@@ -488,6 +488,12 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
+    /// Apply initial mesh displacement
+    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    {
+      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");

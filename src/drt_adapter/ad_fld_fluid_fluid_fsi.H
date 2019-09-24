@@ -117,6 +117,12 @@ namespace ADAPTER
 
     //@}
 
+    /// Apply initial mesh displacement
+    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    {
+      dserror("Not implemented, yet!");
+    }
+
     // apply ALE-mesh displacements to embedded fluid
     void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 

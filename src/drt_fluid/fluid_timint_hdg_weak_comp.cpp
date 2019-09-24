@@ -567,8 +567,8 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
           std::ofstream f;
           f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
           f << "#| " << simulation << "\n";
-          f << "#| Step | Time | abs. L2-error mixed variable  |  abs. L2-error density  |  abs. "
-               "L2-error momentum  |\n";
+          f << "#| Step | Time | abs. L2-error mixed variable | abs. L2-error density | abs. "
+               "L2-error momentum |\n";
           f << step_ << " " << time_ << " " << (*abserror)[0] << " " << (*abserror)[1] << " "
             << (*abserror)[2] << "\n";
           f.flush();
@@ -583,8 +583,8 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
         {
           std::ofstream f;
           f.open(fname.c_str());
-          f << "#| Step | Time | abs. L2-error mixed variable  |  abs. L2-error density  |  abs. "
-               "H1-error momentum  |\n";
+          f << "#| Step | Time | abs. L2-error mixed variable | abs. L2-error density | abs. "
+               "L2-error momentum |\n";
           f << std::setprecision(10) << step_ << " " << std::setw(1) << std::setprecision(5)
             << time_ << std::setw(1) << std::setprecision(6) << " " << (*abserror)[0]
             << std::setw(1) << std::setprecision(6) << " " << (*abserror)[1] << std::setprecision(6)

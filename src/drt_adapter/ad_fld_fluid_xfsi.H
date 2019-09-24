@@ -107,6 +107,12 @@ namespace ADAPTER
     /// convert increment of displacement to increment in velocity
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 
+    /// Apply initial mesh displacement
+    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    {
+      dserror("Not implemented, yet!");
+    }
+
     /// apply the interface displacements to the fluid
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 

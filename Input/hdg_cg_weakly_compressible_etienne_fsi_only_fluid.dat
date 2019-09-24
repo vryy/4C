@@ -2,8 +2,10 @@
 // Maintainer: Andrea La Spina
 //
 -------------------------------------------------------------TITLE
-Weakly compressible flow with manufactured solution on a deformed
-domain solved with the HDG method
+FSI problem with manufactured solution solved by coupling
+the HDG and the CG methods.
+From: "A superconvergent HDG method for weakly compressible
+Fluid-Structure Interaction", Andrea La Spina et al.
 ------------------------------------------------------PROBLEM SIZE
 DIM              2
 -------------------------------------------------------PROBLEM TYP
@@ -16,53 +18,50 @@ NUMALEDIS        1
 -----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE    Weakly_compressible_dens_mom
 STAB_DEN_REF     1.0
-STAB_MOM_REF     1.0
+STAB_MOM_REF     10.0
 NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-7
-TIMEINTEGR       Stationary
+TIMEINTEGR       BDF2
 LINEAR_SOLVER    1
 INITIALFIELD     field_by_function
 CALCERROR        byfunct
 STARTFUNCNO      1
-CALCERRORFUNCNO  2
-BODYFORCEFUNCNO  3
-VARVISCFUNCNO    4
+CALCERRORFUNCNO  1
+BODYFORCEFUNCNO  2
+VARVISCFUNCNO    3
 -------------------------------------------------------ALE DYNAMIC
 ALE_TYPE         solid_linear
 UPDATEMATRIX     no
 LINEAR_SOLVER    1
 INITIALDISP      displacement_by_function
-STARTFUNCNO      5
+STARTFUNCNO      4
 -------------------------------------------------------FSI DYNAMIC
-MAXTIME          1.0
-NUMSTEP          1
-TIMESTEP         1.0
+MAXTIME          0.125
+NUMSTEP          4
+TIMESTEP         0.03125
 ----------------------------------------------------------SOLVER 1
 SOLVER           Superlu
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid_weakly_compressible VISCOSITY 0 REFDENSITY 1.0 REFPRESSURE 0.0 COMPRCOEFF 0.000001
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.49 DENS 1.0
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.30 DENS 1.0
 ----------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 3
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1 // r
-COMPONENT 1 FUNCTION 0 // wx
-COMPONENT 2 FUNCTION 0 // wy
+WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID MAT_FLUID 1 MAT_STRUC 2
 ------------------------------------------------------------FUNCT2
-WEAKLYCOMPRESSIBLE_ETIENNE_CFD MAT 1
+WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE MAT_FLUID 1 MAT_STRUC 2
 ------------------------------------------------------------FUNCT3
-WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE MAT 1
+WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY MAT_FLUID 1 MAT_STRUC 2
 ------------------------------------------------------------FUNCT4
-WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY MAT 1
-------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 0                                // ux
-COMPONENT 1 FUNCTION ((1-10*x^2*(x-1/2)*(x-1)^2)-1)*y // uy
+COMPONENT 0 FUNCTION 0                                                     // ux
+COMPONENT 1 FUNCTION -(sin(2*pi*x)*sin(2*pi*(t+1/4))*(cos(2*pi*x)-1))/20*y // uy
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1 QUANTITY L2errmix VALUE 3.09082364982271422e-02 TOLERANCE 1e-09
-FLUID DIS fluid NODE 1 QUANTITY L2errden VALUE 4.58185598265013781e-09 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1 QUANTITY L2errmom VALUE 3.72056208261101456e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1 QUANTITY L2errmix VALUE 7.43797985655946903e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1 QUANTITY L2errden VALUE 5.88350500229279178e-08 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1 QUANTITY L2errmom VALUE 3.68186122156881554e-02 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  4
@@ -71,17 +70,17 @@ NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 4
 // Bottom
-E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 2 2 2
+E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 1 1 1
 // Top
-E 2 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 2 2 2
+E 2 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 1 1 1
 // Left
-E 3 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 2 2 2
+E 3 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 1 1 1
 // Right
-E 4 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 2 2 2
+E 4 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 1.0 1.0  FUNCT 1 1 1
 --------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT 1
 // ALE
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 5 5
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 4 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE  1 DLINE 1
 NODE  3 DLINE 1

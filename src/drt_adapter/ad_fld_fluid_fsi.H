@@ -98,6 +98,9 @@ namespace ADAPTER
 
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
+    /// Apply initial mesh displacement
+    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp);
+
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
     /// Update fluid griv velocity via FD approximation

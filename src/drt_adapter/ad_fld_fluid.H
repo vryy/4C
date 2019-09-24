@@ -508,6 +508,9 @@ namespace ADAPTER
 
     //! @name Extract mesh values
 
+    /// tell the initial mesh displacement to the fluid solver
+    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) = 0;
+
     /// tell the mesh displacement to the fluid solver
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) = 0;
 

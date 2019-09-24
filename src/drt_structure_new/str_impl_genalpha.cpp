@@ -18,7 +18,9 @@
 #include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -118,12 +120,73 @@ void STR::IMPLICIT::GenAlpha::Setup()
   fviscon_ptr_ = GlobalState().GetMutableFviscoN();
   fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
 
+  // -------------------------------------------------------------------
+  // set initial displacement
+  // -------------------------------------------------------------------
+  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
+  SetInitialDisplacement(DRT::INPUT::IntegralValue<INPAR::STR::InitialDisp>(params, "INITIALDISP"),
+      params.get<int>("STARTFUNCNO"));
+
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
 
   PostSetup();
 }
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::GenAlpha::SetInitialDisplacement(
+    const INPAR::STR::InitialDisp init, const int startfuncno)
+{
+  switch (init)
+  {
+    case INPAR::STR::initdisp_zero_disp:
+    {
+      GlobalState().GetMutableDisN()->PutScalar(0.0);
+      GlobalState().GetMutableDisNp()->PutScalar(0.0);
 
+      break;
+    }
+    case INPAR::STR::initdisp_disp_by_function:
+    {
+      const Epetra_Map* dofrowmap = GlobalState().GetMutableDiscret()->DofRowMap();
+
+      // loop all nodes on the processor
+      for (int lnodeid = 0; lnodeid < GlobalState().GetMutableDiscret()->NumMyRowNodes(); lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node* lnode = GlobalState().GetMutableDiscret()->lRowNode(lnodeid);
+
+        // the set of degrees of freedom associated with the node
+        std::vector<int> nodedofset = GlobalState().GetMutableDiscret()->Dof(0, lnode);
+
+        // loop nodal dofs
+        for (unsigned int d = 0; d < nodedofset.size(); ++d)
+        {
+          const int dofgid = nodedofset[d];
+          int doflid = dofrowmap->LID(dofgid);
+
+          // evaluate component k of spatial function
+          double initialval = DRT::Problem::Instance()
+                                  ->Funct(startfuncno - 1)
+                                  .Evaluate(d, lnode->X(), GlobalState().GetTimeN());
+
+          int err = GlobalState().GetMutableDisN()->ReplaceMyValues(1, &initialval, &doflid);
+          if (err != 0) dserror("dof not on proc");
+        }
+      }
+
+      // initialize also the solution vector
+      GlobalState().GetMutableDisNp()->Update(1.0, *GlobalState().GetMutableDisN(), 0.0);
+
+      break;
+    }
+    default:
+      dserror("Unknown option for initial displacement: %d", init);
+      break;
+  }
+
+  return;
+}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::PostSetup()

@@ -54,6 +54,13 @@ namespace INPAR
       meshsliding
     };
 
+    /// initial displacement field
+    enum InitialDisp
+    {
+      initdisp_zero_disp,        ///< zero initial displacement
+      initdisp_disp_by_function  ///< initial displacement from function
+    };
+
     /// Defines all valid parameters for ale problem
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

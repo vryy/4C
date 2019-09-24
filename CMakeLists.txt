@@ -1127,6 +1127,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/epetra_utils.cpp
   src/drt_beaminteraction/drt_utils_parallel_proctoproc.cpp
   src/drt_lib/drt_utils_rebalancing.cpp
+  src/drt_structure_new/str_functions.cpp
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c

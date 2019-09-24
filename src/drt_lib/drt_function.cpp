@@ -17,6 +17,7 @@
 #include "standardtypes_cpp.H"
 #include "drt_linedefinition.H"
 #include "../drt_fluid/fluid_functions.H"
+#include "../drt_structure_new/str_functions.H"
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_function.H"
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions_combust.H"
@@ -143,6 +144,31 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   weaklycompressibleetiennecfdviscosity.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
       .AddNamedInt("MAT");
 
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluid;
+  weaklycompressibleetiennefsifluid.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidforce;
+  weaklycompressibleetiennefsifluidforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidviscosity;
+  weaklycompressibleetiennefsifluidviscosity
+      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
+  weaklycompressibleetiennefsistructure.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce;
+  weaklycompressibleetiennefsistructureforce
+      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+      .AddNamedInt("MAT_STRUC");
+
   DRT::INPUT::LineDefinition kimmoin;
   kimmoin.AddTag("KIM-MOIN");
 
@@ -265,6 +291,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(weaklycompressibleetiennecfd);
   lines->Add(weaklycompressibleetiennecfdforce);
   lines->Add(weaklycompressibleetiennecfdviscosity);
+  lines->Add(weaklycompressibleetiennefsifluid);
+  lines->Add(weaklycompressibleetiennefsifluidforce);
+  lines->Add(weaklycompressibleetiennefsifluidviscosity);
+  lines->Add(weaklycompressibleetiennefsistructure);
+  lines->Add(weaklycompressibleetiennefsistructureforce);
   lines->Add(kimmoin);
   lines->Add(bochevup);
   lines->Add(bochevrhs);
@@ -456,6 +487,95 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.push_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+      {
+        // read data
+        int mat_id_fluid = -1;
+        int mat_id_struc = -1;
+
+        function->ExtractInt("MAT_FLUID", mat_id_fluid);
+        function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+        if (mat_id_fluid <= 0)
+          dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+        if (mat_id_struc <= 0)
+          dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+
+        functions_.push_back(Teuchos::rcp(
+            new FLD::WeaklyCompressibleEtienneFSIFluidFunction(mat_id_fluid, mat_id_struc)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+      {
+        // read data
+        int mat_id_fluid = -1;
+        int mat_id_struc = -1;
+
+        function->ExtractInt("MAT_FLUID", mat_id_fluid);
+        function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+        if (mat_id_fluid <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_FLUID' in "
+              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+        if (mat_id_struc <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_STRUC' in "
+              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+
+        functions_.push_back(Teuchos::rcp(
+            new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(mat_id_fluid, mat_id_struc)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+      {
+        // read data
+        int mat_id_fluid = -1;
+        int mat_id_struc = -1;
+
+        function->ExtractInt("MAT_FLUID", mat_id_fluid);
+        function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+        if (mat_id_fluid <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_FLUID' in "
+              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+        if (mat_id_struc <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_STRUC' in "
+              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
+                mat_id_fluid, mat_id_struc)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+      {
+        // read data
+        int mat_id_struc = -1;
+
+        function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+        if (mat_id_struc <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
+
+        functions_.push_back(
+            Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(mat_id_struc)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+      {
+        // read data
+        int mat_id_struc = -1;
+
+        function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+        if (mat_id_struc <= 0)
+          dserror(
+              "Please give a (reasonable) 'MAT_STRUC' in "
+              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
+
+        functions_.push_back(Teuchos::rcp(
+            new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(mat_id_struc)));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {

@@ -287,6 +287,23 @@ namespace INPAR
           tuple<std::string>("vague", "imrLike", "trLike"),
           tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &sdyn);
 
+      // Initial displacement
+      setStringToIntegralParameter<int>("INITIALDISP", "zero_displacement",
+          "Initial displacement for structure problem",
+          tuple<std::string>("zero_displacement", "displacement_by_function"),
+          tuple<int>(initdisp_zero_disp, initdisp_disp_by_function), &sdyn);
+
+      // Function to evaluate initial displacement
+      IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
+
+      // Flag to (de)activate error calculations
+      setStringToIntegralParameter<int>("CALCERROR", "no",
+          "Flag to (de)activate error calculations", tuple<std::string>("no", "byfunct"),
+          tuple<int>(no_error_calculation, byfunct), &sdyn);
+
+      // Function number to calculate the error
+      IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &sdyn);
+
       /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
       Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY", false, "");
