@@ -34,10 +34,7 @@ void PARTICLEWALL::WallDataState::Init(const Teuchos::RCP<DRT::Discretization> w
 {
   // set wall discretization
   walldiscretization_ = walldiscretization;
-}
 
-void PARTICLEWALL::WallDataState::Setup()
-{
   // get flags defining considered states of particle wall
   bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
   bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
@@ -60,6 +57,11 @@ void PARTICLEWALL::WallDataState::Setup()
   {
     force_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap()), true);
   }
+}
+
+void PARTICLEWALL::WallDataState::Setup()
+{
+  // nothing to do
 }
 
 void PARTICLEWALL::WallDataState::WriteRestart(const int step, const double time) const
