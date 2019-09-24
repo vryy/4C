@@ -89,8 +89,10 @@ namespace PARTICLEWALL
      * \brief init wall handler
      *
      * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] binstrategy binning strategy
      */
-    virtual void Init();
+    virtual void Init(const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
 
     /*!
      * \brief setup wall handler
@@ -98,11 +100,9 @@ namespace PARTICLEWALL
      * \author Sebastian Fuchs \date 10/2018
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
-     * \param[in] binstrategy           binning strategy
      */
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!
      * \brief write restart of wall handler
@@ -230,12 +230,8 @@ namespace PARTICLEWALL
     //! \name init and setup methods
     //! @{
 
-    /*!
-     * \brief init wall discretization
-     *
-     * \author Sebastian Fuchs \date 10/2018
-     */
-    virtual void InitWallDiscretization() final;
+    //! init wall discretization
+    virtual void InitWallDiscretization() = 0;
 
     //! setup wall discretization
     virtual void SetupWallDiscretization() const = 0;
@@ -267,6 +263,9 @@ namespace PARTICLEWALL
         walldiscretizationruntimevtuwriter_;
 
    protected:
+    //! create wall discretization
+    virtual void CreateWallDiscretization() final;
+
     //! communicator
     const Epetra_Comm& comm_;
 
@@ -351,6 +350,13 @@ namespace PARTICLEWALL
     void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
 
     /*!
+     * \brief init wall discretization
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
+    void InitWallDiscretization() override;
+
+    /*!
      * \brief setup wall discretization
      *
      * \author Sebastian Fuchs \date 10/2018
@@ -396,6 +402,13 @@ namespace PARTICLEWALL
     void TransferWallElementsAndNodes() override;
 
    private:
+    /*!
+     * \brief init wall discretization
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
+    void InitWallDiscretization() override;
+
     /*!
      * \brief setup wall discretization
      *

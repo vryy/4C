@@ -112,7 +112,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   particleengine_->Setup(particlestatestotypes_);
 
   // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+  if (particlewall_) particlewall_->Setup(particleengine_);
 
   // check particle types for modified states
   const bool havemodifiedstates = HaveModifiedStates();
@@ -374,7 +374,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
   }
 
   // init particle wall handler
-  if (particlewall_) particlewall_->Init();
+  if (particlewall_) particlewall_->Init(particleengine_->GetBinningStrategy());
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()

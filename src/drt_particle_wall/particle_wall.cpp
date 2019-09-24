@@ -60,8 +60,12 @@ PARTICLEWALL::WallHandlerBase::~WallHandlerBase()
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-void PARTICLEWALL::WallHandlerBase::Init()
+void PARTICLEWALL::WallHandlerBase::Init(
+    const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
 {
+  // set interface to binning strategy
+  binstrategy_ = binstrategy;
+
   // init wall discretization
   InitWallDiscretization();
 
@@ -73,14 +77,10 @@ void PARTICLEWALL::WallHandlerBase::Init()
 }
 
 void PARTICLEWALL::WallHandlerBase::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
-
-  // set interface to binning strategy
-  binstrategy_ = binstrategy;
 
   // setup wall discretization
   SetupWallDiscretization();
@@ -454,16 +454,6 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
   }
 }
 
-void PARTICLEWALL::WallHandlerBase::InitWallDiscretization()
-{
-  // create wall discretization
-  walldiscretization_ =
-      Teuchos::rcp(new DRT::Discretization("particlewalls", Teuchos::rcp(comm_.Clone())));
-
-  // create wall discretization writer
-  walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_)));
-}
-
 void PARTICLEWALL::WallHandlerBase::InitWallDataState()
 {
   // create wall data state container
@@ -482,6 +472,16 @@ void PARTICLEWALL::WallHandlerBase::InitWallDiscretizationRuntimeVtuWriter()
 
   // init wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_->Init(walldiscretization_, walldatastate_);
+}
+
+void PARTICLEWALL::WallHandlerBase::CreateWallDiscretization()
+{
+  // create wall discretization
+  walldiscretization_ =
+      Teuchos::rcp(new DRT::Discretization("particlewalls", Teuchos::rcp(comm_.Clone())));
+
+  // create wall discretization writer
+  walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_)));
 }
 
 PARTICLEWALL::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
@@ -561,11 +561,10 @@ void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);
 }
 
-void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
+void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 {
-  // short screen output
-  if (binstrategy_->HavePBC() and myrank_ == 0)
-    IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
+  // create wall discretization
+  CreateWallDiscretization();
 
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structurediscretization =
@@ -639,6 +638,13 @@ void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
   walldiscretization_->FillComplete(true, false, false);
 }
 
+void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
+{
+  // short screen output
+  if (binstrategy_->HavePBC() and myrank_ == 0)
+    IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
+}
+
 PARTICLEWALL::WallHandlerBoundingBox::WallHandlerBoundingBox(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PARTICLEWALL::WallHandlerBase(comm, params)
@@ -656,8 +662,11 @@ void PARTICLEWALL::WallHandlerBoundingBox::TransferWallElementsAndNodes()
   // no need to transfer wall elements and nodes
 }
 
-void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
+void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
 {
+  // create wall discretization
+  CreateWallDiscretization();
+
   // init vector of node and element ids
   std::vector<int> nodeids(0);
   std::vector<int> eleids(0);
@@ -772,4 +781,9 @@ void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
 
   // finalize wall discretization construction
   walldiscretization_->FillComplete(true, false, false);
+}
+
+void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
+{
+  // nothing to do
 }

@@ -787,9 +787,6 @@ void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
   // determine minimum relevant bin size
   DetermineMinRelevantBinSize();
 
-  // build periodic boundary condition
-  binstrategy_->BuildPeriodicBC();
-
   // create an initial linear distribution of row bins
   binrowmap_ = binstrategy_->CreateLinearMapForNumbin(comm_);
 
