@@ -24,6 +24,11 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
+namespace IO
+{
+  class DiscretizationReader;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -58,37 +63,53 @@ namespace PARTICLEWALL
      * \brief init wall data state container
      *
      * \author Sebastian Fuchs \date 05/2019
+     *
+     * \param[in] walldiscretization wall discretization
      */
-    void Init();
+    void Init(const Teuchos::RCP<DRT::Discretization> walldiscretization);
 
     /*!
      * \brief setup wall data state container
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void Setup(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
+    void Setup();
+
+    /*!
+     * \brief write restart of wall data state container
+     *
+     * \author Sebastian Fuchs \date 09/2019
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
+    void WriteRestart(const int step, const double time) const;
+
+    /*!
+     * \brief read restart of wall data state container
+     *
+     * \author Sebastian Fuchs \date 09/2019
+     *
+     * \param[in] reader discretization reader
+     */
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     /*!
      * \brief check for correct maps
      *
      * \author Sebastian Fuchs \date 05/2019
-     *
-     * \params[in] walldiscretization wall discretization
      */
-    void CheckForCorrectMaps(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
+    void CheckForCorrectMaps();
 
     /*!
      * \brief update maps of state vectors
      *
      * \author Sebastian Fuchs \date 05/2019
-     *
-     * \params[in] walldiscretization wall discretization
      */
-    void UpdateMapsOfStateVectors(
-        Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
+    void UpdateMapsOfStateVectors();
 
     //! @name get states (read only access)
-    //@{
+    //! @{
 
     //! get wall displacements (row map based)
     inline Teuchos::RCP<const Epetra_Vector> GetDispRow() const { return disp_row_; };
@@ -111,10 +132,10 @@ namespace PARTICLEWALL
     //! get wall forces (column map based)
     inline Teuchos::RCP<const Epetra_Vector> GetForceCol() const { return force_col_; };
 
-    //@}
+    //! @}
 
     //! @name get states (read and write access)
-    //@{
+    //! @{
 
     //! get wall displacements (row map based)
     inline Teuchos::RCP<Epetra_Vector> GetMutableDispRow() { return disp_row_; };
@@ -139,14 +160,20 @@ namespace PARTICLEWALL
     //! get wall forces (column map based)
     inline Teuchos::RCP<Epetra_Vector> GetMutableForceCol() { return force_col_; };
 
-    //@}
+    //! @}
 
    private:
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
 
+    //! wall discretization
+    Teuchos::RCP<DRT::Discretization> walldiscretization_;
+
     //! current dof row map
     Teuchos::RCP<Epetra_Map> curr_dof_row_map_;
+
+    //! @name stored states
+    //! @{
 
     //! wall displacements (row map based)
     Teuchos::RCP<Epetra_Vector> disp_row_;
@@ -165,6 +192,8 @@ namespace PARTICLEWALL
 
     //! wall forces (column map based)
     Teuchos::RCP<Epetra_Vector> force_col_;
+
+    //! @}
   };
 
 }  // namespace PARTICLEWALL

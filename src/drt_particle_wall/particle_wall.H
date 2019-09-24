@@ -167,7 +167,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 03/2019
      *
-     * \params[out] allprocmaxpositionincrement maximum wall position increment
+     * \param[out] allprocmaxpositionincrement maximum wall position increment
      */
     virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) const final;
 

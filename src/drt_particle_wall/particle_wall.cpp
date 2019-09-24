@@ -86,7 +86,7 @@ void PARTICLEWALL::WallHandlerBase::Setup(
   SetupWallDiscretization();
 
   // setup wall data state container
-  walldatastate_->Setup(walldiscretization_);
+  walldatastate_->Setup();
 
   // setup wall runtime vtu/vtp writers
   {
@@ -106,6 +106,9 @@ void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double ti
 
   walldiscretizationwriter->NewStep(step, time);
 
+  // write restart of wall data state container
+  walldatastate_->WriteRestart(step, time);
+
   // write restart of wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_->WriteRestart(step, time);
 }
@@ -118,6 +121,9 @@ void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep)
 
   // safety check
   if (restartstep != reader->ReadInt("step")) dserror("time step on file not equal to given step!");
+
+  // read restart of wall data state container
+  walldatastate_->ReadRestart(reader);
 
   // read restart of wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_->ReadRestart(reader);
@@ -260,7 +266,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles");
 
 #ifdef DEBUG
-  walldatastate_->CheckForCorrectMaps(walldiscretization_);
+  walldatastate_->CheckForCorrectMaps();
 #endif
 
   // clear vector relating column wall elements to bins
@@ -295,7 +301,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors");
 
 #ifdef DEBUG
-  walldatastate_->CheckForCorrectMaps(walldiscretization_);
+  walldatastate_->CheckForCorrectMaps();
 #endif
 
   // safety check
@@ -460,14 +466,16 @@ void PARTICLEWALL::WallHandlerBase::InitWallDiscretization()
 
 void PARTICLEWALL::WallHandlerBase::InitWallDataState()
 {
-  // create and init wall data state container
+  // create wall data state container
   walldatastate_ = std::make_shared<PARTICLEWALL::WallDataState>(params_);
-  walldatastate_->Init();
+
+  // init wall data state container
+  walldatastate_->Init(walldiscretization_);
 }
 
 void PARTICLEWALL::WallHandlerBase::InitWallDiscretizationRuntimeVtuWriter()
 {
-  // construct wall discretization runtime vtu writer
+  // create wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_ =
       std::unique_ptr<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>(
           new PARTICLEWALL::WallDiscretizationRuntimeVtuWriter());
@@ -515,7 +523,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
   ExtendWallElementGhosting(bintorowelemap);
 
   // update maps of state vectors
-  walldatastate_->UpdateMapsOfStateVectors(walldiscretization_);
+  walldatastate_->UpdateMapsOfStateVectors();
 }
 
 void PARTICLEWALL::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
@@ -539,7 +547,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
   ExtendWallElementGhosting(bintorowelemap);
 
   // update maps of state vectors
-  walldatastate_->UpdateMapsOfStateVectors(walldiscretization_);
+  walldatastate_->UpdateMapsOfStateVectors();
 }
 
 void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
