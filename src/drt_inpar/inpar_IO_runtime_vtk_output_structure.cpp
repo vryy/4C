@@ -49,6 +49,10 @@ namespace INPAR
         // whether to write displacement state
         setStringToIntegralParameter<int>("DISPLACEMENT", "No", "write displacement output",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
+        // whether to write element owner
+        setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
+            yesnovalue, &sublist_IO_VTK_structure);
       }
 
 

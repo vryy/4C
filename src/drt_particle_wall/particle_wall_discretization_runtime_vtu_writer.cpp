@@ -102,14 +102,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
 
   // element owner
   {
-    Teuchos::RCP<Epetra_Vector> eleowner =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
-    for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
-    {
-      const DRT::Element* ele = walldiscretization_->lColElement(iele);
-      (*eleowner)[iele] = ele->Owner();
-    }
-    runtime_vtuwriter_->AppendElementBasedResultDataVector(eleowner, 1, "owner");
+    runtime_vtuwriter_->AppendElementOwner("owner");
   }
 
   // element id

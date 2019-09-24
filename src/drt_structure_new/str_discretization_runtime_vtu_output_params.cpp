@@ -19,7 +19,10 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams()
-    : isinit_(false), issetup_(false), output_displacement_state_(false)
+    : isinit_(false),
+      issetup_(false),
+      output_displacement_state_(false),
+      output_element_owner_(false)
 {
   // empty constructor
 }
@@ -36,6 +39,9 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
 
   output_displacement_state_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
+
+  output_element_owner_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
 
   isinit_ = true;
 }

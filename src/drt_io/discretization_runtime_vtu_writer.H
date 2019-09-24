@@ -88,6 +88,17 @@ class DiscretizationRuntimeVtuWriter
       const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
       unsigned int result_num_components_per_element, const std::string& resultname);
 
+  /**
+   * \brief Write owner id for each element.
+   *
+   * In order to process all solid elements (beam elements are handled by a sepperate output
+   * writer), it is sufficient that each processor writes all elements in his row map. This can
+   * easily be achieved by appending the PID of the writing processor.
+   *
+   * @param resultname (in) Name of the owner field in the VTK file.
+   */
+  void AppendElementOwner(const std::string resultname);
+
   /** \brief write all required VTU files to filesystem
    *
    *  \author grill

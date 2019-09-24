@@ -51,6 +51,13 @@ namespace DRT
         return output_displacement_state_;
       };
 
+      /// whether to write the owner of elements
+      bool OutputElementOwner() const
+      {
+        CheckInitSetup();
+        return output_element_owner_;
+      };
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -76,6 +83,9 @@ namespace DRT
 
       /// whether to write displacement output
       bool output_displacement_state_;
+
+      /// whether to write the owner of elements
+      bool output_element_owner_;
 
       //@}
     };
