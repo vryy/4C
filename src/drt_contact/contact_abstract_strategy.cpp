@@ -1005,7 +1005,7 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
   ivel_.resize(0);
 
   // for dynamic problems
-  if (alphaf_ != 0.0)
+  if (alphaf_ != 0.0)  // ToDo Improve this check! alphaf_ = 0 does not guarantee Statics.
   {
     // create vector of interface velocities
     for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -1018,7 +1018,9 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
       double mean = 0.0;
 
       int err = velidofs->MeanValue(&mean);
-      if (err) dserror("error for meanvalue calculation");
+      if (err)
+        dserror("Calculation of mean velocity for interface %s failed.",
+            Interfaces()[i]->Discret().Name().c_str());
       mean = abs(mean);
 
       ivel_.push_back(mean);
