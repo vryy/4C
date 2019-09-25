@@ -25,8 +25,8 @@
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
 CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis,
-    std::vector<DRT::Condition*>& mtcond, std::vector<DRT::Condition*>& ccond,
-    double timeIntegrationMidPoint)
+    std::vector<DRT::Condition*>& meshtyingConditions,
+    std::vector<DRT::Condition*>& contactConditions, double timeIntegrationMidPoint)
     : cman_(Teuchos::null), mtman_(Teuchos::null)
 {
   bool onlymeshtying = false;
@@ -34,11 +34,11 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
   bool meshtyingandcontact = false;
 
   // check for case
-  if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
+  if (meshtyingConditions.size() != 0 and contactConditions.size() != 0) meshtyingandcontact = true;
 
-  if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
+  if (meshtyingConditions.size() != 0 and contactConditions.size() == 0) onlymeshtying = true;
 
-  if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
+  if (meshtyingConditions.size() == 0 and contactConditions.size() != 0) onlycontact = true;
 
   // create meshtying and contact manager
   if (onlymeshtying)
