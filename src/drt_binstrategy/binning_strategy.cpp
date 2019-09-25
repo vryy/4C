@@ -223,7 +223,8 @@ void BINSTRATEGY::BinningStrategy::Init(const Epetra_Comm& lcomm)
     }
   }
 
-  return;
+  // build periodic boundary condition
+  BuildPeriodicBC();
 }
 
 /*----------------------------------------------------------------------------*
