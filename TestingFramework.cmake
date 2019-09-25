@@ -2166,7 +2166,7 @@ baci_test(immersed_cell_adhesiondynamics_penalty_heterogeneous_reaction_h8_quad4
 baci_test(immersed_cell_biochemo_mechano_passivematerial_h8 2 "")
 baci_test(immersed_poro_oscillating_cylinder_h8 3 "")
 baci_test(immersed_poro_plate_with_pseudo_hole_h8 3 "")
-baci_test(activefiber_square_cell_dashpot_h8 2 "")
+baci_test(activefiber_square_cell_dashpot_h8 3 "")
 baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 
 
