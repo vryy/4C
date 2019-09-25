@@ -58,7 +58,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   const int dim = DRT::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3) dserror("ERROR: Contact problem must be 2D or 3D");
   std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
-  Teuchos::ParameterList cparams;
+  Teuchos::ParameterList contactParams;
 
   // read and check contact input parameters
   if (Comm().MyPID() == 0)
@@ -66,7 +66,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     std::cout << "Checking contact input parameters...........";
     fflush(stdout);
   }
-  ReadAndCheckInput(cparams);
+  ReadAndCheckInput(contactParams);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for FillComplete of discretization
@@ -117,24 +117,25 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
   // get input parameters
   INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contactParams, "STRATEGY");
   INPAR::WEAR::WearLaw wearLaw =
-      DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
-  INPAR::WEAR::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cparams, "WEARTYPE");
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(contactParams, "WEARLAW");
+  INPAR::WEAR::WearType wearType =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(contactParams, "WEARTYPE");
   INPAR::CONTACT::ConstraintDirection constr_direction =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          cparams, "CONSTRAINT_DIRECTIONS");
-  INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
-  INPAR::CONTACT::AdhesionType ad =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
-  const bool nurbs = cparams.get<bool>("NURBS");
+          contactParams, "CONSTRAINT_DIRECTIONS");
+  INPAR::CONTACT::FrictionType frictionType =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contactParams, "FRICTION");
+  INPAR::CONTACT::AdhesionType adhesionType =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contactParams, "ADHESION");
+  const bool nurbs = contactParams.get<bool>("NURBS");
   INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(cparams, "ALGORITHM");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM");
 
   bool friplus = false;
-  if ((wearLaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
+  if ((wearLaw != INPAR::WEAR::wear_none) ||
+      (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
   // only for poro
@@ -215,11 +216,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         Searchele_AllProc, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
-    Teuchos::ParameterList icparams = cparams;
+    Teuchos::ParameterList icparams = contactParams;
 
     // find out if interface-specific coefficients of friction are given
-    if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb ||
-        ftype == INPAR::CONTACT::friction_stick)
+    if (frictionType == INPAR::CONTACT::friction_tresca ||
+        frictionType == INPAR::CONTACT::friction_coulomb ||
+        frictionType == INPAR::CONTACT::friction_stick)
     {
       // read interface COFs
       std::vector<double> frcoeff((int)currentgroup.size());
@@ -235,19 +237,19 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       if (frcoeff[0] < 0.0) dserror("ERROR: Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
-      if (ftype == INPAR::CONTACT::friction_tresca)
+      if (frictionType == INPAR::CONTACT::friction_tresca)
       {
         icparams.setEntry("FRBOUND", static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
         icparams.setEntry("FRCOEFF", static_cast<Teuchos::ParameterEntry>(-1.0));
       }
-      else if (ftype == INPAR::CONTACT::friction_coulomb)
+      else if (frictionType == INPAR::CONTACT::friction_coulomb)
       {
         icparams.setEntry("FRCOEFF", static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
         icparams.setEntry("FRBOUND", static_cast<Teuchos::ParameterEntry>(-1.0));
       }
       // dummy values for FRCOEFF and FRBOUND have to be set,
       // since entries are accessed regardless of the friction law
-      else if (ftype == INPAR::CONTACT::friction_stick)
+      else if (frictionType == INPAR::CONTACT::friction_stick)
       {
         icparams.setEntry("FRCOEFF", static_cast<Teuchos::ParameterEntry>(-1.0));
         icparams.setEntry("FRBOUND", static_cast<Teuchos::ParameterEntry>(-1.0));
@@ -255,7 +257,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     }
 
     // find out if interface-specific coefficients of adhesion are given
-    if (ad == INPAR::CONTACT::adhesion_bound)
+    if (adhesionType == INPAR::CONTACT::adhesion_bound)
     {
       // read interface COFs
       std::vector<double> ad_bound((int)currentgroup.size());
@@ -340,7 +342,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
         // and found for the second, third, ... time!
-        if (ftype != INPAR::CONTACT::friction_none)
+        if (frictionType != INPAR::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(
               new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
@@ -487,7 +489,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
             Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
 
-        if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+        if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
             algo != INPAR::MORTAR::algorithm_gpts)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
@@ -518,7 +520,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     //-------------------- finalize the contact interface construction
     interface->FillComplete(true, maxdof);
 
-    if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
         algo != INPAR::MORTAR::algorithm_gpts)
       FindPoroInterfaceTypes(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
@@ -540,55 +542,55 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wearLaw != INPAR::WEAR::wear_none &&
-      (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
+      (wearType == INPAR::WEAR::wear_intstate || wearType == INPAR::WEAR::wear_primvar))
   {
     strategy_ = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, Discret().DofRowMap(),
-        Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+        Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
-    if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
     {
       strategy_ = Teuchos::rcp(
-          new PoroLagrangeStrategy(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(), cparams,
-              interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
+          new PoroLagrangeStrategy(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
+              contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
     }
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+    else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       strategy_ = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
       strategy_ = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
   else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
            stype == INPAR::CONTACT::solution_uzawa)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(data_ptr, Discret().DofRowMap(),
-        Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+        Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
            (stype == INPAR::CONTACT::solution_nitsche || stype == INPAR::CONTACT::solution_penalty))
   {
-    if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
         stype == INPAR::CONTACT::solution_nitsche)
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategyPoro(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::fsi &&
+    else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::fsi &&
              stype == INPAR::CONTACT::solution_nitsche)
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategy(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
@@ -613,13 +615,13 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     for (int i = 0; i < (int)interfaces.size(); ++i)
     {
       double checkfrcoeff = 0.0;
-      if (ftype == INPAR::CONTACT::friction_tresca)
+      if (frictionType == INPAR::CONTACT::friction_tresca)
       {
         checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRBOUND");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
-      else if (ftype == INPAR::CONTACT::friction_coulomb)
+      else if (frictionType == INPAR::CONTACT::friction_coulomb)
       {
         checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRCOEFF");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
