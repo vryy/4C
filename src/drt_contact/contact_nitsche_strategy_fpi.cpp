@@ -13,13 +13,7 @@
 #include "contact_nitsche_strategy_fpi.H"
 #include "contact_nitsche_strategy_fsi.H"
 
-//#include "contact_nitsche_integrator_fpi.H"
-//#include "contact_element.H"
 #include "contact_interface.H"
-
-//#include "../drt_mortar/mortar_projector.H"
-
-//#include "../drt_lib/drt_discret.H"
 
 void CONTACT::CoNitscheStrategyFpi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
