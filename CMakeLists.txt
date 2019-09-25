@@ -2252,6 +2252,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_integrator_tsi.cpp
   src/drt_contact/contact_nitsche_integrator_poro.cpp
   src/drt_contact/contact_nitsche_integrator_fsi.cpp
+  src/drt_contact/contact_nitsche_integrator_fpi.cpp
   src/drt_contact/contact_ehl_integrator.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
@@ -2270,6 +2271,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_strategy_tsi.cpp
   src/drt_contact/contact_nitsche_strategy_poro.cpp
   src/drt_contact/contact_nitsche_strategy_fsi.cpp
+  src/drt_contact/contact_nitsche_strategy_fpi.cpp
   src/drt_contact/contact_utils.cpp
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp

@@ -24,6 +24,7 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_nitsche_strategy_poro.H"
 #include "contact_nitsche_strategy_fsi.H"
+#include "contact_nitsche_strategy_fpi.H"
 #include "contact_defines.H"
 #include "friction_node.H"
 #include "contact_strategy_factory.H"
@@ -587,6 +588,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       strategy_ = Teuchos::rcp(new CoNitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
     }
+    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::fpi &&
+             stype == INPAR::CONTACT::solution_nitsche)
+    {
+      strategy_ = Teuchos::rcp(new CoNitscheStrategyFpi(data_ptr, Discret().DofRowMap(),
+          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+    }
     else
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategy(data_ptr, Discret().DofRowMap(),
@@ -1111,9 +1118,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
-    if (problemtype != prb_structure && problemtype != prb_poroelast && problemtype != prb_fsi_xfem)
+    if (problemtype != prb_structure && problemtype != prb_poroelast &&
+        problemtype != prb_fsi_xfem && problemtype != prb_fpsi_xfem)
       dserror(
-          "ERROR: GPTS algorithm only tested for structural, FSI-CutFEM, and poroelastic problems");
+          "ERROR: GPTS algorithm only tested for structural, FSI-CutFEM, FPSI-CutFEM, and "
+          "poroelastic problems");
 
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
         INPAR::WEAR::wear_none)
@@ -1167,7 +1176,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_fpsi_xfem)
+  else if (problemtype == prb_poroelast or problemtype == prb_fpsi)
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::poro);
@@ -1181,6 +1190,17 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   else if (problemtype == prb_fsi_xfem)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::fsi);
+  }
+  else if (problemtype == prb_fpsi_xfem)
+  {
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    cparams.set<int>("PROBTYPE", INPAR::CONTACT::fpi);
+    // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
+    double porotimefac =
+        1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
+    cparams.set<double>("porotimefac", porotimefac);
+    cparams.set<bool>("CONTACTNOPEN",
+        DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
   else
   {
@@ -1242,7 +1262,8 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
 
 
   // If Parent Elements are required, we need to reconnect them before contact restart!
-  if (GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+  if (GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poro ||
+      GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
     ReconnectParentElements();
 
   // this is contact, thus we need the displacement state for restart

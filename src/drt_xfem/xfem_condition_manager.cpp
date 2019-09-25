@@ -937,7 +937,7 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
         coup_sid);
 }
 
-void XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
@@ -946,12 +946,20 @@ void XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> c
   {
     Teuchos::RCP<MeshCouplingFSI> mc_fsi =
         Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mesh_coupl_[m]);
+    Teuchos::RCP<MeshCouplingFPI> mc_fpi =
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mesh_coupl_[m]);
     if (mc_fsi != Teuchos::null)
     {
-      mc_fsi->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
-      return;
+      if (mc_fsi->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams))
+        return true;
+    }
+    if (mc_fpi != Teuchos::null)
+    {
+      if (mc_fpi->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams))
+        return true;
     }
   }
+  return false;
 }
 
 // Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>

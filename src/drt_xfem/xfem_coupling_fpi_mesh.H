@@ -133,6 +133,38 @@ namespace XFEM
     //! Caluculate the Porosity for this FaceElement Gausspoint
     double CalcPorosity(DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& J);
 
+    //! get distance when transition between FPSI and PSCI is started
+    double Get_fpi_pcontact_exchange_dist() { return fpsi_contact_hfraction_ * h_scaling_; }
+
+    //! ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is starte
+    double Get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
+
+    /// Assign communicator to contact to mesh coupling object
+    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm)
+    {
+      xf_c_comm_ = xf_c_comm;
+    }
+
+    /// Get communicator to contact
+    Teuchos::RCP<XFEM::XFluid_Contact_Comm> Get_Contact_Comm()
+    {
+      if (xf_c_comm_ == Teuchos::null)
+        dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
+      return xf_c_comm_;
+    }
+
+    /// Register this side on this proc
+    void RegisterSideProc(int sid);
+
+    /// Reconnect Parent Pointers
+    void ReconnectParentPointers();
+
+    /// Initialize Fluid State
+    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
+
    private:
     void Output(const int step, const double time, const bool write_restart_data);
 
@@ -170,6 +202,26 @@ namespace XFEM
 
     virtual void SetConditionSpecificParameters();
 
+   private:
+    //! Updates configurationmap for specific Gausspoint in the contact case
+    virtual void UpdateConfigurationMap_GP_Contact(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                 //< master sided dynamic viscosity
+        double& visc_s,                 //< slave sided dynamic viscosity
+        double& density_m,              //< master sided density
+        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
+        double& full_stab,              //< full NIT Penalty scaling
+        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,     //< Condition
+        DRT::Element* ele,              //< Element
+        DRT::Element* bele,             //< Boundary Element
+        double* funct,  //< local shape function for Gauss Point (from fluid element)
+        double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    );
+
     //! Caluculate the Porosity for J,porosity pair on this FaceElement
     double CalctrPermeability(DRT::Element* ele, double& porosity, double& J);
 
@@ -200,6 +252,19 @@ namespace XFEM
     std::map<int, int> lm_struct_x_lm_pres_;
 
     double BJ_coeff_;
+
+    //! flag for contact
+    bool contact_;
+
+    //! factor of element size, when transition between FPSI and PSCI is started! (if 1,
+    //! interpolation within one element)
+    double fpsi_contact_hfraction_;
+    //! ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is started! (if 0, pure contact
+    //! starts when gap is zero)
+    double fpsi_contact_fullpcfraction_;
+
+    //! Xfluid Contact Communicator
+    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
 
     //@}
   };

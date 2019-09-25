@@ -2275,11 +2275,13 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
   XFEM::UTILS::GetNavierSlipStabilizationParameters(
       visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);  // sliplength is input for this
 
+#ifdef WRITE_GMSH
   {
     xf_c_comm_->Gmsh_Write(x, *fulltraction, 1);
     xf_c_comm_->Gmsh_Write(x, (double)pure_fsi, 3);
     xf_c_comm_->Gmsh_Write(x, sliplength, 6);
   }
+#endif
 
   if (pure_fsi)  // standard FSI with gernal Navier-slip --> Case I
   {
@@ -2450,14 +2452,14 @@ void XFEM::MeshCouplingFSI::RegisterSideProc(int sid)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFSI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
   if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
     Get_Contact_Comm()->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
-  return;
+  return (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact);
 }
 
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(

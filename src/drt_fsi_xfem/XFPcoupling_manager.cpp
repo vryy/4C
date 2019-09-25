@@ -80,6 +80,14 @@ XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManag
   lambda_pf_ = Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->Map(1), true));
 }
 
+void XFEM::XFPCoupling_Manager::InitCouplingStates()
+{
+  mcfpi_ps_ps_->ReconnectParentPointers();
+  mcfpi_pf_ps_->ReconnectParentPointers();
+  mcfpi_ps_pf_->ReconnectParentPointers();
+  mcfpi_pf_pf_->ReconnectParentPointers();
+}
+
 void XFEM::XFPCoupling_Manager::SetCouplingStates()
 {
   // 1 Set Displacement on both mesh couplings ... we get them from the structure field!

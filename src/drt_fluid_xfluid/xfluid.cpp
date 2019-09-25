@@ -1045,11 +1045,16 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             for (std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::iterator bit = bcells.begin();
                  bit != bcells.end(); ++bit)
             {
+              Teuchos::RCP<XFEM::CouplingBase> mc = condition_manager_->GetCouplingByIdx(
+                  condition_manager_->GetMeshCouplingIndex(bit->first));
               Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi =
-                  Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(
-                      condition_manager_->GetCouplingByIdx(
-                          condition_manager_->GetMeshCouplingIndex(bit->first)));
-              if (mc_fsi != Teuchos::null) mc_fsi->RegisterSideProc(bit->first);
+                  Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc);
+              Teuchos::RCP<XFEM::MeshCouplingFPI> mc_fpi =
+                  Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mc);
+              if (mc_fsi != Teuchos::null)
+                mc_fsi->RegisterSideProc(bit->first);
+              else if (mc_fpi != Teuchos::null)
+                mc_fpi->RegisterSideProc(bit->first);
             }
             e->BoundaryCellGaussPointsLin(bcells, bintpoints);
 

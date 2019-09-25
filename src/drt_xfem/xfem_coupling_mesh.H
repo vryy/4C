@@ -669,7 +669,7 @@ namespace XFEM
     void RegisterSideProc(int sid);
 
     /// Initialize Fluid State
-    void InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
