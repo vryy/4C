@@ -1129,7 +1129,7 @@ void MORTAR::MortarInterface::BinningStrategy(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinningStrategy(
-    const double vel)
+    const double meanVelocity)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
   LINALG::Matrix<3, 2> XAABB(false);
@@ -1189,10 +1189,10 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (vel >= EPS12)
+  if (meanVelocity >= EPS12)
   {
     const double dt = InterfaceParams().get<double>("TIMESTEP");
-    cutoff = cutoff + 2 * dt * vel;
+    cutoff = cutoff + 2 * dt * meanVelocity;
   }
 
   // increase XAABB by 2x cutoff radius

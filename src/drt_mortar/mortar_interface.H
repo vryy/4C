@@ -1597,10 +1597,10 @@ namespace MORTAR
     configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
     coupling in the reference configuration, it suffices to set the velocity to 0.0.
 
-    @param[in] vel Average velocity of solid body
+    @param[in] meanVelocity Current mean velocity of this interface
     @return Binning strategy object ready to be used
     */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel);
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     /*!
     \brief Create interface local communicator
