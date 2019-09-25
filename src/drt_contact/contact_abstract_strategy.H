@@ -1114,20 +1114,22 @@ namespace CONTACT
     bool WasInContact() const { return Data().WasInContact(); }
 
     /*!
-     \brief Return old global contact status (last time step)
+    \brief Return old global contact status (last time step)
 
-     True if there has been contact at the end of the last
-     time step (last converged state)
-     */
+    True if there has been contact at the end of the last
+    time step (last converged state)
+    */
     bool WasInContactLastTimeStep() const { return Data().WasInContactLastTimeStep(); }
 
-    /*! \brief Return global self contact status
+    /*!
+    \brief Return global self contact status
 
-     Note that at the moment this only gives information about the
-     POTENTIAL self contact of the global problem and not about
-     an actual self contact occurring.
+    Note that at the moment this only gives information about the
+    POTENTIAL self contact of the global problem and not about
+    an actual self contact occurring.
 
-     TODO: automatically recognize ACTUAL self contact */
+    TODO: automatically recognize ACTUAL self contact
+    */
     bool& IsSelfContact() { return Data().IsSelfContact(); }
     bool IsSelfContact() const { return Data().IsSelfContact(); };
 
@@ -1140,10 +1142,12 @@ namespace CONTACT
       return Interfaces();
     }
 
-    /*! \brief Get dual quadratic 3d slave element flag
+    /*!
+    \brief Get dual quadratic 3d slave element flag
 
-     Returns TRUE if at least one higher-order 3d slave element with
-     dual Lagrange mutliplier shape functions in any interface. */
+    Returns TRUE if at least one higher-order 3d slave element with
+    dual Lagrange mutliplier shape functions in any interface.
+    */
     virtual bool Dualquadslavetrafo() const { return Data().IsDualQuadSlaveTrafo(); };
 
     //! Return parallel redistribution status (yes or no)
@@ -1263,13 +1267,14 @@ namespace CONTACT
 
     /*! \brief Set current deformation state
 
-     All interfaces are called to set the current deformation state
-     (u, xspatial) in their nodes. Additionally, the new contact
-     element areas are computed.
+    All interfaces are called to set the current deformation state
+    (u, xspatial) in their nodes. Additionally, the new contact
+    element areas are computed.
 
-     \param statename (in): std::string defining which quantity to set (either "displacement" or
-     "olddisplacement") \param vec (in): current global state of the quantity defined by statename
-   */
+    \param statename (in): std::string defining which quantity to set (either "displacement" or
+                           "olddisplacement")
+    \param vec (in): current global state of the quantity defined by statename
+    */
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec);
 
     /*! \brief Evaluate reference state
@@ -1590,7 +1595,7 @@ namespace CONTACT
     /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration
+     *                       integration
      *
      *  \date 03/2016
      *  \author hiermeier */
@@ -1603,12 +1608,14 @@ namespace CONTACT
      *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
      *  is condensed, this method is the right place to recover it from the displacement solution.
      *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
-     * instead.
+     *  instead.
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xold    (in): old solution vector of the NOX solver \param dir     (in):
-     * current search direction (in general NOT the actual step, keep in mind that the step length
-     * can differ from 1.0) \param xnew    (in): new solution vector of the NOX solver
+     *                       integration
+     *  \param xold    (in): old solution vector of the NOX solver
+     *  \param dir     (in): current search direction (in general NOT the actual step, keep in mind
+     *                       that the step length can differ from 1.0)
+     *  \param xnew    (in): new solution vector of the NOX solver
      *
      *  \date 05/2016
      *  \author hiermeier */
@@ -1664,7 +1671,8 @@ namespace CONTACT
     /*! \brief Reset the internal stored Lagrange multipliers
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xnew    (in): new solution vector of the NOX solver
+     *                       integration
+     *  \param xnew    (in): new solution vector of the NOX solver
      *
      *  \date 07/2016
      *  \author hiermeier */
@@ -1963,7 +1971,7 @@ namespace CONTACT
     //! Global tangential right-hand side vector (formulation with incremental #z_)
     Teuchos::RCP<Epetra_Vector>& tangrhs_;
 
-    /*! \brief Gloabl inactive right-hand side vector
+    /*! \brief Global inactive right-hand side vector
      *
      * This is used for the formulation with incremental #z_ and saddle point system.
      */
@@ -2063,7 +2071,7 @@ namespace CONTACT
     //! Flag for frictional contact
     bool& friction_;
 
-    //! Flag for nonsmooth contact algorithm
+    //! Flag for non-smooth contact algorithm
     bool& nonSmoothContact_;
 
     //! Flag for regularized contact
@@ -2109,7 +2117,7 @@ namespace CONTACT
 
     /*! \brief Modified global Mortar matrix Dold
      *
-     * \todo What modifciations?
+     * \todo What modifications?
      */
     Teuchos::RCP<LINALG::SparseMatrix>& doldmod_;
 
@@ -2119,7 +2127,7 @@ namespace CONTACT
      */
     double& inttime_;
 
-    //! Mean interface velocity
+    //! Mean velocity of each interface
     std::vector<double>& ivel_;
 
     //! Current used solving strategy
@@ -2145,7 +2153,7 @@ namespace CONTACT
   };  // namespace CONTACT
 }  // namespace CONTACT
 
-// << operator
+//! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
 
 #endif  // #ifndef CONTACT_STRATEGY_H
