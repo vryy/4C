@@ -54,8 +54,6 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // overwrite base class communicator
   comm_ = Teuchos::rcp(Discret().Comm().Clone());
 
-  // welcome message
-
   // create some local variables (later to be stored in strategy)
   const int dim = DRT::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3) dserror("ERROR: Contact problem must be 2D or 3D");
@@ -74,9 +72,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
-  // let's check for contact boundary conditions in discret
-  // and detect groups of matching conditions
-  // for each group, create a contact interface and store it
+  // let's check for contact boundary conditions in the discretization and and detect groups of
+  // matching conditions. For each group, create a contact interface and store it.
   if (Comm().MyPID() == 0)
   {
     std::cout << "Building contact interface(s)...............";
@@ -105,7 +102,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   if ((int)contactconditions.size() == 1)
   {
     const std::string* side = contactconditions[0]->Get<std::string>("Side");
-    if (*side != "Selfcontact") dserror("ERROR: Not enough contact conditions in discretization");
+    if (*side != "Selfcontact") dserror("Not enough contact conditions in discretization");
   }
 
   // find all pairs of matching contact conditions
@@ -115,13 +112,14 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
-  // freedom, which of course must not overlap with displacement dofs
+  // freedom, which of course must not overlap with existing displacement dofs
   int maxdof = Discret().DofRowMap()->MaxAllGID();
 
-  // get input par.
+  // get input parameters
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
+  INPAR::WEAR::WearLaw wearLaw =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::WEAR::WearType wtype =
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cparams, "WEARTYPE");
   INPAR::CONTACT::ConstraintDirection constr_direction =
@@ -136,7 +134,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(cparams, "ALGORITHM");
 
   bool friplus = false;
-  if ((wlaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
+  if ((wearLaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
   // only for poro
@@ -541,7 +539,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create WearLagrangeStrategy for wear as non-distinct quantity
-  if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
+  if (stype == INPAR::CONTACT::solution_lagmult && wearLaw != INPAR::WEAR::wear_none &&
       (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
   {
     strategy_ = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, Discret().DofRowMap(),
@@ -809,16 +807,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
-    dserror(
-        "ERROR: Frictionless first contact step with Tresca's law not yet implemented");  // hopefully
-                                                                                          // coming
-                                                                                          // soon,
-                                                                                          // when
-                                                                                          // Coulomb
-                                                                                          // and
-                                                                                          // Tresca
-                                                                                          // are
-                                                                                          // combined
+    // Hopefully coming soon, when Coulomb and Tresca are combined. Until then, throw error.
+    dserror("ERROR: Frictionless first contact step with Tresca's law not yet implemented");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
@@ -1576,6 +1566,7 @@ void CONTACT::CoManager::ReconnectParentElements()
     }
   }
 }
+
 /*----------------------------------------------------------------------*
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/

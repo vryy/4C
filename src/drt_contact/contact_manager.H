@@ -146,25 +146,27 @@ namespace CONTACT
 
     //! @}
 
-   private:
-    /*!
-    \brief Read and check contact input parameters
-
-    All specified contact-related input parameters are read from the
-    DRT::Problem::Instance() and stored into a local variable of
-    type Teuchos::ParameterList. Invalid parameter combinations are
-    sorted out and throw a dserror.
-
-    */
-    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
-
    protected:
-    // don't want = operator and cctor
-    CoManager operator=(const CoManager& old) = delete;
-    CoManager(const CoManager& old) = delete;
-
     //! the underlying problem discretization
     DRT::Discretization& discret_;
+
+   private:
+    /*!
+     \brief Read and check contact input parameters
+
+     All specified contact-related input parameters are read from the
+     DRT::Problem::Instance() and stored into a local variable of
+     type Teuchos::ParameterList. Invalid parameter combinations are
+     sorted out and throw a dserror.
+
+     */
+    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+
+    //! don't want operator=
+    CoManager operator=(const CoManager& old) = delete;
+
+    //! don't want copy constructor
+    CoManager(const CoManager& old) = delete;
 
   };  // class CoManager
 }  // namespace CONTACT
