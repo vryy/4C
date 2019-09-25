@@ -2693,7 +2693,8 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
     incnorm.resize(5, -2.0);  // disp, vel, p , porovel, porop
     if (!StructurePoro()->isPoro())
     {
-      if (nd_max_incnorm_[0] > 0) Extractor().ExtractVector(iterinc_, 0)->NormInf(&incnorm[0]);
+      if (nd_max_incnorm_[0] > 0)
+        Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
     }
     else if (nd_max_incnorm_[0] > 0 || nd_max_incnorm_[3] > 0 || nd_max_incnorm_[4] > 0)
     {
@@ -2703,20 +2704,10 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       fluidvelpres.push_back(StructurePoro()->FluidField()->PressureRowMap());
       LINALG::MultiMapExtractor fluidvelpresextract(
           *(StructurePoro()->FluidField()->DofRowMap()), fluidvelpres);
-      StructurePoro()
-          ->PoroField()
-          ->Extractor()
-          ->ExtractVector(Extractor().ExtractVector(iterinc_, 0), 0)
-          ->NormInf(&incnorm[0]);
-      fluidvelpresextract
-          .ExtractVector(StructurePoro()->PoroField()->Extractor()->ExtractVector(
-                             Extractor().ExtractVector(iterinc_, 0), 1),
-              0)
+      Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
+      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 0)
           ->NormInf(&incnorm[3]);
-      fluidvelpresextract
-          .ExtractVector(StructurePoro()->PoroField()->Extractor()->ExtractVector(
-                             Extractor().ExtractVector(iterinc_, 0), 1),
-              1)
+      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 1)
           ->NormInf(&incnorm[4]);
     }
     if (nd_max_incnorm_[1] > 0 || nd_max_incnorm_[2] > 0)
@@ -2726,9 +2717,9 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       fluidvelpres.push_back(FluidField()->VelocityRowMap());
       fluidvelpres.push_back(FluidField()->PressureRowMap());
       LINALG::MultiMapExtractor fluidvelpresextract(*(FluidField()->DofRowMap()), fluidvelpres);
-      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, 1), 0)
+      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 0)
           ->NormInf(&incnorm[1]);  // fluid velocity Dofs
-      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, 1), 1)
+      fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 1)
           ->NormInf(&incnorm[2]);  // fluid pressure Dofs
     }
     for (int field = 0; field < 5; ++field)
