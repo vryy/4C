@@ -214,9 +214,6 @@ void POROELAST::Monolithic::Solve()
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_, iter_ == 1);
 
-    // Modify System for Contact or Meshtying!
-    EvalPoroMortar();
-
     EvalCellMigrationSpecific();
 
     // std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
@@ -374,6 +371,9 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool f
   // create full monolithic rhs vector
   SetupRHS(firstiter);
 
+  // Modify System for Contact or Meshtying!
+  EvalPoroMortar();
+
 }  // Evaluate()
 
 void POROELAST::Monolithic::Evaluate(
@@ -395,6 +395,9 @@ void POROELAST::Monolithic::Evaluate(
 
   // create full monolithic rhs vector
   SetupRHS(firstiter);
+
+  // Modify System for Contact or Meshtying!
+  EvalPoroMortar();
 
 }  // Evaluate()
 
