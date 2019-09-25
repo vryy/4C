@@ -1123,37 +1123,6 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
     if (undecidedsidesize == undecidedsides.size())
       throw std::runtime_error("SelfCut: no progress in cutside position");
   }
-#if (0)
-  // Do a check if positions where identified correctly
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
-       i != selfcut_edges_.end(); ++i)
-  {
-    Edge* cutsideedge = &*i->second;
-    std::vector<Side*> selfcutsides;
-    plain_side_set cutsides;
-    if (cutsideedge->SelfCutPosition() == Point::oncutsurface)
-    {
-      int Sum_Pos = 0;
-      cutsides = cutsideedge->Sides();  // always 4 sides
-      for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
-      {
-        Side* cutside = *i;
-        if (cutside->SelfCutPosition() == Point::undecided)
-          dserror("Selfcutposition on Side unknown!");
-        else if (cutside->SelfCutPosition() == Point::outside)
-          Sum_Pos += 1;
-        else if (cutside->SelfCutPosition() == Point::inside)
-          Sum_Pos -= 1;
-      }
-      //      if (Sum_Pos > 0)
-      //        std::cout << "==| WARNING: SelfCut Position Check Failed with too much outside! |=="
-      //                  << std::endl;
-      //      else if (Sum_Pos < 0)
-      //        std::cout << "==| WARNING: SelfCut Position Check Failed with too much inside! |=="
-      //                  << std::endl;
-    }
-  }
-#endif
 }
 
 /*-------------------------------------------------------------------------------------*

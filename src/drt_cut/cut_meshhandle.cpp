@@ -863,7 +863,8 @@ void GEO::CUT::MeshHandle::RemoveSubSide(GEO::CUT::Side* side)
   if (lit != linearsides_.end())
   {
     std::cout << "==| WARNING: MeshHandle::RemoveSubSide: Your Subside belongs to a "
-                 "LinearSideHandle --> This should be done in a different way! |=="
+                 "LinearSideHandle and, thus, cannot be removed. In case this happens - except for "
+                 "a CutTest - this is critical and should be implemented! |=="
               << std::endl;
   }
   else
@@ -885,8 +886,9 @@ void GEO::CUT::MeshHandle::AddSubSide(GEO::CUT::Side* side)
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
   if (lit != linearsides_.end())
   {
-    std::cout << "==| WARNING: MeshHandle::AddSubSide: Your Subside belongs to a LinearSideHandle "
-                 "--> This should be done in a different way! |=="
+    std::cout << "==| WARNING: MeshHandle::AddSubSide: Your Subside belongs to a "
+                 "LinearSideHandle and, thus, cannot be removed. In case this happens - except for "
+                 "a CutTest - this is critical and should be implemented! |=="
               << std::endl;
   }
   else
@@ -912,7 +914,8 @@ void GEO::CUT::MeshHandle::MarkSubSideasUnphysical(GEO::CUT::Side* side)
   if (lit != linearsides_.end())
   {
     std::cout << "==| WARNING: MeshHandle::MarkSubSideasUnphysical: Your Subside belongs to a "
-                 "LinearSideHandle --> This should be done in a different way! |=="
+                 "LinearSideHandle and, thus, cannot be removed. In case this happens - except for "
+                 "a CutTest - this is critical and should be implemented! |=="
               << std::endl;
   }
   else
