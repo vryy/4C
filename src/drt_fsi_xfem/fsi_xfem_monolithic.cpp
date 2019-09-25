@@ -241,7 +241,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     {
       if (StructurePoro()->MeshtyingContactBridge()->HaveContact())
       {
-        CONTACT::CoNitscheStrategyFsi* cs = dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(
+        CONTACT::CoNitscheStrategy* cs = dynamic_cast<CONTACT::CoNitscheStrategy*>(
             &StructurePoro()->MeshtyingContactBridge()->GetStrategy());
         if (!cs)
           dserror(
@@ -320,6 +320,22 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
       idx.push_back(fluidp_block_);
       coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFPCoupling_Manager(
           FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(), idx));
+
+      if (have_contact_)
+      {
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+            FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_ps_ps"), true)
+            ->Assign_Contact_Comm(xf_c_comm_);  // assign to mesh coupling object
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+            FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_pf_ps"), true)
+            ->Assign_Contact_Comm(xf_c_comm_);  // assign to mesh coupling object
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+            FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_ps_pf"), true)
+            ->Assign_Contact_Comm(xf_c_comm_);  // assign to mesh coupling object
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+            FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_pf_pf"), true)
+            ->Assign_Contact_Comm(xf_c_comm_);  // assign to mesh coupling object
+      }
     }
   }
 
