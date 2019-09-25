@@ -34,18 +34,15 @@
 
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_nitsche_strategy_f#include "../ drt_contact / contact_nitsche_strategy_fpi.H "
-si.H "
+#include "../drt_contact/contact_nitsche_strategy_fsi.H"
+#include "../drt_contact/contact_nitsche_strategy_fpi.H"
 
 #include "../drt_mortar/mortar_element.H"
 
-    //#define WRITE_GMSH
-
-    void
-    XFEM::XFluid_Contact_Come(Teuchos::RCP<GEO::CutWizard> cutwizard,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-        Teuchos::RCP<Teuchos::ParameterList> fluidparams)
+void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+    Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
   if (fluiddis != Teuchos::null && condition_manager != Teuchos::null) fluid_init_ = true;
   cutwizard_ = cutwizard;
@@ -265,7 +262,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   }
 }
 
-bool XFEM::XFluid_Contact_Combool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(
+bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(
     CONTACT::CoElement* cele, const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,                            // stressfluid + penalty
     double& gap                                                 // gap
@@ -280,9 +277,9 @@ bool XFEM::XFluid_Contact_Combool XFEM::XFluid_Contact_Comm::CheckNitscheContact
   return false;  // dummy to make compiler happy :)
 }
 
-m::Get_Contact_State(int sid,                             // Solid Surface Element
-    std::string mcname, const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-    const double& full_fsi_traction,                      // stressfluid + penalty ...
+bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,  // Solid Surface Element
+    std::string mcname, const LINALG::Matrix<2, 1>& xsi,    // local coord on the ele element
+    const double& full_fsi_traction,                        // stressfluid + penalty ...
     double& gap)
 {
   if (!ele_ptrs_already_setup_) return true;
@@ -291,7 +288,7 @@ m::Get_Contact_State(int sid,                             // Solid Surface Eleme
       condition_manager_->GetMeshCouplingStartGID(condition_manager_->GetCouplingIndex(mcname));
   CONTACT::CoElement* cele = GetContactEle(sid + startgid);
   if (cele)
-    return GetContactStrategy().CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
+    return CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
   else
   {
     gap = 1e12;
@@ -307,139 +304,142 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     LINALG::Matrix<3, 3>& vderxy_m, LINALG::Matrix<3, 1>& velpf_s)
 {
   fluidele = fluiddis_->gElement(fluidele_id);
-  DRT::ELEMENTS::Fluid* ffluidele =
-      dyn return CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
-  ::LocationArray laf(1);
-  fluidele->LocationVector(*fluiddis_, fluid_nds, laf, false);
-  Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->GetState("velaf");
-  DRT::UTILS::ExtractMyValues(*matrix_state, velpres, laf[0].lm_);
-
-  std::vector<int> lmdisp;
-  lmdisp.resize(fluid_nds.size() * 3);
-  if (!ffluidele) dserror("Cast to Fluidelement failed");
-  if (ffluidele->IsAle())
+  DRT::ELEMENTS::Fluid* ffluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(fluidele);
+  // 1 // get element states
   {
-    for (uint n = 0; n < fluid_nds.size(); ++n)
-      for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
-    Teuchos::RCP<const Epetra_Vector> matrix_state_disp = fluiddis_->GetState("dispnp");
-    DRT::UTILS::ExtractMyValues(*matrix_state_disp, disp, lmdisp);
-  }
-}
-{
-  DRT::Element::LocationArray las(1);
-  sele->LocationVector(*mc_[mcidx_]->GetCutterDis(), las, false);
-  Teuchos::RCP<const Epetra_Vector> matrix_state = mc_[mcidx_]->GetCutterDis()->GetState("ivelnp");
-  DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
-}
-static std::vector<double> ipfvel;
-if (isporo_)
-{
-  DRT::Element::LocationArray las(1);
-  sele->LocationVector(*mcfpi_ps_pf_->GetCutterDis(), las, false);
-  Teuchos::RCP<const Epetra_Vector> matrix_state = mcfpi_ps_pf_->GetCutterDis()->GetState("ivelnp");
-  DRT::UTILS::ExtractMyValues(*matrix_state, ipfvel, las[0].lm_);
-}
+    DRT::Element::LocationArray laf(1);
+    fluidele->LocationVector(*fluiddis_, fluid_nds, laf, false);
+    Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->GetState("velaf");
+    DRT::UTILS::ExtractMyValues(*matrix_state, velpres, laf[0].lm_);
 
-// 2 // get element xyze
-/// element coordinates in EpetraMatrix
-ele_xyze.Shape(3, fluidele->NumNode());
-for (int i = 0; i < fluidele->NumNode(); ++i)
-{
-  for (int j = 0; j < 3; j++)
-  {
+    std::vector<int> lmdisp;
+    lmdisp.resize(fluid_nds.size() * 3);
+    if (!ffluidele) dserror("Cast to Fluidelement failed");
     if (ffluidele->IsAle())
-      ele_xyze(j, i) = fluidele->Nodes()[i]->X()[j] + disp[i * 3 + j];
-    else
-      ele_xyze(j, i) = fluidele->Nodes()[i]->X()[j];
-  }
-}
-
-// 3 // get quantities in gp
-{
-  LINALG::Matrix<3, 1> fluidele_xsi(true);
-  if (fluidele->Shape() == DRT::Element::hex8)
-  {
-    LINALG::Matrix<3, 8> xyze(ele_xyze.A(), true);
-    // find element local position of gauss point
-    Teuchos::RCP<GEO::CUT::Position> pos =
-        GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::hex8>(xyze, x);
-    if (!pos->Compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
     {
-      pos->LocalCoordinates(fluidele_xsi);
-      std::cout << "fluidele_xsi: " << fluidele_xsi << std::endl;
-      std::ofstream file("DEBUG_OUT_D007.pos");
-      GEO::CUT::OUTPUT::GmshNewSection(file, "The point");
-      GEO::CUT::OUTPUT::GmshCoordDump(file, x, -1);
-      GEO::CUT::OUTPUT::GmshNewSection(file, "The Element", true);
-      file << "SH(";
-      for (int i = 0; i < 7; ++i)
-        for (int j = 0; j < 3; ++j) file << xyze(j, i) << ", ";
-      file << xyze(0, 7) << ", " << xyze(1, 7) << ", " << xyze(2, 7) << "){1,2,3,4,5,6,7,8};";
-      GEO::CUT::OUTPUT::GmshEndSection(file, true);
-      dserror("Couldn'd compute local coordinate for fluid element (DEBUG_OUT_D007.pos)!");
+      for (uint n = 0; n < fluid_nds.size(); ++n)
+        for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
+      Teuchos::RCP<const Epetra_Vector> matrix_state_disp = fluiddis_->GetState("dispnp");
+      DRT::UTILS::ExtractMyValues(*matrix_state_disp, disp, lmdisp);
     }
-    pos->LocalCoordinates(fluidele_xsi);
+  }
+  {
+    DRT::Element::LocationArray las(1);
+    sele->LocationVector(*mc_[mcidx_]->GetCutterDis(), las, false);
+    Teuchos::RCP<const Epetra_Vector> matrix_state =
+        mc_[mcidx_]->GetCutterDis()->GetState("ivelnp");
+    DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
+  }
+  static std::vector<double> ipfvel;
+  if (isporo_)
+  {
+    DRT::Element::LocationArray las(1);
+    sele->LocationVector(*mcfpi_ps_pf_->GetCutterDis(), las, false);
+    Teuchos::RCP<const Epetra_Vector> matrix_state =
+        mcfpi_ps_pf_->GetCutterDis()->GetState("ivelnp");
+    DRT::UTILS::ExtractMyValues(*matrix_state, ipfvel, las[0].lm_);
+  }
 
-    static LINALG::Matrix<3, 3> xji;
-    static LINALG::Matrix<3, 3> xjm;
-    static LINALG::Matrix<3, 8> deriv;
-    static LINALG::Matrix<8, 1> funct;
-    static LINALG::Matrix<3, 8> derxy;
-
-    // evaluate shape functions
-    DRT::UTILS::shape_function<DRT::Element::hex8>(fluidele_xsi, funct);
-
-    // evaluate the derivatives of shape functions
-    DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(fluidele_xsi, deriv);
-    xjm.MultiplyNT(deriv, xyze);
-    // double det = xji.Invert(xjm); //if we need this at some point
-    xji.Invert(xjm);
-
-    // compute global first derivates
-    derxy.Multiply(xji, deriv);
-
-    static LINALG::Matrix<3, 8> vel;
-    static LINALG::Matrix<8, 1> pres;
-    for (int n = 0; n < fluidele->NumNode(); ++n)
+  // 2 // get element xyze
+  /// element coordinates in EpetraMatrix
+  ele_xyze.Shape(3, fluidele->NumNode());
+  for (int i = 0; i < fluidele->NumNode(); ++i)
+  {
+    for (int j = 0; j < 3; j++)
     {
-      pres(n, 0) = velpres[n * 4 + 3];
+      if (ffluidele->IsAle())
+        ele_xyze(j, i) = fluidele->Nodes()[i]->X()[j] + disp[i * 3 + j];
+      else
+        ele_xyze(j, i) = fluidele->Nodes()[i]->X()[j];
+    }
+  }
+
+  // 3 // get quantities in gp
+  {
+    LINALG::Matrix<3, 1> fluidele_xsi(true);
+    if (fluidele->Shape() == DRT::Element::hex8)
+    {
+      LINALG::Matrix<3, 8> xyze(ele_xyze.A(), true);
+      // find element local position of gauss point
+      Teuchos::RCP<GEO::CUT::Position> pos =
+          GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::hex8>(xyze, x);
+      if (!pos->Compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
+      {
+        pos->LocalCoordinates(fluidele_xsi);
+        std::cout << "fluidele_xsi: " << fluidele_xsi << std::endl;
+        std::ofstream file("DEBUG_OUT_D007.pos");
+        GEO::CUT::OUTPUT::GmshNewSection(file, "The point");
+        GEO::CUT::OUTPUT::GmshCoordDump(file, x, -1);
+        GEO::CUT::OUTPUT::GmshNewSection(file, "The Element", true);
+        file << "SH(";
+        for (int i = 0; i < 7; ++i)
+          for (int j = 0; j < 3; ++j) file << xyze(j, i) << ", ";
+        file << xyze(0, 7) << ", " << xyze(1, 7) << ", " << xyze(2, 7) << "){1,2,3,4,5,6,7,8};";
+        GEO::CUT::OUTPUT::GmshEndSection(file, true);
+        dserror("Couldn'd compute local coordinate for fluid element (DEBUG_OUT_D007.pos)!");
+      }
+      pos->LocalCoordinates(fluidele_xsi);
+
+      static LINALG::Matrix<3, 3> xji;
+      static LINALG::Matrix<3, 3> xjm;
+      static LINALG::Matrix<3, 8> deriv;
+      static LINALG::Matrix<8, 1> funct;
+      static LINALG::Matrix<3, 8> derxy;
+
+      // evaluate shape functions
+      DRT::UTILS::shape_function<DRT::Element::hex8>(fluidele_xsi, funct);
+
+      // evaluate the derivatives of shape functions
+      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(fluidele_xsi, deriv);
+      xjm.MultiplyNT(deriv, xyze);
+      // double det = xji.Invert(xjm); //if we need this at some point
+      xji.Invert(xjm);
+
+      // compute global first derivates
+      derxy.Multiply(xji, deriv);
+
+      static LINALG::Matrix<3, 8> vel;
+      static LINALG::Matrix<8, 1> pres;
+      for (int n = 0; n < fluidele->NumNode(); ++n)
+      {
+        pres(n, 0) = velpres[n * 4 + 3];
+        for (int dof = 0; dof < 3; ++dof)
+        {
+          vel(dof, n) = velpres[n * 4 + dof];
+        }
+      }
+      pres_m = pres.Dot(funct);
+      vel_m.Multiply(1., vel, funct, 0.);
+      vderxy_m.MultiplyNT(vel, derxy);
+    }
+    else
+      dserror("fluidele is not hex8!");
+  }
+
+  // 4 // evaluate slave velocity at guasspoint
+  if (sele->Shape() == DRT::Element::quad4)
+  {
+    static LINALG::Matrix<3, 4> vels;
+    static LINALG::Matrix<3, 4> velpfs;
+    for (int n = 0; n < sele->NumNode(); ++n)
+    {
       for (int dof = 0; dof < 3; ++dof)
       {
-        vel(dof, n) = velpres[n * 4 + dof];
+        vels(dof, n) = ivel[n * 3 + dof];
+        if (isporo_) velpfs(dof, n) = ipfvel[n * 3 + dof];
       }
     }
-    pres_m = pres.Dot(funct);
-    vel_m.Multiply(1., vel, funct, 0.);
-    vderxy_m.MultiplyNT(vel, derxy);
+
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+    static LINALG::Matrix<numnodes, 1> funct(false);
+    DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
+    vel_s.Multiply(vels, funct);
+    if (isporo_) velpf_s.Multiply(velpfs, funct);
   }
   else
-    dserror("fluidele is not hex8!");
-}
+    dserror("Your Slave Element is not a quad4?!");
 
-// 4 // evaluate slave velocity at guasspoint
-if (sele->Shape() == DRT::Element::quad4)
-{
-  static LINALG::Matrix<3, 4> vels;
-  static LINALG::Matrix<3, 4> velpfs;
-  for (int n = 0; n < sele->NumNode(); ++n)
-  {
-    for (int dof = 0; dof < 3; ++dof)
-    {
-      vels(dof, n) = ivel[n * 3 + dof];
-      if (isporo_) velpfs(dof, n) = ipfvel[n * 3 + dof];
-    }
-  }
-
-  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-  static LINALG::Matrix<numnodes, 1> funct(false);
-  DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
-  vel_s.Multiply(vels, funct);
-  if (isporo_) velpf_s.Multiply(velpfs, funct);
-}
-else
-  dserror("Your Slave Element is not a quad4?!");
-
-return;
+  return;
 }
 
 void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
@@ -653,6 +653,11 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
     }
   }
   ele_ptrs_already_setup_ = true;
+
+  contact_strategy_fsi_ =
+      dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(&contact_strategy_);  // might be NULL
+  contact_strategy_fpi_ =
+      dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be NULL
 }
 
 bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,
@@ -672,11 +677,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
     LINALG::Matrix<numnodes, 1> funct(false);
 
     sidehandle->Coordinates(xyze_m);
-    LINALG::Matrix < 3, numn contact_strategy_fsi_ = dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(
-                            &contact_strategy_);  // might be NULL
-    contact_strategy_fpi_ =
-        dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be NULL
-    odes > xyze(xyze_m.A(), true);
+    LINALG::Matrix<3, numnodes> xyze(xyze_m.A(), true);
     DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DRT::Element::quad4);
     x.Multiply(xyze, funct);
   }
@@ -1421,6 +1422,8 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
 void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
 {
   if (!parallel_) return;
+  if (cutwizard_ == Teuchos::null)
+    dserror("XFluid_Contact_Comm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
   for (uint i = 0; i < mortarId_to_sosid_.size(); ++i)
@@ -1448,9 +1451,7 @@ void XFEM::XFluid_Contact_Comm::PrepareTimeStep()
 
 void XFEM::XFluid_Contact_Comm::PrepareIterationStep()
 {
-  highe if (cutwizard_ == Teuchos::null)
-      dserror("XFluid_Contact_Comm::FillComplete_SeleMap: CutWizard not set!");
-  r_contact_elements_comm_.clear();
+  higher_contact_elements_comm_.clear();
 
   std::vector<int> src(higher_contact_elements_.begin(), higher_contact_elements_.end());
 
@@ -1469,18 +1470,31 @@ void XFEM::XFluid_Contact_Comm::PrepareIterationStep()
   }
 }
 
+double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_exchange_dist()
+{
+  return mcfpi_ps_pf_->Get_fpi_pcontact_exchange_dist();
+}
+
+double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_fullfraction()
+{
+  return mcfpi_ps_pf_->Get_fpi_pcontact_fullfraction();
+}
+
 void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
 {
 #ifdef WRITE_GMSH
   std::vector<std::string> sections;
-  sections.push_back("Contact_Traction");        // 0
-  sections.push_back("FSI_Traction");            // 1
-  sections.push_back("Contact_Active");          // 2
-  sections.push_back("FSI_Active");              // 3
-  sections.push_back("Contact_Traction_Solid");  // 4
-  sections.push_back("Contact_Traction_Fluid");  // 5
-  sections.push_back("FSI_sliplenth");           // 6
-  sections.push_back("All_GPs_Contact");         // 7
+  sections.push_back("Contact_Traction");           // 0
+  sections.push_back("FSI_Traction");               // 1
+  sections.push_back("Contact_Active");             // 2
+  sections.push_back("FSI_Active");                 // 3
+  sections.push_back("Contact_Traction_Solid");     // 4
+  sections.push_back("Contact_Traction_Fluid");     // 5
+  sections.push_back("FSI_sliplenth");              // 6
+  sections.push_back("All_GPs_Contact");            // 7
+  sections.push_back("Contact_PoroFlow_Active");    // 8
+  sections.push_back("Contact_PoroFlow_Inactive");  // 9
+  sections.push_back("FPI_PoroFlow_Ffac");          // 10
 
   static int counter = 0;
   if (counter)
@@ -1493,17 +1507,8 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
       GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
       for (uint entry = 0; entry < (plot_data_[section]).size(); ++entry)
       {
-        GEO::CUT::OUTPUT::GmshCoordDump(file, (plot_data_[section])[entry].first,
-            (plot_data_[sectdouble XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_exchange_dist() {
-              return mcfpi_ps_pf_->Get_fpi_pcontact_exchange_dist();
-            }
-
-                double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_fullfraction() {
-                  return mcfpi_ps_pf_->Get_fpi_pcontact_fullfraction();
-                }
-
-                ion])[entry]
-                .second);
+        GEO::CUT::OUTPUT::GmshCoordDump(
+            file, (plot_data_[section])[entry].first, (plot_data_[section])[entry].second);
       }
       GEO::CUT::OUTPUT::GmshEndSection(file, false);
     }
@@ -1520,21 +1525,16 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
   fluiddis_->Comm().SumAll(&sum_gps_[0], &g_sum_gps[0], 5);
   if (!fluiddis_->Comm().MyPID())
   {
-    std::co sections.push_back("Contact_Traction");   // 0
-    sections.push_back("FSI_Traction");               // 1
-    sections.push_back("Contact_Active");             // 2
-    sections.push_back("FSI_Active");                 // 3
-    sections.push_back("Contact_Traction_Solid");     // 4
-    sections.push_back("Contact_Traction_Fluid");     // 5
-    sections.push_back("FSI_sliplenth");              // 6
-    sections.push_back("All_GPs_Contact");            // 7
-    sections.push_back("Contact_PoroFlow_Active");    // 8
-    sections.push_back("Contact_PoroFlow_Inactive");  // 9
-    sections.push_back("FPI_PoroFlow_Ffac");          // 10
-    << ", FSI_C: " << g_sum_gps[4] << "(" << g_sum_gps[3] + g_sum_gps[4]
-    << ") == (Sum: " << g_sum_gps[0] + g_sum_gps[1] + g_sum_gps[2] + g_sum_gps[3] + g_sum_gps[4]
-    << ")"
-    << " === (Fair Sum: " << g_sum_gps[0] + g_sum_gps[1] + g_sum_gps[3] << ")" << std::endl;
+    std::cout << "===| Summary Contact GPs |===" << std::endl;
+    // 0 ... Contact, 1 ... Contact_NoContactNoFSI, 2 ... Contact_NoContactFSI, 3 ... FSI_NoContact,
+    // 4 ... FSI_Contact
+    std::cout << "Contact: " << g_sum_gps[0] << ", Contact_noC_noFSI: " << g_sum_gps[1]
+              << ", Contact_noC_FSI: " << g_sum_gps[2] << "("
+              << g_sum_gps[0] + g_sum_gps[1] + g_sum_gps[2] << "), FSI_noC: " << g_sum_gps[3]
+              << ", FSI_C: " << g_sum_gps[4] << "(" << g_sum_gps[3] + g_sum_gps[4] << ") == (Sum: "
+              << g_sum_gps[0] + g_sum_gps[1] + g_sum_gps[2] + g_sum_gps[3] + g_sum_gps[4] << ")"
+              << " === (Fair Sum: " << g_sum_gps[0] + g_sum_gps[1] + g_sum_gps[3] << ")"
+              << std::endl;
     std::cout << "===| ------------------- |===" << std::endl;
   }
   sum_gps_.clear();
