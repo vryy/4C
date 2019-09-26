@@ -132,5 +132,5 @@ Our Git-hooks check for compliant file-maintainers in source and input files and
 - An up-to-date `baci_developers.json` list can be created by the following steps:
     1. Create a personal access token for your Baci Gitlab repository as described in the [gitlab documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
     1. Download the list of all members of the **baci_developers** group using the command
-`curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" > baci_developers.json`
+`curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" | python -m json.tool > baci_developers.json`. Note that Python 2.6+ is used for formating the json-file.
     1. Commit and merge the changes in `utilities/code_checks/baci_developers.json`
