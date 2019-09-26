@@ -450,7 +450,8 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(MeshIntersection& mesh, in
 /*----------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,
-    std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& intpoints)
+    std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& intpoints,
+    const int bc_cubaturedegree)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
 
@@ -490,7 +491,7 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
 
       // Create (unmodified) gauss points for integration cell with requested
       // polynomial order. This is supposed to be fast, since there is a cache.
-      cell_points.push_back(bc->gaussRule());
+      cell_points.push_back(bc->gaussRule(bc_cubaturedegree));
     }
   }
 }

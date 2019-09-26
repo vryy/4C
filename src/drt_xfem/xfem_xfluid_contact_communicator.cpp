@@ -505,7 +505,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
     if (bcells.size() > 0)
     {
       // get boundary cell Gaussian points
-      cele->BoundaryCellGaussPointsLin(bcells, bintpoints);
+      cele->BoundaryCellGaussPointsLin(bcells, bintpoints, cutwizard_->Get_BC_Cubaturedegree());
     }
     else
     {
@@ -1368,7 +1368,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   double drs_sh = 0;
   for (uint bc = 0; bc < bcs.size(); ++bc)
   {
-    DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(20);
+    DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
     {
       coords.Reshape(weights.size() + gi.NumPoints(), 2);

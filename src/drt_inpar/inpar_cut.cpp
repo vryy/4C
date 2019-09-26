@@ -82,4 +82,9 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "ISLANDS with maximal size of the bounding box of h*multiplacator will be removed in the "
       "meshcorrection",
       &cut_general);
+
+  // Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.
+  IntParameter("BOUNDARYCELL_CUBATURDEGREE", 20,
+      "Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.",
+      &cut_general);
 }

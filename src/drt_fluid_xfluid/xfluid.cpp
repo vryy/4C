@@ -1056,7 +1056,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               else if (mc_fpi != Teuchos::null)
                 mc_fpi->RegisterSideProc(bit->first);
             }
-            e->BoundaryCellGaussPointsLin(bcells, bintpoints);
+            e->BoundaryCellGaussPointsLin(
+                bcells, bintpoints, GetCutWizard()->Get_BC_Cubaturedegree());
 
             //-----------------------------------------------------------
             // fluid-structure coupling part
@@ -2047,7 +2048,8 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_
         if (bcells.size() > 0)
         {
           // get boundary cell Gaussian points
-          e->BoundaryCellGaussPointsLin(bcells, bintpoints);
+          e->BoundaryCellGaussPointsLin(
+              bcells, bintpoints, GetCutWizard()->Get_BC_Cubaturedegree());
 
           if (CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
               CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
