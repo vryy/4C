@@ -636,13 +636,6 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // create binary search tree
   for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
 
-  // show default parameters
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << std::endl;
-    DRT::INPUT::PrintDefaultParameters(IO::cout, GetStrategy().Params());
-  }
-
   return;
 }
 
