@@ -353,6 +353,8 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
     Interfaces()[i]->FillComplete(true, maxdof_);
 
     // print new parallel distribution
+    if (Comm().MyPID() == 0)
+      std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
     Interfaces()[i]->PrintParallelDistribution();
 
     // re-create binary search tree

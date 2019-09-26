@@ -1264,7 +1264,7 @@ void MORTAR::MortarInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nRedistributing interface '" << Discret().Name() << "' using ZOLTAN.........\n";
+    std::cout << "\nRedistributing interface '" << Discret().Name() << "' .........\n";
     std::cout << "Procs used for redistribution: " << sproc << " / " << mproc << " (S / M)\n";
   }
 

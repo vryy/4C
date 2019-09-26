@@ -84,6 +84,8 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
     for (int i = 0; i < (int)interface_.size(); ++i)
     {
       // print parallel distribution
+      if (Comm().MyPID() == 0)
+        std::cout << "\nInterface parallel distribution before rebalancing:" << std::endl;
       interface_[i]->PrintParallelDistribution();
 
       // redistribute optimally among all procs
@@ -93,6 +95,8 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       interface_[i]->FillComplete(true, maxdof_);
 
       // print parallel distribution again
+      if (Comm().MyPID() == 0)
+        std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
       interface_[i]->PrintParallelDistribution();
     }
 

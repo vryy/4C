@@ -489,6 +489,8 @@ void CONTACT::CoInterface::Redistribute()
   }
 
   // print old parallel distribution
+  if (myrank == 0)
+    std::cout << "\nInterface parallel distribution before rebalancing:" << std::endl;
   PrintParallelDistribution();
 
   // use simple base class method if there are ONLY close or non-close elements
@@ -530,7 +532,7 @@ void CONTACT::CoInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nRedistributing interface '" << Discret().Name() << "' using ZOLTAN.........\n";
+    std::cout << "\nRedistributing interface '" << Discret().Name() << "' .........\n";
     std::cout << "Procs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc
               << " (close-S / non-close-S / M)\n";
   }
