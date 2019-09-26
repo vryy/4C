@@ -538,7 +538,8 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistribution, const int maxdof)
+void MORTAR::MortarInterface::FillComplete(
+    const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -580,7 +581,7 @@ void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistributio
 
   CreateInterfaceLocalCommunicator();
 
-  ExtendInterfaceGhosting(isFinalParallelDistribution);
+  ExtendInterfaceGhosting(isFinalParallelDistribution, meanVelocity);
 
   // make sure discretization is complete
   Discret().FillComplete(isFinalParallelDistribution, false, false);
@@ -1338,7 +1339,8 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallelDistribution)
+void MORTAR::MortarInterface::ExtendInterfaceGhosting(
+    const bool isFinalParallelDistribution, const double meanVelocity)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
@@ -1595,8 +1597,8 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallel
       Discret().FillComplete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
-      const double vel = 0.0;
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+          SetupBinningStrategy(meanVelocity);
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;

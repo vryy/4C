@@ -4513,7 +4513,8 @@ void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool WEAR::WearLagrangeStrategy::RedistributeContact(
+    Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job

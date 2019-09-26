@@ -668,9 +668,10 @@ void CONTACT::AUG::ComboStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
 /*----------------------------------------------------------------------*
  *  *----------------------------------------------------------------------*/
 bool CONTACT::AUG::ComboStrategy::DynRedistributeContact(
-    const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+    const Teuchos::RCP<const Epetra_Vector>& dis, Teuchos::RCP<const Epetra_Vector> vel,
+    const int nlniter)
 {
-  const bool is_redistributed = Get().DynRedistributeContact(dis, nlniter);
+  const bool is_redistributed = Get().DynRedistributeContact(dis, vel, nlniter);
 
   // This function must be called manually, since the internal PostSetup
   // call will not effect this wrapper class.

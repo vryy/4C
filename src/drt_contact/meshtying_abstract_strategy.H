@@ -449,7 +449,6 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> ContactNorForce() { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> ContactTanForce() { return Teuchos::null; }
     void AssembleMortar() {}
-    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) final {}
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const
     {
@@ -464,7 +463,11 @@ namespace CONTACT
     void ComputeContactStresses() final{};
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final { return false; }
+    bool RedistributeContact(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) final
+    {
+      return false;
+    }
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}

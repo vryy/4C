@@ -1181,13 +1181,22 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    /*! \brief Redistribute all contact interfaces in parallel
+    /*!
+    \brief Redistribute all contact interfaces in parallel
 
-     We hand in the current global displacement state so that
-     a contact search can be performed and set state called.
+    We hand in the current global displacement state so that a contact search can be performed and
+    set state called.
 
-     \return TRUE if the interface has been redistributed. Return FALSE otherwise.*/
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override;
+    The current velocity state is required in case of extedning the ghosting via binning to account
+    for relative motion between interfaces.
+
+    \param[in] dis Current displacement state
+    \param[in] vel Current velocity state
+
+    \return TRUE if the interface has been redistributed. Return FALSE otherwise.
+    */
+    bool RedistributeContact(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     /** \brief Redistribute all contact interfaces in parallel
      *
@@ -1197,8 +1206,8 @@ namespace CONTACT
      *  In this way an adaption can be made quicker directly after a large predictor
      *  step or another unforeseen scenario which might have changed the contact
      *  situation severely. */
-    virtual bool DynRedistributeContact(
-        const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+    virtual bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+        Teuchos::RCP<const Epetra_Vector> vel, const int nlniter)
     {
       return false;
     };
@@ -1283,8 +1292,6 @@ namespace CONTACT
      therefore we store the nodal entries of mortar matrices (reference
      configuration) before the first time step */
     virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
-
-    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) final;
 
     /*! \brief Evaluate matrix of nodal normals
 
@@ -1823,8 +1830,14 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     Teuchos::RCP<Epetra_Map> CreateDeterministicLMDofRowMap(const Epetra_Map& gsdofrowmap) const;
 
-    //! \brief Calculate mean velocity of interface for binning range
-    void CalcMeanVelforBinning(Teuchos::RCP<const Epetra_Vector> vel);
+    /*!
+    \brief Calculate mean velocity of interface for binning
+
+    For each interface, extract its velocity DOFs and compute their mean value.
+
+    \param[in] velocity Vector with velocities for all solid DOFs
+    */
+    void CalcMeanVelocityForBinning(const Epetra_Vector& velocity);
 
     /*! return the mutable contact abstract data container
      *

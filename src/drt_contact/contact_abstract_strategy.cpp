@@ -232,7 +232,8 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::CoAbstractStrategy::RedistributeContact(
+    Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
@@ -338,6 +339,13 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   Comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
 
+  // Prepare for extending the ghosting
+  ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
+      INPAR::MORTAR::binningstrategy)
+    CalcMeanVelocityForBinning(*vel);
+
   /* set old and current displacement state
    * (needed for search within redistribution) */
   SetState(MORTAR::state_new_displacement, *dis);
@@ -350,7 +358,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
     Interfaces()[i]->Redistribute();
 
     // call fill complete again
-    Interfaces()[i]->FillComplete(true, maxdof_);
+    Interfaces()[i]->FillComplete(true, maxdof_, ivel_[i]);
 
     // print new parallel distribution
     if (Comm().MyPID() == 0)
@@ -1001,7 +1009,7 @@ void CONTACT::CoAbstractStrategy::UpdateGlobalSelfContactState()
 /*----------------------------------------------------------------------*
  | Calculate mean. vel. for bin size                         farah 11/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetra_Vector> vel)
+void CONTACT::CoAbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector& velocity)
 {
   ivel_.clear();
   ivel_.resize(0);
@@ -1013,19 +1021,19 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
     for (int i = 0; i < (int)Interfaces().size(); ++i)
     {
       // interface node map
-      Teuchos::RCP<Epetra_Vector> velidofs =
+      Teuchos::RCP<Epetra_Vector> interfaceVelocity =
           Teuchos::rcp(new Epetra_Vector(*(Interfaces()[i]->Discret().DofRowMap())));
-      LINALG::Export(*vel, *velidofs);
+      LINALG::Export(velocity, *interfaceVelocity);
 
-      double mean = 0.0;
+      double meanVelocity = 0.0;
 
-      int err = velidofs->MeanValue(&mean);
+      int err = interfaceVelocity->MeanValue(&meanVelocity);
       if (err)
         dserror("Calculation of mean velocity for interface %s failed.",
             Interfaces()[i]->Discret().Name().c_str());
-      mean = abs(mean);
+      meanVelocity = abs(meanVelocity);
 
-      ivel_.push_back(mean);
+      ivel_.push_back(meanVelocity);
     }
   }
   // static problems
@@ -1036,41 +1044,6 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
         "Binning Strategy is only recommended for dynamic problems! Please use a different "
         "Parallel Strategy!");
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Prepare binning                                           farah 11/13|
- *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel)
-{
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-
-  if (strat != INPAR::MORTAR::binningstrategy) return;
-
-  // calc mean value of contact interfaces
-  CalcMeanVelforBinning(vel);
-
-  // create bins and perform ghosting for each interface
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
-  {
-    // init interface
-    Interfaces()[i]->Initialize();
-
-    // call binning strategy
-    Interfaces()[i]->BinningStrategy(initial_elecolmap_[i], ivel_[i]);
-
-    // build new search tree or do nothing for bruteforce
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(Params(), "SEARCH_ALGORITHM") ==
-        INPAR::MORTAR::search_binarytree)
-      Interfaces()[i]->CreateSearchTree();
-    else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(
-                 Params(), "SEARCH_ALGORITHM") != INPAR::MORTAR::search_bfele)
-      dserror("ERROR: Invalid search algorithm");
-  }
-
   return;
 }
 

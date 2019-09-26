@@ -110,8 +110,8 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->Inttime_init();
-  strategy_ptr_->RedistributeContact(Int().GetDbc().GetZerosPtr());
-  strategy_ptr_->InitBinStrategyforTimestep(Int().GetDbc().GetZerosPtr());
+  strategy_ptr_->RedistributeContact(
+      Int().GetDbc().GetZerosPtr(), Int().GetDbc().GetZerosPtr());  // ToDo RedistributeMeshtying??
   strategy_ptr_->MortarCoupling(Int().GetDbc().GetZerosPtr());
 
   strategy_ptr_->NoxInterfacePtr()->Init(GStatePtr());

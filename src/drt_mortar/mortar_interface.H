@@ -1011,9 +1011,12 @@ namespace MORTAR
     \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
+    \param meanVelocity (in): mean velocity of this interface (for contact with ghosting by binning)
+
     \return Filled()==true
     */
-    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0);
+    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0,
+        const double meanVelocity = 0.0);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1528,8 +1531,9 @@ namespace MORTAR
     \post The interface discretization is _NOT_ FillComplete.
 
     \param[in] isFinalParallelDistribution Is this parallel distribution final?
+    \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
-    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution);
+    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
 
     /*!
     \brief Update master and slave interface maps for DOFs

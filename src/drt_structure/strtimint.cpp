@@ -573,20 +573,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   cmtbridge_->StoreDirichletStatus(dbcmaps_);
   cmtbridge_->SetState(zeros_);
 
-  // Setup ghosting in case of binning
-  {
-    // get type of parallel strategy
-    const Teuchos::ParameterList& parallelParamsMortar =
-        DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-    INPAR::MORTAR::GhostingStrategy strat =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-            parallelParamsMortar, "GHOSTING_STRATEGY");
-
-    // prepare binning strategy for the first time step
-    if (strat == INPAR::MORTAR::binningstrategy)
-      cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
-  }
-
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
     dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
@@ -1055,30 +1041,11 @@ void STR::TimInt::PrepareStepContact()
   {
     if (cmtbridge_->HaveContact())
     {
-      // set inttime_ to zero
       cmtbridge_->GetStrategy().Inttime_init();
-
-      // dynamic parallel redistribution of interfaces
-      const bool didRedistribute = cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0));
-
-      // Ghosting has only to be redone, if interfaces have been redistributed
-      if (didRedistribute)
-      {
-        // get type of parallel strategy
-        const Teuchos::ParameterList& parallelParamsMortar =
-            DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-        INPAR::MORTAR::GhostingStrategy strat =
-            DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-                parallelParamsMortar, "GHOSTING_STRATEGY");
-
-        // prepare binning strategy for this time step
-        if (strat == INPAR::MORTAR::binningstrategy)
-          cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
-      }
+      cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0), (*vel_)(0));
     }
   }
 
-  // bye bye
   return;
 }
 

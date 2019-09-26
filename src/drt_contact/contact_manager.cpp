@@ -517,7 +517,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       ggsize += gsize;  // update global element counter
     }
 
-    //-------------------- finalize the contact interface construction
+    /* Finalize the contact interface construction
+     *
+     * Always assign degrees of freedom here, because we need a valid column map for further contact
+     * setup. This is an initial one time cost, that does not matter compared to the repeated
+     * FillComplete calls due to dynamic redistribution.
+     */
     interface->FillComplete(true, maxdof);
 
     if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&

@@ -85,10 +85,12 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override
+    //! [derived]
+    bool RedistributeContact(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override
     {
       if (fix_redistribution_) return false;
-      return CONTACT::CoAbstractStrategy::RedistributeContact(dis);
+      return CONTACT::CoAbstractStrategy::RedistributeContact(dis, vel);
     }
 
     void EnableRedistribution() { fix_redistribution_ = false; }
