@@ -76,7 +76,7 @@ SEARCH_PARAM                    0.3
 REDUNDANT_STORAGE               none
 GHOSTING_STRATEGY               binningstrategy
 PARALLEL_REDIST                 dynamic
-MAX_BALANCE                     1.02
+MAX_BALANCE                     1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
