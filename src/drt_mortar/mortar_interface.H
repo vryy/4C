@@ -642,11 +642,6 @@ namespace MORTAR
     const Teuchos::ParameterList& InterfaceParams() const { return imortar_; };
 
     /*!
-    \brief binning strategy for efficient ghosting
-    */
-    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel);
-
-    /*!
     \brief Get quadratic 2d/3d slave element flag
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.

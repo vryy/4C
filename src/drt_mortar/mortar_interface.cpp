@@ -1082,52 +1082,6 @@ void MORTAR::MortarInterface::InitializeDataContainer()
 
 
 /*----------------------------------------------------------------------*
- |  Parallel Strategy based on bin distribution (public)     farah 11/13|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::BinningStrategy(
-    Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel)
-{
-  // Create the binning strategy
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
-
-  // fill master and slave elements into bins
-  std::map<int, std::set<int>> slavebinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
-  std::map<int, std::set<int>> masterbinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
-
-  // ghosting is extended
-  Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
-      Discret(), *initial_elecolmap, slavebinelemap, masterbinelemap);
-
-  // adapt layout to extended ghosting in discret
-  // first export the elements according to the processor local element column maps
-  Discret().ExportColumnElements(*extendedmastercolmap);
-
-  // get the node ids of the elements that are to be ghosted and create a proper node column map for
-  // their export
-  std::set<int> nodes;
-  for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
-  {
-    DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
-  }
-
-  std::vector<int> colnodes(nodes.begin(), nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
-
-  // now ghost the nodes
-  Discret().ExportColumnNodes(*nodecolmap);
-
-  // fillcomplete interface
-  FillComplete(true);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinningStrategy(
     const double meanVelocity)
