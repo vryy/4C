@@ -48,18 +48,17 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 STRATEGY                        Lagrange
 PENALTYPARAM                    1.0e6
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR
+AZPREC                          Chebyshev
+IFPACKGFILL                     3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
