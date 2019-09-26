@@ -35,7 +35,7 @@ TIMESTEP                        0.5
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_PARAM                    1
 INTTYPE                         Elements
-NUMGP_PER_DIM                   32
+NUMGP_PER_DIM                   10
 TRIANGULATION                   Center
 ALGORITHM                       gpts
 SEARCH_ALGORITHM                Binarytree
@@ -164,6 +164,7 @@ KERNEL_DISTANCE_FLOATTYPE                     cln
 SELFCUT_MESHCORRECTION_MULTIPLICATOR          2 //just for this testcase, use a larger value for big 3D problems (e.g. 30)
 SELFCUT_DO_MESHCORRECTION                     yes
 DO_SELFCUT                                    yes
+BOUNDARYCELL_CUBATURDEGREE                    10
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
 NAME                            XFSI_SOLVER
@@ -409,16 +410,18 @@ NODE 38    COORD  1.9000000000000000e+00  1.9000000000000000e+00  2.100000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 6.96269472312464215e-04 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.78111650931091056e-12 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.74259311267371056e-02 TOLERANCE 1e-7
-FLUID DIS porofluid NODE 8 QUANTITY velx VALUE -1.56652513274960388e-02 TOLERANCE 1e-7
-FLUID DIS porofluid NODE 8 QUANTITY vely VALUE 2.25566995972257288e-09 TOLERANCE 1e-7
-FLUID DIS porofluid NODE 8 QUANTITY velz VALUE -9.80713482963982419e-03 TOLERANCE 1e-7
-FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE 2.47366351249270089e-01 TOLERANCE 1e-7
-XFLUID DIS fluid NODE 39 QUANTITY velx VALUE -6.22105598805518679e-03 TOLERANCE 1e-7
-XFLUID DIS fluid NODE 39 QUANTITY vely VALUE -6.22105533919226593e-03 TOLERANCE 1e-7
-XFLUID DIS fluid NODE 39 QUANTITY velz VALUE -9.52844998804856270e-03 TOLERANCE 1e-7
-XFLUID DIS fluid NODE 39 QUANTITY pressure VALUE -1.69042000400634407e-03 TOLERANCE 1e-7
+//These tolerance are specified not very strict due to the critical problem setup 
+// (physic is not really resolved and a low number of integration points on the interface)
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 8.54297497583865234e-04 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 1.91767396227196655e-10 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.67686543573507783e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 8 QUANTITY velx VALUE -1.53302396278978282e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 8 QUANTITY vely VALUE 6.24193598490804409e-08 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 8 QUANTITY velz VALUE -8.30101938936498966e-03 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE 2.40322465529101303e-01 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY velx VALUE -6.21971346249761831e-03 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY vely VALUE -6.22055733100585623e-03 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY velz VALUE -8.21457869554731261e-03 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY pressure VALUE -1.73883525839163577e-03 TOLERANCE 1e-5
 ---------------------------------------------------------------END
 // END
