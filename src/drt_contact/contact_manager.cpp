@@ -593,11 +593,11 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       strategy_ = Teuchos::rcp(new CoNitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::fpi &&
+    else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::fpi &&
              stype == INPAR::CONTACT::solution_nitsche)
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategyFpi(data_ptr, Discret().DofRowMap(),
-          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
