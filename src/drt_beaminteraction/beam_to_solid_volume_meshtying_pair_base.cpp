@@ -28,7 +28,7 @@
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
 
 

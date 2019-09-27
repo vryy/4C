@@ -9,7 +9,8 @@
 
 
 #include "geometry_pair_factory.H"
-#include "geometry_pair_element_types.H"
+
+#include "geometry_pair_element.H"
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"

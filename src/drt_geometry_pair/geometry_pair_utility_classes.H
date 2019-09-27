@@ -24,34 +24,6 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Geometry discretization type of surface element.
-   */
-  enum class DiscretizationTypeSurface
-  {
-    //! none
-    none,
-    //! triangle
-    triangle,
-    //! quad
-    quad
-  };
-
-
-  /**
-   * \brief Geometry discretization type of volume element.
-   */
-  enum class DiscretizationTypeVolume
-  {
-    //! none
-    none,
-    //! hexaeder
-    hexaeder,
-    //! tetraeder
-    tetraeder
-  };
-
-
-  /**
    * \brief Result of a projection with the geometry pairs.
    */
   enum class ProjectionResult
@@ -65,7 +37,6 @@ namespace GEOMETRYPAIR
     //! Projection found and the parameter coordinates are valid.
     projection_found_valid
   };
-
 
   /**
    * \brief Class that represents a projection from a line to a volume.

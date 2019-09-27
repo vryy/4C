@@ -9,17 +9,87 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
-#define GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
+#ifndef GEOMETRY_PAIR_ELEMENT_FUNCTIONS_H
+#define GEOMETRY_PAIR_ELEMENT_FUNCTIONS_H
 
 
-#include "geometry_pair_element_types.H"
 #include "../drt_beam3/beam3.H"
 #include "../headers/FAD_utils.H"
+#include "geometry_pair_element.H"
 
 
 namespace GEOMETRYPAIR
 {
+  /**
+   * \brief Get the position in the element.
+   * @param xi (in) Parameter coordinate on the element.
+   * @param q (in) Degrees of freedom for the element.
+   * @param r (out) Position on the element.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename element_type, typename T, typename V, typename scalar_type>
+  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
+      const DRT::Element* element = NULL)
+  {
+    // Matrix for shape function values.
+    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
+
+    // Evaluate the shape function values.
+    element_type::EvaluateShapeFunction(
+        N, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+
+    // Calculate the position.
+    r.Clear();
+    for (unsigned int node = 0; node < element_type::n_nodes_; node++)
+    {
+      for (unsigned int dim = 0; dim < 3; dim++)
+      {
+        for (unsigned int val = 0; val < element_type::n_val_; val++)
+        {
+          r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+                    N(element_type::n_val_ * node + val);
+        }
+      }
+    }
+  }
+
+  /**
+   * \brief Get the derivative of the position w.r.t xi in the element.
+   * @param xi (in) Parameter coordinate on the element.
+   * @param q (in) Degrees of freedom for the element.
+   * @param dr (out) Derivative of the position on the element.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename element_type, typename T, typename V, typename scalar_type>
+  inline void EvaluatePositionDerivative1(const T& xi, const V& q,
+      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = NULL)
+  {
+    // Matrix for shape function values.
+    LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
+        dN(true);
+
+    // Evaluate the shape function values.
+    element_type::EvaluateShapeFunctionDeriv1(
+        dN, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+
+    // Calculate the derivative of the position.
+    dr.Clear();
+    for (unsigned int dim = 0; dim < 3; dim++)
+    {
+      for (unsigned int direction = 0; direction < element_type::dim_; direction++)
+      {
+        for (unsigned int node = 0; node < element_type::n_nodes_; node++)
+        {
+          for (unsigned int val = 0; val < element_type::n_val_; val++)
+          {
+            dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+                                  dN(direction, element_type::n_val_ * node + val);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * \brief Get the spatial position in a volume defined by a centerline and a cross section.
    *
