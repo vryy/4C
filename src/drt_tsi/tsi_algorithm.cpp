@@ -522,8 +522,8 @@ void TSI::Algorithm::GetContactStrategy()
     contact_strategy_lagrange_->SaveReferenceState(zero_disp);
     contact_strategy_lagrange_->EvaluateReferenceState(zero_disp);
     contact_strategy_lagrange_->Inttime_init();
-    contact_strategy_lagrange_->RedistributeContact(StructureField()->Dispn());
-    contact_strategy_lagrange_->InitBinStrategyforTimestep(StructureField()->Veln());
+    contact_strategy_lagrange_->RedistributeContact(
+        StructureField()->Dispn(), StructureField()->Veln());
 
     if (contact_strategy_lagrange_ != Teuchos::null)
     {

@@ -68,7 +68,8 @@ namespace CONTACT
       /** \brief Initiate a redistribution if the set \c interval_ suggests it
        *
        *  \return TRUE if a redistribution took place. Return FALSE otherwise. */
-      bool redistribute(const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter);
+      bool redistribute(const Teuchos::RCP<const Epetra_Vector>& dis,
+          Teuchos::RCP<const Epetra_Vector> vel, const int nlniter);
 
      private:
       /// reference to the surrounding contact strategy

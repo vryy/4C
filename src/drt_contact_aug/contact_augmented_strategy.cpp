@@ -661,10 +661,10 @@ void CONTACT::AUG::Strategy::CheckParallelDistribution(const GlobalTimeMonitor& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AUG::Strategy::DynRedistributeContact(
-    const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+bool CONTACT::AUG::Strategy::DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+    Teuchos::RCP<const Epetra_Vector> vel, const int nlniter)
 {
-  return Data().PDController().redistribute(dis, nlniter);
+  return Data().PDController().redistribute(dis, vel, nlniter);
 }
 
 /*----------------------------------------------------------------------*
