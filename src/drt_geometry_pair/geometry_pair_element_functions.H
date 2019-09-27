@@ -41,16 +41,10 @@ namespace GEOMETRYPAIR
     // Calculate the position.
     r.Clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-    {
       for (unsigned int dim = 0; dim < 3; dim++)
-      {
         for (unsigned int val = 0; val < element_type::n_val_; val++)
-        {
           r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
                     N(element_type::n_val_ * node + val);
-        }
-      }
-    }
   }
 
   /**
@@ -75,19 +69,38 @@ namespace GEOMETRYPAIR
     // Calculate the derivative of the position.
     dr.Clear();
     for (unsigned int dim = 0; dim < 3; dim++)
-    {
       for (unsigned int direction = 0; direction < element_type::dim_; direction++)
-      {
         for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-        {
           for (unsigned int val = 0; val < element_type::n_val_; val++)
-          {
             dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
                                   dN(direction, element_type::n_val_ * node + val);
-          }
-        }
-      }
+  }
+
+  /**
+   * \brief Get a normal on an element. This only makes sense for a 2D element.
+   * @param xi (in) Parameter coordinate on the element.
+   * @param q (in) Degrees of freedom for the element.
+   * @param n (out) Normal of the element.
+   * @param element (in) Pointer to the element.
+   */
+  template <typename element_type, typename T, typename V, typename scalar_type>
+  inline void EvaluateNormal(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& n,
+      const DRT::Element* element = NULL)
+  {
+    // Calculate derivative of the position on the element.
+    LINALG::Matrix<3, element_type::dim_, scalar_type>& dr;
+    EvaluatePositionDerivative1<element_type>(xi, q, dr, element);
+
+    // Calculate the cross product between the two direction vectors.
+    LINALG::Matrix<3, 1, scalar_type>& dr_0;
+    LINALG::Matrix<3, 1, scalar_type>& dr_1;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    {
+      dr_0[i_dim] = dr[i_dim, 0];
+      dr_1[i_dim] = dr[i_dim, 1];
     }
+    n.CrossProduct(dr_0, dr_1);
+    n.Scale(1. / FADUTILS::VectorNorm(n));
   }
 
   /**
