@@ -28,9 +28,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Shortcut to typed that are used to overload the get shape function methods.
    */
-  typedef std::integral_constant<unsigned int, 1> t_1D_element;
-  typedef std::integral_constant<unsigned int, 2> t_2D_element;
-  typedef std::integral_constant<unsigned int, 3> t_3D_element;
+  using t_1D_element = std::integral_constant<unsigned int, 1>;
+  using t_2D_element = std::integral_constant<unsigned int, 2>;
+  using t_3D_element = std::integral_constant<unsigned int, 3>;
 
 
   /**
@@ -103,6 +103,51 @@ namespace GEOMETRYPAIR
       }
     }
   }
+
+
+  /**
+   * \brief This structure "converts" the DRT discretization type to a surface type.
+   *
+   * For some geometry pairs we need to know if a surface is a triangle or a quad (linear,
+   * quadratic, ...) this structure "returns" the correct type depending on the DRT discretization
+   * type of the element.
+   */
+  template <DRT::Element::DiscretizationType discretization>
+  struct ElementDiscretizationToSurfaceType
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::none;
+  };
+  template <>
+  struct ElementDiscretizationToSurfaceType<DRT::Element::tri3>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::triangle;
+  };
+  template <>
+  struct ElementDiscretizationToSurfaceType<DRT::Element::tri6>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::triangle;
+  };
+  template <>
+  struct ElementDiscretizationToSurfaceType<DRT::Element::quad4>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
+  };
+  template <>
+  struct ElementDiscretizationToSurfaceType<DRT::Element::quad8>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
+  };
+  template <>
+  struct ElementDiscretizationToSurfaceType<DRT::Element::quad9>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
+  };
 
 
   /**
@@ -196,6 +241,10 @@ namespace GEOMETRYPAIR
   class ElementDiscretizationStandard : public base
   {
    public:
+    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        ElementDiscretizationToSurfaceType<base::discretization_>::surface_type_;
+
     //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
     static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
         ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
@@ -222,6 +271,53 @@ namespace GEOMETRYPAIR
 
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_1D(N, xi, discretization);
+    };
+
+    /**
+     * \brief Evaluate the 2D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 2.
+      static_assert(base::dim_ == 2, "EvaluateShapeFunction2D can only be called for 2D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
+    };
+
+    /**
+     * \brief Evaluate the first derivative of the 2D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 2.
+      static_assert(
+          base::dim_ == 2, "EvaluateShapeFunctionDeriv1 can only be called for 2D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::UTILS::shape_function_2D_deriv1(N, xi(0), xi(1), discretization);
     };
 
     /**
@@ -269,7 +365,7 @@ namespace GEOMETRYPAIR
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_3D_deriv1(N, xi(0), xi(1), xi(2), discretization);
     };
-  };
+  };  // namespace GEOMETRYPAIR
 
 
   /**
@@ -430,16 +526,27 @@ namespace GEOMETRYPAIR
    * Shortcuts to element types are created here, so the explicit template initialisations are
    * better readable.
    */
-  typedef ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>> t_hermite;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>> t_line2;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>> t_line3;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>> t_line4;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>> t_hex8;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>> t_hex20;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>> t_hex27;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>> t_tet4;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>> t_tet10;
-  typedef ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>> t_nurbs27;
+
+  //! 1D elements
+  using t_hermite = ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>>;
+  using t_line2 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>>;
+  using t_line3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>>;
+  using t_line4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>>;
+
+  //! 2D elements
+  using t_tri3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri3, 1>>;
+  using t_tri6 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri6, 1>>;
+  using t_quad4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad4, 1>>;
+  using t_quad8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad8, 1>>;
+  using t_quad9 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad9, 1>>;
+
+  //! 3D elements
+  using t_hex8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>>;
+  using t_hex20 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>>;
+  using t_hex27 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>>;
+  using t_tet4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>>;
+  using t_tet10 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>>;
+  using t_nurbs27 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>>;
 
 }  // namespace GEOMETRYPAIR
 

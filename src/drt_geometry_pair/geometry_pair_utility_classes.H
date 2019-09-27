@@ -24,6 +24,20 @@
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief Geometry discretization type of surface element.
+   */
+  enum class DiscretizationTypeSurface
+  {
+    //! none
+    none,
+    //! triangle
+    triangle,
+    //! quad
+    quad
+  };
+
+
+  /**
    * \brief Geometry discretization type of volume element.
    */
   enum class DiscretizationTypeVolume
