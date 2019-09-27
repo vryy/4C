@@ -52,6 +52,14 @@ void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
 bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement* cele,
     const LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
+  return CONTACT::UTILS::CheckNitscheContactState(
+      *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
+}
+
+bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinterface,
+    const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::CoElement* cele,
+    const LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
+{
   // No master elements found
   if (!cele->MoData().NumSearchElements())
   {
@@ -73,7 +81,7 @@ bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement*
   {
     if (other_cele) break;
     CONTACT::CoElement* test_ele = dynamic_cast<CONTACT::CoElement*>(
-        (ContactInterfaces()[0])->Discret().gElement(cele->MoData().SearchElements()[m]));
+        contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
     if (!test_ele)
       dserror("ERROR: Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
@@ -150,10 +158,10 @@ bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement*
 
   double ws = 0.;
   double wm = 0.;
-  double my_pen = pen_n_;
+  double my_pen = pen_n;
   double my_pen_t = 0.0;
   CONTACT::UTILS::NitscheWeightsAndScaling(
-      *cele, *other_cele, weighting_, 1., ws, wm, my_pen, my_pen_t);
+      *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
   LINALG::Matrix<3, 1> ele_n;
   cele->ComputeUnitNormalAtXi(xsi.A(), ele_n.A());

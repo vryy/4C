@@ -384,8 +384,16 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "the extrapolation of the fluid stress in the contact zone is relaxed to zero after a "
       "certain distance",
       &xfsi_monolithic);
+  DoubleParameter("POROCONTACTFPSI_HFRACTION", 1.0,
+      "factor of element size, when transition between FPSI and PSCI is started!",
+      &xfsi_monolithic);
+  DoubleParameter("POROCONTACTFPSI_FULLPCFRACTION", 0.0,
+      "ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is started!", &xfsi_monolithic);
+  BoolParameter("USE_PORO_PRESSURE", "yes",
+      "the extrapolation of the fluid stress in the contact zone is relaxed to zero after a "
+      "certtain distance",
+      &xfsi_monolithic);
 }
-
 
 
 void INPAR::XFEM::SetValidConditions(
@@ -801,6 +809,10 @@ void INPAR::XFEM::SetValidConditions(
 
   xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("Method", "NIT",
       Teuchos::tuple<std::string>("NIT", "SUB"), Teuchos::tuple<std::string>("NIT", "SUB"), true)));
+
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("Contact",
+      "contact_no", Teuchos::tuple<std::string>("contact_no", "contact_yes"),
+      Teuchos::tuple<std::string>("contact_no", "contact_yes"), true)));
 
   condlist.push_back(xfem_surf_fpi_mono);
 

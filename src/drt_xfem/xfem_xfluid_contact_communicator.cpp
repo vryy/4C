@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief communicates between xfluid and NIT contact ... for XFSCI and XFPSCI(soon)
+\brief Communicates between xfluid and NIT contact --> for XFSCI and XFPSCI
 
 \level 3
 
@@ -35,10 +35,9 @@
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_nitsche_strategy_fsi.H"
+#include "../drt_contact/contact_nitsche_strategy_fpi.H"
 
 #include "../drt_mortar/mortar_element.H"
-
-//#define WRITE_GMSH
 
 void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -263,6 +262,21 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   }
 }
 
+bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(
+    CONTACT::CoElement* cele, const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+    const double& full_fsi_traction,                            // stressfluid + penalty
+    double& gap                                                 // gap
+)
+{
+  if (contact_strategy_fsi_)
+    return contact_strategy_fsi_->CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
+  else if (contact_strategy_fpi_)
+    return contact_strategy_fpi_->CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
+  else
+    dserror("CheckNitscheContactState: Not adequate contact strategy is assigned!");
+  return false;  // dummy to make compiler happy :)
+}
+
 bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,  // Solid Surface Element
     std::string mcname, const LINALG::Matrix<2, 1>& xsi,    // local coord on the ele element
     const double& full_fsi_traction,                        // stressfluid + penalty ...
@@ -274,7 +288,7 @@ bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,  // Solid Surface Ele
       condition_manager_->GetMeshCouplingStartGID(condition_manager_->GetCouplingIndex(mcname));
   CONTACT::CoElement* cele = GetContactEle(sid + startgid);
   if (cele)
-    return GetContactStrategy().CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
+    return CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
   else
   {
     gap = 1e12;
@@ -491,7 +505,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
     if (bcells.size() > 0)
     {
       // get boundary cell Gaussian points
-      cele->BoundaryCellGaussPointsLin(bcells, bintpoints);
+      cele->BoundaryCellGaussPointsLin(bcells, bintpoints, cutwizard_->Get_BC_Cubaturedegree());
     }
     else
     {
@@ -639,6 +653,11 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
     }
   }
   ele_ptrs_already_setup_ = true;
+
+  contact_strategy_fsi_ =
+      dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(&contact_strategy_);  // might be NULL
+  contact_strategy_fpi_ =
+      dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be NULL
 }
 
 bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,
@@ -1349,7 +1368,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   double drs_sh = 0;
   for (uint bc = 0; bc < bcs.size(); ++bc)
   {
-    DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(20);
+    DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
     {
       coords.Reshape(weights.size() + gi.NumPoints(), 2);
@@ -1403,6 +1422,8 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
 void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
 {
   if (!parallel_) return;
+  if (cutwizard_ == Teuchos::null)
+    dserror("XFluid_Contact_Comm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
   for (uint i = 0; i < mortarId_to_sosid_.size(); ++i)
@@ -1449,18 +1470,31 @@ void XFEM::XFluid_Contact_Comm::PrepareIterationStep()
   }
 }
 
+double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_exchange_dist()
+{
+  return mcfpi_ps_pf_->Get_fpi_pcontact_exchange_dist();
+}
+
+double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_fullfraction()
+{
+  return mcfpi_ps_pf_->Get_fpi_pcontact_fullfraction();
+}
+
 void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
 {
 #ifdef WRITE_GMSH
   std::vector<std::string> sections;
-  sections.push_back("Contact_Traction");        // 0
-  sections.push_back("FSI_Traction");            // 1
-  sections.push_back("Contact_Active");          // 2
-  sections.push_back("FSI_Active");              // 3
-  sections.push_back("Contact_Traction_Solid");  // 4
-  sections.push_back("Contact_Traction_Fluid");  // 5
-  sections.push_back("FSI_sliplenth");           // 6
-  sections.push_back("All_GPs_Contact");         // 7
+  sections.push_back("Contact_Traction");           // 0
+  sections.push_back("FSI_Traction");               // 1
+  sections.push_back("Contact_Active");             // 2
+  sections.push_back("FSI_Active");                 // 3
+  sections.push_back("Contact_Traction_Solid");     // 4
+  sections.push_back("Contact_Traction_Fluid");     // 5
+  sections.push_back("FSI_sliplenth");              // 6
+  sections.push_back("All_GPs_Contact");            // 7
+  sections.push_back("Contact_PoroFlow_Active");    // 8
+  sections.push_back("Contact_PoroFlow_Inactive");  // 9
+  sections.push_back("FPI_PoroFlow_Ffac");          // 10
 
   static int counter = 0;
   if (counter)

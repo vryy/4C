@@ -47,7 +47,8 @@ namespace GEO
             selfcut_do_meshcorrection_(true),
             selfcut_island_geom_multiplicator_(2),
             gen_bcell_position_(INPAR::CUT::bcells_on_cut_side),
-            split_cutsides_(true)
+            split_cutsides_(true),
+            bc_cubaturedegree_(20)
       {
       }
 
@@ -127,6 +128,9 @@ namespace GEO
       /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
       bool SplitCutSides() const { return split_cutsides_; }
 
+      /** \brief Cubaturedegree for creating of integrationpoints on boundarycells */
+      int BC_Cubaturedegree() const { return bc_cubaturedegree_; }
+
       /** \brief Run the SelfCut Algorithm*/
       bool Do_SelfCut() { return do_selfcut_; }
 
@@ -199,6 +203,9 @@ namespace GEO
 
       /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
       bool split_cutsides_;
+
+      /** \brief Cubaturedegree for creating of integrationpoints on boundarycells */
+      int bc_cubaturedegree_;
     };
 
   }  // namespace CUT

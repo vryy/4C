@@ -701,7 +701,7 @@ namespace XFEM
         DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, int coup_sid);
 
     /// Initialize Fluid Intersection/Cut State
-    void InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

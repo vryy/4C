@@ -189,7 +189,9 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContai
   if (ftype != INPAR::CONTACT::friction_none) friction_ = true;
 
   // set poro contact
-  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poro) SetPoroFlag(true);
+  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poro ||
+      icontact.get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
+    SetPoroFlag(true);
 
   // set ehl contact
   if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::ehl) SetEhlFlag(true);

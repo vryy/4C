@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A class to perform integrations of nitsche related terms for the fsi contact case
+\brief A class to perform integrations of nitsche related terms for the fpi contact case
 
 \level 3
 
@@ -9,27 +9,19 @@
 
 */
 /*---------------------------------------------------------------------*/
+#include "contact_nitsche_integrator_fpi.H"
 #include "contact_nitsche_integrator_fsi.H"
 
 #include "contact_element.H"
-
 #include "contact_node.H"
 
-#include "../drt_so3/so_hex8.H"
-#include "../drt_so3/so3_poro.H"
-
 #include "../drt_xfem/xfem_xfluid_contact_communicator.H"
-
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(Teuchos::ParameterList& params,
+CONTACT::CoIntegratorNitscheFpi::CoIntegratorNitscheFpi(Teuchos::ParameterList& params,
     DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
-    : CoIntegratorNitsche(params, eletype, comm), ele_contact_state_(-2)
+    : CoIntegratorNitschePoro(params, eletype, comm), ele_contact_state_(-2)
 {
-  if (fabs(theta_) > 1e-12)
-    dserror("No Adjoint Consistency term for Nitsche Contact FSI implemented!");
-
   if (imortar_.isParameter("XFluid_Contact_Comm"))
     xf_c_comm_ = imortar_.get<Teuchos::RCP<XFEM::XFluid_Contact_Comm>>("XFluid_Contact_Comm");
   else
@@ -38,7 +30,7 @@ CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -70,7 +62,7 @@ void CONTACT::CoIntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::MortarElement&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheFpi::IntegrateGP_3D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
     LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
     LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -97,7 +89,7 @@ void CONTACT::CoIntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
@@ -131,10 +123,16 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   LINALG::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
 
+  double poropressure;
   bool gp_on_this_proc;
+  if (GetPoroPressure(sele, sval, mele, mval, poropressure))
+    normal_contact_transition =
+        xf_c_comm_->Get_FSI_Traction(&sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal,
+            FSI_integrated, gp_on_this_proc, &poropressure);
+  else
+    normal_contact_transition = xf_c_comm_->Get_FSI_Traction(&sele, pxsi,
+        LINALG::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
 
-  normal_contact_transition = xf_c_comm_->Get_FSI_Traction(
-      &sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
 #ifdef WRITE_GMSH
   {
     LINALG::Matrix<3, 1> sgp_x;
@@ -163,6 +161,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
       wm * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::CoElement*>(&mele),
                LINALG::Matrix<dim - 1, 1>(mxi, true), normal, normal) +
       pen * gap;
+
 #ifdef WRITE_GMSH
   {
     LINALG::Matrix<3, 1> sgp_x;
@@ -175,11 +174,50 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
 #endif
 
 
+  if (!FSI_integrated || (gap < (1 + xf_c_comm_->Get_fpi_pcontact_fullfraction()) *
+                                     xf_c_comm_->Get_fpi_pcontact_exchange_dist() &&
+                             xf_c_comm_->Get_fpi_pcontact_exchange_dist() > 1e-16))
+  {
+    double ffac = 1;
+    if (gap < (1 + xf_c_comm_->Get_fpi_pcontact_fullfraction()) *
+                  xf_c_comm_->Get_fpi_pcontact_exchange_dist() &&
+        FSI_integrated &&
+        gap > xf_c_comm_->Get_fpi_pcontact_fullfraction() *
+                  xf_c_comm_->Get_fpi_pcontact_exchange_dist())
+      ffac = 1. - (gap / (xf_c_comm_->Get_fpi_pcontact_exchange_dist()) -
+                      xf_c_comm_->Get_fpi_pcontact_fullfraction());
+
+    IntegratePoroNoOutFlow<dim>(
+        -ffac, sele, sxi, sval, sderiv, jac, jacintcellmap, wgt, normal, dnmap_unit, mele, mval);
+#ifdef WRITE_GMSH
+    {
+      LINALG::Matrix<3, 1> sgp_x;
+      for (int i = 0; i < sele.NumNode(); ++i)
+        for (int d = 0; d < dim; ++d)
+          sgp_x(d) += sval(i) * dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->xspatial()[d];
+      xf_c_comm_->Gmsh_Write(sgp_x, ffac, 8);
+    }
+#endif
+  }
+  else
+  {
+#ifdef WRITE_GMSH
+    {
+      LINALG::Matrix<3, 1> sgp_x;
+      for (int i = 0; i < sele.NumNode(); ++i)
+        for (int d = 0; d < dim; ++d)
+          sgp_x(d) += sval(i) * dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->xspatial()[d];
+      xf_c_comm_->Gmsh_Write(sgp_x, gap, 9);
+    }
+#endif
+  }
+
+
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
     GEN::pairedvector<int, double> lin_fluid_traction(0);
     IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
-        normal_contact_transition, lin_fluid_traction, normal, dnmap_unit);
+        normal_contact_transition, lin_fluid_traction, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
     {
       LINALG::Matrix<3, 1> sgp_x;
@@ -207,39 +245,31 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   double cauchy_nn_weighted_average = 0.;
-  GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv(
+  GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
-
-  LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
-  GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
-      sele.MoData().ParentDof().size() + dnmap_unit[0].size() + dsxi[0].size(), -1,
-      LINALG::SerialDenseVector(sele.MoData().ParentDof().size(), true));
-
-  LINALG::SerialDenseVector normal_adjoint_test_master(mele.MoData().ParentDof().size());
-  GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_master(
-      mele.MoData().ParentDof().size() + dnmap_unit[0].size() + dmxi[0].size(), -1,
-      LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
+  GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
+      sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
 
   SoEleCauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
-      cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, normal_adjoint_test_slave,
-      deriv_normal_adjoint_test_slave);
+      cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv_d,
+      cauchy_nn_weighted_average_deriv_p);
   SoEleCauchy<dim>(mele, mxi, dmxi, wgt, normal, dnmap_unit, normal, dnmap_unit, wm,
-      cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, normal_adjoint_test_master,
-      deriv_normal_adjoint_test_master);
+      cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv_d,
+      cauchy_nn_weighted_average_deriv_p);
 
-  double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
+  const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
   GEN::pairedvector<int, double> d_snn_av_pen_gap(
-      cauchy_nn_weighted_average_deriv.size() + dgapgp.size());
-  for (_CI p = cauchy_nn_weighted_average_deriv.begin();
-       p != cauchy_nn_weighted_average_deriv.end(); ++p)
+      cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
+  for (_CI p = cauchy_nn_weighted_average_deriv_d.begin();
+       p != cauchy_nn_weighted_average_deriv_d.end(); ++p)
     d_snn_av_pen_gap[p->first] += p->second;
   for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
     d_snn_av_pen_gap[p->first] += pen * p->second;
 
   // test in normal contact direction
   IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
-      d_snn_av_pen_gap, normal, dnmap_unit);
+      d_snn_av_pen_gap, cauchy_nn_weighted_average_deriv_p, normal, dnmap_unit);
 
   UpdateEleContactState(sele, 1);
 #ifdef WRITE_GMSH
@@ -258,7 +288,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   return;
 }
 
-void CONTACT::CoIntegratorNitscheFsi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
+void CONTACT::CoIntegratorNitscheFpi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
@@ -272,49 +302,4 @@ void CONTACT::CoIntegratorNitscheFsi::UpdateEleContactState(MORTAR::MortarElemen
     ele_contact_state_ = 0;
     xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
   }
-}
-
-double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele, const LINALG::Matrix<2, 1>& xsi,
-    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir)
-{
-  if (cele->ParentElement()->Shape() != DRT::Element::hex8)
-    dserror("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
-
-  LINALG::Matrix<3, 1> pxsi(true);
-  LINALG::Matrix<3, 3> trafo;
-  CONTACT::UTILS::SoEleGP<DRT::Element::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
-
-  double sigma_nt;
-
-  if (!cele->MoData().ParentPFPres().size())
-    dynamic_cast<DRT::ELEMENTS::So_base*>(cele->ParentElement())
-        ->GetCauchyAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt, NULL, NULL, NULL, NULL,
-            NULL, NULL, NULL, NULL);
-  else
-    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
-        cele->ParentElement())
-        ->GetCauchyAtXi(
-            pxsi, cele->MoData().ParentDisp(), cele->MoData().ParentPFPres(), n, dir, sigma_nt);
-  return sigma_nt;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
-void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
-    const double* gpcoord, LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtrafo)
-{
-  DRT::UTILS::CollectedGaussPoints intpoints =
-      DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-  intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
-
-  // get coordinates of gauss point w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(1, dim);
-  derivtrafo.Clear();
-
-  DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
-      sele.Shape(), sele.FaceParentNumber());
-
-  // coordinates of the current integration point in parent coordinate system
-  for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
 }

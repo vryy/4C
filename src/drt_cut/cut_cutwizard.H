@@ -255,6 +255,9 @@ namespace GEO
     void UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
+    //! Cubaturedegree for creating of integrationpoints on boundarycells
+    int Get_BC_Cubaturedegree() const;
+
    protected:
     /** \brief hidden constructor for derived classes only
      *
