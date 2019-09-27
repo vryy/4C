@@ -60,6 +60,14 @@ namespace GEOMETRYPAIR
 
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
+
+    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        ElementDiscretizationToSurfaceType<discretization_>::surface_type_;
+
+    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
+    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
+        ElementDiscretizationToVolumeType<discretization_>::volume_type_;
   };
 
 
@@ -71,15 +79,6 @@ namespace GEOMETRYPAIR
   template <typename base>
   class ElementDiscretizationStandard : public base
   {
-   public:
-    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        ElementDiscretizationToSurfaceType<base::discretization_>::surface_type_;
-
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
-
    public:
     /**
      * \brief Evaluate the 1D shape functions of the element.
@@ -280,11 +279,6 @@ namespace GEOMETRYPAIR
   template <typename base>
   class ElementDiscretizationNurbs : public base
   {
-   public:
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
-
    public:
     /**
      * \brief Evaluate the 3D shape functions of the element.
