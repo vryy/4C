@@ -83,7 +83,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // We only check xi, as eta is given by the user and is assumed to be correct.
-        if (ValidParameterElement2(xi))
+        if (ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -200,7 +200,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  this->ValidParameterElement2(xi_start);
+  SetStartValuesElement3D<volume>(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
     scalar_type eta = segment.GetEtaA() +
@@ -298,7 +298,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // Check if the parameter coordinates are valid.
-        if (ValidParameterElement1(eta) && ValidParameterElement2(xi))
+        if (ValidParameter1D(eta) && ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -416,83 +416,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement1(eta_start);
-  SetStartValuesElement2(xi_start);
+  SetStartValuesElement1D(eta_start);
+  SetStartValuesElement3D<volume>(xi_start);
 
   // Call the intersect function.
   IntersectLineWithVolume(q_line, q_volume, intersection_points, eta_start, xi_start);
 };
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidParameterElement1(
-    const scalar_type& eta) const
-{
-  double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-  if (fabs(eta) < xi_limit) return true;
-
-  // Default value.
-  return false;
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidParameterElement2(
-    const LINALG::Matrix<3, 1, scalar_type>& xi) const
-{
-  double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
-  {
-    if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
-  }
-  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
-  {
-    if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
-        xi(2) > -CONSTANTS::projection_xi_eta_tol &&
-        xi(0) + xi(1) + xi(2) < 1.0 + CONSTANTS::projection_xi_eta_tol)
-      return true;
-  }
-  else
-  {
-    dserror("Wrong volume type given!");
-  }
-
-  // Default value.
-  return false;
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStartValuesElement1(
-    scalar_type& eta) const
-{
-  eta = 0.;
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStartValuesElement2(
-    LINALG::Matrix<3, 1, scalar_type>& xi) const
-{
-  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
-    xi.PutScalar(0.0);
-  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
-    xi.PutScalar(0.25);
-  else
-    dserror("Wrong element type given!");
-}
 
 
 /**

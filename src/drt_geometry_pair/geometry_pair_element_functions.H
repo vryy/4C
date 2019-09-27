@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Utility functions for the geometry pairs.
+\brief Utility functions for the geometry pairs elements.
 
 \level 1
 \maintainer Ivo Steinbrecher
@@ -154,6 +154,110 @@ namespace GEOMETRYPAIR
     for (unsigned int dir = 0; dir < 3; dir++)
       r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
                              eta_cross_section(1) * cross_section_director_3(dir));
+  }
+
+  /**
+   * \brief Check if the parameter coordinate xi is in the valid range for a 1D element.
+   * @param xi (in) Parameter coordinate on the line.
+   * @return True if xi is in a valid range for the element.
+   */
+  template <typename T>
+  bool ValidParameter1D(const T& xi)
+  {
+    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    if (fabs(xi) < xi_limit)
+      return true;
+    else
+      return false;
+  }
+
+  /**
+   * \brief Check if the parameter coordinate xi is in the valid range for a 2D element.
+   * @param xi (in) Parameter coordinate on the line.
+   * @return True if xi is in a valid range for the element.
+   */
+  template <typename element_type, typename T>
+  bool ValidParameter2D(const T& xi)
+  {
+    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
+    {
+      if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
+    }
+    else
+    {
+      dserror("Wrong volume type given!");
+    }
+
+    // Default value.
+    return false;
+  }
+
+  /**
+   * \brief Check if the parameter coordinate xi is in the valid range for a 3D element.
+   * @param xi (in) Parameter coordinate on the line.
+   * @return True if xi is in a valid range for the element.
+   */
+  template <typename element_type, typename T>
+  bool ValidParameter3D(const T& xi)
+  {
+    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
+    {
+      if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
+    }
+    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
+    {
+      if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
+          xi(2) > -CONSTANTS::projection_xi_eta_tol &&
+          xi(0) + xi(1) + xi(2) < 1.0 + CONSTANTS::projection_xi_eta_tol)
+        return true;
+    }
+    else
+    {
+      dserror("Wrong volume type given!");
+    }
+
+    // Default value.
+    return false;
+  }
+
+  /**
+   * \brief Set the parameter coordinate to the middle of an 1D element.
+   * @param xi(in/out) Parameter coordinate.
+   */
+  template <typename T>
+  void SetStartValuesElement1D(T& xi)
+  {
+    xi = 0.;
+  }
+
+  /**
+   * \brief Set the parameter coordinate to the middle of a 2D element.
+   * @param xi(in/out) Parameter coordinates.
+   */
+  template <typename element_type, typename T>
+  void SetStartValuesElement2D(T& xi)
+  {
+    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
+      xi.PutScalar(0.0);
+    else
+      dserror("Wrong volume type given!");
+  }
+
+  /**
+   * \brief Set the parameter coordinate to the middle of a 2D element.
+   * @param xi(in/out) Parameter coordinates.
+   */
+  template <typename element_type, typename T>
+  void SetStartValuesElement3D(T& xi)
+  {
+    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
+      xi.PutScalar(0.0);
+    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
+      xi.PutScalar(0.25);
+    else
+      dserror("Wrong element type given!");
   }
 }  // namespace GEOMETRYPAIR
 

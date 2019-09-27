@@ -214,34 +214,6 @@ namespace GEOMETRYPAIR
     void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points) const;
-
-    /**
-     * \brief Check if the parameter coordinate eta is in the valid range from -1 to 1.
-     * @param eta Parameter coordiante on the line.
-     * @return True if eta is between -1 and 1
-     */
-    bool ValidParameterElement1(const scalar_type& eta) const;
-
-    /**
-     * \brief Check if the parameter coordinates xi are in the valid range.
-     * @param xi Parameter coordiantes in the volume.
-     * @return True if xi is valid.
-     */
-    bool ValidParameterElement2(const LINALG::Matrix<3, 1, scalar_type>& xi) const;
-
-    /**
-     * \brief Set the parameter coordinate on the line to default starting value for a Newton
-     * iteration.
-     * @param eta Parameter coordiante on the line.
-     */
-    void SetStartValuesElement1(scalar_type& eta) const;
-
-    /**
-     * \brief Set the parameter coordinates in the volume to default starting values for a Newton
-     * iteration.
-     * @param xi Parameter coordiantes in the volume.
-     */
-    void SetStartValuesElement2(LINALG::Matrix<3, 1, scalar_type>& xi) const;
   };
 }  // namespace GEOMETRYPAIR
 

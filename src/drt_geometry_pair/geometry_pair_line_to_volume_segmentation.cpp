@@ -9,7 +9,7 @@
 
 
 #include "geometry_pair_line_to_volume_segmentation.H"
-#include "geometry_pair_element.H"
+#include "geometry_pair_element_functions.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
@@ -65,7 +65,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
   std::vector<ProjectionPointLineToVolume<scalar_type>> search_points;
   search_points.reserve(n_search_points);
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  this->SetStartValuesElement2(xi_start);
+  SetStartValuesElement3D<volume>(xi_start);
   scalar_type eta;
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)
   {
