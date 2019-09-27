@@ -378,23 +378,21 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
   }
 
   // converged
-  if (abs_disp_inc <= ittol_ and rel_disp_inc <= ittol_ and abs_force_inc <= ittol_ and
-      rel_force_inc <= ittol_)
+  if (rel_disp_inc <= ittol_ and rel_force_inc <= ittol_)
   {
     stopnonliniter = true;
 
     if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     {
       // clang-format off
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                             |\n", itnum, itmax_);
+      printf("|  Outer iteration loop converged (based on relative increments) after iteration %3d/%3d !              |\n", itnum, itmax_);
       printf("+-------------------------------------------------------------------------------------------------------+\n");
       // clang-format on
     }
   }
 
   // stop if itemax is reached without convergence
-  if ((itnum == itmax_) and (abs_disp_inc > ittol_ or rel_disp_inc > ittol_ or
-                                abs_force_inc > ittol_ or rel_force_inc > ittol_))
+  if ((itnum == itmax_) and (rel_disp_inc > ittol_ or rel_force_inc > ittol_))
   {
     stopnonliniter = true;
 
@@ -404,7 +402,7 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  ATTENTION: Outer Iteration loop not converged in itemax = %3d steps!                                 |\n", itmax_);
+        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                                 |\n", itmax_);
         printf("+-------------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
@@ -415,7 +413,7 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  STOP: Outer Iteration loop not converged in itemax = %3d steps                                       |\n", itmax_);
+        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                       |\n", itmax_);
         printf("+-------------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
