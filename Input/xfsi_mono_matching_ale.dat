@@ -1,6 +1,6 @@
 //
-// Maintainer: Christoph Ager
-// ager@lnm.mw.tum.de
+// Maintainer: Martin Kronbichler
+// kronbichler@lnm.mw.tum.de
 //
 // Monolithic xfsi with Nitsche including Solid Sided interface stress representation,
 // ALE-Fluid, matching grid on the interface
