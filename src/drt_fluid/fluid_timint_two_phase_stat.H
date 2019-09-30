@@ -3,7 +3,7 @@
 
 \brief stationary two-phase flow problems
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

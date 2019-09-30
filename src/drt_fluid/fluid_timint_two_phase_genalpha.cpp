@@ -3,7 +3,7 @@
 
 \brief Generalized alpha time integration for two-phase flow
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

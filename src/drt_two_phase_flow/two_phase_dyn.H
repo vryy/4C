@@ -3,8 +3,8 @@
 \brief Control routine for fluid/xfluid and ScaTra coupled routines.
 \level 2
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
 
