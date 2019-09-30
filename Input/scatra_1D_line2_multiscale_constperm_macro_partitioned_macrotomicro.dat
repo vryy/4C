@@ -37,8 +37,8 @@ LINEAR_SOLVER                   1
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra_multiscale MICROFILE scatra_1D_line2_multiscale_constperm_micro1.dat MICRODIS_NUM 1 POROSITY 0.4764012244 TORTUOSITY 1.374674082 A_s 1.570796327 DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
-MAT 2 MAT_scatra_multiscale MICROFILE scatra_1D_line2_multiscale_constperm_micro2.dat MICRODIS_NUM 2 POROSITY 0.4764012244 TORTUOSITY 1.374674082 A_s 1.570796327 DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
+MAT 1 MAT_scatra_multiscale MICROFILE scatra_1D_line2_multiscale_constperm_micro1.mat MICRODIS_NUM 1 POROSITY 0.4764012244 TORTUOSITY 1.374674082 A_s 1.570796327 DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
+MAT 2 MAT_scatra_multiscale MICROFILE scatra_1D_line2_multiscale_constperm_micro2.mat MICRODIS_NUM 2 POROSITY 0.4764012244 TORTUOSITY 1.374674082 A_s 1.570796327 DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
 // --> porosity and specific surface area correspond to a porous medium that consists of spheres (radius = 1 m) packed according to a simple cubic packing
 // --> the tortuosity was determined in a 3D reference test case
 -------------------------------------------------------------FUNCT1
