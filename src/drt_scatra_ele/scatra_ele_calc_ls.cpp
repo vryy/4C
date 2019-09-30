@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_ls.H"
