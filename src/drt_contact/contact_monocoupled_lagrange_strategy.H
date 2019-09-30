@@ -9,7 +9,7 @@ to be called!
 
 \level 3
 
-\maintainer Christoph Ager
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
