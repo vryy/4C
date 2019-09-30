@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"

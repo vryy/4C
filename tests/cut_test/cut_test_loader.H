@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #ifndef CUT_TEST_LOADER_H
