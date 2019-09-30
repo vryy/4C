@@ -888,6 +888,7 @@ baci_test_restartonly(fs3i_ac_periodic 4 10) #this one MUST be placed behind tes
 baci_test(fs3i_ac_prestress 5 "")
 baci_test_restartonly(fs3i_ac_restart_from_prestress 5 1) #this one MUST be placed behind test case 'fs3i_ac_prestress'
 baci_test(fs3i_mult_scalar_windkessel_reac 4 4)
+baci_test(fs3i_part_1wc_finperm 2 10)
 baci_test(fs3i_part_1wc_infperm 2 10)
 baci_test(fsci_simp_salz_syst 3 "")
 baci_test(fs3i_biogr 2 "")
