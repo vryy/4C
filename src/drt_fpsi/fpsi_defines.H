@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer  Christoph Ager
+\maintainer  Johannes Kremheller
 
  *------------------------------------------------------------------------------------------------*/
 #ifndef FPSI_DEFINES_H

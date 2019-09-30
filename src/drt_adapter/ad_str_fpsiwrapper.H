@@ -4,7 +4,7 @@
 \brief Structural adapter for FPSI problems containing the interface
        and methods dependent on the interface
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 3
 

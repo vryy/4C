@@ -3,7 +3,7 @@
   \brief  Utility Methods For Fluid Porous Structure Interaction Problems
 \level 3
 
-\maintainer  Christoph Ager
+\maintainer  Johannes Kremheller
  *-----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
