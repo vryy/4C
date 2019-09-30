@@ -3,7 +3,7 @@
 
 \brief evaluation for nitsche trace inequality estimate
 
-\maintainer Christoph Ager
+\maintainer Christoph Schmidt
 
 \level 3
 *----------------------------------------------------------------------*/
