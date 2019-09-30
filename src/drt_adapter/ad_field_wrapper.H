@@ -6,7 +6,7 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 
 \level 2
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
