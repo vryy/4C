@@ -9,7 +9,7 @@ be set in problem specific parameter lists derived from this class.
 
 \level 2
 
-\maintainer  Christoph Ager
+\maintainer  Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/

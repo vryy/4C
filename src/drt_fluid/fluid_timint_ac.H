@@ -3,7 +3,7 @@
 
 \brief Fluid time integrator for FS3I-AC problems
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 3
 

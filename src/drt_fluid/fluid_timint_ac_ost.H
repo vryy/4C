@@ -4,7 +4,7 @@
 \brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta
        and TimIntAC.
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 3
 
