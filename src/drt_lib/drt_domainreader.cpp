@@ -5,7 +5,7 @@
 
 \level 0
 
-\maintainer  Christoph Ager
+\maintainer  Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
