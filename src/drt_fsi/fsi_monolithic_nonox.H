@@ -5,10 +5,7 @@
 
 \level 2
 
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
+\maintainer  Matthias Mayr
 *----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_NONOX_H
