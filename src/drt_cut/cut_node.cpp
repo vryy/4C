@@ -6,7 +6,7 @@
 
 \level 3
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_element.H"

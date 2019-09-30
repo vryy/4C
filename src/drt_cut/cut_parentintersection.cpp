@@ -3,8 +3,8 @@
 
 \brief provides the basic functionality for cutting a mesh
 
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
+\maintainer  Martin Kronbichler
+             kronbichler@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
 

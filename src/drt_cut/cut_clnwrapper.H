@@ -5,8 +5,8 @@
 
 \level 3
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
 
 *----------------------------------------------------------------------*/
 

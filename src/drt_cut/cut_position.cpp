@@ -8,7 +8,7 @@
 
 \level 2
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_position.H"
