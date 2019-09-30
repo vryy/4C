@@ -2,7 +2,7 @@
 /*! \file
 \brief  fluid material for poroelasticity problems
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
  *-----------------------------------------------------------------------*/

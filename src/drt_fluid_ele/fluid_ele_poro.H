@@ -6,7 +6,7 @@
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
 

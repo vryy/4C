@@ -4,13 +4,13 @@
 
  \brief coupling adapter for porous meshtying
 
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
+// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Johannes Kremheller
 // Originates from ADAPTER::CouplingNonLinMortar
 
 \level 3
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
+\maintainer Johannes Kremheller
+            kremheller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
 *----------------------------------------------------------------------*/

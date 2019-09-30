@@ -3,8 +3,8 @@
 
 \brief element types of the 3D solid-poro element
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
+\maintainer Johannes Kremheller
+            kremheller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
 

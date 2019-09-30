@@ -4,7 +4,7 @@
 
 \level 2
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef INPAR_POROELAST_H_
