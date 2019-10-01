@@ -184,9 +184,15 @@ namespace GEOMETRYPAIR
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit) return true;
     }
+    else if (element_type::surface_type_ == DiscretizationTypeSurface::triangle)
+    {
+      if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
+          xi(0) + xi(1) < 1.0 + CONSTANTS::projection_xi_eta_tol)
+        return true;
+    }
     else
     {
-      dserror("Wrong volume type given!");
+      dserror("Wrong surface type given!");
     }
 
     // Default value.

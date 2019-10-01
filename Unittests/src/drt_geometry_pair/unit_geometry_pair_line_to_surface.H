@@ -68,6 +68,233 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
+   * Test the projection of a point to a tri3 surface, with default normals on the surface.
+   */
+  void test_point_to_surface_projection_tri3()
+  {
+    // Set up the pair.
+    Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
+        pair;
+    pair.Init(evaluation_data_, beam.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<9, 1, double> q_solid;
+    q_solid(0) = 0.;
+    q_solid(1) = 0.;
+    q_solid(2) = 0.;
+    q_solid(3) = 1.;
+    q_solid(4) = -0.5;
+    q_solid(5) = 0.5;
+    q_solid(6) = -0.1;
+    q_solid(7) = 0.95;
+    q_solid(8) = 0.;
+
+    // Point to project to.
+    LINALG::Matrix<3, 1, double> point(true);
+    point(0) = 0.3;
+    point(1) = 0.1;
+    point(2) = 0.2;
+
+    // Project the point to the surface.
+    LINALG::Matrix<3, 1, double> xi(true);
+    ProjectionResult projection_result;
+    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+
+    // Check the results.
+    LINALG::Matrix<3, 1, double> xi_result(true);
+    xi_result(0) = 0.3436484045755569;
+    xi_result(1) = 0.2877784467188441;
+    xi_result(2) = 0.03189763881277458;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+  }
+
+  /**
+   * Test the projection of a point to a tri3 surface, with default given normals on the nodes.
+   */
+  void test_point_to_surface_projection_normal_interpolation_tri3()
+  {
+    // Set up the pair.
+    Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
+        pair;
+    pair.Init(evaluation_data_, beam.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<9, 1, double> q_solid;
+    q_solid(0) = 0.;
+    q_solid(1) = 0.;
+    q_solid(2) = 0.;
+    q_solid(3) = 1.;
+    q_solid(4) = -0.5;
+    q_solid(5) = 0.5;
+    q_solid(6) = -0.1;
+    q_solid(7) = 0.95;
+    q_solid(8) = 0.;
+
+    // Define the normals on the solid element.
+    LINALG::Matrix<9, 1, double> nodal_normals(true);
+    nodal_normals(0) = -0.2627627396383057;
+    nodal_normals(1) = 0.0814482045510598;
+    nodal_normals(2) = 0.961416628019913;
+    nodal_normals(3) = -0.7190848597139832;
+    nodal_normals(4) = -0.0866854771055773;
+    nodal_normals(5) = 0.6894944471053408;
+    nodal_normals(6) = -0.6025696958211013;
+    nodal_normals(7) = 0.1931525301890987;
+    nodal_normals(8) = 0.7743396294647555;
+
+    // Point to project to.
+    LINALG::Matrix<3, 1, double> point(true);
+    point(0) = 0.3;
+    point(1) = 0.1;
+    point(2) = 0.2;
+
+    // Project the point to the surface.
+    LINALG::Matrix<3, 1, double> xi(true);
+    ProjectionResult projection_result;
+    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+
+    // Check the results.
+    LINALG::Matrix<3, 1, double> xi_result(true);
+    xi_result(0) = 0.3457692493957274;
+    xi_result(1) = 0.2853120425437799;
+    xi_result(2) = 0.03218342274405913;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+  }
+
+  /**
+   * Test the projection of a point to a tri6 surface, with default normals on the surface.
+   */
+  void test_point_to_surface_projection_tri6()
+  {
+    // Set up the pair.
+    Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
+        pair;
+    pair.Init(evaluation_data_, beam.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<18, 1, double> q_solid;
+    q_solid(0) = 0.;
+    q_solid(1) = 0.;
+    q_solid(2) = 0.;
+    q_solid(3) = 1.;
+    q_solid(4) = -0.5;
+    q_solid(5) = 0.5;
+    q_solid(6) = -0.1;
+    q_solid(7) = 0.95;
+    q_solid(8) = 0.;
+    q_solid(9) = 0.7;
+    q_solid(10) = -0.1;
+    q_solid(11) = 0.;
+    q_solid(12) = 0.5;
+    q_solid(13) = 0.5;
+    q_solid(14) = 0.2;
+    q_solid(15) = 0.;
+    q_solid(16) = 0.4;
+    q_solid(17) = 0.;
+
+    // Point to project to.
+    LINALG::Matrix<3, 1, double> point(true);
+    point(0) = 0.3;
+    point(1) = 0.1;
+    point(2) = 0.2;
+
+    // Project the point to the surface.
+    LINALG::Matrix<3, 1, double> xi(true);
+    ProjectionResult projection_result;
+    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+
+    // Check the results.
+    LINALG::Matrix<3, 1, double> xi_result(true);
+    xi_result(0) = 0.1935801417994475;
+    xi_result(1) = 0.1678155116663445;
+    xi_result(2) = 0.236826220497202;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+  }
+
+  /**
+   * Test the projection of a point to a tri3 surface, with default given normals on the nodes.
+   */
+  void test_point_to_surface_projection_normal_interpolation_tri6()
+  {
+    // Set up the pair.
+    Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
+        pair;
+    pair.Init(evaluation_data_, beam.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<18, 1, double> q_solid;
+    q_solid(0) = 0.;
+    q_solid(1) = 0.;
+    q_solid(2) = 0.;
+    q_solid(3) = 1.;
+    q_solid(4) = -0.5;
+    q_solid(5) = 0.5;
+    q_solid(6) = -0.1;
+    q_solid(7) = 0.95;
+    q_solid(8) = 0.;
+    q_solid(9) = 0.7;
+    q_solid(10) = -0.1;
+    q_solid(11) = 0.;
+    q_solid(12) = 0.5;
+    q_solid(13) = 0.5;
+    q_solid(14) = 0.2;
+    q_solid(15) = 0.;
+    q_solid(16) = 0.4;
+    q_solid(17) = 0.;
+
+    // Define the normals on the solid element.
+    LINALG::Matrix<18, 1, double> nodal_normals(true);
+    nodal_normals(0) = 0.4647142046388283;
+    nodal_normals(1) = 0.07560665247369116;
+    nodal_normals(2) = 0.882226922117334;
+    nodal_normals(3) = -0.940585437337313;
+    nodal_normals(4) = -0.3017696640225994;
+    nodal_normals(5) = -0.155673070711231;
+    nodal_normals(6) = -0.4731211190964157;
+    nodal_normals(7) = 0.1945363466954595;
+    nodal_normals(8) = 0.859250846074265;
+    nodal_normals(9) = -0.840743980012363;
+    nodal_normals(10) = 0.01531668856144018;
+    nodal_normals(11) = 0.5412161852018873;
+    nodal_normals(12) = -0.7282283511923046;
+    nodal_normals(13) = -0.4445443397695543;
+    nodal_normals(14) = 0.5215973528485246;
+    nodal_normals(15) = -0.1079357859495496;
+    nodal_normals(16) = -0.06091161819004808;
+    nodal_normals(17) = 0.992290099154941;
+
+    // Point to project to.
+    LINALG::Matrix<3, 1, double> point(true);
+    point(0) = 0.3;
+    point(1) = 0.1;
+    point(2) = 0.2;
+
+    // Project the point to the surface.
+    LINALG::Matrix<3, 1, double> xi(true);
+    ProjectionResult projection_result;
+    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+
+    // Check the results.
+    LINALG::Matrix<3, 1, double> xi_result(true);
+    xi_result(0) = 0.3274411842809972;
+    xi_result(1) = 0.1649919700896869;
+    xi_result(2) = 0.2749865824042791;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+  }
+
+  /**
    * Test the projection of a point to a quad4 surface, with default normals on the surface.
    */
   void test_point_to_surface_projection_quad4()
