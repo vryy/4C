@@ -23,6 +23,8 @@
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_lib/drt_globalproblem.H"
 
+#include "src/drt_geometry_pair/unit_geometry_pair_line_to_surface_geometry.H"
+
 
 namespace GEOMETRYPAIR
 {
@@ -81,15 +83,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = -0.1;
-    q_solid(7) = 0.95;
-    q_solid(8) = 0.;
+    xtest_setup_tri3(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -112,7 +106,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
-   * Test the projection of a point to a tri3 surface, with default given normals on the nodes.
+   * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
   void test_point_to_surface_projection_normal_interpolation_tri3()
   {
@@ -123,29 +117,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     pair.Init(evaluation_data_, beam.get(), NULL);
     pair.Setup();
 
-    // Define the coordinates for the solid element.
+    // Define the coordinates and normals for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = -0.1;
-    q_solid(7) = 0.95;
-    q_solid(8) = 0.;
-
-    // Define the normals on the solid element.
     LINALG::Matrix<9, 1, double> nodal_normals(true);
-    nodal_normals(0) = -0.2627627396383057;
-    nodal_normals(1) = 0.0814482045510598;
-    nodal_normals(2) = 0.961416628019913;
-    nodal_normals(3) = -0.7190848597139832;
-    nodal_normals(4) = -0.0866854771055773;
-    nodal_normals(5) = 0.6894944471053408;
-    nodal_normals(6) = -0.6025696958211013;
-    nodal_normals(7) = 0.1931525301890987;
-    nodal_normals(8) = 0.7743396294647555;
+    xtest_setup_tri3(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -181,24 +156,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = -0.1;
-    q_solid(7) = 0.95;
-    q_solid(8) = 0.;
-    q_solid(9) = 0.7;
-    q_solid(10) = -0.1;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.5;
-    q_solid(13) = 0.5;
-    q_solid(14) = 0.2;
-    q_solid(15) = 0.;
-    q_solid(16) = 0.4;
-    q_solid(17) = 0.;
+    xtest_setup_tri6(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -221,7 +179,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
-   * Test the projection of a point to a tri3 surface, with default given normals on the nodes.
+   * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
   void test_point_to_surface_projection_normal_interpolation_tri6()
   {
@@ -232,47 +190,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     pair.Init(evaluation_data_, beam.get(), NULL);
     pair.Setup();
 
-    // Define the coordinates for the solid element.
+    // Define the coordinates and normals for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = -0.1;
-    q_solid(7) = 0.95;
-    q_solid(8) = 0.;
-    q_solid(9) = 0.7;
-    q_solid(10) = -0.1;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.5;
-    q_solid(13) = 0.5;
-    q_solid(14) = 0.2;
-    q_solid(15) = 0.;
-    q_solid(16) = 0.4;
-    q_solid(17) = 0.;
-
-    // Define the normals on the solid element.
     LINALG::Matrix<18, 1, double> nodal_normals(true);
-    nodal_normals(0) = 0.4647142046388283;
-    nodal_normals(1) = 0.07560665247369116;
-    nodal_normals(2) = 0.882226922117334;
-    nodal_normals(3) = -0.940585437337313;
-    nodal_normals(4) = -0.3017696640225994;
-    nodal_normals(5) = -0.155673070711231;
-    nodal_normals(6) = -0.4731211190964157;
-    nodal_normals(7) = 0.1945363466954595;
-    nodal_normals(8) = 0.859250846074265;
-    nodal_normals(9) = -0.840743980012363;
-    nodal_normals(10) = 0.01531668856144018;
-    nodal_normals(11) = 0.5412161852018873;
-    nodal_normals(12) = -0.7282283511923046;
-    nodal_normals(13) = -0.4445443397695543;
-    nodal_normals(14) = 0.5215973528485246;
-    nodal_normals(15) = -0.1079357859495496;
-    nodal_normals(16) = -0.06091161819004808;
-    nodal_normals(17) = 0.992290099154941;
+    xtest_setup_tri6(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -306,20 +227,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     pair.Init(evaluation_data_, beam.get(), NULL);
     pair.Setup();
 
+    // Define the normals on the solid element.
     // Define the coordinates for the solid element.
     LINALG::Matrix<12, 1, double> q_solid(true);
-    q_solid(0) = 0;
-    q_solid(1) = 0;
-    q_solid(2) = 0;
-    q_solid(3) = 1.0000000000000000000;
-    q_solid(4) = -0.50000000000000000000;
-    q_solid(5) = 0.50000000000000000000;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0;
+    xtest_setup_quad4(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -342,7 +253,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
-   * Test the projection of a point to a quad4 surface, with default given normals on the nodes.
+   * Test the projection of a point to a quad4 surface, with given normals on the nodes.
    */
   void test_point_to_surface_projection_normal_interpolation_quad4()
   {
@@ -353,35 +264,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     pair.Init(evaluation_data_, beam.get(), NULL);
     pair.Setup();
 
-    // Define the coordinates for the solid element.
+    // Define the coordinates and normals for the solid element.
     LINALG::Matrix<12, 1, double> q_solid(true);
-    q_solid(0) = 0;
-    q_solid(1) = 0;
-    q_solid(2) = 0;
-    q_solid(3) = 1.0000000000000000000;
-    q_solid(4) = -0.50000000000000000000;
-    q_solid(5) = 0.50000000000000000000;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0;
-
-    // Define the normals on the solid element.
     LINALG::Matrix<12, 1, double> nodal_normals(true);
-    nodal_normals(0) = -0.2627627396383057;
-    nodal_normals(1) = 0.0814482045510598;
-    nodal_normals(2) = 0.961416628019913;
-    nodal_normals(3) = -0.696398235712595;
-    nodal_normals(4) = -0.00250557448550925;
-    nodal_normals(5) = 0.7176511822556153;
-    nodal_normals(6) = -0.5381757744868267;
-    nodal_normals(7) = 0.2523235485556319;
-    nodal_normals(8) = 0.804176387740773;
-    nodal_normals(9) = -0.5695583742587585;
-    nodal_normals(10) = 0.3920519545501438;
-    nodal_normals(11) = 0.7224254447658469;
+    xtest_setup_quad4(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -417,30 +303,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.7;
-    q_solid(13) = -0.1;
-    q_solid(14) = 0.;
-    q_solid(15) = 1.5;
-    q_solid(16) = 0.5;
-    q_solid(17) = 0.4285714285714286;
-    q_solid(18) = 0.6;
-    q_solid(19) = 1.;
-    q_solid(20) = 0.;
-    q_solid(21) = 0.;
-    q_solid(22) = 0.4;
-    q_solid(23) = 0.;
+    xtest_setup_quad8(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -463,7 +326,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
-   * Test the projection of a point to a quad8 surface, with default given normals on the nodes.
+   * Test the projection of a point to a quad8 surface, with given normals on the nodes.
    */
   void test_point_to_surface_projection_normal_interpolation_quad8()
   {
@@ -476,57 +339,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.7;
-    q_solid(13) = -0.1;
-    q_solid(14) = 0.;
-    q_solid(15) = 1.5;
-    q_solid(16) = 0.5;
-    q_solid(17) = 0.4285714285714286;
-    q_solid(18) = 0.6;
-    q_solid(19) = 1.;
-    q_solid(20) = 0.;
-    q_solid(21) = 0.;
-    q_solid(22) = 0.4;
-    q_solid(23) = 0.;
-
-    // Define the normals on the solid element.
     LINALG::Matrix<24, 1, double> nodal_normals;
-    nodal_normals(0) = 0.4647142046388283;
-    nodal_normals(1) = 0.07560665247369116;
-    nodal_normals(2) = 0.882226922117334;
-    nodal_normals(3) = -0.836343726511398;
-    nodal_normals(4) = 0.4199949186410029;
-    nodal_normals(5) = 0.3523257575607623;
-    nodal_normals(6) = -0.685419065478165;
-    nodal_normals(7) = -0.2637809647101298;
-    nodal_normals(8) = 0.6786901408858333;
-    nodal_normals(9) = 0.084751268287718;
-    nodal_normals(10) = 0.5628096661844073;
-    nodal_normals(11) = 0.822230200231674;
-    nodal_normals(12) = -0.4965263011922144;
-    nodal_normals(13) = -0.01413350221776395;
-    nodal_normals(14) = 0.867906605770136;
-    nodal_normals(15) = -0.979140049557007;
-    nodal_normals(16) = 0.05236426002737823;
-    nodal_normals(17) = 0.1963230695188068;
-    nodal_normals(18) = 0.2410702660375203;
-    nodal_normals(19) = -0.349981608608912;
-    nodal_normals(20) = 0.905206054149064;
-    nodal_normals(21) = 0.5745894251085984;
-    nodal_normals(22) = -0.2036034941085485;
-    nodal_normals(23) = 0.792712185941506;
+    xtest_setup_quad8(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -562,33 +376,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.7;
-    q_solid(13) = -0.1;
-    q_solid(14) = 0.;
-    q_solid(15) = 1.5;
-    q_solid(16) = 0.5;
-    q_solid(17) = 0.4285714285714286;
-    q_solid(18) = 0.6;
-    q_solid(19) = 1.;
-    q_solid(20) = 0.;
-    q_solid(21) = 0.;
-    q_solid(22) = 0.4;
-    q_solid(23) = 0.;
-    q_solid(24) = 0.5;
-    q_solid(25) = 0.5;
-    q_solid(26) = 0.2;
+    xtest_setup_quad9(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -611,7 +399,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   }
 
   /**
-   * Test the projection of a point to a quad9 surface, with default given normals on the nodes.
+   * Test the projection of a point to a quad9 surface, with given normals on the nodes.
    */
   void test_point_to_surface_projection_normal_interpolation_quad9()
   {
@@ -622,65 +410,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     pair.Init(evaluation_data_, beam.get(), NULL);
     pair.Setup();
 
-    // Define the coordinates for the solid element.
+    // Define the coordinates and normals for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
-    q_solid(0) = 0.;
-    q_solid(1) = 0.;
-    q_solid(2) = 0.;
-    q_solid(3) = 1.;
-    q_solid(4) = -0.5;
-    q_solid(5) = 0.5;
-    q_solid(6) = 1.2;
-    q_solid(7) = 1.2;
-    q_solid(8) = 0.5;
-    q_solid(9) = -0.1;
-    q_solid(10) = 0.95;
-    q_solid(11) = 0.;
-    q_solid(12) = 0.7;
-    q_solid(13) = -0.1;
-    q_solid(14) = 0.;
-    q_solid(15) = 1.5;
-    q_solid(16) = 0.5;
-    q_solid(17) = 0.4285714285714286;
-    q_solid(18) = 0.6;
-    q_solid(19) = 1.;
-    q_solid(20) = 0.;
-    q_solid(21) = 0.;
-    q_solid(22) = 0.4;
-    q_solid(23) = 0.;
-    q_solid(24) = 0.5;
-    q_solid(25) = 0.5;
-    q_solid(26) = 0.2;
-
-    // Define the normals on the solid element.
     LINALG::Matrix<27, 1, double> nodal_normals;
-    nodal_normals(0) = 0.4647142046388283;
-    nodal_normals(1) = 0.07560665247369116;
-    nodal_normals(2) = 0.882226922117334;
-    nodal_normals(3) = -0.836343726511398;
-    nodal_normals(4) = 0.4199949186410029;
-    nodal_normals(5) = 0.3523257575607623;
-    nodal_normals(6) = -0.685419065478165;
-    nodal_normals(7) = -0.2637809647101298;
-    nodal_normals(8) = 0.6786901408858333;
-    nodal_normals(9) = 0.084751268287718;
-    nodal_normals(10) = 0.5628096661844073;
-    nodal_normals(11) = 0.822230200231674;
-    nodal_normals(12) = -0.6102068773340782;
-    nodal_normals(13) = -0.5672458156179746;
-    nodal_normals(14) = 0.5530639669315768;
-    nodal_normals(15) = -0.477142251285473;
-    nodal_normals(16) = -0.03320684296047792;
-    nodal_normals(17) = 0.878198484181582;
-    nodal_normals(18) = 0.0853062914327283;
-    nodal_normals(19) = 0.898922710199504;
-    nodal_normals(20) = 0.4297217678097922;
-    nodal_normals(21) = -0.3719814588140768;
-    nodal_normals(22) = -0.3844673823348876;
-    nodal_normals(23) = 0.844875509302472;
-    nodal_normals(24) = 0.2831165159078166;
-    nodal_normals(25) = 0.1617600702632027;
-    nodal_normals(26) = 0.945345819310935;
+    xtest_setup_quad9(q_solid, &nodal_normals);
+
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -700,6 +434,526 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     xi_result(2) = 0.2483249147920992;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+  }
+
+  /**
+   * Test the intersection of a line with a tri3 surface, with default normals on the surface.
+   */
+  void test_line_to_surface_intersection_tri3()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<9, 1, double> q_solid;
+    xtest_setup_tri3(q_solid);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = 0.0;
+    xi_result(0, 1) = 0.5441734719700435;
+    xi_result(1, 0) = 0.1074360140351795;
+    xi_result(1, 1) = 0.4558265280299565;
+    xi_result(2, 0) = 0.1140207710811362;
+    xi_result(2, 1) = 0.00821450263257107;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.959535845440973;
+    eta_result(1) = -0.2754895911921936;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a tri3 surface, with given normals on the nodes.
+   */
+  void test_line_to_surface_intersection_normal_interpolation_tri3()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<9, 1, double> q_solid;
+    LINALG::Matrix<9, 1, double> nodal_normals;
+    xtest_setup_tri3(q_solid, &nodal_normals);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(
+        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = 0.;
+    xi_result(0, 1) = 0.5449151431901401;
+    xi_result(1, 0) = 0.0892976752542103;
+    xi_result(1, 1) = 0.4550848568098599;
+    xi_result(2, 0) = 0.1071908576829917;
+    xi_result(2, 1) = 0.00852036464820085;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.933108361186308;
+    eta_result(1) = -0.2769233373990823;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a tri6 surface, with default normals on the surface.
+   */
+  void test_line_to_surface_intersection_tri6()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<18, 1, double> q_solid;
+    xtest_setup_tri6(q_solid);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = 0.0;
+    xi_result(0, 1) = 0.661306368091275;
+    xi_result(1, 0) = 0.1351724121757158;
+    xi_result(1, 1) = 0.338693631908725;
+    xi_result(2, 0) = 0.1130371451881858;
+    xi_result(2, 1) = 0.133409588649314;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.845498535448603;
+    eta_result(1) = -0.1960742371555871;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a tri6 surface, with given normals on the nodes.
+   */
+  void test_line_to_surface_intersection_normal_interpolation_tri6()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<18, 1, double> q_solid;
+    LINALG::Matrix<18, 1, double> nodal_normals;
+    xtest_setup_tri6(q_solid, &nodal_normals);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(
+        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = 0.;
+    xi_result(0, 1) = 0.6584629848688872;
+    xi_result(1, 0) = 0.1326786387805501;
+    xi_result(1, 1) = 0.3415370151311128;
+    xi_result(2, 0) = 0.1167772617143948;
+    xi_result(2, 1) = 0.117654537323362;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.834928214700044;
+    eta_result(1) = -0.1707134503670001;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad4 surface, with default normals on the surface.
+   */
+  void test_line_to_surface_intersection_quad4()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<12, 1, double> q_solid;
+    xtest_setup_quad4(q_solid);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.785985513536155;
+    xi_result(1, 1) = 0.0135117312962169;
+    xi_result(2, 0) = 0.113108951013877;
+    xi_result(2, 1) = 0.1177337444785567;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.957076826689831;
+    eta_result(1) = 0.4600569936643898;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad4 surface, with given normals on the nodes.
+   */
+  void test_line_to_surface_intersection_normal_interpolation_quad4()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<12, 1, double> q_solid;
+    LINALG::Matrix<12, 1, double> nodal_normals;
+    xtest_setup_quad4(q_solid, &nodal_normals);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(
+        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.825474249880623;
+    xi_result(1, 1) = -0.01145366341249682;
+    xi_result(2, 0) = 0.107340226468075;
+    xi_result(2, 1) = 0.119547807682323;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.932605711413924;
+    eta_result(1) = 0.4202318513645913;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad8 surface, with default normals on the surface.
+   */
+  void test_line_to_surface_intersection_quad8()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<24, 1, double> q_solid;
+    xtest_setup_quad8(q_solid);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.7289003389787947;
+    xi_result(1, 1) = -0.2401689430824591;
+    xi_result(2, 0) = 0.1151116342572037;
+    xi_result(2, 1) = 0.3985715991803625;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.839363025185972;
+    eta_result(1) = 0.5611477338536844;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad8 surface, with given normals on the nodes.
+   */
+  void test_line_to_surface_intersection_normal_interpolation_quad8()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<24, 1, double> q_solid;
+    LINALG::Matrix<24, 1, double> nodal_normals;
+    xtest_setup_quad8(q_solid, &nodal_normals);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(
+        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.6839738851708264;
+    xi_result(1, 1) = -0.3051161431281305;
+    xi_result(2, 0) = 0.1455754614884382;
+    xi_result(2, 1) = 0.5364371832797651;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.7799706383258106;
+    eta_result(1) = 0.2729951612552455;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad9 surface, with default normals on the surface.
+   */
+  void test_line_to_surface_intersection_quad9()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<27, 1, double> q_solid;
+    xtest_setup_quad9(q_solid);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.7317907464850744;
+    xi_result(1, 1) = -0.02799989440327506;
+    xi_result(2, 0) = 0.1080035769948319;
+    xi_result(2, 1) = 0.3188357119982439;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.865583933012948;
+    eta_result(1) = 0.926806412303738;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test the intersection of a line with a quad9 surface, with given normals on the nodes.
+   */
+  void test_line_to_surface_intersection_normal_interpolation_quad9()
+  {
+    // Set up the beam.
+    Teuchos::RCP<DRT::Element> element_1;
+    LINALG::Matrix<12, 1, double> q_beam;
+    xtest_setup_beam(element_1, q_beam);
+
+    // Set up the pair.
+    GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
+        pair;
+    pair.Init(evaluation_data_, element_1.get(), NULL);
+    pair.Setup();
+
+    // Define the coordinates for the solid element.
+    LINALG::Matrix<27, 1, double> q_solid;
+    LINALG::Matrix<27, 1, double> nodal_normals;
+    xtest_setup_quad9(q_solid, &nodal_normals);
+
+    // Intersect the beam with the surface.
+    std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
+    LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithSurface(
+        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+
+    // Check the results.
+    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+
+    LINALG::Matrix<3, 2, double> xi_result;
+    xi_result(0, 0) = -1.;
+    xi_result(0, 1) = 1.;
+    xi_result(1, 0) = -0.6516378999140468;
+    xi_result(1, 1) = -0.03862428489685134;
+    xi_result(2, 0) = 0.111426072236278;
+    xi_result(2, 1) = 0.33200167129208;
+
+    LINALG::Matrix<2, 1, double> eta_result;
+    eta_result(0) = -0.869816485526844;
+    eta_result(1) = 0.808011110533093;
+
+    for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
+    {
+      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+            xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
   }
 
  private:
