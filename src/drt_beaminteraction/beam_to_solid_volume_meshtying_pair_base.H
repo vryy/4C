@@ -224,7 +224,7 @@ namespace BEAMINTERACTION
      * position is calculated.
      */
     virtual void EvaluateBeamPosition(
-        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
         LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
 
     /**

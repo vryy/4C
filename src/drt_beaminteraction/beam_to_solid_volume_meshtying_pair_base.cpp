@@ -328,7 +328,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateBeamPosition(
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
   if (reference)

@@ -82,7 +82,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
       {
         // Valid Gauss point was found, add to this segment and set tracking point to true.
         line_segment.AddProjectionPoint(
-            ProjectionPointLineToVolume<scalar_type>(eta, xi, gauss_points.qwgt[index_gp]));
+            ProjectionPoint1DTo3D<scalar_type>(eta, xi, gauss_points.qwgt[index_gp]));
         line_projection_tracker[index_gp] = true;
 
         one_projects = true;
@@ -132,7 +132,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
     if (need_segmentation)
     {
       // Segmentation is needed. First get the intersection points with the volume.
-      std::vector<ProjectionPointLineToVolume<scalar_type>> intersection_points;
+      std::vector<ProjectionPoint1DTo3D<scalar_type>> intersection_points;
       this->IntersectLineWithVolume(q_line, q_volume, intersection_points);
 
       // This algorithm only works if one intersection point was found.

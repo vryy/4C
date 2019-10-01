@@ -84,15 +84,14 @@ namespace BEAMINTERACTION
 
    protected:
     /**
-     * \brief Calculate the position on the beam, also taking into accout parameter coordinates on
+     * \brief Calculate the position on the beam, also taking into account parameter coordinates on
      * the cross section.
      * @param integration_point (in) Integration where the position should be evaluated.
      * @param r_beam (out) Position on the beam.
      * @param reference (in) True -> the reference position is calculated, False -> the current
      * position is calculated.
      */
-    void EvaluateBeamPosition(
-        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
         LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const override;
   };
 }  // namespace BEAMINTERACTION

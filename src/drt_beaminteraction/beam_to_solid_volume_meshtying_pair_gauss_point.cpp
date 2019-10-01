@@ -77,7 +77,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
          i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
-      const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
+      const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
           this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.

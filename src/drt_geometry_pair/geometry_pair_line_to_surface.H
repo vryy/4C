@@ -23,6 +23,10 @@ namespace GEOMETRYPAIR
 {
   class GeometryPairLineToSurface_TestSuite;
   enum class ProjectionResult;
+
+  template <typename scalar_type>
+  class ProjectionPoint1DTo3D;
+
 }  // namespace GEOMETRYPAIR
 namespace LINALG
 {
@@ -157,6 +161,44 @@ namespace GEOMETRYPAIR
     void EvaluateSurfaceNormal(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
         LINALG::Matrix<3, 1, scalar_type_evaluate>& normal,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+
+    /**
+     * \brief Get the intersection between the line and an extended boundary of the surface.
+     *
+     * The extended boundaries are the edges of the surface, extended by the normal vector there.
+     *
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the surface.
+     * @param fixed_parameter (in) Index of parameter coordinate to be fixed on the surface. In case
+     * of triangle elements, fixed_parameter=2 represents the $r+s=1$ curve.
+     * @param fixed_value (in) Value of fixed parameter.
+     * @param eta (in/out) Parameter coordinate on the line. The given value is the start value
+     * for the Newton iteration.
+     * @param xi (in/out) Parameter coordinates for the surface. The given values are the start
+     * values for the Newton iteration.
+     * @param projection_result (out) Flag for the result of the intersection.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
+     */
+    void IntersectLineWithSurfaceEdge(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+        const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
+        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+
+    /**
+     * \brief Intersect a line with all edges of a surface.
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param intersection_points (out) vector with the found surface intersections.
+     * @param eta_start (in) start value for parameter coordinate on line.
+     * @param xi_start (in) start values for parameter coordinates in volume.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
+     */
+    void IntersectLineWithSurface(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
   };
 }  // namespace GEOMETRYPAIR

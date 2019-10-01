@@ -40,7 +40,7 @@ namespace GEOMETRYPAIR
   enum class ProjectionResult;
 
   template <typename scalar_type>
-  class ProjectionPointLineToVolume;
+  class ProjectionPoint1DTo3D;
 
   template <typename scalar_type>
   class LineSegment;
@@ -142,7 +142,7 @@ namespace GEOMETRYPAIR
      */
     void ProjectPointsOnLineToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
         unsigned int& n_projections_valid, unsigned int& n_projections) const;
 
     /**
@@ -156,7 +156,7 @@ namespace GEOMETRYPAIR
      */
     void ProjectPointsOnLineToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
         unsigned int& n_projections_valid) const;
 
     /**
@@ -201,7 +201,7 @@ namespace GEOMETRYPAIR
      */
     void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
 
     /**
@@ -213,7 +213,7 @@ namespace GEOMETRYPAIR
      */
     void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points) const;
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points) const;
   };
 }  // namespace GEOMETRYPAIR
 

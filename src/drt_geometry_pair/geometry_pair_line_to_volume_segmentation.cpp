@@ -62,7 +62,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
       this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfSearchPoints();
 
   // Set up vector with projection points for the search points.
-  std::vector<ProjectionPointLineToVolume<scalar_type>> search_points;
+  std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
   search_points.reserve(n_search_points);
   LINALG::Matrix<3, 1, scalar_type> xi_start;
   SetStartValuesElement3D<volume>(xi_start);
@@ -70,7 +70,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)
   {
     eta = -1. + i_search_point * 2. / (n_search_points - 1.);
-    search_points.push_back(ProjectionPointLineToVolume<scalar_type>(eta, xi_start));
+    search_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi_start));
   }
 
   // Project all the search points.
@@ -86,7 +86,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
     // Now we start from every search point that could be projected (not necessary valid) and look
     // for surface intersections of the line with the volume. The intersection points are stored in
     // a std::set that will keep them unique and in order.
-    std::set<ProjectionPointLineToVolume<scalar_type>> intersection_points;
+    std::set<ProjectionPoint1DTo3D<scalar_type>> intersection_points;
 
     // If the start and/or end points (nodes of the line element) could be projected valid, add them
     // to the intersections set. This helps for some cases where the line just touches the surface
@@ -97,7 +97,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
       intersection_points.insert(search_points.back());
 
     // Vector for intersection point search.
-    std::vector<ProjectionPointLineToVolume<scalar_type>> search_intersection_points;
+    std::vector<ProjectionPoint1DTo3D<scalar_type>> search_intersection_points;
 
     // Starting from each search point, try to project to all surfaces of the volume.
     for (auto const& point : search_points)
@@ -135,19 +135,19 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
       bool last_segment_active = false;
       scalar_type eta_start;
       unsigned int counter = 0;
-      for (typename std::set<ProjectionPointLineToVolume<scalar_type>>::iterator set_iterator =
+      for (typename std::set<ProjectionPoint1DTo3D<scalar_type>>::iterator set_iterator =
                intersection_points.begin();
            set_iterator != intersection_points.end(); ++set_iterator)
       {
         // Reference to this current point.
-        const ProjectionPointLineToVolume<scalar_type>& start_point = *set_iterator;
+        const ProjectionPoint1DTo3D<scalar_type>& start_point = *set_iterator;
 
         // Get the next intersection point and calculate the projection. This can only be done if
         // the iterator is not on its last iteration.
         if (counter != intersection_points.size() - 1)
         {
           // Reference to the next point.
-          const ProjectionPointLineToVolume<scalar_type>& end_point = *std::next(set_iterator);
+          const ProjectionPoint1DTo3D<scalar_type>& end_point = *std::next(set_iterator);
 
           // Get starting points for projection.
           eta = 0.5 * (start_point.GetEta() + end_point.GetEta());

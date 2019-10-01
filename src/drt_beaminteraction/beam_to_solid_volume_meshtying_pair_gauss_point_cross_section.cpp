@@ -83,7 +83,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     dserror("There can be a maximum of one segment!");
 
   // Get the vector with the projection points for this pair.
-  const std::vector<GEOMETRYPAIR::ProjectionPointLineToVolume<double>>& projection_points =
+  const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =
       this->line_to_volume_segments_[0].GetProjectionPoints();
 
   // If there are no projection points, return no contact status.
@@ -108,7 +108,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
        i_integration_point++)
   {
     // Get the current Gauss point.
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
         projection_points[i_integration_point];
 
     // Get the jacobian in the reference configuration.
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPointLineToVolume<double>&
+    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                      integration_point,
     LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
