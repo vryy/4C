@@ -2600,6 +2600,7 @@ src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_to_surface.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp

@@ -82,7 +82,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       // Check if tolerance is fulfilled.
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
-        // We only check xi, as eta is given by the user and is assumed to be correct.
         if (ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else

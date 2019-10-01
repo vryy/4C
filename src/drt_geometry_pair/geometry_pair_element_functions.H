@@ -182,7 +182,7 @@ namespace GEOMETRYPAIR
     const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
     if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
     {
-      if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
+      if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit) return true;
     }
     else
     {
