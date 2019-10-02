@@ -54,7 +54,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Setup the projection tracker for this line element.
      */
-    void Setup();
+    void Setup() override;
 
     /**
      * \brief Try to project the points on the surface of the line to the volume.

@@ -41,12 +41,12 @@ namespace GEOMETRYPAIR
     /**
      * \brief Initialize parameters. Load them from the input file.
      */
-    void Init();
+    void Init() override;
 
     /**
      * \brief Setup function.
      */
-    void Setup();
+    void Setup() override;
 
     /**
      * \brief Get the segmentation strategy.
