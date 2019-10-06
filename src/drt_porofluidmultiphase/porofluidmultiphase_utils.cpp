@@ -255,6 +255,12 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
   {
     const int artelegid = artsearchdis->ElementColMap()->GID(iart);
 
+    // rough estimate of duration
+    if (contdis->Comm().MyPID() == 0 &&
+        iart == (int)(0.02 * artsearchdis->ElementColMap()->NumMyElements()))
+      std::cout << "Estimated duration: " << 50.0 * (timersearch.WallTime() - dtcpu) << "s"
+                << std::endl;
+
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
     // AABB of artery

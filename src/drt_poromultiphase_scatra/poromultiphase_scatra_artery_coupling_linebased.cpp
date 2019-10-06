@@ -837,8 +837,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateNewArteryCoup
           return Teuchos::rcp(
               new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
                   DRT::Element::hex8>());
+        case DRT::Element::tet4:
+          return Teuchos::rcp(
+              new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+                  DRT::Element::tet4>());
         default:
-          dserror("only quad4 and hex8 elements supported for continuous elements so far");
+          dserror("only quad4, hex8 and tet4 elements supported for continuous elements so far");
       }
       break;
     }

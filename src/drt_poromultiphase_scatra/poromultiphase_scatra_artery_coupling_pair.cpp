@@ -2169,20 +2169,34 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
   }
   else if (numdim_ == 3)
   {
-    if (numnodescont_ == 8)
+    if (numnodescont_ == 8)  // hex8
     {
       for (unsigned int j = 0; j < numdim_; j++)
       {
-        // project edge xi1 or xi2 or xi3 = 1.0
+        // project surface xi1 or xi2 or xi3 = 1.0
         InterSectWith2D3D(xi, eta, j, 1.0, projection_valid);
         if (projection_valid && ProjectionNotYetFound(intersections, eta))
           intersections.push_back(eta);
 
-        // project edge xi1 or xi2 or xi3 = -1.0
+        // project surface xi1 or xi2 or xi3 = -1.0
         InterSectWith2D3D(xi, eta, j, -1.0, projection_valid);
         if (projection_valid && ProjectionNotYetFound(intersections, eta))
           intersections.push_back(eta);
       }
+    }
+    else if (numnodescont_ == 4)  // tet4
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        // project surface xi1 or xi2 or xi3 = 0.0
+        InterSectWith2D3D(xi, eta, j, 0.0, projection_valid);
+        if (projection_valid && ProjectionNotYetFound(intersections, eta))
+          intersections.push_back(eta);
+      }
+      // project fourth surface of tetahedron xi1 + xi2 + xi3 = 1
+      InterSectWith2D3D(xi, eta, 3, 0.0, projection_valid);
+      if (projection_valid && ProjectionNotYetFound(intersections, eta))
+        intersections.push_back(eta);
     }
     else
       dserror("only hex8 ele valid in 3D so far");
@@ -2251,7 +2265,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
   else if (numdim_ == 3)
   {
-    if (numnodescont_ == 8)
+    if (numnodescont_ == 8)  // hex8
     {
       if (fixedPar == 0)  // xi1 fixed
       {
@@ -2274,8 +2288,39 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       else
         dserror("wrong input for fixedPar");
     }
+    else if (numnodescont_ == 4)  // tet4
+    {
+      if (fixedPar == 0)  // xi1 fixed
+      {
+        xi[0] = fixedAt;
+        xi[1] = 0.25;
+        xi[2] = 0.25;
+      }
+      else if (fixedPar == 1)  // xi2 fixed
+      {
+        xi[0] = 0.25;
+        xi[1] = fixedAt;
+        xi[2] = 0.25;
+      }
+      else if (fixedPar == 2)  // xi3 fixed
+      {
+        xi[0] = 0.25;
+        xi[1] = 0.25;
+        xi[2] = fixedAt;
+      }
+      else if (fixedPar == 3)  // fourth surface xi1 + xi2 + xi3 = 1 fixed
+      {
+        xi[0] = 0.25;
+        xi[1] = 0.25;
+        xi[2] = 0.5;
+      }
+      else
+        dserror(
+            "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
+            "elements");
+    }
     else
-      dserror("only hex8 ele valid in 3D so far");
+      dserror("only hex8 and tet4 ele valid in 3D so far");
   }
   else
     dserror("Only numdim_ = 2, 3 is valid");
@@ -2362,6 +2407,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       for (unsigned int idim = 0; idim < numdim_; idim++)
         for (unsigned int jdim = 0; jdim < numdim_ - 1; jdim++) J(idim, jdim) = x2_xi(idim, jdim);
     }
+    else if (fixedPar == 3)  // xi3 fixed at xi3 = 1.0 - xi1 - xi2
+    {
+      for (unsigned int idim = 0; idim < numdim_; idim++)
+      {
+        // df/dxi1 = df/dxi1 - df/dxi3
+        J(idim, 0) = x2_xi(idim, 0) - x2_xi(idim, 2);
+        // df/dxi_2 = df/dxi2 - df/dxi3
+        J(idim, 1) = x2_xi(idim, 1) - x2_xi(idim, 2);
+      }
+    }
+    else
+      dserror(
+          "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
+          "elements)");
 
     // fill dr_deta into Jacobian
     for (unsigned int idim = 0; idim < numdim_; idim++) J(idim, numdim_ - 1) = -r1_eta(idim);
@@ -2434,12 +2493,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       for (unsigned int idim = 0; idim < numdim_ - 1; idim++)
         for (unsigned int jdim = 0; jdim < numdim_; jdim++) xi[idim] += -J(idim, jdim) * f(jdim);
     }
-    // else if (fixedPar == 3)
-    //{
-    //  xi1 += -J(0, 0) * f(0) - J(0, 1) * f(1) - J(0, 2) * f(2);
-    //  xi2 += -J(1, 0) * f(0) - J(1, 1) * f(1) - J(1, 2) * f(2);
-    //  xi3 = 1.0 - xi1 - xi2;
-    //}
+    else if (fixedPar == 3)
+    {
+      // xi3 fixed at 1.0 - xi1 - xi2
+      for (unsigned int idim = 0; idim < numdim_ - 1; idim++)
+        for (unsigned int jdim = 0; jdim < numdim_; jdim++) xi[idim] += -J(idim, jdim) * f(jdim);
+      xi[2] = 1.0 - xi[0] - xi[1];
+    }
+    else
+      dserror(
+          "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
+          "elements)");
 
     // update also eta
     for (unsigned int jdim = 0; jdim < numdim_; jdim++) eta += -J(numdim_ - 1, jdim) * f(jdim);
@@ -2472,8 +2536,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit || fabs(xi[2]) > limit || fabs(eta) > limit)
         projection_valid = false;
     }
+    else if (numnodescont_ == 4)
+    {
+      if (xi[0] < -VALIDPROJTOL || xi[1] < -VALIDPROJTOL || xi[2] < -VALIDPROJTOL ||
+          xi[0] + xi[1] + xi[2] > limit || fabs(eta) > limit)
+        projection_valid = false;
+    }
     else
-      dserror("only hex8 ele valid in 3D so far");
+      dserror("only hex8 and tet4 ele valid in 3D so far");
   }
   else
     dserror("Only numdim_ = 2, 3 is valid");
@@ -2515,14 +2585,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
   else if (numdim_ == 3)
   {
-    if (numnodescont_ == 8)
+    if (numnodescont_ == 8)  // hex8
     {
       xi[0] = 0.0;
       xi[1] = 0.0;
       xi[2] = 0.0;
     }
+    else if (numnodescont_ == 4)  // tet4
+    {
+      xi[0] = 0.25;
+      xi[1] = 0.25;
+      xi[2] = 0.25;
+    }
     else
-      dserror("only hex8 ele valid in 3D so far");
+      dserror("only hex8 and tet4 ele valid in 3D so far");
   }
   else
     dserror("Only numdim_ = 2, 3 is valid");
@@ -2666,13 +2742,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
   else if (numdim_ == 3)
   {
-    if (numnodescont_ == 8)
+    if (numnodescont_ == 8)  // hex8
     {
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit || fabs(xi[2]) > limit)
         projection_valid = false;
     }
+    else if (numnodescont_ == 4)  // tet4
+    {
+      if (xi[0] < -VALIDPROJTOL || xi[1] < -VALIDPROJTOL || xi[2] < -VALIDPROJTOL ||
+          xi[0] + xi[1] + xi[2] > limit)
+        projection_valid = false;
+    }
     else
-      dserror("only hex8 ele valid in 3D so far");
+      dserror("only hex8 and tet4 ele valid in 3D so far");
   }
   else
     dserror("Only numdim_ = 2, 3 is valid");
@@ -3009,3 +3091,5 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT:
     DRT::Element::quad4>;
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::hex8>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+    DRT::Element::tet4>;
