@@ -108,6 +108,9 @@ namespace POROMULTIPHASESCATRA
     virtual void SetSegmentID(const int& segmentid) = 0;
     virtual int GetSegmentID() const = 0;
 
+    //! get the volume of the 2D/3D element
+    virtual double CalculateVol2D3D() const = 0;
+
     //! type of coupling pair
     enum CouplingType
     {
@@ -176,6 +179,9 @@ namespace POROMULTIPHASESCATRA
     //! set and get segment id
     void SetSegmentID(const int& segmentid);
     int GetSegmentID() const;
+
+    //! get the volume of the 2D/3D element
+    double CalculateVol2D3D() const;
 
    private:
     //! static variables

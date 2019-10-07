@@ -58,6 +58,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       output_satpress_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
       output_solidpress_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
       output_porosity_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
+      output_bloodvesselvolfrac_(DRT::INPUT::IntegralValue<int>(
+          poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
       stab_biot_(DRT::INPUT::IntegralValue<int>(poroparams_, "STAB_BIOT")),
       domainint_funct_(std::vector<int>()),
       num_domainint_funct_(0),
@@ -554,8 +556,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
     // step number and time (only after that data output is possible)
     output_->NewStep(step_, time_);
 
-    // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_ == upres_) output_->WriteElementData(true);
+    // write domain decomposition for visualization (only once at step 0!)
+    if (step_ == 0)
+    {
+      output_->WriteElementData(true);
+      // write output of blood vessel volume fraction
+      if (output_bloodvesselvolfrac_)
+        output_->WriteVector(
+            "bloodvesselvolfrac", strategy_->BloodVesselVolumeFraction(), IO::elementvector);
+    }
 
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields

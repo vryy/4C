@@ -27,6 +27,7 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/drt_element_integration_select.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
@@ -632,6 +633,58 @@ int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::GetSegmentID() const
 {
   return segmentid_;
+}
+
+/*------------------------------------------------------------------------*
+ | calculate volume of 2D/3D element                     kremheller 08/19 |
+ *------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::CalculateVol2D3D() const
+{
+  // use one-point Gauss rule
+  DRT::UTILS::IntPointsAndWeights<numdim_> intpoints_stab(
+      DRT::ELEMENTS::DisTypeToStabGaussRule<distypeCont>::rule);
+
+  const double* gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
+  const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
+
+  LINALG::Matrix<numdim_, 1> xsi(gpcoord, true);
+  static LINALG::Matrix<numnodescont_, 1> funct;
+  static LINALG::Matrix<numdim_, numnodescont_> deriv;
+  static LINALG::Matrix<numdim_, numdim_> xjm;
+  static LINALG::Matrix<numdim_, numdim_> xji;
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distypeCont>(xsi, funct);
+  DRT::UTILS::shape_function_deriv1<distypeCont>(xsi, deriv);
+
+  //
+
+  // get Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+  xjm.MultiplyNT(deriv, ele2pos_);
+  double det = xji.Invert(xjm);
+
+  if (det < 1E-16) dserror("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
+
+  // compute integration factor
+  return gpweight * det;
 }
 
 /*------------------------------------------------------------------------*

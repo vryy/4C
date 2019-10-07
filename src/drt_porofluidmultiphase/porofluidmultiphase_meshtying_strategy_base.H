@@ -118,6 +118,14 @@ namespace POROFLUIDMULTIPHASE
     //! apply the mesh movement
     virtual void ApplyMeshMovement() const = 0;
 
+    //! return blood vessel volume fraction
+    virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction()
+    {
+      dserror(
+          "BloodVesselVolumeFraction() not implemented in base class, wrong mesh tying object?");
+      return Teuchos::null;
+    }
+
    protected:
     //! porofluid multi time integrator
     POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint_;

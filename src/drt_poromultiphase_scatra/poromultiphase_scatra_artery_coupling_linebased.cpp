@@ -22,6 +22,7 @@
 #include "../linalg/linalg_multiply.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
+#include "../drt_mat/cnst_1d_art.H"
 
 
 /*----------------------------------------------------------------------*
@@ -136,6 +137,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
   // fill length of artery elements that is not influenced if the underlying
   // 2D/3D mesh moves (basically protruding artery elements or segments)
   FillUnaffectedArteryLength();
+
+  // calculate blood vessel volume fraction (only porofluid needs to do this)
+  if (contdis_->Name() == "porofluid" &&
+      (DRT::INPUT::IntegralValue<int>(couplingparams_, "OUTPUT_BLOODVESSELVOLFRAC")))
+    CalculateBloodVesselVolumeFraction();
 
   // print out summary of pairs
   OutputSummary();
@@ -480,6 +486,60 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   // the current length is simply the unaffected length
   else
     current_seg_lengths_artery_->Update(1.0, *unaffected_seg_lengths_artery_, 0.0);
+
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | calculate blood vessel volume fraction                kremheller 08/19 |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
+    CalculateBloodVesselVolumeFraction()
+{
+  bloodvesselvolfrac_ = Teuchos::rcp(new Epetra_Vector(*contdis_->ElementRowMap(), true));
+
+  double totalvolblood = 0.0;
+  // evaluate all pairs
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
+  {
+    const int artelegid = coupl_elepairs_[i]->Ele1GID();
+    const int contelegid = coupl_elepairs_[i]->Ele2GID();
+
+    DRT::Element* artele = arterydis_->gElement(artelegid);
+
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    // TODO: this will not work for higher order artery eles
+    const double etaA = coupl_elepairs_[i]->EtaA();
+    const double etaB = coupl_elepairs_[i]->EtaB();
+    const double length = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+
+    const double vol_cont = coupl_elepairs_[i]->CalculateVol2D3D();
+    const double vol_art =
+        (etaB - etaA) / 2.0 * length * arterymat->Diam() * arterymat->Diam() * M_PI / 4.0;
+
+    totalvolblood += vol_art;
+
+    const double volfrac = vol_art / vol_cont;
+
+    // note: this works since we 2D/3D continuous element of each pair is always owned by this proc.
+    int err = bloodvesselvolfrac_->SumIntoGlobalValues(1, &volfrac, &contelegid);
+    if (err) dserror("SumIntoGlobalValues failed!");
+  }
+
+  // user output
+  double vol_sumall = 0.0;
+  Comm().SumAll(&totalvolblood, &vol_sumall, 1);
+  if (myrank_ == 0)
+  {
+    std::cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    std::cout << "<    Calculating blood vessel volume fraction      >" << std::endl;
+    std::cout << "<    total volume blood:    " << std::setw(5) << vol_sumall
+              << "                 >" << std::endl;
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+  }
 
   return;
 }
@@ -1075,6 +1135,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | access to blood vessel volume fraction              kremheller 08/19 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BloodVesselVolumeFraction()
+{
+  return bloodvesselvolfrac_;
+}
+
 
 /*----------------------------------------------------------------------*
  | print out method                                    kremheller 06/18 |

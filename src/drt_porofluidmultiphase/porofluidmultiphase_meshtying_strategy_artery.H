@@ -92,6 +92,9 @@ namespace POROFLUIDMULTIPHASE
     //! apply the mesh movement
     void ApplyMeshMovement() const;
 
+    //! return blood vessel volume fraction
+    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction();
+
    protected:
     //! artery time integration
     Teuchos::RCP<ADAPTER::ArtNet> artnettimint_;

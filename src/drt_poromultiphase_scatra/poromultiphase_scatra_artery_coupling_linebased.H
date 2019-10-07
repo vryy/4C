@@ -94,6 +94,9 @@ namespace POROMULTIPHASESCATRA
     /// apply mesh movement (on artery elements)
     void ApplyMeshMovement();
 
+    /// access to blood vessel volume fraction
+    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction();
+
    private:
     //! create interaction pairs
     void CreateCouplingPairs();
@@ -103,6 +106,9 @@ namespace POROMULTIPHASESCATRA
 
     //! fill the length not changed through deformation
     void FillUnaffectedArteryLength();
+
+    //! calculate the volume fraction occupied by blood vessels
+    void CalculateBloodVesselVolumeFraction();
 
     //! create gid to seg
     void CreateGIDToSegmentVector();
@@ -233,6 +239,9 @@ namespace POROMULTIPHASESCATRA
 
     //! length of artery elements in current configuration
     Teuchos::RCP<Epetra_FEVector> current_seg_lengths_artery_;
+
+    //! volume fraction of blood vessels (for output)
+    Teuchos::RCP<Epetra_Vector> bloodvesselvolfrac_;
 
     //! gid to segment: stores [GID; [eta_a eta_b]_1, [eta_a eta_b]_2, ..., [eta_a eta_b]_n]
     //  of artery elements in column format, i.e. fully overlapping

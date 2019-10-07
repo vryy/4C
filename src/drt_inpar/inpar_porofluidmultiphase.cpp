@@ -209,4 +209,9 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   BoolParameter("EVALUATE_IN_REF_CONFIG", "yes",
       "Flag if artery elements are evaluated in reference or current configuration",
       &porofluidmultiphasemshtdyn);
+
+  // Flag if blood vessel volume fraction should be output
+  BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
+      "Flag if output of blood vessel volume fraction should be calculated",
+      &porofluidmultiphasemshtdyn);
 }

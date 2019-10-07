@@ -476,6 +476,9 @@ namespace POROFLUIDMULTIPHASE
     //! flag if porosity should be output
     bool output_porosity_;
 
+    //! flag if blood vessel volume fraction should be output (for 1D-3D coupling)
+    bool output_bloodvesselvolfrac_;
+
     //! flag for biot stabilization
     bool stab_biot_;
 
