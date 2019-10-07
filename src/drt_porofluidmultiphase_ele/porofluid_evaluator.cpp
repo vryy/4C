@@ -37,6 +37,9 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
   bool inittimederiv = false;
   if (action == POROFLUIDMULTIPHASE::calc_initial_time_deriv) inittimederiv = true;
 
+  // check if fluidphases present
+  const bool hasfluidphases = (numfluidphases > 0);
+
   // check if we also have to evaluate additional volume fraction terms
   const bool hasvolfracs = (numdofpernode - numfluidphases > 0);
 
@@ -53,182 +56,187 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
       Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
           Teuchos::rcp(new MultiEvaluator<nsd, nen>());
 
-      // build evaluators for all but last fluid phase
-      for (int curphase = 0; curphase < numfluidphases - 1; curphase++)
+      if (hasfluidphases)
       {
-        // initialize the evaluator for the current phase
-        Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_phase =
-            Teuchos::rcp(new MultiEvaluator<nsd, nen>());
-
-        // temporary interfaces
-        Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-        Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
-
-        // Note: this term cancels because of the formulation w.r.t. the material formulation of the
-        // solid add evaluator for the conservative term (w, v \nabla \cdot S )
-        // assembler = Teuchos::rcp(new AssembleStandard(curphase,inittimederiv));
-        // tmpevaluator = Teuchos::rcp(new EvaluatorConv<nsd, nen>(assembler,curphase));
-        // evaluator_phase->AddEvaluator(tmpevaluator);
-
-        // add evaluator for the convective conservative term (w, S \nabla \cdot v )
-        if (para.IsAle())
+        // build evaluators for all but last fluid phase
+        for (int curphase = 0; curphase < numfluidphases - 1; curphase++)
         {
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorSatDivVel<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-        }
-        // add evaluator for Biot stabilization
-        if (para.BiotStab())
-        {
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-        }
+          // initialize the evaluator for the current phase
+          Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_phase =
+              Teuchos::rcp(new MultiEvaluator<nsd, nen>());
 
-        // add evaluator for the diffusive term (\nabla w, K \nabla p)
-        // the diffusive term is also assembled into the last phase
-        assembler = Teuchos::rcp(
-            new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
-        tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
-        evaluator_phase->AddEvaluator(tmpevaluator);
+          // temporary interfaces
+          Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
+          Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
 
-        // add evaluator for the reactive term
-        if (phasemanager.IsReactive(curphase))
-        {
-          // the reactive term is also assembled into the last phase
-          assembler = Teuchos::rcp(
-              new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-        }
+          // Note: this term cancels because of the formulation w.r.t. the material formulation of
+          // the solid add evaluator for the conservative term (w, v \nabla \cdot S ) assembler =
+          // Teuchos::rcp(new AssembleStandard(curphase,inittimederiv)); tmpevaluator =
+          // Teuchos::rcp(new EvaluatorConv<nsd, nen>(assembler,curphase));
+          // evaluator_phase->AddEvaluator(tmpevaluator);
 
-        // add evaluators for the instationary terms
-        if (not para.IsStationary())
-        {
-          // add evaluator for the instationary pressure term
-          // the term is also assembled into the last phase
-          assembler = Teuchos::rcp(
-              new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-
-          // add evaluator for the instationary solid pressure term
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator =
-              Teuchos::rcp(new EvaluatorMassSolidPressureSat<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-
-          // add evaluator for the instationary saturation term
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorMassSaturation<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
-        }
-
-        // add evaluators for the additional terms in fluid equations introduced by volume fractions
-        if (hasvolfracs)
-        {
-          // add evaluators for the instationary terms
-          if (not para.IsStationary())
-          {
-            // add evaluator for the instationary solid pressure term
-            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-            tmpevaluator =
-                Teuchos::rcp(new EvaluatorVolFracAddInstatTermsSat<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
-          }
-
+          // add evaluator for the convective conservative term (w, S \nabla \cdot v )
           if (para.IsAle())
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-            tmpevaluator =
-                Teuchos::rcp(new EvaluatorVolFracAddDivVelTermSat<nsd, nen>(assembler, curphase));
+            tmpevaluator = Teuchos::rcp(new EvaluatorSatDivVel<nsd, nen>(assembler, curphase));
             evaluator_phase->AddEvaluator(tmpevaluator);
           }
-        }
+          // add evaluator for Biot stabilization
+          if (para.BiotStab())
+          {
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
+            evaluator_phase->AddEvaluator(tmpevaluator);
+          }
 
-        // add the evaluator of the phase to the multiphase evaluator
-        evaluator_multiphase->AddEvaluator(evaluator_phase);
-      }
+          // add evaluator for the diffusive term (\nabla w, K \nabla p)
+          // the diffusive term is also assembled into the last phase
+          assembler = Teuchos::rcp(
+              new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
+          tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
+          evaluator_phase->AddEvaluator(tmpevaluator);
 
-      // build evaluators for the last fluid phase
-      {
-        const int curphase = numfluidphases - 1;
+          // add evaluator for the reactive term
+          if (phasemanager.IsReactive(curphase))
+          {
+            // the reactive term is also assembled into the last phase
+            assembler = Teuchos::rcp(
+                new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
+            evaluator_phase->AddEvaluator(tmpevaluator);
+          }
 
-        // initialize the evaluator for the last phase
-        Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_lastphase =
-            Teuchos::rcp(new MultiEvaluator<nsd, nen>());
-
-        // temporary interfaces
-        Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-        Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
-
-        // add evaluator for the convective conservative term (w, \nabla \cdot v )
-        if (para.IsAle())
-        {
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, false));
-          tmpevaluator = Teuchos::rcp(new EvaluatorDivVel<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
-        }
-        // add evaluator for Biot stabilization
-        if (para.BiotStab())
-        {
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
-        }
-
-        // add evaluator for the diffusive term (\nabla w, K \nabla p)
-        assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-        tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
-        evaluator_lastphase->AddEvaluator(tmpevaluator);
-
-        // add evaluator for the reactive term
-        if (phasemanager.IsReactive(curphase))
-        {
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
-        }
-
-        // add evaluators for the instationary terms
-        if (not para.IsStationary())
-        {
-          // add evaluator for the instationary pressure term
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
-
-          // add evaluator for the instationary solid pressure term
-          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-          tmpevaluator =
-              Teuchos::rcp(new EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
-        }
-
-        // add evaluators for the additional terms in fluid equations introduced by volume fractions
-        if (hasvolfracs)
-        {
           // add evaluators for the instationary terms
           if (not para.IsStationary())
           {
+            // add evaluator for the instationary pressure term
+            // the term is also assembled into the last phase
+            assembler = Teuchos::rcp(
+                new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
+            evaluator_phase->AddEvaluator(tmpevaluator);
+
             // add evaluator for the instationary solid pressure term
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator =
-                Teuchos::rcp(new EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+                Teuchos::rcp(new EvaluatorMassSolidPressureSat<nsd, nen>(assembler, curphase));
+            evaluator_phase->AddEvaluator(tmpevaluator);
+
+            // add evaluator for the instationary saturation term
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorMassSaturation<nsd, nen>(assembler, curphase));
+            evaluator_phase->AddEvaluator(tmpevaluator);
           }
 
-          if (para.IsAle())
+          // add evaluators for the additional terms in fluid equations introduced by volume
+          // fractions
+          if (hasvolfracs)
           {
-            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
-            tmpevaluator =
-                Teuchos::rcp(new EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            // add evaluators for the instationary terms
+            if (not para.IsStationary())
+            {
+              // add evaluator for the instationary solid pressure term
+              assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+              tmpevaluator = Teuchos::rcp(
+                  new EvaluatorVolFracAddInstatTermsSat<nsd, nen>(assembler, curphase));
+              evaluator_phase->AddEvaluator(tmpevaluator);
+            }
+
+            if (para.IsAle())
+            {
+              assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+              tmpevaluator =
+                  Teuchos::rcp(new EvaluatorVolFracAddDivVelTermSat<nsd, nen>(assembler, curphase));
+              evaluator_phase->AddEvaluator(tmpevaluator);
+            }
           }
+
+          // add the evaluator of the phase to the multiphase evaluator
+          evaluator_multiphase->AddEvaluator(evaluator_phase);
         }
 
-        // add the evaluator of the phase to the multiphase evaluator
-        evaluator_multiphase->AddEvaluator(evaluator_lastphase);
+        // build evaluators for the last fluid phase
+        {
+          const int curphase = numfluidphases - 1;
+
+          // initialize the evaluator for the last phase
+          Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_lastphase =
+              Teuchos::rcp(new MultiEvaluator<nsd, nen>());
+
+          // temporary interfaces
+          Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
+          Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+
+          // add evaluator for the convective conservative term (w, \nabla \cdot v )
+          if (para.IsAle())
+          {
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, false));
+            tmpevaluator = Teuchos::rcp(new EvaluatorDivVel<nsd, nen>(assembler, curphase));
+            evaluator_lastphase->AddEvaluator(tmpevaluator);
+          }
+          // add evaluator for Biot stabilization
+          if (para.BiotStab())
+          {
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
+            evaluator_lastphase->AddEvaluator(tmpevaluator);
+          }
+
+          // add evaluator for the diffusive term (\nabla w, K \nabla p)
+          assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+          tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
+          evaluator_lastphase->AddEvaluator(tmpevaluator);
+
+          // add evaluator for the reactive term
+          if (phasemanager.IsReactive(curphase))
+          {
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
+            evaluator_lastphase->AddEvaluator(tmpevaluator);
+          }
+
+          // add evaluators for the instationary terms
+          if (not para.IsStationary())
+          {
+            // add evaluator for the instationary pressure term
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
+            evaluator_lastphase->AddEvaluator(tmpevaluator);
+
+            // add evaluator for the instationary solid pressure term
+            assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+            tmpevaluator =
+                Teuchos::rcp(new EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase));
+            evaluator_lastphase->AddEvaluator(tmpevaluator);
+          }
+
+          // add evaluators for the additional terms in fluid equations introduced by volume
+          // fractions
+          if (hasvolfracs)
+          {
+            // add evaluators for the instationary terms
+            if (not para.IsStationary())
+            {
+              // add evaluator for the instationary solid pressure term
+              assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+              tmpevaluator =
+                  Teuchos::rcp(new EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase));
+              evaluator_lastphase->AddEvaluator(tmpevaluator);
+            }
+
+            if (para.IsAle())
+            {
+              assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
+              tmpevaluator =
+                  Teuchos::rcp(new EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase));
+              evaluator_lastphase->AddEvaluator(tmpevaluator);
+            }
+          }
+
+          // add the evaluator of the phase to the multiphase evaluator
+          evaluator_multiphase->AddEvaluator(evaluator_lastphase);
+        }
       }
 
       // evaluate the additional volume fraction terms in the volume fraction equations

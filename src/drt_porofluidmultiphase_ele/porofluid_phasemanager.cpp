@@ -67,7 +67,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     {
       // we have volume fractions --> we need PhaseManagerDerivAndPorosity because solid pressure is
       // calculated differently
-      if (corephasemanager->TotalNumDof() > corephasemanager->NumFluidPhases())
+      if (corephasemanager->TotalNumDof() > corephasemanager->NumFluidPhases() &&
+          corephasemanager->NumFluidPhases() > 0)
       {
         // porosity (includes derivatves) needed
         phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
@@ -83,7 +84,10 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     {
       // derivatives needed
-      phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+      if (corephasemanager->NumFluidPhases() > 0)
+        phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+      else
+        phasemanager = corephasemanager;
       // enhance by diffusion tensor
       switch (nsd)
       {
@@ -377,7 +381,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   multiphasemat.TransformGenPresToTruePres(genpressure_, pressure_);
 
   // explicit evaluation of saturation
-  multiphasemat.EvaluateSaturation(saturation_, fluid_phinp, pressure_);
+  if (numfluidphases_ > 0) multiphasemat.EvaluateSaturation(saturation_, fluid_phinp, pressure_);
 
   // solid pressure = sum (S_i*p_i)
   solidpressure_ =
@@ -639,13 +643,16 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // evaluate wrapped phase manager
   phasemanager_->EvaluateGPState(J, varmanager, matnum);
 
+  // get number of phases
+  const int numfluidphases = phasemanager_->NumFluidPhases();
+  // if we do not have any fluid phases we do not need any derivatives
+  if (numfluidphases == 0) return;
+
   // get material
   dsassert(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
-  // get number of phases
-  const int numfluidphases = phasemanager_->NumFluidPhases();
   // get pressure
   const std::vector<double>& pressure = phasemanager_->Pressure();
   // get saturation

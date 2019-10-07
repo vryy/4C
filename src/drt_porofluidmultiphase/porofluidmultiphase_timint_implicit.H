@@ -252,13 +252,26 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> Hist() const { return hist_; }
 
     //! return solid pressure field
-    Teuchos::RCP<const Epetra_Vector> SolidPressure() const { return solidpressure_; }
+    Teuchos::RCP<const Epetra_Vector> SolidPressure() const
+    {
+      if (!output_solidpress_)
+        dserror("solid pressure requested but flag OUTPUT_SOLIDPRESS set to no");
+      return solidpressure_;
+    }
 
     //! return pressure field
-    Teuchos::RCP<const Epetra_Vector> Pressure() const { return pressure_; }
+    Teuchos::RCP<const Epetra_Vector> Pressure() const
+    {
+      if (!output_satpress_) dserror("pressure requested but flag OUTPUT_SATANDPRESS set to no");
+      return pressure_;
+    }
 
     //! return saturation field
-    Teuchos::RCP<const Epetra_Vector> Saturation() const { return saturation_; }
+    Teuchos::RCP<const Epetra_Vector> Saturation() const
+    {
+      if (!output_satpress_) dserror("saturation requested but flag OUTPUT_SATANDPRESS set to no");
+      return saturation_;
+    }
 
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const { return flux_; }
@@ -453,6 +466,12 @@ namespace POROFLUIDMULTIPHASE
 
     //! flag if initial time derivative should be skipped
     bool skipinitder_;
+
+    //! flag if saturations and pressures should be output
+    bool output_satpress_;
+
+    //! flag if solid pressure should be output
+    bool output_solidpress_;
 
     //! flag if porosity should be output
     bool output_porosity_;

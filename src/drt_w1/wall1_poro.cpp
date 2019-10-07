@@ -299,11 +299,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials_presbased()
     if (NumMaterial() > 1)
     {
       fluidmultimat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
-      if (fluidmultimat_ == Teuchos::null) return;
-      // dserror("cast to fluid poro material failed");
+      if (fluidmultimat_ == Teuchos::null) dserror("cast to multiphase fluid poro material failed");
       if (fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
           fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
         dserror("invalid fluid material for poro-multiphase-elasticity");
+      if (fluidmultimat_->NumFluidPhases() == 0)
+        dserror(
+            "NUMFLUIDPHASES = 0 currently not supported since this requires an adaption of the "
+            "definition of the solid pressure");
     }
     else
       dserror("no second material defined for element %i", Id());

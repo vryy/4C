@@ -79,6 +79,10 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
   BoolParameter("SKIPINITDER", "yes", "Flag to skip computation of initial time derivative",
       &porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_SATANDPRESS", "yes",
+      "Flag if output of saturations and pressures should be calculated", &porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_SOLIDPRESS", "yes", "Flag if output of solid pressure should be calculated",
+      &porofluidmultiphasedyn);
   BoolParameter("OUTPUT_POROSITY", "yes", "Flag if output of porosity should be calculated",
       &porofluidmultiphasedyn);
 

@@ -48,17 +48,20 @@ INITIALFIELD                    field_by_condition
 INITFUNCNO                      1
 FLUX_PROJ_METHOD                none
 FLUX_PROJ_SOLVER                2
+OUTPUT_POROSITY                 no
+OUTPUT_SOLIDPRESS               no
+OUTPUT_SATANDPRESS              no
 -----------------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING
 ARTERY_COUPLING_METHOD          GPTS
 EVALUATE_IN_REF_CONFIG          yes
 SCALEREAC_ART                   0
 REACFUNCT_ART                   0
-SCALEREAC_CONT                  0 0 0
-REACFUNCT_CONT                  0 0 0
+SCALEREAC_CONT                  0 0
+REACFUNCT_CONT                  0 0
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
-SOLVE_STRUCTURE                 yes
+SOLVE_STRUCTURE                 no
 ----------------------------------POROMULTIPHASE DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -101,51 +104,36 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Stationary
 SOLVESCATRA                     yes
 INITIALFIELD                    field_by_condition
-INITFUNCNO                      2
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 50 END
-
-MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 1 -1 COUPLING scalar_by_function FUNCTID 7
-
-MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 RELPERMEABILITYLAWID 105
-MAT 101 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 102
-MAT 102 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF -1 1 0 END RELTENSION 0.02 EXP 1.0 SATURATION_0 0.1
-MAT 103 MAT_PoroDensityLawExp BULKMODULUS 100.0
-MAT 104 MAT_FluidPoroViscosityLawConstant VALUE 0.01
-MAT 105 MAT_FluidPoroRelPermeabilityLawConstant VALUE  1.0
-
-MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 104 DENSITYLAWID 113 DENSITY 1.0 RELPERMEABILITYLAWID 105
-MAT 111 MAT_FluidPoroSinglePhaseDofDiffPressure PHASELAWID 112 NUMDOF 3 PRESCOEFF 0 1 -1 END
-MAT 112 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF 0 -1  1 END RELTENSION 0.005 EXP 1.0 SATURATION_0 0.2
-MAT 113 MAT_PoroDensityLawExp BULKMODULUS 100.0
-
-MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 104 DENSITYLAWID 123 DENSITY 10.0 RELPERMEABILITYLAWID 105
-MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 122
-MAT 122 MAT_PhaseLawConstraint
-MAT 123 MAT_PoroDensityLawExp BULKMODULUS 100.0
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 2 MATIDS 14 15 NUMFLUIDPHASES 0 NUMREAC 1 REACIDS 50 END
+MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 2 NUMVOLFRAC 1 SCALE 1 -1 COUPLING scalar_by_function FUNCTID 7
 
 MAT 2 MAT_StructPoro MATID 20 POROLAWID 200 INITPOROSITY 0.7
 MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.35 DENS 0.1
 MAT 200 MAT_PoroLawConstant
+
+MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 10.0 DIFFUSIVITY 1.0 AddScalarDependentFlux NO
+
+MAT 15 MAT_FluidPoroVolFracPressure PERMEABILITY 1.0e-3 VISCOSITYLAWID 151
+MAT 151 MAT_FluidPoroViscosityLawConstant VALUE 1.0
 
 MAT 3 MAT_CNST_ART VISCOSITY 1.0 DENS 1.0 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
 
 MAT 6 MAT_scatra DIFFUSIVITY 2.0 REACOEFF 0 SCNUM 0 DENSIFICATION 0
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 301 NUMREAC 1 REACIDS 401 END
-MAT 301 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 0.7
+MAT 301 MAT_scatra_multiporo_volfrac PHASEID 0 DIFFUSIVITY 0.7
 MAT 401 MAT_scatra_reaction NUMSCAL 1 STOICH -1 REACCOEFF 1.0 COUPLING by_function ROLE 4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 5
 SRC_FIELD artery SRC_MAT 3 TAR_FIELD artery_scatra TAR_MAT 6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1
+COMPONENT 0 FUNCTION 0.56
 COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 0.1*x+1.0
 COMPONENT 1 FUNCTION 0.2*x+1.0
@@ -165,9 +153,9 @@ FUNCTION t
 ----------------------------------------------------------------------FUNCT9
 FUNCTION x*y*t
 ----------------------------------------------------------------------FUNCT10
-VARFUNCTION pi*D*0.1*(p_art-p3)
+VARFUNCTION pi*D*0.1*(p_art-VFP1)
 ----------------------------------------------------------------------FUNCT11
-VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-p3)*(phi_art1-phi1)
+VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-VFP1)*(phi_art1-phi1)
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 FUNCTION 2.7e-4
 ------------------------------------------------DESIGN DESCRIPTION
@@ -182,6 +170,12 @@ SCATRA DIS artery_scatra NODE 237 QUANTITY phi1 VALUE  2.62951659340471147e-04 T
 SCATRA DIS artery_scatra NODE 100 QUANTITY phi1 VALUE  2.62731981842613007e-04 TOLERANCE 1e-12
 SCATRA DIS artery_scatra NODE 120 QUANTITY phi1 VALUE  2.62536549761099283e-04 TOLERANCE 1e-12
 SCATRA DIS artery_scatra NODE 240 QUANTITY phi1 VALUE  2.62776666551086237e-04 TOLERANCE 1e-12
+ARTNET DIS artery NODE 233 QUANTITY pressure VALUE  8.22009637867146647e-01 TOLERANCE 1e-12
+ARTNET DIS artery NODE 235 QUANTITY pressure VALUE  8.20396020712017782e-01 TOLERANCE 1e-12
+ARTNET DIS artery NODE 237 QUANTITY pressure VALUE  8.18594719531932635e-01 TOLERANCE 1e-12
+ARTNET DIS artery NODE 100 QUANTITY pressure VALUE  4.31742310632776294e-01 TOLERANCE 1e-12
+ARTNET DIS artery NODE 120 QUANTITY pressure VALUE  8.19754407530573159e-01 TOLERANCE 1e-12
+ARTNET DIS artery NODE 240 QUANTITY pressure VALUE  8.02997513428496235e-01 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 500 QUANTITY phi1 VALUE  4.64154093378350803e-05 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 600 QUANTITY phi1 VALUE  8.83266824613990464e-05 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 700 QUANTITY phi1 VALUE  4.71788061185351182e-05 TOLERANCE 1e-12
@@ -232,7 +226,7 @@ E 5 - NUMDOF 1 ONOFF 1 VAL 2.7e-4 FUNCT 0
 ---------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL   1
 // designvol
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.56 0.0 FUNCT 0 0
 --------DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS
 DLINE  1
 // 1D_curve
