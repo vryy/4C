@@ -107,6 +107,12 @@ namespace POROMULTIPHASESCATRA
     //! create gid to seg
     void CreateGIDToSegmentVector();
 
+    //! fill the gid to segment vector
+    void FillGIDToSegmentVector(
+        const std::vector<Teuchos::RCP<
+            POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+        std::map<int, std::vector<double>>& gid_to_seglength);
+
     //! evaluate the pairs
     void EvaluateCouplingPairs(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,

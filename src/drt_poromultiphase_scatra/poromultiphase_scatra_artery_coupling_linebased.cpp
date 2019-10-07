@@ -273,6 +273,95 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
       active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
 
+  // the following case takes care of the special occurence where the 1D element lies exactly in
+  // between two 2D/3D-elements which are owned by different processors
+
+  // fill the GID-to-segment vector
+  std::map<int, std::vector<double>> gid_to_seglength;
+  FillGIDToSegmentVector(active_coupl_elepairs, gid_to_seglength);
+
+  // dummy map to collect duplicates in form [ele2gid, eta_a, eta_b, ... ];
+  std::map<int, std::vector<double>> duplicates;
+
+  // loop over all artery elements
+  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
+  {
+    const int artelegid = arterydis_->ElementColMap()->GID(i);
+    if (gid_to_seglength[artelegid].size() > 0)  // check if element projects
+    {
+      // compare all segment with each other if it might be identical
+      for (int iseg = 0; iseg < (int)(gid_to_seglength[artelegid].size() / 2); iseg++)
+      {
+        const double eta_a = gid_to_seglength[artelegid][2 * iseg];
+        const double eta_b = gid_to_seglength[artelegid][2 * iseg + 1];
+        for (int jseg = iseg + 1; jseg < (int)(gid_to_seglength[artelegid].size() / 2); jseg++)
+        {
+          const double eta_a_jseg = gid_to_seglength[artelegid][2 * jseg];
+          const double eta_b_jseg = gid_to_seglength[artelegid][2 * jseg + 1];
+          // identical segment found
+          if (fabs(eta_a - eta_a_jseg) < XIETATOL && fabs(eta_b - eta_b_jseg) < XIETATOL)
+          {
+            // we need this to get the ele2gid
+            int id = -1;
+            if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+            {
+              const int ele2gid = active_coupl_elepairs[id]->Ele2GID();
+              duplicates[artelegid].push_back((double)(ele2gid));
+              duplicates[artelegid].push_back(eta_a);
+              duplicates[artelegid].push_back(eta_b);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // communicate the dummy map to all procs.
+  std::vector<int> allproc(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), &allproc[0], Comm());
+
+  // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
+  // id)
+  std::map<int, std::vector<double>>::iterator it;
+  for (it = duplicates.begin(); it != duplicates.end(); it++)
+  {
+    const int artelegid = it->first;
+    std::vector<double> myduplicates = it->second;
+    // should always be a multiple of six because we should always find exactly two/four, etc.
+    // duplicates
+    if (myduplicates.size() % 6 != 0)
+      dserror("duplicate vector has size %i, should be multiple of six", myduplicates.size());
+    // compare the possible duplicates
+    for (int idupl = 0; idupl < (int)(myduplicates.size() / 3); idupl++)
+    {
+      const double eta_a = myduplicates[3 * idupl + 1];
+      const double eta_b = myduplicates[3 * idupl + 2];
+      for (int jdupl = idupl + 1; jdupl < (int)(myduplicates.size() / 3); jdupl++)
+      {
+        const double eta_a_jdupl = myduplicates[3 * jdupl + 1];
+        const double eta_b_jdupl = myduplicates[3 * jdupl + 2];
+        // duplicate found
+        if (fabs(eta_a - eta_a_jdupl) < XIETATOL && fabs(eta_b - eta_b_jdupl) < XIETATOL)
+        {
+          const int ele_i = (int)myduplicates[3 * idupl];
+          const int ele_j = (int)myduplicates[3 * jdupl];
+          const int ele_to_be_erased = std::max(ele_i, ele_j);
+          int id = -1;
+          // delete the duplicate with the larger ele2gid
+          if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+          {
+            if (active_coupl_elepairs[id]->Ele2GID() == ele_to_be_erased)
+            {
+              active_coupl_elepairs.erase(active_coupl_elepairs.begin() + id);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // overwrite the coupling pairs
   coupl_elepairs_ = active_coupl_elepairs;
 
   // output
@@ -401,32 +490,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSegmentVector()
 {
   // fill the GID-to-segment vector
-  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-  {
-    const int artelegid = coupl_elepairs_[i]->Ele1GID();
-    const int contelegid = coupl_elepairs_[i]->Ele2GID();
-
-    const DRT::Element* contele = contdis_->gElement(contelegid);
-
-    const double etaA = coupl_elepairs_[i]->EtaA();
-    const double etaB = coupl_elepairs_[i]->EtaB();
-
-    if (contele->Owner() == myrank_)
-    {
-      gid_to_segment_[artelegid].push_back(etaA);
-      gid_to_segment_[artelegid].push_back(etaB);
-    }
-    else
-      dserror(
-          "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
-          "element is not owned by this proc.");
-  }
-
-  // communicate it to all procs.
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  LINALG::Gather<double>(
-      gid_to_segment_, gid_to_segment_, (int)allproc.size(), &allproc[0], Comm());
+  FillGIDToSegmentVector(coupl_elepairs_, gid_to_segment_);
 
   // sort and take care of special cases
   for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
@@ -486,6 +550,45 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       }
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | fill the GID to segment vector                      kremheller 08/19 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegmentVector(
+    const std::vector<Teuchos::RCP<
+        POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+    std::map<int, std::vector<double>>& gid_to_seglength)
+{
+  // fill the GID-to-segment vector
+  for (unsigned i = 0; i < coupl_elepairs.size(); i++)
+  {
+    const int artelegid = coupl_elepairs[i]->Ele1GID();
+    const int contelegid = coupl_elepairs[i]->Ele2GID();
+
+    const DRT::Element* contele = contdis_->gElement(contelegid);
+
+    const double etaA = coupl_elepairs[i]->EtaA();
+    const double etaB = coupl_elepairs[i]->EtaB();
+
+    if (contele->Owner() == myrank_)
+    {
+      gid_to_seglength[artelegid].push_back(etaA);
+      gid_to_seglength[artelegid].push_back(etaB);
+    }
+    else
+      dserror(
+          "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
+          "element is not owned by this proc.");
+  }
+
+  // communicate it to all procs.
+  std::vector<int> allproc(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  LINALG::Gather<double>(
+      gid_to_seglength, gid_to_seglength, (int)allproc.size(), &allproc[0], Comm());
 
   return;
 }
