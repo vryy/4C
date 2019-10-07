@@ -60,6 +60,7 @@ MORTAR_SHAPE_FUNCTION                 line3
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
 GAUSS_POINTS                          6
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
@@ -68,8 +69,6 @@ MORTAR_LAMBDA_CONTINUOUS              yes
 MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
-----------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
-STRATEGY                              gauss_point_projection
 --------------------------------------------------------------RESULT DESCRIPTION
 // Displacements at a solid node.
 STRUCTURE DIS structure NODE 175 QUANTITY dispx VALUE -4.57437014913572082e-01 TOLERANCE 1e-10

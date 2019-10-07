@@ -62,6 +62,7 @@ REPARTITIONSTRATEGY             Everydt
 CONTACT_DISCRETIZATION          gauss_point_to_segment
 CONSTRAINT_STRATEGY             penalty
 PENALTY_PARAMETER               1.0e+10
+GEOMETRY_PAIR_STRATEGY          gauss_point_projection
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
@@ -70,8 +71,6 @@ SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
-----------------------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
-STRATEGY                        gauss_point_projection
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   2
 BOUNDINGBOX                     -2 -2 -2 2 2 2

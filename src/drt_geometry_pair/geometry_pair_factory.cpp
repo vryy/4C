@@ -26,16 +26,16 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
     const Teuchos::RCP<GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
 {
   // Get the strategy for line to volume interaction.
-  INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy =
+  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy =
       geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
   {
-    case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
       return Teuchos::rcp(
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>());
-    case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::segmentation:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
       return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>());
     default:
     {

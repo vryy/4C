@@ -54,8 +54,6 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     // Set up the evaluation data container for the geometry pairs.
     evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
     evaluation_data_->BuildLineToVolumeEvaluationData();
-    evaluation_data_->LineToVolumeEvaluationData()->SetGaussRule(
-        DRT::UTILS::GaussRule1D::intrule_line_6point);
   }
 
   /**

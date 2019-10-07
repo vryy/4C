@@ -45,7 +45,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     std::vector<DRT::Element const*> elements)
 {
   // Check that the correct geometry pair is given.
-  if (INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section !=
+  if (INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section !=
       geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy())
     dserror(
         "The class BeamToSolidVolumeMeshtyingPairGaussPointCylinder can only be used with the "
@@ -198,9 +198,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
         geometry_evaluation_data_ptr)
 {
   // Check that the cylinder strategy is given in the input file.
-  INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy =
+  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy =
       geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section)
+  if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     dserror(
         "The cross section projection only works with cross section projection in the geometry "
         "pairs.");

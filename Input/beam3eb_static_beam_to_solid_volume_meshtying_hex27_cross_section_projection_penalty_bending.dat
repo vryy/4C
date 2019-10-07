@@ -63,14 +63,13 @@ CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
 GAUSS_POINTS                          6
 INTEGRATION_POINTS_CIRCUMFENCE        10
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
 MORTAR_LAMBDA_DISCRET                 yes
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
-----------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
-STRATEGY                              gauss_point_projection_cross_section
 --------------------------------------------------------------RESULT DESCRIPTION
 // Displacements of the beam.
 STRUCTURE DIS structure NODE 226 QUANTITY dispx VALUE -1.83846627941513761e-02 TOLERANCE 1e-14

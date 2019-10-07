@@ -15,6 +15,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_beaminteraction.H"
+#include "inpar_geometry_pair.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -140,6 +141,9 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "parameter is only used in beam to cylinder meshtying. No gauss integration is "
         "used along the circumfencial direction, equally spaced integration points are used.",
         &beam_to_solid_volume_mestying);
+
+    // Add the geometry pair input parameters.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
   }
 
   // Beam to solid volume mesh tying output parameters.

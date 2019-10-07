@@ -52,19 +52,13 @@ namespace GEOMETRYPAIR
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */
-    inline INPAR::GEOMETRYPAIR::LineToVolumeStrategy GetStrategy() const { return strategy_; }
+    inline INPAR::GEOMETRYPAIR::LineTo3DStrategy GetStrategy() const { return strategy_; }
 
     /**
      * \brief Get the number of search points for segmentation search.
      * @return number of search points.
      */
     inline unsigned int GetNumberOfSearchPoints() const { return n_search_points_; }
-
-    /**
-     * \brief Set the Gauss rule to be used for Gauss point projection method.
-     * @param gauss_rule
-     */
-    void SetGaussRule(DRT::UTILS::GaussRule1D gauss_rule) { gauss_rule_ = gauss_rule; };
 
     /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.
@@ -86,16 +80,6 @@ namespace GEOMETRYPAIR
      * @return Gauss rule
      */
     inline int GetNumberOfGaussPoints() const { return GetGaussPoints().nquad; };
-
-    /**
-     * \brief Sets the number of integration points along the circumfence of the line cross
-     * section.
-     */
-    inline void SetNumberOfIntegrationPointsCircumfence(
-        const unsigned int integration_points_circumfence)
-    {
-      integration_points_circumfence_ = integration_points_circumfence;
-    }
 
     /**
      * \brief Returns the number of integration points along the circumfence of the line cross
@@ -127,7 +111,7 @@ namespace GEOMETRYPAIR
 
    private:
     //! Strategy to be used for contact search.
-    INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy_;
+    INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy_;
 
     //! Gauss rule for Gauss point projection method.
     DRT::UTILS::GaussRule1D gauss_rule_;
