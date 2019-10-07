@@ -219,6 +219,9 @@ namespace POROMULTIPHASESCATRA
     //! penalty parameter
     double pp_;
 
+    //! maximum number of segments per artery element
+    int maxnumsegperartele_;
+
     //! length of artery elements unaffected by deformation
     Teuchos::RCP<Epetra_FEVector> unaffected_seg_lengths_artery_;
 

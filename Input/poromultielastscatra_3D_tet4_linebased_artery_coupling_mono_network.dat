@@ -58,6 +58,7 @@ SCALEREAC_ART                   0
 REACFUNCT_ART                   0
 SCALEREAC_CONT                  0 0
 REACFUNCT_CONT                  0 0
+MAXNUMSEGPERARTELE              7
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_monolithic

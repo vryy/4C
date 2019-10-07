@@ -43,6 +43,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
       pp_(couplingparams_.get<double>("PENALTY")),
+      maxnumsegperartele_(DRT::Problem::Instance()
+                              ->PoroFluidMultiPhaseDynamicParams()
+                              .sublist("ARTERY COUPLING")
+                              .get<int>("MAXNUMSEGPERARTELE")),
       timersearch_(Comm())
 {
   // user info
@@ -435,14 +439,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       const int end = gid_to_segment_[artelegid].size();
       const double valueAtEnd = gid_to_segment_[artelegid][end - 1];
       // end of element lies outside domain
-      if (fabs(valueAtEnd - 1.0) > ETAABTOL)
+      if (fabs(valueAtEnd - 1.0) > XIETATOL)
       {
         gid_to_segment_[artelegid].push_back(valueAtEnd);
         gid_to_segment_[artelegid].push_back(1.0);
       }
       const double valueAtBegin = gid_to_segment_[artelegid][0];
       // beginning of element lies outside domain
-      if (fabs(valueAtBegin + 1.0) > ETAABTOL)
+      if (fabs(valueAtBegin + 1.0) > XIETATOL)
       {
         gid_to_segment_[artelegid].insert(gid_to_segment_[artelegid].begin(), valueAtBegin);
         gid_to_segment_[artelegid].insert(gid_to_segment_[artelegid].begin(), -1.0);
@@ -459,18 +463,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
   // safety checks
   for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
   {
-    // 1) check if artery element has more than MAXNUMSEGPERELE segments
+    // 1) check if artery element has more than MAXNUMSEGPERARTELE segments
     const int artelegid = arterydis_->ElementColMap()->GID(i);
-    if (gid_to_segment_[artelegid].size() > 2 * MAXNUMSEGPERELE)
+    if ((int)gid_to_segment_[artelegid].size() > 2 * maxnumsegperartele_)
       dserror(
           "Artery element %i has %i segments, which is more than the maximum allowed number of %i "
-          "segments per artery element, increase MAXNUMSEGPERELE",
-          artelegid, (int)(gid_to_segment_[artelegid].size() / 2), MAXNUMSEGPERELE);
+          "segments per artery element, increase MAXNUMSEGPERARTELE",
+          artelegid, (int)(gid_to_segment_[artelegid].size() / 2), maxnumsegperartele_);
     // 2) check if segment has been overlooked
     for (int iseg = 0; iseg < (int)(gid_to_segment_[artelegid].size() / 2) - 1; iseg++)
     {
       if (fabs(gid_to_segment_[artelegid][2 * iseg + 1] -
-               gid_to_segment_[artelegid][2 * iseg + 2]) > SMALLESTSEGMENT)
+               gid_to_segment_[artelegid][2 * iseg + 2]) > XIETATOL)
       {
         std::cout << "Problem with segments of artery-element " << artelegid << ":" << std::endl;
         for (int jseg = 0; jseg < (int)(gid_to_segment_[artelegid].size() / 2); jseg++)
@@ -478,10 +482,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
           std::cout << "[" << gid_to_segment_[artelegid][2 * jseg] << ", "
                     << gid_to_segment_[artelegid][2 * jseg + 1] << "]" << std::endl;
         }
-        dserror(
-            "artery element %i has probably not found all possible segments, increase "
-            "NUMPROJCHECKS",
-            artelegid);
+        dserror("artery element %i has probably not found all possible segments", artelegid);
       }
     }
   }
@@ -763,7 +764,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLength
 
   Teuchos::RCP<const Epetra_Vector> curr_seg_lengths = arterydis_->GetState(1, "curr_seg_lengths");
 
-  std::vector<double> seglengths(MAXNUMSEGPERELE);
+  std::vector<double> seglengths(maxnumsegperartele_);
   DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
 
   return seglengths;
@@ -801,8 +802,8 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSeg
     // first check if ele1-Gid is identical
     if (ele1gid == coupl_elepairs[i]->Ele1GID())
       // check if integration segment is the same
-      if (fabs(etaA - coupl_elepairs[i]->EtaA()) < ETAABTOL &&
-          fabs(etaB - coupl_elepairs[i]->EtaB()) < ETAABTOL)
+      if (fabs(etaA - coupl_elepairs[i]->EtaA()) < XIETATOL &&
+          fabs(etaB - coupl_elepairs[i]->EtaB()) < XIETATOL)
       {
         if (PROJOUTPUT) std::cout << "found duplicate integration segment" << std::endl;
         elepairID = i;

@@ -197,8 +197,16 @@ namespace POROMULTIPHASESCATRA
         std::vector<double>& myEta, std::vector<std::vector<double>>& myXi, double& etaA,
         double& etaB);
 
-    //! create segment [eta_a, eta_b]
-    void CreateIntegrationSegment(const std::vector<bool>& validprojections);
+    /**
+     * create segment [eta_a, eta_b]
+     *
+     * \note: the following algorithm works only for linear 1D elements and linear 2D/3D elements
+     *        where always 0,1 or 2 intersections can be found. For higher order elements with
+     *        special cases, it has to be re-thought. For instance, if we find two intersections, it
+     *        is always assumed that the integration segment lies between these two intersections
+     *        --> for a higher order 1D element this may not be the case
+     */
+    void CreateIntegrationSegment();
 
     //! get all intersections of artery element with 2D/3D element
     std::vector<double> GetAllInterSections();

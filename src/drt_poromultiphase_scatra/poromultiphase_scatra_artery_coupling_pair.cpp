@@ -377,32 +377,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 {
   if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
 
-  // number of checks
-  // we check at NUMPROJCHECKS (default = 11) positions from [-0.99, ..., 0, ..., 0.99]
-  // if these points on the artery element can be projected
-  std::vector<double> check_proj(NUMPROJCHECKS);
-  check_proj[0] = -0.999;
-  const double dist = 1.998 / ((double)(NUMPROJCHECKS)-1.0);
-  for (int i = 1; i < NUMPROJCHECKS; i++) check_proj[i] = -0.999 + (double)(i)*dist;
-  std::vector<bool> validprojections(NUMPROJCHECKS, false);
+  // Try to create integration segment [eta_a, eta_b]
+  CreateIntegrationSegment();
 
-  std::vector<double> xi(numdim_);
-
-  for (int i = 0; i < NUMPROJCHECKS; i++)
-  {
-    bool projection_valid = false;
-    if (PROJOUTPUT)
-      std::cout << "projection for " << check_proj[i]
-                << " ========================================" << std::endl;
-    Projection<double>(check_proj[i], xi, projection_valid);
-    if (projection_valid)
-    {
-      isactive_ = true;
-      validprojections[i] = true;
-    }
-  }
-
-  // no projection found
+  // no viable segment found
   if (!isactive_)
   {
     return;
@@ -431,14 +409,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   invJ_.resize(n_gp_);
   xi_.resize(n_gp_);
   for (int i_gp = 0; i_gp < n_gp_; i_gp++) xi_[i_gp].resize(numdim_);
-
-  // integration segment [eta_a, eta_b] is created
-  CreateIntegrationSegment(validprojections);
-  // no projection found
-  if (!isactive_)
-  {
-    return;
-  }
 
   // get jacobian determinant
   const double determinant = (eta_b_ - eta_a_) / 2.0;
@@ -2049,91 +2019,159 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::CreateIntegrationSegment(const std::vector<bool>& validprojections)
+    distypeCont>::CreateIntegrationSegment()
 {
   if (PROJOUTPUT)
-    std::cout << "\nStarting with creation of integration segments "
-                 "===========================================\n"
-              << std::endl;
-  bool allprojectionsvalid = true;
-  const int numproj = validprojections.size();
-  for (int i = 0; i < numproj; i++)
   {
-    if (!validprojections[i])
-    {
-      allprojectionsvalid = false;
-      break;
-    }
+    std::cout << "========================= getting intersection for artery ele " << Ele1GID()
+              << std::endl;
   }
 
-  // all points could be projected, the 1D element lies completely inside
-  if (allprojectionsvalid)
-  {
-    eta_a_ = -1.0;
-    eta_b_ = 1.0;
-    if (PROJOUTPUT) std::cout << "all could be projected" << std::endl;
-  }
-  else
-  {
-    // the first few could be projected, segment will look like [-1.0, etaB]
-    if (validprojections[0] && !validprojections[numproj - 1])
-    {
-      if (PROJOUTPUT) std::cout << "first few could be projected" << std::endl;
-      eta_a_ = -1.0;
-      std::vector<double> intersections = GetAllInterSections();
-      if (intersections.size() < 1) dserror("found not enough intersections");
-      eta_b_ = *std::max_element(intersections.begin(), intersections.end());
-    }
-    // last few could be projected, segment will look like [etaA, 1.0]
-    else if (validprojections[numproj - 1] && !validprojections[0])
-    {
-      if (PROJOUTPUT) std::cout << "last few could be projected" << std::endl;
-      eta_b_ = 1.0;
-      std::vector<double> intersections = GetAllInterSections();
-      if (intersections.size() < 1) dserror("found not enough intersections");
-      eta_a_ = *std::min_element(intersections.begin(), intersections.end());
-    }
-    // middle few could be projected, segment will look like [etaA, etaB]
-    else if (!validprojections[0] && !validprojections[numproj - 1])
-    {
-      if (PROJOUTPUT) std::cout << "middle few could be projected" << std::endl;
-      std::vector<double> intersections = GetAllInterSections();
-      if (intersections.size() != 2)
-      {
-        // this could happen if element lies exactly diagonal in-between the elements of the 2D/3D
-        // domain and somehow one projection can still be found, then it is no problem because this
-        // element will not have to be evaluated anyhow
-        std::cout << "WARNING: Found degenerate case for artery element " << Ele1GID()
-                  << " and continuous element " << Ele2GID()
-                  << ", read comment and check segments for these elements!" << std::endl;
-        if (THROW_ERR_AT_DEGENERATE_CASE) dserror("found too many or less intersections");
-        isactive_ = false;
-        return;
-      }
-      eta_a_ = intersections[0];
-      eta_b_ = intersections[1];
-    }
-    else
-      dserror("Cannot create segment [etaA, etaB], unsupported case detected");
-  }
+  // get the intersections
+  std::vector<double> intersections = GetAllInterSections();
+  const int numintersections = intersections.size();
 
   if (PROJOUTPUT)
   {
-    std::cout << "Finished with creation of integration segments "
-                 "==========================================="
-              << std::endl;
-    std::cout << "eta_a: " << eta_a_ << ", "
-              << "eta_b: " << eta_b_ << std::endl;
+    if (numintersections == 0)
+      std::cout << "no intersections found" << std::endl;
+    else
+    {
+      std::cout << "intersections are:" << std::endl;
+      for (auto i = intersections.begin(); i != intersections.end(); ++i) std::cout << *i << " ";
+      std::cout << " " << std::endl;
+    }
   }
 
+  std::vector<double> xi(numdim_);
+  bool projection_valid = false;
+
+  // 1st case: no intersection found
+  if (numintersections == 0)
+  {
+    Projection<double>(0.0, xi, projection_valid);
+    // case: completely inside
+    if (projection_valid)
+    {
+      eta_a_ = -1.0;
+      eta_b_ = 1.0;
+      isactive_ = true;
+    }
+    // case: completely outside
+    else
+      isactive_ = false;
+  }
+  // 2nd case: 1 intersection found
+  else if (numintersections == 1)
+  {
+    // special case: eta = -1.0 lies directly at boundary of 3D element:
+    if (fabs(intersections[0] + 1.0) < XIETATOL)
+    {
+      // first possibility: segment goes from [-1; 1], second point lies inside 3D element
+      Projection<double>(1.0, xi, projection_valid);
+      if (projection_valid)
+      {
+        eta_a_ = -1.0;
+        eta_b_ = 1.0;
+        isactive_ = true;
+      }
+      else
+      {
+        // we have found a segment between [-1.0; -1.0 +  XIETATOL] --> this can be sorted out
+        if (PROJOUTPUT)
+        {
+          std::cout << "probably found a very small integration segment for artery element "
+                    << Ele1GID() << " and 3D element " << Ele2GID() << " which is sorted out!"
+                    << std::endl;
+        }
+        isactive_ = false;
+      }
+    }
+    // special case: eta = 1.0 lies directly at boundary of 3D element:
+    else if (fabs(intersections[0] - 1.0) < XIETATOL)
+    {
+      // first possibility: segment goes from [-1; 1], second point lies inside 3D element
+      Projection<double>(-1.0, xi, projection_valid);
+      if (projection_valid)
+      {
+        eta_a_ = -1.0;
+        eta_b_ = 1.0;
+        isactive_ = true;
+      }
+      else
+      {
+        // we have found a segment between [1.0 - XIETATOL; 1.0] --> this can be sorted out
+        if (PROJOUTPUT)
+        {
+          std::cout << "probably found a very small integration segment for artery element "
+                    << Ele1GID() << " and 3D element " << Ele2GID() << " which is sorted out!"
+                    << std::endl;
+        }
+        isactive_ = false;
+      }
+    }
+    // normal case: found one intersection: check if -1.0 or 1.0 are inside
+    else
+    {
+      Projection<double>(-1.0, xi, projection_valid);
+      // case: segment goes from [-1.0; intersections[0]]
+      if (projection_valid)
+      {
+        eta_a_ = -1.0;
+        eta_b_ = intersections[0];
+        isactive_ = true;
+      }
+      else
+      {
+        // case: segment goes from [intersections[0]; 1.0]
+        Projection<double>(1.0, xi, projection_valid);
+        eta_a_ = intersections[0];
+        eta_b_ = 1.0;
+        isactive_ = true;
+        // special case: projection lies directly at corner of element, this can be sorted out
+        if (!projection_valid)
+        {
+          if (PROJOUTPUT)
+          {
+            std::cout << "original point " << intersections[0] << std::endl;
+            std::cout << "Neither -1.0 nor 1.0 could be projected" << std::endl;
+          }
+          isactive_ = false;
+        }
+      }
+    }
+  }
+  // 3rd case: two intersections found
+  else if (numintersections == 2)
+  {
+    eta_a_ = intersections[0];
+    eta_b_ = intersections[1];
+    isactive_ = true;
+  }
+  // rest is not possible
+  else
+    dserror(
+        "Found more than two intersections for artery element %d and 2D/3D element %d, this should "
+        "not be possible",
+        Ele1GID(), Ele2GID());
+
   // safety checks
-  if (eta_a_ > eta_b_) dserror("something went terribly wrong, eta_a is bigger than eta_b");
-  if (fabs(eta_a_ - eta_b_) < SMALLESTSEGMENT)
-    dserror("something went terribly wrong, found extremely small integration segment");
+  if (isactive_)
+  {
+    if (eta_a_ > eta_b_)
+      dserror(
+          "something went terribly wrong for artery element %d and 2D/3D element %d, eta_a is "
+          "bigger than eta_b",
+          Ele1GID(), Ele2GID());
+    if (fabs(eta_a_ - eta_b_) < XIETATOL)
+      dserror(
+          "something went terribly wrong for artery element %d and 2D/3D element %d, found "
+          "extremely small integration segment",
+          Ele1GID(), Ele2GID());
+  }
 
   return;
 }
-
 /*-----------------------------------------------------------------------------*
  | get all intersections of artery-element with 2D/3D-element kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
@@ -2218,7 +2256,7 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 {
   for (unsigned int i = 0; i < intersections.size(); i++)
   {
-    if (fabs(intersections[i] - eta) < ETAABTOL)
+    if (fabs(intersections[i] - eta) < XIETATOL)
     {
       if (PROJOUTPUT) std::cout << "duplicate intersection found" << std::endl;
       return false;
@@ -2239,7 +2277,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   bool parallel = false;
 
   // Initialize limit for parameter values (interval [-limit, limit])
-  const double limit = 1.0 + VALIDPROJTOL;
+  const double limit = 1.0 + XIETATOL;
 
   // reset iteration variables
   eta = 0.0;
@@ -2360,6 +2398,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // Local newton iteration
   // -----------------------------------------------------------------
   int iter;
+  double first_residual = 1.0e-4;  // used for convergence check
 
   for (iter = 0; iter < PROJMAXITER; iter++)
   {
@@ -2379,6 +2418,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     residual = 0.0;
     for (unsigned int i = 0; i < numdim_; i++) residual += f(i) * f(i);
     residual = sqrt(residual);
+    if (iter == 0) first_residual = std::max(first_residual, residual);
 
     J.Clear();
 
@@ -2430,11 +2470,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     // If det_J = 0 we assume, that the artery and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
     // identified by other projections
-    parallel = fabs(jacdet) < COLINEARTOL;
+    parallel = fabs(jacdet) < COLINEARTOL * first_residual;
     if (!parallel) jacdet = J.Invert();
 
     // Check if the local Newton iteration has converged
-    if (residual < CONVTOLNEWTONPROJ && !parallel)
+    if (residual < CONVTOLNEWTONPROJ * first_residual && !parallel)
     {
       if (PROJOUTPUT)
       {
@@ -2510,7 +2550,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
 
   // Local Newton iteration unconverged after PROJMAXITER
-  if (residual > CONVTOLNEWTONPROJ || parallel)
+  if (residual > CONVTOLNEWTONPROJ * first_residual || parallel)
   {
     for (unsigned int idim = 0; idim < numdim_; idim++) xi[idim] = 1e+12;
     eta = 1e+12;
@@ -2538,7 +2578,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     }
     else if (numnodescont_ == 4)
     {
-      if (xi[0] < -VALIDPROJTOL || xi[1] < -VALIDPROJTOL || xi[2] < -VALIDPROJTOL ||
+      if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
           xi[0] + xi[1] + xi[2] > limit || fabs(eta) > limit)
         projection_valid = false;
     }
@@ -2571,7 +2611,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   bool parallel = false;
 
   // Initialize limit for parameter values (interval [-limit, limit])
-  const double limit = 1.0 + VALIDPROJTOL;
+  const double limit = 1.0 + XIETATOL;
 
   if (numdim_ == 2)
   {
@@ -2639,6 +2679,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // -----------------------------------------------------------------
 
   int iter;
+  double first_residual = 1.0e-4;  // used for convergence check
 
   for (iter = 0; iter < PROJMAXITER; iter++)
   {
@@ -2655,6 +2696,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
     residual = FADUTILS::VectorNorm(f);
+    if (iter == 0) first_residual = std::max(first_residual, FADUTILS::CastToDouble(residual));
 
     // Reset matrices
     for (unsigned int i = 0; i < numdim_; i++)
@@ -2665,15 +2707,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     // If det_J = 0 we assume, that the artery element and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
     // identified by two contact interval borders found with the GetContactLines method
-    parallel = fabs(jacdet) < COLINEARTOL;
+    parallel = fabs(jacdet) < COLINEARTOL * first_residual;
     if (!parallel) J.Invert();
 
     // Check if the local Newton iteration has converged
-    // If the start point fulfills the orthogonalty conditions (residual < CONVTOLNEWTONPROJ), we
-    // also check if the artery element and the surface edge are parallel. This is done by
-    // calculating det_J before checking if the local Newton iteration has converged by fulfilling
-    // the condition residual < CONVTOLNEWTONPROJ
-    if (residual < CONVTOLNEWTONPROJ && !parallel)
+    // If the start point fulfills the orthogonalty conditions (residual < CONVTOLNEWTONPROJ*
+    // first_residual), we also check if the artery element and the surface edge are parallel. This
+    // is done by calculating det_J before checking if the local Newton iteration has converged by
+    // fulfilling the condition residual < CONVTOLNEWTONPROJ*first_residual
+    if (residual < CONVTOLNEWTONPROJ * first_residual && !parallel)
     {
       if (PROJOUTPUT)
       {
@@ -2722,7 +2764,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // End: Local Newton iteration
 
   // Local Newton iteration unconverged after PROJMAXITER
-  if (residual > CONVTOLNEWTONPROJ || parallel)
+  if (residual > CONVTOLNEWTONPROJ * first_residual || parallel)
   {
     for (unsigned int idim = 0; idim < numdim_; idim++) xi[idim] = 1e+12;
 
@@ -2749,7 +2791,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     }
     else if (numnodescont_ == 4)  // tet4
     {
-      if (xi[0] < -VALIDPROJTOL || xi[1] < -VALIDPROJTOL || xi[2] < -VALIDPROJTOL ||
+      if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
           xi[0] + xi[1] + xi[2] > limit)
         projection_valid = false;
     }

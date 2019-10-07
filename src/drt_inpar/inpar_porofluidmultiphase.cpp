@@ -160,6 +160,11 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   Teuchos::ParameterList& porofluidmultiphasemshtdyn =
       porofluidmultiphasedyn.sublist("ARTERY COUPLING", false, "Parameters for artery mesh tying");
 
+  // maximum number of segments per artery element for 1D-3D artery coupling
+  IntParameter("MAXNUMSEGPERARTELE", 5,
+      "maximum number of segments per artery element for 1D-3D artery coupling",
+      &porofluidmultiphasemshtdyn);
+
   // penalty parameter
   DoubleParameter(
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
