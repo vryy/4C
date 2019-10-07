@@ -14,7 +14,7 @@
 
 
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "../drt_inpar/inpar_beam_to_solid.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::BEAMINTERACTION::BeamToSolidVolumeConstraintEnforcement GetConstraintEnforcement()
+    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement GetConstraintEnforcement()
         const
     {
       return constraint_enforcement_;
@@ -92,7 +92,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization GetContactDiscretization()
+    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization GetContactDiscretization()
         const
     {
       return contact_discretization_;
@@ -101,8 +101,8 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions
-    GetMortarShapeFunctionType() const
+    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions GetMortarShapeFunctionType()
+        const
     {
       return mortar_shape_function_;
     }
@@ -143,13 +143,13 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Enforcement strategy for constraints.
-    INPAR::BEAMINTERACTION::BeamToSolidVolumeConstraintEnforcement constraint_enforcement_;
+    INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement constraint_enforcement_;
 
     //! Discretization used for the contact.
-    INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization contact_discretization_;
+    INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization contact_discretization_;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_function_;
+    INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions mortar_shape_function_;
 
     //! Penalty parameter.
     double penalty_parameter_;

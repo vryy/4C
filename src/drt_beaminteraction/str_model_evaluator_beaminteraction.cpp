@@ -28,6 +28,7 @@
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_inpar/inpar_beamcontact.H"
+#include "../drt_inpar/inpar_beam_to_solid.H"
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -254,11 +255,11 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") !=
-          INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none)
+          INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------

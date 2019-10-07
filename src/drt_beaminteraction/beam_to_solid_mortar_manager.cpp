@@ -50,19 +50,19 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType())
   {
-    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
+    case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line2:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 0 * 3;
       break;
     }
-    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line3:
+    case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line3:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 1 * 3;
       break;
     }
-    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line4:
+    case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line4:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 2 * 3;

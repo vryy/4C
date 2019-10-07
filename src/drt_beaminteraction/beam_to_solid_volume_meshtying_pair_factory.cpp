@@ -32,12 +32,12 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
   DRT::Element::DiscretizationType shape = solidele->Shape();
 
   // Get the contact discretization method.
-  INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization contact_discretization =
+  INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization contact_discretization =
       params_ptr->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization();
 
   // Check which contact discretization is wanted.
   if (contact_discretization ==
-      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::gauss_point_to_segment)
+      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::gauss_point_to_segment)
   {
     switch (shape)
     {
@@ -71,14 +71,14 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
     }
   }
   else if (contact_discretization ==
-           INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::mortar)
+           INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::mortar)
   {
-    INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_function =
+    INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions mortar_shape_function =
         params_ptr->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
 
     switch (mortar_shape_function)
     {
-      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
+      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line2:
       {
         switch (shape)
         {
@@ -111,7 +111,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
         }
         break;
       }
-      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line3:
+      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line3:
       {
         switch (shape)
         {
@@ -144,7 +144,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
         }
         break;
       }
-      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line4:
+      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line4:
       {
         switch (shape)
         {
@@ -182,7 +182,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
     }
   }
   if (contact_discretization ==
-      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::gauss_point_cross_section)
+      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::gauss_point_cross_section)
   {
     switch (shape)
     {

@@ -53,6 +53,7 @@
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
+#include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
 
@@ -509,11 +510,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") !=
-          INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none or
+          INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none or
       beampotconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 

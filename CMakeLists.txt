@@ -765,6 +765,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
+  src/drt_inpar/inpar_beam_to_solid.cpp
   src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_geometry_pair.cpp
   src/drt_inpar/inpar_bio.cpp

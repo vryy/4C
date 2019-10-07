@@ -1,0 +1,94 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief Input parameter for beam-to-solid interaction.
+
+\maintainer Ivo Steinbrecher
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef INPAR_BEAM_TO_SOLID_H
+#define INPAR_BEAM_TO_SOLID_H
+
+
+#include "inpar_parameterlist_utils.H"
+
+#include "../drt_fem_general/drt_utils_integration.H"
+
+
+// Forward declaration.
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
+
+
+namespace INPAR
+{
+  namespace BEAMTOSOLID
+  {
+    /**
+     * \brief Constraint enforcement for beam to solid volume mesh tying.
+     */
+    enum class BeamToSolidVolumeConstraintEnforcement
+    {
+      //! Default value.
+      none,
+      //! Penalty method.
+      penalty
+    };
+
+    /**
+     * \brief Contact discretization for beam to solid volume mesh tying.
+     */
+    enum class BeamToSolidVolumeContactDiscretization
+    {
+      //! Default value.
+      none,
+      //! Gauss point to segment approach.
+      gauss_point_to_segment,
+      //! Gauss point on cross section method.
+      gauss_point_cross_section,
+      //! Mortar type coupling.
+      mortar
+    };
+
+    /**
+     * \brief Shape function for the mortar Lagrange-multiplicators
+     */
+    enum class BeamToSolidVolumeMortarShapefunctions
+    {
+      //! Default value.
+      none,
+      //! Linear.
+      line2,
+      //! Quadratic.
+      line3,
+      //! Cubic.
+      line4
+    };
+
+    /**
+     * \brief Map number of gauss points to 1D gauss rule
+     */
+    DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
+
+    /**
+     * \brief Set the beam-to-solid parameters
+     */
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /**
+     * \brief Set beam beam-to-solid specific conditions.
+     */
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  }  // namespace BEAMTOSOLID
+}  // namespace INPAR
+
+#endif
