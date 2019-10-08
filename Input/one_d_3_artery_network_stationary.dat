@@ -83,7 +83,8 @@ NODE 8 COORD -30.0 0.0 0.0
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
+MAT 1 MAT_CNST_ART VISCOSITY 0.01384870662445334 DENS 0.001 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0 VISCOSITYLAW BLOOD
+// note: this yields a blood viscosity of 0.04
 ----------------------------------------------------------------------FUNCT1
 FUNCTION 1.0*t
 ----------------------------------------------------------RESULT DESCRIPTION

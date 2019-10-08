@@ -2114,13 +2114,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
         "MAT_CNST_ART", "artery with constant properties", INPAR::MAT::m_cnst_art));
 
-    AddNamedReal(m, "VISCOSITY", "viscosity of blood");
+    AddNamedReal(m, "VISCOSITY",
+        "viscosity (for CONSTANT viscosity law taken as blood viscosity, for BLOOD viscosity law "
+        "taken as the viscosity of blood plasma)");
     AddNamedReal(m, "DENS", "density of blood");
     AddNamedReal(m, "YOUNG", "artery Youngs modulus of elasticity");
     AddNamedReal(m, "NUE", "Poissons ratio of artery fiber");
     AddNamedReal(m, "TH", "artery thickness");
     AddNamedReal(m, "PEXT1", "artery fixed external pressure 1");
     AddNamedReal(m, "PEXT2", "artery fixed external pressure 2");
+    AddNamedString(
+        m, "VISCOSITYLAW", "type of viscosity law, CONSTANT (default) or BLOOD", "CONSTANT", true);
+    AddNamedReal(m, "BLOOD_VISC_SCALE_DIAM_TO_MICRONS",
+        "used to scale the diameter for blood viscosity law to microns if your problem is not "
+        "given in microns, e.g., if you use mms, set this parameter to 1.0e3",
+        1.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }
