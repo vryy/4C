@@ -21,6 +21,36 @@
 /**
  *
  */
+void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetAll(
+    std::vector<BeamToSolidInteraction>& interactions)
+{
+  interactions = {BeamToSolidInteraction::beam_to_solid_volume_meshtying,
+      BeamToSolidInteraction::beam_to_solid_surface_meshtying};
+}
+
+/**
+ *
+ */
+void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
+    const BeamToSolidInteraction& interaction, std::array<std::string, 2>& condition_names)
+{
+  if (interaction == BeamToSolidInteraction::beam_to_solid_volume_meshtying)
+  {
+    condition_names[0] = "BeamToSolidVolumeMeshtyingLine";
+    condition_names[1] = "BeamToSolidVolumeMeshtyingVolume";
+  }
+  else if (interaction == BeamToSolidInteraction::beam_to_solid_surface_meshtying)
+  {
+    condition_names[0] = "BeamToSolidSurfaceMeshtyingLine";
+    condition_names[1] = "BeamToSolidSurfaceMeshtyingSurface";
+  }
+  else
+    dserror("Got unexpected beam-to-solid interaction type.");
+}
+
+/**
+ *
+ */
 DRT::UTILS::GaussRule1D INPAR::BEAMTOSOLID::IntToGaussRule1D(const int n_gauss_points)
 {
   switch (n_gauss_points)
@@ -161,4 +191,58 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
   using namespace DRT::INPUT;
+
+  // Beam-to-volume mesh tying conditions.
+  {
+    std::array<std::string, 2> condition_names;
+    BeamToSolidInteractionGetString(
+        BeamToSolidInteraction::beam_to_solid_volume_meshtying, condition_names);
+
+    Teuchos::RCP<ConditionDefinition> beam_to_solid_volume_meshtying_condition = Teuchos::rcp(
+        new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME",
+            condition_names[1], "Beam-to-volume mesh tying conditions - volume definition",
+            DRT::Condition::BeamToSolidVolumeMeshtyingVolume, true, DRT::Condition::Volume));
+    beam_to_solid_volume_meshtying_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_volume_meshtying_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_volume_meshtying_condition);
+
+    beam_to_solid_volume_meshtying_condition =
+        Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING LINE",
+            condition_names[0], "Beam-to-volume mesh tying conditions - line definition",
+            DRT::Condition::BeamToSolidVolumeMeshtyingLine, true, DRT::Condition::Line));
+    beam_to_solid_volume_meshtying_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_volume_meshtying_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_volume_meshtying_condition);
+  }
+
+  // Beam-to-surface mesh tying conditions.
+  {
+    std::array<std::string, 2> condition_names;
+    BeamToSolidInteractionGetString(
+        BeamToSolidInteraction::beam_to_solid_surface_meshtying, condition_names);
+
+    Teuchos::RCP<ConditionDefinition> beam_to_solid_surface_meshtying_condition = Teuchos::rcp(
+        new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE",
+            condition_names[1], "Beam-to-surface mesh tying conditions - surface definition",
+            DRT::Condition::BeamToSolidSurfaceMeshtyingSurface, true, DRT::Condition::Surface));
+    beam_to_solid_surface_meshtying_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_surface_meshtying_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_surface_meshtying_condition);
+
+    beam_to_solid_surface_meshtying_condition = Teuchos::rcp(
+        new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING LINE",
+            condition_names[0], "Beam-to-surface mesh tying conditions - line definition",
+            DRT::Condition::BeamToSolidSurfaceMeshtyingLine, true, DRT::Condition::Line));
+    beam_to_solid_surface_meshtying_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_surface_meshtying_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_surface_meshtying_condition);
+  }
 }

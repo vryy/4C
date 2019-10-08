@@ -180,4 +180,7 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           true)));
 
   condlist.push_back(beam_filament_condition);
+
+  // beam-to-solid interaction
+  INPAR::BEAMTOSOLID::SetValidConditions(condlist);
 }
