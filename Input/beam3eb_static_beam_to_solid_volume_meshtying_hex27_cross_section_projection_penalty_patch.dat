@@ -91,7 +91,7 @@ COMPONENT 0 FUNCTION t
 NDPOINT 0
 NDLINE 1
 NDSURF 0
-NDVOL 1
+NDVOL 2
 ----------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 1
 // fix
@@ -99,6 +99,14 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 --------------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE 1
 E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0 1 0 0 0 0 FUNCT 0 1 0 0 0 0
+--------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME
+// Define the volumes for the beam-to-solid volume meshtying.
+DVOL                                  1
+E 1 - COUPLING_ID 1
+----------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING LINE
+// Define the lines for the beam-to-solid volume meshtying.
+DLINE                                 1
+E 1 - COUPLING_ID 1
 -------------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 226 DLINE 1
 NODE 227 DLINE 1
