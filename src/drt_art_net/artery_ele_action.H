@@ -23,6 +23,7 @@ namespace ARTERY
   {
     none,
     calc_sys_matrix_rhs,
+    calc_flow_pressurebased,
     get_initial_artery_state,
     solve_riemann_problem,
     set_term_bc,

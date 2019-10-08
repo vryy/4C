@@ -56,27 +56,23 @@ namespace DRT
       /// called upon destruction
       virtual void Done();
 
-      /// Evaluate
-      /*!
-        The evaluate function for the general artery case.
-       */
-      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+      int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material> mat) override;
 
-      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+      int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) override;
 
-      virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+      int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs

@@ -109,6 +109,8 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   pressurenp_ = LINALG::CreateVector(*dofrowmap, true);
   pressureincnp_ = LINALG::CreateVector(*dofrowmap, true);
 
+  // for output of volumetric flow
+  ele_volflow_ = LINALG::CreateVector(*discret_->ElementRowMap());
 
   // -------------------------------------------------------------------
   // set initial field
@@ -461,6 +463,9 @@ void ART::ArtNetImplStationary::Output(
     // "pressure in the arteries" vector
     output_.WriteVector("one_d_artery_pressure", pressurenp_);
 
+    // output of flow
+    OutputFlow();
+
     if (solvescatra_) scatra_->ScaTraField()->Output();
   }
 
@@ -498,6 +503,50 @@ void ART::ArtNetImplStationary::OutputRadius()
 
   // write the output
   output_.WriteVector("ele_radius", eleradiusvector, IO::elementvector);
+
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | output of element volumetric flow                    kremheller 09/19|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetImplStationary::OutputFlow()
+{
+  Epetra_SerialDenseMatrix dummyMat;
+  Epetra_SerialDenseVector dummyVec;
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState(0, "pressurenp", pressurenp_);
+
+  // enough to loop over row nodes since element-based quantity
+  for (int i = 0; i < discret_->NumMyRowElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = discret_->lRowElement(i);
+
+    // list to define routines at elementlevel
+    Teuchos::ParameterList p;
+    p.set<int>("action", ARTERY::calc_flow_pressurebased);
+
+    DRT::Element::LocationArray la(discret_->NumDofSets());
+    actele->LocationVector(*discret_, la, false);
+    Epetra_SerialDenseVector flowVec(1);
+
+    actele->Evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
+
+    int err = ele_volflow_->ReplaceMyValue(i, 0, flowVec(0));
+    if (err != 0) dserror("ReplaceMyValue failed with error code %d!", err);
+  }
+
+  // write the output
+  output_.WriteVector("ele_volflow", ele_volflow_, IO::elementvector);
 
   return;
 }

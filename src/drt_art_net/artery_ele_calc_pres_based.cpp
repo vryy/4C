@@ -113,13 +113,16 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
     const ARTERY::Action action, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
   switch (action)
   {
+    case ARTERY::calc_flow_pressurebased:
+      EvaluateFlow(ele, discretization, la, elevec1_epetra, mat);
+      break;
     default:
       dserror("Unkown type of action %d for Artery (PressureBased formulation)", action);
   }
@@ -164,20 +167,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   LINALG::Matrix<my::iel_, 1> mypress(true);
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
-  double L;
-  // get current element length
-  if (discretization.NumDofSets() > 1 && discretization.HasState(1, "curr_seg_lengths"))
-  {
-    Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
-        discretization.GetState(1, "curr_seg_lengths");
-    std::vector<double> seglengths(la[1].lm_.size());
-
-    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
-
-    L = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
-  }
-  else
-    L = my::CalculateEleLength(ele);
+  // calculate the element length
+  const double L = CalculateEleLength(ele, discretization, la);
 
   // check here, if we really have an artery !!
   if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
@@ -185,7 +176,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   // cast the material to artery material material
   const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
 
-  // Read in blood viscosity
+  // Read in diameter
   const double diam = actmat->Diam();
   // Read in blood viscosity
   const double visc = actmat->Viscosity();
@@ -233,6 +224,67 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseVector& flowVec, Teuchos::RCP<const MAT::Material> material)
+{
+  // get pressure
+  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
+  if (pressnp == Teuchos::null) dserror("could not get pressure inside artery element");
+
+  // extract local values of pressure field from global state vector
+  LINALG::Matrix<my::iel_, 1> mypress(true);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+
+  // calculate the element length
+  const double L = CalculateEleLength(ele, discretization, la);
+
+  // check here, if we really have an artery !!
+  if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
+
+  // cast the material to artery material material
+  const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+
+  // Read in diameter
+  const double diam = actmat->Diam();
+  // Read in blood viscosity
+  const double visc = actmat->Viscosity();
+
+  const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
+
+  // TODO: this works only for line 2 elements
+  flowVec(0) = -hag_pois * (mypress(1) - mypress(0)) / L;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::CalculateEleLength(
+    Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+{
+  double length;
+  // get current element length
+  if (discretization.NumDofSets() > 1 && discretization.HasState(1, "curr_seg_lengths"))
+  {
+    Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
+        discretization.GetState(1, "curr_seg_lengths");
+    std::vector<double> seglengths(la[1].lm_.size());
+
+    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+
+    length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
+  }
+  else
+    length = my::CalculateEleLength(ele);
+
+  return length;
 }
 
 /*----------------------------------------------------------------------*

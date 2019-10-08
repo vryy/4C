@@ -28,6 +28,11 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
 
       break;
     }
+      // note by J Kremheller:
+      // The current implementation relies on the fact that we only use linear elements on several
+      // occasions, for instance, when calculating element volumetric flow and element length
+      // I currently do not see any application of higher order elements, but if this is ever
+      // desired the implementation should be checked carefully
     default:
       dserror("Only line2 elements available so far");
       break;
