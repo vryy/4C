@@ -297,10 +297,19 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  DRT::INPUT::LineDefinition porofluidmultiphase;
-  porofluidmultiphase.AddTag("POROFLUIDMULTIPHASE")
+  DRT::INPUT::LineDefinition porofluidmultiphase_node;
+  porofluidmultiphase_node.AddTag("POROFLUIDMULTIPHASE")
       .AddNamedString("DIS")
       .AddNamedInt("NODE")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE")
+      .AddOptionalNamedString("NAME");
+
+  DRT::INPUT::LineDefinition porofluidmultiphase_ele;
+  porofluidmultiphase_ele.AddTag("POROFLUIDMULTIPHASE")
+      .AddNamedString("DIS")
+      .AddNamedInt("ELEMENT")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE")
@@ -511,7 +520,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(lubrication);
-  lines->Add(porofluidmultiphase);
+  lines->Add(porofluidmultiphase_node);
+  lines->Add(porofluidmultiphase_ele);
   lines->Add(porofluidmultiphase_special);
   lines->Add(scatra);
   lines->Add(scatra_special);

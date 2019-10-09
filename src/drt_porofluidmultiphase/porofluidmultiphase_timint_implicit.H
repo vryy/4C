@@ -294,6 +294,12 @@ namespace POROFLUIDMULTIPHASE
       return domain_integrals_;
     }
 
+    //! return the meshtying strategy
+    Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> MeshTyingStrategy() const
+    {
+      return strategy_;
+    }
+
    protected:
     /*========================================================================*/
     //! @name Constructors and destructors and related methods
