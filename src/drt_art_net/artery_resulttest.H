@@ -55,11 +55,16 @@ namespace ART
      */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+    /// our version of element value tests
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
    private:
     /// Teuchos::RCP to scalar transport discretization
     Teuchos::RCP<DRT::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<const Epetra_Vector> mysol_;
+    /// Teuchos::RCP to solution vector
+    Teuchos::RCP<const Epetra_Vector> myelevolflow_;
   };
 
 }  // namespace ART

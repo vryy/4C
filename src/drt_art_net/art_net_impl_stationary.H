@@ -111,6 +111,9 @@ namespace ART
     // get solution vector = pressure
     Teuchos::RCP<const Epetra_Vector> Pressurenp() const { return pressurenp_; }
 
+    //! get element volume flow
+    Teuchos::RCP<const Epetra_Vector> EleVolflow() const { return ele_volflow_; }
+
     //! iterative update of primary variable
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
     {
