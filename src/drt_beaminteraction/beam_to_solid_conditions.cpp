@@ -320,6 +320,33 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfa
 /**
  *
  */
+void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BuildIdSets()
+{
+  // Call the parent method to build the line maps.
+  BeamToSolidCondition::BuildIdSets();
+
+  // Build the surface map.
+  surface_ids_.clear();
+  for (const auto& map_item : condition_other_->Geometry())
+  {
+    if (!map_item.second->IsFaceElement()) dserror("Expected FaceElement");
+    Teuchos::RCP<const DRT::FaceElement> face_element =
+        Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(map_item.second);
+    const int solid_id = face_element->ParentElementId();
+    surface_ids_[solid_id] = face_element;
+  }
+
+  // The size of the surface id set and the geometry in the conditions have to match, otherwise
+  // there are two faces connected to the same element, which is not implemented at this point.
+  if (surface_ids_.size() != condition_other_->Geometry().size())
+    dserror(
+        "There are multiple faces connected to one solid element in this condition. This case is "
+        "currently not implemented.");
+}
+
+/**
+ *
+ */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal(
     const std::vector<DRT::Element const*>& ele_ptrs,

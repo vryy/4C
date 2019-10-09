@@ -17,9 +17,16 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <Teuchos_RCP.hpp>
+
+
+// Forward declarations.
+namespace DRT
+{
+  class FaceElement;
+}
 
 
 namespace BEAMINTERACTION
@@ -150,7 +157,7 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void BuildIdSets() override { dserror("Not yet implemented!"); }
+    void BuildIdSets() override;
 
    protected:
     /**
@@ -165,10 +172,14 @@ namespace BEAMINTERACTION
      */
     inline bool IdInOther(const int id_other) const override
     {
-      dserror("Not yet implemented!");
+      if (surface_ids_.find(id_other) != surface_ids_.end()) return true;
       return false;
     }
-  };
+
+   private:
+    //! Map containing the global volume element IDs and the corresponding face element.
+    std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;
+  };  // namespace BEAMINTERACTION
 }  // namespace BEAMINTERACTION
 
 #endif
