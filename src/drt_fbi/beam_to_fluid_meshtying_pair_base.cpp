@@ -108,7 +108,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::PreEvaluate()
   // Call PreEvaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->PreEvaluate(ele1poscur_, ele2poscur_, this->line_to_volume_segments_);
+    this->CastGeometryPair()->PreEvaluate(ele1poscur_, ele2poscur_, this->line_to_3D_segments_);
   }
 }
 
@@ -128,7 +128,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Print(std::ostr
 
   out << "\n\nele1 dofvec: " << this->ele1pos_;
   out << "\nele2 dofvec: " << this->ele2pos_;
-  out << "\nn_segments: " << this->line_to_volume_segments_.size();
+  out << "\nn_segments: " << this->line_to_3D_segments_.size();
   out << "\n";
   out << "------------------------------------------------------------------------\n";
 }
@@ -144,21 +144,21 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   this->CheckInitSetup();
 
   // Only display information if a segment exists for this pair.
-  if (this->line_to_volume_segments_.size() == 0) return;
+  if (this->line_to_3D_segments_.size() == 0) return;
 
   // Display the number of segments and segment length.
   out << "beam ID " << this->Element1()->Id() << ", fluid ID " << this->Element2()->Id() << ":";
-  out << " n_segments = " << this->line_to_volume_segments_.size() << "\n";
+  out << " n_segments = " << this->line_to_3D_segments_.size() << "\n";
 
   // Loop over segments and display information about them.
-  for (unsigned int index_segment = 0; index_segment < this->line_to_volume_segments_.size();
+  for (unsigned int index_segment = 0; index_segment < this->line_to_3D_segments_.size();
        index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << this->line_to_volume_segments_[index_segment].GetEtaA() << ", "
-        << this->line_to_volume_segments_[index_segment].GetEtaB() << "]";
+    out << "eta in [" << this->line_to_3D_segments_[index_segment].GetEtaA() << ", "
+        << this->line_to_3D_segments_[index_segment].GetEtaB() << "]";
     out << ", Gauss points = "
-        << this->line_to_volume_segments_[index_segment].GetNumberOfProjectionPoints();
+        << this->line_to_3D_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
 }
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     std::vector<double>& force = visualization->GetMutablePointDataVector("force");
 
     // Loop over the segments on the beam.
-    for (const auto& segment : this->line_to_volume_segments_)
+    for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the integration points.
       for (const auto& projection_point : segment.GetProjectionPoints())
@@ -234,7 +234,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
 
     // Loop over the segments on the beam.
-    for (const auto& segment : this->line_to_volume_segments_)
+    for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})

@@ -13,10 +13,9 @@
 #define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_H_
 
 
-#include "beam_contact_pair.H"
+#include "beam_to_solid_pair_base.H"
 
 #include "beam3contact_defines.H"
-#include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -43,11 +42,16 @@ namespace BEAMINTERACTION
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPairBase : public BeamContactPair
+  class BeamToSolidVolumeMeshtyingPairBase
+      : public BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>,
+            beam, solid>
   {
    protected:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+    //! Type to be used for scalar AD variables.
+    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
+
+    //! Shortcut to the base class.
+    using base_class = BeamToSolidPairBase<scalar_type_fad, beam, solid>;
 
    public:
     /**
@@ -59,14 +63,13 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidVolumeMeshtyingPairBase(){};
-    /**
-     * \brief Initialize the contact pair.
-     */
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        std::vector<DRT::Element const*> elements);
 
     /**
-     * \brief Setup the contact pair.
+     * \brief Setup the contact pair (derived).
+     *
+     * This method sets the solid reference positions for this pair. This can not be done in the
+     * base class, since the beam-to-surface (which derive from the base class) need a different
+     * handling of the solid DOF.
      */
     void Setup() override;
 
@@ -77,25 +80,12 @@ namespace BEAMINTERACTION
     void PreEvaluate() override;
 
     /**
-     * \brief Evaluate this contact element pair.
-     * @param forcevec1 (out) Force vector on element 1.
-     * @param forcevec2 (out) Force vector on element 2.
-     * @param stiffmat11 (out) Stiffness contributions on element 1 - element 1.
-     * @param stiffmat12 (out) Stiffness contributions on element 1 - element 2.
-     * @param stiffmat21 (out) Stiffness contributions on element 2 - element 1.
-     * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
-     * @return True if pair is in contact.
-     */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
-    {
-      return false;
-    };
-
-    /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
      * elements.
+     *
+     * Update of the solid positions is performed in this class method, the beam positions are set
+     * in the parent class method, which is called here.
+     *
      * @param beam_centerline_dofvec
      * @param solid_nodal_dofvec
      */
@@ -113,82 +103,6 @@ namespace BEAMINTERACTION
      */
     virtual void SetRestartDisplacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_) override;
-
-    /**
-     * \brief Print information about this beam contact element pair to screen.
-     */
-    void Print(std::ostream& out) const override;
-
-    /**
-     * \brief Print this beam contact element pair to screen.
-     */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
-
-    /**
-     * \brief Check if this pair is in contact. The correct value is only returned after PreEvaluate
-     * and Evaluate are run on the geometry pair.
-     * @return true if it is in contact.
-     */
-    inline bool GetContactFlag() const override
-    {
-      // The element pair is assumed to be active when we have at least one active contact point
-      if (line_to_volume_segments_.size() > 0)
-        return true;
-      else
-        return false;
-    };
-
-    /**
-     * \brief Get number of active contact point pairs on this element pair. Not yet implemented.
-     */
-    unsigned int GetNumAllActiveContactPointPairs() const override
-    {
-      dserror("not yet implemented!");
-      return 0;
-    };
-
-    /**
-     * \brief Get coordinates of all active contact points on element1. Not yet implemented.
-     */
-    void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get coordinates of all active contact points on element2. Not yet implemented.
-     */
-    void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
-     */
-    void GetAllActiveContactForces(std::vector<double>& forces) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) gap values of this contact pair. Not yet implemented.
-     */
-    void GetAllActiveContactGaps(std::vector<double>& gaps) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get energy of penalty contact. Not yet implemented.
-     */
-    double GetEnergy() const override
-    {
-      dserror("not implemented yet!");
-      return 0.0;
-    }
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.
@@ -221,23 +135,8 @@ namespace BEAMINTERACTION
     CastGeometryPair() const
     {
       return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
-          geometry_pair_, true);
+          this->geometry_pair_, true);
     };
-
-    /**
-     * \brief This function evaluates the position at an integration point for the pairs.
-     *
-     * This is needed because the cross section pairs have 3 parameter coordinates on the beam and
-     * the other pairs have 1. This method is mainly used for visualization.
-     *
-     * @param integration_point (in) Integration where the position should be evaluated.
-     * @param r_beam (out) Position on the beam.
-     * @param reference (in) True -> the reference position is calculated, False -> the current
-     * position is calculated.
-     */
-    virtual void EvaluateBeamPosition(
-        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
 
     /**
      * \brief This function evaluates the penalty force from a given beam position and a given solid
@@ -249,9 +148,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
-        const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const;
+    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
+        const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
+        LINALG::Matrix<3, 1, scalar_type_fad>& force) const;
 
     /**
      * \brief Get the reference position to be used for the evaluation of the coupling terms.
@@ -266,22 +165,18 @@ namespace BEAMINTERACTION
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
-    //! Current nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1pos_;
-    LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2pos_;
+    //! Current nodal positions (and tangents) of the solid.
+    LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> ele2pos_;
 
-    //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
+    //! Reference nodal positions (and tangents) of the solid.
     LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;
 
-    //! Offset of nodal positions for coupling. This will be used when the state that should be
-    //! coupled is not the undeformed reference position, i.e. in restart simulations where the
-    //! restart state is coupled.
+    //! Offset of solid DOFs for coupling. This will be used when the state that should be coupled
+    //! is not the undeformed reference position, i.e. in restart simulations where the restart
+    //! state is coupled. This only makes sense for volume mesh tying, which is why we also define
+    //! the beam restart DOFs here.
     LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
     LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
-
-    //! Vector with the segments of the line to volume pair.
-    std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;
   };
 }  // namespace BEAMINTERACTION
 

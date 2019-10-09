@@ -52,12 +52,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
     LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
-        beam_coupling_ref, solid_coupling_ref, this->line_to_volume_segments_);
+        beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_volume_segments_.size() == 0) return false;
+  if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for local mortar matrices.
   LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> D(true);
@@ -77,18 +77,18 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
 
   // Calculate the mortar matrices.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_volume_segments_.size(); i_segment++)
+  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
-    beam_segmentation_factor = 0.5 * this->line_to_volume_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
@@ -179,9 +179,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   {
     // Setup variables.
     LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, scalar_type_fad> X;
+    LINALG::Matrix<3, 1, scalar_type_fad> r;
+    LINALG::Matrix<3, 1, scalar_type_fad> u;
     LINALG::Matrix<3, 1, double> lambda_discret;
     LINALG::Matrix<3, 1, double> xi_mortar_node;
 
@@ -249,15 +249,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
       double xi;
       std::vector<double>& point_coordinates =
           visualization_continuous->GetMutablePointCoordinateVector(
-              (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+              (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<double>& displacement = visualization_continuous->GetMutablePointDataVector(
-          "displacement", (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+          "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<double>& lambda_vis = visualization_continuous->GetMutablePointDataVector(
-          "lambda", (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+          "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<uint8_t>& cell_type = visualization_continuous->GetMutableCellTypeVector();
       std::vector<int32_t>& cell_offset = visualization_continuous->GetMutableCellOffsetVector();
 
-      for (const auto& segment : this->line_to_volume_segments_)
+      for (const auto& segment : this->line_to_3D_segments_)
       {
         for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
              i_curve_segment++)
@@ -294,9 +294,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
-    const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const
+    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
+    const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
+    LINALG::Matrix<3, 1, scalar_type_fad>& force) const
 {
   force.PutScalar(0.);
 }
