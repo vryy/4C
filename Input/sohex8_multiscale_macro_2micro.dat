@@ -314,8 +314,8 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro1.dat MICRODIS_NUM 1
-MAT 2 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro2.dat MICRODIS_NUM 2
+MAT 1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro1.mat MICRODIS_NUM 1
+MAT 2 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro1.mat MICRODIS_NUM 2
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t/1.5
 ----------------------------------------------------------RESULT DESCRIPTION
