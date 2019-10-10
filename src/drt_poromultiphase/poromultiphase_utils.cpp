@@ -26,8 +26,6 @@
 
 #include "../drt_lib/drt_utils_createdis.H"
 
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_defines.H"
-
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -59,9 +57,14 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
             problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
+    // get MAXNUMSEGPERARTELE
+    const int maxnumsegperele = problem->PoroFluidMultiPhaseDynamicParams()
+                                    .sublist("ARTERY COUPLING")
+                                    .get<int>("MAXNUMSEGPERARTELE");
+
     // curr_seg_lengths: defined as element-wise quantity
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, MAXNUMSEGPERELE, 0, false));
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery discretization
     arterydis->AddDofSet(dofsetaux);
 

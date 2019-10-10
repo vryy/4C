@@ -74,31 +74,13 @@ namespace DRT
       /// called upon destruction
       virtual void Done() = 0;
 
-      /// In this class we do not define a static ArteryEle...* Instance
-      /// since only derived child classes are free to be allocated!!
-
-      /// Evaluate
       /*!
-        The evaluate function for the general artery case.
+       * \brief  calculate element length
+       * \param  ele[in] element whose length should be calculated
+       * \return         the length of the element
+       *
+       * \note   only checked for line2 elements
        */
-      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
-
-      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
-
-      virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
-
       virtual double CalculateEleLength(Artery* ele);
 
 

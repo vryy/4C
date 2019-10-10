@@ -82,6 +82,9 @@ namespace ART
     //! output of element radius
     void OutputRadius();
 
+    //! output of element volumetric flow
+    void OutputFlow();
+
     //! set the initial field on the artery discretization
     virtual void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
         const int startfuncno  //!< number of spatial function
@@ -108,6 +111,9 @@ namespace ART
     // get solution vector = pressure
     Teuchos::RCP<const Epetra_Vector> Pressurenp() const { return pressurenp_; }
 
+    //! get element volume flow
+    Teuchos::RCP<const Epetra_Vector> EleVolflow() const { return ele_volflow_; }
+
     //! iterative update of primary variable
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
     {
@@ -125,6 +131,8 @@ namespace ART
     Teuchos::RCP<Epetra_Vector> pressureincnp_;
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;
+    //! volumetric flow (for output)
+    Teuchos::RCP<Epetra_Vector> ele_volflow_;
     /// underlying scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 

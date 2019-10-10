@@ -71,10 +71,11 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     case ARTERY::calc_scatra_from_scatra_fb:
     case ARTERY::evaluate_wf_wb:
     case ARTERY::evaluate_scatra_analytically:
+    case ARTERY::calc_flow_pressurebased:
     {
       return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
-          ->EvaluateService(this, action, params, discretization, la[0].lm_, elemat1, elemat2,
-              elevec1, elevec2, elevec3, mat);
+          ->EvaluateService(this, action, params, discretization, la, elemat1, elemat2, elevec1,
+              elevec2, elevec3, mat);
     }
     break;
     default:

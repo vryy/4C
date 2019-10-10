@@ -153,10 +153,12 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   }
 
   // check
-  if (constraintphaseID_ == -1)
-    dserror("No constraint phase law defined. Are you sure this makes sense?");
+  if (constraintphaseID_ == -1 && numfluidphases_ > 0)
+    dserror(
+        "No constraint phase law defined but NUMFLUIDPHASES > 0. Are you sure this makes sense?");
 
-  // invert dof2pres_ to get conversion from dofs to prbessures
+  // invert dof2pres_ to get conversion from dofs to pressures for the fluid phases
+  if (numfluidphases_ > 0)
   {
     Epetra_SerialDenseSolver inverse;
     inverse.SetMatrix(*dof2pres_);

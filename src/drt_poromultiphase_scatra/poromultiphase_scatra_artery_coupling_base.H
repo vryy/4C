@@ -96,6 +96,8 @@ namespace POROMULTIPHASESCATRA
     /// apply mesh movement (on artery elements)
     virtual void ApplyMeshMovement() = 0;
 
+    //! return blood vessel volume fraction inside each 2D/3D element
+    virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() = 0;
 
    protected:
     /// communicator

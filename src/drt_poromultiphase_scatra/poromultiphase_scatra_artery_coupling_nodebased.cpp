@@ -387,6 +387,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovem
 }
 
 /*----------------------------------------------------------------------*
+ | access to blood vessel volume fraction              kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFraction()
+{
+  dserror("Output of vessel volume fraction not possible for node-based coupling");
+
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
  | print out method                                    kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCouplingMethod() const

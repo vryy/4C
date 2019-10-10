@@ -79,6 +79,10 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
   BoolParameter("SKIPINITDER", "yes", "Flag to skip computation of initial time derivative",
       &porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_SATANDPRESS", "yes",
+      "Flag if output of saturations and pressures should be calculated", &porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_SOLIDPRESS", "yes", "Flag if output of solid pressure should be calculated",
+      &porofluidmultiphasedyn);
   BoolParameter("OUTPUT_POROSITY", "yes", "Flag if output of porosity should be calculated",
       &porofluidmultiphasedyn);
 
@@ -156,6 +160,11 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   Teuchos::ParameterList& porofluidmultiphasemshtdyn =
       porofluidmultiphasedyn.sublist("ARTERY COUPLING", false, "Parameters for artery mesh tying");
 
+  // maximum number of segments per artery element for 1D-3D artery coupling
+  IntParameter("MAXNUMSEGPERARTELE", 5,
+      "maximum number of segments per artery element for 1D-3D artery coupling",
+      &porofluidmultiphasemshtdyn);
+
   // penalty parameter
   DoubleParameter(
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
@@ -199,5 +208,10 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   // Flag if artery elements are evaluated in reference or current configuration
   BoolParameter("EVALUATE_IN_REF_CONFIG", "yes",
       "Flag if artery elements are evaluated in reference or current configuration",
+      &porofluidmultiphasemshtdyn);
+
+  // Flag if blood vessel volume fraction should be output
+  BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
+      "Flag if output of blood vessel volume fraction should be calculated",
       &porofluidmultiphasemshtdyn);
 }

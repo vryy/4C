@@ -545,7 +545,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::UpdateFieldsAfterConvergenc
   FluidField()->ReconstructPressuresAndSaturations();
   FluidField()->ReconstructFlux();
 
-  StructureField()->Evaluate(sx);
+  if (solve_structure_) StructureField()->Evaluate(sx);
 
   // (4) Set structure solution on fluid field
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());

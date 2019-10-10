@@ -23,6 +23,7 @@ namespace DRT
 {
   class Discretization;
   class Node;
+  class Element;
 }  // namespace DRT
 
 namespace POROFLUIDMULTIPHASE
@@ -51,6 +52,9 @@ namespace POROFLUIDMULTIPHASE
      */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+    /// our version of element value tests
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
     //! test special quantity not associated with a particular element or node
     virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
@@ -58,6 +62,11 @@ namespace POROFLUIDMULTIPHASE
     //! get nodal result to be tested
     double ResultNode(const std::string quantity,  //! name of quantity to be tested
         DRT::Node* node                            //! node carrying the result to be tested
+        ) const;
+
+    //! get element result to be tested
+    double ResultElement(const std::string quantity,  //! name of quantity to be tested
+        const DRT::Element* element                   //! element carrying the result to be tested
         ) const;
 
     //! get special result to be tested

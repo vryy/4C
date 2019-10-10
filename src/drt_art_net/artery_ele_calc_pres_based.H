@@ -55,50 +55,64 @@ namespace DRT
       /// called upon destruction
       virtual void Done();
 
-      /// Evaluate
-      /*!
-        The evaluate function for the general artery case.
-       */
-      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+      int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material> mat) override;
 
-      /// ScatraEvaluate
-      /*!
-        Evaluate scalar transport in arteries, this is not available for the pressure-based
-        formulation Instead, ScaTra-discretization is cloned and work is done by ScaTraEleCalcArtery
-       */
-      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+      int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) override;
 
-      /// EvaluateService
-      /*!
-        Evaluate other stuff that might be needed
-       */
-      virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+      int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) override;
 
 
      protected:
       /*!
         \brief calculate element matrix and rhs
 
-        \param ele              (i) the element those matrix is calculated
-        \param sysmat           (o) element matrix to calculate
-        \param rhs              (o) element rhs to calculate
-        \param material         (i) artery material/dimesion
+        \param ele[in]            the element which is evaluated
+        \param discretization[in] discretization to which element belongs
+        \param la[in]             element location array
+        \param sysmat[in,out]     element matrix to calculate
+        \param rhs[in,out]        element rhs to calculate
+        \param material[in]       artery material
         */
       void Sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
           Teuchos::RCP<const MAT::Material> material);
+
+      /*!
+        \brief Evaluate volumetric flow inside the element (for post-processing)
+
+        \param ele[in]            the element which is evaluated
+        \param discretization[in] discretization to which element belongs
+        \param la[in]             element location array
+        \param flowVec[in,out]    element flow to calculate
+        \param material[in]       artery material/dimesion
+
+        \note  only checked for line2 elements
+        */
+      void EvaluateFlow(Artery* ele, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& flowVec,
+          Teuchos::RCP<const MAT::Material> material);
+
+      /*!
+        \brief Calculate element length (either in current or deformed configuration)
+        \param ele[in]            the element which is evaluated
+        \param discretization[in] discretization to which element belongs
+        \param la[in]             element location array
+        \return                   element length (either in current or deformed configuration)
+       */
+      double CalculateEleLength(
+          Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la);
     };
 
   }  // namespace ELEMENTS

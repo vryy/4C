@@ -55,7 +55,11 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       nsd_(DRT::Problem::Instance()->NDim()),
       isale_(false),
       skipinitder_(DRT::INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
+      output_satpress_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
+      output_solidpress_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
       output_porosity_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
+      output_bloodvesselvolfrac_(DRT::INPUT::IntegralValue<int>(
+          poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
       stab_biot_(DRT::INPUT::IntegralValue<int>(poroparams_, "STAB_BIOT")),
       domainint_funct_(std::vector<int>()),
       num_domainint_funct_(0),
@@ -185,15 +189,19 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // history vector
   hist_ = LINALG::CreateVector(*dofrowmap, true);
 
-  // pressure at time n+1
-  pressure_ = LINALG::CreateVector(*dofrowmap, true);
   // valid (physically meaningful) volume fraction dofs
   valid_volfracpress_dofs_ = LINALG::CreateVector(*dofrowmap, true);
   valid_volfracspec_dofs_ = LINALG::CreateVector(*dofrowmap, true);
-  // saturation at time n+1
-  saturation_ = LINALG::CreateVector(*dofrowmap, true);
+  if (output_satpress_)
+  {
+    // pressure at time n+1
+    pressure_ = LINALG::CreateVector(*dofrowmap, true);
+    // saturation at time n+1
+    saturation_ = LINALG::CreateVector(*dofrowmap, true);
+  }
   // solid pressure at time n+1
-  solidpressure_ = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+  if (output_solidpress_)
+    solidpressure_ = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
   // porosity at time n+1 (lives on same dofset as solid pressure)
   if (output_porosity_)
     porosity_ = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
@@ -548,8 +556,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
     // step number and time (only after that data output is possible)
     output_->NewStep(step_, time_);
 
-    // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_ == upres_) output_->WriteElementData(true);
+    // write domain decomposition for visualization (only once at step 0!)
+    if (step_ == 0)
+    {
+      output_->WriteElementData(true);
+      // write output of blood vessel volume fraction
+      if (output_bloodvesselvolfrac_)
+        output_->WriteVector(
+            "bloodvesselvolfrac", strategy_->BloodVesselVolumeFraction(), IO::elementvector);
+    }
 
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields
@@ -1152,41 +1167,44 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrintHeader()
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
 {
-  // reset
-  pressure_->PutScalar(0.0);
-  saturation_->PutScalar(0.0);
-
-  // create parameter list for elements
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_pres_and_sat);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-
-  // add state vectors according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
-
-  // initialize counter vector (will store how many times the node has been evaluated)
-  Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  ;
-
-  // call loop over elements
-  discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
-
-  discret_->ClearState();
-
-  // dummy way: the values have been assembled too many times -> just divide by number of
-  // evaluations
-  for (int i = 0; i < discret_->DofRowMap()->NumMyElements(); i++)
+  if (output_satpress_)
   {
-    (*pressure_)[i] *= 1.0 / (*counter)[i];
-    (*saturation_)[i] *= 1.0 / (*counter)[i];
+    // reset
+    pressure_->PutScalar(0.0);
+    saturation_->PutScalar(0.0);
+
+    // create parameter list for elements
+    Teuchos::ParameterList eleparams;
+
+    // action for elements
+    eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_pres_and_sat);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+
+    // add state vectors according to time-integration scheme
+    AddTimeIntegrationSpecificVectors();
+
+    // initialize counter vector (will store how many times the node has been evaluated)
+    Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    ;
+
+    // call loop over elements
+    discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
+
+    discret_->ClearState();
+
+    // dummy way: the values have been assembled too many times -> just divide by number of
+    // evaluations
+    for (int i = 0; i < discret_->DofRowMap()->NumMyElements(); i++)
+    {
+      (*pressure_)[i] *= 1.0 / (*counter)[i];
+      (*saturation_)[i] *= 1.0 / (*counter)[i];
+    }
   }
 
   // reconstruct also the solid pressures
-  ReconstructSolidPressures();
+  if (output_solidpress_) ReconstructSolidPressures();
 
   return;
 }
@@ -1469,12 +1487,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
   output_->WriteVector("phinp_fluid", phinp_);
   // time derivative of solution
   // output_->WriteVector("phidtnp", phidtnp_);
-  // pressures
-  output_->WriteVector("pressure", pressure_);
-  // saturations
-  output_->WriteVector("saturation", saturation_);
+  if (output_satpress_)
+  {
+    // pressures
+    output_->WriteVector("pressure", pressure_);
+    // saturations
+    output_->WriteVector("saturation", saturation_);
+  }
 
   // solid pressure
+  if (output_solidpress_)
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> solidpressure_multi =
