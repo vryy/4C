@@ -75,7 +75,7 @@ namespace DRT
       virtual void Done() = 0;
 
       /*!
-       * calculate element length
+       * \brief  calculate element length
        * \param  ele[in] element whose length should be calculated
        * \return         the length of the element
        *
