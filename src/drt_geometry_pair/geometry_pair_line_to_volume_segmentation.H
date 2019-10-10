@@ -44,7 +44,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Setup the segment tracker for this line element.
      */
-    void Setup();
+    void Setup() override;
 
     /**
      * \brief This method performs the segmentation of the line with the volume.
@@ -78,7 +78,7 @@ namespace GEOMETRYPAIR
      */
     void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:
     /**

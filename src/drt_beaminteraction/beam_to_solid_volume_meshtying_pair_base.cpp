@@ -28,7 +28,7 @@
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
 
 
@@ -328,7 +328,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateBeamPosition(
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
   if (reference)

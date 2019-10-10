@@ -15,8 +15,8 @@ on the surface of the (circular) beam cross section.
 
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
-#include "../drt_geometry_pair/geometry_pair_utility_functions.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
+#include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
@@ -83,7 +83,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     dserror("There can be a maximum of one segment!");
 
   // Get the vector with the projection points for this pair.
-  const std::vector<GEOMETRYPAIR::ProjectionPointLineToVolume<double>>& projection_points =
+  const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =
       this->line_to_volume_segments_[0].GetProjectionPoints();
 
   // If there are no projection points, return no contact status.
@@ -108,7 +108,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
        i_integration_point++)
   {
     // Get the current Gauss point.
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
         projection_points[i_integration_point];
 
     // Get the jacobian in the reference configuration.
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPointLineToVolume<double>&
+    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                      integration_point,
     LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {

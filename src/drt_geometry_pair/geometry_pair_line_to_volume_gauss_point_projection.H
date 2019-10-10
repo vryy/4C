@@ -45,7 +45,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Setup the projection tracker for this line element.
      */
-    void Setup();
+    void Setup() override;
 
     /**
      * \brief Try to project all Gauss points to the volume. Only points are checked that do not
@@ -58,7 +58,7 @@ namespace GEOMETRYPAIR
      */
     void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in PreEvaluate. If so, all Gauss
@@ -70,7 +70,7 @@ namespace GEOMETRYPAIR
      */
     void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:
     /**
