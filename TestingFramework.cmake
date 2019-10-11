@@ -980,9 +980,13 @@ result_file(invana_levenbergmarquardt_tri_fsi_contour 1 result xxx_coupneohooke_
 # Surface Current Evaluation needs Kokkos
 # Statistical stuff neeeds C++11
 if (HAVE_Kokkos)
+baci_test(invana_arch_surfcurr_target 2 "")
 baci_test(invana_arch_surfcurr 2 "")
+baci_test(invana_arch_surfcurr_prestress_pc_target 2 "")
 baci_test(invana_arch_surfcurr_prestress_pc 2 "")
+baci_test(invana_arch_surfcurr_volgrowth_target 2 "")
 baci_test(invana_arch_surfcurr_volgrowth_pc 2 "")
+baci_test(invana_arch_stat_target 2 "")
 baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_smc_estim invana_arch_stat_smcprediction 4 2 2)
 baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_mh_estim "" 4 2 "")
 endif (HAVE_Kokkos)
