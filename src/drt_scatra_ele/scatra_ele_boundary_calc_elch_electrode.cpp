@@ -571,7 +571,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       i -= residual / linearization;
     }
   }
-  //final scaling
+  // final scaling
   return i / faraday;
 }
 
@@ -670,10 +670,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
 
         k_ss(row_conc, col_conc) += test_slave(vi) * dj_dc_slave * funct_slave(ui);
         k_ss(row_conc, col_pot) += test_slave(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ss(row_pot, col_conc) +=
-            numelectrons * test_slave(vi) * dj_dc_slave * funct_slave(ui);
-        k_ss(row_pot, col_pot) +=
-            numelectrons * test_slave(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ss(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_slave * funct_slave(ui);
+        k_ss(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_slave * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -683,10 +681,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
 
         k_sm(row_conc, col_conc) += test_slave(vi) * dj_dc_master * funct_master(ui);
         k_sm(row_conc, col_pot) += test_slave(vi) * dj_dpot_master * funct_master(ui);
-        k_sm(row_pot, col_conc) +=
-            numelectrons * test_slave(vi) * dj_dc_master * funct_master(ui);
-        k_sm(row_pot, col_pot) +=
-            numelectrons * test_slave(vi) * dj_dpot_master * funct_master(ui);
+        k_sm(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_master * funct_master(ui);
+        k_sm(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_master * funct_master(ui);
       }
 
       r_s[row_conc] -= test_slave(vi) * j;
@@ -711,10 +707,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
 
         k_ms(row_conc, col_conc) -= test_master(vi) * dj_dc_slave * funct_slave(ui);
         k_ms(row_conc, col_pot) -= test_master(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ms(row_pot, col_conc) -=
-            numelectrons * test_master(vi) * dj_dc_slave * funct_slave(ui);
-        k_ms(row_pot, col_pot) -=
-            numelectrons * test_master(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ms(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_slave * funct_slave(ui);
+        k_ms(row_pot, col_pot) -= numelectrons * test_master(vi) * dj_dpot_slave * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -724,8 +718,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
 
         k_mm(row_conc, col_conc) -= test_master(vi) * dj_dc_master * funct_master(ui);
         k_mm(row_conc, col_pot) -= test_master(vi) * dj_dpot_master * funct_master(ui);
-        k_mm(row_pot, col_conc) -=
-            numelectrons * test_master(vi) * dj_dc_master * funct_master(ui);
+        k_mm(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_master * funct_master(ui);
         k_mm(row_pot, col_pot) -=
             numelectrons * test_master(vi) * dj_dpot_master * funct_master(ui);
       }
