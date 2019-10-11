@@ -989,6 +989,15 @@ void GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> 
   }
 }
 
+int GEO::CutWizard::Get_BC_Cubaturedegree() const
+{
+  if (is_set_options_)
+    return intersection_->GetOptions().BC_Cubaturedegree();
+  else
+    dserror("Get_BC_Cubaturedegree: Options are not set!");
+  return -1;  // dummy to make compiler happy :)
+}
+
 
 
 /// run after the Run_Cut routine has been called

@@ -2252,10 +2252,12 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_integrator_tsi.cpp
   src/drt_contact/contact_nitsche_integrator_poro.cpp
   src/drt_contact/contact_nitsche_integrator_fsi.cpp
+  src/drt_contact/contact_nitsche_integrator_fpi.cpp
   src/drt_contact/contact_ehl_integrator.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp
+  src/drt_contact/contact_interface_roundrobin.cpp
   src/drt_contact/contact_interface_tools.cpp
   src/drt_contact/contact_interpolator.cpp
   src/drt_contact/contact_lagrange_strategy.cpp
@@ -2270,6 +2272,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_strategy_tsi.cpp
   src/drt_contact/contact_nitsche_strategy_poro.cpp
   src/drt_contact/contact_nitsche_strategy_fsi.cpp
+  src/drt_contact/contact_nitsche_strategy_fpi.cpp
   src/drt_contact/contact_utils.cpp
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
@@ -2599,10 +2602,9 @@ src/drt_fiber/drt_fiber_node.cpp
 set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
-src/drt_geometry_pair/geometry_pair_utility_classes.cpp
-src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_to_surface.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp

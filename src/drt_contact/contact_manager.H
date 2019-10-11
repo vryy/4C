@@ -83,7 +83,7 @@ namespace CONTACT
     active set status of each slave node.
 
     \param output (in): IO::Discretization writer for restart
-
+    \param forcedrestart (in): Force writing of restart data?
     */
     void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
@@ -118,17 +118,18 @@ namespace CONTACT
     /*!
     \brief Reconnect Contact Element -- Parent Element Pointers
 
-    (As during the Restart the initial created structural elements are destructed and created again,
-    the pointer of these elements changes and therefore needs to be reconnected)
+    As during the Restart the initial created structural elements are destructed and created again,
+    the pointer of these elements changes and therefore needs to be reconnected
     */
     void ReconnectParentElements();
 
     /*!
     \brief Set Parent Elements for Poro Face Elements
 
-    \param output (in): int& type of slave/master elements --> = (-1; //1 poro, 0 struct, -1
-    default) Teuchos::RCP<CONTACT::CoElement>& Reference to pointer of contact face element!
-                        Teuchos::RCP<DRT::Element>& Reference to pointer of contact parent element!
+    \param slavetype type of slave elements --> = (-1; //1 poro, 0 struct, -1 default)
+    \param mastertype type of master elements --> = (-1; //1 poro, 0 struct, -1 default)
+    \param[out] cele Reference to pointer of contact face element
+    \param[out] ele Reference to pointer of contact parent element
 
     */
     void SetPoroParentElement(int& slavetype, int& mastertype,
@@ -137,34 +138,39 @@ namespace CONTACT
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface
 
-    \param output (in): bool& poromaster, bool& poroslave,
-        bool& structmaster, bool& structslave, int& slavetype, int& mastertype
-
+    \param poromaster ??
+    \param poroslave ??
+    \param structmaster ??
+    \param structslave ??
+    \param slavetype ??
+    \param mastertype ??
     */
     void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
         bool& structslave, int& slavetype, int& mastertype);
 
     //! @}
 
-   private:
-    /*!
-    \brief Read and check contact input parameters
-
-    All specified contact-related input parameters are read from the
-    DRT::Problem::Instance() and stored into a local variable of
-    type Teuchos::ParameterList. Invalid parameter combinations are
-    sorted out and throw a dserror.
-
-    */
-    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
-
    protected:
-    // don't want = operator and cctor
-    CoManager operator=(const CoManager& old) = delete;
-    CoManager(const CoManager& old) = delete;
-
     //! the underlying problem discretization
     DRT::Discretization& discret_;
+
+   private:
+    /*!
+     \brief Read and check contact input parameters
+
+     All specified contact-related input parameters are read from the
+     DRT::Problem::Instance() and stored into a local variable of
+     type Teuchos::ParameterList. Invalid parameter combinations are
+     sorted out and throw a dserror.
+
+     */
+    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+
+    //! don't want operator=
+    CoManager operator=(const CoManager& old) = delete;
+
+    //! don't want copy constructor
+    CoManager(const CoManager& old) = delete;
 
   };  // class CoManager
 }  // namespace CONTACT

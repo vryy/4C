@@ -153,6 +153,7 @@ namespace INPAR
       poro,           ///< poroelasticity problem with contact
       ehl,            ///< elasto-hydrodymanic lubrication
       fsi,            ///< coupled FSI problem with contact
+      fpi,            ///< coupled FPI problem with contact
       other           ///< other problemtypes
     };
 

@@ -82,11 +82,12 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::AUG::ParallelDistributionController::redistribute(
-    const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+    const Teuchos::RCP<const Epetra_Vector>& dis, Teuchos::RCP<const Epetra_Vector> vel,
+    const int nlniter)
 {
   if (nlniter % interval_ == 0)
   {
-    const bool is_redis = strat_.RedistributeContact(dis);
+    const bool is_redis = strat_.RedistributeContact(dis, vel);
     if (is_redis) sele_eval_times_ = Teuchos::null;
 
     return is_redis;

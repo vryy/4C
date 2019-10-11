@@ -148,7 +148,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINA
   // standard solver call
   // system is ready to solve since Dirichlet Boundary conditions have been applied in
   // SetupSystemMatrix or Evaluate
-  solver->Solve(comb_systemmatrix_->EpetraOperator(), comb_increment_, rhs_, true, false);
+  solver->Solve(sparse->EpetraOperator(), comb_increment_, rhs_, true, false);
 
   return;
 }
@@ -309,4 +309,13 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement() const
 {
   arttoporofluidcoupling_->ApplyMeshMovement();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | access to blood vessel volume fraction              kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>
+POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::BloodVesselVolumeFraction()
+{
+  return arttoporofluidcoupling_->BloodVesselVolumeFraction();
 }

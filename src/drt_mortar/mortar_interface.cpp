@@ -538,7 +538,8 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistribution, const int maxdof)
+void MORTAR::MortarInterface::FillComplete(
+    const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -580,7 +581,7 @@ void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistributio
 
   CreateInterfaceLocalCommunicator();
 
-  ExtendInterfaceGhosting(isFinalParallelDistribution);
+  ExtendInterfaceGhosting(isFinalParallelDistribution, meanVelocity);
 
   // make sure discretization is complete
   Discret().FillComplete(isFinalParallelDistribution, false, false);
@@ -1081,55 +1082,9 @@ void MORTAR::MortarInterface::InitializeDataContainer()
 
 
 /*----------------------------------------------------------------------*
- |  Parallel Strategy based on bin distribution (public)     farah 11/13|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::BinningStrategy(
-    Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel)
-{
-  // Create the binning strategy
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
-
-  // fill master and slave elements into bins
-  std::map<int, std::set<int>> slavebinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
-  std::map<int, std::set<int>> masterbinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
-
-  // ghosting is extended
-  Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
-      Discret(), *initial_elecolmap, slavebinelemap, masterbinelemap);
-
-  // adapt layout to extended ghosting in discret
-  // first export the elements according to the processor local element column maps
-  Discret().ExportColumnElements(*extendedmastercolmap);
-
-  // get the node ids of the elements that are to be ghosted and create a proper node column map for
-  // their export
-  std::set<int> nodes;
-  for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
-  {
-    DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
-  }
-
-  std::vector<int> colnodes(nodes.begin(), nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
-
-  // now ghost the nodes
-  Discret().ExportColumnNodes(*nodecolmap);
-
-  // fillcomplete interface
-  FillComplete(true);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinningStrategy(
-    const double vel)
+    const double meanVelocity)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
   LINALG::Matrix<3, 2> XAABB(false);
@@ -1189,10 +1144,10 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (vel >= EPS12)
+  if (meanVelocity >= EPS12)
   {
     const double dt = InterfaceParams().get<double>("TIMESTEP");
-    cutoff = cutoff + 2 * dt * vel;
+    cutoff = cutoff + 2 * dt * meanVelocity;
   }
 
   // increase XAABB by 2x cutoff radius
@@ -1264,7 +1219,7 @@ void MORTAR::MortarInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nRedistributing interface '" << Discret().Name() << "' using ZOLTAN.........\n";
+    std::cout << "\nRedistributing interface '" << Discret().Name() << "' .........\n";
     std::cout << "Procs used for redistribution: " << sproc << " / " << mproc << " (S / M)\n";
   }
 
@@ -1338,7 +1293,8 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallelDistribution)
+void MORTAR::MortarInterface::ExtendInterfaceGhosting(
+    const bool isFinalParallelDistribution, const double meanVelocity)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
@@ -1595,8 +1551,8 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallel
       Discret().FillComplete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
-      const double vel = 0.0;
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+          SetupBinningStrategy(meanVelocity);
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;

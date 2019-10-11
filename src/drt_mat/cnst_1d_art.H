@@ -22,6 +22,12 @@ namespace MAT
 {
   namespace PAR
   {
+    enum ArteryViscosityLaw
+    {
+      viscositylaw_undefined,
+      constant,
+      blood
+    };
     /*----------------------------------------------------------------------*/
     /// material parameters for constant 1D_Artery
     ///
@@ -51,6 +57,11 @@ namespace MAT
       const double pext1_;
       /// Fixed external pressure at node 2
       const double pext2_;
+      /// viscosity law
+      ArteryViscosityLaw viscositylaw_;
+      //! used to scale the diameter for blood viscosity law to microns if your problem is not
+      //! given in microns, e.g., if you use mms, set this parameter to 1.0e3
+      const double blood_visc_scale_diam_to_microns_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -134,7 +145,7 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Cnst_1d_art(*this)); }
 
     /// return viscosity
-    double Viscosity() const { return params_->viscosity_; }
+    double Viscosity() const;
 
     /// return density
     virtual double Density() const { return params_->density_; }
@@ -170,6 +181,29 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
    private:
+    /*! \brief Calculate blood viscosity based on empirical law for blood fully saturated with
+     *         oxygen, i.e., hematocrit 0.45
+     *
+     *  Calculate blood viscosity based on empirical law by
+     *  Pries AR, Secomb TW. 2005. Microvascular blood viscosity in vivo and the endothelial surface
+     *  layer. Am. J. Physiol. Heart Circ. Physiol. 289:H2657–64
+     *  https://doi.org/10.1152/ajpheart.00297.2005
+     *  hematocrit of 0.45 (blood fully saturated with oxygen) is assumed
+     *
+     *  \note In the aforementioned paper, everything is given in a micrometer scaling, hence, this
+     *        function assumes micro-meters. If spatial units are not given in micro-meters, caller
+     *        of this function has to take care of passing diameter in units of micro-meter. If your
+     *        problem is given in different units, consider the parameter
+     *        BLOOD_VISC_SCALE_DIAM_TO_MICRONS, which may be used to scale your diameter to the
+     *        appropriate units, i.e., for a problem with length of mm use
+     *        BLOOD_VISC_SCALE_DIAM_TO_MICRONS = 1.0e3 to get diameter in microns
+     *
+     *  \param[in] diam        diameter of 1D element (in micro-meters)
+     *  \param[in] plasmavisc  viscosity of blood plasma (should be approx. 1.05e-3 Pa s)
+     *  \return    blood viscosity
+     */
+    double CalculateBloodViscosity(const double diam, const double plasmavisc) const;
+
     /// my material parameters
     MAT::PAR::Cnst_1d_art* params_;
     /// Artery initial diameter

@@ -15,7 +15,7 @@
 
 #include "../drt_so3/so_base.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 
 

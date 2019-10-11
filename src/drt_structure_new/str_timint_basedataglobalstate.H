@@ -143,6 +143,9 @@ namespace STR
 
       /*! \brief Extract the part of a vector which belongs to the displacement dofs.
        *
+       * \todo ToDo "displacement dofs" might be misleading, since this could also be applied to
+       * extract velocities of those DOFs associated with translations.
+       *
        * \param source (in) : full vector to extract from. */
       Teuchos::RCP<Epetra_Vector> ExtractDisplEntries(const Epetra_Vector& source) const;
 

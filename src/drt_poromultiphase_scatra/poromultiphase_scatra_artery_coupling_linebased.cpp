@@ -22,6 +22,7 @@
 #include "../linalg/linalg_multiply.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
+#include "../drt_mat/cnst_1d_art.H"
 
 
 /*----------------------------------------------------------------------*
@@ -43,6 +44,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
       pp_(couplingparams_.get<double>("PENALTY")),
+      maxnumsegperartele_(DRT::Problem::Instance()
+                              ->PoroFluidMultiPhaseDynamicParams()
+                              .sublist("ARTERY COUPLING")
+                              .get<int>("MAXNUMSEGPERARTELE")),
       timersearch_(Comm())
 {
   // user info
@@ -132,6 +137,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
   // fill length of artery elements that is not influenced if the underlying
   // 2D/3D mesh moves (basically protruding artery elements or segments)
   FillUnaffectedArteryLength();
+
+  // calculate blood vessel volume fraction (only porofluid needs to do this)
+  if (contdis_->Name() == "porofluid" &&
+      (DRT::INPUT::IntegralValue<int>(couplingparams_, "OUTPUT_BLOODVESSELVOLFRAC")))
+    CalculateBloodVesselVolumeFraction();
 
   // print out summary of pairs
   OutputSummary();
@@ -269,6 +279,95 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
       active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
 
+  // the following case takes care of the special occurence where the 1D element lies exactly in
+  // between two 2D/3D-elements which are owned by different processors
+
+  // fill the GID-to-segment vector
+  std::map<int, std::vector<double>> gid_to_seglength;
+  FillGIDToSegmentVector(active_coupl_elepairs, gid_to_seglength);
+
+  // dummy map to collect duplicates in form [ele2gid, eta_a, eta_b, ... ];
+  std::map<int, std::vector<double>> duplicates;
+
+  // loop over all artery elements
+  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
+  {
+    const int artelegid = arterydis_->ElementColMap()->GID(i);
+    if (gid_to_seglength[artelegid].size() > 0)  // check if element projects
+    {
+      // compare all segment with each other if it might be identical
+      for (int iseg = 0; iseg < (int)(gid_to_seglength[artelegid].size() / 2); iseg++)
+      {
+        const double eta_a = gid_to_seglength[artelegid][2 * iseg];
+        const double eta_b = gid_to_seglength[artelegid][2 * iseg + 1];
+        for (int jseg = iseg + 1; jseg < (int)(gid_to_seglength[artelegid].size() / 2); jseg++)
+        {
+          const double eta_a_jseg = gid_to_seglength[artelegid][2 * jseg];
+          const double eta_b_jseg = gid_to_seglength[artelegid][2 * jseg + 1];
+          // identical segment found
+          if (fabs(eta_a - eta_a_jseg) < XIETATOL && fabs(eta_b - eta_b_jseg) < XIETATOL)
+          {
+            // we need this to get the ele2gid
+            int id = -1;
+            if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+            {
+              const int ele2gid = active_coupl_elepairs[id]->Ele2GID();
+              duplicates[artelegid].push_back((double)(ele2gid));
+              duplicates[artelegid].push_back(eta_a);
+              duplicates[artelegid].push_back(eta_b);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // communicate the dummy map to all procs.
+  std::vector<int> allproc(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), &allproc[0], Comm());
+
+  // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
+  // id)
+  std::map<int, std::vector<double>>::iterator it;
+  for (it = duplicates.begin(); it != duplicates.end(); it++)
+  {
+    const int artelegid = it->first;
+    std::vector<double> myduplicates = it->second;
+    // should always be a multiple of six because we should always find exactly two/four, etc.
+    // duplicates
+    if (myduplicates.size() % 6 != 0)
+      dserror("duplicate vector has size %i, should be multiple of six", myduplicates.size());
+    // compare the possible duplicates
+    for (int idupl = 0; idupl < (int)(myduplicates.size() / 3); idupl++)
+    {
+      const double eta_a = myduplicates[3 * idupl + 1];
+      const double eta_b = myduplicates[3 * idupl + 2];
+      for (int jdupl = idupl + 1; jdupl < (int)(myduplicates.size() / 3); jdupl++)
+      {
+        const double eta_a_jdupl = myduplicates[3 * jdupl + 1];
+        const double eta_b_jdupl = myduplicates[3 * jdupl + 2];
+        // duplicate found
+        if (fabs(eta_a - eta_a_jdupl) < XIETATOL && fabs(eta_b - eta_b_jdupl) < XIETATOL)
+        {
+          const int ele_i = (int)myduplicates[3 * idupl];
+          const int ele_j = (int)myduplicates[3 * jdupl];
+          const int ele_to_be_erased = std::max(ele_i, ele_j);
+          int id = -1;
+          // delete the duplicate with the larger ele2gid
+          if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+          {
+            if (active_coupl_elepairs[id]->Ele2GID() == ele_to_be_erased)
+            {
+              active_coupl_elepairs.erase(active_coupl_elepairs.begin() + id);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // overwrite the coupling pairs
   coupl_elepairs_ = active_coupl_elepairs;
 
   // output
@@ -391,38 +490,67 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   return;
 }
 
+/*------------------------------------------------------------------------*
+ | calculate blood vessel volume fraction                kremheller 08/19 |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
+    CalculateBloodVesselVolumeFraction()
+{
+  bloodvesselvolfrac_ = Teuchos::rcp(new Epetra_Vector(*contdis_->ElementRowMap(), true));
+
+  double totalvolblood = 0.0;
+  // evaluate all pairs
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
+  {
+    const int artelegid = coupl_elepairs_[i]->Ele1GID();
+    const int contelegid = coupl_elepairs_[i]->Ele2GID();
+
+    DRT::Element* artele = arterydis_->gElement(artelegid);
+
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    // TODO: this will not work for higher order artery eles
+    const double etaA = coupl_elepairs_[i]->EtaA();
+    const double etaB = coupl_elepairs_[i]->EtaB();
+    const double length = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+
+    const double vol_cont = coupl_elepairs_[i]->CalculateVol2D3D();
+    const double vol_art =
+        (etaB - etaA) / 2.0 * length * arterymat->Diam() * arterymat->Diam() * M_PI / 4.0;
+
+    totalvolblood += vol_art;
+
+    const double volfrac = vol_art / vol_cont;
+
+    // note: this works since we 2D/3D continuous element of each pair is always owned by this proc.
+    int err = bloodvesselvolfrac_->SumIntoGlobalValues(1, &volfrac, &contelegid);
+    if (err) dserror("SumIntoGlobalValues failed!");
+  }
+
+  // user output
+  double vol_sumall = 0.0;
+  Comm().SumAll(&totalvolblood, &vol_sumall, 1);
+  if (myrank_ == 0)
+  {
+    std::cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    std::cout << "<    Calculating blood vessel volume fraction      >" << std::endl;
+    std::cout << "<    total volume blood:    " << std::setw(5) << vol_sumall
+              << "                 >" << std::endl;
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | create the GID to segment vector                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSegmentVector()
 {
   // fill the GID-to-segment vector
-  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-  {
-    const int artelegid = coupl_elepairs_[i]->Ele1GID();
-    const int contelegid = coupl_elepairs_[i]->Ele2GID();
-
-    const DRT::Element* contele = contdis_->gElement(contelegid);
-
-    const double etaA = coupl_elepairs_[i]->EtaA();
-    const double etaB = coupl_elepairs_[i]->EtaB();
-
-    if (contele->Owner() == myrank_)
-    {
-      gid_to_segment_[artelegid].push_back(etaA);
-      gid_to_segment_[artelegid].push_back(etaB);
-    }
-    else
-      dserror(
-          "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
-          "element is not owned by this proc.");
-  }
-
-  // communicate it to all procs.
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  LINALG::Gather<double>(
-      gid_to_segment_, gid_to_segment_, (int)allproc.size(), &allproc[0], Comm());
+  FillGIDToSegmentVector(coupl_elepairs_, gid_to_segment_);
 
   // sort and take care of special cases
   for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
@@ -435,14 +563,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       const int end = gid_to_segment_[artelegid].size();
       const double valueAtEnd = gid_to_segment_[artelegid][end - 1];
       // end of element lies outside domain
-      if (fabs(valueAtEnd - 1.0) > ETAABTOL)
+      if (fabs(valueAtEnd - 1.0) > XIETATOL)
       {
         gid_to_segment_[artelegid].push_back(valueAtEnd);
         gid_to_segment_[artelegid].push_back(1.0);
       }
       const double valueAtBegin = gid_to_segment_[artelegid][0];
       // beginning of element lies outside domain
-      if (fabs(valueAtBegin + 1.0) > ETAABTOL)
+      if (fabs(valueAtBegin + 1.0) > XIETATOL)
       {
         gid_to_segment_[artelegid].insert(gid_to_segment_[artelegid].begin(), valueAtBegin);
         gid_to_segment_[artelegid].insert(gid_to_segment_[artelegid].begin(), -1.0);
@@ -459,18 +587,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
   // safety checks
   for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
   {
-    // 1) check if artery element has more than MAXNUMSEGPERELE segments
+    // 1) check if artery element has more than MAXNUMSEGPERARTELE segments
     const int artelegid = arterydis_->ElementColMap()->GID(i);
-    if (gid_to_segment_[artelegid].size() > 2 * MAXNUMSEGPERELE)
+    if ((int)gid_to_segment_[artelegid].size() > 2 * maxnumsegperartele_)
       dserror(
           "Artery element %i has %i segments, which is more than the maximum allowed number of %i "
-          "segments per artery element, increase MAXNUMSEGPERELE",
-          artelegid, (int)(gid_to_segment_[artelegid].size() / 2), MAXNUMSEGPERELE);
+          "segments per artery element, increase MAXNUMSEGPERARTELE",
+          artelegid, (int)(gid_to_segment_[artelegid].size() / 2), maxnumsegperartele_);
     // 2) check if segment has been overlooked
     for (int iseg = 0; iseg < (int)(gid_to_segment_[artelegid].size() / 2) - 1; iseg++)
     {
       if (fabs(gid_to_segment_[artelegid][2 * iseg + 1] -
-               gid_to_segment_[artelegid][2 * iseg + 2]) > SMALLESTSEGMENT)
+               gid_to_segment_[artelegid][2 * iseg + 2]) > XIETATOL)
       {
         std::cout << "Problem with segments of artery-element " << artelegid << ":" << std::endl;
         for (int jseg = 0; jseg < (int)(gid_to_segment_[artelegid].size() / 2); jseg++)
@@ -478,13 +606,49 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
           std::cout << "[" << gid_to_segment_[artelegid][2 * jseg] << ", "
                     << gid_to_segment_[artelegid][2 * jseg + 1] << "]" << std::endl;
         }
-        dserror(
-            "artery element %i has probably not found all possible segments, increase "
-            "NUMPROJCHECKS",
-            artelegid);
+        dserror("artery element %i has probably not found all possible segments", artelegid);
       }
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | fill the GID to segment vector                      kremheller 08/19 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegmentVector(
+    const std::vector<Teuchos::RCP<
+        POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+    std::map<int, std::vector<double>>& gid_to_seglength)
+{
+  // fill the GID-to-segment vector
+  for (unsigned i = 0; i < coupl_elepairs.size(); i++)
+  {
+    const int artelegid = coupl_elepairs[i]->Ele1GID();
+    const int contelegid = coupl_elepairs[i]->Ele2GID();
+
+    const DRT::Element* contele = contdis_->gElement(contelegid);
+
+    const double etaA = coupl_elepairs[i]->EtaA();
+    const double etaB = coupl_elepairs[i]->EtaB();
+
+    if (contele->Owner() == myrank_)
+    {
+      gid_to_seglength[artelegid].push_back(etaA);
+      gid_to_seglength[artelegid].push_back(etaB);
+    }
+    else
+      dserror(
+          "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
+          "element is not owned by this proc.");
+  }
+
+  // communicate it to all procs.
+  std::vector<int> allproc(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  LINALG::Gather<double>(
+      gid_to_seglength, gid_to_seglength, (int)allproc.size(), &allproc[0], Comm());
 
   return;
 }
@@ -763,7 +927,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLength
 
   Teuchos::RCP<const Epetra_Vector> curr_seg_lengths = arterydis_->GetState(1, "curr_seg_lengths");
 
-  std::vector<double> seglengths(MAXNUMSEGPERELE);
+  std::vector<double> seglengths(maxnumsegperartele_);
   DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
 
   return seglengths;
@@ -801,8 +965,8 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSeg
     // first check if ele1-Gid is identical
     if (ele1gid == coupl_elepairs[i]->Ele1GID())
       // check if integration segment is the same
-      if (fabs(etaA - coupl_elepairs[i]->EtaA()) < ETAABTOL &&
-          fabs(etaB - coupl_elepairs[i]->EtaB()) < ETAABTOL)
+      if (fabs(etaA - coupl_elepairs[i]->EtaA()) < XIETATOL &&
+          fabs(etaB - coupl_elepairs[i]->EtaB()) < XIETATOL)
       {
         if (PROJOUTPUT) std::cout << "found duplicate integration segment" << std::endl;
         elepairID = i;
@@ -837,8 +1001,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateNewArteryCoup
           return Teuchos::rcp(
               new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
                   DRT::Element::hex8>());
+        case DRT::Element::tet4:
+          return Teuchos::rcp(
+              new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+                  DRT::Element::tet4>());
         default:
-          dserror("only quad4 and hex8 elements supported for continuous elements so far");
+          dserror("only quad4, hex8 and tet4 elements supported for continuous elements so far");
       }
       break;
     }
@@ -967,6 +1135,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | access to blood vessel volume fraction              kremheller 08/19 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BloodVesselVolumeFraction()
+{
+  return bloodvesselvolfrac_;
+}
+
 
 /*----------------------------------------------------------------------*
  | print out method                                    kremheller 06/18 |

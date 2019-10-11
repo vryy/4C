@@ -19,6 +19,8 @@
 #include <Epetra_Vector.h>
 #include "../drt_inpar/inpar_xfem.H"
 
+//#define WRITE_GMSH
+
 namespace MORTAR
 {
   class MortarElement;
@@ -27,6 +29,8 @@ namespace CONTACT
 {
   class CoElement;
   class CoNitscheStrategyFsi;
+  class CoNitscheStrategyFpi;
+  class CoNitscheStrategy;
 }  // namespace CONTACT
 
 namespace DRT
@@ -62,7 +66,7 @@ namespace XFEM
   {
    public:
     //! constructor
-    explicit XFluid_Contact_Comm(CONTACT::CoNitscheStrategyFsi& contact_strategy)
+    explicit XFluid_Contact_Comm(CONTACT::CoNitscheStrategy& contact_strategy)
         : fluid_init_(false),
           ele_ptrs_already_setup_(false),
           cutwizard_(Teuchos::null),
@@ -90,7 +94,9 @@ namespace XFEM
           extrapolate_to_zero_(false),
           my_sele_ids_(std::set<int>()),
           contact_ele_rowmap_fluidownerbased_(Teuchos::null),
-          contact_strategy_(contact_strategy)
+          contact_strategy_(contact_strategy),
+          contact_strategy_fsi_(NULL),
+          contact_strategy_fpi_(NULL)
     {
     }
 
@@ -211,7 +217,21 @@ namespace XFEM
     /// Increment gausspoint counter
     void Inc_GP(int state) { ++sum_gps_[state]; }
 
+    //! get distance when transition between FPSI and PSCI is started
+    double Get_fpi_pcontact_exchange_dist();
+
+    //! ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is starte
+    double Get_fpi_pcontact_fullfraction();
+
    private:
+    //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
+    //! return true if contact is evaluated, reture false if FSI is evaluated
+    bool CheckNitscheContactState(CONTACT::CoElement* cele,
+        const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const double& full_fsi_traction,  // stressfluid + penalty
+        double& gap                       // gap
+    );
+
     /// Get the fluid states at specific selexi
     void Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
         const DRT::ELEMENTS::StructuralSurface* sele, const LINALG::Matrix<2, 1>& selexsi,
@@ -255,7 +275,7 @@ namespace XFEM
         GEO::CUT::Element* ele, std::set<GEO::CUT::Element*>& performed_elements, int& lastid);
 
     /// access to contact/meshtying bridge
-    CONTACT::CoNitscheStrategyFsi& GetContactStrategy() { return contact_strategy_; }
+    CONTACT::CoNitscheStrategy& GetContactStrategy() { return contact_strategy_; }
 
     /// fluid state members initialized
     bool fluid_init_;
@@ -318,7 +338,13 @@ namespace XFEM
     Teuchos::RCP<Epetra_Map> contact_ele_rowmap_fluidownerbased_;
 
     /// The Contact Strategy
-    CONTACT::CoNitscheStrategyFsi& contact_strategy_;
+    CONTACT::CoNitscheStrategy& contact_strategy_;
+
+    /// The Contact Strategy casted to fsi
+    CONTACT::CoNitscheStrategyFsi* contact_strategy_fsi_;
+
+    /// The Contact Strategy casted to fpi
+    CONTACT::CoNitscheStrategyFpi* contact_strategy_fpi_;
 
     /// Contact Elements with increased number of GPs
     std::set<int> higher_contact_elements_;
@@ -336,7 +362,7 @@ namespace XFEM
     /// store the last evaluted set of physical sides for solid side with id key
     std::pair<int, std::set<GEO::CUT::Side*>> last_physical_sides_;
 
-    /// last computed element h measure
+    /// last computed element h measure with key fluidele id
     std::pair<int, double> last_ele_h_;
   };  // class XFluid_Contact_Comm
 }  // namespace XFEM

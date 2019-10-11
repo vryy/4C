@@ -259,7 +259,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
-  if (problemtype == prb_fsi_xfem)
+  if (problemtype == prb_fsi_xfem || problemtype == prb_fpsi_xfem)
     Searchele_AllProc = true;
   else
     Searchele_AllProc = false;
@@ -288,8 +288,8 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
             "other contact conditions with same ID need to be defined accordingly!");
     }
 
-    if (problemtype != prb_structure && problemtype != prb_fsi_xfem)
-      dserror("two half pass algorithm only implemented in structural and fsi problems");
+    if (problemtype != prb_structure && problemtype != prb_fsi_xfem && problemtype != prb_fpsi_xfem)
+      dserror("two half pass algorithm only implemented in structural and fsi/fpsi problems");
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
       dserror("two half pass algorithm only with nitsche contact formulation");

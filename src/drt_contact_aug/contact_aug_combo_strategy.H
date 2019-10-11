@@ -180,8 +180,8 @@ namespace CONTACT
       void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
 
       /// function wrapper
-      bool DynRedistributeContact(
-          const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter) override;
+      bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+          Teuchos::RCP<const Epetra_Vector> vel, const int nlniter) override;
 
       /// @}
 

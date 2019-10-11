@@ -640,6 +640,19 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::fsi);
   }
+  else if (problemtype == prb_fpsi_xfem)
+  {
+    dserror(
+        "Everything which is related to a special time integration scheme has to be moved to the"
+        " related scheme. Don't do it here! -- hiermeier 02/2016");
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    params.set<int>("PROBTYPE", INPAR::CONTACT::fpi);
+    //    //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
+    //    double porotimefac = 1/(stru.sublist("ONESTEPTHETA").get<double>("THETA") *
+    //    stru.get<double>("TIMESTEP")); params.set<double> ("porotimefac", porotimefac);
+    params.set<bool>("CONTACTNOPEN",
+        DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
+  }
   else
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::other);
@@ -1769,13 +1782,6 @@ void CONTACT::STRATEGY::Factory::Print(
 
   // print initial parallel redistribution
   for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
-
-  // show default parameters
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << std::endl;
-    DRT::INPUT::PrintDefaultParameters(IO::cout, strategy_ptr->Params());
-  }
 
   if (Comm().MyPID() == 0)
   {

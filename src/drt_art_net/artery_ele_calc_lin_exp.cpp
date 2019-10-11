@@ -157,7 +157,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
     const ARTERY::Action action, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
@@ -166,42 +166,42 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
   {
     case ARTERY::get_initial_artery_state:
     {
-      Initial(ele, params, discretization, lm, mat);
+      Initial(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::set_term_bc:
     {
-      EvaluateTerminalBC(ele, params, discretization, lm, mat);
+      EvaluateTerminalBC(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::set_scatra_term_bc:
     {
-      EvaluateScatraBC(ele, params, discretization, lm, mat);
+      EvaluateScatraBC(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::solve_riemann_problem:
     {
-      SolveRiemann(ele, params, discretization, lm, mat);
+      SolveRiemann(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::calc_postpro_vals:
     {
-      CalcPostprocessingValues(ele, params, discretization, lm, mat);
+      CalcPostprocessingValues(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::calc_scatra_from_scatra_fb:
     {
-      CalcScatraFromScatraFW(ele, params, discretization, lm, mat);
+      CalcScatraFromScatraFW(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::evaluate_wf_wb:
     {
-      EvaluateWfAndWb(ele, params, discretization, lm, mat);
+      EvaluateWfAndWb(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::evaluate_scatra_analytically:
     {
-      SolveScatraAnalytically(ele, params, discretization, lm, mat);
+      SolveScatraAnalytically(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     default:

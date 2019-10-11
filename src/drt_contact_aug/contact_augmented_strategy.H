@@ -969,8 +969,8 @@ namespace CONTACT
       void CheckParallelDistribution(const GlobalTimeMonitor& global_timer);
 
       /// handle dynamic redistribution of the contact interface elements
-      bool DynRedistributeContact(
-          const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter) override;
+      bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+          Teuchos::RCP<const Epetra_Vector> vel, const int nlniter) override;
 
       /** spread the global evaluation times of the slave elements to the different
        *  contact interfaces */

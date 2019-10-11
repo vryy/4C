@@ -257,7 +257,6 @@ namespace MORTAR
         Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
         const int iter, bool predictor = false) = 0;
     virtual void AssembleMortar() = 0;
-    virtual void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
@@ -314,7 +313,8 @@ namespace MORTAR
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
-    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool RedistributeContact(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) = 0;
     virtual void RedistributeMeshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;

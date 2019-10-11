@@ -24,20 +24,6 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Geometry discretization type of volume element.
-   */
-  enum class DiscretizationTypeVolume
-  {
-    //! none
-    none,
-    //! hexaeder
-    hexaeder,
-    //! tetraeder
-    tetraeder
-  };
-
-
-  /**
    * \brief Result of a projection with the geometry pairs.
    */
   enum class ProjectionResult
@@ -52,12 +38,12 @@ namespace GEOMETRYPAIR
     projection_found_valid
   };
 
-
   /**
-   * \brief Class that represents a projection from a line to a volume.
+   * \brief Class that represents a projection from a 1D structure (usually a line) to a 3D
+   * structure (can be volume, as well as surface including normal direction).
    */
   template <typename scalar_type>
-  class ProjectionPointLineToVolume
+  class ProjectionPoint1DTo3D
   {
    public:
     /**
@@ -66,7 +52,7 @@ namespace GEOMETRYPAIR
      * @param xi Parameter coordinates in volume.
      * @param gauss_weight Gauss weight for this point.
      */
-    ProjectionPointLineToVolume(
+    ProjectionPoint1DTo3D(
         scalar_type eta, LINALG::Matrix<3, 1, scalar_type> xi, double gauss_weight)
         : eta_(eta),
           xi_(xi),
@@ -80,13 +66,13 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on line.
      * @param xi Parameter coordinates in volume.
      */
-    ProjectionPointLineToVolume(scalar_type eta, LINALG::Matrix<3, 1, scalar_type> xi)
-        : ProjectionPointLineToVolume(eta, xi, -1.){};
+    ProjectionPoint1DTo3D(scalar_type eta, LINALG::Matrix<3, 1, scalar_type> xi)
+        : ProjectionPoint1DTo3D(eta, xi, -1.){};
 
     /**
      * \brief Destructor.
      */
-    virtual ~ProjectionPointLineToVolume(){};
+    virtual ~ProjectionPoint1DTo3D(){};
 
     /**
      * \brief Set the parameter coordinate on the line.
@@ -173,8 +159,8 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return True if smaller, false if larger.
      */
-    friend bool operator<(const ProjectionPointLineToVolume<scalar_type>& lhs,
-        const ProjectionPointLineToVolume<scalar_type>& rhs)
+    friend bool operator<(const ProjectionPoint1DTo3D<scalar_type>& lhs,
+        const ProjectionPoint1DTo3D<scalar_type>& rhs)
     {
       if (lhs.GetEta() < rhs.GetEta() - CONSTANTS::projection_xi_eta_tol)
         return true;
@@ -188,8 +174,8 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return False if smaller, true if larger.
      */
-    friend bool operator>(const ProjectionPointLineToVolume<scalar_type>& lhs,
-        const ProjectionPointLineToVolume<scalar_type>& rhs)
+    friend bool operator>(const ProjectionPoint1DTo3D<scalar_type>& lhs,
+        const ProjectionPoint1DTo3D<scalar_type>& rhs)
     {
       if (lhs.GetEta() > rhs.GetEta() + CONSTANTS::projection_xi_eta_tol)
         return true;
@@ -267,7 +253,7 @@ namespace GEOMETRYPAIR
      * \brief Add a projection point to the projection point vector.
      * @param projection_point projection point to add to the end of the vector.
      */
-    inline void AddProjectionPoint(ProjectionPointLineToVolume<scalar_type> projection_point)
+    inline void AddProjectionPoint(ProjectionPoint1DTo3D<scalar_type> projection_point)
     {
       segment_projection_points_.push_back(projection_point);
     }
@@ -285,7 +271,7 @@ namespace GEOMETRYPAIR
      * \brief Return a const reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline const std::vector<ProjectionPointLineToVolume<scalar_type>>& GetProjectionPoints() const
+    inline const std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPoints() const
     {
       return segment_projection_points_;
     }
@@ -294,7 +280,7 @@ namespace GEOMETRYPAIR
      * \brief Return a mutable reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline std::vector<ProjectionPointLineToVolume<scalar_type>>& GetProjectionPointsMutable()
+    inline std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPointsMutable()
     {
       return segment_projection_points_;
     }
@@ -357,7 +343,7 @@ namespace GEOMETRYPAIR
     scalar_type eta_b_;
 
     //! Vector to store projection points for this segment.
-    std::vector<ProjectionPointLineToVolume<scalar_type>> segment_projection_points_;
+    std::vector<ProjectionPoint1DTo3D<scalar_type>> segment_projection_points_;
   };
 
 }  // namespace GEOMETRYPAIR

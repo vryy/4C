@@ -79,12 +79,19 @@ namespace WEAR
     /*!
     \brief Redistribute all contact interfaces in parallel
 
-    We hand in the current global displacement state so that
-    a contact search can be performed and set state called.
+    We hand in the current global displacement state so that a contact search can be performed and
+    set state called.
 
-    \return TRUE if a redistribution took place. Return FALSE otherwise.
+    The current velocity state is required in case of extedning the ghosting via binning to account
+    for relative motion between interfaces.
+
+    \param[in] dis Current displacement state
+    \param[in] vel Current velocity state
+
+    \return TRUE if the interface has been redistributed. Return FALSE otherwise.
     */
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final;
+    bool RedistributeContact(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) final;
 
     /*!
     \brief Build 2x2 saddle point system

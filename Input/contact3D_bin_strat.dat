@@ -44,8 +44,8 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
 TIMESTEP                        0.02
-NUMSTEP                         30
-MAXTIME                         0.6
+NUMSTEP                         15
+MAXTIME                         0.3
 DAMPING                         Yes
 M_DAMP                          0.00001
 K_DAMP                          0.00001
@@ -55,7 +55,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -76,6 +76,7 @@ SEARCH_PARAM                    0.3
 REDUNDANT_STORAGE               none
 GHOSTING_STRATEGY               binningstrategy
 PARALLEL_REDIST                 dynamic
+MAX_BALANCE                     1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -1162,13 +1163,13 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1 VALUES 0 0 0.2 0.2
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.3 1 VALUES 0 0 0.4 0.4
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1 VALUES 0 1 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.3 1 VALUES 0 1 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 2.01549143076004134e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.97001280103979354e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.76562789671415299e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 4.06763520927109490e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 4.03766188121956138e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.85525598658079871e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

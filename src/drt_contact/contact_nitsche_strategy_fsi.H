@@ -91,5 +91,19 @@ namespace CONTACT
     //! Nitsche weighting strategy
     INPAR::CONTACT::NitscheWeighting weighting_;
   };
+
+  namespace UTILS
+  {
+    //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
+    //! return true if contact is evaluated, reture false if FSI is evaluated
+    bool CheckNitscheContactState(CONTACT::CoInterface& contactinterface,  ///< Contact interface
+        const double& pen_n,                         ///< Nitsche normal penalty parameter
+        INPAR::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
+        CONTACT::CoElement* cele,                    ///< the contact element
+        const LINALG::Matrix<2, 1>& xsi,             ///< local coord on the ele element
+        const double& full_fsi_traction,             ///< stressfluid + penalty
+        double& gap                                  ///< gap
+    );
+  }  // namespace UTILS
 }  // namespace CONTACT
 #endif  //  CONTACT_NITSCHE_STRATEGY_FSI_H

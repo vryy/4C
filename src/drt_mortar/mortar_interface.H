@@ -642,11 +642,6 @@ namespace MORTAR
     const Teuchos::ParameterList& InterfaceParams() const { return imortar_; };
 
     /*!
-    \brief binning strategy for efficient ghosting
-    */
-    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel);
-
-    /*!
     \brief Get quadratic 2d/3d slave element flag
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.
@@ -1011,9 +1006,12 @@ namespace MORTAR
     \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
+    \param meanVelocity (in): mean velocity of this interface (for contact with ghosting by binning)
+
     \return Filled()==true
     */
-    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0);
+    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0,
+        const double meanVelocity = 0.0);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1528,8 +1526,9 @@ namespace MORTAR
     \post The interface discretization is _NOT_ FillComplete.
 
     \param[in] isFinalParallelDistribution Is this parallel distribution final?
+    \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
-    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution);
+    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
 
     /*!
     \brief Update master and slave interface maps for DOFs
@@ -1597,10 +1596,10 @@ namespace MORTAR
     configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
     coupling in the reference configuration, it suffices to set the velocity to 0.0.
 
-    @param[in] vel Average velocity of solid body
+    @param[in] meanVelocity Current mean velocity of this interface
     @return Binning strategy object ready to be used
     */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel);
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     /*!
     \brief Create interface local communicator

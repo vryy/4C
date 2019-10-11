@@ -11,11 +11,10 @@ line.
 
 #include "geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 
-#include "geometry_pair_element_types.H"
+#include "geometry_pair_element_functions.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
-#include "geometry_pair_utility_functions.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -114,7 +113,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          ProjectionPointLineToVolume<scalar_type> new_point(eta, xi_solid,
+          ProjectionPoint1DTo3D<scalar_type> new_point(eta, xi_solid,
               gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_integration_points_circ));
           new_point.SetEtaCrossSection(eta_cross_section);
           projection_point_segment.AddProjectionPoint(new_point);

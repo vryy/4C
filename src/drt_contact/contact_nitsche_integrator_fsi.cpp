@@ -135,7 +135,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
 
   normal_contact_transition = xf_c_comm_->Get_FSI_Traction(
       &sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
-
+#ifdef WRITE_GMSH
   {
     LINALG::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.NumNode(); ++i)
@@ -143,6 +143,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->xspatial()[d];
     xf_c_comm_->Gmsh_Write(sgp_x, gp_on_this_proc, 7);
   }
+#endif
 
   if (!gp_on_this_proc) return;
 
@@ -162,7 +163,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
       wm * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::CoElement*>(&mele),
                LINALG::Matrix<dim - 1, 1>(mxi, true), normal, normal) +
       pen * gap;
-
+#ifdef WRITE_GMSH
   {
     LINALG::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.NumNode(); ++i)
@@ -171,6 +172,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
     xf_c_comm_->Gmsh_Write(sgp_x, snn_pengap, 4);
     xf_c_comm_->Gmsh_Write(sgp_x, normal_contact_transition, 5);
   }
+#endif
 
 
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
@@ -178,7 +180,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
     GEN::pairedvector<int, double> lin_fluid_traction(0);
     IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, normal, dnmap_unit);
-
+#ifdef WRITE_GMSH
     {
       LINALG::Matrix<3, 1> sgp_x;
       for (int i = 0; i < sele.NumNode(); ++i)
@@ -187,6 +189,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
       xf_c_comm_->Gmsh_Write(sgp_x, normal_contact_transition, 0);
       xf_c_comm_->Gmsh_Write(sgp_x, 2.0, 2);
     }
+#endif
     UpdateEleContactState(sele, 0);
   }
 
@@ -239,7 +242,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
       d_snn_av_pen_gap, normal, dnmap_unit);
 
   UpdateEleContactState(sele, 1);
-
+#ifdef WRITE_GMSH
   {
     LINALG::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.NumNode(); ++i)
@@ -248,8 +251,9 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
 
     xf_c_comm_->Gmsh_Write(sgp_x, snn_av_pen_gap, 0);
     xf_c_comm_->Gmsh_Write(sgp_x, 1.0, 2);
-    xf_c_comm_->Inc_GP(0);
   }
+#endif
+  xf_c_comm_->Inc_GP(0);
 
   return;
 }

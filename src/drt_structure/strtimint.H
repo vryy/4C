@@ -943,8 +943,14 @@ namespace STR
     //! return bool indicating if edge based integration is defined
     bool HaveFaceDiscret() { return (facediscret_ != Teuchos::null); }
 
-    //! Check if contact / meshtying is chosen in input file and
-    //! create manager object + initialize all relevant stuff if so
+    /*!
+    \brief Prepare time integration for contact/meshtying
+
+    Check if contact / meshtying is chosen in input file. If yes, create manager object and
+    initialize all relevant stuff.
+
+    @param[in] sdynparams Structural dynamics input parameter list
+    */
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
 
     /*!

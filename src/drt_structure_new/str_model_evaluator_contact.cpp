@@ -101,8 +101,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->Inttime_init();
-  strategy_ptr_->RedistributeContact(GState().GetDisN());
-  strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  strategy_ptr_->RedistributeContact(GState().GetDisN(), GState().GetVelN());
   SetTimeIntegrationInfo(*strategy_ptr_);
 
   CheckPseudo2D();
@@ -434,10 +433,7 @@ void STR::MODELEVALUATOR::Contact::PostUpdateStepState()
   strategy_ptr_->Inttime_init();
 
   // redistribute contact
-  strategy_ptr_->RedistributeContact(GState().GetDisN());
-
-  // initialize binning strategy for new time step
-  strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  strategy_ptr_->RedistributeContact(GState().GetDisN(), GState().GetVelN());
 
   // setup the map extractor, since redistribute calls FillComplete
   // on the structural discretization. Though this only changes the
@@ -915,8 +911,10 @@ void STR::MODELEVALUATOR::Contact::RunPostIterate(const NOX::Solver::Generic& so
 
   // displacement vector after the predictor call
   Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
+  Teuchos::RCP<const Epetra_Vector> curr_vel = GState().GetVelNp();
 
-  if (Strategy().DynRedistributeContact(curr_disp, solver.getNumIterations())) EvaluateForce();
+  if (Strategy().DynRedistributeContact(curr_disp, curr_vel, solver.getNumIterations()))
+    EvaluateForce();
 
   EvalContact().SetActionType(MORTAR::eval_run_post_iterate);
   Strategy().Evaluate(EvalData().Contact());
@@ -950,9 +948,6 @@ void STR::MODELEVALUATOR::Contact::RunPreSolve(const NOX::Solver::Generic& solve
 
   EvalContact().SetActionType(MORTAR::eval_run_pre_solve);
   Strategy().Evaluate(EvalData().Contact(), &eval_vec);
-
-  //  if ( Strategy().RedistributeContact( curr_disp ) )
-  //    EvaluateForceStiff();
 }
 
 /*----------------------------------------------------------------------------*

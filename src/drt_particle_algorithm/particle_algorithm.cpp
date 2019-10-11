@@ -112,7 +112,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   particleengine_->Setup(particlestatestotypes_);
 
   // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+  if (particlewall_) particlewall_->Setup(particleengine_);
 
   // check particle types for modified states
   const bool havemodifiedstates = HaveModifiedStates();
@@ -374,7 +374,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
   }
 
   // init particle wall handler
-  if (particlewall_) particlewall_->Init();
+  if (particlewall_) particlewall_->Init(particleengine_->GetBinningStrategy());
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
@@ -740,22 +740,26 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     // no owned particles of current particle type
     if (particlestored == 0) continue;
 
-    // get pointer to particle states
-    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    const double* lasttransferpos =
-        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
-
     // get particle state dimension
     int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
-    // iterate over coordinate values of owned particles of current type
-    for (int i = 0; i < (statedim * particlestored); ++i)
-    {
-      // get position increment of particle in current spatial dimension since last transfer
-      double absolutpositionincrement = std::abs(pos[i] - lasttransferpos[i]);
+    // position increment of particle
+    double positionincrement[3];
 
-      // compare to current maximum
-      maxpositionincrement = std::max(maxpositionincrement, absolutpositionincrement);
+    // iterate over owned particles of current type
+    for (int i = 0; i < particlestored; ++i)
+    {
+      // get pointer to particle states
+      const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, i);
+      const double* lasttransferpos =
+          container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, i);
+
+      // position increment of particle considering periodic boundaries
+      particleengine_->DistanceBetweenParticles(pos, lasttransferpos, positionincrement);
+
+      // iterate over spatial dimension
+      for (int dim = 0; dim < statedim; ++dim)
+        maxpositionincrement = std::max(maxpositionincrement, std::abs(positionincrement[dim]));
     }
   }
 

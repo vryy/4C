@@ -56,12 +56,13 @@ namespace CONTACT
     \brief Constructor
 
     @param dis Structure discretization
-    @param mtcond List of meshtying conditions as given in input file
-    @param ccond List of contact conditions as given in input file
+    @param meshtyingConditions List of meshtying conditions as given in input file
+    @param contactConditions List of contact conditions as given in input file
     @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
     */
-    MeshtyingContactBridge(DRT::Discretization& dis, std::vector<DRT::Condition*>& mtcond,
-        std::vector<DRT::Condition*>& ccond, double timeIntegrationMidPoint);
+    MeshtyingContactBridge(DRT::Discretization& dis,
+        std::vector<DRT::Condition*>& meshtyingConditions,
+        std::vector<DRT::Condition*>& contactConditions, double timeIntegrationMidPoint);
 
     /*!
     \brief Destructor

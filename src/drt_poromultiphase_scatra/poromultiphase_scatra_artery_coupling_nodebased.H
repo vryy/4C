@@ -86,6 +86,9 @@ namespace POROMULTIPHASESCATRA
     /// apply mesh movement (on artery elements)
     void ApplyMeshMovement();
 
+    /// return blood vessel volume fraction
+    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction();
+
     //! print out the coupling method
     void PrintOutCouplingMethod() const;
 

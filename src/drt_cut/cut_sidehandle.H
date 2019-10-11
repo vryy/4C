@@ -289,15 +289,10 @@ namespace GEO
       /// Is this side and unphysical subside
       virtual bool IsunphysicalSubSide(Side* side)
       {
-        std::vector<Side*>::iterator tmpssit = unphysical_subsides_.end();
         for (std::vector<Side*>::iterator ssit = unphysical_subsides_.begin();
              ssit != unphysical_subsides_.end(); ++ssit)
         {
-          if ((*ssit) == side)
-          {
-            tmpssit = ssit;
-            return true;
-          }
+          if ((*ssit) == side) return true;
         }
         return false;
       }

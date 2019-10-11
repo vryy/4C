@@ -9,11 +9,11 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_ELEMENT_TYPES_H_
-#define GEOMETRY_PAIR_ELEMENT_TYPES_H_
+#ifndef GEOMETRY_PAIR_ELEMENT_H_
+#define GEOMETRY_PAIR_ELEMENT_H_
 
 
-#include "geometry_pair_utility_classes.H"
+#include "geometry_pair_element_classes.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -28,133 +28,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Shortcut to typed that are used to overload the get shape function methods.
    */
-  typedef std::integral_constant<unsigned int, 1> t_1D_element;
-  typedef std::integral_constant<unsigned int, 2> t_2D_element;
-  typedef std::integral_constant<unsigned int, 3> t_3D_element;
-
-
-  /**
-   * \brief Get the position in the element.
-   * @param xi (in) Parameter coordinate on the element.
-   * @param q (in) Degrees of freedom for the element.
-   * @param r (out) Position on the element.
-   * @param element (in) Pointer to the element, needed for beam elements.
-   */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
-      const DRT::Element* element = NULL)
-  {
-    // Matrix for shape function values.
-    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
-
-    // Evaluate the shape function values.
-    element_type::EvaluateShapeFunction(
-        N, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
-
-    // Calculate the position.
-    r.Clear();
-    for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-    {
-      for (unsigned int dim = 0; dim < 3; dim++)
-      {
-        for (unsigned int val = 0; val < element_type::n_val_; val++)
-        {
-          r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
-                    N(element_type::n_val_ * node + val);
-        }
-      }
-    }
-  }
-
-
-  /**
-   * \brief Get the derivative of the position w.r.t xi in the element.
-   * @param xi (in) Parameter coordinate on the element.
-   * @param q (in) Degrees of freedom for the element.
-   * @param dr (out) Derivative of the position on the element.
-   * @param element (in) Pointer to the element, needed for beam elements.
-   */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = NULL)
-  {
-    // Matrix for shape function values.
-    LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
-        dN(true);
-
-    // Evaluate the shape function values.
-    element_type::EvaluateShapeFunctionDeriv1(
-        dN, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
-
-    // Calculate the derivative of the position.
-    dr.Clear();
-    for (unsigned int dim = 0; dim < 3; dim++)
-    {
-      for (unsigned int direction = 0; direction < element_type::dim_; direction++)
-      {
-        for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-        {
-          for (unsigned int val = 0; val < element_type::n_val_; val++)
-          {
-            dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
-                                  dN(direction, element_type::n_val_ * node + val);
-          }
-        }
-      }
-    }
-  }
-
-
-  /**
-   * \brief This structure "converts" the DRT discretization type to a volume type.
-   *
-   * For some geometry pairs we need to know if a volume is a hexaeder or a tetraeder (linear,
-   * quadratic, ...) this structure "returns" the correct type depending on the DRT discretization
-   * type of the element.
-   */
-  template <DRT::Element::DiscretizationType discretization>
-  struct ElementDiscretizationToVolumeType
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::none;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex8>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex20>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex27>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::tet4>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::tet10>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
-  };
-  template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::nurbs27>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
-  };
-
+  using t_1D_element = std::integral_constant<unsigned int, 1>;
+  using t_2D_element = std::integral_constant<unsigned int, 2>;
+  using t_3D_element = std::integral_constant<unsigned int, 3>;
 
   /**
    * \brief Base class for the geometry pair element type.
@@ -184,6 +60,14 @@ namespace GEOMETRYPAIR
 
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
+
+    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
+    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
+        ElementDiscretizationToSurfaceType<discretization_>::surface_type_;
+
+    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
+    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
+        ElementDiscretizationToVolumeType<discretization_>::volume_type_;
   };
 
 
@@ -195,11 +79,6 @@ namespace GEOMETRYPAIR
   template <typename base>
   class ElementDiscretizationStandard : public base
   {
-   public:
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
-
    public:
     /**
      * \brief Evaluate the 1D shape functions of the element.
@@ -222,6 +101,53 @@ namespace GEOMETRYPAIR
 
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_1D(N, xi, discretization);
+    };
+
+    /**
+     * \brief Evaluate the 2D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 2.
+      static_assert(base::dim_ == 2, "EvaluateShapeFunction2D can only be called for 2D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
+    };
+
+    /**
+     * \brief Evaluate the first derivative of the 2D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 2.
+      static_assert(
+          base::dim_ == 2, "EvaluateShapeFunctionDeriv1 can only be called for 2D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::UTILS::shape_function_2D_deriv1(N, xi(0), xi(1), discretization);
     };
 
     /**
@@ -269,7 +195,7 @@ namespace GEOMETRYPAIR
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_3D_deriv1(N, xi(0), xi(1), xi(2), discretization);
     };
-  };
+  };  // namespace GEOMETRYPAIR
 
 
   /**
@@ -354,11 +280,6 @@ namespace GEOMETRYPAIR
   class ElementDiscretizationNurbs : public base
   {
    public:
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
-
-   public:
     /**
      * \brief Evaluate the 3D shape functions of the element.
      * @param N (out) Array to store shape function values in.
@@ -430,16 +351,27 @@ namespace GEOMETRYPAIR
    * Shortcuts to element types are created here, so the explicit template initialisations are
    * better readable.
    */
-  typedef ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>> t_hermite;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>> t_line2;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>> t_line3;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>> t_line4;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>> t_hex8;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>> t_hex20;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>> t_hex27;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>> t_tet4;
-  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>> t_tet10;
-  typedef ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>> t_nurbs27;
+
+  //! 1D elements
+  using t_hermite = ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>>;
+  using t_line2 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>>;
+  using t_line3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>>;
+  using t_line4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>>;
+
+  //! 2D elements
+  using t_tri3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri3, 1>>;
+  using t_tri6 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri6, 1>>;
+  using t_quad4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad4, 1>>;
+  using t_quad8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad8, 1>>;
+  using t_quad9 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad9, 1>>;
+
+  //! 3D elements
+  using t_hex8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>>;
+  using t_hex20 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>>;
+  using t_hex27 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>>;
+  using t_tet4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>>;
+  using t_tet10 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>>;
+  using t_nurbs27 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>>;
 
 }  // namespace GEOMETRYPAIR
 

@@ -92,21 +92,27 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupFluidManagersAndMaterials(
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont) = 0;
 
-    //! beginning and end of integration segment
+    //! beginning of integration segment
     virtual double EtaA() const = 0;
+    //! end of integration segment
     virtual double EtaB() const = 0;
 
-    //! the element GIDs (1 = artery, 2 = cont)
+    //! element 1 (= artery) GID
     virtual int Ele1GID() const = 0;
+    //! element 2 (= cont) GID
     virtual int Ele2GID() const = 0;
 
     //! apply mesh movement on artery element
     virtual double ApplyMeshMovement(
         const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis) = 0;
 
-    //! set and get segment id
+    //! set segment id
     virtual void SetSegmentID(const int& segmentid) = 0;
+    //! get segment id
     virtual int GetSegmentID() const = 0;
+
+    //! get the volume of the 2D/3D element
+    virtual double CalculateVol2D3D() const = 0;
 
     //! type of coupling pair
     enum CouplingType
@@ -133,18 +139,18 @@ namespace POROMULTIPHASESCATRA
     void Init(std::vector<DRT::Element const*> elements,
         const Teuchos::ParameterList& meshtyingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
-        const std::vector<std::vector<int>>& funct_vec);
+        const std::vector<std::vector<int>>& funct_vec) override;
 
     //! query if pair active
-    virtual bool IsActive() { return isactive_; }
+    bool IsActive() override { return isactive_; }
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void PreEvaluate();
+    void PreEvaluate() override;
 
     //! reset state
-    void ResetState(
-        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
+    void ResetState(Teuchos::RCP<DRT::Discretization> contdis,
+        Teuchos::RCP<DRT::Discretization> artdis) override;
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
@@ -152,37 +158,46 @@ namespace POROMULTIPHASESCATRA
      * @param timefacrhs_art: right hand side factor for artery time integration
      * @param timefacrhs_cont: right hand side factor for time integration of 2D/3D discretization
      */
-    void SetupFluidManagersAndMaterials(
-        const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont);
+    void SetupFluidManagersAndMaterials(const std::string disname, const double& timefacrhs_art,
+        const double& timefacrhs_cont) override;
 
     //! evaluate this pair
     void Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
         LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
-        LINALG::SerialDenseVector* Kappa_ele, const std::vector<double>& segmentlengths);
+        LINALG::SerialDenseVector* Kappa_ele, const std::vector<double>& segmentlengths) override;
 
     //! beginning and end of integration segment
-    double EtaA() const { return eta_a_; }
-    double EtaB() const { return eta_b_; }
+    double EtaA() const override { return eta_a_; }
+    double EtaB() const override { return eta_b_; }
 
-    //! the element GIDs (1 = artery, 2 = cont)
-    int Ele1GID() const;
-    int Ele2GID() const;
+    //! element 1 (= artery) GID
+    int Ele1GID() const override;
+    //! element 2 (= cont) GID
+    int Ele2GID() const override;
 
     //! apply mesh movement on artery element
-    double ApplyMeshMovement(const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis);
+    double ApplyMeshMovement(
+        const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis) override;
 
-    //! set and get segment id
-    void SetSegmentID(const int& segmentid);
-    int GetSegmentID() const;
+    //! set segment id
+    void SetSegmentID(const int& segmentid) override;
+    //! get segment id
+    int GetSegmentID() const override;
+
+    //! get the volume of the 2D/3D element
+    double CalculateVol2D3D() const override;
 
    private:
-    //! static variables
+    // static variables
+    //! number of nodes of 1D artery element
     static const unsigned numnodesart_ =
         DRT::UTILS::DisTypeToNumNodePerEle<distypeArt>::numNodePerElement;
+    //! number of nodes of 2D/3D continuous element
     static const unsigned numnodescont_ =
         DRT::UTILS::DisTypeToNumNodePerEle<distypeCont>::numNodePerElement;
+    //! number of nodes of spatial dimensions
     static const unsigned numdim_ = DRT::UTILS::DisTypeToDim<distypeCont>::dim;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
@@ -197,8 +212,16 @@ namespace POROMULTIPHASESCATRA
         std::vector<double>& myEta, std::vector<std::vector<double>>& myXi, double& etaA,
         double& etaB);
 
-    //! create segment [eta_a, eta_b]
-    void CreateIntegrationSegment(const std::vector<bool>& validprojections);
+    /**
+     * \brief create segment [eta_a, eta_b]
+     *
+     * \note: the following algorithm works only for linear 1D elements and linear 2D/3D elements
+     *        where always 0,1 or 2 intersections can be found. For higher order elements with
+     *        special cases, it has to be re-thought. For instance, if we find two intersections, it
+     *        is always assumed that the integration segment lies between these two intersections
+     *        --> for a higher order 1D element this may not be the case
+     */
+    void CreateIntegrationSegment();
 
     //! get all intersections of artery element with 2D/3D element
     std::vector<double> GetAllInterSections();
@@ -403,35 +426,42 @@ namespace POROMULTIPHASESCATRA
     //! second element of interacting pair (2D/3D element)
     const DRT::Element* element2_;
 
-    //! reference nodal positions of the two elements
+    //! reference nodal positions element 1 (1D artery)
     LINALG::Matrix<numdim_ * numnodesart_, 1> ele1posref_;
+    //! reference nodal positions element 2 (2D/3D continuous element)
     LINALG::Matrix<numdim_, numnodescont_> ele2posref_;
 
-    //! current position and velocity of element 2
+    //! current position of element 2
     LINALG::Matrix<numdim_, numnodescont_> ele2pos_;
+    //! current velocity of element 2
     LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
     //! diameter of the artery element
     double arterydiam_;
 
-    //! numdofs of artery and 2D/3D element
+    //! numdofs of artery element
     int numdof_cont_;
+    //! numdofs of 2D/3D element
     int numdof_art_;
 
-    //! coupled dofs
+    //! coupled dofs of continuous (2D/3D) element
     std::vector<int> coupleddofs_cont_;
+    //! coupled dofs of artery (1D) element
     std::vector<int> coupleddofs_art_;
+    //! number of coupled dofs
     int numcoupleddofs_;
 
     //! the id of the volume fraction pressure phase
     std::vector<int> volfracpressid_;
 
-    //! number of fluid phases and number of volume fractions
+    //! number of fluid phases
     int numfluidphases_;
+    //! number of volume fractions
     int numvolfrac_;
 
-    //! number of scalars (cont and art)
+    //! number of scalars (cont)
     int numscalcont_;
+    //! number of scalars (art)
     int numscalart_;
 
     //! dof-set number of porofluid (either 0 or 2)
@@ -452,15 +482,17 @@ namespace POROMULTIPHASESCATRA
     //! Gausspoints in solid
     std::vector<std::vector<double>> xi_;
 
-    //! Gausspoints in arteries and weights
+    //! Gausspoints in arteries
     std::vector<double> eta_;
+    //! Gausspoint weigths in arteries
     std::vector<double> wgp_;
 
     //! eta_s
     std::vector<double> eta_s_;
 
-    //! primary variables of cont and artery elements
+    //! primary variables of cont element
     std::vector<double> contelephinp_;
+    //! primary variables of artery element
     std::vector<double> artelephinp_;
 
     //! nodal artery pressure values
@@ -475,8 +507,9 @@ namespace POROMULTIPHASESCATRA
     //! penalty parameter
     double pp_;
 
-    //! start and end of integration segment
+    //! start of integration segment
     double eta_a_;
+    //! end of integration segment
     double eta_b_;
 
     //! length of integration segment int current configuration
@@ -486,15 +519,20 @@ namespace POROMULTIPHASESCATRA
     //! in reference configuration is performed
     bool constant_part_evaluated_;
 
-    //! GPTS stiffness matrices
+    //! GPTS stiffness matrix (artery-artery contribution)
     LINALG::SerialDenseMatrix GPTS_stiffmat11_;
+    //! GPTS stiffness matrix (artery-cont contribution)
     LINALG::SerialDenseMatrix GPTS_stiffmat12_;
+    //! GPTS stiffness matrix (cont-artery contribution)
     LINALG::SerialDenseMatrix GPTS_stiffmat21_;
+    //! GPTS stiffness matrix (cont-cont contribution)
     LINALG::SerialDenseMatrix GPTS_stiffmat22_;
 
-    //! mortar coupling matrices
+    //! mortar coupling matrix D
     LINALG::SerialDenseMatrix D_;
+    //! mortar coupling matrix M
     LINALG::SerialDenseMatrix M_;
+    //! mortar coupling vector kappa
     LINALG::SerialDenseVector Kappa_;
 
     //! (dX/dxi)^-1
@@ -507,8 +545,9 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<numdim_, numnodescont_>>
         variablemanager_;
 
-    //! scale and function vectors
+    //! scale vector
     std::vector<std::vector<int>> scale_vec_;
+    //! function vector
     std::vector<std::vector<DRT::UTILS::VariableExprFunction*>> funct_vec_;
 
     //! string name used for scalars in function parser

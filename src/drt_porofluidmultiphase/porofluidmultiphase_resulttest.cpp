@@ -13,6 +13,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "porofluidmultiphase_timint_implicit.H"
+#include "porofluidmultiphase_meshtying_strategy_base.H"
 
 
 /*----------------------------------------------------------------------*
@@ -73,14 +74,61 @@ void POROFLUIDMULTIPHASE::ResultTest::TestNode(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | test element                                        kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::ResultTest::TestElement(
+    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS", dis);
+
+  if (dis != porotimint_.Discretization()->Name()) return;
+
+  int element;
+  res.ExtractInt("ELEMENT", element);
+  element -= 1;
+
+  int haveelement(porotimint_.Discretization()->HaveGlobalElement(element));
+  int iselementofanybody(0);
+  porotimint_.Discretization()->Comm().SumAll(&haveelement, &iselementofanybody, 1);
+
+  if (iselementofanybody == 0)
+  {
+    dserror("Element %d does not belong to discretization %s", element + 1,
+        porotimint_.Discretization()->Name().c_str());
+  }
+  else
+  {
+    if (porotimint_.Discretization()->HaveGlobalElement(element))
+    {
+      const DRT::Element* actelement = porotimint_.Discretization()->gElement(element);
+
+      // Here we are just interested in the elements that we own (i.e. a row element)!
+      if (actelement->Owner() != porotimint_.Discretization()->Comm().MyPID()) return;
+
+      // extract name of quantity to be tested
+      std::string quantity;
+      res.ExtractString("QUANTITY", quantity);
+
+      // get result to be tested
+      const double result = ResultElement(quantity, actelement);
+
+      nerr += CompareValues(result, "ELEMENT", res);
+      test_count++;
+    }
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
-    const std::string quantity,  //! name of quantity to be tested
-    DRT::Node* node              //! node carrying the result to be tested
-    ) const
+    const std::string quantity, DRT::Node* node) const
 {
   // initialize variable for result
   double result(0.);
@@ -157,6 +205,28 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultNode
 
+/*----------------------------------------------------------------------*
+ | get element result to be tested                     kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
+    const std::string quantity, const DRT::Element* element) const
+{
+  // initialize variable for result
+  double result(0.);
+
+  if (quantity == "bloodvesselvolfrac")
+  {
+    result =
+        (*porotimint_.MeshTyingStrategy()
+                ->BloodVesselVolumeFraction())[porotimint_.Discretization()->ElementRowMap()->LID(
+            element->Id())];
+  }
+  // catch unknown quantity strings
+  else
+    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+
+  return result;
+}
 
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  vuong 08/16 |
