@@ -285,6 +285,55 @@ void INPAR::S2I::SetValidConditions(
               kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-reduced",
                   butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreduced)));
             }
+
+            {
+              // Butler-Volmer-Resistance
+              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerresistance;
+              butlervolmerresistance.push_back(Teuchos::rcp(
+                  new SeparatorConditionComponent("numscal")));  // total number of existing scalars
+              std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
+              intsepcomp.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+              std::vector<Teuchos::RCP<IntVectorConditionComponent>>
+                  intvectcomp;  // string separator in front of integer stoichiometry vector in
+                                // input file line
+              intvectcomp.push_back(Teuchos::rcp(new IntVectorConditionComponent(
+                  "stoichiometries", 0)));  // integer vector of stoichiometric coefficients
+              std::vector<Teuchos::RCP<SeparatorConditionComponent>>
+                  realsepcomp;  // empty vector --> no separators for real vectors needed
+              std::vector<Teuchos::RCP<RealVectorConditionComponent>>
+                  realvectcomp;  // empty vector --> no real vectors needed
+              butlervolmerresistance.push_back(Teuchos::rcp(new IntRealBundle("stoichiometries",
+                  Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
+                  realsepcomp, realvectcomp)));
+              butlervolmerresistance.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+              butlervolmerresistance.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+              butlervolmerresistance.push_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+              butlervolmerresistance.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+              butlervolmerresistance.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new RealConditionComponent("resistance")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("CONVTOL_MODBUTLERVOLMER")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new RealConditionComponent("CONVTOL_MODBUTLERVOLMER")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("ITEMAX_MODBUTLERVOLMER")));
+              butlervolmerresistance.push_back(
+                  Teuchos::rcp(new RealConditionComponent("ITEMAX_MODBUTLERVOLMER")));
+
+              kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Resistance",
+                  butlervolmerresistance, INPAR::S2I::kinetics_butlervolmerresistance)));
+            }
+
           }  // kinetic models for scatra-scatra interface coupling
 
           // insert kinetic models into vector with slave-side condition components
@@ -293,10 +342,11 @@ void INPAR::S2I::SetValidConditions(
               "kinetic models for scatra-scatra interface coupling",
               Teuchos::rcp(new StringConditionComponent("kinetic model", "ConstantPermeability",
                   Teuchos::tuple<std::string>("ConstantPermeability", "Butler-Volmer",
-                      "Butler-Volmer-Peltier", "Butler-Volmer-reduced"),
+                      "Butler-Volmer-Peltier", "Butler-Volmer-reduced", "Butler-Volmer-Resistance"),
                   Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,
                       INPAR::S2I::kinetics_butlervolmer, INPAR::S2I::kinetics_butlervolmerpeltier,
-                      INPAR::S2I::kinetics_butlervolmerreduced))),
+                      INPAR::S2I::kinetics_butlervolmerreduced,
+                      INPAR::S2I::kinetics_butlervolmerresistance))),
               kineticmodels)));
 
           // insert slave-side condition components into vector of interface sides

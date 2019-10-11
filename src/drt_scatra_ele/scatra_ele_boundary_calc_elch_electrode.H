@@ -92,11 +92,42 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const int kineticmodel, const int numelectrons, const std::vector<int>* stoichiometries,
-          const double kr, const double alphaa, const double alphac, const double timefacfac,
+          const double kr, const double alphaa, const double alphac, const double resistance,
+          const double itemaxmodifiedBV, const double convtolmodifiedBV, const double timefacfac,
           const double timefacrhsfac, const double frt, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
+
+      //! calculate modified Butler-Volmer mass flux density via Newton method
+      static double CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
+          const double alphaa, const double alphac, const double frt, const double pot_ed,
+          const double pot_el, const double epd, const double resistance, const double itemax,
+          const double convtol, const double faraday);
+
+      //! calculate core linearizations associated with Butler-Volmer mass flux density
+      static void CalculateCoreLinearizations(const int kineticmodel, const double timefacfac,
+          const double timefacrhsfac, const double j0, const double frt, const double epdderiv,
+          const double alphaa, const double alphac, const double resistance, const double expterm1,
+          const double expterm2, const double kr, const double faraday, const double emasterphiint,
+          const double eslavephiint, const double cmax, double& dj_dc_slave, double& dj_dc_master,
+          double& dj_dpot_slave, double& dj_dpot_master);
+
+      //! calculate out-parameters such as residual vectors and linearizations of residuals
+      template <DRT::Element::DiscretizationType distype_master>
+      static void CalculateRHSandGlobalSystem(const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              funct_master,
+          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              test_master,
+          const double numelectrons, const int nen_master, const double dj_dc_slave,
+          const double dj_dc_master, const double dj_dpot_slave, const double dj_dpot_master,
+          const double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
      protected:
       //! protected constructor for singletons

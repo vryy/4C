@@ -84,6 +84,17 @@ namespace DRT
       /// return vector of stoichiometric coefficients for scatra-scatra interface
       std::vector<int>* Stoichiometries() { return stoichiometries_; };
 
+      /// return interface resistance associated with S2ICoupling condition
+      double Resistance() { return resistance_; };
+
+      /// return convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      double ConvtolmodifiedBV() { return convtolmodifiedBV_; };
+
+      /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      double ItemaxmodifiedBV() { return itemaxmodifiedBV_; };
+
      private:
       //! private constructor for singletons
       ScaTraEleParameterBoundary(const std::string& disname  //!< name of discretization
@@ -133,6 +144,17 @@ namespace DRT
 
       /// vector of stoichiometric coefficients for scatra-scatra interface
       std::vector<int>* stoichiometries_;
+
+      /// interface resistance associated with S2ICoupling condition
+      double resistance_;
+
+      /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      double convtolmodifiedBV_;
+
+      /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      double itemaxmodifiedBV_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

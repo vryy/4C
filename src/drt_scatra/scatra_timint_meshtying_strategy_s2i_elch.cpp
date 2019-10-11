@@ -609,6 +609,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   const double kr = my::scatraparamsboundary_->Kr();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
+  const double resistance = my::scatraparamsboundary_->Resistance();
+  const double itemaxmodifiedBV = my::scatraparamsboundary_->ItemaxmodifiedBV();
+  const double convtolmodifiedBV = my::scatraparamsboundary_->ConvtolmodifiedBV();
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -628,7 +631,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
         my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
-        alphaa, alphac, timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        alphaa, alphac, resistance, itemaxmodifiedBV, convtolmodifiedBV, timefacfac, timefacrhsfac,
+        GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 
   return;
@@ -686,6 +690,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   const double kr = my::scatraparamsboundary_->Kr();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
+  const double resistance = my::scatraparamsboundary_->Resistance();
+  const double itemaxmodifiedBV = my::scatraparamsboundary_->ItemaxmodifiedBV();
+  const double convtolmodifiedBV = my::scatraparamsboundary_->ConvtolmodifiedBV();
 
   // overall integration factors
   const double timefacfac =
@@ -698,8 +705,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, my::funct_slave_, my::funct_master_, my::funct_slave_,
       my::funct_master_, kineticmodel, numelectrons, stoichiometries, kr, alphaa, alphac,
-      timefacfac, timefacrhsfac, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
-      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+      resistance, itemaxmodifiedBV, convtolmodifiedBV, timefacfac, timefacrhsfac,
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
+      r_m);
 
   return;
 }
