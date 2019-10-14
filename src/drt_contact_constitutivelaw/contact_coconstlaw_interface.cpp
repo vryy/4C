@@ -28,7 +28,6 @@
 #include "../drt_mortar/mortar_projector.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -47,10 +46,10 @@
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id, const Epetra_Comm& comm,
-    const int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant)
-    : CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData, const int id,
+    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    : CoInterface(interfaceData, id, comm, dim, icontact, selfcontact, redundant)
 {
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
       CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
@@ -96,13 +95,14 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
 #endif
 
     // Activate/Deactivate node and notice any change
-    if ((cnode->Active() == false) && (coconstlaw_->Parameter()->GetOffset() - kappa * gap >= 0))
+    if ((cnode->Active() == false) && (-coconstlaw_->Parameter()->GetOffset() - kappa * gap >= 0))
     {
       cnode->Active() = true;
       localactivesetchange = true;
     }
 
-    else if ((cnode->Active() == true) && (coconstlaw_->Parameter()->GetOffset() - kappa * gap < 0))
+    else if ((cnode->Active() == true) &&
+             (-coconstlaw_->Parameter()->GetOffset() - kappa * gap < 0))
     {
       cnode->Active() = false;
       localactivesetchange = true;

@@ -183,7 +183,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(
     INPAR::CONTACT::SolvingStrategy soltype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
+    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
+                          soltype == INPAR::CONTACT::solution_multiscale))
       interface_[i]->AssembleRegTangentForcesPenalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
@@ -773,7 +774,8 @@ void CONTACT::CoPenaltyStrategy::Assemble()
     INPAR::CONTACT::SolvingStrategy soltype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
+    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
+                          soltype == INPAR::CONTACT::solution_multiscale))
       interface_[i]->AssembleRegTangentForcesPenalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)

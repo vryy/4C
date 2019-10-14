@@ -718,6 +718,30 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             std::cout << "================================================================\n"
                       << std::endl;
           }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Standard Multi Scale strategy ================================"
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Dual Multi Scale strategy ===================================="
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
           else if (soltype == INPAR::CONTACT::solution_lagmult &&
                    DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                        INPAR::MORTAR::lagmult_const)

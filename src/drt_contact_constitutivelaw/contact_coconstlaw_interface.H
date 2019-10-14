@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
-\file contact_coconstlaw_interface.H
+/*! \file
 
 \brief Contact interface for contact using micro information like the roughness profile
 
@@ -18,7 +17,7 @@
 // forward declarations
 namespace MORTAR
 {
-  class IDataContainer;
+  class InterfacedataContainer;
 }
 
 namespace CONTACT
@@ -47,9 +46,10 @@ namespace CONTACT
     \param redundant (in): type of redundancy in interface storage
 
     */
-    ConstitutivelawInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
-        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+    ConstitutivelawInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
+        const int id, const Epetra_Comm& comm, const int dim,
+        const Teuchos::ParameterList& icontact, bool selfcontact,
+        INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Destructor

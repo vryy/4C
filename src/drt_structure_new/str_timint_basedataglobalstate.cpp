@@ -291,7 +291,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
 
       // systems without additional dofs
       if (soltype == INPAR::CONTACT::solution_nitsche ||
-          soltype == INPAR::CONTACT::solution_penalty || soltype == INPAR::CONTACT::solution_uzawa)
+          soltype == INPAR::CONTACT::solution_penalty ||
+          soltype == INPAR::CONTACT::solution_uzawa ||
+          soltype == INPAR::CONTACT::solution_multiscale)
       {
         model_block_id_[mt] = 0;
       }
@@ -321,7 +323,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
 
       // systems without additional dofs
       if (soltype == INPAR::CONTACT::solution_nitsche ||
-          soltype == INPAR::CONTACT::solution_penalty || soltype == INPAR::CONTACT::solution_uzawa)
+          soltype == INPAR::CONTACT::solution_penalty ||
+          soltype == INPAR::CONTACT::solution_uzawa ||
+          soltype == INPAR::CONTACT::solution_multiscale)
       {
         model_block_id_[mt] = 0;
       }

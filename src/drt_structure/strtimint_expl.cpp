@@ -78,7 +78,8 @@ void STR::TimIntExpl::Setup()
     INPAR::CONTACT::SolvingStrategy soltype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    if (soltype != INPAR::CONTACT::solution_penalty)
+    if (soltype != INPAR::CONTACT::solution_penalty &&
+        (soltype != INPAR::CONTACT::solution_multiscale))
       dserror("Explicit TIS can only handle penalty contact / meshtying");
   }
 

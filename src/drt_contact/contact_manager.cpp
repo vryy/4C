@@ -572,7 +572,9 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
-  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
+  else if (((stype == INPAR::CONTACT::solution_penalty ||
+                stype == INPAR::CONTACT::solution_multiscale) &&
+               algo != INPAR::MORTAR::algorithm_gpts) ||
            stype == INPAR::CONTACT::solution_uzawa)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(data_ptr, Discret().DofRowMap(),

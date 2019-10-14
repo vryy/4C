@@ -1374,6 +1374,11 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 
       break;
     }
+    case INPAR::CONTACT::solution_multiscale:
+      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
+      newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
+          idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+      break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case
     // ------------------------------------------------------------------------
@@ -1387,11 +1392,6 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       else if (icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi &&
                stype == INPAR::CONTACT::solution_lagmult)
         newinterface = Teuchos::rcp(new CONTACT::CoTSIInterface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
-      else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
-                   DRT::Problem::Instance()->ContactDynamicParams(), "CONTACT_REGULARIZATION") !=
-               INPAR::CONTACT::reg_none)
-        newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       else
         newinterface = Teuchos::rcp(
@@ -1658,7 +1658,9 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
           params, interfaces, dim, comm_ptr, alphaf, dof_offset));
     }
   }
-  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) &&
+  else if (((stype == INPAR::CONTACT::solution_penalty or
+                stype == INPAR::CONTACT::solution_multiscale) &&
+               algo != INPAR::MORTAR::algorithm_gpts) &&
            stype != INPAR::CONTACT::solution_uzawa)
   {
     strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
@@ -2057,6 +2059,22 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
         {
           IO::cout << "================================================================\n";
           IO::cout << "===== Dual Penalty strategy ====================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                 shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Multi Scale strategy ================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                 shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Multi Scale strategy ====================================\n";
           IO::cout << "===== (Pure displacement formulation) ==========================\n";
           IO::cout << "================================================================\n\n";
         }

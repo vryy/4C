@@ -54,7 +54,8 @@ namespace INPAR
       solution_std_lagrange,       ///< lagrange strategy (based on the augmented formulation)
       solution_xcontact,           ///< eXtended contact approach
       solution_nitsche,            ///< Nitsche contact solution method
-      solution_ehl                 ///< method for elasto-hydrodynamic lubrication
+      solution_ehl,                ///< method for elasto-hydrodynamic lubrication
+      solution_multiscale  ///< method for contact of rough surfaces with a multi scale approach
     };
 
     inline std::string SolvingStrategy2String(enum SolvingStrategy stype)
