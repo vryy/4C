@@ -82,6 +82,19 @@ namespace INPAR
       linkertype_integrin    ///< sphere to beam linker
     };
 
+    /**
+     * \brief Types of beam interaction conditions
+     */
+    enum class BeamInteractionConditions
+    {
+      //! Default value.
+      none,
+      //! Beam-to-solid volume mesh tying.
+      beam_to_solid_volume_meshtying,
+      //! Beam-to-solid surface mesh tying.
+      beam_to_solid_surface_meshtying
+    };
+
     //! Map type std::string to enum
     inline enum JointType String2JointType(const std::string& name)
     {
@@ -150,6 +163,12 @@ namespace INPAR
       }
       return "";
     };
+
+    /**
+     * \brief Get all available beam interaction conditions, excluding the default value.
+     */
+    void BeamInteractionConditionsGetAll(
+        std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions);
 
     /// set the beam interaction parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

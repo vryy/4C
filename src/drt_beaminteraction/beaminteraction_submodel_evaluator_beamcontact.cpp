@@ -46,7 +46,7 @@
 #include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
 
-#include "beam_to_solid_conditions.H"
+#include "beaminteraction_conditions.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
@@ -62,7 +62,7 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
-      beam_to_solid_conditions_ptr_(Teuchos::null),
+      beam_interaction_conditions_ptr_(Teuchos::null),
       geometry_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null)
@@ -82,8 +82,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_to_solid_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditions());
-  beam_to_solid_conditions_ptr_->SetBeamToSolidConditions(DiscretPtr());
+  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
+  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(DiscretPtr());
 
   // build a new data container to manage geometry evaluation data that can not be stored
   // pairwise
@@ -731,7 +731,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   CheckInit();
 
   // Build the ids of the elements for the beam-to-solid conditions.
-  beam_to_solid_conditions_ptr_->BuildIdSets();
+  beam_interaction_conditions_ptr_->BuildIdSets();
 
   // loop over all row beam elements
   // note: like this we ensure that first element of pair is always a beam element, also only
@@ -793,10 +793,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     {
       toerase = true;
     }
-    // 2) ensure that beam-to-solid pairs are part of a condition in the input file
+    // 2) ensure that the two elements confirm with the beam interactions defined via conditions in
+    // the input file. For now this is only implemented for beam-to-solid elements, therefore the
+    // dynamic cast here.
     else if (dynamic_cast<DRT::ELEMENTS::So_base*>(*eiter) != NULL)
     {
-      if (!beam_to_solid_conditions_ptr_->IdsInConditions(currele->Id(), (*eiter)->Id()))
+      if (!beam_interaction_conditions_ptr_->IdsInConditions(currele->Id(), (*eiter)->Id()))
         toerase = true;
     }
     // 3) ensure that two elements sharing the same node do not get into contact
@@ -848,7 +850,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(
-              ele_ptrs, beam_contact_params_ptr_, beam_to_solid_conditions_ptr_);
+              ele_ptrs, beam_contact_params_ptr_, beam_interaction_conditions_ptr_);
 
       if (newbeaminteractionpair == Teuchos::null)
         dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",

@@ -17,6 +17,13 @@
 #include "inpar_beam_to_solid.H"
 
 
+void INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(
+    std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions)
+{
+  interactions = {INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying};
+}
+
 void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;

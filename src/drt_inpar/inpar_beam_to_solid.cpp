@@ -14,6 +14,7 @@
 #include "inpar_beam_to_solid.H"
 
 #include "drt_validparameters.H"
+#include "inpar_beaminteraction.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -21,25 +22,18 @@
 /**
  *
  */
-void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetAll(
-    std::vector<BeamToSolidInteraction>& interactions)
-{
-  interactions = {BeamToSolidInteraction::beam_to_solid_volume_meshtying,
-      BeamToSolidInteraction::beam_to_solid_surface_meshtying};
-}
-
-/**
- *
- */
 void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
-    const BeamToSolidInteraction& interaction, std::array<std::string, 2>& condition_names)
+    const INPAR::BEAMINTERACTION::BeamInteractionConditions& interaction,
+    std::array<std::string, 2>& condition_names)
 {
-  if (interaction == BeamToSolidInteraction::beam_to_solid_volume_meshtying)
+  if (interaction ==
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
   {
     condition_names[0] = "BeamToSolidVolumeMeshtyingLine";
     condition_names[1] = "BeamToSolidVolumeMeshtyingVolume";
   }
-  else if (interaction == BeamToSolidInteraction::beam_to_solid_surface_meshtying)
+  else if (interaction ==
+           INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying)
   {
     condition_names[0] = "BeamToSolidSurfaceMeshtyingLine";
     condition_names[1] = "BeamToSolidSurfaceMeshtyingSurface";
@@ -196,7 +190,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
   {
     std::array<std::string, 2> condition_names;
     BeamToSolidInteractionGetString(
-        BeamToSolidInteraction::beam_to_solid_volume_meshtying, condition_names);
+        INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
+        condition_names);
 
     Teuchos::RCP<ConditionDefinition> beam_to_solid_volume_meshtying_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME",
@@ -223,7 +218,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
   {
     std::array<std::string, 2> condition_names;
     BeamToSolidInteractionGetString(
-        BeamToSolidInteraction::beam_to_solid_surface_meshtying, condition_names);
+        INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
+        condition_names);
 
     Teuchos::RCP<ConditionDefinition> beam_to_solid_surface_meshtying_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE",

@@ -34,7 +34,7 @@ namespace BEAMINTERACTION
 {
   class BeamContactParams;
   class BeamContactPair;
-  class BeamToSolidConditions;
+  class BeamInteractionConditions;
   class BeamToSolidVolumeMeshtyingVtkOutputWriter;
 
   namespace SUBMODELEVALUATOR
@@ -235,8 +235,8 @@ namespace BEAMINTERACTION
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
-      //! data container holding all beam-to-solid conditions
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidConditions> beam_to_solid_conditions_ptr_;
+      //! data container holding all beam interactions defined by conditions
+      Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
       //! data container holding all geometry related evaluation data
       Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr_;

@@ -17,7 +17,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "beam_to_beam_contact_pair.H"
-#include "beam_to_solid_conditions.H"
+#include "beaminteraction_conditions.H"
 #include "beam_to_sphere_contact_pair.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -85,7 +85,7 @@ void BEAMINTERACTION::BeamContactPair::Setup()
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
     std::vector<DRT::Element const*> const& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidConditions>& beam_to_solid_conditions_ptr)
+    const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_to_solid_conditions_ptr)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -218,7 +218,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != NULL)
           {
             // Create the beam to solid pair.
-            return beam_to_solid_conditions_ptr->CreatePair(ele_ptrs, params_ptr);
+            return beam_to_solid_conditions_ptr->CreateContactPair(ele_ptrs, params_ptr);
           }
           else if (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[1]) != NULL)
           {

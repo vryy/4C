@@ -28,6 +28,13 @@ namespace DRT
     class ConditionDefinition;
   }
 }  // namespace DRT
+namespace INPAR
+{
+  namespace BEAMINTERACTION
+  {
+    enum class BeamInteractionConditions;
+  }
+}  // namespace INPAR
 
 
 namespace INPAR
@@ -35,28 +42,11 @@ namespace INPAR
   namespace BEAMTOSOLID
   {
     /**
-     * \brief Types of beam-to-solid interaction
-     */
-    enum class BeamToSolidInteraction
-    {
-      //! Default value.
-      none,
-      //! Beam-to-solid volume meshtying.
-      beam_to_solid_volume_meshtying,
-      //! Beam-to-solid surface meshtying.
-      beam_to_solid_surface_meshtying
-    };
-
-    /**
-     * \brief Get all available beam-to-solid interactions, excluding the default value.
-     */
-    void BeamToSolidInteractionGetAll(std::vector<BeamToSolidInteraction>& interactions);
-
-    /**
      * \brief Get the condition strings for the beam-to-solid interactions.
      */
     void BeamToSolidInteractionGetString(
-        const BeamToSolidInteraction& interaction, std::array<std::string, 2>& condition_names);
+        const INPAR::BEAMINTERACTION::BeamInteractionConditions& interaction,
+        std::array<std::string, 2>& condition_names);
 
     /**
      * \brief Constraint enforcement for beam to solid volume mesh tying.
