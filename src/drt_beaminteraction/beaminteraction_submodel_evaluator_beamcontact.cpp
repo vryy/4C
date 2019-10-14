@@ -40,6 +40,8 @@
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
+#include "../drt_so3/so_base.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
@@ -728,6 +730,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
 
   CheckInit();
 
+  // Build the ids of the elements for the beam-to-solid conditions.
+  beam_to_solid_conditions_ptr_->BuildIdSets();
+
   // loop over all row beam elements
   // note: like this we ensure that first element of pair is always a beam element, also only
   // only beam to something contact considered
@@ -788,7 +793,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     {
       toerase = true;
     }
-    // 2) ensure that two elements sharing the same node do not get into contact
+    // 2) ensure that beam-to-solid pairs are part of a condition in the input file
+    else if (dynamic_cast<DRT::ELEMENTS::So_base*>(*eiter) != NULL)
+    {
+      if (!beam_to_solid_conditions_ptr_->IdsInConditions(currele->Id(), (*eiter)->Id()))
+        toerase = true;
+    }
+    // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
       for (int i = 0; i < 2; ++i)
@@ -810,9 +821,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   // Todo maybe keep existing pairs and reuse them ?
   contact_elepairs_.clear();
   assembly_managers_.clear();
-
-  // Build the ids of the elements for the conditions.
-  beam_to_solid_conditions_ptr_->BuildIdSets();
 
   // reset the geometry evaluation data
   geometry_evaluation_data_ptr_->ResetGeometryEvaluationDataGlobal();
@@ -837,21 +845,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
     {
       ele_ptrs[1] = *secondeleiter;
 
-      // Try to create the contact pair.
+      // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(
               ele_ptrs, beam_contact_params_ptr_, beam_to_solid_conditions_ptr_);
 
-      // If the pair is created, call init and setup on it and add it to the pair vector.
-      if (newbeaminteractionpair != Teuchos::null)
-      {
-        newbeaminteractionpair->Init(
-            beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
-        newbeaminteractionpair->Setup();
+      if (newbeaminteractionpair == Teuchos::null)
+        dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",
+            ele_ptrs[0]->Id(), ele_ptrs[1]->Id());
 
-        // add to list of current contact pairs
-        contact_elepairs_.push_back(newbeaminteractionpair);
-      }
+      newbeaminteractionpair->Init(
+          beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
+      newbeaminteractionpair->Setup();
+
+      // add to list of current contact pairs
+      contact_elepairs_.push_back(newbeaminteractionpair);
     }
   }
 

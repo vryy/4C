@@ -80,12 +80,12 @@ namespace BEAMINTERACTION
      */
     virtual void BuildIdSets();
 
-   protected:
     /**
      * \brief Check if a combination of beam and solid id is in this condition.
      */
-    bool IdsInSet(const int id_line, const int id_other) const;
+    bool IdsInCondition(const int id_line, const int id_other) const;
 
+   protected:
     /**
      * \brief Check if a solid ID is in this condition.
      */
@@ -263,6 +263,17 @@ namespace BEAMINTERACTION
       for (const auto& map_pair : condition_map_) count += map_pair.second.size();
       return count;
     }
+
+    /**
+     * \brief Check if a combination of beam and solid id is in any beam-to-solid condition.
+     */
+    bool IdsInConditions(const int id_line, const int id_other) const
+    {
+      for (auto& map_pair : condition_map_)
+        for (auto& condition : map_pair.second)
+          if (condition->IdsInCondition(id_line, id_other)) return true;
+      return false;
+    };
 
    private:
     //! A map containing all types of beam-to-solid conditions. The map keys are the beam-to-solid

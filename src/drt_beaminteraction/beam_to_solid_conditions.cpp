@@ -48,7 +48,8 @@ void BEAMINTERACTION::BeamToSolidCondition::BuildIdSets()
 /**
  *
  */
-bool BEAMINTERACTION::BeamToSolidCondition::IdsInSet(const int id_line, const int id_other) const
+bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
+    const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end())
     if (IdInOther(id_other)) return true;
@@ -74,7 +75,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateBeamToSolidPair(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
 {
   // Check if the given elements are in this condition.
-  if (!IdsInSet(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
+  if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
 
   // Cast the solid element.
   DRT::ELEMENTS::So_base const* solidele = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]);
