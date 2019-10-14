@@ -86,6 +86,9 @@ void PASI::PartitionedAlgo::ReadRestart(int restartstep)
 
   // set time and step after restart
   SetTimeStep(structurefield_->TimeOld(), restartstep);
+
+  // set structural states
+  SetStructStates();
 }
 
 /*---------------------------------------------------------------------------*
