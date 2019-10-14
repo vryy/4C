@@ -66,20 +66,13 @@ void PARTICLEWALL::WallDataState::Setup()
 
 void PARTICLEWALL::WallDataState::WriteRestart(const int step, const double time) const
 {
-  // get wall discretization writer
-  Teuchos::RCP<IO::DiscretizationWriter> walldiscretizationwriter = walldiscretization_->Writer();
-
-  // write wall displacements after last transfer
-  if (disp_row_last_transfer_ != Teuchos::null)
-    walldiscretizationwriter->WriteVector("disp_row_last_transfer", disp_row_last_transfer_);
+  // nothing to do
 }
 
 void PARTICLEWALL::WallDataState::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // get wall displacements after last transfer
-  if (disp_row_last_transfer_ != Teuchos::null)
-    reader->ReadVector(disp_row_last_transfer_, "disp_row_last_transfer");
+  // nothing to do
 }
 
 void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
