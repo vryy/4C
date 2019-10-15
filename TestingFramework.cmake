@@ -1,6 +1,6 @@
 ###------------------------------------------------------------------ Test definitions
 
-# Determine timeout for each test. Use default one, if it is not passed from te outside.
+# Determine timeout for each test. Use default one, if it is not passed from the outside.
 if (DEFINED ENV{GLOBAL_TEST_TIMEOUT})
   set(GLOBAL_TEST_TIMEOUT $ENV{GLOBAL_TEST_TIMEOUT})
   message("Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s.")
