@@ -120,6 +120,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
             "CoConstLaw_linear", "Linear function", INPAR::CONTACT::colaw_linear));
 
     AddNamedReal(m, "A", "slope");
+    AddNamedReal(m, "B", "y intercept");
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
 
     AppendCoConstLawDefinition(coconstlawlist, m);
