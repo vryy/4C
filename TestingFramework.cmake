@@ -7,7 +7,7 @@ if (DEFINED ENV{GLOBAL_TEST_TIMEOUT})
 else ()
   # default test timeout, if not passed as an environment variable
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-    set(GLOBAL_TEST_TIMEOUT 500) # Default timeout for debug configuration
+    set(GLOBAL_TEST_TIMEOUT 1000) # Default timeout for debug configuration
   else ()
     set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
   endif ()
