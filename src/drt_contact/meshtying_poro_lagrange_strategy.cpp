@@ -2,10 +2,10 @@
 /*! \file
 \brief Meshtying of porous media using Lagrange multipliers
 
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
+// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Matthias Mayr
 // Originates from contact_poro_lagrange_strategy
 
-\maintainer Christoph Ager
+\maintainer Matthias Mayr
 
 \level 3
 */

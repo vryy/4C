@@ -6,7 +6,7 @@ xfluid class and the cut-library
 
 \level 3
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

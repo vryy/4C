@@ -3,7 +3,7 @@
 
 \brief Stationary problem driver for porous fluid
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
 

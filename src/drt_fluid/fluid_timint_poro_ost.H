@@ -3,7 +3,7 @@
 
 \brief One-step theta time integration scheme for porous fluid
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
 

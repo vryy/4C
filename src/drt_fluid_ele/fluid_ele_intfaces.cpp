@@ -3,7 +3,7 @@
 
 \brief Fluid internal faces elements
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

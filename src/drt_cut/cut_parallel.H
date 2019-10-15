@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 

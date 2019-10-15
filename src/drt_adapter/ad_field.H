@@ -14,7 +14,7 @@ At the moment this class is on the same level as AlgorithmBase for Algorithms
 functions there exist also for fields.
 (e.g. Dt(),....) --> Should be discussed!
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 1
 */

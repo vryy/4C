@@ -2,7 +2,7 @@
 /*! \file
  \brief wrapper for structure material of porous media
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
  *-----------------------------------------------------------------------*/

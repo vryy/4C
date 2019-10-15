@@ -3,7 +3,7 @@
 
 \brief Fluid element for poroelasticity problems
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 2
 

@@ -3,7 +3,7 @@
 
 \brief Setting of specific XFEM based fluid parameter for element evaluation
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

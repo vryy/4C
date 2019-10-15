@@ -5,7 +5,7 @@
 
  \level 2
 
-\maintainer  Christoph Ager
+\maintainer  Johannes Kremheller
  */
 /*----------------------------------------------------------------------------*/
 

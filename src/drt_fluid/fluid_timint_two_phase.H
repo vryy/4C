@@ -3,7 +3,7 @@
 
 \brief Basic time integration class for two-phase flow
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

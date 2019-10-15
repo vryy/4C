@@ -4,7 +4,7 @@
  \brief Fluid field adapter for poroelasticity
 
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 
 \level 2

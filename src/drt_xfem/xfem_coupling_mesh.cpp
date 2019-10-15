@@ -6,8 +6,8 @@ between the xfluid class and the cut-library
 
 \level 2
 
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
+\maintainer  Martin Kronbichler
+             kronbichler@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
 */
@@ -2372,7 +2372,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
       // Change from linearization w.r.t. displacements to linearization w.r.t. velocities
       // (All other linearizations on the Nitsche Interface are evaluated like this)
       solid_stress[1].Scale(timefac_);
-      for (int idx = 2; idx < 5; ++idx) solid_stress[idx].Scale(timefac_ * timefac_);
+      for (int idx = 2; idx < 5; ++idx) solid_stress[idx].Scale(-timefac_ * timefac_);
     }
     else
       dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",

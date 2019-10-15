@@ -3,7 +3,7 @@
 
 \brief Managing and evaluating of spatial functions for fluid problems
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
 
 \level 2
 

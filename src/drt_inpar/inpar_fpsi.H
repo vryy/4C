@@ -2,7 +2,7 @@
 /*! \file
 \brief fpsi parameters
 \level 1
-\maintainer  Christoph Ager
+\maintainer  Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 

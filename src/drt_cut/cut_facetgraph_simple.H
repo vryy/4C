@@ -8,7 +8,7 @@
 
 \level 2
 
-\maintainer Christoph Ager
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_CUT_CUT_FACETGRAPH_SIMPLE_H_

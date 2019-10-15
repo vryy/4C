@@ -3,8 +3,8 @@
 
 \brief Evaluation methods for the 3D structural poro element
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
+\maintainer Johannes Kremheller
+            kremheller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
 

@@ -4,7 +4,7 @@
 \brief \brief FPSI Coupling Object: Holds all objects on the Fluid-Poro-Interface and evaluates the
 Fluid-Poro-Coupling Matrixes!
 
-\maintainer Christoph Ager
+\maintainer Johannes Kremheller
 
 \level 3
 */
