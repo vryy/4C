@@ -40,10 +40,13 @@
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
+#include "../drt_so3/so_base.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
 
+#include "beaminteraction_conditions.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
@@ -59,6 +62,7 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
+      beam_interaction_conditions_ptr_(Teuchos::null),
       geometry_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null)
@@ -76,6 +80,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
+
+  // Build the container to manage beam-to-solid conditions and get all coupling conditions.
+  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
+  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(DiscretPtr());
 
   // build a new data container to manage geometry evaluation data that can not be stored
   // pairwise
@@ -112,11 +120,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none)
+      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -722,6 +730,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
 
   CheckInit();
 
+  // Build the ids of the elements for the beam-to-solid conditions.
+  beam_interaction_conditions_ptr_->BuildIdSets();
+
   // loop over all row beam elements
   // note: like this we ensure that first element of pair is always a beam element, also only
   // only beam to something contact considered
@@ -782,7 +793,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     {
       toerase = true;
     }
-    // 2) ensure that two elements sharing the same node do not get into contact
+    // 2) ensure that the two elements confirm with the beam interactions defined via conditions in
+    // the input file. For now this is only implemented for beam-to-solid elements, therefore the
+    // dynamic cast here.
+    else if (dynamic_cast<DRT::ELEMENTS::So_base*>(*eiter) != NULL)
+    {
+      if (!beam_interaction_conditions_ptr_->IdsInConditions(currele->Id(), (*eiter)->Id()))
+        toerase = true;
+    }
+    // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
       for (int i = 0; i < 2; ++i)
@@ -830,7 +849,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_contact_params_ptr_);
+          BEAMINTERACTION::BeamContactPair::Create(
+              ele_ptrs, beam_contact_params_ptr_, beam_interaction_conditions_ptr_);
+
+      if (newbeaminteractionpair == Teuchos::null)
+        dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",
+            ele_ptrs[0]->Id(), ele_ptrs[1]->Id());
+
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
       newbeaminteractionpair->Setup();

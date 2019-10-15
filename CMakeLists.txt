@@ -765,6 +765,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
+  src/drt_inpar/inpar_beam_to_solid.cpp
   src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_geometry_pair.cpp
   src/drt_inpar/inpar_bio.cpp
@@ -903,12 +904,12 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
+  src/drt_beaminteraction/beam_to_solid_conditions.cpp
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_factory.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
@@ -939,6 +940,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/beaminteraction_data.cpp
+  src/drt_beaminteraction/beaminteraction_conditions.cpp
   src/drt_beaminteraction/crosslinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
   src/drt_beaminteraction/spherebeamlinking_params.cpp

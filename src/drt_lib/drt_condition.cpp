@@ -273,6 +273,14 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "blend materials: ";
   else if (Type() == FilamentBeamLineCondition)
     os << "line condition for polymer networks: ";
+  else if (Type() == BeamToSolidVolumeMeshtyingLine)
+    os << "line condition for beam-to-volume interaction: ";
+  else if (Type() == BeamToSolidVolumeMeshtyingVolume)
+    os << "volume condition for beam-to-volume interaction: ";
+  else if (Type() == BeamToSolidSurfaceMeshtyingLine)
+    os << "line condition for beam-to-surface interaction: ";
+  else if (Type() == BeamToSolidSurfaceMeshtyingSurface)
+    os << "surface condition for beam-to-surface interaction: ";
   else if (Type() == ForceSensor)
     os << "marking points in a system where force sensors are applied: ";
   else if (Type() == FlowRateThroughLine_2D)

@@ -39,6 +39,7 @@ namespace BEAMINTERACTION
   // forward declaration ...
   class BeamContactParams;
   class BeamToSolidVtuOutputWriterBase;
+  class BeamInteractionConditions;
 
   /*!
    \brief
@@ -87,7 +88,9 @@ namespace BEAMINTERACTION
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr);
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr,
+        const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
+            beam_interaction_conditions_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both

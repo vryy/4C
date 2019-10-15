@@ -674,6 +674,13 @@ namespace INPAR
   {
   }  // namespace BEAMPOTENTIAL
 
+  /*!
+   * \brief Input parameters for beam-to-solid interactions
+   */
+  namespace BEAMTOSOLID
+  {
+  }  // namespace BEAMTOSOLID
+
   /*! \brief Input parameters for binning strategy
    *
    */
