@@ -322,13 +322,13 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerresistance.push_back(
                   Teuchos::rcp(new RealConditionComponent("resistance")));
               butlervolmerresistance.push_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("CONVTOL_MODBUTLERVOLMER")));
+                  Teuchos::rcp(new SeparatorConditionComponent("CONVTOL_IMPLBUTLERVOLMER")));
               butlervolmerresistance.push_back(
-                  Teuchos::rcp(new RealConditionComponent("CONVTOL_MODBUTLERVOLMER")));
+                  Teuchos::rcp(new RealConditionComponent("CONVTOL_IMPLBUTLERVOLMER")));
               butlervolmerresistance.push_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("ITEMAX_MODBUTLERVOLMER")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ITEMAX_IMPLBUTLERVOLMER")));
               butlervolmerresistance.push_back(
-                  Teuchos::rcp(new RealConditionComponent("ITEMAX_MODBUTLERVOLMER")));
+                  Teuchos::rcp(new RealConditionComponent("ITEMAX_IMPLBUTLERVOLMER")));
 
               kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Resistance",
                   butlervolmerresistance, INPAR::S2I::kinetics_butlervolmerresistance)));

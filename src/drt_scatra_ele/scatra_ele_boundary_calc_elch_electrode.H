@@ -99,13 +99,65 @@ namespace DRT
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
 
-      //! calculate modified Butler-Volmer mass flux density via Newton method
+      /*!
+       * \brief calculate modified Butler-Volmer mass flux density via Newton method
+       *
+       * \remark This is a static method as it is called from
+       * static method EvaluateS2ICouplingAtIntegrationPoint.
+       *
+       * @param[in] j0               exchange mass flux density
+       * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
+       * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
+       * @param[in] frt              factor F/(RT)
+       * @param[in] pot_ed           electric potential on the electrode-side (slave-side)
+       * @param[in] pot_el           electric potential on the electrolyte-side (master-side)
+       * @param[in] epd              equilibrium electric potential difference
+       * @param[in] resistance       ohmic resistance on the interface
+       * @param[in] itemax           max. number of iterations for implicit Butler-Volmer equation
+       * @param[in] convtol          convergence tolerance for implicit Butler-Volmer equation
+       * @param[in] faraday          faraday constant
+       * @param[out] j               Butler-Volmer mass flux density
+       *
+       */
       static double CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
           const double alphaa, const double alphac, const double frt, const double pot_ed,
           const double pot_el, const double epd, const double resistance, const double itemax,
           const double convtol, const double faraday);
 
-      //! calculate core linearizations associated with Butler-Volmer mass flux density
+      /*!
+       * \brief calculate core linearizations associated with Butler-Volmer mass flux density
+       *
+       * \remark This is a static method as it is also called from
+       * static method EvaluateS2ICouplingAtIntegrationPoint.
+       *
+       * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
+       * @param[in] timefacfac       time-integration factor times domain-integration factor
+       * @param[in] timefacrhsfac    time-integration factor for right-hand side times
+       * @param[in] j0               exchange mass flux density
+       * @param[in] frt              factor F/(RT)
+       * @param[in] epdderiv         derivative of equilibrium electric potential difference w.r.t.
+       *                             concentration at electrode surface
+       * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
+       * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
+       * @param[in] resistance       ohmic resistance on the interface
+       * @param[in] expterm1         first exponential term of Butler-Volmer equation
+       * @param[in] expterm2         second exponential term of Butler-Volmer equation
+       * @param[in] kr               charge transfer constant
+       * @param[in] faraday          faraday constant
+       * @param[in] emasterphiint    state variables on master-side integration points
+       * @param[in] eslavephiint     state variables on slave-side integration points
+       * @param[in] cmax             saturation value of intercalated lithium concentration from
+       *                             electrode material
+       * @param[out] dj_dc_slave     linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on slave-side
+       * @param[out] dj_dc_master    linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on master-side
+       * @param[out] dj_dpot_slave   linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on slave-side
+       * @param[out] dj_dpot_master  linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on master-side
+       *
+       */
       static void CalculateCoreLinearizations(const int kineticmodel, const double timefacfac,
           const double timefacrhsfac, const double j0, const double frt, const double epdderiv,
           const double alphaa, const double alphac, const double resistance, const double expterm1,
@@ -113,7 +165,37 @@ namespace DRT
           const double eslavephiint, const double cmax, double& dj_dc_slave, double& dj_dc_master,
           double& dj_dpot_slave, double& dj_dpot_master);
 
-      //! calculate out-parameters such as residual vectors and linearizations of residuals
+      /*!
+       * \brief calculate out-parameters such as residual vectors and linearizations of residuals
+       *
+       * \remark This is a static method as it is called from
+       * static method EvaluateS2ICouplingAtIntegrationPoint.
+       *
+       * @param[in] funct_slave      slave-side shape function values
+       * @param[in] funct_master     master-side shape function values
+       * @param[in] test_slave       slave-side test function values
+       * @param[in] test_master      master-side test function values
+       * @param[in] numelectrons     number of electrons involved in charge transfer at
+       *                             electrode-electrolyte interface
+       * @param[in] nen_master       number of nodes of master-side mortar element
+       * @param[in] dj_dc_slave      linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on slave-side
+       * @param[in] dj_dc_master     linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on master-side
+       * @param[in] dj_dpot_slave    linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on slave-side
+       * @param[in] dj_dpot_master   linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on master-side
+       * @param[in] j                Butler-Volmer mass flux density
+       * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_sm            linearizations of slave-side residuals w.r.t. master-side dofs
+       * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
+       * @param[out] k_mm            linearizations of master-side residuals w.r.t. master-side dofs
+       * @param[out] r_s             slave-side residual vector
+       * @param[out] r_m             master-side residual vector
+       *
+       * \tparam distype_master  This method is templated on the master-side discretization type.
+       */
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystem(const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<

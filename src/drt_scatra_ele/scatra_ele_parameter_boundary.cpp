@@ -81,8 +81,8 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       resistivity_(0.0),
       stoichiometries_(NULL),
       resistance_(0.0),
-      convtolmodifiedBV_(-1.0),
-      itemaxmodifiedBV_(-1.0)
+      convtolimplicitBV_(-1.0),
+      itemaxmimplicitBV_(-1.0)
 {
   return;
 }
@@ -129,10 +129,10 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           {
             resistance_ =
                 parameters.get<double>("resistance", std::numeric_limits<double>::infinity());
-            convtolmodifiedBV_ = parameters.get<double>(
-                "CONVTOL_MODBUTLERVOLMER", std::numeric_limits<double>::infinity());
-            itemaxmodifiedBV_ = parameters.get<double>(
-                "ITEMAX_MODBUTLERVOLMER", std::numeric_limits<double>::infinity());
+            convtolimplicitBV_ = parameters.get<double>(
+                "CONVTOL_IMPLBUTLERVOLMER", std::numeric_limits<double>::infinity());
+            itemaxmimplicitBV_ = parameters.get<double>(
+                "ITEMAX_IMPLBUTLERVOLMER", std::numeric_limits<double>::infinity());
           }
           break;
         }

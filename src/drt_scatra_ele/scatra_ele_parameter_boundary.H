@@ -89,11 +89,11 @@ namespace DRT
 
       /// return convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      double ConvtolmodifiedBV() { return convtolmodifiedBV_; };
+      double ConvtolimplicitBV() { return convtolimplicitBV_; };
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      double ItemaxmodifiedBV() { return itemaxmodifiedBV_; };
+      double ItemaximplicitBV() { return itemaxmimplicitBV_; };
 
      private:
       //! private constructor for singletons
@@ -150,11 +150,11 @@ namespace DRT
 
       /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      double convtolmodifiedBV_;
+      double convtolimplicitBV_;
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      double itemaxmodifiedBV_;
+      double itemaxmimplicitBV_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

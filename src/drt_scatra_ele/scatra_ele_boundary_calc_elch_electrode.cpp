@@ -129,8 +129,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double resistance = my::scatraparamsboundary_->Resistance();
-  const double itemaxmodifiedBV = my::scatraparamsboundary_->ItemaxmodifiedBV();
-  const double convtolmodifiedBV = my::scatraparamsboundary_->ConvtolmodifiedBV();
+  const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
+  const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
 
     EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_, emasterphinp,
         my::funct_, my::funct_, my::funct_, my::funct_, kineticmodel, numelectrons, stoichiometries,
-        kr, alphaa, alphac, resistance, itemaxmodifiedBV, convtolmodifiedBV, timefacfac,
+        kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac,
         timefacrhsfac, GetFRT(), eslavematrix, emastermatrix, dummymatrix, dummymatrix,
         eslaveresidual, dummyvector);
   }  // loop over integration points
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         test_master,
     const int kineticmodel, const int numelectrons, const std::vector<int>* stoichiometries,
     const double kr, const double alphaa, const double alphac, const double resistance,
-    const double itemaxmodifiedBV, const double convtolmodifiedBV, const double timefacfac,
+    const double itemaxmimplicitBV, const double convtolimplicitBV, const double timefacfac,
     const double timefacrhsfac, const double frt, Epetra_SerialDenseMatrix& k_ss,
     Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
     Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
               expterm);
 
         // core residual term associated with Butler-Volmer mass flux density
-        const double j = j0 * expterm * timefacrhsfac;
+        const double jfacrhsfac = j0 * expterm * timefacrhsfac;
 
         // forward declarations
         double dj_dc_slave(.0);
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
             test_master, numelectrons, nen_master, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+            dj_dpot_master, jfacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
       }
 
       break;
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         // compute Butler-Volmer mass flux density via Newton-Raphson method
         const double j =
             CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt, eslavepotint,
-                emasterpotint, epd, resistance, itemaxmodifiedBV, convtolmodifiedBV, faraday);
+                emasterpotint, epd, resistance, itemaxmimplicitBV, convtolimplicitBV, faraday);
 
         // electrode-electrolyte overpotential at integration point
         const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
