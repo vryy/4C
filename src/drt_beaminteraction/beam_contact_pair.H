@@ -90,7 +90,7 @@ namespace BEAMINTERACTION
     static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
         const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr,
         const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
-            beam_to_solid_conditions_ptr);
+            beam_interaction_conditions_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
