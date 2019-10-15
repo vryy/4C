@@ -119,29 +119,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
  *
  */
 template <typename scalar_type, typename line, typename surface>
-template <typename scalar_type_evaluate>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::EvaluateSurfacePosition(
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-    LINALG::Matrix<3, 1, scalar_type_evaluate>& r,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
-{
-  // Evaluate the normal.
-  LINALG::Matrix<3, 1, scalar_type_evaluate> normal;
-  EvaluateSurfaceNormal(q_surface, xi, normal, nodal_normals);
-
-  // Evaluate the position on the surface.
-  GEOMETRYPAIR::EvaluatePosition<surface>(xi, q_surface, r, Element2());
-
-  // Add the normal part to the position.
-  normal.Scale(xi(2));
-  r += normal;
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     surface>::EvaluateSurfacePositionAndDerivative(const LINALG::Matrix<surface::n_dof_, 1,
                                                        scalar_type>& q_surface,
@@ -158,47 +135,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   LINALG::Matrix<3, 1, FAD_outer> r_AD;
 
   // Evaluate the position.
-  EvaluateSurfacePosition(q_surface, xi_AD, r_AD, nodal_normals);
+  EvaluateSurfacePosition<surface>(q_surface, xi_AD, r_AD, Element2(), nodal_normals);
 
   // Extract the return values from the AD types.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
   {
     r(i_dir) = r_AD(i_dir).val();
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) dr(i_dir, i_dim) = r_AD(i_dir).dx(i_dim);
-  }
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-template <typename scalar_type_evaluate>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::EvaluateSurfaceNormal(
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-    LINALG::Matrix<3, 1, scalar_type_evaluate>& normal,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
-{
-  if (nodal_normals == NULL)
-  {
-    // Calculate the normal as the geometrical normal on the element.
-    LINALG::Matrix<3, 2, scalar_type_evaluate> dr;
-    LINALG::Matrix<3, 1, scalar_type_evaluate> dr_0;
-    LINALG::Matrix<3, 1, scalar_type_evaluate> dr_1;
-    GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_surface, dr, Element2());
-    for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-    {
-      dr_0(i_dir) = dr(i_dir, 0);
-      dr_1(i_dir) = dr(i_dir, 1);
-    }
-    normal.CrossProduct(dr_0, dr_1);
-    normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
-  }
-  else
-  {
-    // Calculate the normal as a interpolation of nodal normals.
-    GEOMETRYPAIR::EvaluatePosition<surface>(xi, *nodal_normals, normal, Element2());
-    normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
   }
 }
 

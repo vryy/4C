@@ -157,6 +157,89 @@ namespace GEOMETRYPAIR
   }
 
   /**
+   * \brief Evaluate the normal at a position on the surface.
+   *
+   * @template surface Class of surface element.
+   * @template scalar_type Scalar type used for the degrees of freedom of the element.
+   * @template scalar_type_evaluate Scalar type used for the parameter coordinates, this will be
+   * the result type of this function.
+   *
+   * @param q_surface (in) Degrees of freedom for the surface.
+   * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
+   * parameter coordiantes, the third one is in the normal direction).
+   * @param normal (out) Normal on the surface.
+   * @param element (in) Pointer to the element object.
+   * @param nodal_normals (in) Optional - Normals on the nodes.
+   */
+  template <typename surface, typename scalar_type, typename scalar_type_evaluate>
+  void EvaluateSurfaceNormal(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+      const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
+      LINALG::Matrix<3, 1, scalar_type_evaluate>& normal, const DRT::Element* element,
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL)
+  {
+    // Check at compile time if a surface (2D) element is given.
+    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+
+    if (nodal_normals == NULL)
+    {
+      // Calculate the normal as the geometrical normal on the element.
+      LINALG::Matrix<3, 2, scalar_type_evaluate> dr;
+      LINALG::Matrix<3, 1, scalar_type_evaluate> dr_0;
+      LINALG::Matrix<3, 1, scalar_type_evaluate> dr_1;
+      GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_surface, dr, element);
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+      {
+        dr_0(i_dir) = dr(i_dir, 0);
+        dr_1(i_dir) = dr(i_dir, 1);
+      }
+      normal.CrossProduct(dr_0, dr_1);
+      normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
+    }
+    else
+    {
+      // Calculate the normal as a interpolation of nodal normals.
+      GEOMETRYPAIR::EvaluatePosition<surface>(xi, *nodal_normals, normal, element);
+      normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
+    }
+  }
+
+  /**
+   * \brief Evaluate a position on the surface.
+   *
+   * @template surface Class of surface element.
+   * @template scalar_type Scalar type used for the degrees of freedom of the element.
+   * @template scalar_type_evaluate Scalar type used for the parameter coordinates, this will be
+   * the result type of this function.
+   *
+   * @param q_surface (in) Degrees of freedom for the surface.
+   * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
+   * parameter coordiantes, the third one is in the normal direction).
+   * @param r (out) Position on the surface.
+   * @param element (in) Pointer to the element object.
+   * @param nodal_normals (in) Optional - Normals on the nodes.
+   */
+  template <typename surface, typename scalar_type, typename scalar_type_evaluate>
+  void EvaluateSurfacePosition(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+      const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
+      LINALG::Matrix<3, 1, scalar_type_evaluate>& r, const DRT::Element* element,
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL)
+  {
+    // Check at compile time if a surface (2D) element is given.
+    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+
+    // Evaluate the normal.
+    LINALG::Matrix<3, 1, scalar_type_evaluate> normal;
+    EvaluateSurfaceNormal<surface>(q_surface, xi, normal, element, nodal_normals);
+
+    // Evaluate the position on the surface.
+    GEOMETRYPAIR::EvaluatePosition<surface>(xi, q_surface, r, element);
+
+    // Add the normal part to the position.
+    normal.Scale(xi(2));
+    r += normal;
+  }
+
+  /**
    * \brief Check if the parameter coordinate xi is in the valid range for a 1D element.
    * @param xi (in) Parameter coordinate on the line.
    * @return True if xi is in a valid range for the element.

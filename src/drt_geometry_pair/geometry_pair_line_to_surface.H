@@ -117,25 +117,6 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
     /**
-     * \brief Evaluate a position on the surface.
-     *
-     * @template scalar_type_evaluate Scalar type used for this function. This type is different
-     * from the scalar type in the class, since we calculate derivatives of the this method inside
-     * of other methods.
-     *
-     * @param q_surface (in) Degrees of freedom for the surface.
-     * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction).
-     * @param r (out) Position on the surface.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
-     */
-    template <typename scalar_type_evaluate>
-    void EvaluateSurfacePosition(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-        LINALG::Matrix<3, 1, scalar_type_evaluate>& r,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
-
-    /**
      * \brief Evaluate a position on the surface and its derivative w.r.t. xi.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
@@ -148,25 +129,6 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const LINALG::Matrix<3, 1, scalar_type>& xi, LINALG::Matrix<3, 1, scalar_type>& r,
         LINALG::Matrix<3, 3, scalar_type>& dr,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
-
-    /**
-     * \brief Evaluate the normal at a position on the surface.
-     *
-     * @template scalar_type_evaluate Scalar type used for this function. This type is different
-     * from the scalar type in the class, since we calculate derivatives of the this method inside
-     * of other methods.
-     *
-     * @param q_surface (in) Degrees of freedom for the surface.
-     * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction).
-     * @param normal (out) Normal on the surface.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
-     */
-    template <typename scalar_type_evaluate>
-    void EvaluateSurfaceNormal(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-        LINALG::Matrix<3, 1, scalar_type_evaluate>& normal,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
     /**
