@@ -1,5 +1,21 @@
 ###------------------------------------------------------------------ Test definitions
 
+# Determine timeout for each test. Use default one, if it is not passed from te outside.
+if (DEFINED ENV{GLOBAL_TEST_TIMEOUT})
+  set(GLOBAL_TEST_TIMEOUT $ENV{GLOBAL_TEST_TIMEOUT})
+  message("Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s.")
+else ()
+  # default test timeout, if not passed as an environment variable
+  if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+    set(GLOBAL_TEST_TIMEOUT 500) # Default timeout for debug configuration
+  else ()
+    set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
+  endif ()
+
+
+  message("Global test timeout is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT} s.")
+endif ()
+
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
     COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
@@ -7,11 +23,12 @@ macro (baci_test arg nproc restart)
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
       COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+    set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   endif (${restart})
   if( "${ARGN}" STREQUAL "minimal")
-    set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000 LABELS minimal)
+    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
   else ()
-    set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000)
+    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   endif ()
 endmacro (baci_test)
 
@@ -27,7 +44,7 @@ macro (baci_test_restartonly arg nproc restart)
   add_test(NAME ${arg}-p${nproc}-restart
     COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
 
-  set_tests_properties ( ${arg}-p${nproc}-restart PROPERTIES TIMEOUT 1000)
+  set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 endmacro (baci_test_restartonly)
 
 # Run test case for nested parallelism
@@ -40,7 +57,7 @@ macro (baci_test_Nested_Par arg1 arg2 restart)
     COMMAND ${MPI_RUN} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
   endif (${restart})
 
-  set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
+  set_tests_properties(${arg1}-nestedPar PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 endmacro (baci_test_Nested_Par)
 
 # Run test case for nested parallelism with multiple inverse analysis
@@ -48,7 +65,7 @@ macro (baci_test_Nested_Par_MultipleInvana arg1 arg2)
   add_test(NAME ${arg1}-nestedPar-multiple-invana
     COMMAND ${MPI_RUN} -np 4 $<TARGET_FILE:${baciname}> -ngroup=4 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx1  ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx2 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx1 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx2)
 
-    set_tests_properties ( ${arg1}-nestedPar-multiple-invana PROPERTIES TIMEOUT 200 )
+  set_tests_properties(${arg1}-nestedPar-multiple-invana PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 endmacro (baci_test_Nested_Par_MultipleInvana)
 
 # Run test case for nested parallelism with copydatfile
@@ -59,9 +76,9 @@ macro (baci_test_Nested_Par_CopyDat arg1 arg2 arg3)
   add_test(NAME ${arg1}-nestedPar_CopyDat-p${arg2}
     COMMAND ${MPI_RUN} -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
     if( "${ARGN}" STREQUAL "minimal")
-      set_tests_properties ( ${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT 200 LABELS minimal)
+      set_tests_properties(${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
     else ()
-      set_tests_properties ( ${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT 1000)
+      set_tests_properties(${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
     endif ()
 endmacro (baci_test_Nested_Par_CopyDat)
 
@@ -87,16 +104,16 @@ macro (baci_test_Nested_Par_CopyDat_prepost arg1 arg2 arg3 arg4 arg5 restart)
       COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
   endif(NOT ${arg3} STREQUAL "")
   if( "${ARGN}" STREQUAL "minimal")
-    set_tests_properties ( ${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
-    set_tests_properties ( ${arg2}-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
+    set_tests_properties(${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
+    set_tests_properties(${arg2}-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
     if (NOT ${arg3} STREQUAL "")
-      set_tests_properties ( ${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
+      set_tests_properties(${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
     endif(NOT ${arg3} STREQUAL "")
   else ()
-    set_tests_properties ( ${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT 1000)
-    set_tests_properties ( ${arg2}-p${arg4} PROPERTIES TIMEOUT 1000)
+    set_tests_properties(${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
+    set_tests_properties(${arg2}-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
     if (NOT ${arg3} STREQUAL "")
-      set_tests_properties ( ${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT 1000)
+      set_tests_properties(${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
     endif(NOT ${arg3} STREQUAL "")
   endif ()
 endmacro (baci_test_Nested_Par_CopyDat_prepost)
@@ -116,7 +133,7 @@ macro (baci_framework_test testname nproc xmlfilename)
 
 # note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
 
-  set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES TIMEOUT 1000 )
+  set_tests_properties(${testname}-p${nproc}-fw PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
   set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
@@ -127,7 +144,7 @@ macro (cut_test nproc)
   set (RUNTESTS ${MPI_RUN}\ -np\ ${nproc}\ cut_test)
   add_test(NAME test-p${nproc}-cut
   COMMAND sh -c "${RUNTESTS}")
-  set_tests_properties ( test-p${nproc}-cut PROPERTIES TIMEOUT 1000 )
+  set_tests_properties(test-p${nproc}-cut PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   set_tests_properties ( test-p${nproc}-cut PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR " )
 endmacro (cut_test)
 
@@ -155,7 +172,7 @@ macro(post_processing arg nproc stresstype straintype startstep)
   # specify test case
   add_test(NAME ${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp
     COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx${IDENTIFIER}_PAR_${arg}${FIELD}*.case xxx${IDENTIFIER}_SER_${arg}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${IDENTIFIER}${FIELD}.csv")
-  set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES TIMEOUT 1000)
+  set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
 endmacro(post_processing)
 endif()
@@ -168,21 +185,21 @@ macro(codetesting arg)
       add_test(NAME ${arg}-ct
       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_input_params.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}")
 
-      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
       set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
    elseif (${arg} STREQUAL check_unused_inpar_params)
 
       add_test(NAME ${arg}-ct
        COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_params.py ${PROJECT_SOURCE_DIR}")
-      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
       set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
    elseif (${arg} STREQUAL check_unused_inpar_materials)
 
       add_test(NAME ${arg}-ct
        COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_materials.py ${PROJECT_SOURCE_DIR}")
-      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
       set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
    elseif (${arg} STREQUAL check_nightly_testcases)
@@ -190,7 +207,7 @@ macro(codetesting arg)
       add_test(NAME ${arg}-ct
       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_nightly_testcases.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/")
 
-      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
       set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
    endif()
@@ -218,7 +235,7 @@ macro(muelu_agg2vtk arg nlevel nblock nproc scaling)
   add_test(NAME ${arg}-p${nproc}-agg2vtk COMMAND sh -c ${COMMANDS})
 
   # set maximum test runtime
-  set_tests_properties(${arg}-p${nproc}-agg2vtk PROPERTIES TIMEOUT 100)
+  set_tests_properties(${arg}-p${nproc}-agg2vtk PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 
 endmacro(muelu_agg2vtk)
 
@@ -230,7 +247,7 @@ macro(result_file arg nproc filetag resultfilename referencefilename)
   add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND diff -q -s ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename})
 
   # set maximum test runtime
-  set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT 100)
+  set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 
 endmacro(result_file)
 endif()
