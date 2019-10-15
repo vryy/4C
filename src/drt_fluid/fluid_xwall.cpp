@@ -769,10 +769,10 @@ void FLD::XWall::SetupL2Projection()
           {  // has 3 dofs, velocity dofs
             // BUT: enriched nodes have 8 dofs, so we have to calculate our own nullspace for 3 dofs
             // store nv and np at unique location in solver parameter list
-            solver_->Params().sublist("NodalBlockInformation").set("nv", 3);
-            solver_->Params().sublist("NodalBlockInformation").set("np", 0);
-            solver_->Params().sublist("NodalBlockInformation").set("numdf", 3);
-            solver_->Params().sublist("NodalBlockInformation").set("dimns", 3);
+            solver_->Params().sublist("NodalBlockInformation").set("number of momentum dofs", 3);
+            solver_->Params().sublist("NodalBlockInformation").set("number of constraint dofs", 0);
+            solver_->Params().sublist("NodalBlockInformation").set("number of dofs per node", 3);
+            solver_->Params().sublist("NodalBlockInformation").set("nullspace dimension", 3);
             // get the belos list and see whether we use downwinding
             Teuchos::ParameterList& beloslist = solver_->Params().sublist("Belos Parameters");
 

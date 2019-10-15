@@ -391,8 +391,9 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>(xCrsA));
   Teuchos::RCP<Xpetra::Matrix<Scalar, LO, GO, Node>> xOp =
       Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LO, GO, Node>>(xCrsOp);
-  xOp->SetFixedBlockSize(
-      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
+  xOp->SetFixedBlockSize(Params()
+                             .sublist("NodalBlockInformation")
+                             .get<int>("number of momentum dofs"));  // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
   data_->setlib(Xpetra::UseEpetra);
@@ -493,8 +494,9 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(
-      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
+  xOp->SetFixedBlockSize(Params()
+                             .sublist("NodalBlockInformation")
+                             .get<int>("number of momentum dofs"));  // set nBlockSize
 
   // detect MueLu/ML Paramter list
   std::string MultiGridParameterListName = "";
@@ -646,8 +648,9 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(
-      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
+  xA->SetFixedBlockSize(Params()
+                            .sublist("NodalBlockInformation")
+                            .get<int>("number of momentum dofs"));  // set nBlockSize
 
   return FindNonDiagonalDominantRows(xA, diagDominanceRatio);
 }
@@ -697,8 +700,9 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(
-      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
+  xA->SetFixedBlockSize(Params()
+                            .sublist("NodalBlockInformation")
+                            .get<int>("number of momentum dofs"));  // set nBlockSize
 
   return FindZeroDiagonalEntries(xA, tolerance);
 }
@@ -713,8 +717,9 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(
-      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
+  xOp->SetFixedBlockSize(Params()
+                             .sublist("NodalBlockInformation")
+                             .get<int>("number of momentum dofs"));  // set nBlockSize
 
   return CountZerosOnDiagonal(xOp);
 }

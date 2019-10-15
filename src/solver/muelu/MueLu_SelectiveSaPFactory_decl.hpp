@@ -3,7 +3,7 @@
 
 \brief Factory class for MueLu
 \level 2
-\maintainer Martin Kronbichler
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

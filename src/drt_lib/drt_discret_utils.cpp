@@ -53,10 +53,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!(nv + np)) dserror("Cannot determine nodal block size");
 
   // store nv and np at unique location in solver parameter list
-  solveparams.sublist("NodalBlockInformation").set("nv", nv);  // TODO improve names
-  solveparams.sublist("NodalBlockInformation").set("np", np);
-  solveparams.sublist("NodalBlockInformation").set("numdf", numdf);
-  solveparams.sublist("NodalBlockInformation").set("dimns", dimns);
+  solveparams.sublist("NodalBlockInformation").set("number of momentum dofs", nv);
+  solveparams.sublist("NodalBlockInformation").set("number of constraint dofs", np);
+  solveparams.sublist("NodalBlockInformation").set("number of dofs per node", numdf);
+  solveparams.sublist("NodalBlockInformation").set("nullspace dimension", dimns);
 
   if (solveparams.isSublist("Aztec Parameters"))
   {

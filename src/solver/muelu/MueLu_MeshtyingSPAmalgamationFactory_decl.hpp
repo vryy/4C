@@ -3,7 +3,7 @@
 
 \brief MueLu amalgamation factory for meshtying
 \level 2
-\maintainer Martin Kronbichler
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

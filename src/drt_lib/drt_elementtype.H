@@ -80,7 +80,18 @@ namespace DRT
       return;
     }
 
-    /// nodal block information to create a null space description
+    /*!
+    \brief Get nodal block information to create a null space description
+
+    \note All elements will fill \c nv, but \c np is only filled by some elements.
+
+    @param[in] dwele Element pointer
+    @param[out] numdf Number of degrees of freedom per node
+    @param[out] dimns Nullspace dimension
+    @param[out] nv Number of degrees of freedom for balance of linear momentum (e.g. solid
+                displacement, fluid velocity)
+    @param[out] np Number of degrees of freedom for local constraints (e.g. fluid pressure)
+    */
     virtual void NodalBlockInformation(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
