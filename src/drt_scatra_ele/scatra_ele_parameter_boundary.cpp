@@ -115,6 +115,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_butlervolmerreduced:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
           stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
           numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
@@ -125,7 +126,8 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerpeltier)
             peltier_ = parameters.get<double>("peltier", std::numeric_limits<double>::infinity());
 
-          if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerresistance)
+          if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerresistance or
+              kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedwithresistance)
           {
             resistance_ =
                 parameters.get<double>("resistance", std::numeric_limits<double>::infinity());

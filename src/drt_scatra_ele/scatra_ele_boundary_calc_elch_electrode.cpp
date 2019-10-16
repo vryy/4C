@@ -221,7 +221,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint, faraday, frt);
 
   // Butler-Volmer exchange mass flux density
-  const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced
+  const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
+                          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance
                       ? kr
                       : kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa) *
                             pow(eslavephiint, alphac));
@@ -276,6 +277,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     }
 
     case INPAR::S2I::kinetics_butlervolmerresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
     {
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
@@ -634,6 +636,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateCoreLi
       dj_dpot_master = -dF_dpot_master * dF_di_inverse;
       break;
     }  // case INPAR::S2I::kinetics_butlervolmerresistance
+    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+    {
+      // core linearizations associated with Butler-Volmer current density according to MA Schmidt
+      // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
+      const double dF_di_inverse =
+          1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
+      const double dF_dc_slave =
+          timefacfac * j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
+      const double dF_dc_master = 0.0;
+      const double dF_dpot_slave = -timefacfac * j0 * frt * (alphaa * expterm1 + alphac * expterm2);
+      const double dF_dpot_master = -dF_dpot_slave;
+
+      // rule of implicit differentiation
+      dj_dc_slave = -dF_dc_slave * dF_di_inverse;
+      dj_dc_master = -dF_dc_master * dF_di_inverse;
+      dj_dpot_slave = -dF_dpot_slave * dF_di_inverse;
+      dj_dpot_master = -dF_dpot_master * dF_di_inverse;
+      break;
+    }  // case INPAR::S2I::kinetics_butlervolmerreducedwithresistance
   }    // switch(kineticmodel)
   return;
 }
