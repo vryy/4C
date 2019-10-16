@@ -253,8 +253,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     const int contelegid = contdis->ElementColMap()->GID(icont);
     DRT::Element* contele = contdis->gElement(contelegid);
 
-    LINALG::Matrix<3, 2> aabb_cont = GetAABB(contele);
-    aabb_cont[contelegid] = aabb_cont;
+    LINALG::Matrix<3, 2> my_aabb_cont = GetAABB(contele);
+    aabb_cont[contelegid] = my_aabb_cont;
   }
 
   // find the bounding box of all elements of the 2D/3D discretization
