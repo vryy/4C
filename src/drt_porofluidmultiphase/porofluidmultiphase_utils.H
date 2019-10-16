@@ -16,6 +16,7 @@
 
 #include "../drt_inpar/inpar_porofluidmultiphase.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace DRT
 {
@@ -72,7 +73,7 @@ namespace POROFLUIDMULTIPHASE
     );
 
     /**
-     * extend ghosting for artery discretization
+     * \brief extend ghosting for artery discretization
      * @param contdis [in]: discretization of 2D/3D domain
      * @param artdis [in]: discretization of 1D domain
      * @return set of nearby element pairs as seen from the artery discretization, each artery
@@ -82,17 +83,17 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
 
     /**
-     * get axis-aligned bounding box of element
-     * @param ele: compute AABB for this element
-     * @return AABB of element as 6x1 vector with format [xmin, ymin, zmin, xmax, ymax, zmax]
+     * \brief get axis-aligned bounding box of element
+     * @param ele[in]: compute AABB for this element
+     * @return         AABB of element as 3x2 LINALG::Matrix
      */
-    std::vector<double> GetAABB(DRT::Element* ele);
+    LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele);
 
     /// maximum distance between two nodes of an element
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
 
     /**
-     * perform brute force search
+     * \brief perform octtree search
      * @param contdis [in]: discretization of 2D/3D domain
      * @param artdis [in]: discretization of 1D domain
      * @param artsearchdis [in]: fully overlapping discretization of 1D domain on which search is
@@ -102,7 +103,7 @@ namespace POROFLUIDMULTIPHASE
      * @return set of nearby element pairs as seen from the artery discretization, each artery
      * element with a vector of close 3D elements
      */
-    std::map<int, std::set<int>> BruteForceSearch(Teuchos::RCP<DRT::Discretization> contdis,
+    std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<DRT::Discretization> contdis,
         Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis,
         std::set<int>* elecolset, std::set<int>* nodecolset);
 
