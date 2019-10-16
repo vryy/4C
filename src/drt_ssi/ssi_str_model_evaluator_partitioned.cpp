@@ -51,8 +51,8 @@ STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI
 bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  // perform structural meshtying for scatra-scatra interface coupling
-  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
+  // perform structural meshtying
+  if (ssi_part_->SSIInterfaceMeshtying())
   {
     // cast old Jacobian
     LINALG::SparseMatrix& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
@@ -99,8 +99,8 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
 void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
-  // perform structural meshtying for scatra-scatra interface coupling
-  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
+  // perform structural meshtying
+  if (ssi_part_->SSIInterfaceMeshtying())
     // transform and assemble master-side part of structural increment vector to slave side
     ssi_part_->MapsStructure()->InsertVector(
         *ssi_part_->CouplingAdapterStructure()->MasterToSlave(
@@ -152,8 +152,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::GetLastTi
 bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  // perform structural meshtying for scatra-scatra interface coupling
-  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling() and ssi_part_->IsSetup())
+  // perform structural meshtying
+  if (ssi_part_->SSIInterfaceMeshtying() and ssi_part_->IsSetup())
   {
     // transform and assemble slave-side part of structural right-hand side vector to master side
     ssi_part_->MapsStructure()->AddVector(*ssi_part_->CouplingAdapterStructure()->SlaveToMaster(

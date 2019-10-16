@@ -94,7 +94,7 @@ STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 4.24230810415598403e-01 TOLE
 STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE 1.66130928341089973e-01 TOLERANCE 1.e-10
 STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -1.66130928341090056e-01 TOLERANCE 1.e-10
 ------------------------------------------------DESIGN DESCRIPTION
-NDSURF  4
+NDSURF  8
 NDVOL   2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
@@ -113,6 +113,10 @@ E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -1.036426882e-5 FUNCT 0 0 Live Mid
 DVOL   2
 E 1 - ScaTra 1
 E 2 - ScaTra 2
+--------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
+DSURF  2
+E 2 - 0 Slave S2ICouplingID 0
+E 3 - 0 Master S2ICouplingID 0
 -------------------------------DESIGN S2I COUPLING SURF CONDITIONS
 DSURF  2
 E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 1.e-2 alpha_a 0.5 alpha_c 0.5

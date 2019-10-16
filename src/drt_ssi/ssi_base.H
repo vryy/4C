@@ -35,6 +35,14 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class PartitionedSSI;
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
+
 namespace SSI
 {
   // forward declaration
@@ -50,6 +58,9 @@ namespace SSI
   //! Base class of all solid-scatra algorithms
   class SSI_Base : public ADAPTER::AlgorithmBase
   {
+    /// define as friend class to be able to access protected methods
+    friend class STR::MODELEVALUATOR::PartitionedSSI;
+
    public:
     /// create using a Epetra_Comm
     explicit SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
@@ -216,6 +227,9 @@ namespace SSI
     //! set flag true after init or false if init became invalid
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
+    //! get bool indicating if we have at least one ssi interface meshtying condition
+    bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
+
     //! set up scatra-scatra interface coupling adapter for structure field
     void SetupCouplingAdapterStructure();
 
@@ -264,6 +278,9 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> zeros_;
 
    private:
+    /// check for a consistent input file definition of the SSIInterfaceMeshtying condition
+    void CheckConsistencySSIInterfaceMeshtyingCondition();
+
     /// Set material pointers for matching structure and scatra grids
     void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
         Teuchos::RCP<const DRT::Discretization> targetdis);
@@ -285,6 +302,9 @@ namespace SSI
 
     //! flag indicating if class is initialized
     bool isinit_;
+
+    //! bool indicating if we have at least one ssi interface meshtying condition
+    const bool ssiinterfacemeshtying_;
   };  // SSI_Base
 }  // namespace SSI
 #endif /* SSI_BASE_H_ */

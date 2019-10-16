@@ -223,4 +223,40 @@ void INPAR::SSI::SetValidConditions(
   condlist.push_back(linessi2);
   condlist.push_back(surfssi2);
   condlist.push_back(volssi2);
+
+  /*--------------------------------------------------------------------*/
+  // set Scalar-Structure interaction interface meshtying condition
+  Teuchos::RCP<ConditionDefinition> linessiinterfacemeshtying =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING LINE CONDITIONS",
+          "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
+          true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfssiinterfacemeshtying =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS",
+          "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
+          true, DRT::Condition::Surface));
+
+  // equip condition definitions with input file line components
+  //
+  // REMARK: it would be cleaner to also set a reference to the structural meshtying condition here
+  // and not only to the S2ICoupling condition. Of course, then also the structural meshtying should
+  // be used which could/should be the long-term goal. However, to date, a simple structural
+  // meshtying version for matching node is implemented within the SSI framework and therefore no
+  // reference is neccessary.
+  std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacemeshtying;
+  ssiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  ssiinterfacemeshtying.push_back(Teuchos::rcp(
+      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+          Teuchos::tuple<std::string>("Master", "Slave"))));
+  ssiinterfacemeshtying.push_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+  ssiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+
+  // insert input file line components into condition definitions
+  for (unsigned i = 0; i < ssiinterfacemeshtying.size(); ++i)
+  {
+    linessiinterfacemeshtying->AddComponent(ssiinterfacemeshtying[i]);
+    surfssiinterfacemeshtying->AddComponent(ssiinterfacemeshtying[i]);
+  }
+
+  condlist.push_back(linessiinterfacemeshtying);
+  condlist.push_back(surfssiinterfacemeshtying);
 }

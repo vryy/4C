@@ -47,14 +47,12 @@ int SSI::SSI_Part::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // safety check
-  if (scatra_->ScaTraField()->S2ICoupling() and
-      structparams.get<std::string>("PREDICT") != "TangDis")
+  if (SSIInterfaceMeshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
     dserror(
         "Must have TangDis predictor for structural field in partitioned scalar-structure "
-        "interaction simulations "
-        "involving scatra-scatra interface coupling! Otherwise, Dirichlet boundary conditions on "
-        "master-side degrees "
-        "of freedom are not transferred to slave-side degrees of freedom!");
+        "interaction simulations involving scatra-scatra interface coupling! Otherwise, Dirichlet "
+        "boundary conditions on master-side degrees of freedom are not transferred to slave-side "
+        "degrees of freedom!");
 
   return returnvar;
 }

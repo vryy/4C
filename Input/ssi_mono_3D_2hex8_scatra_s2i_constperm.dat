@@ -87,7 +87,7 @@ SSI DIS structure NODE 9 QUANTITY stress_xy VALUE -5.21492465045089726e-02 TOLER
 SSI DIS structure NODE 9 QUANTITY stress_yz VALUE -3.43148665730459643e-02 TOLERANCE 1.e-11
 SSI DIS structure NODE 9 QUANTITY stress_xz VALUE 5.21492465045087783e-02 TOLERANCE 1.e-11
 ------------------------------------------------DESIGN DESCRIPTION
-NDSURF  4
+NDSURF  6
 NDVOL   2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
@@ -97,6 +97,10 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 3 none none
 DVOL   2
 E 1 - ScaTra 1
 E 2 - ScaTra 2
+--------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
+DSURF  2
+E 2 - 1 Slave S2ICouplingID 0
+E 3 - 1 Master S2ICouplingID 0
 -------------------------------DESIGN S2I COUPLING SURF CONDITIONS
 DSURF  2
 E 2 - 0 Slave KineticModel ConstantPermeability numscal 1 permeabilities 1.0
