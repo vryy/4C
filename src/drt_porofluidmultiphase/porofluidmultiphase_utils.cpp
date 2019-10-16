@@ -21,6 +21,9 @@
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_geometry/intersection_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -246,18 +249,14 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // search tree
   Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
 
-  // AABBs of 2D/3D discretization
-  std::map<int, LINALG::Matrix<3, 2>> aabb_cont;
-  for (int icont = 0; icont < contdis->ElementColMap()->NumMyElements(); ++icont)
-  {
-    const int contelegid = contdis->ElementColMap()->GID(icont);
-    DRT::Element* contele = contdis->gElement(contelegid);
+  // nodal positions of 2D/3D-discretization
+  std::map<int, LINALG::Matrix<3, 1>> my_positions_cont =
+      GetNodalPositions(contdis, contdis->NodeColMap());
+  // axis-aligned bounding boxes of all elements of 2D/3D discretization
+  std::map<int, LINALG::Matrix<3, 2>> aabb_cont =
+      GEO::getCurrentXAABBs(*contdis, my_positions_cont);
 
-    LINALG::Matrix<3, 2> my_aabb_cont = GetAABB(contele);
-    aabb_cont[contelegid] = my_aabb_cont;
-  }
-
-  // find the bounding box of all elements of the 2D/3D discretization
+  // find the bounding box of the 2D/3D discretization
   const LINALG::Matrix<3, 2> sourceEleBox = GEO::getXAABBofDis(*contdis);
   searchTree->initializeTree(sourceEleBox, *contdis, GEO::TreeType(GEO::OCTTREE));
 
@@ -271,14 +270,26 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   double dtcpu = timersearch.WallTime();
   // *********** time measurement ***********
 
+  // nodal positions of artery-discretization (fully overlapping)
+  std::map<int, LINALG::Matrix<3, 1>> positions_artery;
+  // nodal positions of artery-discretization (row-map format)
+  std::map<int, LINALG::Matrix<3, 1>> my_positions_artery =
+      GetNodalPositions(artdis, artdis->NodeRowMap());
+
+  // gather
+  int procs[contdis->Comm().NumProc()];
+  for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
+  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
+      my_positions_artery, positions_artery, contdis->Comm().NumProc(), &procs[0], contdis->Comm());
+
   // do the actual search on fully overlapping artery discretization
   for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
   {
     const int artelegid = artsearchdis->ElementColMap()->GID(iart);
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
-    // AABB of artery
-    LINALG::Matrix<3, 2> aabb_artery = GetAABB(artele);
+    // axis-aligned bounding box of artery
+    const LINALG::Matrix<3, 2> aabb_artery = GetAABB(artele, positions_artery);
 
     // get elements nearby
     std::set<int> closeeles;
@@ -322,68 +333,35 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele)
+LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(
+    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions)
 {
-  // safety factor
-  const double aabbsafety = 1.01;
-  // minimum length of AABB (in one coordinate direction)
-  const double aabbminsize = 2.0e-10;
+  const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(ele, positions));
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+  GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  // format is [xmin, ymin, zmin, xmax, ymax, zmax]
-  LINALG::Matrix<3, 2> aabb;
+  return GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+}
 
-  DRT::Node** nodes = ele->Nodes();
-
-  // initialize with first node
-  aabb(0, 0) = nodes[0]->X()[0];
-  aabb(1, 0) = nodes[0]->X()[1];
-  aabb(2, 0) = nodes[0]->X()[2];
-  aabb(0, 1) = nodes[0]->X()[0];
-  aabb(1, 1) = nodes[0]->X()[1];
-  aabb(2, 1) = nodes[0]->X()[2];
-
-  // loop over remaining nodes
-  for (int inode = 1; inode < ele->NumNode(); inode++)
+/*----------------------------------------------------------------------*
+ | get nodal positions                                 kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+std::map<int, LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
+    Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap)
+{
+  std::map<int, LINALG::Matrix<3, 1>> positions;
+  for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
   {
-    DRT::Node* node = nodes[inode];
-    aabb(0, 0) = std::min(aabb(0, 0), node->X()[0]);
-    aabb(1, 0) = std::min(aabb(1, 0), node->X()[1]);
-    aabb(2, 0) = std::min(aabb(2, 0), node->X()[2]);
+    const DRT::Node* node = dis->gNode(nodemap->GID(lid));
+    LINALG::Matrix<3, 1> currpos;
 
-    aabb(0, 1) = std::max(aabb(0, 1), node->X()[0]);
-    aabb(1, 1) = std::max(aabb(1, 1), node->X()[1]);
-    aabb(2, 1) = std::max(aabb(2, 1), node->X()[2]);
-  }
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
 
-  // for safety: we increase the length of AABB by the factor bruteforcesafety (in x-, y- and
-  // z-direction),
-  // i.e. we add  aabbsafety/2.0*original length to the max values
-  // and subtract aabbsafety/2.0*original length from the min values
-  aabb(0, 0) = (aabb(0, 0) + aabb(0, 1)) / 2.0 - (aabb(0, 1) - aabb(0, 0)) * aabbsafety / 2.0;
-  aabb(1, 0) = (aabb(1, 0) + aabb(1, 1)) / 2.0 - (aabb(1, 1) - aabb(1, 0)) * aabbsafety / 2.0;
-  aabb(2, 0) = (aabb(2, 0) + aabb(2, 1)) / 2.0 - (aabb(2, 1) - aabb(2, 0)) * aabbsafety / 2.0;
-  aabb(0, 1) = (aabb(0, 0) + aabb(0, 1)) / 2.0 + (aabb(0, 1) - aabb(0, 0)) * aabbsafety / 2.0;
-  aabb(1, 1) = (aabb(1, 0) + aabb(1, 1)) / 2.0 + (aabb(1, 1) - aabb(1, 0)) * aabbsafety / 2.0;
-  aabb(2, 1) = (aabb(2, 0) + aabb(2, 1)) / 2.0 + (aabb(2, 1) - aabb(2, 0)) * aabbsafety / 2.0;
-
-  // take care of AABBs, that lie in surface orthogonal to one of the coordinate axes
-  if (aabb(0, 1) - aabb(0, 0) < aabbminsize)
-  {
-    aabb(0, 1) += aabbminsize / 2.0;
-    aabb(0, 0) -= aabbminsize / 2.0;
+    positions[node->Id()] = currpos;
   }
-  if (aabb(1, 1) - aabb(1, 0) < aabbminsize)
-  {
-    aabb(1, 1) += aabbminsize / 2.0;
-    aabb(1, 0) -= aabbminsize / 2.0;
-  }
-  if (aabb(2, 1) - aabb(2, 0) < aabbminsize)
-  {
-    aabb(2, 1) += aabbminsize / 2.0;
-    aabb(2, 0) -= aabbminsize / 2.0;
-  }
-
-  return aabb;
+  return positions;
 }
 
 /*----------------------------------------------------------------------*
