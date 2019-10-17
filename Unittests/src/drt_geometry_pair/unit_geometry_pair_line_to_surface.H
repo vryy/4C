@@ -49,8 +49,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     problem.setParameterList(global_parameter);
 
     // Set up the evaluation data container for the geometry pairs.
-    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
-    evaluation_data_->BuildLineToVolumeEvaluationData();
+    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData());
   }
 
   /**
@@ -75,8 +74,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -111,8 +110,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -148,8 +147,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -184,8 +183,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -221,8 +220,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the normals on the solid element.
@@ -258,8 +257,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -295,8 +294,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -331,8 +330,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -368,8 +367,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -404,8 +403,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair;
-    pair.Init(evaluation_data_, beam.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(beam.get(), NULL);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -446,8 +445,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -497,8 +496,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -550,8 +549,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -601,8 +600,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -654,8 +653,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -705,8 +704,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -758,8 +757,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -809,8 +808,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -862,8 +861,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -913,8 +912,8 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair;
-    pair.Init(evaluation_data_, element_1.get(), NULL);
+        pair(evaluation_data_);
+    pair.Init(element_1.get(), NULL);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -956,7 +955,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 };
 
 #endif

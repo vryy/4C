@@ -30,7 +30,7 @@ namespace DRT
 namespace GEOMETRYPAIR
 {
   class GeometryPair;
-  class GeometryEvaluationDataGlobal;
+  class GeometryEvaluationDataBase;
 }  // namespace GEOMETRYPAIR
 
 
@@ -62,7 +62,6 @@ namespace BEAMINTERACTION
 
     //! Initialization
     virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
         std::vector<DRT::Element const*> elements);
 
     //! Setup
@@ -273,11 +272,21 @@ namespace BEAMINTERACTION
     {
     }
 
-   protected:
-    //! Create the geometry pair for this contact pair. Per default no geometry pair is created.
-    virtual void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
-            geometry_evaluation_data_ptr){};
+    /**
+     * \brief Create the geometry pair for this contact pair.
+     *
+     * Per default no geometry pair is created. The geometry pair has to be created before init is
+     * called on the contact pair.
+     *
+     * @param geometry_evaluation_data_ptr (in) Geometry evaluation data for the geometry pair.
+     */
+    virtual void CreateGeometryPair(
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+    {
+      if (isinit_) dserror("The geometry pair has to be created before Init is called.");
+    };
 
+   protected:
     //! returns init state
     inline const bool& IsInit() const { return isinit_; };
 

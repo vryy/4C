@@ -12,7 +12,6 @@ line.
 #include "geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 
 #include "geometry_pair_element_functions.H"
-#include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 

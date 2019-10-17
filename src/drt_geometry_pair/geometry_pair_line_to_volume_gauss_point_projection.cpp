@@ -10,7 +10,6 @@
 
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_element.H"
-#include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 

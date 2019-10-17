@@ -20,7 +20,6 @@
 #include "src/drt_so3/so_hex27.H"
 #include "src/drt_so3/so_tet10.H"
 #include "src/drt_geometry_pair/geometry_pair_element.H"
-#include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
@@ -52,8 +51,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     problem.setParameterList(global_parameter);
 
     // Set up the evaluation data container for the geometry pairs.
-    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
-    evaluation_data_->BuildLineToVolumeEvaluationData();
+    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData());
   }
 
   /**
@@ -4244,7 +4242,8 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     std::vector<const DRT::Element*> pair_elements;
     pair_elements.push_back(&(*beam_element));
     pair_elements.push_back(&(*solid_element));
-    contact_pair.Init(Teuchos::null, evaluation_data_, pair_elements);
+    contact_pair.CreateGeometryPair(evaluation_data_);
+    contact_pair.Init(Teuchos::null, pair_elements);
 
     // Evaluate the local matrices.
     LINALG::SerialDenseMatrix local_D;
@@ -4279,7 +4278,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 };
 
 #endif

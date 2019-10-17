@@ -21,7 +21,7 @@
 namespace GEOMETRYPAIR
 {
   class GeometryPair;
-  class LineTo3DEvaluationData;
+  class GeometryEvaluationDataBase;
 }  // namespace GEOMETRYPAIR
 
 
@@ -33,7 +33,7 @@ namespace GEOMETRYPAIR
    */
   template <typename scalar_type, typename line, typename volume>
   Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(
-      const Teuchos::RCP<LineTo3DEvaluationData>& geometry_evaluation_data_ptr);
+      const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
 
 #endif

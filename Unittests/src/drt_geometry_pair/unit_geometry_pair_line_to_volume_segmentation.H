@@ -21,7 +21,6 @@
 #include "src/drt_so3/so_tet10.H"
 #include "src/drt_so3/so_nurbs27.H"
 #include "src/drt_geometry_pair/geometry_pair_element_functions.H"
-#include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
@@ -53,8 +52,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     problem.setParameterList(global_parameter);
 
     // Set up the evaluation data container for the geometry pairs.
-    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
-    evaluation_data_->BuildLineToVolumeEvaluationData();
+    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData());
   }
 
   /**
@@ -296,9 +294,10 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
       // Loop over each solid with this beam and create a pair.
       for (auto& volume : volume_elements_)
       {
-        geometry_pairs.push_back(Teuchos::rcp(
-            new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>()));
-        geometry_pairs.back()->Init(evaluation_data_, line.get(), volume.get());
+        geometry_pairs.push_back(
+            Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>(
+                evaluation_data_)));
+        geometry_pairs.back()->Init(line.get(), volume.get());
         geometry_pairs.back()->Setup();
       }
     }
@@ -319,7 +318,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 
   //! Vector of line elements.
   std::vector<Teuchos::RCP<DRT::Element>> line_elements_;

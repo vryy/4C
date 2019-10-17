@@ -193,14 +193,15 @@ namespace BEAMINTERACTION
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
         const Teuchos::ParameterList& visualization_params) const override;
 
-   protected:
     /**
      * \brief Create the geometry pair for this contact pair.
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
-            geometry_evaluation_data_ptr);
+    void CreateGeometryPair(
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+        override;
 
+   protected:
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.

@@ -50,7 +50,6 @@
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
-#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_inpar/inpar_geometry_pair.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
@@ -63,7 +62,6 @@
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
       beam_interaction_conditions_ptr_(Teuchos::null),
-      geometry_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null)
 {
@@ -84,10 +82,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
   beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
   beam_interaction_conditions_ptr_->SetBeamInteractionConditions(DiscretPtr());
-
-  // build a new data container to manage geometry evaluation data that can not be stored
-  // pairwise
-  geometry_evaluation_data_ptr_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
 
   // build runtime vtp writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
@@ -129,8 +123,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
     beam_contact_params_ptr_->BuildBeamToSolidVolumeMeshtyingParams();
-
-    geometry_evaluation_data_ptr_->BuildLineToVolumeEvaluationData();
 
     // Build the beam to solid volume meshtying output writer if desired.
     if (beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
@@ -817,7 +809,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   assembly_managers_.clear();
 
   // reset the geometry evaluation data
-  geometry_evaluation_data_ptr_->ResetGeometryEvaluationDataGlobal();
+  beam_interaction_conditions_ptr_->Reset();
 
   std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
@@ -848,8 +840,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
         dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",
             ele_ptrs[0]->Id(), ele_ptrs[1]->Id());
 
-      newbeaminteractionpair->Init(
-          beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
+      newbeaminteractionpair->Init(beam_contact_params_ptr_, ele_ptrs);
       newbeaminteractionpair->Setup();
 
       // add to list of current contact pairs

@@ -14,7 +14,6 @@
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
-#include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 
 
@@ -23,11 +22,14 @@
  */
 template <typename scalar_type, typename line, typename volume>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory(
-    const Teuchos::RCP<LineTo3DEvaluationData>& line_to_3d_geometry_evaluation_data)
+    const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
+  // Cast the geometry evaluation data to the correct format.
+  auto line_to_3d_evaluation_data =
+      Teuchos::rcp_dynamic_cast<LineTo3DEvaluationData>(geometry_evaluation_data, true);
+
   // Get the strategy for line to volume interaction.
-  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy =
-      line_to_3d_geometry_evaluation_data->GetStrategy();
+  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
@@ -35,10 +37,10 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
       return Teuchos::rcp(
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>(
-              line_to_3d_geometry_evaluation_data));
+              line_to_3d_evaluation_data));
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
       return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>(
-          line_to_3d_geometry_evaluation_data));
+          line_to_3d_evaluation_data));
     default:
     {
       dserror(
@@ -56,19 +58,19 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
  */
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>(
-    const Teuchos::RCP<LineTo3DEvaluationData>&);
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);

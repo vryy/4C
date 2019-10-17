@@ -79,35 +79,42 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
       params_ptr->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization();
 
   // Check which contact discretization is wanted.
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair = Teuchos::null;
   if (contact_discretization ==
       INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::gauss_point_to_segment)
   {
     switch (shape)
     {
       case DRT::Element::hex8:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex8>());
+        break;
       case DRT::Element::hex20:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex20>());
+        break;
       case DRT::Element::hex27:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex27>());
+        break;
       case DRT::Element::tet4:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet4>());
+        break;
       case DRT::Element::tet10:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
+        break;
       case DRT::Element::nurbs27:
-        return Teuchos::rcp(
+        new_pair = Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_nurbs27>());
+        break;
 
       default:
         dserror("Wrong element type for solid element.");
@@ -126,29 +133,35 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
         switch (shape)
         {
           case DRT::Element::hex8:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>());
+            break;
           case DRT::Element::hex20:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>());
+            break;
           case DRT::Element::hex27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>());
+            break;
           case DRT::Element::tet4:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>());
+            break;
           case DRT::Element::tet10:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
+            break;
           case DRT::Element::nurbs27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line2>());
+            break;
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -159,29 +172,35 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
         switch (shape)
         {
           case DRT::Element::hex8:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>());
+            break;
           case DRT::Element::hex20:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>());
+            break;
           case DRT::Element::hex27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>());
+            break;
           case DRT::Element::tet4:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>());
+            break;
           case DRT::Element::tet10:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
+            break;
           case DRT::Element::nurbs27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line3>());
+            break;
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -192,29 +211,35 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
         switch (shape)
         {
           case DRT::Element::hex8:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>());
+            break;
           case DRT::Element::hex20:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>());
+            break;
           case DRT::Element::hex27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>());
+            break;
           case DRT::Element::tet4:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>());
+            break;
           case DRT::Element::tet10:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());
+            break;
           case DRT::Element::nurbs27:
-            return Teuchos::rcp(
+            new_pair = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line4>());
+            break;
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -230,32 +255,43 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
     switch (shape)
     {
       case DRT::Element::hex8:
-        return Teuchos::rcp(
-            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+        new_pair =
+            Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>());
+        break;
       case DRT::Element::hex20:
-        return Teuchos::rcp(
-            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+        new_pair =
+            Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>());
+        break;
       case DRT::Element::hex27:
-        return Teuchos::rcp(
-            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+        new_pair =
+            Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>());
+        break;
       case DRT::Element::tet4:
-        return Teuchos::rcp(
-            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+        new_pair =
+            Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>());
+        break;
       case DRT::Element::tet10:
-        return Teuchos::rcp(
-            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+        new_pair =
+            Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>());
+        break;
       default:
         dserror("Wrong element type for solid element.");
     }
   }
 
-  // Default return value.
-  return Teuchos::null;
+  // Create the geometry pair on the beam contact pair.
+  if (new_pair != Teuchos::null)
+    new_pair->CreateGeometryPair(geometry_evaluation_data_);
+  else
+    dserror("No pair was created!");
+
+  // Return the newly created pair.
+  return new_pair;
 }
 
 /**
