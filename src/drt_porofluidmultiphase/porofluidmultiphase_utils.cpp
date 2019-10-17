@@ -19,6 +19,12 @@
 #include "../drt_adapter/ad_porofluidmultiphase.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
+#include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_geometry/intersection_service.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
@@ -180,7 +186,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // search with the fully overlapping discretization
   std::map<int, std::set<int>> nearbyelepairs =
-      BruteForceSearch(contdis, artdis, artsearchdis, &elecolset, &nodecolset);
+      OctTreeSearch(contdis, artdis, artsearchdis, &elecolset, &nodecolset);
 
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
@@ -230,16 +236,33 @@ Teuchos::RCP<DRT::Discretization> POROFLUIDMULTIPHASE::UTILS::CreateSearchDiscre
 }
 
 /*----------------------------------------------------------------------*
- | brute force search for near elements                kremheller 05/18 |
+ | octtree search for nearby elements                  kremheller 10/19 |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
+std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
     Teuchos::RCP<DRT::Discretization> artsearchdis, std::set<int>* elecolset,
     std::set<int>* nodecolset)
 {
+  // this map will be filled
+  std::map<int, std::set<int>> nearbyelepairs;
+
+  // search tree
+  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
+
+  // nodal positions of 2D/3D-discretization
+  std::map<int, LINALG::Matrix<3, 1>> my_positions_cont =
+      GetNodalPositions(contdis, contdis->NodeColMap());
+  // axis-aligned bounding boxes of all elements of 2D/3D discretization
+  std::map<int, LINALG::Matrix<3, 2>> aabb_cont =
+      GEO::getCurrentXAABBs(*contdis, my_positions_cont);
+
+  // find the bounding box of the 2D/3D discretization
+  const LINALG::Matrix<3, 2> sourceEleBox = GEO::getXAABBofDis(*contdis);
+  searchTree->initializeTree(sourceEleBox, *contdis, GEO::TreeType(GEO::OCTTREE));
+
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
-    std::cout << "Starting with brute force search for coupling ... " << std::endl;
+    std::cout << "Starting with OctTree search for coupling ... " << std::endl;
   Epetra_Time timersearch(contdis->Comm());
   // reset timer
   timersearch.ResetStartTime();
@@ -247,47 +270,53 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
   double dtcpu = timersearch.WallTime();
   // *********** time measurement ***********
 
-  // this set will be filled
-  std::map<int, std::set<int>> nearbyelepairs;
+  // nodal positions of artery-discretization (fully overlapping)
+  std::map<int, LINALG::Matrix<3, 1>> positions_artery;
+  // nodal positions of artery-discretization (row-map format)
+  std::map<int, LINALG::Matrix<3, 1>> my_positions_artery =
+      GetNodalPositions(artdis, artdis->NodeRowMap());
 
-  // scheme is artery-dis: fully-overlapping elecolmap --> contdis: elecolmap
+  // gather
+  int procs[contdis->Comm().NumProc()];
+  for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
+  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
+      my_positions_artery, positions_artery, contdis->Comm().NumProc(), &procs[0], contdis->Comm());
+
+  // do the actual search on fully overlapping artery discretization
   for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
   {
     const int artelegid = artsearchdis->ElementColMap()->GID(iart);
-
-    // rough estimate of duration
-    if (contdis->Comm().MyPID() == 0 &&
-        iart == (int)(0.02 * artsearchdis->ElementColMap()->NumMyElements()))
-      std::cout << "Estimated duration: " << 50.0 * (timersearch.WallTime() - dtcpu) << "s"
-                << std::endl;
-
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
-    // AABB of artery
-    std::vector<double> aabb_artery = GetAABB(artele);
+    // axis-aligned bounding box of artery
+    const LINALG::Matrix<3, 2> aabb_artery = GetAABB(artele, positions_artery);
 
-    for (int icont = 0; icont < contdis->ElementColMap()->NumMyElements(); ++icont)
+    // get elements nearby
+    std::set<int> closeeles;
+    searchTree->searchCollisions(aabb_cont, aabb_artery, 0, closeeles);
+
+    // nearby elements found
+    if (closeeles.size() > 0)
     {
-      const int contelegid = contdis->ElementColMap()->GID(icont);
-      DRT::Element* contele = contdis->gElement(contelegid);
+      nearbyelepairs[artelegid] = closeeles;
 
-      // AABB of 2D/3D-discretization
-      std::vector<double> aabb_cont = GetAABB(contele);
-
-      // check if bounding boxes intersect
-      if (!(aabb_artery[0] >= aabb_cont[3] || aabb_artery[3] <= aabb_cont[0] ||
-              aabb_artery[1] >= aabb_cont[4] || aabb_artery[4] <= aabb_cont[1] ||
-              aabb_artery[2] >= aabb_cont[5] || aabb_artery[5] <= aabb_cont[2]))
+      // add elements and nodes for extended ghosting of artery discretization
+      if (not artdis->HaveGlobalElement(artelegid))
       {
-        nearbyelepairs[artelegid].insert(contelegid);
-        if (not artdis->HaveGlobalElement(artelegid))
-        {
-          elecolset->insert(artelegid);
-          const int* nodeids = artele->NodeIds();
-          for (int inode = 0; inode < artele->NumNode(); ++inode)
-            nodecolset->insert(nodeids[inode]);
-        }
+        elecolset->insert(artelegid);
+        const int* nodeids = artele->NodeIds();
+        for (int inode = 0; inode < artele->NumNode(); ++inode) nodecolset->insert(nodeids[inode]);
       }
+    }
+
+    // estimate of duration for search
+    if (iart == (int)(0.05 * artsearchdis->ElementColMap()->NumMyElements()))
+    {
+      double mydtsearch = timersearch.WallTime() - dtcpu;
+      double maxdtsearch = 0.0;
+      contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
+      if (contdis->Comm().MyPID() == 0)
+        std::cout << "Estimated duration: " << 20.0 * (maxdtsearch) << "s" << std::endl;
     }
   }
 
@@ -304,68 +333,35 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-std::vector<double> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele)
+LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(
+    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions)
 {
-  // safety factor for brute force search
-  const double bruteforcesafety = 1.1;
-  // minimum length of AABB (in one coordinate direction) for brute force search
-  const double bruteforceaabbminsize = 2.0e-10;
+  const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(ele, positions));
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+  GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  // format is [xmin, ymin, zmin, xmax, ymax, zmax]
-  std::vector<double> aabb(6);
+  return GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+}
 
-  DRT::Node** nodes = ele->Nodes();
-
-  // initialize with first node
-  aabb[0] = nodes[0]->X()[0];
-  aabb[1] = nodes[0]->X()[1];
-  aabb[2] = nodes[0]->X()[2];
-  aabb[3] = nodes[0]->X()[0];
-  aabb[4] = nodes[0]->X()[1];
-  aabb[5] = nodes[0]->X()[2];
-
-  // loop over remaining nodes
-  for (int inode = 1; inode < ele->NumNode(); inode++)
+/*----------------------------------------------------------------------*
+ | get nodal positions                                 kremheller 10/19 |
+ *----------------------------------------------------------------------*/
+std::map<int, LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
+    Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap)
+{
+  std::map<int, LINALG::Matrix<3, 1>> positions;
+  for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
   {
-    DRT::Node* node = nodes[inode];
-    aabb[0] = std::min(aabb[0], node->X()[0]);
-    aabb[1] = std::min(aabb[1], node->X()[1]);
-    aabb[2] = std::min(aabb[2], node->X()[2]);
+    const DRT::Node* node = dis->gNode(nodemap->GID(lid));
+    LINALG::Matrix<3, 1> currpos;
 
-    aabb[3] = std::max(aabb[3], node->X()[0]);
-    aabb[4] = std::max(aabb[4], node->X()[1]);
-    aabb[5] = std::max(aabb[5], node->X()[2]);
-  }
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
 
-  // for safety: we increase the length of AABB by the factor bruteforcesafety (in x-, y- and
-  // z-direction),
-  // i.e. we add  bruteforcesafety/2.0*original length to the max values
-  // and subtract bruteforcesafety/2.0*original length from the min values
-  aabb[0] = (aabb[0] + aabb[3]) / 2.0 - (aabb[3] - aabb[0]) * bruteforcesafety / 2.0;
-  aabb[1] = (aabb[1] + aabb[4]) / 2.0 - (aabb[4] - aabb[1]) * bruteforcesafety / 2.0;
-  aabb[2] = (aabb[2] + aabb[5]) / 2.0 - (aabb[5] - aabb[2]) * bruteforcesafety / 2.0;
-  aabb[3] = (aabb[0] + aabb[3]) / 2.0 + (aabb[3] - aabb[0]) * bruteforcesafety / 2.0;
-  aabb[4] = (aabb[1] + aabb[4]) / 2.0 + (aabb[4] - aabb[1]) * bruteforcesafety / 2.0;
-  aabb[5] = (aabb[2] + aabb[5]) / 2.0 + (aabb[5] - aabb[2]) * bruteforcesafety / 2.0;
-
-  // take care of AABBs, that lie in surface orthogonal to one of the coordinate axes
-  if (aabb[3] - aabb[0] < bruteforceaabbminsize)
-  {
-    aabb[3] += bruteforceaabbminsize / 2.0;
-    aabb[0] -= bruteforceaabbminsize / 2.0;
+    positions[node->Id()] = currpos;
   }
-  if (aabb[4] - aabb[1] < bruteforceaabbminsize)
-  {
-    aabb[4] += bruteforceaabbminsize / 2.0;
-    aabb[1] -= bruteforceaabbminsize / 2.0;
-  }
-  if (aabb[5] - aabb[2] < bruteforceaabbminsize)
-  {
-    aabb[5] += bruteforceaabbminsize / 2.0;
-    aabb[2] -= bruteforceaabbminsize / 2.0;
-  }
-
-  return aabb;
+  return positions;
 }
 
 /*----------------------------------------------------------------------*
