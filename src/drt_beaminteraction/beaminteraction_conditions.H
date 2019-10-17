@@ -65,6 +65,7 @@ namespace BEAMINTERACTION
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @param params_ptr (in) Pointer beam contact parameters.
+     * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
         const std::vector<DRT::Element const*>& ele_ptrs,
