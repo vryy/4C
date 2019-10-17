@@ -54,9 +54,13 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
     const Teuchos::RCP<const DRT::Condition>& condition_other)
     : BeamToSolidCondition(condition_line, condition_other)
 {
+  // Get the input parameter list that will be passed to the geometry pair.
+  const Teuchos::ParameterList& input_parameter_list =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+
   // Create the geometry evaluation data for this condition.
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      new GEOMETRYPAIR::LineTo3DEvaluationData());
+      new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
 }
 
 /**
@@ -316,9 +320,13 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfa
     const Teuchos::RCP<const DRT::Condition>& condition_other)
     : BeamToSolidCondition(condition_line, condition_other)
 {
+  // Get the input parameter list that will be passed to the geometry pair.
+  const Teuchos::ParameterList& input_parameter_list =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+
   // Create the geometry evaluation data for this condition.
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      new GEOMETRYPAIR::LineTo3DEvaluationData());
+      new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
 }
 
 /**

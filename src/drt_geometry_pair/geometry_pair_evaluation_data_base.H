@@ -13,6 +13,9 @@
 #define GEOMETRY_PAIR_EVALUATION_DATA_BASE_H
 
 
+#include <Teuchos_ParameterList.hpp>
+
+
 namespace GEOMETRYPAIR
 {
   /**
@@ -24,7 +27,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryEvaluationDataBase(){};
+    GeometryEvaluationDataBase(const Teuchos::ParameterList& input_parameter_list){};
 
     /**
      * \brief Destructor.

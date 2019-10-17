@@ -283,7 +283,8 @@ namespace BEAMINTERACTION
     virtual void CreateGeometryPair(
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
-      if (isinit_) dserror("The geometry pair has to be created before Init is called.");
+      if (isinit_)
+        dserror("If a geometry pair is created, it has has to be done before Init is called.");
     };
 
    protected:

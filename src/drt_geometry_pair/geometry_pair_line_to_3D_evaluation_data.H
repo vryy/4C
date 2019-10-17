@@ -31,7 +31,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    LineTo3DEvaluationData();
+    LineTo3DEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 
     /**
      * \brief Destructor.

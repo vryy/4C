@@ -8,16 +8,17 @@
 */
 
 
-#include "../drt_inpar/inpar_beam_to_solid.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
+
+#include "../drt_inpar/inpar_beam_to_solid.H"
 
 
 /**
  *
  */
-GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData()
-    : GeometryEvaluationDataBase(),
+GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
+    const Teuchos::ParameterList& input_parameter_list)
+    : GeometryEvaluationDataBase(input_parameter_list),
       strategy_(INPAR::GEOMETRYPAIR::LineTo3DStrategy::none),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
       integration_points_circumfence_(-1),
@@ -27,19 +28,16 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData()
 {
   // Get parameters from the input file.
   {
-    const Teuchos::ParameterList& line_to_volume_params_list =
-        DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
-
     strategy_ = Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::LineTo3DStrategy>(
-        line_to_volume_params_list, "GEOMETRY_PAIR_STRATEGY");
+        input_parameter_list, "GEOMETRY_PAIR_STRATEGY");
 
-    n_search_points_ = line_to_volume_params_list.get<int>("GEOMETRY_PAIR_SEARCH_POINTS");
+    n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEARCH_POINTS");
 
     gauss_rule_ =
-        INPAR::BEAMTOSOLID::IntToGaussRule1D(line_to_volume_params_list.get<int>("GAUSS_POINTS"));
+        INPAR::BEAMTOSOLID::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
 
     integration_points_circumfence_ =
-        line_to_volume_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
+        input_parameter_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
   }
 
   // Initialize evaluation data structures.

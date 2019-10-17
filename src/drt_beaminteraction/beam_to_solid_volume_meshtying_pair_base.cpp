@@ -50,11 +50,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   // Call Init of base class, the geometry pair will be created and initialized there.
-  BeamContactPair::Init(params_ptr, geometry_evaluation_data_ptr, elements);
+  BeamContactPair::Init(params_ptr, elements);
 }
 
 

@@ -45,14 +45,11 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
    */
   void setUp()
   {
-    // Add an empty parameter list, then the default values are set.
-    DRT::Problem& problem = (*DRT::Problem::Instance());
-    Teuchos::RCP<Teuchos::ParameterList> global_parameter =
-        Teuchos::rcp(new Teuchos::ParameterList());
-    problem.setParameterList(global_parameter);
-
     // Set up the evaluation data container for the geometry pairs.
-    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData());
+    Teuchos::ParameterList line_to_volume_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    evaluation_data_ =
+        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
   }
 
   /**
@@ -66,11 +63,6 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     // Clear the vectors.
     line_elements_.clear();
     volume_elements_.clear();
-
-    // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
-    // not done, some troubles arise where unit tests influence each other on some configurations.
-    // We suspect that missing singleton destruction might be the reason for that.
-    DRT::Problem::Done();
   }
 
   /**

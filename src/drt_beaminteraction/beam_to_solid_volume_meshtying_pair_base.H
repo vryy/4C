@@ -63,7 +63,6 @@ namespace BEAMINTERACTION
      * \brief Initialize the contact pair.
      */
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
         std::vector<DRT::Element const*> elements);
 
     /**
