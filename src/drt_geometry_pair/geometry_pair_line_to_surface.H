@@ -27,6 +27,7 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPoint1DTo3D;
 
+  class LineTo3DEvaluationData;
 }  // namespace GEOMETRYPAIR
 namespace LINALG
 {
@@ -57,7 +58,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface() : GeometryPair(){};
+    GeometryPairLineToSurface(
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
+        : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
 
     /**
      * \brief Destructor.
@@ -66,12 +69,10 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief Initialize the pair.
-     * @param evaluation_data_ptr Pointer to the evaluation data.
      * @param element1 Pointer to the first element.
      * @param element2 Pointer to the second element.
      */
-    void Init(Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
-        const DRT::Element* element1, const DRT::Element* element2) override;
+    void Init(const DRT::Element* element1, const DRT::Element* element2) override;
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
@@ -200,6 +201,10 @@ namespace GEOMETRYPAIR
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+
+   protected:
+    //! Link to the geometry evaluation container.
+    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
   };
 }  // namespace GEOMETRYPAIR
 

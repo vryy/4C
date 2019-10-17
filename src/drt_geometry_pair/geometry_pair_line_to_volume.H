@@ -45,7 +45,7 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class LineSegment;
 
-  class GeometryEvaluationDataGlobal;
+  class LineTo3DEvaluationData;
 }  // namespace GEOMETRYPAIR
 
 
@@ -65,7 +65,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolume() : GeometryPair(){};
+    GeometryPairLineToVolume(
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
+        : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
 
     /**
      * \brief Destructor.
@@ -74,12 +76,10 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief Initialize the pair.
-     * @param evaluation_data_ptr Pointer to the evaluation data.
      * @param element1 Pointer to the first element.
      * @param element2 Pointer to the second element.
      */
-    void Init(Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
-        const DRT::Element* element1, const DRT::Element* element2) override;
+    void Init(const DRT::Element* element1, const DRT::Element* element2) override;
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
@@ -214,6 +214,10 @@ namespace GEOMETRYPAIR
     void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points) const;
+
+   protected:
+    //! Link to the geometry evaluation container.
+    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
   };
 }  // namespace GEOMETRYPAIR
 

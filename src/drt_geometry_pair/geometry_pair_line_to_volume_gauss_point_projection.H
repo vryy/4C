@@ -34,8 +34,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjection()
-        : GeometryPairLineToVolume<scalar_type, line, volume>(){};
+    GeometryPairLineToVolumeGaussPointProjection(
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
 
     /**
      * \brief Destructor.

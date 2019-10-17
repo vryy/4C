@@ -16,11 +16,7 @@ problems.
  *
  */
 GEOMETRYPAIR::GeometryPair::GeometryPair()
-    : isinit_(false),
-      issetup_(false),
-      evaluation_data_(Teuchos::null),
-      element1_(NULL),
-      element2_(NULL)
+    : isinit_(false), issetup_(false), element1_(nullptr), element2_(nullptr)
 {
   // Empty constructor.
 }
@@ -28,11 +24,8 @@ GEOMETRYPAIR::GeometryPair::GeometryPair()
 /**
  *
  */
-void GEOMETRYPAIR::GeometryPair::Init(
-    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
-    const DRT::Element* element1, const DRT::Element* element2)
+void GEOMETRYPAIR::GeometryPair::Init(const DRT::Element* element1, const DRT::Element* element2)
 {
-  evaluation_data_ = evaluation_data_ptr;
   element1_ = element1;
   element2_ = element2;
 

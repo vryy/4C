@@ -31,11 +31,11 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
-    int n_gauss_points = this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfGaussPoints();
+    int n_gauss_points = this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -60,7 +60,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
 
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPoints();
+      this->line_to_3d_evaluation_data_->GetGaussPoints();
 
   // Initilaize variables for the projection.
   scalar_type eta;
@@ -156,8 +156,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
-          this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPoints(), segments[0]);
+      this->ProjectGaussPointsOnSegmentToVolume(
+          q_line, q_volume, this->line_to_3d_evaluation_data_->GetGaussPoints(), segments[0]);
     }
   }
 }
@@ -173,7 +173,7 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<sc
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
   return projection_tracker[line_element_id];
 }
 

@@ -36,13 +36,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
     int n_gauss_points =
-        this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfGaussPoints() *
-        this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfIntegrationPointsCircumfence();
+        this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints() *
+        this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumfence();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -67,11 +67,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
 
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points_axis =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPoints();
-  unsigned int n_gauss_points_axis =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfGaussPoints();
+      this->line_to_3d_evaluation_data_->GetGaussPoints();
+  unsigned int n_gauss_points_axis = this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints();
   unsigned int n_integration_points_circ =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfIntegrationPointsCircumfence();
+      this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumfence();
 
   // Initilaize variables for the projection.
   scalar_type eta;
@@ -181,7 +180,7 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCro
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
   return projection_tracker[line_element_id];
 }
 
