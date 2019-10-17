@@ -758,5 +758,10 @@ NODE 204 COORD 18.5 0.0 0.5
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 99 QUANTITY dispx VALUE -1.08894435483236116e-01 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 99 QUANTITY dispy VALUE  3.11400063333047550e+00 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 102 QUANTITY dispx VALUE 4.14119055426150004e-02 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 102 QUANTITY dispy VALUE  3.05257113499521759e+00 TOLERANCE 1e-09
 -------------------------------------------------------------------------END
 // END
