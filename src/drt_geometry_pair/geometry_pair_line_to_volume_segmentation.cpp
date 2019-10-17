@@ -11,7 +11,7 @@
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_evaluation_data_global.H"
-#include "geometry_pair_line_to_volume_evaluation_data.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 
 #include "../headers/FAD_utils.H"
@@ -29,7 +29,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetSegmentTrackerMutable();
+      this->EvaluationData()->LineTo3DEvaluationData()->GetSegmentTrackerMutable();
 
   if (segment_tracker_map.find(line_element_id) == segment_tracker_map.end())
   {
@@ -59,7 +59,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
 
   // Number of search points.
   unsigned int n_search_points =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfSearchPoints();
+      this->EvaluationData()->LineTo3DEvaluationData()->GetNumberOfSearchPoints();
 
   // Set up vector with projection points for the search points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
@@ -193,7 +193,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
 
               // Project the Gauss points on the segment. All points have to project valid.
               this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
-                  this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(),
+                  this->EvaluationData()->LineTo3DEvaluationData()->GetGaussPoints(),
                   segments.back());
             }
 
@@ -220,7 +220,7 @@ std::set<GEOMETRYPAIR::LineSegment<double>>& GEOMETRYPAIR::GeometryPairLineToVol
   // Get the segment tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetSegmentTrackerMutable();
+      this->EvaluationData()->LineTo3DEvaluationData()->GetSegmentTrackerMutable();
   return segment_tracker_map[line_element_id];
 }
 

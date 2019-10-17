@@ -24,7 +24,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryEvaluationDataBase();
+    GeometryEvaluationDataBase(){};
 
     /**
      * \brief Destructor.
@@ -32,34 +32,9 @@ namespace GEOMETRYPAIR
     virtual ~GeometryEvaluationDataBase(){};
 
     /**
-     * \brief Initialize the container.
+     * \brief Reset data in this evaluation container.
      */
-    virtual void Init();
-
-    /**
-     * \brief Setup the container.
-     */
-    virtual void Setup();
-
-
-   protected:
-    /**
-     * \brief Check if Init was already called.
-     */
-    void CheckInit() const;
-
-    /**
-     * \brief Check if Init and Setup were already called.
-     */
-    void CheckInitSetup() const;
-
-
-   protected:
-    //! Indicates if the Init() function has been called.
-    bool isinit_;
-
-    //! Indicates if the Setup() function has been called.
-    bool issetup_;
+    virtual void Reset(){};
   };
 }  // namespace GEOMETRYPAIR
 

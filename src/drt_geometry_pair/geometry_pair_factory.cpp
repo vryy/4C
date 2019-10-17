@@ -15,7 +15,7 @@
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_evaluation_data_global.H"
-#include "geometry_pair_line_to_volume_evaluation_data.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
 
 
 /**
@@ -27,7 +27,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
 {
   // Get the strategy for line to volume interaction.
   INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy =
-      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
+      geometry_evaluation_data_ptr->LineTo3DEvaluationData()->GetStrategy();
 
   // Create the class depending on the strategy.
   switch (strategy)

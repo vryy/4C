@@ -16,7 +16,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "src/drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_element_functions.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "src/drt_so3/so_surface.H"

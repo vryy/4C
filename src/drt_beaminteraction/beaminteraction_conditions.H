@@ -34,6 +34,10 @@ namespace BEAMINTERACTION
   class BeamContactPair;
   class BeamContactParams;
 }  // namespace BEAMINTERACTION
+namespace GEOMETRYPAIR
+{
+  class GeometryEvaluationDataBase;
+}
 
 
 namespace BEAMINTERACTION
@@ -73,6 +77,11 @@ namespace BEAMINTERACTION
     virtual void BuildIdSets();
 
     /**
+     * \brief Reset data that was build up in this condition.
+     */
+    virtual void Reset();
+
+    /**
      * \brief Check if a combination of a beam element ID and another element (beam, solid, ...) ID
      * is in this condition.
      */
@@ -84,6 +93,9 @@ namespace BEAMINTERACTION
 
     //! Set containing the beam element IDs.
     std::set<int> line_ids_;
+
+    //! Pointer to the geometry evaluation data for this condition.
+    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
   };
 
   /**
@@ -115,6 +127,11 @@ namespace BEAMINTERACTION
      * \brief Build the ID sets on all contained beam interaction conditions.
      */
     void BuildIdSets();
+
+    /**
+     * \brief Reset data that was build up in the conditions.
+     */
+    virtual void Reset();
 
     /**
      * \brief Create the correct pair for the given element pointers.

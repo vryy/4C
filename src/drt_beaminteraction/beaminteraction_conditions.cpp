@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
+#include "../drt_geometry_pair/geometry_pair_evaluation_data_base.H"
 #include "../drt_so3/so_base.H"
 
 
@@ -26,7 +27,7 @@
  */
 BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
     const Teuchos::RCP<const DRT::Condition>& condition_line)
-    : condition_line_(condition_line)
+    : condition_line_(condition_line), line_ids_(), geometry_evaluation_data_(Teuchos::null)
 {
 }
 
@@ -39,6 +40,15 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets()
   std::vector<int> line_ids;
   ConditionToElementIds(condition_line_, line_ids);
   line_ids_ = std::set<int>(line_ids.begin(), line_ids.end());
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamInteractionConditionBase::Reset()
+{
+  // Reset the geometry evaluation tracker.
+  geometry_evaluation_data_->Reset();
 }
 
 /**
@@ -133,6 +143,15 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets()
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->BuildIdSets();
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamInteractionConditions::Reset()
+{
+  for (auto const& map_pair : condition_map_)
+    for (auto const& condition : map_pair.second) condition->Reset();
 }
 
 /**

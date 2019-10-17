@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_so3/so_base.H"
 
 
@@ -53,6 +54,9 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
     const Teuchos::RCP<const DRT::Condition>& condition_other)
     : BeamToSolidCondition(condition_line, condition_other)
 {
+  // Create the geometry evaluation data for this condition.
+  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+      new GEOMETRYPAIR::LineTo3DEvaluationData());
 }
 
 /**
@@ -276,6 +280,9 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfa
     const Teuchos::RCP<const DRT::Condition>& condition_other)
     : BeamToSolidCondition(condition_line, condition_other)
 {
+  // Create the geometry evaluation data for this condition.
+  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+      new GEOMETRYPAIR::LineTo3DEvaluationData());
 }
 
 /**

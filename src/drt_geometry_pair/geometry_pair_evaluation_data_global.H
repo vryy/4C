@@ -23,7 +23,7 @@
 namespace GEOMETRYPAIR
 {
   class GeometryEvaluationDataBase;
-  class LineToVolumeEvaluationData;
+  class LineTo3DEvaluationData;
 }  // namespace GEOMETRYPAIR
 
 
@@ -59,14 +59,14 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the LineToVolumeEvaluationData object
      * @return Line to volume evaluation data container.
      */
-    inline Teuchos::RCP<GEOMETRYPAIR::LineToVolumeEvaluationData> LineToVolumeEvaluationData() const
+    inline Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> LineTo3DEvaluationData() const
     {
       return line_to_volume_evaluation_data_;
     }
 
    private:
     //! Pointer to the evaluation data container class of line to volume interaction.
-    Teuchos::RCP<GEOMETRYPAIR::LineToVolumeEvaluationData> line_to_volume_evaluation_data_;
+    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_volume_evaluation_data_;
 
     //! Vector with all evaluation data subcontainers.
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>> sub_container_list_;

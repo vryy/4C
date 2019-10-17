@@ -1,42 +1,30 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief container for parameters for line to volume pairs, as well as global evaluation data.
+\brief Container for parameters for line to 3D pairs, as well as global evaluation data.
 
 \level 1
 \maintainer Ivo Steinbrecher
 */
 
 
-#include "geometry_pair_line_to_volume_evaluation_data.H"
-
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
 
 
 /**
  *
  */
-GEOMETRYPAIR::LineToVolumeEvaluationData::LineToVolumeEvaluationData()
-    : strategy_(INPAR::GEOMETRYPAIR::LineTo3DStrategy::none),
+GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData()
+    : GeometryEvaluationDataBase(),
+      strategy_(INPAR::GEOMETRYPAIR::LineTo3DStrategy::none),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
       integration_points_circumfence_(-1),
       gauss_point_projection_tracker_(),
       n_search_points_(0),
       segment_tracker_()
 {
-  // Empty Constructor
-}
-
-
-/**
- *
- */
-void GEOMETRYPAIR::LineToVolumeEvaluationData::Init()
-{
-  // Call init in base class first.
-  GEOMETRYPAIR::GeometryEvaluationDataBase::Init();
-
   // Get parameters from the input file.
   {
     const Teuchos::ParameterList& line_to_volume_params_list =
@@ -55,6 +43,18 @@ void GEOMETRYPAIR::LineToVolumeEvaluationData::Init()
   }
 
   // Initialize evaluation data structures.
+  Reset();
+}
+
+/**
+ *
+ */
+void GEOMETRYPAIR::LineTo3DEvaluationData::Reset()
+{
+  // Call reset on the base method.
+  GeometryEvaluationDataBase::Reset();
+
+  // Initialize evaluation data structures.
   {
     // Tracker for gauss point projection method.
     gauss_point_projection_tracker_.clear();
@@ -62,19 +62,4 @@ void GEOMETRYPAIR::LineToVolumeEvaluationData::Init()
     // Segment tracker for segmentation.
     segment_tracker_.clear();
   }
-
-  // Set init flag.
-  isinit_ = true;
-}
-
-
-/**
- *
- */
-void GEOMETRYPAIR::LineToVolumeEvaluationData::Setup()
-{
-  // Call  setup in base class.
-  GEOMETRYPAIR::GeometryEvaluationDataBase::Setup();
-
-  issetup_ = true;
 }

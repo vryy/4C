@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief container for parameters for line to volume pairs, as well as global evaluation data.
+\brief Container for parameters for line to 3D pairs, as well as global evaluation data.
 
 \level 1
 \maintainer Ivo Steinbrecher
@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_EVALUATION_DATA_GLOBAL_H
-#define GEOMETRY_PAIR_LINE_TO_VOLUME_EVALUATION_DATA_GLOBAL_H
+#ifndef GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
+#define GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
 
 
 #include "geometry_pair_evaluation_data_base.H"
@@ -23,30 +23,25 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Class to manage inout parameters and evaluation data for line to volume interactions.
+   * \brief Class to manage inout parameters and evaluation data for line to 3D interactions.
    */
-  class LineToVolumeEvaluationData : public GeometryEvaluationDataBase
+  class LineTo3DEvaluationData : public GeometryEvaluationDataBase
   {
    public:
     /**
      * \brief Constructor.
      */
-    LineToVolumeEvaluationData();
+    LineTo3DEvaluationData();
 
     /**
      * \brief Destructor.
      */
-    ~LineToVolumeEvaluationData(){};
+    ~LineTo3DEvaluationData(){};
 
     /**
-     * \brief Initialize parameters. Load them from the input file.
+     * \brief Reset the evaluation data.
      */
-    void Init() override;
-
-    /**
-     * \brief Setup function.
-     */
-    void Setup() override;
+    void Reset() override;
 
     /**
      * \brief Get the segmentation strategy.

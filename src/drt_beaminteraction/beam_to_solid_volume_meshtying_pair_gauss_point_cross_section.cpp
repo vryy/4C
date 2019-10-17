@@ -18,7 +18,7 @@ on the surface of the (circular) beam cross section.
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 
@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 {
   // Check that the correct geometry pair is given.
   if (INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section !=
-      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy())
+      geometry_evaluation_data_ptr->LineTo3DEvaluationData()->GetStrategy())
     dserror(
         "The class BeamToSolidVolumeMeshtyingPairGaussPointCylinder can only be used with the "
         "geometry pair GeometryPairLineToVolumeGaussPointProjectionCylinder set by the input "
@@ -199,7 +199,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 {
   // Check that the cylinder strategy is given in the input file.
   INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy =
-      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
+      geometry_evaluation_data_ptr->LineTo3DEvaluationData()->GetStrategy();
   if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     dserror(
         "The cross section projection only works with cross section projection in the geometry "

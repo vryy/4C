@@ -22,7 +22,7 @@
 #include "src/drt_geometry_pair/geometry_pair_element.H"
 #include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "src/drt_lib/drt_globalproblem.H"

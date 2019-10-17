@@ -10,7 +10,7 @@ specific to their problem type, that can not be stored pairwise.
 
 
 #include "geometry_pair_evaluation_data_global.H"
-#include "geometry_pair_line_to_volume_evaluation_data.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
 
 
 /**
@@ -26,14 +26,7 @@ GEOMETRYPAIR::GeometryEvaluationDataGlobal::GeometryEvaluationDataGlobal()
 /**
  *
  */
-void GEOMETRYPAIR::GeometryEvaluationDataGlobal::ResetGeometryEvaluationDataGlobal()
-{
-  for (auto& sub_container : sub_container_list_)
-  {
-    sub_container->Init();
-    sub_container->Setup();
-  }
-}
+void GEOMETRYPAIR::GeometryEvaluationDataGlobal::ResetGeometryEvaluationDataGlobal() {}
 
 
 /**
@@ -41,8 +34,7 @@ void GEOMETRYPAIR::GeometryEvaluationDataGlobal::ResetGeometryEvaluationDataGlob
  */
 void GEOMETRYPAIR::GeometryEvaluationDataGlobal::BuildLineToVolumeEvaluationData()
 {
-  line_to_volume_evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineToVolumeEvaluationData());
-  line_to_volume_evaluation_data_->Init();
-  line_to_volume_evaluation_data_->Setup();
+  line_to_volume_evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData());
+
   sub_container_list_.push_back(line_to_volume_evaluation_data_);
 }

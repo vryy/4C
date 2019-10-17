@@ -51,7 +51,7 @@
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_inpar/inpar_geometry_pair.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
