@@ -600,8 +600,12 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& cellstructdyn =
       celldyn.sublist("STRUCTURAL DYNAMIC", false, "cell structure control parameters");
 
-  /// copy already existing parameterlist instead of producing redundant code
+  // copy already existing parameter list instead of producing redundant code
   cellstructdyn = Teuchos::ParameterList(list->sublist("STRUCTURAL DYNAMIC", true));
+  // the following two subsections are currently untested resp. not needed as it leads to errors in
+  // pre_exodus
+  cellstructdyn.remove("GEMM");
+  cellstructdyn.remove("GENALPHA");
 
 }  // SetValidParameters
 

@@ -91,6 +91,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-sub-list "Modified Newton"
   Teuchos::ParameterList& modnewton = newton.sublist("Modified", false, "");
+  SetPrintEqualSign(modnewton, true);
   {
     DoubleParameter("Initial Primal Diagonal Correction", 1.0e-4,
         "Initial correction factor for the diagonal of the primal block.", &modnewton);
