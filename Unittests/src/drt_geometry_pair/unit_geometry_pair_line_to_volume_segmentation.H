@@ -24,7 +24,6 @@
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "src/drt_lib/drt_globalproblem.H"
 
 #include "src/drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H"
 
