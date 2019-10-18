@@ -655,7 +655,7 @@ void SSI::SSI_Base::CheckConsistencySSIInterfaceMeshtyingCondition()
         {
           if (isslave)
           {
-            DRT::UTILS::CheckConditions(ssicondition, s2icondition, matchingconditions);
+            matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
           }
           break;
         }
@@ -663,7 +663,7 @@ void SSI::SSI_Base::CheckConsistencySSIInterfaceMeshtyingCondition()
         {
           if (!isslave)
           {
-            DRT::UTILS::CheckConditions(ssicondition, s2icondition, matchingconditions);
+            matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
           }
           break;
         }

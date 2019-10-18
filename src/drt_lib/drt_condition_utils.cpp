@@ -619,8 +619,8 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::CheckConditions(const DRT::Condition* const condition1,
-    const DRT::Condition* const condition2, bool& matchingconditions)
+bool DRT::UTILS::HaveSameNodes(
+    const DRT::Condition* const condition1, const DRT::Condition* const condition2)
 {
   // get nodes of conditions
   auto condition1nodes = condition1->Nodes();
@@ -658,8 +658,7 @@ void DRT::UTILS::CheckConditions(const DRT::Condition* const condition1,
           "fix this inconsistency!");
     }
   }
-  // when we get here everything is fine
-  matchingconditions = true;
 
-  return;
+  // when we get here everything is fine
+  return true;
 }

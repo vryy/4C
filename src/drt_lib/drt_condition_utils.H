@@ -234,13 +234,12 @@ namespace DRT
     /*!
      * \brief This method checks whether handed in conditions are defined on the same set of nodes
      *
-     * @param[in] condition1            first condition to be tested
-     * @param[in] condition2            second condition to be tested
-     * @param[out] matchingconditions   flag indicating if conditions are matching i.e. defined on
-     *                                  same set of nodes
+     * @param[in] condition1  first condition to be tested
+     * @param[in] condition2  second condition to be tested
+     * @return flag indicating if both conditions are defined on the same set of nodes
      */
-    void CheckConditions(const DRT::Condition* const condition1,
-        const DRT::Condition* const condition2, bool& matchingconditions);
+    bool HaveSameNodes(
+        const DRT::Condition* const condition1, const DRT::Condition* const condition2);
 
   }  // namespace UTILS
 }  // namespace DRT
