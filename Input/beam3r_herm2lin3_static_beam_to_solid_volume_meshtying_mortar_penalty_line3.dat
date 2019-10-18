@@ -58,6 +58,8 @@ CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line3
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
+GEOMETRY_PAIR_STRATEGY                segmentation
+GEOMETRY_PAIR_SEARCH_POINTS           2
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
@@ -66,9 +68,6 @@ MORTAR_LAMBDA_CONTINUOUS              yes
 MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
-----------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
-STRATEGY                              segmentation
-SEARCH_POINTS                         2
 --------------------------------------------------------------RESULT DESCRIPTION
 // Displacements at a solid node.
 STRUCTURE DIS structure NODE 175 QUANTITY dispx VALUE -0.4574379917037107 TOLERANCE 1e-10

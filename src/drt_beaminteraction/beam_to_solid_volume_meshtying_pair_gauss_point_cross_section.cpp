@@ -17,8 +17,7 @@ on the surface of the (circular) beam cross section.
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 
@@ -33,30 +32,6 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 {
   // Empty constructor.
 }
-
-
-/**
- *
- */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam, solid>::Init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
-    std::vector<DRT::Element const*> elements)
-{
-  // Check that the correct geometry pair is given.
-  if (INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section !=
-      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy())
-    dserror(
-        "The class BeamToSolidVolumeMeshtyingPairGaussPointCylinder can only be used with the "
-        "geometry pair GeometryPairLineToVolumeGaussPointProjectionCylinder set by the input "
-        "parameter STRATEGY gauss_point_projection_cross_section");
-
-  // Call Init of base class, the geometry pair will be created and initialized there.
-  BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Init(
-      params_ptr, geometry_evaluation_data_ptr, elements);
-}
-
 
 /**
  *
@@ -194,13 +169,19 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
+    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
         geometry_evaluation_data_ptr)
 {
+  // Call the method of the base class.
+  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
+
+  // Cast the geometry evaluation data to the correct format.
+  auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
+      geometry_evaluation_data_ptr, true);
+
   // Check that the cylinder strategy is given in the input file.
-  INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy =
-      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section)
+  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
+  if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     dserror(
         "The cross section projection only works with cross section projection in the geometry "
         "pairs.");
@@ -209,7 +190,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
   // geometry pair.
   this->geometry_pair_ = Teuchos::rcp(
       new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
-          solid>());
+          solid>(line_to_3d_evaluation_data));
 }
 
 /**

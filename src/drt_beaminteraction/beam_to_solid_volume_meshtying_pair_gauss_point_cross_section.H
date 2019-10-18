@@ -38,6 +38,9 @@ namespace BEAMINTERACTION
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
    private:
+    //! Shortcut to the base class.
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
 
@@ -51,13 +54,6 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSection(){};
-
-    /**
-     * \brief Initialize this pair. Check that the correct geometry pair is given in the input file.
-     */
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
-        std::vector<DRT::Element const*> elements) override;
 
     /**
      * \brief Evaluate this contact element pair.
@@ -79,7 +75,7 @@ namespace BEAMINTERACTION
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
     void CreateGeometryPair(
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
    protected:

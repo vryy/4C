@@ -15,6 +15,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_beaminteraction.H"
+#include "inpar_geometry_pair.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -132,14 +133,8 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     DoubleParameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid volume meshtying", &beam_to_solid_volume_mestying);
 
-    IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
-        &beam_to_solid_volume_mestying);
-
-    IntParameter("INTEGRATION_POINTS_CIRCUMFENCE", 6,
-        "Number of Integration points along the circumfencial direction of the beam. This is "
-        "parameter is only used in beam to cylinder meshtying. No gauss integration is "
-        "used along the circumfencial direction, equally spaced integration points are used.",
-        &beam_to_solid_volume_mestying);
+    // Add the geometry pair input parameters.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
   }
 
   // Beam to solid volume mesh tying output parameters.

@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_so3/so_base.H"
 
 
@@ -48,24 +49,69 @@ bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
-    const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
-    : BeamToSolidCondition(condition_line, condition_other)
-{
-}
-
-/**
- *
- */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
+BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
     const std::vector<DRT::Element const*>& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
 
+  // Create the beam contact pair.
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
+      CreateContactPairInternal(ele_ptrs, params_ptr);
+
+  // Create the geometry pair on the beam contact pair.
+  if (contact_pair != Teuchos::null)
+    contact_pair->CreateGeometryPair(geometry_evaluation_data_);
+  else
+    dserror(
+        "No contact pair was created. This is fatal, since we want to create a geometry pair on "
+        "the contact pair here.");
+
+  // Return the newly created pair.
+  return contact_pair;
+}
+
+/**
+ *
+ */
+BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
+    const Teuchos::RCP<const DRT::Condition>& condition_line,
+    const Teuchos::RCP<const DRT::Condition>& condition_other)
+    : BeamToSolidCondition(condition_line, condition_other)
+{
+  // Get the input parameter list that will be passed to the geometry pair.
+  const Teuchos::ParameterList& input_parameter_list =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+
+  // Create the geometry evaluation data for this condition.
+  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+      new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets()
+{
+  // Call the parent method to build the line maps.
+  BeamToSolidCondition::BuildIdSets();
+
+  // Build the volume map.
+  std::vector<int> volume_ids;
+  ConditionToElementIds(condition_other_, volume_ids);
+  volume_ids_ = std::set<int>(volume_ids.begin(), volume_ids.end());
+}
+
+/**
+ *
+ */
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
+    const std::vector<DRT::Element const*>& ele_ptrs,
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+{
   // Cast the solid element.
   DRT::ELEMENTS::So_base const* solidele = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]);
   DRT::Element::DiscretizationType shape = solidele->Shape();
@@ -257,32 +303,25 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPair(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets()
-{
-  // Call the parent method to build the line maps.
-  BeamToSolidCondition::BuildIdSets();
-
-  // Build the volume map.
-  std::vector<int> volume_ids;
-  ConditionToElementIds(condition_other_, volume_ids);
-  volume_ids_ = std::set<int>(volume_ids.begin(), volume_ids.end());
-}
-
-/**
- *
- */
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfaceMeshtying(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
     const Teuchos::RCP<const DRT::Condition>& condition_other)
     : BeamToSolidCondition(condition_line, condition_other)
 {
+  // Get the input parameter list that will be passed to the geometry pair.
+  const Teuchos::ParameterList& input_parameter_list =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+
+  // Create the geometry evaluation data for this condition.
+  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+      new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
 }
 
 /**
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPair(
+BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal(
     const std::vector<DRT::Element const*>& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
 {

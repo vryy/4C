@@ -50,26 +50,15 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief Initialize the pair.
-     * @param evaluation_data_ptr Pointer to the evaluation data.
      * @param element1 Pointer to the first element.
      * @param element2 Pointer to the second element.
      */
-    virtual void Init(Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
-        const DRT::Element* element1, const DRT::Element* element2);
+    virtual void Init(const DRT::Element* element1, const DRT::Element* element2);
 
     /**
      * \brief Setup the pair.
      */
     virtual void Setup();
-
-    /*!
-    \brief Get the evaluation data container.
-    */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> EvaluationData() const
-    {
-      return evaluation_data_;
-    };
-
 
    protected:
     /**
@@ -108,9 +97,6 @@ namespace GEOMETRYPAIR
 
 
    private:
-    //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_;
-
     //! Link to the element containing the first geometry.
     const DRT::Element* element1_;
 

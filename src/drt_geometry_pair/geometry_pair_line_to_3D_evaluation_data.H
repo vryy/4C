@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief container for parameters for line to volume pairs, as well as global evaluation data.
+\brief Container for parameters for line to 3D pairs, as well as global evaluation data.
 
 \level 1
 \maintainer Ivo Steinbrecher
@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_EVALUATION_DATA_GLOBAL_H
-#define GEOMETRY_PAIR_LINE_TO_VOLUME_EVALUATION_DATA_GLOBAL_H
+#ifndef GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
+#define GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
 
 
 #include "geometry_pair_evaluation_data_base.H"
@@ -23,48 +23,37 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Class to manage inout parameters and evaluation data for line to volume interactions.
+   * \brief Class to manage inout parameters and evaluation data for line to 3D interactions.
    */
-  class LineToVolumeEvaluationData : public GeometryEvaluationDataBase
+  class LineTo3DEvaluationData : public GeometryEvaluationDataBase
   {
    public:
     /**
      * \brief Constructor.
      */
-    LineToVolumeEvaluationData();
+    LineTo3DEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 
     /**
      * \brief Destructor.
      */
-    ~LineToVolumeEvaluationData(){};
+    ~LineTo3DEvaluationData(){};
 
     /**
-     * \brief Initialize parameters. Load them from the input file.
+     * \brief Reset the evaluation data.
      */
-    void Init() override;
-
-    /**
-     * \brief Setup function.
-     */
-    void Setup() override;
+    void Reset() override;
 
     /**
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */
-    inline INPAR::GEOMETRYPAIR::LineToVolumeStrategy GetStrategy() const { return strategy_; }
+    inline INPAR::GEOMETRYPAIR::LineTo3DStrategy GetStrategy() const { return strategy_; }
 
     /**
      * \brief Get the number of search points for segmentation search.
      * @return number of search points.
      */
     inline unsigned int GetNumberOfSearchPoints() const { return n_search_points_; }
-
-    /**
-     * \brief Set the Gauss rule to be used for Gauss point projection method.
-     * @param gauss_rule
-     */
-    void SetGaussRule(DRT::UTILS::GaussRule1D gauss_rule) { gauss_rule_ = gauss_rule; };
 
     /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.
@@ -86,16 +75,6 @@ namespace GEOMETRYPAIR
      * @return Gauss rule
      */
     inline int GetNumberOfGaussPoints() const { return GetGaussPoints().nquad; };
-
-    /**
-     * \brief Sets the number of integration points along the circumfence of the line cross
-     * section.
-     */
-    inline void SetNumberOfIntegrationPointsCircumfence(
-        const unsigned int integration_points_circumfence)
-    {
-      integration_points_circumfence_ = integration_points_circumfence;
-    }
 
     /**
      * \brief Returns the number of integration points along the circumfence of the line cross
@@ -127,7 +106,7 @@ namespace GEOMETRYPAIR
 
    private:
     //! Strategy to be used for contact search.
-    INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy_;
+    INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy_;
 
     //! Gauss rule for Gauss point projection method.
     DRT::UTILS::GaussRule1D gauss_rule_;

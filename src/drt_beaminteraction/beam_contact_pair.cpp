@@ -28,7 +28,6 @@
 #include "beam_contact_params.H"
 
 #include "../drt_geometry_pair/geometry_pair.H"
-#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -48,7 +47,6 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   issetup_ = false;
@@ -58,12 +56,8 @@ void BEAMINTERACTION::BeamContactPair::Init(
   element1_ = elements[0];
   element2_ = elements[1];
 
-  // Create the geometry pair.
-  CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // If a geometry pair is created by a derived class, call its Init function.
-  if (geometry_pair_ != Teuchos::null)
-    geometry_pair_->Init(geometry_evaluation_data_ptr, element1_, element2_);
+  // If a geometry pair is created at this point, call its Init function.
+  if (geometry_pair_ != Teuchos::null) geometry_pair_->Init(element1_, element2_);
 
   isinit_ = true;
 }

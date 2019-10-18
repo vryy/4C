@@ -50,11 +50,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   // Call Init of base class, the geometry pair will be created and initialized there.
-  BeamContactPair::Init(params_ptr, geometry_evaluation_data_ptr, elements);
+  BeamContactPair::Init(params_ptr, elements);
 }
 
 
@@ -141,8 +140,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeometryPair(
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
+  // Call the method of the base class.
+  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
+
   // Set up the geometry pair, it will be initialized in the Init call of the base class.
   geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
       geometry_evaluation_data_ptr);

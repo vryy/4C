@@ -238,9 +238,6 @@ namespace BEAMINTERACTION
       //! data container holding all beam interactions defined by conditions
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
-      //! data container holding all geometry related evaluation data
-      Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr_;
-
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;
 

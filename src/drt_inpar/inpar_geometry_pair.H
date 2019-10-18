@@ -13,9 +13,6 @@
 #define INPAR_GEOMETRYPAIR_H
 
 
-#include <Teuchos_RCP.hpp>
-
-
 // Forward declaration.
 namespace Teuchos
 {
@@ -29,9 +26,9 @@ namespace INPAR
   namespace GEOMETRYPAIR
   {
     /**
-     * Method to be used for line to volume pairs.
+     * Method to be used for line to 3D pairs.
      */
-    enum class LineToVolumeStrategy
+    enum class LineTo3DStrategy
     {
       none,                    ///< Default value.
       gauss_point_projection,  ///< Project the Gauss points, segment lines that poke out of the
@@ -42,10 +39,14 @@ namespace INPAR
     };
 
     /**
-     * Set valid input parameters for geometry pairs.
-     * @param list
+     * \brief Set valid input parameters for line to 3D geometry pairs.
+     *
+     * This function adds all available input parameters to a given section. Call this function with
+     * the parameter list of the input section you want the line to 3D parameters to be added to.
+     *
+     * @param (in) Parameter list to add the line to 3D parameters to.
      */
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
 
   }  // namespace GEOMETRYPAIR
 

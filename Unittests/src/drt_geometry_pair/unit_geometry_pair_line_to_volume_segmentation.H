@@ -21,11 +21,9 @@
 #include "src/drt_so3/so_tet10.H"
 #include "src/drt_so3/so_nurbs27.H"
 #include "src/drt_geometry_pair/geometry_pair_element_functions.H"
-#include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "src/drt_lib/drt_globalproblem.H"
 
 #include "src/drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H"
 
@@ -46,17 +44,11 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
    */
   void setUp()
   {
-    // Add an empty parameter list, then the default values are set.
-    DRT::Problem& problem = (*DRT::Problem::Instance());
-    Teuchos::RCP<Teuchos::ParameterList> global_parameter =
-        Teuchos::rcp(new Teuchos::ParameterList());
-    problem.setParameterList(global_parameter);
-
     // Set up the evaluation data container for the geometry pairs.
-    evaluation_data_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
-    evaluation_data_->BuildLineToVolumeEvaluationData();
-    evaluation_data_->LineToVolumeEvaluationData()->SetGaussRule(
-        DRT::UTILS::GaussRule1D::intrule_line_6point);
+    Teuchos::ParameterList line_to_volume_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    evaluation_data_ =
+        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
   }
 
   /**
@@ -70,11 +62,6 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     // Clear the vectors.
     line_elements_.clear();
     volume_elements_.clear();
-
-    // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
-    // not done, some troubles arise where unit tests influence each other on some configurations.
-    // We suspect that missing singleton destruction might be the reason for that.
-    DRT::Problem::Done();
   }
 
   /**
@@ -298,9 +285,10 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
       // Loop over each solid with this beam and create a pair.
       for (auto& volume : volume_elements_)
       {
-        geometry_pairs.push_back(Teuchos::rcp(
-            new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>()));
-        geometry_pairs.back()->Init(evaluation_data_, line.get(), volume.get());
+        geometry_pairs.push_back(
+            Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>(
+                evaluation_data_)));
+        geometry_pairs.back()->Init(line.get(), volume.get());
         geometry_pairs.back()->Setup();
       }
     }
@@ -321,7 +309,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 
   //! Vector of line elements.
   std::vector<Teuchos::RCP<DRT::Element>> line_elements_;

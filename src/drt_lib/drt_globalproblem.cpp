@@ -285,8 +285,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection(
       "--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CROSSLINKING", *list);
-  reader.ReadGidSection("--GEOMETRY PAIR", *list);
-  reader.ReadGidSection("--GEOMETRY PAIR/LINE TO VOLUME", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);

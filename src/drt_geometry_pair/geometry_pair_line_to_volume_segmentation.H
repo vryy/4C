@@ -33,8 +33,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeSegmentation()
-        : GeometryPairLineToVolume<scalar_type, line, volume>(){};
+    GeometryPairLineToVolumeSegmentation(
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
 
     /**
      * \brief Destructor.
@@ -70,7 +71,7 @@ namespace GEOMETRYPAIR
      * In the case where a line lies on the surface between two volumes, segments on both volumes
      * are valid. To avoid this case a global segment tracker is kept in the evaluation data, that
      * allows a segment only once on all line to volume pairs. This does not work in the very
-     * special case, that the volumes have nonconforming discretization.
+     * special case, that the volumes have non-conforming discretization.
      *
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.

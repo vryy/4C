@@ -22,14 +22,13 @@
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
-    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
     const DRT::Element* element1, const DRT::Element* element2)
 {
   // Call init of base class.
-  GeometryPair::Init(evaluation_data_ptr, element1, element2);
+  GeometryPair::Init(element1, element2);
 
   // For the current implementation, the line element has to be on the same processor as the pair
-  // object. This is because the tracking vector in LineToVolumeEvaluationData is only local and we
+  // object. This is because the tracking vector in LineTo3DEvaluationData is only local and we
   // need this vector for segmentation e.t.c.
   int myrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);

@@ -50,11 +50,32 @@ namespace BEAMINTERACTION
      */
     bool IdsInCondition(const int id_line, const int id_other) const override;
 
+    /**
+     * \brief Create the beam to solid pairs needed for this condition (derived).
+     */
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
+        const std::vector<DRT::Element const*>& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+
    protected:
     /**
      * \brief Check if a solid ID is in this condition.
      */
     virtual bool IdInOther(const int id_other) const = 0;
+
+    /**
+     * \brief Return the created beam contact pair for this condition.
+     *
+     * This function is called by CreateContactPair where the geometry pair in the created contact
+     * pair is initialized.
+     *
+     * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
+     * @param params_ptr (in) Pointer beam contact parameters.
+     * @return Pointer to the created pair.
+     */
+    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+        const std::vector<DRT::Element const*>& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) = 0;
 
    protected:
     //! Pointer to the solid condition.
@@ -80,19 +101,19 @@ namespace BEAMINTERACTION
     ~BeamToSolidConditionVolumeMeshtying(){};
 
     /**
-     * \brief Create the beam to solid pairs needed for this condition (derived).
-     */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
-
-    /**
      * \brief Build the volume ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
     void BuildIdSets() override;
 
    protected:
+    /**
+     * \brief Return the created beam contact pair for this condition. (derived)
+     */
+    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+        const std::vector<DRT::Element const*>& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+
     /**
      * \brief Check if a solid ID is in this condition.
      */
@@ -126,19 +147,19 @@ namespace BEAMINTERACTION
     ~BeamToSolidConditionSurfaceMeshtying(){};
 
     /**
-     * \brief Create the beam to solid pairs needed for this condition (derived).
-     */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
-
-    /**
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
     void BuildIdSets() override { dserror("Not yet implemented!"); }
 
    protected:
+    /**
+     * \brief Return the created beam contact pair for this condition. (derived)
+     */
+    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+        const std::vector<DRT::Element const*>& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+
     /**
      * \brief Check if a solid ID is in this condition.
      */
