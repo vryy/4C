@@ -56,7 +56,10 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       issetup_(false),
-      isinit_(false)
+      isinit_(false),
+      ssiinterfacemeshtying_(
+          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
+          nullptr)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -253,8 +256,11 @@ void SSI::SSI_Base::Setup()
       structure_->Discretization(), scatra_->ScaTraField()->Discretization());
 
   // set up scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  if (SSIInterfaceMeshtying())
   {
+    // check for consistent parameterization of these conditions
+    CheckConsistencySSIInterfaceMeshtyingCondition();
+
     // set up scatra-scatra interface coupling adapter for structure field
     SetupCouplingAdapterStructure();
 
@@ -603,4 +609,78 @@ void SSI::SSI_Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
   CheckIsSetup();
 
   ssicoupling_->SetMeshDisp(scatra_, disp);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::CheckConsistencySSIInterfaceMeshtyingCondition()
+{
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+
+  // get ssi and s2i conditions to be tested
+  std::vector<DRT::Condition*> ssiconditions;
+  structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
+  std::vector<DRT::Condition*> s2iconditions;
+  structdis->GetCondition("S2ICoupling", s2iconditions);
+
+  // loop over all ssi conditions and check for a consistent initialization of the s2i conditions
+  for (auto ssicondition : ssiconditions)
+  {
+    bool matchingconditions(false);
+    bool isslave(true);
+    const int s2icouplingid = ssicondition->GetInt("S2ICouplingID");
+    auto* side = ssicondition->Get<std::string>("Side");
+    // check interface side
+    if (*side == "Slave")
+      isslave = true;
+    else if (*side == "Master")
+      isslave = false;
+    else
+      dserror(
+          "Interface side of SSIInterfaceMeshtying condition not recognized, has to be either "
+          "'Slave' or 'Master'");
+
+    // loop over all s2i conditions to find the one that is matching the current ssi condition
+    for (auto s2icondition : s2iconditions)
+    {
+      const int s2iconditionid = s2icondition->GetInt("ConditionID");
+      // only do further checks if Ids match
+      if (s2icouplingid != s2iconditionid) continue;
+
+      // check the interface side
+      switch (s2icondition->GetInt("interface side"))
+      {
+        case INPAR::S2I::side_slave:
+        {
+          if (isslave)
+          {
+            matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
+          }
+          break;
+        }
+        case INPAR::S2I::side_master:
+        {
+          if (!isslave)
+          {
+            matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
+          }
+          break;
+        }
+        default:
+        {
+          dserror("interface side of 'S2iCondition' has to be either 'Slave' or 'Master'");
+          break;
+        }
+      }
+    }
+
+    if (matchingconditions == false)
+      dserror(
+          "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
+          "the 'SSIInterfaceMeshtying' condition",
+          s2icouplingid, side->c_str());
+  }
+
+  return;
 }

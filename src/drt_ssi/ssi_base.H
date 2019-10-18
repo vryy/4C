@@ -197,6 +197,9 @@ namespace SSI
     /// set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
+    //! get bool indicating if we have at least one ssi interface meshtying condition
+    bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
+
    protected:
     //! check if \ref Setup() was called
     void CheckIsSetup()
@@ -264,6 +267,9 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> zeros_;
 
    private:
+    /// check for a consistent input file definition of the SSIInterfaceMeshtying condition
+    void CheckConsistencySSIInterfaceMeshtyingCondition();
+
     /// Set material pointers for matching structure and scatra grids
     void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
         Teuchos::RCP<const DRT::Discretization> targetdis);
@@ -285,6 +291,9 @@ namespace SSI
 
     //! flag indicating if class is initialized
     bool isinit_;
+
+    //! bool indicating if we have at least one ssi interface meshtying condition
+    const bool ssiinterfacemeshtying_;
   };  // SSI_Base
 }  // namespace SSI
 #endif /* SSI_BASE_H_ */

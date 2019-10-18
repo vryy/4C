@@ -429,6 +429,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure coupling condition from Solid to Scatra";
   else if (Type() == SSICouplingScatraToSolid)
     os << "Scalar-Structure coupling condition from Scatra to Solid";
+  else if (Type() == SSIInterfaceMeshtying)
+    os << "Scalar-Structure interaction interface meshtying condition: ";
   else if (Type() == CellFocalAdhesion)
     os << "Scalar transport boundary condition depending on structural surface stress";
   else if (Type() == ScaTraCellIntCalc)
@@ -436,7 +438,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type() == ScaTraCellExtCalc)
     os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type() == S2ICoupling)
-    os << "Scatra-scatra interface coupling";
+    os << "Scatra-scatra interface coupling: ";
   else if (Type() == SilverMueller)
     os << "Silver-Mueller boundary for electromagnetics";
   else if (Type() == ElementTag)

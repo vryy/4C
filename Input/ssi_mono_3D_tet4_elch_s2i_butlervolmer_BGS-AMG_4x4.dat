@@ -132,7 +132,7 @@ SSI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 9.00000000000000000e+00 TOL
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  3
-NDSURF  14
+NDSURF  18
 NDVOL   9
 --------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF  1
@@ -167,6 +167,12 @@ E 3 - ScaTra 3
 -------------------------------------DESIGN SURF LOCSYS CONDITIONS
 DSURF  1
 E 10 - ROTANGLE 0.7853981634 0.0 0.0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+--------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
+DSURF  4
+E 2 - 0 Slave S2ICouplingID 0
+E 3 - 0 Master S2ICouplingID 0
+E 4 - 1 Master S2ICouplingID 1
+E 5 - 1 Slave S2ICouplingID 1
 -------------------------------DESIGN S2I COUPLING SURF CONDITIONS
 DSURF  4
 E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5

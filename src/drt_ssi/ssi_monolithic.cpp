@@ -47,10 +47,7 @@
 SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
     const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     )
-    // call base class constructor
     : SSI_Base(comm, globaltimeparams),
-
-      // initialize member variables
       dtele_(0.),
       dtsolve_(0.),
       map_structure_(Teuchos::null),
@@ -92,7 +89,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
     const Teuchos::RCP<Epetra_Vector> increment_structure = maps_->ExtractVector(increment_, 1);
 
     // consider structural meshtying if applicable
-    if (scatra_->ScaTraField()->S2ICoupling())
+    if (SSIInterfaceMeshtying())
     {
       maps_structure_->InsertVector(
           icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(structure_->Dispnp(), 2)),
@@ -144,7 +141,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
                   scatra_->ScaTraField()->BlockSystemMatrix()->Matrix(iblock, jblock));
 
             // perform structural meshtying before assigning remaining matrix blocks
-            if (scatra_->ScaTraField()->S2ICoupling())
+            if (SSIInterfaceMeshtying())
             {
               // assemble interior and master-side columns of scatra-structure block into global
               // system matrix
@@ -196,7 +193,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
           }
 
           // perform structural meshtying before assigning structure-structure matrix block
-          if (scatra_->ScaTraField()->S2ICoupling())
+          if (SSIInterfaceMeshtying())
           {
             // assemble interior and master-side rows and columns of structural system matrix into
             // global system matrix
@@ -275,7 +272,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
           blocksystemmatrix->Assign(0, 0, LINALG::View, *scatra_->ScaTraField()->SystemMatrix());
 
           // perform structural meshtying before assigning remaining matrix blocks
-          if (scatra_->ScaTraField()->S2ICoupling())
+          if (SSIInterfaceMeshtying())
           {
             // assemble interior and master-side columns of scatra-structure block into global
             // system matrix
@@ -393,7 +390,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
       systemmatrix->Add(*scatra_->ScaTraField()->SystemMatrix(), false, 1., 0.);
 
       // perform structural meshtying before adding remaining matrix blocks
-      if (scatra_->ScaTraField()->S2ICoupling())
+      if (SSIInterfaceMeshtying())
       {
         // assemble interior and master-side columns of scatra-structure block into global system
         // matrix
@@ -570,7 +567,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // perform structural meshtying before assembling structural right-hand side vector into
   // monolithic right-hand side vector
-  if (scatra_->ScaTraField()->S2ICoupling())
+  if (SSIInterfaceMeshtying())
   {
     // make copy of structural right-hand side vector
     Epetra_Vector residual_structure(*structure_->RHS());
@@ -649,7 +646,7 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
 
   // provide scatra-structure matrix block with contributions from scatra-scatra interface coupling
   // if applicable
-  if (scatra_->ScaTraField()->S2ICoupling())
+  if (SSIInterfaceMeshtying())
   {
     // create parameter list for element evaluation
     Teuchos::ParameterList condparams;
@@ -1005,7 +1002,7 @@ void SSI::SSI_Mono::EquilibrateSystem(
 {
   // for equilibration, S2ICoupling needs to be activated, as it uses the S2I equilibration input
   // values
-  if (scatra_->ScaTraField()->S2ICoupling())
+  if (SSIInterfaceMeshtying())
   {
     switch (strategy_scatra_->Equilibration())
     {
@@ -1196,7 +1193,7 @@ void SSI::SSI_Mono::FDCheck()
 
     // continue loop if current column index is associated with slave side of structural meshtying
     // interface
-    if (scatra_->ScaTraField()->S2ICoupling())
+    if (SSIInterfaceMeshtying())
     {
       collid = icoup_structure_->SlaveDofMap()->LID(colgid);
       Comm().MaxAll(&collid, &maxcollid, 1);
@@ -1210,8 +1207,7 @@ void SSI::SSI_Mono::FDCheck()
     if (statenp->Map().MyGID(colgid))
       if (statenp->SumIntoGlobalValue(colgid, 0, scatra_->ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
-    if (scatra_->ScaTraField()->S2ICoupling() and
-        icoup_structure_->PermMasterDofMap()->MyGID(colgid))
+    if (SSIInterfaceMeshtying() and icoup_structure_->PermMasterDofMap()->MyGID(colgid))
       if (statenp->SumIntoGlobalValue(icoup_structure_->SlaveDofMap()->GID(
                                           icoup_structure_->PermMasterDofMap()->LID(colgid)),
               0, scatra_->ScaTraField()->FDCheckEps()))
@@ -1244,8 +1240,7 @@ void SSI::SSI_Mono::FDCheck()
       // meshtying interface
       if (scatra_->ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or
           structure_->GetDBCMapExtractor()->CondMap()->MyGID(rowgid) or
-          (scatra_->ScaTraField()->S2ICoupling() and
-              icoup_structure_->SlaveDofMap()->MyGID(rowgid)))
+          (SSIInterfaceMeshtying() and icoup_structure_->SlaveDofMap()->MyGID(rowgid)))
         continue;
 
       // get relevant entry in current row of original system matrix
@@ -1490,17 +1485,16 @@ void SSI::SSI_Mono::Setup()
   if (scatra_->ScaTraField()->NumScal() != 1)
     dserror(
         "Since the ssi_monolithic framework is only implemented for usage in combination with "
-        "volume change laws 'MAT_InelasticDefgradLinScalarIso' or"
-        " 'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only one "
-        "transported scalar at the moment it is not reasonable to"
-        " use them with more than one transported scalar. So you need to cope with it or change "
-        "implementation! ;-)");
+        "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
+        "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only one "
+        "transported scalar at the moment it is not reasonable to use them with more than one "
+        "transported scalar. So you need to cope with it or change implementation! ;-)");
 
   if (!scatra_->ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 
-  // set up scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  // set up scatra-scatra interface meshtying if set in input file
+  if (SSIInterfaceMeshtying())
   {
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
@@ -1524,7 +1518,7 @@ void SSI::SSI_Mono::Setup()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SetupSystem()
 {
-  if (scatra_->ScaTraField()->S2ICoupling())
+  if (SSIInterfaceMeshtying())
   {
     // check whether slave-side degrees of freedom are Dirichlet-free
     std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
@@ -1688,7 +1682,7 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
   // construct and register structural model evaluator if necessary
   if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
           DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none and
-      scatra_->ScaTraField()->S2ICoupling())
+      SSIInterfaceMeshtying())
     struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
 

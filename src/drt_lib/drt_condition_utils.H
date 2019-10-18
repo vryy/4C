@@ -231,6 +231,16 @@ namespace DRT
         int mypid     // current proc
     );
 
+    /*!
+     * \brief This method checks whether handed in conditions are defined on the same set of nodes
+     *
+     * @param[in] condition1  first condition to be tested
+     * @param[in] condition2  second condition to be tested
+     * @return flag indicating if both conditions are defined on the same set of nodes
+     */
+    bool HaveSameNodes(
+        const DRT::Condition* const condition1, const DRT::Condition* const condition2);
+
   }  // namespace UTILS
 }  // namespace DRT
 
