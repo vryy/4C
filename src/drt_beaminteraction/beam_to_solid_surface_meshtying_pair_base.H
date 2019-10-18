@@ -1,0 +1,97 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+
+\brief Base meshtying element for meshtying between a 3D beam and a surface element.
+
+\level 3
+\maintainer Ivo Steinbrecher
+*/
+// End doxygen header.
+
+
+#ifndef BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_BASE_H_
+#define BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_BASE_H_
+
+
+#include "beam_to_solid_pair_base.H"
+
+#include "beam3contact_defines.H"
+
+#include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
+
+
+// Forward declarations.
+namespace LINALG
+{
+  class SerialDenseVector;
+  class SerialDenseMatrix;
+}  // namespace LINALG
+namespace GEOMETRYPAIR
+{
+  template <typename scalar_type, typename line, typename surface>
+  class GeometryPairLineToSurface;
+}  // namespace GEOMETRYPAIR
+
+
+namespace BEAMINTERACTION
+{
+  /**
+   * \brief Class for beam to surface surface mesh tying.
+   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @param surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
+   */
+  template <typename beam, typename surface>
+  class BeamToSolidSurfaceMeshtyingPairBase
+      : public BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>,
+            beam, surface>
+  {
+   protected:
+    //! Shortcut to the base class.
+    using base_class =
+        BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>, beam,
+            surface>;
+
+    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
+    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>;
+
+   public:
+    /**
+     * \brief Standard Constructor
+     */
+    BeamToSolidSurfaceMeshtyingPairBase();
+
+    /**
+     * \brief Destructor.
+     */
+    virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
+
+    /**
+     * \brief Create the geometry pair for this contact pair.
+     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
+     */
+    void CreateGeometryPair(
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+        override;
+
+   protected:
+    /**
+     * \brief Return a cast of the geometry pair to the type for this contact pair.
+     * @return RPC with the type of geometry pair for this beam contact pair.
+     */
+    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
+        const;
+
+   protected:
+    //! Flag if the meshtying has been evaluated already.
+    bool meshtying_is_evaluated_;
+
+    //! Reference normals at the nodes of the surface elements.
+    LINALG::Matrix<surface::n_nodes_ * 3, 1, double> surface_normals_ref_;
+
+    //! Current normals at the nodes of the surface elements.
+    LINALG::Matrix<surface::n_nodes_ * 3, 1, scalar_type_fad> surface_normals_;
+  };
+}  // namespace BEAMINTERACTION
+
+#endif
