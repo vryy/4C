@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_condition.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
 #include "../drt_so3/so_base.H"
 
 
@@ -312,8 +313,8 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfa
       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
 
   // Create the geometry evaluation data for this condition.
-  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
+  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineToSurfaceEvaluationData<double>>(
+      new GEOMETRYPAIR::LineToSurfaceEvaluationData<double>(input_parameter_list));
 }
 
 /**

@@ -29,7 +29,7 @@ namespace GEOMETRYPAIR
   {
    public:
     /**
-     * \brief Constructor.
+     * \brief Constructor (derived).
      */
     LineTo3DEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 

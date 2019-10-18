@@ -16,7 +16,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "src/drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
+#include "src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_element_functions.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "src/drt_so3/so_surface.H"
@@ -43,10 +43,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   void setUp()
   {
     // Set up the evaluation data container for the geometry pairs.
-    Teuchos::ParameterList line_to_volume_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
-    evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+    Teuchos::ParameterList line_to_surface_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
+    evaluation_data_ = Teuchos::rcp(
+        new GEOMETRYPAIR::LineToSurfaceEvaluationData<double>(line_to_surface_params_list));
   }
 
   /**
@@ -947,7 +947,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData<double>> evaluation_data_;
 };
 
 #endif

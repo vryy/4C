@@ -27,15 +27,19 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPoint1DTo3D;
 
-  class LineTo3DEvaluationData;
+  template <typename scalar_type>
+  class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
 namespace LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }  // namespace LINALG
-template <typename scalar_type>
-class LineSegment;
+namespace GEOMETRYPAIR
+{
+  template <typename scalar_type>
+  class LineSegment;
+}
 
 
 
@@ -59,8 +63,9 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      */
     GeometryPairLineToSurface(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
-        : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
+        const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData<scalar_type>>&
+            line_to_surface_evaluation_data)
+        : GeometryPair(), line_to_surface_evaluation_data_(line_to_surface_evaluation_data){};
 
     /**
      * \brief Destructor.
@@ -83,7 +88,7 @@ namespace GEOMETRYPAIR
      */
     virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+        std::vector<LineSegment<scalar_type>>& segments) const;
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
@@ -204,7 +209,8 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
+    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData<scalar_type>>
+        line_to_surface_evaluation_data_;
   };
 }  // namespace GEOMETRYPAIR
 

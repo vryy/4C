@@ -12,6 +12,7 @@
 
 #include "geometry_pair_element.H"
 #include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_line_to_surface_evaluation_data.H"
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
@@ -85,18 +86,19 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
   // Cast the geometry evaluation data to the correct format.
-  auto line_to_3d_evaluation_data =
-      Teuchos::rcp_dynamic_cast<LineTo3DEvaluationData>(geometry_evaluation_data, true);
+  auto line_to_surface_evaluation_data =
+      Teuchos::rcp_dynamic_cast<LineToSurfaceEvaluationData<scalar_type>>(
+          geometry_evaluation_data, true);
 
   // Get the strategy for line to volume interaction.
-  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
+  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_surface_evaluation_data->GetStrategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
   {
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
-      return Teuchos::rcp(
-          new GeometryPairLineToSurface<scalar_type, line, surface>(line_to_3d_evaluation_data));
+      return Teuchos::rcp(new GeometryPairLineToSurface<scalar_type, line, surface>(
+          line_to_surface_evaluation_data));
     default:
     {
       dserror(

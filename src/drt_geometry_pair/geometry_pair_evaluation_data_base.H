@@ -26,6 +26,8 @@ namespace GEOMETRYPAIR
    public:
     /**
      * \brief Constructor.
+     *
+     * \param input_parameter_list (in) Parameter list with the geometry evaluation parameters.
      */
     GeometryEvaluationDataBase(const Teuchos::ParameterList& input_parameter_list){};
 

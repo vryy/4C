@@ -43,6 +43,17 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Init(
  *
  */
 template <typename scalar_type, typename line, typename surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::PreEvaluate(
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    std::vector<LineSegment<scalar_type>>& segments) const {
+
+};
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToSurface(
     const LINALG::Matrix<3, 1, scalar_type>& point,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,

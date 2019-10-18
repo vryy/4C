@@ -17,6 +17,7 @@
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/FAD_utils.H"
 
 #include <vector>
 
@@ -344,6 +345,25 @@ namespace GEOMETRYPAIR
 
     //! Vector to store projection points for this segment.
     std::vector<ProjectionPoint1DTo3D<scalar_type>> segment_projection_points_;
+  };
+
+  /**
+   * \brief This class stores information related to (averaged) nodal normals.
+   */
+  template <typename scalar_type>
+  class NodalNormal
+  {
+   public:
+    /**
+     * \brief Constructor.
+     *
+     * \param node_id (in) Global ID of this node.
+     */
+    NodalNormal(const int node_id) : node_id_(node_id){};
+
+   private:
+    //! Global ID of the node element.
+    int node_id_;
   };
 
 }  // namespace GEOMETRYPAIR
