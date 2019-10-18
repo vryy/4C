@@ -67,7 +67,9 @@ namespace INPAR
       kinetics_constperm,
       kinetics_butlervolmer,
       kinetics_butlervolmerpeltier,
-      kinetics_butlervolmerreduced
+      kinetics_butlervolmerreduced,
+      kinetics_butlervolmerresistance,
+      kinetics_butlervolmerreducedwithresistance
     };
 
     //! type of global system matrix in global system of equations
