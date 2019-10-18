@@ -13,12 +13,7 @@
 //NODES       1352
 DIM           3
 -----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
@@ -36,11 +31,11 @@ DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     1000
 TIMESTEP                        20.0
-NUMSTEP                         3
-MAXTIME                         60.0
-TOLDISP                         1e-06
+NUMSTEP                         2
+MAXTIME                         40.0
+TOLDISP                         5e-05
 NORM_DISP                       Abs
-TOLRES                          1e-06
+TOLRES                          5e-05
 NORM_RESF                       Abs
 TOLPRE                          1e-06
 NORM_PRES                       Abs
@@ -50,7 +45,7 @@ MAXITER                         50
 MINITER                         0
 ITERNORM                        L2
 // FOLLOWING PARAMS IMPORTANT FOR CELL
-NLNSOL                          lsnewton //lsnewton fullnewton
+NLNSOL                          lsnewton
 ALPHA_LS                        0.5
 MATERIALTANGENT                 finitedifferences
 PREDICT                         ConstVel
@@ -62,11 +57,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+03 EPSNULL 2.8E-04
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
------------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------FUNCT1
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  4
@@ -4191,13 +4181,9 @@ NODE 1352    COORD  5.0000000000000003e-02  5.0000000000000003e-02  5.0000000000
    623 SOLIDH8 HEX8  1294 1293 1295 1296 1346 1345 1347 1348    MAT 1 KINEM nonlinear EAS none
    624 SOLIDH8 HEX8  1296 1295 1297 1298 1348 1347 1349 1350    MAT 1 KINEM nonlinear EAS none
    625 SOLIDH8 HEX8  1298 1297 1299 1300 1350 1349 1351 1352    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -2.17946699186344025e-05 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 2.21769095178239859e-05 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -1.21935116670359857e-05 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 1.22073239313162021e-05 TOLERANCE 1e-09
 
 ---------------------------------------------------------------END
 // END

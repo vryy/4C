@@ -38,8 +38,8 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     2
 NLNSOL                          fullnewton
-TIMESTEP                        0.1
-NUMSTEP                         10
+TIMESTEP                        1.0
+NUMSTEP                         1
 MAXTIME                         1.0
 DAMPING                         No
 M_DAMP                          0.00001
@@ -50,7 +50,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 -------------------------------------------------------------MORTAR COUPLING

@@ -5,7 +5,7 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-First dynamic test for beam3sk elements
+First dynamic test for beam3sk elements with rotation vec. Dofs
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -19,24 +19,17 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     100
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
-NUMSTEP                         200
-MAXTIME                         2
+NUMSTEP                         110
+MAXTIME                         1.1
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
@@ -410,9 +403,9 @@ NODE            129    COORD 1000 0.0 0.0
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_BeamKirchhoffElastHyper  YOUNG 1.0e+07 SHEARMOD 5.0e+06 DENS 1e-07 CROSSAREA 0.1 MOMINPOL 1.666666666666667e-05 MOMIN2 8.333333333333335e-06 MOMIN3 8.333333333333335e-06
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.14512518665311180e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -1.85492295825048181e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE -1.41386497980773687e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -7.67139832075478267e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE  2.52676828657232566e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE -7.86733164698086540e+01 TOLERANCE 1e-8
 ------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION sin(x*3.14/500.0)*1.0*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0

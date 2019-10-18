@@ -1,7 +1,6 @@
 # parameters
 set(CTEST_SOURCE_DIRECTORY "$ENV{CI_PROJECT_DIR}")
 set(CTEST_BINARY_DIRECTORY "$ENV{CI_PROJECT_DIR}/../baci-build")
-set(CTEST_TIMEOUT          "300")       # ctest timeout 1000s
 set($ENV{LC_MESSAGES}      "en_EN" )    # set output to english such that ctest can analyze it
 
 set(CTEST_SITE "$ENV{HOSTNAME}")
