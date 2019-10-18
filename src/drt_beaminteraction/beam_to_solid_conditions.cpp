@@ -113,16 +113,16 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
 {
   // Cast the solid element.
-  DRT::ELEMENTS::So_base const* solidele = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]);
-  DRT::Element::DiscretizationType shape = solidele->Shape();
+  const DRT::ELEMENTS::So_base* solidele = dynamic_cast<const DRT::ELEMENTS::So_base*>(ele_ptrs[1]);
+  const DRT::Element::DiscretizationType shape = solidele->Shape();
 
   // Get the contact discretization method.
-  INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization contact_discretization =
+  INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization =
       params_ptr->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization();
 
   // Check which contact discretization is wanted.
   if (contact_discretization ==
-      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::gauss_point_to_segment)
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_to_segment)
   {
     switch (shape)
     {
@@ -155,15 +155,14 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
         dserror("Wrong element type for solid element.");
     }
   }
-  else if (contact_discretization ==
-           INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::mortar)
+  else if (contact_discretization == INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
   {
-    INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions mortar_shape_function =
+    INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function =
         params_ptr->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
 
     switch (mortar_shape_function)
     {
-      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line2:
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
       {
         switch (shape)
         {
@@ -196,7 +195,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
         }
         break;
       }
-      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line3:
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
       {
         switch (shape)
         {
@@ -229,7 +228,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
         }
         break;
       }
-      case INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::line4:
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
       {
         switch (shape)
         {
@@ -267,7 +266,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
     }
   }
   if (contact_discretization ==
-      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::gauss_point_cross_section)
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section)
   {
     switch (shape)
     {

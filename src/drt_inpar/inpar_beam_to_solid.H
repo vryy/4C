@@ -49,9 +49,9 @@ namespace INPAR
         std::array<std::string, 2>& condition_names);
 
     /**
-     * \brief Constraint enforcement for beam to solid volume mesh tying.
+     * \brief Constraint enforcement for beam to solid interactions.
      */
-    enum class BeamToSolidVolumeConstraintEnforcement
+    enum class BeamToSolidConstraintEnforcement
     {
       //! Default value.
       none,
@@ -60,9 +60,9 @@ namespace INPAR
     };
 
     /**
-     * \brief Contact discretization for beam to solid volume mesh tying.
+     * \brief Contact discretization for beam to solid interactions.
      */
-    enum class BeamToSolidVolumeContactDiscretization
+    enum class BeamToSolidContactDiscretization
     {
       //! Default value.
       none,
@@ -77,7 +77,7 @@ namespace INPAR
     /**
      * \brief Shape function for the mortar Lagrange-multiplicators
      */
-    enum class BeamToSolidVolumeMortarShapefunctions
+    enum class BeamToSolidMortarShapefunctions
     {
       //! Default value.
       none,
@@ -87,6 +87,21 @@ namespace INPAR
       line3,
       //! Cubic.
       line4
+    };
+
+    /**
+     * \brief How the coupling between a beam and a surface should be evaluated.
+     */
+    enum class BeamToSolidSurfaceCoupling
+    {
+      //! Default value.
+      none,
+      //! Couple the reference configurations of the beam and solid, but force the normal distance
+      //! to 0. This will lead to angular momentum conservation, but initial strains.
+      configurations_forced_to_zero,
+      //! Couple the displacements, if no mesh initialization is performed, this will lead to
+      //! non-conserving angular momentum.
+      displacements
     };
 
     /**

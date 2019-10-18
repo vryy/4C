@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Data container holding all beam to solid volume meshtying input parameters.
+\brief Data container holding all beam to solid surface meshtying input parameters.
 
 \level 3
 \maintainer Ivo Steinbrecher
@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PARAMS_H
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PARAMS_H
+#ifndef BEAM_TO_SOLID_SURFACE_MESHTYING_PARAMS_H
+#define BEAM_TO_SOLID_SURFACE_MESHTYING_PARAMS_H
 
 
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -19,30 +19,23 @@
 #include "../drt_lib/drt_dserror.H"
 
 
-// Forward declaration.
-namespace BEAMINTERACTION
-{
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
-}
-
-
 namespace BEAMINTERACTION
 {
   /**
    * \brief Class for beam to solid meshtying parameters.
    */
-  class BeamToSolidVolumeMeshtyingParams
+  class BeamToSolidSurfaceMeshtyingParams
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidVolumeMeshtyingParams();
+    BeamToSolidSurfaceMeshtyingParams();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingParams(){};
+    virtual ~BeamToSolidSurfaceMeshtyingParams(){};
 
     /**
      * \brief Initialize with the stuff coming from input file.
@@ -97,6 +90,14 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the coupling type for beam-to-surface coupling.
+     */
+    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling GetCouplingType() const
+    {
+      return coupling_type_;
+    }
+
+    /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
     inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionType() const
@@ -126,17 +127,6 @@ namespace BEAMINTERACTION
       return integration_points_circumfence_;
     }
 
-    /**
-     * \brief Returns a pointer to the vtk output parameters.
-     * @return Pointer to vtk output parameters.
-     */
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> GetVtkOuputParamsPtr();
-
-    /**
-     * \brief Returns if the restart configuration should be coupled.
-     */
-    inline bool GetCoupleRestartState() const { return couple_restart_state_; }
-
    private:
     //! Flag if Init was called.
     bool isinit_;
@@ -150,6 +140,9 @@ namespace BEAMINTERACTION
     //! Discretization used for the contact.
     INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization_;
 
+    //! How the coupling should be evaluated.
+    INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type_;
+
     //! Shape function for the mortar Lagrange-multiplicators
     INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_;
 
@@ -162,12 +155,6 @@ namespace BEAMINTERACTION
     //! Number of integration points along the circumfencial direction in the cross section
     //! projection.
     unsigned int integration_points_circumfence_;
-
-    //! Pointer to the vtk output parameters for beam to solid volume meshtying.
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;
-
-    //! If the coupling terms should be evaluated with the restart configuration.
-    bool couple_restart_state_;
   };
 
 }  // namespace BEAMINTERACTION

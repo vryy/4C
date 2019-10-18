@@ -43,17 +43,14 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename surface>
   class BeamToSolidSurfaceMeshtyingPairBase
-      : public BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>,
-            beam, surface>
+      : public BeamToSolidPairBase<Sacado::ELRFad::DFad<double>, beam, surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class =
-        BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>, beam,
-            surface>;
+    using base_class = BeamToSolidPairBase<Sacado::ELRFad::DFad<double>, beam, surface>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>;
+    using scalar_type_fad = Sacado::ELRFad::DFad<double>;
 
    public:
     /**

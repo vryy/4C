@@ -114,11 +114,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
-              "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
+  // Check if beam-to-solid volume mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_volume_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -137,6 +138,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
           GState().GetTimeN());
     }
+  }
+
+  // Check if beam-to-solid surface mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_surface_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+
+    beam_contact_params_ptr_->BuildBeamToSolidSurfaceMeshtyingParams();
   }
 
   // set flag

@@ -8,9 +8,7 @@
 */
 
 
-#include "beam_to_solid_volume_meshtying_params.H"
-
-#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -18,15 +16,15 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingParams()
     : isinit_(false),
       issetup_(false),
       constraint_enforcement_(INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement::none),
       contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none),
+      coupling_type_(INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::none),
       mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
-      couple_restart_state_(false)
+      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
 {
   // Empty Constructor.
 }
@@ -35,11 +33,11 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
 
   // Get parameters form input file.
   {
@@ -52,6 +50,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     contact_discretization_ =
         Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
             beam_to_solid_contact_params_list, "CONTACT_DISCRETIZATION");
+
+    // Type of coupling evaluation to be used.
+    coupling_type_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling>(
+        beam_to_solid_contact_params_list, "COUPLING_TYPE");
 
     // Contact discretization to be used.
     mortar_shape_function_ =
@@ -70,18 +72,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     // Number of integrations points along the circumfence of the cross section.
     integration_points_circumfence_ =
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
-
-    // If the restart configuration should be coupled.
-    couple_restart_state_ = (bool)DRT::INPUT::IntegralValue<int>(
-        beam_to_solid_contact_params_list, "COUPLE_RESTART_STATE");
-  }
-
-  // Setup the output parameter object.
-  {
-    output_params_ptr_ = Teuchos::rcp<BeamToSolidVolumeMeshtyingVtkOutputParams>(
-        new BeamToSolidVolumeMeshtyingVtkOutputParams());
-    output_params_ptr_->Init();
-    output_params_ptr_->Setup();
   }
 
   isinit_ = true;
@@ -91,7 +81,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Setup()
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Setup()
 {
   CheckInit();
 
@@ -99,12 +89,3 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Setup()
 
   issetup_ = true;
 }
-
-/**
- *
- */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::GetVtkOuputParamsPtr()
-{
-  return output_params_ptr_;
-};

@@ -118,6 +118,8 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
                                            beam_to_solid_surface_meshtying)
             new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying(
                 map_item.second.first, map_item.second.second));
+          else
+            dserror("Got unexpected interaction type.");
           interaction_vector.push_back(new_condition);
         }
         else

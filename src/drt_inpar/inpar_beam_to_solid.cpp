@@ -105,29 +105,27 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   Teuchos::ParameterList& beam_to_solid_volume_mestying =
       beaminteraction.sublist("BEAM TO SOLID VOLUME MESHTYING", false, "");
   {
-    setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
-        "none", "Type of employed contact discretization",
+    setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
+        "Type of employed contact discretization",
         tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
-        tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
-            BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
-            BeamToSolidVolumeContactDiscretization::mortar,
-            BeamToSolidVolumeContactDiscretization::gauss_point_cross_section),
+        tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
+            BeamToSolidContactDiscretization::gauss_point_to_segment,
+            BeamToSolidContactDiscretization::mortar,
+            BeamToSolidContactDiscretization::gauss_point_cross_section),
         &beam_to_solid_volume_mestying);
 
-    setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",
-        "none", "Type of employed constraint enforcement strategy",
-        tuple<std::string>("none", "penalty"),
-        tuple<BeamToSolidVolumeConstraintEnforcement>(BeamToSolidVolumeConstraintEnforcement::none,
-            BeamToSolidVolumeConstraintEnforcement::penalty),
+    setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
+        "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
+        tuple<BeamToSolidConstraintEnforcement>(
+            BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         &beam_to_solid_volume_mestying);
 
-    setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
-        "none", "Shape function for the mortar Lagrange-multiplicators",
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multiplicators",
         tuple<std::string>("none", "line2", "line3", "line4"),
-        tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
-            BeamToSolidVolumeMortarShapefunctions::line2,
-            BeamToSolidVolumeMortarShapefunctions::line3,
-            BeamToSolidVolumeMortarShapefunctions::line4),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
     DoubleParameter("PENALTY_PARAMETER", 0.0,
@@ -180,6 +178,57 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+  }
+
+  // Beam to solid surface mesh tying parameters.
+  Teuchos::ParameterList& beam_to_solid_surface_mestying =
+      beaminteraction.sublist("BEAM TO SOLID SURFACE MESHTYING", false, "");
+  {
+    setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
+        "Type of employed contact discretization",
+        tuple<std::string>("none", "gauss_point_to_segment", "mortar"),
+        tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
+            BeamToSolidContactDiscretization::gauss_point_to_segment,
+            BeamToSolidContactDiscretization::mortar),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
+        "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
+        tuple<BeamToSolidConstraintEnforcement>(
+            BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidSurfaceCoupling>("COUPLING_TYPE", "none",
+        "How the coupling constraints are formulated/",
+        tuple<std::string>("none", "configurations_forced_to_zero", "displacements"),
+        tuple<BeamToSolidSurfaceCoupling>(BeamToSolidSurfaceCoupling::none,
+            BeamToSolidSurfaceCoupling::configurations_forced_to_zero,
+            BeamToSolidSurfaceCoupling::displacements),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multiplicators",
+        tuple<std::string>("none", "line2", "line3", "line4"),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
+        &beam_to_solid_surface_mestying);
+
+    DoubleParameter("PENALTY_PARAMETER", 0.0,
+        "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
+
+    // Add the geometry pair input parameters.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
+  }
+
+  // Beam to solid surface mesh tying output parameters.
+  Teuchos::ParameterList& beam_to_solid_surface_mestying_vtk =
+      beam_to_solid_surface_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
+  {
+    // Whether to write vtp output at all for btsvmt.
+    setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
+        "Enable / disable beam-to-solid volume mesh tying output.", yesnotuple, yesnovalue,
+        &beam_to_solid_surface_mestying_vtk);
   }
 }
 
