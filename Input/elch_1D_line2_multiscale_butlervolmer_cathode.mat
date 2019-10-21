@@ -1,0 +1,65 @@
+//
+// Maintainer: Christoph Schmidt
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+Academic test case for multi-scale electrochemistry:
+- based on one-dimensional model in Goldin et al., Electrochimica Acta 64 (2012) 118-129
+- one 1D macro scale representing electrolyte and consisting of 29 line2 elements:
+  15 in anode region, 4 in separator region, and 10 in cathode region
+- two 1D micro scales, each representing one of the two electrodes and consisting of 10 line2 elements
+- initial and boundary conditions on macro and micro scales as given by the reference
+- coupling between macro and micro scales based on Butler-Volmer charge transfer kinetics
+- discharge from fully charged state at C rate of 1
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    10
+//NODES       11
+DIM           1
+-------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE                      nonlinear
+NUMSTEP                         50
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+SPHERICALCOORDS                 Yes
+LINEAR_SOLVER                   1
+---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ABSTOLRES                       0.0
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_electrode DIFFCOEF -1 COND 0 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 C_MAX 23.9 OCP_MODEL Redlich-Kister X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
+-------------------------------------------------------------FUNCT1
+FUNCTION 10.56
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+---------------DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS
+DPOINT 1
+E 1 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    11 DNODE 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 2 COORD 1.0000000000000000e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 3 COORD 2.0000000000000001e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 4 COORD 3.0000000000000003e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 5 COORD 4.0000000000000002e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 6 COORD 5.0000000000000001e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 7 COORD 6.0000000000000006e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 8 COORD 6.9999999999999999e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 9 COORD 8.0000000000000004e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 10 COORD 9.0000000000000008e-04 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 11 COORD 1.0000000000000000e-03 0.0000000000000000e+00 0.0000000000000000e+00
+------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP LINE2 1 2 MAT 1 TYPE Std
+2 TRANSP LINE2 2 3 MAT 1 TYPE Std
+3 TRANSP LINE2 3 4 MAT 1 TYPE Std
+4 TRANSP LINE2 4 5 MAT 1 TYPE Std
+5 TRANSP LINE2 5 6 MAT 1 TYPE Std
+6 TRANSP LINE2 6 7 MAT 1 TYPE Std
+7 TRANSP LINE2 7 8 MAT 1 TYPE Std
+8 TRANSP LINE2 8 9 MAT 1 TYPE Std
+9 TRANSP LINE2 9 10 MAT 1 TYPE Std
+10 TRANSP LINE2 10 11 MAT 1 TYPE Std
+---------------------------------------------------------------END

@@ -30,13 +30,14 @@ fi
 
 
 ### Tests check ################################################
+echo "Start test for input files and unittests ..."
 python2 ./utilities/code_checks/testing_frameworks_check.py --out wrong_tests.txt | tee wrong_tests.txt
 
 if [ -s wrong_tests.txt ]
 then
   echo "Failed. Non-compliant (unit- and input file-)tests have been reported in wrong_tests.txt."
   cat wrong_tests.txt
-  # exit 1
+  exit 1
 else
   echo "Passed."
 fi
