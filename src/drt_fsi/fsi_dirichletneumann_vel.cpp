@@ -50,14 +50,6 @@ void FSI::DirichletNeumannVel::Setup()
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
       DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
-  printf("before constraint manager\n");
-  constraint_manager_->Setup(StructureField(), MBFluidField());
-  vtk_output_writer_ = Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
-  vtk_output_writer_->Init();
-  vtk_output_writer_->Setup(
-      Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
-      constraint_manager_->GetBridge()->GetParams()->GetVtkOuputParamsPtr(), Time());
-  constraint_manager_->Evaluate();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -171,6 +163,21 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP
 void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
-  printf("We are in the output\n");
   vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
+}
+
+void FSI::DirichletNeumannVel::Timeloop(
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+{
+  constraint_manager_->Setup(StructureField(), MBFluidField());
+  if (GetKinematicCoupling()) constraint_manager_->PrepareFluidSolve();
+  vtk_output_writer_ = Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
+  vtk_output_writer_->Init();
+  vtk_output_writer_->Setup(
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
+      constraint_manager_->GetBridge()->GetParams()->GetVtkOuputParamsPtr(), Time());
+  constraint_manager_->Evaluate();
+  if (GetKinematicCoupling()) StructToFluid(Teuchos::null);
+
+  FSI::Partitioned::Timeloop(interface);
 }

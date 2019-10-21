@@ -93,11 +93,17 @@ namespace FSI
     explicit DirichletNeumannVel(const Epetra_Comm& comm);
 
    public:
+    /*! \brief Outer level FSI time loop
+     *
+     * @param interface Our interface to NOX
+     */
+    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface) override;
+
     /// setup this object
-    virtual void Setup() override;
+    void Setup() override;
 
     /// write output
-    virtual void Output() override;
+    void Output() override;
 
    protected:
     /** \brief interface fluid operator
@@ -108,7 +114,7 @@ namespace FSI
      * \param[in] ivel The interface velocity
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> FluidOp(
         Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag) override;
 
     /** \brief interface structural operator
@@ -119,18 +125,19 @@ namespace FSI
      * \param[in] iforce The interface force
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> StructOp(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override;
 
     /// Computes initial guess for the next iteration
 
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
     // todo use or throw error
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
 
     // todo use or throw error
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) override;
+
 
    private:
     /**
