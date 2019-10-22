@@ -1317,6 +1317,20 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   output.WriteVector("activeset", activesetexp);
 
   // *********************************************************************
+  // gap
+  // *********************************************************************
+  // export to problem dof row map
+  Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
+  Teuchos::RCP<Epetra_Vector> gaps = GetStrategy().ContactWGap();
+  if (gaps != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
+    LINALG::Export(*gaps, *gapsexp);
+
+    output.WriteVector("gap", gapsexp);
+  }
+
+  // *********************************************************************
   // contact tractions
   // *********************************************************************
 
