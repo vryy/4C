@@ -159,6 +159,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
     if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
+
+    // In case of MultiScale contact this is the id of the interface's constitutive contact law
+    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+
     bool foundit = false;
 
     // only one surface per group is ok for self contact
@@ -292,8 +296,9 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = STRATEGY::Factory::CreateInterface(
-        groupid1, Comm(), dim, icparams, isself[0], redundant, Teuchos::null);
+    Teuchos::RCP<CONTACT::CoInterface> newinterface =
+        STRATEGY::Factory::CreateInterface(groupid1, Comm(), dim, icparams, isself[0], redundant,
+            Teuchos::null, Teuchos::null, contactconstitutivelawid);
 
     interfaces.push_back(newinterface);
 
