@@ -2456,7 +2456,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluid(this));
 
   // scatra-scatra interface coupling
-  else if (s2icoupling_)
+  else if (IsS2IMeshtying())
     strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, params_->sublist("S2I COUPLING")));
 
   // scatra-scatra interface coupling
@@ -3741,4 +3741,43 @@ void SCATRA::ScaTraTimIntImpl::CheckIsInit() const
 void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
 {
   if (not IsSetup()) dserror("ScaTraTimIntImpl is not set up. Call Setup() first.");
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
+{
+  auto problem = DRT::Problem::Instance();
+  bool IsS2IMeshtying(false);
+  // decide depending on the problem type
+  switch (problem->GetProblemType())
+  {
+    case prb_elch:
+    case prb_scatra:
+    case prb_sti:
+    {
+      if (s2icoupling_) IsS2IMeshtying = true;
+      break;
+    }
+    case prb_ssi:
+    {
+      // get structure discretization
+      auto structdis = problem->GetDis("structure");
+
+      // get ssi meshtying conditions
+      std::vector<DRT::Condition*> ssiconditions;
+      structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
+
+      // do mesh tying if there is at least one mesh tying condition
+      if (!ssiconditions.empty()) IsS2IMeshtying = true;
+      break;
+    }
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return IsS2IMeshtying;
 }

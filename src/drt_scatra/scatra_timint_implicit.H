@@ -878,6 +878,9 @@ namespace SCATRA
     //! is output needed for the current time step?
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
+    //! return whether a scatra-scatra interface mesh tying condition is defined
+    bool IsS2IMeshtying() const;
+
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 

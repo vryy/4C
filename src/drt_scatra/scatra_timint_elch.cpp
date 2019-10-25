@@ -30,7 +30,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include "scatra_timint_elch.H"
 
@@ -1841,16 +1840,13 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluidElch(this));
 
   // scatra-scatra interface coupling
-  else if (s2icoupling_)
+  else if (IsS2IMeshtying())
     strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, params_->sublist("S2I COUPLING")));
 
   // standard case without meshtying
   else
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStdElch(this));
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
-
 
 /*----------------------------------------------------------------------*
  | calculate initial electric potential field                fang 03/15 |
