@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 
 \level 1
 

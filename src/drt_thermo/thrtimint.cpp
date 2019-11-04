@@ -2,7 +2,7 @@
 /*! \file
 \brief Time integration for spatially discretised thermal dynamics
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 

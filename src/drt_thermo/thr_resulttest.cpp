@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief tesing of structure calculation results
+\brief testing of structure calculation results
 
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*
