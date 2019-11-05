@@ -2,7 +2,7 @@
 /*! \file
 \brief Explicit time integration for thermal dynamics
 \level 3
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*/

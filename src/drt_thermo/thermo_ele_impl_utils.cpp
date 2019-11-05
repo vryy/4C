@@ -2,7 +2,7 @@
 /*! \file
 
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 #ifdef D_THERMO

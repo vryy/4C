@@ -2,7 +2,7 @@
 /*! \file
 \brief various auxiliar methods needed in thermal analysis
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 
