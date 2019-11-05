@@ -48,13 +48,11 @@
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant, const int contactconstitutivelawid)
     : CoInterface(interfaceData, id, comm, dim, icontact, selfcontact, redundant)
 {
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
-          id + 1);  // todo This is temporary, until we can hand the interface its roughness law id
-                    // via condition
+      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(contactconstitutivelawid);
   coconstlaw_ = coconstlaw;
   return;
 }

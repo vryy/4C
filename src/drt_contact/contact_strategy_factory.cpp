@@ -738,6 +738,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
 
+    // In case of MultiScale contact this is the id of the interface's constitutive contact law
+    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+
     /* get the parent discretization of the contact interface discretization
      * which shares the same contact condition group */
     Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> parent_dis_pair =
@@ -841,8 +844,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    Teuchos::RCP<CONTACT::CoInterface> newinterface =
-        CreateInterface(groupid1, Comm(), Dim(), icparams, isself[0], redundant, parent_dis_pair);
+    Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
+        icparams, isself[0], redundant, parent_dis_pair, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -1250,13 +1253,14 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+    const int contactconstitutivelawid)
 {
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return CreateInterface(
-      stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair, interfaceData_ptr);
+  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair,
+      interfaceData_ptr, contactconstitutivelawid);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1267,7 +1271,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
 
@@ -1377,7 +1381,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     case INPAR::CONTACT::solution_multiscale:
       idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
       newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
-          idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+          idata_ptr, id, comm, dim, icparams, selfcontact, redundant, contactconstitutivelawid));
       break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case

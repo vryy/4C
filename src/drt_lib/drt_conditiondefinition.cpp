@@ -234,7 +234,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
   (*condline) >> number;
 
   int n;
-  if (noneallowed_ and number == "none")
+  if (noneallowed_ and (number == "none" or number == ""))
   {
     n = -1;
   }
@@ -344,7 +344,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
           // failed to read the numbers, fall back to default values
           condline =
               PushBack("", condline);  // This line has been changed to incorporate optional flag!!
-          // condline = PushBack(number,condline); //Old implementation -> Not working!!!
           break;
         }
         dserror(

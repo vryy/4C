@@ -49,7 +49,7 @@ namespace CONTACT
     ConstitutivelawInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant);
+        INPAR::MORTAR::RedundantStorage redundant, const int contactconstitutivelawid);
 
     /*!
     \brief Destructor
