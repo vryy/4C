@@ -406,16 +406,14 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
 
   if (myrank_ == 0)
   {
+    printf("+------------+-------------+-------------+-------------+-------------+\n");
     printf(
-        "+------------+-------------------+--------------+--------------+--------------+-----------"
-        "---+\n");
+        "|- step/max -|-- vel-res --|-- pre-res --|-- vel-inc --|-- pre-inc "
+        "--|\n");
     printf(
-        "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
-        "---|\n");
-    printf(
-        "|-   norm   -|-- abs. L2 ---|-- abs. L2 ---|-- rel. L2 ---|-- rel. L2 "
-        "---|\n");
-    printf("|-   tol    -| %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n", velrestol, presrestol,
+        "|-   norm   -|-- abs. L2 --|-- abs. L2 --|-- rel. L2 --|-- rel. L2 "
+        "--|\n");
+    printf("|-   tol    -| %10.3E  | %10.3E  | %10.3E  | %10.3E  |\n", velrestol, presrestol,
         velinctol, presinctol);
   }
 
@@ -538,9 +536,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
-            vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
-        printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
+        printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
+            presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
+        printf(" (ts=%10.3E,te=%10.3E\n", dtsolve_, dtele_);
       }
     }
     /* ordinary case later iteration steps:
@@ -557,12 +555,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         stopnonliniter = true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E   | %10.3E   |      --      |      --      |", itnum,
-              itemax, vresnorm_, presnorm_);
+          printf("|   --/%3d   | %10.3E  | %10.3E  |      --     |      --     |", itemax,
+              vresnorm_, presnorm_);
           printf(" (ts=%10.3E,te=%10.3E)\n", dtsolve_, dtele_);
-          printf(
-              "+------------+-------------------+--------------+--------------+--------------+-----"
-              "---------+\n");
+          printf("+------------+-------------+-------------+-------------+-------------+\n");
 
           FILE* errfile = params_->get<FILE*>("err file", NULL);
           if (errfile != NULL)
@@ -580,8 +576,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       {
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E  | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
-              vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
+          printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
+              presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
           printf(" (ts=%10.3E,te=%10.3E)\n", dtsolve_, dtele_);
         }
       }

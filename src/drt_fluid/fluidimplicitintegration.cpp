@@ -818,16 +818,14 @@ void FLD::FluidImplicitTimeInt::Solve()
   // -------------------------------------------------------------------
   if (myrank_ == 0)
   {
+    printf("+------------+-------------+-------------+-------------+-------------+\n");
     printf(
-        "+------------+-------------------+--------------+--------------+--------------+-----------"
-        "---+\n");
+        "|- step/max -|-- vel-res --|-- pre-res --|-- vel-inc --|-- pre-inc "
+        "--|\n");
     printf(
-        "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
-        "---|\n");
-    printf(
-        "|-   norm   -|-- abs. L2 ---|-- abs. L2 ---|-- rel. L2 ---|-- rel. L2 "
-        "---|\n");
-    printf("|-   tol    -| %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n", velrestol, presrestol,
+        "|-   norm   -|-- abs. L2 --|-- abs. L2 --|-- rel. L2 --|-- rel. L2 "
+        "--|\n");
+    printf("|-   tol    -| %10.3E  | %10.3E  | %10.3E  | %10.3E  |\n", velrestol, presrestol,
         velinctol, presinctol);
   }
 
@@ -2294,7 +2292,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
   {
     if (itnum > 0)
     {
-      printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itmax, vresnorm_,
+      printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itmax, vresnorm_,
           presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
       printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) printf(",tf=%10.3E", dtfilter_);
@@ -2302,7 +2300,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
     }
     else
     {
-      printf("|   --/%3d   | %10.3E   | %10.3E   |      --      |      --      |", itmax, vresnorm_,
+      printf("|   --/%3d   | %10.3E  | %10.3E  |      --     |      --     |", itmax, vresnorm_,
           presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) printf(",tf=%10.3E", dtfilter_);
@@ -2321,9 +2319,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
   {
     if (myrank_ == 0 and (inconsistent_ or (not inconsistent_ and itnum == 0)))
     {
-      printf(
-          "+------------+-------------------+--------------+--------------+--------------+---------"
-          "-----+\n");
+      printf("+------------+-------------+-------------+-------------+-------------+\n");
       FILE* errfile = params_->get<FILE*>("err file", NULL);
       if (errfile != NULL)
       {
