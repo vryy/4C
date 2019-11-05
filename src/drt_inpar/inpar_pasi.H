@@ -31,8 +31,8 @@ namespace INPAR
     {
       partitioned_onewaycoup,
       partitioned_twowaycoup,
-      partitioned_twowaycoup_forcerelax,
-      partitioned_twowaycoup_forcerelaxaitken
+      partitioned_twowaycoup_disprelax,
+      partitioned_twowaycoup_disprelaxaitken
     };
 
     //! set valid parameters for particle structure interaction

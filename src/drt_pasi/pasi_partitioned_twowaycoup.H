@@ -53,21 +53,24 @@ namespace PASI
     //! output of fields
     void Output() override;
 
-    //! update the current states in every iteration
-    void IterUpdateStates(
-        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> forcenp);
+    //! reset increment states
+    void ResetIncrementStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+        Teuchos::RCP<const Epetra_Vector> intfforceincnp);
 
-    //! set wall forces
-    void SetWallForces(Teuchos::RCP<const Epetra_Vector> forcenp);
+    //! build increment states
+    void BuildIncrementStates();
+
+    //! set interface forces
+    void SetInterfaceForces(Teuchos::RCP<const Epetra_Vector> intfforcenp);
 
     //! reset particle states
     void ResetParticleStates();
 
-    //! clear wall forces
-    void ClearWallForces();
+    //! clear interface forces
+    void ClearInterfaceForces();
 
-    //! get wall forces
-    void GetWallForces();
+    //! get interface forces
+    void GetInterfaceForces();
 
     //! convergence check for structure and particles fields
     bool ConvergenceCheck(int itnum);
@@ -75,14 +78,14 @@ namespace PASI
     //! save particle states
     void SaveParticleStates();
 
-    //! particle force acting on structural boundary
-    Teuchos::RCP<Epetra_Vector> forcenp_;
+    //! interface force acting on structural boundary
+    Teuchos::RCP<Epetra_Vector> intfforcenp_;
 
-    //! structural displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> dispincnp_;
+    //! interface displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> intfdispincnp_;
 
-    //! particle force increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> forceincnp_;
+    //! interface force increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> intfforceincnp_;
 
     //! maximum iteration steps
     int itmax_;
@@ -97,16 +100,16 @@ namespace PASI
     int writerestartevery_;
   };
 
-  //! two way coupled partitioned algorithm with force relaxation
-  class PASI_PartTwoWayCoup_ForceRelax : public PASI_PartTwoWayCoup
+  //! two way coupled partitioned algorithm with displacement relaxation
+  class PASI_PartTwoWayCoup_DispRelax : public PASI_PartTwoWayCoup
   {
    public:
     //! constructor
-    explicit PASI_PartTwoWayCoup_ForceRelax(
+    explicit PASI_PartTwoWayCoup_DispRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~PASI_PartTwoWayCoup_ForceRelax() override{};
+    ~PASI_PartTwoWayCoup_DispRelax() override{};
 
    protected:
     //! iteration loop between coupled fields with relaxed forces
@@ -117,18 +120,23 @@ namespace PASI
 
     //! relaxation parameter
     double omega_;
+
+   private:
+    //! perform relaxation of interface states
+    void PerformRelaxationInterfaceStates(Teuchos::RCP<Epetra_Vector> intfdispnp,
+        Teuchos::RCP<Epetra_Vector> intfvelnp, Teuchos::RCP<Epetra_Vector> intfaccnp);
   };
 
-  //! two way coupled partitioned algorithm with force relaxation via aitken
-  class PASI_PartTwoWayCoup_ForceRelaxAitken : public PASI_PartTwoWayCoup_ForceRelax
+  //! two way coupled partitioned algorithm with displacement relaxation via aitken
+  class PASI_PartTwoWayCoup_DispRelaxAitken : public PASI_PartTwoWayCoup_DispRelax
   {
    public:
     //! constructor
-    PASI_PartTwoWayCoup_ForceRelaxAitken(
+    PASI_PartTwoWayCoup_DispRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~PASI_PartTwoWayCoup_ForceRelaxAitken() override{};
+    ~PASI_PartTwoWayCoup_DispRelaxAitken() override{};
 
     //! init pasi algorithm
     void Init() override;
@@ -143,8 +151,8 @@ namespace PASI
     //! calculate relaxation parameter
     void CalcOmega(double& omega, const int itnum) override;
 
-    //! old particle force increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> forceincnpold_;
+    //! old interface displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> intfdispincnpold_;
 
     //! maximal relaxation parameter
     double maxomega_;

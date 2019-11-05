@@ -38,6 +38,14 @@ namespace PARTICLEALGORITHM
   class ParticleAlgorithm;
 }
 
+namespace STR
+{
+  namespace AUX
+  {
+    class MapExtractor;
+  }
+}  // namespace STR
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 01/2017 |
  *---------------------------------------------------------------------------*/
@@ -84,8 +92,12 @@ namespace PASI
     //! particle time step
     void ParticleStep();
 
-    //! set structural states
-    void SetStructStates();
+    //! extract interface states
+    void ExtractInterfaceStates();
+
+    //! set interface states
+    void SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+        Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp);
 
     //! output of structure field
     void StructOutput();
@@ -110,6 +122,18 @@ namespace PASI
 
     //! particle algorithm
     Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
+
+    //! communication object at the interface
+    Teuchos::RCP<const STR::AUX::MapExtractor> interface_;
+
+    //! interface displacement
+    Teuchos::RCP<Epetra_Vector> intfdispnp_;
+
+    //! interface velocity
+    Teuchos::RCP<Epetra_Vector> intfvelnp_;
+
+    //! interface acceleration
+    Teuchos::RCP<Epetra_Vector> intfaccnp_;
 
    private:
     //! init structure field

@@ -38,9 +38,9 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("COUPLING", "partitioned_onewaycoup",
       "partitioned coupling strategies for particle structure interaction",
       tuple<std::string>("partitioned_onewaycoup", "partitioned_twowaycoup",
-          "partitioned_twowaycoup_forcerelax", "partitioned_twowaycoup_forcerelaxaitken"),
-      tuple<int>(partitioned_onewaycoup, partitioned_twowaycoup, partitioned_twowaycoup_forcerelax,
-          partitioned_twowaycoup_forcerelaxaitken),
+          "partitioned_twowaycoup_disprelax", "partitioned_twowaycoup_disprelaxaitken"),
+      tuple<int>(partitioned_onewaycoup, partitioned_twowaycoup, partitioned_twowaycoup_disprelax,
+          partitioned_twowaycoup_disprelaxaitken),
       &pasidyn);
 
   // partitioned iteration dependent parameters

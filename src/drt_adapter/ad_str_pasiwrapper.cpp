@@ -33,13 +33,13 @@ ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
 }  // ADAPTER::PASIStructureWrapper::PASIStructureWrapper()
 
 /*----------------------------------------------------------------------*
- | apply particle wall force to structure interface      sfuchs 03/2017 |
+ | apply interface force to structure interface          sfuchs 03/2017 |
  *----------------------------------------------------------------------*/
-void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<Epetra_Vector> wallforce)
+void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
 {
   PASIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
 
-  if (wallforce != Teuchos::null)
-    interface_->AddPASICondVector(wallforce, PASIModelEvaluator()->GetInterfaceForceNpPtr());
+  if (intfforce != Teuchos::null)
+    interface_->AddPASICondVector(intfforce, PASIModelEvaluator()->GetInterfaceForceNpPtr());
 
 }  // ADAPTER::PASIStructureWrapper::ApplyInterfaceForce()

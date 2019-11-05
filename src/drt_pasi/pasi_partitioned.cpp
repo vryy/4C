@@ -25,6 +25,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_structure/stru_aux.H"
+
 #include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -53,6 +55,14 @@ void PASI::PartitionedAlgo::Init()
 
   // init particle algorithm
   InitParticleAlgorithm();
+
+  // set communication object at the interface
+  interface_ = structurefield_->Interface();
+
+  // construct interface states
+  intfdispnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfvelnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfaccnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
 
   // set init flag
   SetIsInit(true);
@@ -87,8 +97,11 @@ void PASI::PartitionedAlgo::ReadRestart(int restartstep)
   // set time and step after restart
   SetTimeStep(structurefield_->TimeOld(), restartstep);
 
-  // set structural states
-  SetStructStates();
+  // extract interface states
+  ExtractInterfaceStates();
+
+  // set interface states
+  SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -167,11 +180,24 @@ void PASI::PartitionedAlgo::ParticleStep()
 }
 
 /*---------------------------------------------------------------------------*
- | set structural states                                      sfuchs 02/2017 |
+ | extract interface states                                   sfuchs 02/2017 |
  *---------------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::SetStructStates()
+void PASI::PartitionedAlgo::ExtractInterfaceStates()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructStates");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ExtractInterfaceStates");
+
+  intfdispnp_ = interface_->ExtractPASICondVector(structurefield_->Dispnp());
+  intfvelnp_ = interface_->ExtractPASICondVector(structurefield_->Velnp());
+  intfaccnp_ = interface_->ExtractPASICondVector(structurefield_->Accnp());
+}
+
+/*---------------------------------------------------------------------------*
+ | set interface states                                       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+    Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetInterfaceStates");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -189,9 +215,9 @@ void PASI::PartitionedAlgo::SetStructStates()
 #endif
 
   // export displacement, velocity and acceleration states
-  LINALG::Export(*structurefield_->Dispnp(), *walldatastate->GetMutableDispCol());
-  LINALG::Export(*structurefield_->Velnp(), *walldatastate->GetMutableVelCol());
-  LINALG::Export(*structurefield_->Accnp(), *walldatastate->GetMutableAccCol());
+  LINALG::Export(*intfdispnp, *walldatastate->GetMutableDispCol());
+  LINALG::Export(*intfvelnp, *walldatastate->GetMutableVelCol());
+  LINALG::Export(*intfaccnp, *walldatastate->GetMutableAccCol());
 
   // export column to row displacements (no communication)
   LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
@@ -201,10 +227,11 @@ void PASI::PartitionedAlgo::SetStructStates()
 
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
+    // clang-format off
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of wall displacements: " << std::setprecision(7) << normwalldisp
-              << std::endl;
+    std::cout << " Norm of interface displacements: " << std::setprecision(7) << normwalldisp << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
+    // clang-format on
   }
 }
 

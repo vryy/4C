@@ -72,8 +72,11 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
     // structural time step
     StructStep();
 
-    // set structural states
-    SetStructStates();
+    // extract interface states
+    ExtractInterfaceStates();
+
+    // set interface states
+    SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
 
     // particle time step
     ParticleStep();

@@ -40,7 +40,7 @@ namespace PASI
     //! partitioned one way coupled timeloop
     void Timeloop() override;
 
-   protected:
+   private:
     //! output of fields
     void Output() override;
   };

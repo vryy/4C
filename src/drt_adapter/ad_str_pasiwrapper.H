@@ -61,8 +61,8 @@ namespace ADAPTER
     //! communication object at the interface
     virtual Teuchos::RCP<const ::STR::AUX::MapExtractor> Interface() const { return interface_; }
 
-    //! apply particle wall force to structure interface
-    void ApplyInterfaceForce(Teuchos::RCP<Epetra_Vector> wallforce);
+    //! apply interface force to structure interface
+    void ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce);
 
    protected:
     //! The structural model evaluator object.
