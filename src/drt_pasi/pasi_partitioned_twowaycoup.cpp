@@ -120,9 +120,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                                |\n");
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                         |\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
@@ -328,41 +328,44 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
   if (forcenorm_L2 < 1e-6) forcenorm_L2 = 1.0;
 
-  // absolute and relative displacement increment
-  double abs_disp_inc = dispincnorm_L2;
+  // scaled and relative displacement increment
+  double disp_inc = dispincnorm_L2 / (Dt() * sqrt(intfdispincnp_->GlobalLength()));
   double rel_disp_inc = dispincnorm_L2 / dispnorm_L2;
 
-  // absolute and relative force increment
-  double abs_force_inc = forceincnorm_L2;
+  // scaled and relative force increment
+  double force_inc = forceincnorm_L2 / (Dt() * sqrt(intfforceincnp_->GlobalLength()));
   double rel_force_inc = forceincnorm_L2 / forcenorm_L2;
 
   // print the incremental based convergence check to the screen
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
-    printf("|  step/max  |  tol       [norm]  |  abs-disp-inc  |  rel-disp-inc  |  abs-force-inc  |  rel-force-inc  |\n");
-    printf("|   %3d/%3d  | %10.3E [L_2 ]  |    %10.3E  |    %10.3E  |     %10.3E  |     %10.3E  |\n", itnum, itmax_, ittol_, abs_disp_inc, rel_disp_inc, abs_force_inc, rel_force_inc);
-    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
+    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
+    printf("|  step/max  |  tol       [norm]  |   disp-inc  |  disp-rel-inc  |  force-inc  |  force-rel-inc  |\n");
+    printf("|   %3d/%3d  | %10.3E [L_2 ]  | %10.3E  |    %10.3E  | %10.3E  |     %10.3E  |\n", itnum, itmax_, ittol_, disp_inc, rel_disp_inc, force_inc, rel_force_inc);
+    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
     // clang-format on
   }
 
+  const bool isconverged = disp_inc <= ittol_ and rel_disp_inc <= ittol_ and force_inc <= ittol_ and
+                           rel_force_inc <= ittol_;
+
   // converged
-  if (rel_disp_inc <= ittol_ and rel_force_inc <= ittol_)
+  if (isconverged)
   {
     stopnonliniter = true;
 
     if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     {
       // clang-format off
-      printf("|  Outer iteration loop converged after iteration %3d/%3d !                                             |\n", itnum, itmax_);
-      printf("+-------------------------------------------------------------------------------------------------------+\n");
+      printf("|  Outer iteration loop converged after iteration %3d/%3d !                                      |\n", itnum, itmax_);
+      printf("+------------------------------------------------------------------------------------------------+\n");
       // clang-format on
     }
   }
 
   // stop if maximum iteration number is reached without convergence
-  if ((itnum == itmax_) and (rel_disp_inc > ittol_ or rel_force_inc > ittol_))
+  if ((itnum == itmax_) and (not isconverged))
   {
     stopnonliniter = true;
 
@@ -372,8 +375,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                                 |\n", itmax_);
-        printf("+-------------------------------------------------------------------------------------------------------+\n");
+        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                          |\n", itmax_);
+        printf("+------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
     }
@@ -383,8 +386,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                       |\n", itmax_);
-        printf("+-------------------------------------------------------------------------------------------------------+\n");
+        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                |\n", itmax_);
+        printf("+------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
       dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
@@ -454,9 +457,9 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED DISPLACEMENTS                                     |\n");
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED DISPLACEMENTS                              |\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
