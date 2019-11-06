@@ -62,9 +62,9 @@ MASSLIN                         rotations
 ---------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 ---------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   2
+BIN_SIZE_LOWER_BOUND            2
 PERIODICONOFF                   1 1 1
-BOUNDINGBOX                     0 0 0 10 6 6
+DOMAINBOUNDINGBOX               0 0 0 10 6 6
 ---------------------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
 VISCOSITY                       0.01

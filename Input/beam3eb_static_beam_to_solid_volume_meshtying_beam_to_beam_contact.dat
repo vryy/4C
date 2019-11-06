@@ -62,8 +62,8 @@ BEAMS_MAXDELTADISSCALEFAC             -1.0
 BEAMS_ADDITEXT                        Yes
 BEAMS_EXTVAL                          2.0
 ----------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                         1.5
-BOUNDINGBOX -2 -2 -2 2 2 4
+BIN_SIZE_LOWER_BOUND                  1.5
+DOMAINBOUNDINGBOX                     -2 -2 -2 2 2 4
 ---------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     100

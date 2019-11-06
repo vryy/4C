@@ -76,7 +76,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
   if (not feasibleboxinput)
   {
     std::istringstream pbb_stream(Teuchos::getNumericStringParameter(
-        DRT::Problem::Instance()->BinningStrategyParams(), "BOUNDINGBOX"));
+        DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
     for (int col = 0; col < 2; ++col)
     {
       for (int row = 0; row < 3; ++row)

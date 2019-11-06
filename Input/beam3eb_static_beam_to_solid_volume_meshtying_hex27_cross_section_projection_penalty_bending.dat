@@ -47,8 +47,8 @@ LOADLIN                               Yes
 NAME                                  Structure_Solver
 SOLVER                                Superlu
 ----------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                         2
-BOUNDINGBOX  -6 -4 -4 6 4 4
+BIN_SIZE_LOWER_BOUND                  2
+DOMAINBOUNDINGBOX                    -6 -4 -4 6 4 4
 -------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
 OUTPUT_STRUCTURE                      yes
 DISPLACEMENT                          yes

@@ -13,9 +13,9 @@ RESTART                         0
 STDOUTEVRY                      1
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   1.0
+BIN_SIZE_LOWER_BOUND            1.0
 PERIODICONOFF                   0 0 0
-BOUNDINGBOX                     -1.0 -1.0 -1.0 1.0 1.0 1.0
+DOMAINBOUNDINGBOX               -1.0 -1.0 -1.0 1.0 1.0 1.0
 WRITEBINS                       none
 ----------------------------------------------------------------PASI DYNAMIC
 RESULTSEVRY                     10

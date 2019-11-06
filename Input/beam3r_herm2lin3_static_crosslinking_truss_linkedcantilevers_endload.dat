@@ -59,9 +59,9 @@ TOLDISP                         1.0E-12
 TOLRES                          1.0E-10
 MAXITER                         15
 -------------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   2
+BIN_SIZE_LOWER_BOUND            2
 PERIODICONOFF                   0 0 0
-BOUNDINGBOX                     0 0 0 10 5 5
+DOMAINBOUNDINGBOX               0 0 0 10 5 5
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
 NUMCROSSLINKERPERTYPE           0

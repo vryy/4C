@@ -58,9 +58,9 @@ Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 -------------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   2
+BIN_SIZE_LOWER_BOUND            2
 PERIODICONOFF                   0 0 0
-BOUNDINGBOX                     -2 -2 -1 2 2 1
+DOMAINBOUNDINGBOX               -2 -2 -1 2 2 1
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
 VISCOSITY                       0.001

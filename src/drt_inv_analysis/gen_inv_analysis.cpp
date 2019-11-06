@@ -1268,7 +1268,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
             Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
         binningstrategy->Init(dis);
-        binningstrategy->WeightedPartitioning(dis, stdelecolmap, stdnodecolmap);
+        binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(dis, stdelecolmap, stdnodecolmap);
       }
     }
   }

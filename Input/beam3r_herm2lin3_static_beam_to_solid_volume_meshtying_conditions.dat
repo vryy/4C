@@ -45,8 +45,8 @@ REPARTITIONSTRATEGY                   Everydt
 --------------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                        Standard
 ----------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS 1.5
-BOUNDINGBOX -1 -4 -4 8 4 4
+BIN_SIZE_LOWER_BOUND                  1.5
+DOMAINBOUNDINGBOX                     -1 -4 -4 8 4 4
 ---------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     100

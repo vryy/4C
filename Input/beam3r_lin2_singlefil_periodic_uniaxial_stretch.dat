@@ -63,9 +63,9 @@ MAXITER                         25
 MASSLIN                         rotations
 NEGLECTINERTIA                  yes
 ----------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   0.5
+BIN_SIZE_LOWER_BOUND            0.5
 PERIODICONOFF                   1 1 1
-BOUNDINGBOX                     0 0 0 5 5 5
+DOMAINBOUNDINGBOX               0 0 0 5 5 5
 ----------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 ----------------------------------------------------------BROWNIAN DYNAMICS

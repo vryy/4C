@@ -283,7 +283,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
 
     // get corresponding bin ids for element
     std::vector<int> binids;
-    binstrategy_->DistributeElementToBinsUsingEleXAABB(
+    binstrategy_->DistributeSingleElementToBinsUsingEleXAABB(
         walldiscretization_, ele, binids, walldatastate_->GetRefMutableDispCol());
 
     // relate ids of owned bins to column wall elements
@@ -555,7 +555,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
 {
   std::map<int, std::set<int>> colbintoelemap;
   Teuchos::RCP<Epetra_Map> extendedelecolmap =
-      binstrategy_->ExtendGhosting(bintorowelemap, colbintoelemap, bincolmap_);
+      binstrategy_->GetExtendedElementColMap(bintorowelemap, colbintoelemap, bincolmap_);
 
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);
@@ -641,7 +641,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
 {
   // short screen output
-  if (binstrategy_->HavePBC() and myrank_ == 0)
+  if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied() and myrank_ == 0)
     IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
 }
 
@@ -685,7 +685,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (int dim = 0; dim < 3; ++dim)
     {
       // periodic boundary conditions in current spatial direction
-      if (binstrategy_->HavePBC(dim)) continue;
+      if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim)) continue;
 
       xaabb(dim, 0) += 1.0e-12;
       xaabb(dim, 1) -= 1.0e-12;
@@ -734,7 +734,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (int dim = 0; dim < 3; ++dim)
     {
       // periodic boundary conditions in current spatial direction
-      if (binstrategy_->HavePBC(dim)) continue;
+      if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim)) continue;
 
       // positive and negative end of bounding box in current spatial direction
       for (int sign = 0; sign < 2; ++sign)
