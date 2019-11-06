@@ -4,44 +4,70 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 02/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PASI_PARTITIONED_ONEWAYCOUP_H
 #define PASI_PARTITIONED_ONEWAYCOUP_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 02/2017 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PASI
 {
-  //! one way coupled partitioned algorithm
+  /*!
+   * \brief one way coupled partitioned algorithm
+   *
+   * One way coupled partitioned particle structure interaction algorithm with structure to particle
+   * coupling of the interface states.
+   *
+   * \author Sebastian Fuchs \date 02/2017
+   */
   class PASI_PartOneWayCoup : public PartitionedAlgo
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle structure interaction parameter list
+     */
     explicit PASI_PartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~PASI_PartOneWayCoup() override{};
 
-    //! setup pasi algorithm
+    /*!
+     * \brief setup pasi algorithm
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void Setup() override;
 
-    //! partitioned one way coupled timeloop
+    /*!
+     * \brief partitioned one way coupled timeloop
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void Timeloop() override;
 
    private:
-    //! output of fields
+    /*!
+     * \brief output of fields
+     *
+     * \author Sebastian Fuchs \date 09/2019
+     */
     void Output() override;
   };
 

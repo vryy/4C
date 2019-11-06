@@ -4,23 +4,23 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef INPAR_PASI_H
 #define INPAR_PASI_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
- | Input parameters for particle structure interaction        sfuchs 01/2017 |
+ | Input parameters for particle structure interaction                       |
  *---------------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -29,10 +29,12 @@ namespace INPAR
     //! type of partitioned coupling
     enum PartitionedCouplingType
     {
-      partitioned_onewaycoup,
-      partitioned_twowaycoup,
-      partitioned_twowaycoup_disprelax,
-      partitioned_twowaycoup_disprelaxaitken
+      partitioned_onewaycoup,                 //! one-way structure to particle coupling
+      partitioned_twowaycoup,                 //! two-way Dirichlet-Neumann coupling
+      partitioned_twowaycoup_disprelax,       //! two-way Dirichlet-Neumann coupling with constant
+                                              //! displacement relaxation
+      partitioned_twowaycoup_disprelaxaitken  //! two-way Dirichlet-Neumann coupling with dynamic
+                                              //! displacement relaxation
     };
 
     //! set valid parameters for particle structure interaction

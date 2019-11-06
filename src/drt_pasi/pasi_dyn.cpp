@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_dyn.H"
 #include "pasi_partitioned_onewaycoup.H"
@@ -23,7 +23,7 @@
 #include "../drt_inpar/inpar_pasi.H"
 
 /*---------------------------------------------------------------------------*
- | control routine for particle structure interaction         sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 void pasi_dyn()
 {

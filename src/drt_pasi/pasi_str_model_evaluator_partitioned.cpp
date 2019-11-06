@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_str_model_evaluator_partitioned.H"
 
@@ -26,16 +26,13 @@
 #include "Epetra_Comm.h"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup class variables                                      sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
   // pasi interface force at t_{n+1}
@@ -45,16 +42,12 @@ void STR::MODELEVALUATOR::PartitionedPASI::Setup()
   issetup_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- *---------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::GetBlockDofRowMapPtr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();
 }
 
-/*---------------------------------------------------------------------------*
- *---------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetCurrentSolutionPtr()
     const
 {
@@ -62,8 +55,6 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetCurre
   return GState().GetDisNp();
 }
 
-/*---------------------------------------------------------------------------*
- *---------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetLastTimeStepSolutionPtr()
     const
 {
@@ -71,8 +62,6 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetLastT
   return GState().GetDisN();
 }
 
-/*---------------------------------------------------------------------------*
- *---------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
@@ -81,6 +70,4 @@ bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
   return true;
 }
 
-/*---------------------------------------------------------------------------*
- *---------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState(const double& timefac_n) { return; }

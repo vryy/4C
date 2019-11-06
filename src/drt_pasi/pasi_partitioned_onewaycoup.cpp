@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_onewaycoup.H"
 
@@ -19,7 +19,7 @@
 #include "../drt_particle_wall/particle_wall_datastate.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -28,9 +28,6 @@ PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartOneWayCoup::Setup()
 {
   // call base class setup
@@ -54,9 +51,6 @@ void PASI::PASI_PartOneWayCoup::Setup()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | partitioned one way coupled timeloop                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartOneWayCoup::Timeloop()
 {
   // safety checks
@@ -86,9 +80,6 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | output of fields                                           sfuchs 09/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartOneWayCoup::Output()
 {
   // output of structure field

@@ -4,19 +4,19 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "inpar_pasi.H"
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
- | set valid parameters for pasi                              sfuchs 01/2017 |
+ | set valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
 void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

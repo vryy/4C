@@ -5,13 +5,13 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 
 
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
+ | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "ad_str_pasiwrapper.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
- | pasi adapter                                          sfuchs 01/2017 |
+ | definitions                                                          |
  *----------------------------------------------------------------------*/
 ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> structure)
     : StructureWrapper(structure)
@@ -29,17 +29,12 @@ ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
 
   interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+}
 
-}  // ADAPTER::PASIStructureWrapper::PASIStructureWrapper()
-
-/*----------------------------------------------------------------------*
- | apply interface force to structure interface          sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
 void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
 {
   PASIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
 
   if (intfforce != Teuchos::null)
     interface_->AddPASICondVector(intfforce, PASIModelEvaluator()->GetInterfaceForceNpPtr());
-
-}  // ADAPTER::PASIStructureWrapper::ApplyInterfaceForce()
+}

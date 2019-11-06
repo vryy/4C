@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
 
@@ -33,7 +33,7 @@
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PASI::PartitionedAlgo::PartitionedAlgo(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -42,9 +42,6 @@ PASI::PartitionedAlgo::PartitionedAlgo(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init pasi algorithm                                        sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::Init()
 {
   // reset setup flag
@@ -68,9 +65,6 @@ void PASI::PartitionedAlgo::Init()
   SetIsInit(true);
 }
 
-/*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::Setup()
 {
   // check correct initialization
@@ -83,9 +77,6 @@ void PASI::PartitionedAlgo::Setup()
   SetIsSetup(true);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart information for given time step               sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ReadRestart(int restartstep)
 {
   // read restart information for structure field
@@ -104,9 +95,6 @@ void PASI::PartitionedAlgo::ReadRestart(int restartstep)
   SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
-/*---------------------------------------------------------------------------*
- | perform result tests                                       sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
 {
   // get instance of global problem
@@ -127,9 +115,6 @@ void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
   problem->TestAll(comm);
 }
 
-/*---------------------------------------------------------------------------*
- | prepare time step                                          sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
 {
   // increment time and step
@@ -143,9 +128,6 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
   particlealgorithm_->PrepareTimeStep(false);
 }
 
-/*---------------------------------------------------------------------------*
- | structural time step                                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructStep()
 {
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
@@ -161,9 +143,6 @@ void PASI::PartitionedAlgo::StructStep()
   structurefield_->Solve();
 }
 
-/*---------------------------------------------------------------------------*
- | particle time step                                         sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleStep()
 {
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
@@ -179,9 +158,6 @@ void PASI::PartitionedAlgo::ParticleStep()
   particlealgorithm_->Integrate();
 }
 
-/*---------------------------------------------------------------------------*
- | extract interface states                                   sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ExtractInterfaceStates()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ExtractInterfaceStates");
@@ -191,9 +167,6 @@ void PASI::PartitionedAlgo::ExtractInterfaceStates()
   intfaccnp_ = interface_->ExtractPASICondVector(structurefield_->Accnp());
 }
 
-/*---------------------------------------------------------------------------*
- | set interface states                                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
     Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp)
 {
@@ -235,9 +208,6 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   }
 }
 
-/*---------------------------------------------------------------------------*
- | output of structure field                                  sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructOutput()
 {
   // calculate stresses, strains, energies
@@ -250,18 +220,12 @@ void PASI::PartitionedAlgo::StructOutput()
   structurefield_->Output();
 }
 
-/*---------------------------------------------------------------------------*
- | output of particle field                                   sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleOutput()
 {
   // write output to files
   particlealgorithm_->Output();
 }
 
-/*---------------------------------------------------------------------------*
- | init structure field                                       sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::InitStructureField()
 {
   // get instance of global problem
@@ -293,9 +257,6 @@ void PASI::PartitionedAlgo::InitStructureField()
   BuildStructureModelEvaluator();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle algorithm                                    sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::InitParticleAlgorithm()
 {
   // get instance of global problem
@@ -312,9 +273,6 @@ void PASI::PartitionedAlgo::InitParticleAlgorithm()
   particlealgorithm_->Init(initialparticles);
 }
 
-/*---------------------------------------------------------------------------*
- | build and register structure model evaluator               sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
 {
   // if adapter base has not already been set up outside.

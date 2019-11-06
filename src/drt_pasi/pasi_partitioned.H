@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PASI_PARTITIONED_H
 #define PASI_PARTITIONED_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
@@ -25,7 +25,7 @@
 #include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 01/2017 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace ADAPTER
 {
@@ -47,33 +47,71 @@ namespace STR
 }  // namespace STR
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 01/2017 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PASI
 {
-  //! partitioned algorithm for particle structure interaction
+  /*!
+   * \brief partitioned algorithm for particle structure interaction
+   *
+   * An abstract base class for partitioned particle structure interaction problems defining
+   * methods and holding members to be used in derived algorithms.
+   *
+   * \author Sebastian Fuchs \date 01/2017
+   */
   class PartitionedAlgo : public ADAPTER::AlgorithmBase
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle structure interaction parameter list
+     */
     explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~PartitionedAlgo() override{};
 
-    //! init pasi algorithm
+    /*!
+     * \brief init pasi algorithm
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     virtual void Init();
 
-    //! setup pasi algorithm
+    /*!
+     * \brief setup pasi algorithm
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     */
     virtual void Setup();
 
-    //! read restart information for given time step
+    /*!
+     * \brief read restart information for given time step
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     *
+     * \param[in] restartstep restart step
+     */
     void ReadRestart(int restartstep) override;
 
-    //! timeloop of coupled problem
+    /*!
+     * \brief timeloop of coupled problem
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     */
     virtual void Timeloop() = 0;
 
-    //! perform result tests
+    /*!
+     * \brief perform result tests
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     *
+     * \param[in] comm communicator
+     */
     void TestResults(const Epetra_Comm& comm);
 
     //! get initialization status
@@ -83,26 +121,68 @@ namespace PASI
     bool IsSetup() { return issetup_; };
 
    protected:
-    //! prepare time step
+    /*!
+     * \brief prepare time step
+     *
+     * \author Sebastian Fuchs \date 01/2017
+     *
+     * \param[in] printheader flag to control output of time step header
+     */
     void PrepareTimeStep(bool printheader = true);
 
-    //! structural time step
+    /*!
+     * \brief structural time step
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void StructStep();
 
-    //! particle time step
+    /*!
+     * \brief particle time step
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void ParticleStep();
 
-    //! extract interface states
+    /*!
+     * \brief extract interface states
+     *
+     * Extract the interface states displacement, velocity, and acceleration from the structural
+     * states.
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
     void ExtractInterfaceStates();
 
-    //! set interface states
+    /*!
+     * \brief set interface states
+     *
+     * Set the interface states displacement, velocity, and acceleration as handed in to the
+     * particle wall handler. This includes communication, since the structural discretization and
+     * the particle wall discretization are in general distributed independently of each other to
+     * all processors.
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     *
+     * \param[in] intfdispnp interface displacement
+     * \param[in] intfvelnp  interface velocity
+     * \param[in] intfaccnp  interface acceleration
+     */
     void SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
         Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp);
 
-    //! output of structure field
+    /*!
+     * \brief output of structure field
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void StructOutput();
 
-    //! output of particle field
+    /*!
+     * \brief output of particle field
+     *
+     * \author Sebastian Fuchs \date 02/2017
+     */
     void ParticleOutput();
 
     //! check correct setup
@@ -136,13 +216,25 @@ namespace PASI
     Teuchos::RCP<Epetra_Vector> intfaccnp_;
 
    private:
-    //! init structure field
+    /*!
+     * \brief init structure field
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     void InitStructureField();
 
-    //! init particle algorithm
+    /*!
+     * \brief init particle algorithm
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     void InitParticleAlgorithm();
 
-    //! build and register structure model evaluator
+    /*!
+     * \brief build and register structure model evaluator
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     void BuildStructureModelEvaluator();
 
     //! ptr to the underlying structure problem base algorithm

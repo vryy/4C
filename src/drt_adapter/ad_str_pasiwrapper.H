@@ -5,25 +5,25 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 
 
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | definitions                                           sfuchs 01/2017 |
+ | definitions                                                          |
  *----------------------------------------------------------------------*/
 #ifndef PASI_STRUCTURE_WRAPPER_H
 #define PASI_STRUCTURE_WRAPPER_H
 
 /*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
+ | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "ad_str_wrapper.H"
 #include "../drt_pasi/pasi_str_model_evaluator_partitioned.H"
 
 /*----------------------------------------------------------------------*
- | forward declarations                                  sfuchs 01/2017 |
+ | forward declarations                                                 |
  *----------------------------------------------------------------------*/
 namespace STR
 {
@@ -38,7 +38,7 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*
- | pasi adapter                                          sfuchs 01/2017 |
+ | class declarations                                                   |
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
@@ -80,10 +80,9 @@ namespace ADAPTER
 
     //! the interface map setup for interface <-> full translation
     Teuchos::RCP<::STR::AUX::MapExtractor> interface_;
-
-  };  // class PASIStructureWrapper : public StructureWrapper
+  };
 
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif  // PASI_STRUCTURE_WRAPPER_H
+#endif
