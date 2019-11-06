@@ -29,12 +29,10 @@ namespace INPAR
     //! type of partitioned coupling
     enum PartitionedCouplingType
     {
-      partitioned_onewaycoup,                 //! one-way structure to particle coupling
-      partitioned_twowaycoup,                 //! two-way Dirichlet-Neumann coupling
-      partitioned_twowaycoup_disprelax,       //! two-way Dirichlet-Neumann coupling with constant
-                                              //! displacement relaxation
-      partitioned_twowaycoup_disprelaxaitken  //! two-way Dirichlet-Neumann coupling with dynamic
-                                              //! displacement relaxation
+      partitioned_onewaycoup,                 //!< one-way coupling
+      partitioned_twowaycoup,                 //!< two-way coupling
+      partitioned_twowaycoup_disprelax,       //!< two-way coupling with constant relaxation
+      partitioned_twowaycoup_disprelaxaitken  //!< two-way coupling with dynamic aitken relaxation
     };
 
     //! set valid parameters for particle structure interaction
