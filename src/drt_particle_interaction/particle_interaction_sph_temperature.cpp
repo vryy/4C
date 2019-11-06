@@ -8,6 +8,9 @@
 */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*
+ | headers                                                                   |
+ *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_temperature.H"
 
 #include "particle_interaction_sph_kernel.H"
@@ -24,6 +27,9 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+/*---------------------------------------------------------------------------*
+ | definitions                                                               |
+ *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
     : params_sph_(params),
       time_(0.0),
