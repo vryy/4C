@@ -82,7 +82,7 @@ void CONTACT::CONSTITUTIVELAW::Container::Pack(DRT::PackBuffer& data) const
   // id_
   AddtoPack(data, id_);
   // type_
-  AddtoPack(data, type_);
+  AddtoPack(data, static_cast<int>(type_));
   // name_
   AddtoPack(data, name_);
 

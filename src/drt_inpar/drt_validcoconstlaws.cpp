@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "drt_validcoconstlaws.H"
 #include "../drt_contact_constitutivelaw/constitutivelaw_definition.H"
-#include "inpar_material.H"
+#include "../drt_contact_constitutivelaw/coconstlaw_parameter.H"
 #include "../drt_lib/drt_colors.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_brokenrational",
-            "Broken rational law", INPAR::CONTACT::colaw_brokenrational));
+            "Broken rational law", INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational));
 
     AddNamedReal(m, "A", "scaling factor");
     AddNamedReal(m, "B", "asymptote");
@@ -89,7 +89,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
-            "CoConstLaw_power", "Power law", INPAR::CONTACT::colaw_power));
+            "CoConstLaw_power", "Power law", INPAR::CONTACT::ConstitutiveLawType::colaw_power));
 
     AddNamedReal(m, "A", "scaling factor");
     AddNamedReal(m, "B", "power coefficient");
@@ -101,8 +101,8 @@ DRT::INPUT::ValidContactConstitutiveLaws()
   // cubic function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
-            "CoConstLaw_cubic", "Cubic function", INPAR::CONTACT::colaw_cubic));
+        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_cubic",
+            "Cubic function", INPAR::CONTACT::ConstitutiveLawType::colaw_cubic));
 
     AddNamedReal(m, "A", "A");
     AddNamedReal(m, "B", "B");
@@ -116,8 +116,8 @@ DRT::INPUT::ValidContactConstitutiveLaws()
   // linear function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
-            "CoConstLaw_linear", "Linear function", INPAR::CONTACT::colaw_linear));
+        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_linear",
+            "Linear function", INPAR::CONTACT::ConstitutiveLawType::colaw_linear));
 
     AddNamedReal(m, "A", "slope");
     AddNamedReal(m, "B", "y intercept");

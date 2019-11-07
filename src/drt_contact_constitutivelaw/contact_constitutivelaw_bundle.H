@@ -14,19 +14,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "coconstlaw_parameter.H"  // todo Remove this header in header inclusion
+#include <Teuchos_RCP.hpp>
+#include <vector>
 
-/*----------------------------------------------------------------------*/
-/* forward declarations */
-
-/*----------------------------------------------------------------------*/
-/* declarations */
-namespace INPAR
-{
-  namespace CONTACT
-  {
-  }
-}  // namespace INPAR
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW

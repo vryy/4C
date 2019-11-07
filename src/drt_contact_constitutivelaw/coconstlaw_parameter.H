@@ -33,7 +33,7 @@ namespace INPAR
   namespace CONTACT
   {
     /// Type of contact constitutive law
-    enum ConstitutiveLawType
+    enum class ConstitutiveLawType
     {                        //
       colaw_none,            ///< undefined
       colaw_brokenrational,  ///< brokenrational constitutive law

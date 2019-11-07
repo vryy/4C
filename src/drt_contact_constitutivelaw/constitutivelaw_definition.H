@@ -12,7 +12,8 @@
 #define CONTACT_COCONSTLAW_DEFINITION_H
 
 #include <Teuchos_RCP.hpp>
-#include "coconstlaw_parameter.H"
+#include <string>
+#include <iostream>
 
 namespace DRT
 {
@@ -29,6 +30,7 @@ namespace INPAR
 {
   namespace CONTACT
   {
+    enum class ConstitutiveLawType;
   }
 }  // namespace INPAR
 
