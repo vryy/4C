@@ -192,8 +192,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntConditionComponent::IntConditionComponent(
-    std::string name, bool fortranstyle, bool noneallowed)
-    : ConditionComponent(name), fortranstyle_(fortranstyle), noneallowed_(noneallowed)
+    std::string name, bool fortranstyle, bool noneallowed, bool optional)
+    : ConditionComponent(name),
+      fortranstyle_(fortranstyle),
+      noneallowed_(noneallowed),
+      optional_(optional)
 {
 }
 
@@ -234,7 +237,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
   (*condline) >> number;
 
   int n;
-  if (noneallowed_ and (number == "none" or number == ""))
+  if ((noneallowed_ and number == "none") or (optional_ and number == ""))
   {
     n = -1;
   }

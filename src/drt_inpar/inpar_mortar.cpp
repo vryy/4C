@@ -205,7 +205,7 @@ void INPAR::MORTAR::SetValidConditions(
   contactcomponents.push_back(
       Teuchos::rcp(new SeparatorConditionComponent("ConstitutiveLawID", true)));
   contactcomponents.push_back(
-      Teuchos::rcp(new IntConditionComponent("ConstitutiveLawID", false, true)));
+      Teuchos::rcp(new IntConditionComponent("ConstitutiveLawID", false, true, true)));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",
