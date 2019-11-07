@@ -197,6 +197,13 @@ namespace CONTACT
   namespace B3TANGENTSMOOTHING
   {
   }  // namespace B3TANGENTSMOOTHING
+     /**
+      *   \brief Namespace for contact constitutive laws, i.e. laws that
+     relate the contact gap to the contact pressure based on micro interactions
+      */
+  namespace CONSTITUTIVELAW
+  {
+  }
 
   /*! \brief
    *

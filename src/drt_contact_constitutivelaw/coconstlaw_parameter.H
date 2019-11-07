@@ -1,5 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
+ *
+  \brief Interface class for contact constitutive law parameters, i.e. paramters for laws that
+relate the contact gap to the contact pressure based on micro interactions
 
 \level 3
 
@@ -46,9 +49,9 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 /* declarations */
+
 namespace CONTACT
 {
-  /// Namespace of objects holding the contact constitutive law input parameters.
   namespace CONSTITUTIVELAW
   {
     /**
