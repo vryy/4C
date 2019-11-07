@@ -3,7 +3,7 @@
 \brief Implicit time integration for spatial discretised
        thermal dynamics
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

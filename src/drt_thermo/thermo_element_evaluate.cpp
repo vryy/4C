@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

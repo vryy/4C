@@ -4,7 +4,7 @@
 \brief  Basis of all TSI algorithms that perform a coupling between the linear
         momentum equation and the heat conduction equation
 
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 \level 1
 */
 
