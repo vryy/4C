@@ -1441,10 +1441,9 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 
   ////////////////
-  ///// attempt at obtaining the nid and relative displacement u of master nodes in contact -
-  devaal
-      // define my own interface
-      MORTAR::StrategyBase& myStrategy = GetStrategy();
+  ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
+  // define my own interface
+  MORTAR::StrategyBase& myStrategy = GetStrategy();
   CoAbstractStrategy& myContactStrategy = dynamic_cast<CoAbstractStrategy&>(myStrategy);
 
   std::vector<Teuchos::RCP<CONTACT::CoInterface>> myInterface =
@@ -1651,8 +1650,7 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype, int& mastertype,
     {
       if (mastertype == 1)
         dserror(
-            "struct and poro master elements on the same processor - no mixed interface "
-            "supported");
+            "struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::MortarElement::structure;
       mastertype = 0;
     }
@@ -1681,8 +1679,7 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype, int& mastertype,
     {
       if (slavetype == 1)
         dserror(
-            "struct and poro master elements on the same processor - no mixed interface "
-            "supported");
+            "struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::MortarElement::structure;
       slavetype = 0;
     }

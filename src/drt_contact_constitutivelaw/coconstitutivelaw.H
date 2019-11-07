@@ -60,6 +60,8 @@ namespace CONTACT
        */
       static Teuchos::RCP<ConstitutiveLaw> Factory(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
+
+      virtual ~ConstitutiveLaw() = default;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

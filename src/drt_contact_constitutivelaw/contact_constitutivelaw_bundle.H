@@ -37,7 +37,7 @@ namespace CONTACT
       Bundle();
 
       /// destructor
-      ~Bundle();
+      ~Bundle() = default;
 
       /** \brief insert new container holding contact constitutive law parameter and ID
        * \params[in] id ID od the contact constitutive law in the input file

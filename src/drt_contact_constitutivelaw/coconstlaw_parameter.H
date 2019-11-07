@@ -37,7 +37,7 @@ namespace INPAR
   {
     /// Type of contact constitutive law
     enum class ConstitutiveLawType
-    {                        //
+    {
       colaw_none,            ///< undefined
       colaw_brokenrational,  ///< brokenrational constitutive law
       colaw_linear,          ///< linear constitutive law
@@ -69,7 +69,7 @@ namespace CONTACT
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
 
       /// destructor
-      virtual ~Parameter() { ; }
+      virtual ~Parameter() = default;
 
       /// (unique) contact constitutive law ID
       int Id() const { return id_; }
@@ -145,7 +145,7 @@ namespace CONTACT
       Container(const Container& old);
 
       /// Destructor
-      virtual ~Container(){};
+      virtual ~Container() = default;
 
       /**
        * \brief Return unique ParObject id

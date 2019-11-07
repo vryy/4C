@@ -65,6 +65,9 @@ namespace CONTACT
       LawDefinition(std::string name, std::string description,
           INPAR::CONTACT::ConstitutiveLawType contactconstitutivelawlawtype);
 
+      // destructor
+      virtual ~LawDefinition() = default;
+
       /** add a concrete component to the contact constitutive law line definition
        *
        * \params[in] c new component needed as parameter for the contact constitutive law

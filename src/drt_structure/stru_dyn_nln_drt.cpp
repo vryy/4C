@@ -137,10 +137,6 @@ void dyn_nlnstructural_drt()
     // Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap())));
     // output->WriteVector("displacement",zeros);
     // output->WriteElementData();
-    // structadapter->PrepareOutput();
-    // structadapter->PreOutput();
-    // structadapter->Output();
-    // structadapter->PostOutput();
   }
 
   // run time integration

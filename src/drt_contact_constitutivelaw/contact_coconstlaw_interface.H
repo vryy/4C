@@ -55,7 +55,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~ConstitutivelawInterface() {}
+    virtual ~ConstitutivelawInterface() = default;
 
 
     /**

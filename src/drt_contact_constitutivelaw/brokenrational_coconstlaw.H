@@ -28,7 +28,7 @@ namespace CONTACT
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// destructor
-      virtual ~BrokenRationalConstitutiveLawParams() { ; }
+      virtual ~BrokenRationalConstitutiveLawParams() = default;
 
       /// create constitutive law instance of matching type with my parameters
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
@@ -69,7 +69,9 @@ namespace CONTACT
     };
 
     /*----------------------------------------------------------------------*/
-    /// Wrapper for broken rational contact constitutive law
+    /**
+     * \brief implements a broken rational function A/(x-B)+C as contact constitutive law
+     */
     class BrokenRationalConstitutiveLaw : public ConstitutiveLaw
     {
      public:

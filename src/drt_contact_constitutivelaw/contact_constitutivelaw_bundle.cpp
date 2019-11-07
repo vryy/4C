@@ -19,12 +19,6 @@
 #include "coconstlaw_parameter.H"
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
-
-
-/*----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::Bundle::~Bundle() {}
-
-
 /*----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::Bundle::Insert(
     int matid, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> mat)
