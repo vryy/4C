@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_dyn.H"
 #include "pasi_partitioned_onewaycoup.H"
@@ -23,7 +23,7 @@
 #include "../drt_inpar/inpar_pasi.H"
 
 /*---------------------------------------------------------------------------*
- | control routine for particle structure interaction         sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 void pasi_dyn()
 {
@@ -63,14 +63,14 @@ void pasi_dyn()
       algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup(comm, params));
       break;
     }
-    case INPAR::PASI::partitioned_twowaycoup_forcerelax:
+    case INPAR::PASI::partitioned_twowaycoup_disprelax:
     {
-      algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelax(comm, params));
+      algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_DispRelax(comm, params));
       break;
     }
-    case INPAR::PASI::partitioned_twowaycoup_forcerelaxaitken:
+    case INPAR::PASI::partitioned_twowaycoup_disprelaxaitken:
     {
-      algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelaxAitken(comm, params));
+      algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_DispRelaxAitken(comm, params));
       break;
     }
     default:

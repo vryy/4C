@@ -23,7 +23,7 @@ RESTARTEVRY                     25
 TIMESTEP                        5.0e-4
 NUMSTEP                         50
 MAXTIME                         0.025
-COUPLING                        partitioned_twowaycoup_forcerelaxaitken
+COUPLING                        partitioned_twowaycoup_disprelaxaitken
 ITEMAX                          10
 CONVTOL                         1.0e-6
 STARTOMEGA                      1.0

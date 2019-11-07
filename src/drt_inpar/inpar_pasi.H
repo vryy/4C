@@ -4,23 +4,23 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef INPAR_PASI_H
 #define INPAR_PASI_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
- | Input parameters for particle structure interaction        sfuchs 01/2017 |
+ | Input parameters for particle structure interaction                       |
  *---------------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -29,10 +29,10 @@ namespace INPAR
     //! type of partitioned coupling
     enum PartitionedCouplingType
     {
-      partitioned_onewaycoup,
-      partitioned_twowaycoup,
-      partitioned_twowaycoup_forcerelax,
-      partitioned_twowaycoup_forcerelaxaitken
+      partitioned_onewaycoup,                 //!< one-way coupling
+      partitioned_twowaycoup,                 //!< two-way coupling
+      partitioned_twowaycoup_disprelax,       //!< two-way coupling with constant relaxation
+      partitioned_twowaycoup_disprelaxaitken  //!< two-way coupling with dynamic aitken relaxation
     };
 
     //! set valid parameters for particle structure interaction

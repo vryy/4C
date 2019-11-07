@@ -4,19 +4,19 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "inpar_pasi.H"
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
- | set valid parameters for pasi                              sfuchs 01/2017 |
+ | set valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
 void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -38,9 +38,9 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("COUPLING", "partitioned_onewaycoup",
       "partitioned coupling strategies for particle structure interaction",
       tuple<std::string>("partitioned_onewaycoup", "partitioned_twowaycoup",
-          "partitioned_twowaycoup_forcerelax", "partitioned_twowaycoup_forcerelaxaitken"),
-      tuple<int>(partitioned_onewaycoup, partitioned_twowaycoup, partitioned_twowaycoup_forcerelax,
-          partitioned_twowaycoup_forcerelaxaitken),
+          "partitioned_twowaycoup_disprelax", "partitioned_twowaycoup_disprelaxaitken"),
+      tuple<int>(partitioned_onewaycoup, partitioned_twowaycoup, partitioned_twowaycoup_disprelax,
+          partitioned_twowaycoup_disprelaxaitken),
       &pasidyn);
 
   // partitioned iteration dependent parameters
