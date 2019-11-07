@@ -48,11 +48,15 @@ TIMEINTEGR                      Np_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           1.0
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CHARELELENGTH_PC                root_of_volume
 -----------------------------------------------------------------ALE DYNAMIC

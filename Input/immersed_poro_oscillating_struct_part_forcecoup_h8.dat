@@ -132,7 +132,6 @@ TIMESTEP                        0.01
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-07
 NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field
@@ -143,6 +142,11 @@ ALPHA_M                         1.0
 GAMMA                           1.0
 THETA                           1.0
 INCONSISTENT_RESIDUAL           yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-07
+TOL_VEL_INC	  1.0E-07
+TOL_PRES_RES	  1.0E-07
+TOL_PRES_INC	  1.0E-07
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no

@@ -43,7 +43,6 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton
 ITEMAX                          20
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-8
 RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         1
@@ -55,6 +54,11 @@ START_THETA                     0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-8
+TOL_VEL_INC	  1.0E-8
+TOL_PRES_RES	  1.0E-8
+TOL_PRES_INC	  1.0E-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

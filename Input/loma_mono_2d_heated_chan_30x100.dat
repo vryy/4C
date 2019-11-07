@@ -23,7 +23,6 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-5
 RESULTSEVRY                           1
 RESTARTEVRY                     2000
 NUMSTEP                         20
@@ -40,6 +39,11 @@ CONVFORM                        convective
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-5
+TOL_VEL_INC	  1.0E-5
+TOL_PRES_RES	  1.0E-5
+TOL_PRES_INC	  1.0E-5
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes

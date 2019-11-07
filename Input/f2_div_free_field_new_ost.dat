@@ -49,7 +49,6 @@ LINEAR_SOLVER                   1
 ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective //conservative
-CONVTOL                         1e-13
 GMSH_OUTPUT                     yes
 INITIALFIELD                    field_by_function
 ITEMAX                          10
@@ -64,6 +63,11 @@ STEADYSTEP                      -1
 THETA                           0.66 //0.5
 TIMEINTEGR                      One_Step_Theta  //Stationary
 NEW_OST                         yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-13
+TOL_VEL_INC	  1e-13
+TOL_PRES_RES	  1e-13
+TOL_PRES_INC	  1e-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

@@ -53,7 +53,6 @@ TIMEINTEGR                      Af_Gen_Alpha   //One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6 //1.0E-10
 RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTASTEPS                     0
@@ -73,6 +72,11 @@ MAXTIME                         9
 NUMSTEP                         450
 TIMESTEP                        0.02
 //GMSH_OUTPUT                   yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

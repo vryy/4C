@@ -48,7 +48,6 @@ ALPHA_M                         0.833333
 GAMMA                           0.666666
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-06
 GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
@@ -66,6 +65,11 @@ MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW                   // INITIALFIELD field_by_function with INITFUNCNO 1 would do the same
 //INITFUNCNO                      -1                              // 1 // Beltrami function
 //INITSTATSOL                     No
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
 GRAD_DIV                        yes

@@ -56,7 +56,6 @@ TIMEINTEGR                      Stationary
 NONLINITER                      fixed_point_like  //Newton
 ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-10
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
@@ -76,6 +75,11 @@ MAXTIME                         3333
 NUMSTEP                         33
 TIMESTEP                        50.0
 GMSH_OUTPUT                     no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt   //Taylor_Hughes_Zarins_Whiting_Jansen

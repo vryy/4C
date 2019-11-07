@@ -30,7 +30,6 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton //fixed_point_like
 ITEMAX                          20
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-12
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 ADAPTCONV                       Yes
@@ -43,6 +42,11 @@ GMSH_OUTPUT                     No
 GEOMETRY                        box
 CALCERROR                       byfunct
 CALCERRORFUNCNO                 5
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-12
+TOL_VEL_INC	  1.0E-12
+TOL_PRES_RES	  1.0E-12
+TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 INCONSISTENT                    No

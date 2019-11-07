@@ -32,7 +32,6 @@ ALPHA_M                         0.83333333333333
 THETA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-10
 GRIDVEL                         BE
 INITIALFIELD field_by_function //zero_field
 INITSTATITEMAX                  5
@@ -50,6 +49,11 @@ STARTFUNCNO                     1
 START_THETA                     1
 STEADYSTEP                      -1
 RESULTSEVRY                           1
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-10
+TOL_VEL_INC	  1e-10
+TOL_PRES_RES	  1e-10
+TOL_PRES_INC	  1e-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

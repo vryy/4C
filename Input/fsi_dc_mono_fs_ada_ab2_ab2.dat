@@ -40,12 +40,16 @@ TIMEINTEGR                      Np_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-8
 INITIALFIELD                    zero_field
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           1.0
 PREDICTOR                       steady_state
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-8
+TOL_VEL_INC	  1.0E-8
+TOL_PRES_RES	  1.0E-8
+TOL_PRES_INC	  1.0E-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CHARELELENGTH_PC                root_of_volume
 VSTAB                           vstab_gls

@@ -31,7 +31,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-06
 GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
@@ -50,6 +49,11 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 RESULTSEVRY                           1
 LINEAR_SOLVER                   2
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

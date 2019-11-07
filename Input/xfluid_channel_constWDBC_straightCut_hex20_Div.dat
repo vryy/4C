@@ -41,7 +41,6 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-13
 RESULTSEVRY                           1
 RESTARTEVRY                     5
 NUMSTEP                         1//2
@@ -55,6 +54,11 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-13
+TOL_VEL_INC	  1.0E-13
+TOL_PRES_RES	  1.0E-13
+TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Barrenechea_Franca_Valentin_Wall

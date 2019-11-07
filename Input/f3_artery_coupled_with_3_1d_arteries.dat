@@ -45,7 +45,6 @@ TIMEINTEGR                      Af_Gen_Alpha //BDF2
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         1000
@@ -61,6 +60,11 @@ LIFTDRAG                        no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
 NONLINEARBC                     yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

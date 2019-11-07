@@ -122,12 +122,16 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 THETA                           1.0
-CONVTOL                         1.0e-10
 START_THETA                     0.67
 STRONG_REDD_3D_COUPLING_TYPE    no
 VELGRAD_PROJ_SOLVER             -1
 VELGRAD_PROJ_METHOD             none
 OFF_PROC_ASSEMBLY               No
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0e-10
+TOL_VEL_INC	  1.0e-10
+TOL_PRES_RES	  1.0e-10
+TOL_PRES_INC	  1.0e-10
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                    residual_based
 TDS                         quasistatic

@@ -33,7 +33,6 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          16
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-10
 RESULTSEVRY                     3
 RESTARTEVRY                     3
 THETA                           1.0
@@ -53,6 +52,11 @@ NUMSTEP                         4
 TIMESTEP                        0.18
 GMSH_OUTPUT                     No
 GEOMETRY                        box
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
 INCONSISTENT                    No

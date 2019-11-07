@@ -27,7 +27,6 @@ ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-06
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          50
@@ -45,6 +44,11 @@ TIMEINTEGR                      Np_Gen_Alpha
 TIMESTEP                        0.05
 RESULTSEVRY                     10
 INCONSISTENT_RESIDUAL           yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

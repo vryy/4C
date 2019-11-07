@@ -25,7 +25,6 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
 INITIALFIELD                    zero_field
 ITEMAX                          10
 MAXTIME                         1000.0
@@ -35,6 +34,11 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     200
 RESULTSEVRY                           50
 INCONSISTENT_RESIDUAL           yes
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall

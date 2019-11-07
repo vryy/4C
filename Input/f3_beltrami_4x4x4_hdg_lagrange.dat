@@ -51,9 +51,13 @@ ALPHA_M                         0.8333333333333333333
 ALPHA_F                         0.6666666666666666667
 GAMMA                           0.6666666666666666667
 THETA                           0.5
-CONVTOL                         1e-04
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-04
+TOL_VEL_INC	  1e-04
+TOL_PRES_RES	  1e-04
+TOL_PRES_INC	  1e-04
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES

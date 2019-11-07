@@ -46,12 +46,16 @@ GAMMA                           1.00
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-4
 NUMSTASTEPS                     0
 START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 PREDICTOR                       explicit_second_order_midpoint
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-4
+TOL_VEL_INC	  1.0E-4
+TOL_PRES_RES	  1.0E-4
+TOL_PRES_INC	  1.0E-4
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                // no_stabilization residual_based inconsistent
 TDS                             quasistatic                   // quasistatic time_dependent

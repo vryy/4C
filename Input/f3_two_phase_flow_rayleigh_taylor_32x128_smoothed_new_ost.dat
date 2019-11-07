@@ -43,7 +43,6 @@ NEW_OST                         yes
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-10
 RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTASTEPS                     0
@@ -62,6 +61,11 @@ MAXTIME                         9
 NUMSTEP                         450
 TIMESTEP                        0.02
 GMSH_OUTPUT                     no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

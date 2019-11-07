@@ -47,7 +47,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-04
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
@@ -62,6 +61,11 @@ THETA                           1.00
 TIMEINTEGR                      Stationary                    //One_Step_Theta
 TIMESTEP                        1.0
 LINEAR_SOLVER                   1
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-04
+TOL_VEL_INC	  1e-04
+TOL_PRES_RES	  1e-04
+TOL_PRES_INC	  1e-04
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 --------------------------------------------------------------------SOLVER 1

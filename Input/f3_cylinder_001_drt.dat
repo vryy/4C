@@ -47,13 +47,17 @@ GAMMA                           1.00
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-7
 START_THETA                     1.0
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-7
+TOL_VEL_INC	  1.0E-7
+TOL_PRES_RES	  1.0E-7
+TOL_PRES_INC	  1.0E-7
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          0

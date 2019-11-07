@@ -44,7 +44,6 @@ ALPHA_M                         1.0                             // 0.833333
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-10
 GRIDVEL                         BE
 INITIALFIELD                    zero_field                      // field_by_function
 INITSTATITEMAX                  5
@@ -61,6 +60,11 @@ STEADYSTEP                      -1
 THETA                           0.66
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-10
+TOL_VEL_INC	  1e-10
+TOL_PRES_RES	  1e-10
+TOL_PRES_INC	  1e-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

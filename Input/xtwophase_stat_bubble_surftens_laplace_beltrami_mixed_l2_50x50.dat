@@ -56,7 +56,6 @@ TIMEINTEGR                      Stationary                    //One_Step_Theta//
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-8
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
@@ -76,6 +75,11 @@ MAXTIME                         1
 NUMSTEP                         1
 TIMESTEP                        0.01
 GMSH_OUTPUT                     Yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-8
+TOL_VEL_INC	  1.0E-8
+TOL_PRES_RES	  1.0E-8
+TOL_PRES_INC	  1.0E-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
 INCONSISTENT                    No

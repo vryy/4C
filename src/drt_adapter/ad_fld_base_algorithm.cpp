@@ -1486,8 +1486,24 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("max nonlin iter steps", fdyn.get<int>("ITEMAX"));
   // maximum number of nonlinear iteration steps for initial stationary solution
   fluidtimeparams->set<int>("max nonlin iter steps init stat sol", fdyn.get<int>("INITSTATITEMAX"));
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>("tolerance for nonlin iter", fdyn.get<double>("CONVTOL"));
+
+  // parameter list containing the nonlinear solver tolerances
+  const Teuchos::ParameterList& nonlinsolvertolerances =
+      fdyn.sublist("NONLINEAR SOLVER TOLERANCES");
+
+  // stop nonlinear iteration when the velocity residual is below this tolerance
+  fluidtimeparams->set<double>(
+      "velocity residual tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_RES"));
+  // stop nonlinear iteration when the pressure residual is below this tolerance
+  fluidtimeparams->set<double>(
+      "pressure residual tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_RES"));
+  // stop nonlinear iteration when the relative velocity increment is below this tolerance
+  fluidtimeparams->set<double>(
+      "velocity increment tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_INC"));
+  // stop nonlinear iteration when the relative pressure increment is below this tolerance
+  fluidtimeparams->set<double>(
+      "pressure increment tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_INC"));
+
   // set convergence check
   fluidtimeparams->set<std::string>("CONVCHECK", fdyn.get<std::string>("CONVCHECK"));
   // set recomputation of residual after solution has convergenced
