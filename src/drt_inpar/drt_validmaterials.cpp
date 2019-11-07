@@ -3673,6 +3673,48 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // crystal plasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_crystal_plasticity", " Crystal plasticity ", INPAR::MAT::m_crystplast));
+    AddNamedReal(m, "TOL", "tolerance for local Newton iteration");
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "Density");
+    AddNamedString(m, "LAT", "lattice type: FCC, BCC, HCP, D019 or L10", "FCC");
+    AddNamedReal(m, "CTOA", "c to a ratio of crystal unit cell");
+    AddNamedReal(m, "ABASE", "base length a of the crystal unit cell");
+    AddNamedInt(m, "NUMSLIPSYS", "number of slip and twinning systems");
+    AddNamedInt(m, "NUMSUBSETS", "number of subsets");
+    AddNamedIntVector(m, "SUBSETMEMBERS",
+        "vector of indices that indicate to which subset each slip/twinning system belongs",
+        "NUMSLIPSYS");
+    AddNamedIntVector(m, "RATEEXP",
+        "vector containing NUMSUBSETS entries for the rate sensitivity exponent", "NUMSUBSETS");
+    AddNamedRealVector(m, "GAMMADOTREF",
+        "vector containing NUMSUBSETS entries for the reference shear rate", "NUMSUBSETS");
+    AddNamedRealVector(m, "DISGENCOEFF",
+        "vector containing NUMSUBSETS entries for the dislocation generation coefficients",
+        "NUMSUBSETS");
+    AddNamedRealVector(m, "DISDYNRECCOEFF",
+        "vector containing NUMSUBSETS entries for the coefficients for dynamic dislocation removal",
+        "NUMSUBSETS");
+    AddNamedRealVector(m, "TAUY0",
+        "vector containing NUMSUBSETS entries for the lattice resistance to slip, i.e. the Peierls "
+        "barrier",
+        "NUMSUBSETS");
+    AddNamedRealVector(m, "GBS",
+        "vector conatining NUMSUBSETS microstructural parameters that are relevant for Hall-Petch "
+        "strengthening, e.g., grain boundaries",
+        "NUMSUBSETS");
+    AddNamedRealVector(m, "HPCOEFF",
+        "vector containing NUMSUBSETS entries for the Hall-Petch coefficients corresponding to the "
+        "microstructural parameters given in GBS",
+        "NUMSUBSETS");
+    AppendMaterialDefinition(matlist, m);
+  }
+
   // deliver
   return vm;
 }

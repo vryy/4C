@@ -19,6 +19,7 @@
 #include "thermostvenantkirchhoff.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
+#include "crystal_plasticity.H"
 #include "plasticnlnlogneohooke.H"
 #include "plasticlinelast.H"
 #include "robinson.H"
@@ -1215,6 +1216,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::SuperElasticSMA(curmat));
       MAT::PAR::SuperElasticSMA* params =
           static_cast<MAT::PAR::SuperElasticSMA*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_crystplast:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::CrystalPlasticity(curmat));
+      MAT::PAR::CrystalPlasticity* params =
+          dynamic_cast<MAT::PAR::CrystalPlasticity*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     default:
