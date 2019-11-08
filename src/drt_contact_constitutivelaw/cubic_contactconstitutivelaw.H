@@ -12,8 +12,8 @@
 #define Cubic_ConstitutiveLaw_H_
 
 
-#include "coconstlaw_parameter.H"
-#include "coconstitutivelaw.H"
+#include "contactconstitutivelaw.H"
+#include "contactconstitutivelaw_parameter.H"
 
 namespace CONTACT
 {

@@ -1,83 +1,80 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief implements a broken rational function A/(x-B)+C as contact constitutive law
+
+\brief implements a simple power law as contact constitutive law
 
 \level 1
 
 \maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
-#ifndef BROKENRATIONAL_COCONSTLAW_H_
-#define BROKENRATIONAL_COCONSTLAW_H_
+#ifndef POWER_COCONSTLAW_H_
+#define POWER_COCONSTLAW_H_
 
 
-#include "coconstlaw_parameter.H"
-#include "coconstitutivelaw.H"
+#include "contactconstitutivelaw.H"
+#include "contactconstitutivelaw_parameter.H"
+
 
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
   {
     /*----------------------------------------------------------------------*/
-    /// constitutive law parameters for a broken rational contact law
-    class BrokenRationalConstitutiveLawParams : public Parameter
+    /// constitutive law parameters for a power contact law Ax^B
+    class PowerConstitutiveLawParams : public Parameter
     {
      public:
-      /// standard constructor
-      BrokenRationalConstitutiveLawParams(
+      /** \brief standard constructor
+       * \params[in] container containing the law parameter from the input file
+       */
+      PowerConstitutiveLawParams(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// destructor
-      virtual ~BrokenRationalConstitutiveLawParams() = default;
+      virtual ~PowerConstitutiveLawParams() = default;
 
       /// create constitutive law instance of matching type with my parameters
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
+      Teuchos::RCP<ConstitutiveLaw> CreateConstitutiveLaw() override;
 
-      /// @name get-functions for the Constitutive Law parameters of a broken rational function
+      /// @name get-functions for the Constitutive Law parameters of a power law function
       //@{
       /// Get the scaling factor
-      double GetA() { return a_; };
-      /// Get the asymptote
-      double GetB() { return b_; };
-      /// get the y intercept
-      double GetC() { return c_; };
+      double GetA() const { return a_; };
+      /// Get the power coefficient
+      double GetB() const { return b_; };
       //@}
 
      private:
-      /// @name Constitutive Law parameters of a broken rational function
+      /// @name Constitutive Law parameters of a power function
       //@{
-      /// scaling
+      /// scaling factor
       const double a_;
-      /// asymptote
+      /// power coefficient
       const double b_;
-      /// y intercept
-      const double c_;
       //@}
     };  // class
 
     /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
-    class BrokenRationalConstitutiveLawType : public ConstitutiveLawType
+    class PowerConstitutiveLawType : public ConstitutiveLawType
     {
      public:
       /// return name of the contact constitutive law
-      std::string Name() const override { return "BrokenRationalConstitutiveLaw"; };
+      std::string Name() const { return "PowerConstitutiveLaw"; }
 
-      static BrokenRationalConstitutiveLawType& Instance() { return instance_; };
+      static PowerConstitutiveLawType& Instance() { return instance_; };
 
      private:
-      static BrokenRationalConstitutiveLawType instance_;
+      static PowerConstitutiveLawType instance_;
     };
 
     /*----------------------------------------------------------------------*/
-    /**
-     * \brief implements a broken rational function A/(x-B)+C as contact constitutive law
-     */
-    class BrokenRationalConstitutiveLaw : public ConstitutiveLaw
+    /// Wrapper for linear contact constitutive law
+    class PowerConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the constitutive law object given parameters
-      explicit BrokenRationalConstitutiveLaw(
-          CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params);
+      explicit PowerConstitutiveLaw(CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params);
 
       /**
        *  \brief Return unique ParObject id
@@ -87,11 +84,16 @@ namespace CONTACT
        */
       int UniqueParObjectId() const override
       {
-        return BrokenRationalConstitutiveLawType::Instance().UniqueParObjectId();
+        return PowerConstitutiveLawType::Instance().UniqueParObjectId();
       }
 
       /**
        *  \brief Pack this class so it can be communicated
+       *
+       *  Resizes the vector data and stores all information of a class in it.
+       *  The first information to be stored in data has to be the
+       *  unique parobject id delivered by UniqueParObjectId() which will then
+       *  identify the exact class on the receiving processor.
        *
        *  \param data (in/out): char vector to store class information
        */
@@ -99,6 +101,12 @@ namespace CONTACT
 
       /**
        *  \brief Unpack data from a char vector into this class
+       *
+       *  The vector data contains all information to rebuild the
+       *  exact copy of an instance of a class on a different processor.
+       *  The first entry in data has to be an integer which is the unique
+       *  parobject id defined at the top of this file and delivered by
+       *  UniqueParObjectId().
        *
        *  \param data (in) : vector storing all data to be unpacked into this
        *  instance.
@@ -110,29 +118,25 @@ namespace CONTACT
       /// contact constitutive law type
       INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
       {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational;
+        return INPAR::CONTACT::ConstitutiveLawType::colaw_power;
       }
 
       /// return copy of this contact constitutive law object
       Teuchos::RCP<ConstitutiveLaw> Clone() const override
       {
-        return Teuchos::rcp(new BrokenRationalConstitutiveLaw(*this));
+        return Teuchos::rcp(new PowerConstitutiveLaw(*this));
       }
 
-      /// Get scaling factor of the broken rational function
+      /// Get scaling factor of power law
       double GetA() { return params_->GetA(); }
-      /// Get asymptote of the broken rational function
+      /// Get power coefficient of power law
       double GetB() { return params_->GetB(); }
-      /// Get Y intercept of the broken rational function
-      double GetC() { return params_->GetC(); }
 
-      /// Return quick accessible mcontact constitutive law parameter data
+      /// Return quick accessible contact constitutive law parameter data
       CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
 
-      //@}
-
       //! @name Evaluation methods
-
+      //@{
       /// evaluate the constitutive law
       double Evaluate(double gap) override;
       /// Evaluate derivative of the constitutive law
@@ -141,9 +145,9 @@ namespace CONTACT
 
      private:
       /// my constitutive law parameters
-      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
 
-#endif /*BROKENRATIONAL_COCONSTLAW_H_*/
+#endif /*POWER_COCONSTLAW_H_*/

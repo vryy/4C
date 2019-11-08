@@ -13,7 +13,7 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include "src/drt_contact_constitutivelaw/brokenrational_coconstlaw.H"
+#include "src/drt_contact_constitutivelaw/brokenrational_contactconstitutivelaw.H"
 
 namespace CONTACT
 {

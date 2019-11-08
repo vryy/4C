@@ -7,9 +7,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "drt_validcoconstlaws.H"
+#include "drt_validcontactconstitutivelaw.H"
+
 #include "../drt_contact_constitutivelaw/constitutivelaw_definition.H"
-#include "../drt_contact_constitutivelaw/coconstlaw_parameter.H"
+#include "../drt_contact_constitutivelaw/contactconstitutivelaw_parameter.H"
 #include "../drt_lib/drt_colors.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

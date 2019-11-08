@@ -10,8 +10,9 @@ file as well as a quick access wrapper for those parameters
 */
 /*----------------------------------------------------------------------*/
 
+#include "contactconstitutivelaw_parameter.H"
+
 #include "Teuchos_RCP.hpp"
-#include "coconstlaw_parameter.H"
 #include "../drt_lib/drt_dserror.H"
 
 

@@ -9,7 +9,7 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "contact_coconstlaw_interface.H"
+#include "contact_constitutivelaw_interface.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
@@ -32,8 +32,7 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_contact_constitutivelaw/coconstitutivelaw.H"
-#include "../drt_contact_constitutivelaw/coconstlaw_parameter.H"
+#include "../drt_contact_constitutivelaw/contactconstitutivelaw_parameter.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_contact/contact_nitsche_utils.H"
@@ -41,6 +40,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_contact/selfcontact_binarytree_unbiased.H"
 #include "../drt_lib/drt_dserror.H"
+#include "contactconstitutivelaw.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

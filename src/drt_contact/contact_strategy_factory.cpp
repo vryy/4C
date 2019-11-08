@@ -45,8 +45,6 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
-#include "../drt_contact_constitutivelaw/contact_coconstlaw_interface.H"
-// --augmented strategies and interfaces
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
@@ -54,6 +52,7 @@
 #include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
 #include "../drt_contact_aug/contact_aug_lagrange_interface.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
+#include "../drt_contact_constitutivelaw/contact_constitutivelaw_interface.H"
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"

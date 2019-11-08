@@ -11,10 +11,11 @@
 /*----------------------------------------------------------------------*/
 
 
+#include "power_contactconstitutivelaw.H"
+
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "power_coconstlaw.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <math.h>
 

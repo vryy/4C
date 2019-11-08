@@ -16,8 +16,8 @@ contact pressure based on micro interactions
 
 
 #include <Teuchos_RCP.hpp>
-#include "coconstlaw_parameter.H"
 #include "../drt_lib/drt_parobject.H"
+#include "contactconstitutivelaw_parameter.H"
 
 namespace CONTACT
 {

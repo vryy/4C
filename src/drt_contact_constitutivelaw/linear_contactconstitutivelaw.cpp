@@ -7,10 +7,11 @@
 *----------------------------------------------------------------------*/
 
 
+#include "linear_contactconstitutivelaw.H"
+
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "linear_coconstlaw.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 

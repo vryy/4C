@@ -11,15 +11,15 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "coconstitutivelaw.H"
+#include "contactconstitutivelaw.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "brokenrational_coconstlaw.H"
-#include "cubic_coconstlaw.H"
-#include "linear_coconstlaw.H"
-#include "power_coconstlaw.H"
-#include "coconstlaw_parameter.H"
+#include "brokenrational_contactconstitutivelaw.H"
 #include "contact_constitutivelaw_bundle.H"
+#include "contactconstitutivelaw_parameter.H"
+#include "cubic_contactconstitutivelaw.H"
+#include "linear_contactconstitutivelaw.H"
+#include "power_contactconstitutivelaw.H"
 
 
 

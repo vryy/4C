@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_inputreader.H"
 #include "contact_constitutivelaw_bundle.H"
 #include "../drt_lib/drt_colors.H"
-#include "coconstlaw_parameter.H"
+#include "contactconstitutivelaw_parameter.H"
 
 /*======================================================================*/
 /*======================================================================*/

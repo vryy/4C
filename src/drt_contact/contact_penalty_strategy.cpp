@@ -24,10 +24,11 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
+
+#include "../drt_contact_constitutivelaw/cubic_contactconstitutivelaw.H"
 #include "../drt_lib/drt_utils.H"
 #include "contact_paramsinterface.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_contact_constitutivelaw/cubic_coconstlaw.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
