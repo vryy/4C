@@ -5,9 +5,9 @@ import os.path
 try:
     from lxml import etree
 except ImportError:
-    print "\n Error: python-lxml is not installed. For installation type as root:"
-    print "   yum install python-lxml "
-    print " exiting now...\n"
+    print("\n Error: python-lxml is not installed. For installation type as root:")
+    print("   yum install python-lxml ")
+    print(" exiting now...\n")
     sys.exit(1)
 
 def adapt(cmake_cmd_line,build_type,path_to_settings):
@@ -24,18 +24,18 @@ def adapt(cmake_cmd_line,build_type,path_to_settings):
     for configurations in project.iter("configurations"):
         for currentConfiguration in configurations.iter("configuration"):
             if currentConfiguration.get("PROFILE_NAME").lower() == build_type.lower():
-                print "Configuring CLion for "+build_type
+                print("Configuring CLion for "+build_type)
                 found = True
                 currentConfiguration.set("GENERATION_OPTIONS", cmake_cmd_line)
     
     if not found:
-        print "Warning: Could not find build config "+build_type+" in "+path_to_settings
+        print("Warning: Could not find build config "+build_type+" in "+path_to_settings)
         return
 
     with open(path_to_settings, "w") as fo:
         fo.write(etree.tostring(project, encoding="UTF-8"))
 
-    print "++ Update of .idea/workspace.xml file done"
+    print("++ Update of .idea/workspace.xml file done")
 
 if __name__=='__main__':
     # argument order: cmake_cmd_line, buildtype, settings file
