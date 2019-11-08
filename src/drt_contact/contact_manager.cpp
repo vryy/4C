@@ -1277,7 +1277,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
-  if (strategy_->IsNitsche()) return;
+  if (GetStrategy().IsNitsche()) return;
 
   // *********************************************************************
   // active contact set and slip set
@@ -1324,11 +1324,12 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   output.WriteVector("activeset", activesetexp);
 
   // *********************************************************************
-  // gap
+  //  weighted gap
   // *********************************************************************
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
-  Teuchos::RCP<Epetra_Vector> gaps = GetStrategy().ContactWGap();
+  Teuchos::RCP<Epetra_Vector> gaps =
+      Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strategy_)->ContactWGap();
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));

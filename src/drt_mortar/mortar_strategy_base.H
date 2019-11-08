@@ -262,7 +262,6 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double ConstraintNorm() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> ContactWGap() { return Teuchos::null; };
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorForce() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanForce() = 0;
