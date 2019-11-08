@@ -40,7 +40,7 @@ namespace CONTACT
   namespace CONSTITUTIVELAW
   {
     class Container;
-    class CoConstLawComponent;
+    class ContactConstitutiveLawComponent;
     class Bundle;
     /**
      * \brief Definition of a valid contact constitutive law in BACI input
@@ -72,7 +72,7 @@ namespace CONTACT
        *
        * \params[in] c new component needed as parameter for the contact constitutive law
        */
-      void AddComponent(Teuchos::RCP<CONTACT::CONSTITUTIVELAW::CoConstLawComponent> c);
+      void AddComponent(Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent> c);
 
       /** \brief read all materials from my input file section
        *
@@ -97,7 +97,8 @@ namespace CONTACT
       std::string Description() const { return description_; }
 
       /// get contact constitutive law inputline
-      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::CoConstLawComponent>> Inputline() const
+      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent>>
+      Inputline() const
       {
         return inputline_;
       }
@@ -110,14 +111,15 @@ namespace CONTACT
       /// type of ontact constitutive law to be build
       INPAR::CONTACT::ConstitutiveLawType coconstlawtype_;
       /// the list of valid components
-      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::CoConstLawComponent>> inputline_;
+      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent>>
+          inputline_;
     };
 
     /**
      * \brief Base class for a component in the input definition of a contact constitutive law
      * component
      */
-    class CoConstLawComponent
+    class ContactConstitutiveLawComponent
     {
      public:
       /**
@@ -125,10 +127,10 @@ namespace CONTACT
        * \params[in] name  name of the parameter
        * \params[in] optional true if the parameter is optional
        */
-      explicit CoConstLawComponent(std::string name, bool optional = false);
+      explicit ContactConstitutiveLawComponent(std::string name, bool optional = false);
 
       /// virtual destructor
-      virtual ~CoConstLawComponent() {}
+      virtual ~ContactConstitutiveLawComponent() {}
 
       /**
        * \brief write my part of the default line of the contact constitutive law
@@ -176,7 +178,7 @@ namespace CONTACT
      * \brief This is a string component within a contact constitutive law definition
      *
      */
-    class StringCoConstLawComponent : public CoConstLawComponent
+    class StringContactConstitutiveLawComponent : public ContactConstitutiveLawComponent
     {
      public:
       /**
@@ -186,7 +188,8 @@ namespace CONTACT
        * \params[in] description of contact constitutive law type
        * \params[in] type of contact constitutive law to be built
        */
-      StringCoConstLawComponent(std::string name, std::string defaultvalue, bool optional = false);
+      StringContactConstitutiveLawComponent(
+          std::string name, std::string defaultvalue, bool optional = false);
 
       /**
        * \brief write my part of the default line of the contact constitutive law
@@ -228,7 +231,7 @@ namespace CONTACT
      * \brief This is a seperator component within a contact constitutive law definition
      *
      */
-    class SeparatorCoConstLawComponent : public CoConstLawComponent
+    class SeparatorContactConstitutiveLawComponent : public ContactConstitutiveLawComponent
     {
      public:
       /**
@@ -238,7 +241,7 @@ namespace CONTACT
        * \params[in] description of contact constitutive law type
        * \params[in] type of contact constitutive law to be built
        */
-      SeparatorCoConstLawComponent(
+      SeparatorContactConstitutiveLawComponent(
           std::string separator, std::string description, bool optional = false);
 
       /**
@@ -283,7 +286,7 @@ namespace CONTACT
      * \brief This is a floating point number component within a contact constitutive law definition
      *
      */
-    class RealCoConstLawComponent : public CoConstLawComponent
+    class RealContactConstitutiveLawComponent : public ContactConstitutiveLawComponent
     {
      public:
       /**
@@ -293,8 +296,8 @@ namespace CONTACT
        * \params[in] description of contact constitutive law type
        * \params[in] type of contact constitutive law to be built
        */
-      RealCoConstLawComponent(std::string name,  ///< variable name in DRT::Material
-          const double defaultvalue = 0,         ///< a default value
+      RealContactConstitutiveLawComponent(std::string name,  ///< variable name in DRT::Material
+          const double defaultvalue = 0,                     ///< a default value
           bool optional = false);
 
       /**
@@ -348,8 +351,9 @@ namespace CONTACT
         const std::string description, const double defaultvalue = 0.0, const bool optional = false)
     {
       def->AddComponent(
-          Teuchos::rcp(new SeparatorCoConstLawComponent(name, description, optional)));
-      def->AddComponent(Teuchos::rcp(new RealCoConstLawComponent(name, defaultvalue, optional)));
+          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
+      def->AddComponent(
+          Teuchos::rcp(new RealContactConstitutiveLawComponent(name, defaultvalue, optional)));
     }
 
     /** Add a separator followed by a single string
@@ -368,8 +372,9 @@ namespace CONTACT
         const std::string description, const std::string defaultvalue, const bool optional = false)
     {
       def->AddComponent(
-          Teuchos::rcp(new SeparatorCoConstLawComponent(name, description, optional)));
-      def->AddComponent(Teuchos::rcp(new StringCoConstLawComponent(name, defaultvalue, optional)));
+          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
+      def->AddComponent(
+          Teuchos::rcp(new StringContactConstitutiveLawComponent(name, defaultvalue, optional)));
     }
 
     /** Add a separator
@@ -387,7 +392,7 @@ namespace CONTACT
         const std::string description, const bool optional = false)
     {
       def->AddComponent(
-          Teuchos::rcp(new SeparatorCoConstLawComponent(name, description, optional)));
+          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
     }
 
     /** Add contact constitutive law definition to list of defined definitions
@@ -396,7 +401,7 @@ namespace CONTACT
      * \params[in] def contact constitutive law definition to add to the list
      *
      */
-    void AppendCoConstLawDefinition(
+    void AppendCoConstLawComponentDefinition(
         std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
         Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> def);
 

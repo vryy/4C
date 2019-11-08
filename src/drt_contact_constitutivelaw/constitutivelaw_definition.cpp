@@ -32,7 +32,7 @@ CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::CoConstLawComponent> c)
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent> c)
 {
   inputline_.push_back(c);
 }
@@ -110,22 +110,24 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const DRT::Problem& problem,
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::CoConstLawComponent::CoConstLawComponent(std::string name, bool optional)
+CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent::ContactConstitutiveLawComponent(
+    std::string name, bool optional)
     : optional_(optional), name_(name)
 {
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::StringCoConstLawComponent(
-    std::string name, std::string defaultvalue, bool optional)
-    : CoConstLawComponent(name, optional), defaultvalue_(defaultvalue)
+CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::
+    StringContactConstitutiveLawComponent(std::string name, std::string defaultvalue, bool optional)
+    : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::DefaultLine(std::ostream& stream)
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::DefaultLine(
+    std::ostream& stream)
 {
   stream << defaultvalue_;
 }
@@ -133,7 +135,7 @@ void CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::DefaultLine(std::ostre
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::Print(
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Print(
     std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
 {
   stream << *cond->Get<std::string>(Name());
@@ -142,11 +144,14 @@ void CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::Print(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::Describe(std::ostream& stream) {}
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Describe(std::ostream& stream)
+{
+}
 
 /*---------------------------------------------------------------------------*/
 
-Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::StringCoConstLawComponent::Read(
+Teuchos::RCP<std::stringstream>
+CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Read(
     CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
 {
@@ -186,29 +191,34 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::StringCoConstLawCompon
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::SeparatorCoConstLawComponent(
-    std::string separator, std::string description, bool optional)
-    : CoConstLawComponent("*SEPARATOR*", optional), separator_(separator), description_(description)
+CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::
+    SeparatorContactConstitutiveLawComponent(
+        std::string separator, std::string description, bool optional)
+    : ContactConstitutiveLawComponent("*SEPARATOR*", optional),
+      separator_(separator),
+      description_(description)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::DefaultLine(std::ostream& stream)
+void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::DefaultLine(
+    std::ostream& stream)
 {
   stream << separator_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::Print(
+void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Print(
     std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
 {
   stream << separator_;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::Describe(std::ostream& stream)
+void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Describe(
+    std::ostream& stream)
 {
   stream << "    " << std::setw(15) << std::left << separator_ << std::setw(15) << std::left
          << (optional_ ? "(optional)" : "") << description_;
@@ -216,7 +226,8 @@ void CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::Describe(std::ostre
 
 
 /*-----------------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawComponent::Read(
+Teuchos::RCP<std::stringstream>
+CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Read(
     CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
 {
@@ -256,16 +267,17 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::SeparatorCoConstLawCom
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::RealCoConstLawComponent(
+CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::RealContactConstitutiveLawComponent(
     std::string name, const double defaultvalue, bool optional)
-    : CoConstLawComponent(name, optional), defaultvalue_(defaultvalue)
+    : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::DefaultLine(std::ostream& stream)
+void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::DefaultLine(
+    std::ostream& stream)
 {
   stream << defaultvalue_;
 }
@@ -273,7 +285,7 @@ void CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::DefaultLine(std::ostream
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::Print(
+void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Print(
     std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
 {
   stream << cond->GetDouble(Name());
@@ -282,13 +294,15 @@ void CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::Print(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::Describe(std::ostream& stream) {}
+void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Describe(std::ostream& stream)
+{
+}
 
 
 /*---------------------------------------------------------------------------*
  | Read double parameter value from material line of input file   fang 08/14 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealCoConstLawComponent::Read(
+Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Read(
     CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
 {
@@ -385,7 +399,7 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::AppendCoConstLawDefinition(
+void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> def)
 {

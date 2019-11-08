@@ -84,7 +84,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "C", "y intercept");
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawDefinition(coconstlawlist, m);
+    AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
   // power law function
   {
@@ -96,7 +96,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "B", "power coefficient");
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawDefinition(coconstlawlist, m);
+    AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
 
   // cubic function
@@ -111,7 +111,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "D", "D");
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawDefinition(coconstlawlist, m);
+    AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
 
   // linear function
@@ -124,7 +124,7 @@ DRT::INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "B", "y intercept");
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawDefinition(coconstlawlist, m);
+    AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
 
   // deliver
