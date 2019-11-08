@@ -191,8 +191,7 @@ echo $Trilinos_DIR
 ############################################################
 # run cmake
 
-$CMAKE_COMMAND \
-  --no-warn-unused-cli \
+CMAKE_FULL_ARGS="--no-warn-unused-cli \
   -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
   -D CMAKE_CXX_COMPILER:FILEPATH="$CXXCOMPILER" \
   -D CMAKE_C_COMPILER:FILEPATH="$CCOMPILER" \
@@ -248,8 +247,14 @@ $CMAKE_COMMAND \
   -D HAVE_ENSIGHT_POSTPROCESSING_TESTS:BOOL=$ENABLE_ENSIGHT_POSTPROCESSING_TESTS \
   -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
   $EXTRA_ARGS \
-  ${BACI_HOME}
+  ${BACI_HOME}"
+
+$CMAKE_COMMAND $CMAKE_FULL_ARGS
 
 cd "$BACI_HOME"
 
+# adapt Eclipse settings
 if [ -f .cproject ]; then ./adapt_cproject.py "`basename $0`" "$BUILD_FOLDER" "$BUILD_TYPE"; fi
+
+# adapt CLion settings
+if [ -f .idea/workspace.xml ]; then ./adapt_idea.py "$CMAKE_FULL_ARGS" "$BUILD_TYPE" ".idea/workspace.xml"; fi
