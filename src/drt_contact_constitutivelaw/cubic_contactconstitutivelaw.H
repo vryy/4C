@@ -21,9 +21,10 @@ namespace CONTACT
   {
     /*----------------------------------------------------------------------*/
     /**
-     * \brief contact constitutive parameters for a cubic constitutive law
+     * \brief Contact constitutive parameters for a cubic constitutive law relating the gap to the
+     * contact pressure
      *
-     * This law has the coefficients Ax^3+Bx^2+Cx+D
+     * This law has the coefficients \f$ Ax^3+Bx^2+Cx+D \f$
      */
     class CubicConstitutiveLawParams : public Parameter
     {
@@ -55,7 +56,11 @@ namespace CONTACT
       //@}
     };  // class
 
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
+    /*----------------------------------------------------------------------*/
+
+    /** \brief DRT::ParObjectType for the CubicConstitutiveLaw \f$ Ax^3+Bx^2+Cx+D \f$
+     * relating the gap to the contact pressure
+     */
     class CubicConstitutiveLawType : public ConstitutiveLawType
     {
      public:
@@ -68,11 +73,14 @@ namespace CONTACT
     };
 
     /*----------------------------------------------------------------------*/
-    /// Wrapper for cubic contact constitutive law
+    /** \brief implements a cubic contact constitutive law \f$ Ax^3+Bx^2+Cx+D \f$ relating the gap
+     * to the contact pressure
+     *
+     */
     class CubicConstitutiveLaw : public ConstitutiveLaw
     {
      public:
-      /// construct the ConstitutiveLaw object given the parameters
+      /// construct the ConstitutiveLaw object given a set of parameters
       explicit CubicConstitutiveLaw(CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params);
 
       //! @name Packing and Unpacking

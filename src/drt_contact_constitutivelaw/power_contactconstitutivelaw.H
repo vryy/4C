@@ -21,7 +21,10 @@ namespace CONTACT
   namespace CONSTITUTIVELAW
   {
     /*----------------------------------------------------------------------*/
-    /// constitutive law parameters for a power contact law Ax^B
+    /** \brief constitutive law parameters for a power contact law \f$ Ax^B \f$ relating the gap to
+     * the contact pressure
+     *
+     */
     class PowerConstitutiveLawParams : public Parameter
     {
      public:
@@ -55,7 +58,12 @@ namespace CONTACT
       //@}
     };  // class
 
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
+    /*----------------------------------------------------------------------*/
+
+    /** \brief DRT::ParObjectType for the PowerConstitutiveLaw \f$ Ax^B \f$ relating the gap to the
+     * contact pressure
+     *
+     */
     class PowerConstitutiveLawType : public ConstitutiveLawType
     {
      public:
@@ -69,11 +77,14 @@ namespace CONTACT
     };
 
     /*----------------------------------------------------------------------*/
-    /// Wrapper for linear contact constitutive law
+    /** \brief implements a power contact constitutive law \f$ Ax^B \f$ relating the gap to the
+     * contact pressure
+     *
+     */
     class PowerConstitutiveLaw : public ConstitutiveLaw
     {
      public:
-      /// construct the constitutive law object given parameters
+      /// construct the constitutive law object given a set of parameters
       explicit PowerConstitutiveLaw(CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params);
 
       /**

@@ -80,7 +80,7 @@ void STR::TimIntExpl::Setup()
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
     if (soltype != INPAR::CONTACT::solution_penalty &&
         (soltype != INPAR::CONTACT::solution_multiscale))
-      dserror("Explicit TIS can only handle penalty contact / meshtying");
+      dserror("Explicit TIS can only handle penalty or multi-scale contact / meshtying");
   }
 
   // cannot handle rotated DOFs

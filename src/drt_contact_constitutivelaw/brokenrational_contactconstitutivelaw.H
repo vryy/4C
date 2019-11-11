@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief implements a broken rational function A/(x-B)+C as contact constitutive law
+\brief implements a broken rational function \f$ A/(x-B)+C \f$ as contact constitutive law
 
 \level 1
 
@@ -19,7 +19,10 @@ namespace CONTACT
   namespace CONSTITUTIVELAW
   {
     /*----------------------------------------------------------------------*/
-    /// constitutive law parameters for a broken rational contact law
+    /** \brief Constitutive law parameters for a broken rational contact law \f$ A/(x-B)+C \f$
+     * relating the gap to the contact pressure
+     *
+     */
     class BrokenRationalConstitutiveLawParams : public Parameter
     {
      public:
@@ -55,7 +58,11 @@ namespace CONTACT
       //@}
     };  // class
 
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
+    /*----------------------------------------------------------------------*/
+
+    /** \brief DRT::ParObjectType for the BrokenrationalConstitutiveLaw \f$ A/(x-B)+C \f$ relating
+     * the gap to the contact pressure
+     */
     class BrokenRationalConstitutiveLawType : public ConstitutiveLawType
     {
      public:
@@ -70,12 +77,13 @@ namespace CONTACT
 
     /*----------------------------------------------------------------------*/
     /**
-     * \brief implements a broken rational function A/(x-B)+C as contact constitutive law
+     * \brief implements a broken rational function \f$ A/(x-B)+C \f$ as contact constitutive law
+     * relating the gap to the contact pressure
      */
     class BrokenRationalConstitutiveLaw : public ConstitutiveLaw
     {
      public:
-      /// construct the constitutive law object given parameters
+      /// construct the constitutive law object given a set of parameters
       explicit BrokenRationalConstitutiveLaw(
           CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params);
 
@@ -107,7 +115,7 @@ namespace CONTACT
 
       //! @name Access methods
 
-      /// contact constitutive law type
+      /// return contact constitutive law type
       INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational;

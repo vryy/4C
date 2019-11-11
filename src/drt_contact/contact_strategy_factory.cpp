@@ -254,9 +254,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-          INPAR::CONTACT::solution_lagmult &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-          INPAR::CONTACT::solution_penalty)
+          INPAR::CONTACT::solution_lagmult)
     dserror(
         "ERROR: Regularized Contact just available for Dual Mortar Contact with Lagrangean "
         "Multiplier!");
@@ -2077,7 +2075,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
                  shapefcn == INPAR::MORTAR::shape_dual)
         {
           IO::cout << "================================================================\n";
-          IO::cout << "===== Multi Scale strategy ====================================\n";
+          IO::cout << "===== Dual Multi Scale strategy ====================================\n";
           IO::cout << "===== (Pure displacement formulation) ==========================\n";
           IO::cout << "================================================================\n\n";
         }

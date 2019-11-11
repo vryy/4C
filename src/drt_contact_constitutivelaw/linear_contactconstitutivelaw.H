@@ -2,7 +2,7 @@
 /*! \file
 \brief Implements a default linear penalty function as contact constitutive law
 
-\level 3
+\level 2
 
 \maintainer Nora Hagmeyer
 */
@@ -20,7 +20,10 @@ namespace CONTACT
   namespace CONSTITUTIVELAW
   {
     /*----------------------------------------------------------------------*/
-    /// constitutive law parameters for a linear contact law Ax+B
+    /** \brief constitutive law parameters for a linear contact law \f$ Ax+B \f$ relating the gap to
+     * the contact pressure
+     *
+     */
     class LinearConstitutiveLawParams : public Parameter
     {
      public:
@@ -54,7 +57,12 @@ namespace CONTACT
       //@}
     };  // class
 
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
+    /*----------------------------------------------------------------------*/
+
+    /** \brief DRT::ParObjectType for the LinearConstitutiveLaw \f$ Ax+B \f$ relating the gap to the
+     * contact pressure
+     *
+     */
     class LinearConstitutiveLawType : public ConstitutiveLawType
     {
      public:
@@ -68,11 +76,13 @@ namespace CONTACT
     };
 
     /*----------------------------------------------------------------------*/
-    /// Wrapper for linear contact constitutive law
+    /** \brief implements a linear contact constitutive law \f$ Ax+B \f$ relating the gap to the
+     * contact pressure
+     */
     class LinearConstitutiveLaw : public ConstitutiveLaw
     {
      public:
-      /// construct the constitutive law object given parameters
+      /// construct the constitutive law object given a set of parameters
       explicit LinearConstitutiveLaw(CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params);
 
       /**
