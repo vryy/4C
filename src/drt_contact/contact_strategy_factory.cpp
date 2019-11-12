@@ -240,16 +240,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
-    dserror(
-        "ERROR: Frictionless first contact step with Tresca's law not yet implemented");  // hopefully
-                                                                                          // coming
-                                                                                          // soon,
-                                                                                          // when
-                                                                                          // Coulomb
-                                                                                          // and
-                                                                                          // Tresca
-                                                                                          // are
-                                                                                          // combined
+    // hopefully coming soon, when Coulomb and Tresca are combined
+    dserror("ERROR: Frictionless first contact step with Tresca's law not yet implemented");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
