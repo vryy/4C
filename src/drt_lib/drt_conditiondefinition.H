@@ -192,9 +192,10 @@ namespace DRT
         \param name variable name in DRT::Condition
         \param fortranstyle whether to substract 1 from the value read
         \param noneallowed whether "none" is a legal value (meaning -1)
+        \params[in] optional true if the parameter is optional
        */
-      explicit IntConditionComponent(
-          std::string name, bool fortranstyle = false, bool noneallowed = false);
+      explicit IntConditionComponent(std::string name, bool fortranstyle = false,
+          bool noneallowed = false, bool optional = false);
       virtual void DefaultLine(std::ostream& stream);
       virtual void Print(std::ostream& stream, const DRT::Condition* cond);
       virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
@@ -203,6 +204,7 @@ namespace DRT
      private:
       bool fortranstyle_;
       bool noneallowed_;
+      bool optional_;
     };
 
 

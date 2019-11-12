@@ -7733,7 +7733,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     bool activeinfuture = false;
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-        INPAR::CONTACT::solution_penalty)
+            INPAR::CONTACT::solution_penalty ||
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
+            INPAR::CONTACT::solution_multiscale)
     {
       if (-gap >= 0) activeinfuture = true;
     }

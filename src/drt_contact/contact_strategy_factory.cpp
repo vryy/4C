@@ -45,7 +45,6 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
-// --augmented strategies and interfaces
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
@@ -53,6 +52,7 @@
 #include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
 #include "../drt_contact_aug/contact_aug_lagrange_interface.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
+#include "../drt_contact_constitutivelaw/contact_constitutivelaw_interface.H"
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
@@ -240,16 +240,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
-    dserror(
-        "ERROR: Frictionless first contact step with Tresca's law not yet implemented");  // hopefully
-                                                                                          // coming
-                                                                                          // soon,
-                                                                                          // when
-                                                                                          // Coulomb
-                                                                                          // and
-                                                                                          // Tresca
-                                                                                          // are
-                                                                                          // combined
+    // hopefully coming soon, when Coulomb and Tresca are combined
+    dserror("ERROR: Frictionless first contact step with Tresca's law not yet implemented");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
@@ -735,6 +727,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
 
+    // In case of MultiScale contact this is the id of the interface's constitutive contact law
+    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+
     /* get the parent discretization of the contact interface discretization
      * which shares the same contact condition group */
     Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> parent_dis_pair =
@@ -838,8 +833,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    Teuchos::RCP<CONTACT::CoInterface> newinterface =
-        CreateInterface(groupid1, Comm(), Dim(), icparams, isself[0], redundant, parent_dis_pair);
+    Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
+        icparams, isself[0], redundant, parent_dis_pair, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -1247,13 +1242,14 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+    const int contactconstitutivelawid)
 {
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return CreateInterface(
-      stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair, interfaceData_ptr);
+  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair,
+      interfaceData_ptr, contactconstitutivelawid);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1264,7 +1260,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
 
@@ -1371,6 +1367,11 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 
       break;
     }
+    case INPAR::CONTACT::solution_multiscale:
+      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
+      newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
+          idata_ptr, id, comm, dim, icparams, selfcontact, redundant, contactconstitutivelawid));
+      break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case
     // ------------------------------------------------------------------------
@@ -1650,7 +1651,9 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
           params, interfaces, dim, comm_ptr, alphaf, dof_offset));
     }
   }
-  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) &&
+  else if (((stype == INPAR::CONTACT::solution_penalty or
+                stype == INPAR::CONTACT::solution_multiscale) &&
+               algo != INPAR::MORTAR::algorithm_gpts) &&
            stype != INPAR::CONTACT::solution_uzawa)
   {
     strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
@@ -2049,6 +2052,22 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
         {
           IO::cout << "================================================================\n";
           IO::cout << "===== Dual Penalty strategy ====================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                 shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Multi Scale strategy ================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                 shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Multi Scale strategy ====================================\n";
           IO::cout << "===== (Pure displacement formulation) ==========================\n";
           IO::cout << "================================================================\n\n";
         }

@@ -3041,7 +3041,8 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_penalty)
+  else if (soltype == INPAR::CONTACT::solution_penalty ||
+           soltype == INPAR::CONTACT::solution_multiscale)
   {
     // nonlinear iteration
     int error = NewtonFull();

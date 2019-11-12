@@ -189,10 +189,10 @@ int main(int argc, char *argv[])
 #ifdef TRAP_FE
 
     /* Sadly, it seems the functions needed for this are different on
-     * different maschines. */
+     * different machines. */
 #ifdef LINUX_MUENCH
 
-    /* This is a GNU extention thus it's only available on linux. But
+    /* This is a GNU extension thus it's only available on linux. But
      * it's exactly what we want: SIGFPE just for the given
      * exceptions. We don't care about FE_INEXACT. (It happens all the
      * time.) */

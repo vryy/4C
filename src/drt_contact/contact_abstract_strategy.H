@@ -1078,6 +1078,8 @@ namespace CONTACT
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> ContactNorStress() { return Data().StressNormalPtr(); }
     Teuchos::RCP<const Epetra_Vector> ContactNorStress() const { return Data().StressNormalPtr(); }
+    //! Return weighted gap
+    Teuchos::RCP<Epetra_Vector> ContactWGap() { return Data().WGapPtr(); }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> ContactTanStress() { return Data().StressTangentialPtr(); }

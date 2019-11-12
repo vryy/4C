@@ -159,6 +159,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
     if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
+
+    // In case of MultiScale contact this is the id of the interface's constitutive contact law
+    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+
     bool foundit = false;
 
     // only one surface per group is ok for self contact
@@ -292,8 +296,9 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = STRATEGY::Factory::CreateInterface(
-        groupid1, Comm(), dim, icparams, isself[0], redundant, Teuchos::null);
+    Teuchos::RCP<CONTACT::CoInterface> newinterface =
+        STRATEGY::Factory::CreateInterface(groupid1, Comm(), dim, icparams, isself[0], redundant,
+            Teuchos::null, Teuchos::null, contactconstitutivelawid);
 
     interfaces.push_back(newinterface);
 
@@ -572,7 +577,9 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
-  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
+  else if (((stype == INPAR::CONTACT::solution_penalty ||
+                stype == INPAR::CONTACT::solution_multiscale) &&
+               algo != INPAR::MORTAR::algorithm_gpts) ||
            stype == INPAR::CONTACT::solution_uzawa)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(data_ptr, Discret().DofRowMap(),
@@ -1270,7 +1277,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
-  if (strategy_->IsNitsche()) return;
+  if (GetStrategy().IsNitsche()) return;
 
   // *********************************************************************
   // active contact set and slip set
@@ -1315,6 +1322,21 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   }
 
   output.WriteVector("activeset", activesetexp);
+
+  // *********************************************************************
+  //  weighted gap
+  // *********************************************************************
+  // export to problem dof row map
+  Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
+  Teuchos::RCP<Epetra_Vector> gaps =
+      Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strategy_)->ContactWGap();
+  if (gaps != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
+    LINALG::Export(*gaps, *gapsexp);
+
+    output.WriteVector("gap", gapsexp);
+  }
 
   // *********************************************************************
   // contact tractions

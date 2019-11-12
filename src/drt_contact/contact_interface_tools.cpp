@@ -6659,8 +6659,10 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
     lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-        INPAR::CONTACT::solution_penalty)
+    if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+        (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
     {
       for (int j = 0; j < dim; j++)
       {
@@ -6814,8 +6816,10 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
       lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty)
+      if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+          (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {
@@ -7030,8 +7034,10 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
       lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty)
+      if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+          (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {

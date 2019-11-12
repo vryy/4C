@@ -24,10 +24,11 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
+
+#include "../drt_contact_constitutivelaw/cubic_contactconstitutivelaw.H"
 #include "../drt_lib/drt_utils.H"
 #include "contact_paramsinterface.H"
 #include "../drt_lib/drt_globalproblem.H"
-
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
@@ -183,7 +184,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(
     INPAR::CONTACT::SolvingStrategy soltype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
+    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
+                          soltype == INPAR::CONTACT::solution_multiscale))
       interface_[i]->AssembleRegTangentForcesPenalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
@@ -773,7 +775,8 @@ void CONTACT::CoPenaltyStrategy::Assemble()
     INPAR::CONTACT::SolvingStrategy soltype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
+    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
+                          soltype == INPAR::CONTACT::solution_multiscale))
       interface_[i]->AssembleRegTangentForcesPenalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)

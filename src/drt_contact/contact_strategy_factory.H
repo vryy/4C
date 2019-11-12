@@ -83,7 +83,8 @@ namespace CONTACT
           const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null);
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
+          const int contactconstitutivelaw_id = -1);
 
       /** \brief Create a contact interface object based on the given information
        *
@@ -94,7 +95,8 @@ namespace CONTACT
           const enum INPAR::MORTAR::RedundantStorage redundant,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr);
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+          const int contactconstitutivelaw_id = -1);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
