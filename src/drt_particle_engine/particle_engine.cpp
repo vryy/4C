@@ -1054,7 +1054,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   // init receiving vector
   std::vector<int> receivedbins;
 
-  // insert received bins
+  // unpack and store received data
   for (auto& p : rdata)
   {
     int msgsource = p.first;
@@ -1074,9 +1074,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
       }
     }
 
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1539,7 +1538,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
-  // ---- pack data for sending ----
+  // pack data for sending
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
   {
     if (particlestosend[torank].empty()) continue;
@@ -1560,7 +1559,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   // communicate data via non-buffered send from proc to proc
   PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-  // ---- unpack and store received data ----
+  // unpack and store received data
   for (auto& p : rdata)
   {
     int msgsource = p.first;
@@ -1603,7 +1602,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
-  // ---- pack data for sending ----
+  // pack data for sending
   for (auto& p : directghosting)
   {
     DRT::PackBuffer data;
@@ -1622,10 +1621,9 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   // init receiving map
   std::map<TypeEnum, std::map<int, std::pair<int, int>>> receiveddirectghosting;
 
-  // ---- unpack and store received data ----
+  // unpack and store received data
   for (auto& p : rdata)
   {
-    int msgsource = p.first;
     std::vector<char>& rmsg = p.second;
 
     std::vector<char>::size_type position = 0;
@@ -1651,9 +1649,8 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
       }
     }
 
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 
   // validate flags denoting validity of direct ghosting

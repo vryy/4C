@@ -31,6 +31,14 @@ namespace PARTICLEENGINE
     /*!
      * \brief communicate data via non-buffered send from processor to processor
      *
+     * Communicate data via non-buffered send from processor to processor via point-to-point
+     * communication. Collective communication is required to inform the target processors about the
+     * size of data to be received. The send buffer only relates data to be send to the target
+     * processor.
+     *
+     * \note This method has to be called by all processors of the communicator as it contains
+     * collective communication.
+     *
      * \author Sebastian Fuchs \date 05/2018
      *
      * \param[in]  comm  communicator
