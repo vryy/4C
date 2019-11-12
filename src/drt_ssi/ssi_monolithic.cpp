@@ -20,8 +20,7 @@
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
-#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_ssi.H"
@@ -151,14 +150,14 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
                   Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(
                       scatrastructureblock_)
                       ->Matrix(iblock, 0);
-              FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+              LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
                   scatrastructureblock.RangeMap(), *map_structure_condensed_, 1., NULL, NULL,
                   blocksystemmatrix->Matrix(iblock, maps_systemmatrix_scatra));
 
               // transform and assemble slave-side columns of scatra-structure block into global
               // system matrix
               ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-              FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+              LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
                   scatrastructureblock.RangeMap(), *maps_structure_->Map(1), 1., NULL, &converter,
                   blocksystemmatrix->Matrix(iblock, maps_systemmatrix_scatra), true, true);
 
@@ -168,13 +167,13 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
                   Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(
                       structurescatrablock_)
                       ->Matrix(0, iblock);
-              FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
+              LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock,
                   *map_structure_condensed_, structurescatrablock.DomainMap(), 1., NULL, NULL,
                   blocksystemmatrix->Matrix(maps_systemmatrix_scatra, iblock));
 
               // transform and assemble slave-side rows of structure-scatra block into global system
               // matrix
-              FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
+              LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock,
                   *maps_structure_->Map(1), structurescatrablock.DomainMap(), 1., &converter, NULL,
                   blocksystemmatrix->Matrix(maps_systemmatrix_scatra, iblock), true, true);
             }
@@ -199,28 +198,28 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
           {
             // assemble interior and master-side rows and columns of structural system matrix into
             // global system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *map_structure_condensed_, *map_structure_condensed_, 1., NULL, NULL,
                 blocksystemmatrix->Matrix(maps_systemmatrix_scatra, maps_systemmatrix_scatra));
 
             // transform and assemble slave-side rows of structural system matrix into global system
             // matrix
             ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *maps_structure_->Map(1), *map_structure_condensed_, 1., &converter, NULL,
                 blocksystemmatrix->Matrix(maps_systemmatrix_scatra, maps_systemmatrix_scatra), true,
                 true);
 
             // transform and assemble slave-side columns of structural system matrix into global
             // system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *map_structure_condensed_, *maps_structure_->Map(1), 1., NULL, &converter,
                 blocksystemmatrix->Matrix(maps_systemmatrix_scatra, maps_systemmatrix_scatra), true,
                 true);
 
             // transform and assemble slave-side rows and columns of structural system matrix into
             // global system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *maps_structure_->Map(1), *maps_structure_->Map(1), 1., &converter, &converter,
                 blocksystemmatrix->Matrix(maps_systemmatrix_scatra, maps_systemmatrix_scatra), true,
                 true);
@@ -280,14 +279,14 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
             // system matrix
             const LINALG::SparseMatrix& scatrastructureblock =
                 *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureblock_);
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+            LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
                 scatrastructureblock.RangeMap(), *map_structure_condensed_, 1., NULL, NULL,
                 blocksystemmatrix->Matrix(0, 1));
 
             // transform and assemble slave-side columns of scatra-structure block into global
             // system matrix
             ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+            LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
                 scatrastructureblock.RangeMap(), *maps_structure_->Map(1), 1., NULL, &converter,
                 blocksystemmatrix->Matrix(0, 1), true, true);
 
@@ -295,37 +294,37 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
             // matrix
             const LINALG::SparseMatrix& structurescatrablock =
                 *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(structurescatrablock_);
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
+            LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock,
                 *map_structure_condensed_, structurescatrablock.DomainMap(), 1., NULL, NULL,
                 blocksystemmatrix->Matrix(1, 0));
 
             // transform and assemble slave-side rows of structure-scatra block into global system
             // matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
-                *maps_structure_->Map(1), structurescatrablock.DomainMap(), 1., &converter, NULL,
+            LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock, *maps_structure_->Map(1),
+                structurescatrablock.DomainMap(), 1., &converter, NULL,
                 blocksystemmatrix->Matrix(1, 0), true, true);
 
             // assemble interior and master-side rows and columns of structural system matrix into
             // global system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *map_structure_condensed_, *map_structure_condensed_, 1., NULL, NULL,
                 blocksystemmatrix->Matrix(1, 1));
 
             // transform and assemble slave-side rows of structural system matrix into global system
             // matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *maps_structure_->Map(1), *map_structure_condensed_, 1., &converter, NULL,
                 blocksystemmatrix->Matrix(1, 1), true, true);
 
             // transform and assemble slave-side columns of structural system matrix into global
             // system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *map_structure_condensed_, *maps_structure_->Map(1), 1., NULL, &converter,
                 blocksystemmatrix->Matrix(1, 1), true, true);
 
             // transform and assemble slave-side rows and columns of structural system matrix into
             // global system matrix
-            FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+            LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
                 *maps_structure_->Map(1), *maps_structure_->Map(1), 1., &converter, &converter,
                 blocksystemmatrix->Matrix(1, 1), true, true);
 
@@ -398,14 +397,14 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
         // matrix
         const LINALG::SparseMatrix& scatrastructureblock =
             *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureblock_);
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+        LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
             scatrastructureblock.RangeMap(), *map_structure_condensed_, 1., NULL, NULL,
             *systemmatrix, true, true);
 
         // transform and assemble slave-side columns of scatra-structure block into global system
         // matrix
         ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(scatrastructureblock,
+        LINALG::MatrixLogicalSplitAndTransform()(scatrastructureblock,
             scatrastructureblock.RangeMap(), *icoup_structure_->SlaveDofMap(), 1., NULL, &converter,
             *systemmatrix, true, true);
 
@@ -413,37 +412,36 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
         // matrix
         const LINALG::SparseMatrix& structurescatrablock =
             *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(structurescatrablock_);
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
-            *map_structure_condensed_, structurescatrablock.DomainMap(), 1., NULL, NULL,
-            *systemmatrix, true, true);
+        LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock, *map_structure_condensed_,
+            structurescatrablock.DomainMap(), 1., NULL, NULL, *systemmatrix, true, true);
 
         // transform and assemble slave-side rows of structure-scatra block into global system
         // matrix
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(structurescatrablock,
+        LINALG::MatrixLogicalSplitAndTransform()(structurescatrablock,
             *icoup_structure_->SlaveDofMap(), structurescatrablock.DomainMap(), 1., &converter,
             NULL, *systemmatrix, true, true);
 
         // assemble interior and master-side rows and columns of structural system matrix into
         // global system matrix
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+        LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
             *map_structure_condensed_, *map_structure_condensed_, 1., NULL, NULL, *systemmatrix,
             true, true);
 
         // transform and assemble slave-side rows of structural system matrix into global system
         // matrix
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+        LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
             *icoup_structure_->SlaveDofMap(), *map_structure_condensed_, 1., &converter, NULL,
             *systemmatrix, true, true);
 
         // transform and assemble slave-side columns of structural system matrix into global system
         // matrix
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+        LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
             *map_structure_condensed_, *icoup_structure_->SlaveDofMap(), 1., NULL, &converter,
             *systemmatrix, true, true);
 
         // transform and assemble slave-side rows and columns of structural system matrix into
         // global system matrix
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
+        LINALG::MatrixLogicalSplitAndTransform()(*structure_->SystemMatrix(),
             *icoup_structure_->SlaveDofMap(), *icoup_structure_->SlaveDofMap(), 1., &converter,
             &converter, *systemmatrix, true, true);
 
@@ -537,7 +535,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
         // extract structural rows of global system matrix
         const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_structure =
             Teuchos::rcp(new LINALG::SparseMatrix(*structure_->DofRowMap(), 27, false, true));
-        FSI::UTILS::MatrixLogicalSplitAndTransform()(*systemmatrix, *structure_->DofRowMap(),
+        LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix, *structure_->DofRowMap(),
             systemmatrix->DomainMap(), 1., NULL, NULL, *systemmatrix_structure);
         systemmatrix_structure->Complete(systemmatrix->DomainMap(), *structure_->DofRowMap());
 
@@ -708,7 +706,7 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
         // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
         // assemble into auxiliary system matrix
         for (int iblock = 0; iblock < strategy_scatra_->BlockMapsSlave().NumMaps(); ++iblock)
-          FSI::UTILS::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
+          LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
               ADAPTER::CouplingSlaveConverter(*strategy_scatra_->CouplingAdapter()),
               ADAPTER::CouplingSlaveConverter(*icoup_structure_), mastermatrix, true);
 
@@ -765,7 +763,7 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
 
         // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
         // assemble into scatra-structure matrix block
-        FSI::UTILS::MatrixRowColTransform()(*strategy_scatra_->SlaveMatrix(), -1.,
+        LINALG::MatrixRowColTransform()(*strategy_scatra_->SlaveMatrix(), -1.,
             ADAPTER::CouplingSlaveConverter(*strategy_scatra_->CouplingAdapter()),
             ADAPTER::CouplingSlaveConverter(*icoup_structure_),
             *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatrastructureblock_), true, true);

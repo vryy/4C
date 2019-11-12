@@ -21,14 +21,14 @@ namespace ADAPTER
 namespace FSI
 {
   class Monolithic;
-
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
 }  // namespace FSI
+namespace LINALG
+{
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
+
 
 namespace POROMULTIPHASESCATRA
 {
@@ -132,9 +132,9 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<ADAPTER::Coupling> artcontfieldcoup_;
 
     /// needed for matrix transforms
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> sibtransform_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

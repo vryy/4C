@@ -18,7 +18,6 @@
 #include "fpsi_coupling.H"
 
 // FSI includes
-#include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_fsi/fsi_monolithic.H"
 
 // POROELAST includes

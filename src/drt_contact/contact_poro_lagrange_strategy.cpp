@@ -23,8 +23,7 @@ interface
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
-
+#include "../linalg/linalg_matrixtransform.H"
 #include "../drt_lib/drt_utils.H"
 
 // this is not nice, but since there is no chance at them moment to set the
@@ -228,17 +227,17 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
   //                                                               //
   if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
   {
-    linncoupveltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    linncoupdisptransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    tanginvtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
-    lintangentlambdatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    porolindmatrixtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    porolinmmatrixtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    mhataamtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);  // h.Willmann
-    dhattransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    doldtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    moldtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    invDatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+    linncoupveltransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    linncoupdisptransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    tanginvtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+    lintangentlambdatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    porolindmatrixtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    porolinmmatrixtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    mhataamtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);  // h.Willmann
+    dhattransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    doldtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    moldtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+    invDatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
   }
 
   //  (6)                                                          //

@@ -36,16 +36,11 @@ namespace LINALG
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MultiMapExtractor;
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
 }  // namespace LINALG
-namespace FSI
-{
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+
 namespace XFEM
 {
   namespace XFieldField
@@ -491,11 +486,11 @@ namespace XFEM
     /** \brief Access the interface matrix row transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    FSI::UTILS::MatrixRowTransform& IMatRowTransform(enum FieldName field)
+    LINALG::MatrixRowTransform& IMatRowTransform(enum FieldName field)
     {
       return IMatRowTransform(SlaveId(field));
     }
-    FSI::UTILS::MatrixRowTransform& IMatRowTransform(unsigned dis_id)
+    LINALG::MatrixRowTransform& IMatRowTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -517,11 +512,11 @@ namespace XFEM
     /** \brief Access the interface matrix column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    FSI::UTILS::MatrixColTransform& IMatColTransform(enum FieldName field)
+    LINALG::MatrixColTransform& IMatColTransform(enum FieldName field)
     {
       return IMatColTransform(SlaveId(field));
     }
-    FSI::UTILS::MatrixColTransform& IMatColTransform(unsigned dis_id)
+    LINALG::MatrixColTransform& IMatColTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -543,11 +538,11 @@ namespace XFEM
     /** \brief Access the interface matrix row and column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    FSI::UTILS::MatrixRowColTransform& IMatRowColTransform(enum FieldName field)
+    LINALG::MatrixRowColTransform& IMatRowColTransform(enum FieldName field)
     {
       return IMatRowColTransform(SlaveId(field));
     }
-    FSI::UTILS::MatrixRowColTransform& IMatRowColTransform(unsigned dis_id)
+    LINALG::MatrixRowColTransform& IMatRowColTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -703,10 +698,9 @@ namespace XFEM
 
     std::vector<Teuchos::RCP<XFEM::XFieldField::Coupling>> interface_couplings_;
 
-    std::vector<Teuchos::RCP<FSI::UTILS::MatrixRowTransform>> interface_matrix_row_transformers_;
-    std::vector<Teuchos::RCP<FSI::UTILS::MatrixColTransform>> interface_matrix_col_transformers_;
-    std::vector<Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>>
-        interface_matrix_row_col_transformers_;
+    std::vector<Teuchos::RCP<LINALG::MatrixRowTransform>> interface_matrix_row_transformers_;
+    std::vector<Teuchos::RCP<LINALG::MatrixColTransform>> interface_matrix_col_transformers_;
+    std::vector<Teuchos::RCP<LINALG::MatrixRowColTransform>> interface_matrix_row_col_transformers_;
 
     std::set<int> xfem_dis_ids_;
 

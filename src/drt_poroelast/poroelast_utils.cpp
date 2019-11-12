@@ -52,12 +52,12 @@
 #include "../drt_w1/wall1_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro_p1_scatra_eletypes.H"
 
-#include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
 #include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 
 /*----------------------------------------------------------------------*
@@ -264,7 +264,7 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
   {
     porositysplitter = Teuchos::rcp(new LINALG::MapExtractor());
     const int ndim = DRT::Problem::Instance()->NDim();
-    FLD::UTILS::SetupFluidSplit(*dis, ndim, *porositysplitter);
+    LINALG::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;

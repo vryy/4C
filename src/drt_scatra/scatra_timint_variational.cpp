@@ -22,9 +22,6 @@
 #include "../drt_io/io.H"
 // To use SCATRA::calc_error when computing analytic solution
 #include "../drt_scatra_ele/scatra_ele_action.H"
-// For initialization of splitter
-#include "../drt_fluid/fluid_utils.H"  // for splitter
-
 
 
 /*----------------------------------------------------------------------*
@@ -112,7 +109,7 @@ void SCATRA::TimIntVariational::SetupSplitter()
   splitter_ =
       Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(), conddofmap, otherdofmap));
 
-  //  FLD::UTILS::SetupFluidSplit(*discret_,NumScal(),*splitter_);
+  //  LINALG::CreateMapExtractorFromDiscretization(*discret_,NumScal(),*splitter_);
 }
 /*----------------------------------------------------------------------*
  |  adds initial state for reference                       deanda 09/17 |

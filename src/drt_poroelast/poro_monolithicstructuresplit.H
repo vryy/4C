@@ -25,17 +25,12 @@ interface
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-namespace FSI
+namespace LINALG
 {
-  // class OverlappingBlockMatrix;
-
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 namespace POROELAST
 {
@@ -93,19 +88,19 @@ namespace POROELAST
 
     /// @name matrix transformation
     //! transform object for structure interface matrix \f$S_{\Gamma \Gamma}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
     //! transform object for structure interface matrix \f$S_{\Gamma I}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> sgitransform_;
     //! transform object for structure interface matrix \f$S_{I \Gamma}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> sigtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> csggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^G\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> cfggtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma I}^S\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> csgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> csgitransform_;
     //! transform object for fluid coupling matrix \f$C_{I \Gamma}^F\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> cfigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> cfigtransform_;
 
     //@}
 

@@ -410,69 +410,6 @@ namespace FLD
     };
 
 
-    /// Split dof row map of discretization into velocity and pressure maps
-    /*!
-
-      We assume that each node possesses ndim velocity dofs and (optionally)
-      one pressure dof. The dof row map is thus split in two.
-      If one node has more than ndim dofs, only the ndimth dof is included in the pressure part
-
-      The velocity dofs are assigned to map 0 (the other map) and the pressure
-      dofs are assigned to map 1 (the condition map).
-
-      \param dis : (in) Discretization
-      \param ndim : (in) dimensions of problem (2 or 3)
-      \param extractor : (out) ready made map splitter
-
-      \author u.kue
-      \date 02/08
-     */
-    void SetupFluidSplit(
-        const DRT::DiscretizationInterface& dis, int ndim, LINALG::MultiMapExtractor& extractor);
-
-    /// Split dof row map of discretization into velocity and pressure maps
-    /*!
-
-      We assume that each node possesses ndim velocity dofs and (optionally)
-      one pressure dof. The dof row map is thus split in two.
-
-      The velocity dofs are assigned to map 0 (the other map) and the pressure
-      dofs are assigned to map 1 (the condition map).
-
-      \param dis : (in) Discretization
-      \param ndim : (in) dimensions of problem (2 or 3)
-      \param extractor : (out) ready made map splitter
-
-      \author u.kue
-      \date 02/08
-     */
-    void SetupFluidSplit(const DRT::Discretization& dis, const DRT::DofSetInterface& dofset,
-        int ndim, LINALG::MapExtractor& extractor);
-
-
-    /// Split dof row map of discretization into velocity and pressure maps
-    /*!
-      This versions is adopted for XFluid and XFluidFluid where more dofsets are used for one node.
-      To get a unique split for velocity and pressure we have to define velocity ndof and pressure
-      ndof. The pres_ndof defines the offset between velocity dofs for two nodes. This splitter
-      works also for cases when nodes do not carry dofs (nodes in void domain!).
-
-      The velocity dofs are assigned to map 0 (the other map) and the pressure
-      dofs are assigned to map 1 (the condition map).
-
-      \param dis : (in) Discretization
-      \param fluid_ndof : (in) ndofs for fluid vector (2 or 3)
-      \param pres_ndof : (in) ndofs for pressure (usually 1)
-      \param extractor : (out) ready made map splitter
-
-      \author schott
-      \date 12/11
-     */
-    void SetupFluidSplit(const DRT::Discretization& dis, int fluid_ndof, int pres_ndof,
-        LINALG::MultiMapExtractor& extractor);
-
-
-
     void SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim,
         const DRT::Discretization& alefluiddis, LINALG::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);

@@ -14,7 +14,7 @@
 #define FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
 
 #include "fsi_lungmonolithic.H"
-#include "fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 namespace FSI
 {
@@ -99,27 +99,27 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f);
 
-    UTILS::MatrixLogicalSplitAndTransform siitransform_;
-    UTILS::MatrixLogicalSplitAndTransform sggtransform_;
-    UTILS::MatrixLogicalSplitAndTransform sgitransform_;
-    UTILS::MatrixLogicalSplitAndTransform sigtransform_;
-    UTILS::MatrixColTransform aigtransform_;
-    UTILS::MatrixColTransform aiGtransform_;
+    LINALG::MatrixLogicalSplitAndTransform siitransform_;
+    LINALG::MatrixLogicalSplitAndTransform sggtransform_;
+    LINALG::MatrixLogicalSplitAndTransform sgitransform_;
+    LINALG::MatrixLogicalSplitAndTransform sigtransform_;
+    LINALG::MatrixColTransform aigtransform_;
+    LINALG::MatrixColTransform aiGtransform_;
 
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmGitransform_;
-    UTILS::MatrixColTransform fmgitransform_;
-    UTILS::MatrixColTransform fmiGtransform_;
-    UTILS::MatrixColTransform fmGGtransform_;
-    UTILS::MatrixColTransform fmgGtransform_;
-    UTILS::MatrixColTransform addfmGGtransform_;
+    LINALG::MatrixColTransform fmiitransform_;
+    LINALG::MatrixColTransform fmGitransform_;
+    LINALG::MatrixColTransform fmgitransform_;
+    LINALG::MatrixColTransform fmiGtransform_;
+    LINALG::MatrixColTransform fmGGtransform_;
+    LINALG::MatrixColTransform fmgGtransform_;
+    LINALG::MatrixColTransform addfmGGtransform_;
 
     /// split of constraint matrices
-    UTILS::MatrixLogicalSplitAndTransform sciitransform_;
-    UTILS::MatrixLogicalSplitAndTransform scgitransform_;
-    UTILS::MatrixLogicalSplitAndTransform csiitransform_;
-    UTILS::MatrixLogicalSplitAndTransform csigtransform_;
-    UTILS::MatrixColTransform caiGtransform_;
+    LINALG::MatrixLogicalSplitAndTransform sciitransform_;
+    LINALG::MatrixLogicalSplitAndTransform scgitransform_;
+    LINALG::MatrixLogicalSplitAndTransform csiitransform_;
+    LINALG::MatrixLogicalSplitAndTransform csigtransform_;
+    LINALG::MatrixColTransform caiGtransform_;
   };
 }  // namespace FSI
 

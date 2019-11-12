@@ -205,7 +205,7 @@ void FLD::FluidImplicitTimeInt::Init()
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
   if (velpressplitter_->NumMaps() == 0)
-    FLD::UTILS::SetupFluidSplit(*discret_, numdim_, *velpressplitter_);
+    LINALG::CreateMapExtractorFromDiscretization(*discret_, numdim_, *velpressplitter_);
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
   if (velpressplitter_->CondMap()->NumGlobalElements() < 1)

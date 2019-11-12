@@ -26,8 +26,6 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 
 
 void CONTACT::CoNitscheStrategyTsi::SetState(

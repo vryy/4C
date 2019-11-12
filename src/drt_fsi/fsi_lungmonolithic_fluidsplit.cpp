@@ -10,7 +10,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_lungmonolithic_fluidsplit.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -22,6 +21,7 @@
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -98,31 +98,31 @@ FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(
   }
   // ---------------------------------------------------------------------------
 
-  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  fgGtransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fGgtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  fgGtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fGgtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmGitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fmigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmGgtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fmiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmGGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgGtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmGitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmGgtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmiGtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmGGtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgGtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
 
-  addfmGGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  addfmGgtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  addfmGGtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  addfmGgtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  fcgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  fcgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aiGtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  caiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  caiGtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   return;
 }

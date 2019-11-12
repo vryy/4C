@@ -25,7 +25,6 @@ with condensed structure interface displacements
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -42,6 +41,7 @@ with condensed structure interface displacements
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -155,11 +155,11 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   SetLambda();
   ddiinc_ = Teuchos::null;

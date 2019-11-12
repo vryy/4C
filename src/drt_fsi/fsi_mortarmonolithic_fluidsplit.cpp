@@ -25,7 +25,6 @@ with condensed fluid interface velocities
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -49,6 +48,7 @@ with condensed fluid interface velocities
 #include "../linalg/linalg_mapextractor.H"
 
 #include <math.h>
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -162,14 +162,14 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   SetLambda();

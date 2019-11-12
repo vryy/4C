@@ -26,7 +26,6 @@
 #include "../drt_io/io_control.H"
 
 #include "../drt_xfem/xfield_state_utils.H"
-#include "../drt_fluid/fluid_utils.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -381,7 +380,7 @@ void FLD::XFluidState::SetupMapExtractors(
   // create vel-pres splitter
   const int numdim = DRT::Problem::Instance()->NDim();
   velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
-  FLD::UTILS::SetupFluidSplit(*xfluiddiscret, numdim, 1, *velpressplitter_);
+  LINALG::CreateMapExtractorFromDiscretization(*xfluiddiscret, numdim, 1, *velpressplitter_);
 }
 
 

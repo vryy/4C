@@ -18,11 +18,10 @@ transform matrixes, vectors, ...
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_colors.H"
 
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 
@@ -423,10 +422,10 @@ Teuchos::RCP<ADAPTER::Coupling> XFEM::Coupling_Comm_Manager::GetCoupling(int idx
 /*------------------------------------------------------------------------------------------------*
 | Get Transform Object between Discret A and B                                        ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<FSI::UTILS::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager::GetTransform(
+Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager::GetTransform(
     int transform_id)
 {
-  std::map<int, Teuchos::RCP<FSI::UTILS::MatrixLogicalSplitAndTransform>>::iterator tit =
+  std::map<int, Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform>>::iterator tit =
       transform_.find(transform_id);
   if (tit != transform_.end() && transform_id != -1)
   {
@@ -434,7 +433,7 @@ Teuchos::RCP<FSI::UTILS::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Man
   }
   else
   {
-    transform_[transform_id] = Teuchos::rcp(new FSI::UTILS::MatrixLogicalSplitAndTransform());
+    transform_[transform_id] = Teuchos::rcp(new LINALG::MatrixLogicalSplitAndTransform());
     return transform_[transform_id];
   }
   return Teuchos::null;

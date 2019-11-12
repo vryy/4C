@@ -11,8 +11,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_fluidsplit.H"
-#include "fsi_matrixtransform.H"
-
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -30,6 +28,8 @@
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 
 #include "../drt_constraint/constraint_manager.H"
+
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -108,14 +108,14 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(
 
   sconT_ = Teuchos::rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(), 81, false, true));
 
-  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fmigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   return;
 }

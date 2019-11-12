@@ -20,15 +20,12 @@ namespace ADAPTER
   class FluidFluidFSI;
 }  // namespace ADAPTER
 
-namespace FSI
+namespace LINALG
 {
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 namespace FSI
 {
@@ -137,13 +134,13 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fmggtransform_;
 
     //@}
 

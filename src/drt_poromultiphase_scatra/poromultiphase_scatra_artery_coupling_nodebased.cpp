@@ -13,7 +13,7 @@
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_condition_selector.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 
 /*----------------------------------------------------------------------*
@@ -107,9 +107,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   globalex_->CheckForValidMapExtractor();
 
   // needed for matrix transformations
-  sbbtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform());
+  sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform());
 
   return;
 }
