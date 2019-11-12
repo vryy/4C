@@ -32,6 +32,7 @@ namespace PARTICLEENGINE
   class ParticleContainer;
   class ParticleContainerBundle;
   class ParticleObject;
+  class ParticleUniqueGlobalIdHandler;
   class ParticleRuntimeVtpWriter;
 }  // namespace PARTICLEENGINE
 
@@ -416,6 +417,20 @@ namespace PARTICLEENGINE
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
 
     /*!
+     * \brief init particle unique global identifier handler
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void InitParticleUniqueGlobalIdHandler();
+
+    /*!
+     * \brief setup particle unique global identifier handler
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void SetupParticleUniqueGlobalIdHandler() const;
+
+    /*!
      * \brief setup data storage
      *
      * \author Sebastian Fuchs \date 12/2018
@@ -713,6 +728,9 @@ namespace PARTICLEENGINE
 
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! particle unique global identifier handler
+    std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler> particleuniqueglobalidhandler_;
 
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;

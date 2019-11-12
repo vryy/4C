@@ -18,6 +18,7 @@
 #include "particle_container.H"
 #include "particle_container_bundle.H"
 #include "particle_object.H"
+#include "particle_unique_global_id.H"
 #include "particle_runtime_vtp_writer.H"
 
 #include "../drt_particle_algorithm/particle_algorithm_utils.H"
@@ -69,6 +70,9 @@ void PARTICLEENGINE::ParticleEngine::Init()
   // init particle container bundle
   InitParticleContainerBundle();
 
+  // init particle unique global identifier handler
+  InitParticleUniqueGlobalIdHandler();
+
   // init particle runtime vtp writer
   InitParticleVtpWriter();
 }
@@ -81,6 +85,9 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 
   // setup particle container bundle
   SetupParticleContainerBundle(particlestatestotypes);
+
+  // setup particle unique global identifier handler
+  SetupParticleUniqueGlobalIdHandler();
 
   // setup data storage
   SetupDataStorage(particlestatestotypes);
@@ -99,12 +106,16 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   particlecontainerbundle_->GetPackedParticleObjectsOfAllContainers(particlebuffer);
 
   // get bin discretization writer
-  Teuchos::RCP<IO::DiscretizationWriter> binwriter = binstrategy_->BinDiscret()->Writer();
+  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+      Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 
   binwriter->NewStep(step, time);
 
   // write particle data
   binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
+
+  // write restart of particle unique global identifier handler
+  particleuniqueglobalidhandler_->WriteRestart(binwriter);
 
   // write restart of runtime vtp writer
   particlevtpwriter_->WriteRestart(step, time);
@@ -137,6 +148,9 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
 
   if (position != particledata->size())
     dserror("mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
+
+  // read restart of particle unique global identifier handler
+  particleuniqueglobalidhandler_->ReadRestart(reader);
 
   // read restart of runtime vtp writer
   particlevtpwriter_->ReadRestart(reader);
@@ -889,6 +903,20 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 {
   // setup particle container bundle
   particlecontainerbundle_->Setup(particlestatestotypes);
+}
+
+void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
+{
+  // create and init particle unique global identifier handler
+  particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler>(
+      new PARTICLEENGINE::ParticleUniqueGlobalIdHandler(comm_));
+  particleuniqueglobalidhandler_->Init();
+}
+
+void PARTICLEENGINE::ParticleEngine::SetupParticleUniqueGlobalIdHandler() const
+{
+  // setup particle container bundle
+  particleuniqueglobalidhandler_->Setup();
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
