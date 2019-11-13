@@ -1353,12 +1353,17 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
 
-#ifdef DEBUG
       // particle left computational domain
       if (gidofbin == -1)
-        dserror("on processor %d a particle left the computational domain without being detected!",
-            myrank_);
+      {
+#ifdef DEBUG
+        if (not particlestoremove[typeEnum].count(ownedindex))
+          dserror(
+              "on processor %d a particle left the computational domain without being detected!",
+              myrank_);
 #endif
+        continue;
+      }
 
       // particle remains owned on this processor
       if (binrowmap_->LID(gidofbin) >= 0) continue;
