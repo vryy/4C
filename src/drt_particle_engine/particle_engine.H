@@ -126,6 +126,19 @@ namespace PARTICLEENGINE
     void WriteParticleRuntimeOutput(const int step, const double time) const;
 
     /*!
+     * \brief get unique global ids for all particles
+     *
+     * All particles handed in do not have a unique global id yet. In this method a unique global id
+     * is assigned to each particle.
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     *
+     * \param[in] particlestogetuniquegids particles to get unique global ids
+     */
+    void GetUniqueGlobalIdsForAllParticles(
+        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids);
+
+    /*!
      * \brief erase particles outside bounding box
      *
      * All particles handed in are checked if they are located inside the bounding box. Particles

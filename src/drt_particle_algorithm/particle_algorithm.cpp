@@ -552,6 +552,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 {
+  // get unique global ids for all particles
+  if (not isrestarted_) particleengine_->GetUniqueGlobalIdsForAllParticles(particlestodistribute_);
+
   // erase particles outside bounding box
   particleengine_->EraseParticlesOutsideBoundingBox(particlestodistribute_);
 

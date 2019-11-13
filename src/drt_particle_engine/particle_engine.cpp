@@ -165,6 +165,23 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
+void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
+    std::vector<ParticleObjShrdPtr>& particlestogetuniquegids)
+{
+  std::vector<int> requesteduniqueglobalids;
+  requesteduniqueglobalids.reserve(particlestogetuniquegids.size());
+
+  // draw requested number of global ids
+  particleuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
+
+  // number of particles to get unique ids
+  int numparticles = particlestogetuniquegids.size();
+
+  // iterate over particles objects
+  for (int i = 0; i < numparticles; ++i)
+    particlestogetuniquegids[i]->SetParticleGlobalID(requesteduniqueglobalids[i]);
+}
+
 void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
@@ -207,6 +224,15 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
       {
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
+
+#ifdef DEBUG
+        if (particlestocheck[i]->ReturnParticleGlobalID() < 0)
+          dserror("no global id assigned to particle!");
+#endif
+
+        // insert freed global id
+        particleuniqueglobalidhandler_->InsertFreedGlobalId(
+            particlestocheck[i]->ReturnParticleGlobalID());
 
         break;
       }
@@ -1209,6 +1235,16 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       {
         (particlestoremove[typeEnum]).insert(ownedindex);
 
+        // get global id of particle
+        const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
+
+#ifdef DEBUG
+        if (currglobalid[0] < 0) dserror("no global id assigned to particle!");
+#endif
+
+        // insert freed global id
+        particleuniqueglobalidhandler_->InsertFreedGlobalId(currglobalid[0]);
+
         ++numparticlesoutside;
 
         continue;
@@ -1317,7 +1353,19 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     int ownerofparticle = pidlist[i];
 
     // particle outside of computational domain
-    if (ownerofparticle == -1) ++numparticlesoutside;
+    if (ownerofparticle == -1)
+    {
+      ++numparticlesoutside;
+
+#ifdef DEBUG
+      if (particlestodistribute[i]->ReturnParticleGlobalID() < 0)
+        dserror("no global id assigned to particle!");
+#endif
+
+      // insert freed global id
+      particleuniqueglobalidhandler_->InsertFreedGlobalId(
+          particlestodistribute[i]->ReturnParticleGlobalID());
+    }
     // particle is owned by this processor
     else if (myrank_ == ownerofparticle)
       particlestokeep[typeEnum].push_back(
@@ -1716,6 +1764,8 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       const ParticleStates& particleStates = particleobject->ReturnParticleStates();
 
 #ifdef DEBUG
+      if (globalid < 0) dserror("no global id assigned to particle!");
+
       // get bin of particle
       int gidofbin = particleobject->ReturnBinGid();
 
