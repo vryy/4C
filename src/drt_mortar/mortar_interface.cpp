@@ -1162,10 +1162,10 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // Set cutoff and bounding box size
   binningstrategy->SetBinSizeLowerBound(cutoff);
-  binningstrategy->SetXAABB(XAABB);
+  binningstrategy->SetDomainBoundingBoxCornerPositions(XAABB);
 
   // compute bins
-  binningstrategy->CreateBinsBasedOnBinSizeLowerBoundAndXAABB();
+  binningstrategy->CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions();
 
   return binningstrategy;
 }

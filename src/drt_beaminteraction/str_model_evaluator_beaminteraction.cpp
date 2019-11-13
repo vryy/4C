@@ -207,14 +207,15 @@ void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
       (*sme_iter)->GetHalfInteractionDistance(half_interaction_distance_);
 
     if (GState().GetMyRank() == 0)
-      std::cout << " half cutoff " << 0.5 * binstrategy_->BinSizeLowerBound() << std::endl;
+      std::cout << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << std::endl;
 
     // safety checks
-    if (half_interaction_distance_ > (0.5 * binstrategy_->BinSizeLowerBound()))
+    if (half_interaction_distance_ > (0.5 * binstrategy_->GetMinBinSize()))
       dserror(
-          "Your half interaction distance %f is larger than half your cuttoff %f. You will not be\n"
-          "able to track all interactions like this. Increase cutoff?",
-          half_interaction_distance_, 0.5 * binstrategy_->BinSizeLowerBound());
+          "Your half interaction distance %f is larger than half your smallest bin %f. You will "
+          "not be\n"
+          "able to track all interactions like this. Increase bin size?",
+          half_interaction_distance_, 0.5 * binstrategy_->GetMinBinSize());
     if (half_interaction_distance_ < 0)
       dserror("At least one model needs to define half interaction radius");
   }
@@ -393,7 +394,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *iadiscolnp);
 
-  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
+  binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
       ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp);
 
   // build row elements to bin map
@@ -452,7 +453,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
        it != ia_state_ptr_->GetBinToRowEleMap().end(); ++it)
   {
     // not doing the following if is only valid if you ensure that the largest element
-    // in the discretization (in deformed state) is smaller than the cutoff
+    // in the discretization (in deformed state) is smaller than the smalles bin size
     // which is not necessarily needed e.g. for beam contact
     //    if( boundcolbins.find( it->first ) != boundcolbins.end() )
     {
@@ -872,10 +873,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::CheckIfBeamDiscretRedistributionNeeds
   {
     IO::cout(IO::debug) << " half interaction distance " << half_interaction_distance_ << IO::endl;
     IO::cout(IO::debug) << " gmaxdisincr " << gmaxdisincr << IO::endl;
-    IO::cout(IO::debug) << " half cutoff " << 0.5 * binstrategy_->BinSizeLowerBound() << IO::endl;
+    IO::cout(IO::debug) << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << IO::endl;
   }
 
-  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->BinSizeLowerBound()));
+  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->GetMinBinSize()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -996,35 +997,6 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(
-    Teuchos::RCP<Epetra_Vector> disnp_ptr, bool newxaabb, bool newcutoff)
-{
-  CheckInitSetup();
-
-  // todo: unshifted current positions are needed here
-  if (newcutoff)
-    dserror("unshifted configuration is needed (not yet here) for calculation of cutoff.");
-
-  // store structure discretization in vector
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
-  // displacement vector according to periodic boundary conditions
-  std::vector<Teuchos::RCP<Epetra_Vector>> disnp(1, disnp_ptr);
-
-  // create XAABB and optionally set cutoff radius
-  if (newxaabb)
-    binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
-        discret_vec, disnp, binstrategy_->XAABB(), newcutoff);
-  // just set cutoff radius
-  else if (newcutoff)
-    binstrategy_->SetBinSizeLowerBound(
-        binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfXAABBOfLargestEle(
-            discret_vec, disnp));
-
-  binstrategy_->CreateBinsBasedOnBinSizeLowerBoundAndXAABB();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
 {
   CheckInit();
@@ -1126,19 +1098,20 @@ void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
-  double calc_cutoff = binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfXAABBOfLargestEle(
-      discret_vec, disnp_vec);
+  double bin_size_lower_bound =
+      binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
+          discret_vec, disnp_vec);
   LINALG::Matrix<3, 2> XAABB(true);
-  binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+  binstrategy_->ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
       discret_vec, disnp_vec, XAABB, false);
   if (GState().GetMyRank() == 0)
   {
     IO::cout(IO::verbose) << " \n---------------------------------------------------------- "
                           << IO::endl;
     IO::cout(IO::verbose) << " chosen/computed cutoff radius                      : "
-                          << binstrategy_->BinSizeLowerBound() << IO::endl;
-    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : " << calc_cutoff
-                          << IO::endl;
+                          << binstrategy_->GetMinBinSize() << IO::endl;
+    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : "
+                          << bin_size_lower_bound << IO::endl;
     IO::cout(IO::verbose) << "DOMAINBOUNDINGBOX containing all elements of input discretization:\n "
                           << XAABB(0, 0) << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " "
                           << XAABB(0, 1) << " " << XAABB(1, 1) << " " << XAABB(2, 1) << IO::endl;

@@ -155,7 +155,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // set of particles located outside bounding box
   std::set<int> particlesoutsideboundingbox;
@@ -690,17 +690,17 @@ const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrate
 
 bool PARTICLEENGINE::ParticleEngine::HavePBC(const int dim) const
 {
-  return binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim);
+  return binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim);
 }
 
 double PARTICLEENGINE::ParticleEngine::PBCDelta(const int dim) const
 {
-  return binstrategy_->LengthOfBinningDomainASpatialDirection(dim);
+  return binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 }
 
-LINALG::Matrix<3, 2>& PARTICLEENGINE::ParticleEngine::XAABB() const
+LINALG::Matrix<3, 2> const& PARTICLEENGINE::ParticleEngine::XAABB() const
 {
-  return binstrategy_->XAABB();
+  return binstrategy_->DomainBoundingBoxCornerPositions();
 }
 
 void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
@@ -713,10 +713,10 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
     r_ji[dim] = pos_j[dim] - pos_i[dim];
 
     // check for periodic boundary condition in current spatial direction
-    if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim))
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
     {
       // periodic length in current spatial direction
-      const double pbcdelta = binstrategy_->LengthOfBinningDomainASpatialDirection(dim);
+      const double pbcdelta = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
       // shift by periodic length if particles are closer over periodic boundary
       if (std::abs(r_ji[dim]) > (0.5 * pbcdelta))
@@ -982,7 +982,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
 
   // safety check
   for (int dim = 0; dim < 3; ++dim)
-    if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim) and binperdir[dim] < 3)
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim) and
+        binperdir[dim] < 3)
       dserror("at least 3 bins in direction with periodic boundary conditions necessary!");
 
   // determine range of all inner bins
@@ -1137,7 +1138,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // count particles that left the computational domain
   int numparticlesoutside = 0;
@@ -1181,15 +1182,15 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       }
 
       // no periodic boundary conditions
-      if (not binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied()) continue;
+      if (not binstrategy_->HavePeriodicBoundaryConditionsApplied()) continue;
 
       // check for periodic boundary in each spatial directions
       for (int dim = 0; dim < 3; ++dim)
       {
-        if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim))
+        if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
         {
           // periodic length in current spatial direction
-          double pbc_length = binstrategy_->LengthOfBinningDomainASpatialDirection(dim);
+          double pbc_length = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
           // shift position by periodic length
           if (currpos[dim] < xaabb(dim, 0))

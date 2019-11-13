@@ -325,7 +325,7 @@ namespace PARTICLEENGINE
 
     double PBCDelta(const int dim) const override;
 
-    LINALG::Matrix<3, 2>& XAABB() const override;
+    LINALG::Matrix<3, 2> const& XAABB() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries

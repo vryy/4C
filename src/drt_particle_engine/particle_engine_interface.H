@@ -185,7 +185,7 @@ namespace PARTICLEENGINE
      *
      * \return bounding box dimensions
      */
-    virtual LINALG::Matrix<3, 2>& XAABB() const = 0;
+    virtual LINALG::Matrix<3, 2> const& XAABB() const = 0;
 
     //! @}
 

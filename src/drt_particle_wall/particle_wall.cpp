@@ -179,7 +179,7 @@ void PARTICLEWALL::WallHandlerBase::UpdateBinRowAndColMap(
 void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
 {
   // get bounding box dimension
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // iterate over row wall nodes
   for (int rowlidofnode = 0; rowlidofnode < walldiscretization_->NumMyRowNodes(); ++rowlidofnode)
@@ -283,7 +283,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
 
     // get corresponding bin ids for element
     std::vector<int> binids;
-    binstrategy_->DistributeSingleElementToBinsUsingEleXAABB(
+    binstrategy_->DistributeSingleElementToBinsUsingEleAABB(
         walldiscretization_, ele, binids, walldatastate_->GetRefMutableDispCol());
 
     // relate ids of owned bins to column wall elements
@@ -516,7 +516,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
 
   // determine bin to row wall element distribution
   std::map<int, std::set<int>> bintorowelemap;
-  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
+  binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
       walldiscretization_, bintorowelemap, disn_col);
 
   // extend wall element ghosting
@@ -641,7 +641,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
 {
   // short screen output
-  if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied() and myrank_ == 0)
+  if (binstrategy_->HavePeriodicBoundaryConditionsApplied() and myrank_ == 0)
     IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
 }
 
@@ -679,13 +679,13 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     eleids.reserve(6);
 
     // get bounding box dimension
-    LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+    LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
 
     // reduce bounding box size to account for round-off errors
     for (int dim = 0; dim < 3; ++dim)
     {
       // periodic boundary conditions in current spatial direction
-      if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim)) continue;
+      if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim)) continue;
 
       xaabb(dim, 0) += 1.0e-12;
       xaabb(dim, 1) -= 1.0e-12;
@@ -734,7 +734,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (int dim = 0; dim < 3; ++dim)
     {
       // periodic boundary conditions in current spatial direction
-      if (binstrategy_->ReturnTruIfPeridociBoundaryConditionApplied(dim)) continue;
+      if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim)) continue;
 
       // positive and negative end of bounding box in current spatial direction
       for (int sign = 0; sign < 2; ++sign)

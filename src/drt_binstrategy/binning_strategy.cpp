@@ -55,7 +55,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
     : bindis_(Teuchos::null),
       visbindis_(Teuchos::null),
       bin_size_lower_bound_(0.0),
-      XAABB_(true),
+      domain_bounding_box_corner_positions_(true),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
@@ -96,7 +96,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   // try to read valid input
   bool feasibleboxinput = true;
-  XAABB_.PutScalar(1.0e12);
+  domain_bounding_box_corner_positions_.PutScalar(1.0e12);
   // get bounding box specified in the input file
   std::istringstream xaabbstream(
       Teuchos::getNumericStringParameter(binstrategyparams, "DOMAINBOUNDINGBOX"));
@@ -106,7 +106,7 @@ void BINSTRATEGY::BinningStrategy::Init(
     {
       double value = 1.0e12;  // this is also default input if not specified in input file
       if (xaabbstream >> value)
-        XAABB_(row, col) = value;
+        domain_bounding_box_corner_positions_(row, col) = value;
       else
         dserror("specify six values for bounding box in three dimensional problem. Fix input file");
     }
@@ -114,7 +114,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   for (int col = 0; col < 2; ++col)
     for (int row = 0; row < 3; ++row)
-      if (XAABB_(row, col) > 1.0e11) feasibleboxinput = false;
+      if (domain_bounding_box_corner_positions_(row, col) > 1.0e11) feasibleboxinput = false;
 
   // get number of bins per direction
   bool feasiblebininput = true;
@@ -151,22 +151,23 @@ void BINSTRATEGY::BinningStrategy::Init(
   if (not feasibleboxinput)
   {
     if (discret.size() == 0) dserror("We need a discretization at this point.");
-    ComputeMinXAABBContainingAllElementsOfInputDiscrets(
-        discret, disnp, XAABB_, bin_size_lower_bound_ < 0.0);
+    ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
+        discret, disnp, domain_bounding_box_corner_positions_, bin_size_lower_bound_ < 0.0);
   }
   else if (bin_size_lower_bound_ < 0.0)
   {
     if (discret.size() == 0) dserror("We need a discretization at this point.");
     bin_size_lower_bound_ =
-        ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfXAABBOfLargestEle(discret, disnp);
+        ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(discret, disnp);
   }
 
   // init binning domain edge length
   for (int idim = 0; idim < 3; ++idim)
-    edge_length_binning_domain_[idim] = XAABB_(idim, 1) - XAABB_(idim, 0);
+    edge_length_binning_domain_[idim] = domain_bounding_box_corner_positions_(idim, 1) -
+                                        domain_bounding_box_corner_positions_(idim, 0);
 
   // create bins
-  CreateBinsBasedOnBinSizeLowerBoundAndXAABB();
+  CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions();
 
   // build periodic boundary condition
   BuildPeriodicBC();
@@ -322,12 +323,14 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos) const
     deforming_simulation_domain_handler_->TransformFromGlobalToUndeformedBoundingBoxSystem(
         pos, pos_ud);
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos_ud[dim] - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos_ud[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
   else
   {
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos[dim] - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
   return ConvertijkToGid(&ijk[0]);
@@ -341,12 +344,14 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) 
     deforming_simulation_domain_handler_->TransformFromGlobalToUndeformedBoundingBoxSystem(
         pos, pos_ud);
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos_ud[dim] - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos_ud[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
   else
   {
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos[dim] - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
   return;
@@ -360,12 +365,14 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3, 1>& p
     deforming_simulation_domain_handler_->TransformFromGlobalToUndeformedBoundingBoxSystem(
         pos, pos_ud);
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos_ud(dim) - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos_ud(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
   else
   {
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos(dim) - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
   return;
@@ -380,12 +387,14 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3, 1>& po
     deforming_simulation_domain_handler_->TransformFromGlobalToUndeformedBoundingBoxSystem(
         pos, pos_ud);
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos_ud(dim) - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos_ud(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
   else
   {
     for (int dim = 0; dim < 3; ++dim)
-      ijk[dim] = static_cast<int>(std::floor((pos(dim) - XAABB_(dim, 0)) * inv_bin_size_[dim]));
+      ijk[dim] = static_cast<int>(std::floor(
+          (pos(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
   return ConvertijkToGid(&ijk[0]);
@@ -455,7 +464,8 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
         LINALG::Matrix<3, 1> curr_corner;
         for (int dim = 0; dim < 3; ++dim)
         {
-          curr_corner(dim) = XAABB_(dim, 0) + bin_size_[dim] * ijk_curr[dim];
+          curr_corner(dim) =
+              domain_bounding_box_corner_positions_(dim, 0) + bin_size_[dim] * ijk_curr[dim];
         }
         bincorners.push_back(curr_corner);
 
@@ -495,7 +505,8 @@ LINALG::Matrix<3, 1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const int binI
 
   LINALG::Matrix<3, 1> centroid;
   for (int dim = 0; dim < 3; ++dim)
-    centroid(dim) = XAABB_(dim, 0) + bin_size_[dim] * (ijk[dim] + 0.5);
+    centroid(dim) =
+        domain_bounding_box_corner_positions_(dim, 0) + bin_size_[dim] * (ijk[dim] + 0.5);
 
   return centroid;
 }
@@ -528,8 +539,8 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
         {
           IO::cout(IO::verbose)
               << "INFO: PBC bounds for particles is computed automatically for direction " << dim
-              << " based on XAABB of bins (left: " << XAABB_(dim, 0)
-              << " , right: " << XAABB_(dim, 1) << " )" << IO::endl;
+              << " based on XAABB of bins (left: " << domain_bounding_box_corner_positions_(dim, 0)
+              << " , right: " << domain_bounding_box_corner_positions_(dim, 1) << " )" << IO::endl;
         }
 
         // set flag
@@ -956,7 +967,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
   return;
 }
 
-void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleXAABB(
+void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleAABB(
     Teuchos::RCP<DRT::Discretization> const& discret, std::map<int, std::set<int>>& bintorowelemap,
     Teuchos::RCP<Epetra_Vector> disnp) const
 {
@@ -969,7 +980,7 @@ void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleXAABB(
     DRT::Element* eleptr = discret->lRowElement(lid);
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
-    DistributeSingleElementToBinsUsingEleXAABB(discret, eleptr, binIds, disnp);
+    DistributeSingleElementToBinsUsingEleAABB(discret, eleptr, binIds, disnp);
 
     // assign element to bins
     std::vector<int>::const_iterator biniter;
@@ -978,7 +989,7 @@ void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleXAABB(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::DistributeSingleElementToBinsUsingEleXAABB(
+void BINSTRATEGY::BinningStrategy::DistributeSingleElementToBinsUsingEleAABB(
     Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
     std::vector<int>& binIds, Teuchos::RCP<Epetra_Vector> const& disnp) const
 {
@@ -1205,7 +1216,7 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
     // binelemap on each proc than contains all bins (not neccesarily owned by
     // this proc) that are cut by the procs row elements
     std::map<int, std::set<int>> bintoelemap;
-    DistributeRowElementsToBinsUsingEleXAABB(discret[i], bintoelemap, dummy2[i]);
+    DistributeRowElementsToBinsUsingEleAABB(discret[i], bintoelemap, dummy2[i]);
 
     // ghosting is extended to one layer (two layer ghosting is excluded as it
     // is not needed, this case is covered by other procs then) around bins that
@@ -1768,10 +1779,10 @@ void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
     std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-    std::vector<Teuchos::RCP<Epetra_Vector>> disnp, LINALG::Matrix<3, 2>& XAABB,
-    bool set_bin_size_lower_bound_)
+    std::vector<Teuchos::RCP<Epetra_Vector>> disnp,
+    LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions_, bool set_bin_size_lower_bound_)
 {
   // reset lower bound for bin size
   if (set_bin_size_lower_bound_) bin_size_lower_bound_ = 0.0;
@@ -1791,8 +1802,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
 
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = currpos[dim] - GEO::TOL7;
-    XAABB(dim, 1) = currpos[dim] + GEO::TOL7;
+    domain_bounding_box_corner_positions_(dim, 0) = currpos[dim] - GEO::TOL7;
+    domain_bounding_box_corner_positions_(dim, 1) = currpos[dim] + GEO::TOL7;
   }
 
   // build XAABB_ from XAABB of all discrets and determine maximal element extension
@@ -1800,13 +1811,16 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
   for (size_t i = 0; i < discret.size(); ++i)
   {
     LINALG::Matrix<3, 2> locXAABB;
-    CreateXAABB(discret[i], locXAABB, disnp[i], set_bin_size_lower_bound_);
+    ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
+        discret[i], locXAABB, disnp[i], set_bin_size_lower_bound_);
 
     // set XAABB_ considering all input discrets
     for (int dim = 0; dim < 3; ++dim)
     {
-      XAABB(dim, 0) = std::min(XAABB(dim, 0), locXAABB(dim, 0));
-      XAABB(dim, 1) = std::max(XAABB(dim, 1), locXAABB(dim, 1));
+      domain_bounding_box_corner_positions_(dim, 0) =
+          std::min(domain_bounding_box_corner_positions_(dim, 0), locXAABB(dim, 0));
+      domain_bounding_box_corner_positions_(dim, 1) =
+          std::max(domain_bounding_box_corner_positions_(dim, 1), locXAABB(dim, 1));
     }
   }
 
@@ -1814,7 +1828,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
   if (set_bin_size_lower_bound_) bin_size_lower_bound_ += GEO::TOL7;
 }
 
-double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfXAABBOfLargestEle(
+double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
     std::vector<Teuchos::RCP<DRT::Discretization>> discret,
     std::vector<Teuchos::RCP<Epetra_Vector>> disnp)
 {
@@ -1884,11 +1898,13 @@ double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthO
   return bin_size_lower_bound;
 }
 
-void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndXAABB(
+void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions(
     Teuchos::RCP<DRT::Discretization> dis)
 {
   // create XAABB for discretization
-  if (dis != Teuchos::null) CreateXAABB(dis, XAABB_);
+  if (dis != Teuchos::null)
+    ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
+        dis, domain_bounding_box_corner_positions_);
 
   // divide global bounding box into bins
   for (int dim = 0; dim < 3; ++dim)
@@ -1897,8 +1913,9 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndXAABB(
     // std::floor leads to bins that are at least of size bin_size_lower_bound_
     if (bin_size_lower_bound_ > 0.0)
     {
-      bin_per_dir_[dim] =
-          std::max(1, (int)((XAABB_(dim, 1) - XAABB_(dim, 0)) / bin_size_lower_bound_));
+      bin_per_dir_[dim] = std::max(1, (int)((domain_bounding_box_corner_positions_(dim, 1) -
+                                                domain_bounding_box_corner_positions_(dim, 0)) /
+                                            bin_size_lower_bound_));
     }
 
     // for detailed description of the difference between bin_per_dir
@@ -1912,7 +1929,9 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndXAABB(
     } while (id_calc_bin_per_dir_[dim] < bin_per_dir_[dim]);
 
     // calculate size of bins in each direction
-    bin_size_[dim] = (XAABB_(dim, 1) - XAABB_(dim, 0)) / bin_per_dir_[dim];
+    bin_size_[dim] = (domain_bounding_box_corner_positions_(dim, 1) -
+                         domain_bounding_box_corner_positions_(dim, 0)) /
+                     bin_per_dir_[dim];
     // calculate inverse of size of bins in each direction
     inv_bin_size_[dim] = 1.0 / bin_size_[dim];
   }
@@ -1931,8 +1950,9 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndXAABB(
   return;
 }
 
-void BINSTRATEGY::BinningStrategy::CreateXAABB(Teuchos::RCP<DRT::Discretization> discret,
-    LINALG::Matrix<3, 2>& XAABB, Teuchos::RCP<Epetra_Vector> disnp, bool set_bin_size_lower_bound_)
+void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
+    Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
+    Teuchos::RCP<Epetra_Vector> disnp, bool set_bin_size_lower_bound_)
 {
   // set_bin_size_lower_bound_ as largest element in discret on each proc
   double locmax_set_bin_size_lower_bound = 0.0;
@@ -2085,7 +2105,7 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
       currele->SetOwner(newowner);
       toranktosendeles[newowner].push_back(currele);
       std::vector<int> binids;
-      DistributeSingleElementToBinsUsingEleXAABB(discret, currele, binids, disnp);
+      DistributeSingleElementToBinsUsingEleAABB(discret, currele, binids, disnp);
       std::pair<int, std::vector<int>> dummy(currele->Id(), binids);
       toranktosendbinids[newowner].push_back(dummy);
     }
@@ -2102,7 +2122,7 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
 
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
-    DistributeSingleElementToBinsUsingEleXAABB(discret, eleptr, binIds, disnp);
+    DistributeSingleElementToBinsUsingEleAABB(discret, eleptr, binIds, disnp);
 
     // assign element to bins
     std::vector<int>::const_iterator biniter;

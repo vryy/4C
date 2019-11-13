@@ -56,10 +56,10 @@ namespace BINSTRATEGY
    *  parallel without fully overlapping maps
    *
    * Binning strategy is based on a geometrical decomposition of the computational domain in
-   * box-like shaped cells. Each element/particle… is assigned to a cell and the size of the cells
-   * is chosen such that all possible interaction partners are found within one layer of cells. The
-   * cells are denoted as bins. Hence, interaction evaluation for a single element involves
-   * gathering the content residing in its own bin and in the 26 neighboring bins around.
+   * box-like shaped cells. Each element/particle is assigned to a cell and the size of the
+   * cells is chosen such that all possible interaction partners are found within one layer of
+   * cells. The cells are denoted as bins. Hence, interaction evaluation for a single element
+   * involves gathering the content residing in its own bin and in the 26 neighboring bins around.
    *
    * Therefore, a binning approach with Cartesian boxes is chosen. Like this, each bin can be
    * addressed using three indices i, j and k each ranging from zero to the maximal number of
@@ -128,13 +128,6 @@ namespace BINSTRATEGY
     //! \{
 
     /*!
-     * \brief get binning discretization pointer (elements of this discretization resemble bins)
-     *
-     * \return pointer to binning discretization
-     */
-    inline Teuchos::RCP<DRT::Discretization>& BinDiscret() { return bindis_; }
-
-    /*!
      * \brief get const binning discretization pointer (elements = bins)
      *
      * \return const pointer to binning discretization
@@ -146,7 +139,7 @@ namespace BINSTRATEGY
      *
      * \return reference to list of pointer to boundary row bins
      */
-    inline std::list<DRT::Element*>& BoundaryRowBins() { return boundaryrowbins_; }
+    inline std::list<DRT::Element*> const& BoundaryRowBins() { return boundaryrowbins_; }
 
     /*!
      * \brief get const list of pointer to boundary row bins
@@ -154,13 +147,6 @@ namespace BINSTRATEGY
      * \return reference to const list of pointer to boundary row bins
      */
     inline std::list<DRT::Element*> const& BoundaryRowBins() const { return boundaryrowbins_; }
-
-    /*!
-     * \brief get set of boundary col bins ids
-     *
-     * \return set of boundary col bins ids
-     */
-    inline std::set<int>& BoundaryColBinsIds() { return boundarycolbins_; }
 
     /*!
      * \brief get const set of boundary col bins ids
@@ -192,22 +178,23 @@ namespace BINSTRATEGY
     inline int const* BinPerDir() const { return &bin_per_dir_[0]; }
 
     /*!
-     * \brief check if periodic boundary conditions are applied in at least one direction or in
-     * specific direction
+     * \brief check if periodic boundary conditions are applied in at least one direction
+     *
+     * \return true if periodic boundary conditions are applied in at least one direction
+     */
+    inline bool HavePeriodicBoundaryConditionsApplied() const { return havepbc_; };
+
+    /*!
+     * \brief check if periodic boundary conditions are applied in a specific direction
      *
      * \param[in] dim direction were application of periodic boundary condition should be checked
-     * (-1: check if at least one direction has periodic boundary conditions)
      *
      * \return true if periodic boundary conditions are applied in respective direction
      */
-    inline bool ReturnTruIfPeridociBoundaryConditionApplied(const int dim = -1) const
+    inline bool HavePeriodicBoundaryConditionsAppliedInSpatialDirection(const int dim) const
     {
-      if (dim == -1)
-        return havepbc_;
-      else
-        return pbconoff_[dim];
+      return pbconoff_[dim];
     };
-
     /*!
      * \brief get length of entire binning domain in a certain direction
      *
@@ -215,18 +202,10 @@ namespace BINSTRATEGY
      *
      * \return length of binning domain in certain direction
      */
-    inline double LengthOfBinningDomainASpatialDirection(const int dim) const
+    inline double LengthOfBinningDomainInASpatialDirection(const int dim) const
     {
       return edge_length_binning_domain_[dim];
     };
-
-    /*!
-     * \brief get dimensions of entire binning domain (resembled by a A_xis A_ligned B_ounding
-     * B_ox)
-     *
-     * \return bounding box dimension of binning domain
-     */
-    inline LINALG::Matrix<3, 2>& XAABB() { return XAABB_; }
 
     /*!
      * \brief get const dimensions of entire binning domain (resembled by a A_xis A_ligned
@@ -234,7 +213,10 @@ namespace BINSTRATEGY
      *
      * \return const bounding box dimension of binning domain
      */
-    inline LINALG::Matrix<3, 2> const& XAABB() const { return XAABB_; }
+    inline LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const
+    {
+      return domain_bounding_box_corner_positions_;
+    }
 
     /*!
      * \brief get pointer to array containing inverse of size of bins in all three directions
@@ -261,9 +243,13 @@ namespace BINSTRATEGY
     /*!
      * \brief set binning domain dimensions
      *
-     * \param[in] XAABB dimension for binning domain
+     * \param[in] domain_bounding_box_corner_positions dimension for binning domain
      */
-    inline void SetXAABB(LINALG::Matrix<3, 2> const& XAABB) { XAABB_ = XAABB; }
+    inline void SetDomainBoundingBoxCornerPositions(
+        LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions)
+    {
+      domain_bounding_box_corner_positions_ = domain_bounding_box_corner_positions;
+    }
 
     /*!
      * \brief set binning
@@ -348,9 +334,7 @@ namespace BINSTRATEGY
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const LINALG::Matrix<3, 1>& pos,  ///< position to be converted into i,j,k
-        int* ijk                                           ///< resulting i,j,k
-        ) const;
+    void ConvertPosToijk(const LINALG::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -445,7 +429,7 @@ namespace BINSTRATEGY
 
     /*!
      * \brief write binning domain and its parallel distribution as output
-     *        Note: This is a debug feature only to visualize the binning domain and the parallel
+     *       \note: This is a debug feature only to visualize the binning domain and the parallel
      *        distribution of bins to procs. This is computationally very expensive.
      *
      * \param[in] step current step
@@ -507,7 +491,7 @@ namespace BINSTRATEGY
         DRT::Element const* const sphereele, double currpos[3], int ijk[3], int ijk_range[6]) const;
 
     /// fixme: the following function needs to be replaced by
-    /// DistributeRowElementsToBinsUsingEleXAABB()
+    /// DistributeRowElementsToBinsUsingEleAABB()
     /*!
      * \brief elements are assigned to bins (either slave or master side of mortar interface)
      *
@@ -521,11 +505,11 @@ namespace BINSTRATEGY
     /*!
      * \brief distribute elements to bins exploiting axis aligned bounding box idea
      *
-     * \param[in] discret discret containing the elements that are distributed to bins
+     * \param[in] discret discretization containing the elements that are distributed to bins
      * \param[out] bintorowelemap map of bins and assigned row elements
      * \param[in] disnp current col displacement state
      */
-    void DistributeRowElementsToBinsUsingEleXAABB(Teuchos::RCP<DRT::Discretization> const& discret,
+    void DistributeRowElementsToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
         std::map<int, std::set<int>>& bintorowelemap,
         Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null) const;
 
@@ -534,12 +518,12 @@ namespace BINSTRATEGY
      *
      * \param[in] discret discretization containing the considered element
      * \param[in] eleptr element thats d
-     * \param[out] binIds ids of bins tuuched by xaabb of current element
+     * \param[out] binIds ids of bins tuuched by aabb of current element
      * \param[in] disnp current col displacement state
      */
-    void DistributeSingleElementToBinsUsingEleXAABB(
-        Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
-        std::vector<int>& binIds, Teuchos::RCP<Epetra_Vector> const& disnp) const;
+    void DistributeSingleElementToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
+        DRT::Element* eleptr, std::vector<int>& binIds,
+        Teuchos::RCP<Epetra_Vector> const& disnp) const;
 
     /*!
      * \brief elements of input discretization are assigned to bins
@@ -599,20 +583,25 @@ namespace BINSTRATEGY
 
 
     /*!
-     * \brief This function is doing the following in chronological order:
-     *        1) create bins, weight them according to number of nodes (of the handed over
-     *           discretizations) they contain. By also considering the bin connectivity (i.e. a
-     *           puzzle like distribution of bins is not desirable) an optimal distribution of
-     * bins (and therefore elements) to procs is obtained with regard to computation costs. 2) Now
-     * we have to apply the new parallel bin distribution by rebuilding the input discrets, i.e.
-     * we need to change the ownership of the nodes/elements according to the bin they belong to
-     * (each proc then owns the nodes/eles laying in its bins. 3) Make sure to have a correct
-     * standard ghosting (owner of element needs to at least ghost all nodes of it, although it
-     * might not reside in a bin that myrank owns) 4) ghosting is extended to one layer (two layer
-     * ghosting is excluded as it is not needed, this case is covered by other procs then) around
-     * bins that actually contain elements. discret than contains all elements that need to be
-     * owned or ghosted to ensure correct interaction handling of the elements in the range of one
-     * layer
+     * \brief Weighted Partitioning of bins to procs and extended ghosting of discretization to one
+     * bin layer
+     *
+     * 1) create bins, weight them according to number of nodes (of the handed over
+     * discretizations) they contain. By also considering the bin connectivity (i.e. a
+     * puzzle like distribution of bins is not desirable) an optimal distribution of
+     * bins (and therefore elements) to procs is obtained with regard to computation costs.
+     *
+     * 2) Now we have to apply the new parallel bin distribution by rebuilding the input discrets,
+     * i.e. we need to change the ownership of the nodes/elements according to the bin they belong
+     * to (each proc then owns the nodes/eles laying in its bins.
+     *
+     * 3) Make sure to have a correct standard ghosting (owner of element needs to at least ghost
+     * all nodes of it, although it might not reside in a bin that myrank owns)
+     *
+     * 4) ghosting is extended to one layer (two layer ghosting is excluded as it is not needed,
+     * this case is covered by other procs then) around bins that actually contain elements. discret
+     * than contains all elements that need to be owned or ghosted to ensure correct interaction
+     * handling of the elements in the range of one layer
      *
      * \param[in] discret vector of discretizations
      * \param[out] stdelecolmap element column map based on standard ghosting
@@ -657,10 +646,12 @@ namespace BINSTRATEGY
         std::map<int, std::set<int>>& masterbinelemap) const;
 
     /*!
-     * \brief ghosting is extended to one layer (two layer ghosting is excluded as it
+     * \brief ghosting is extended to one layer
+     *
+     * ghosting is extended to one layer (two layer ghosting is excluded as it
      * is not needed, this case is covered by other procs then) around bins that
      * actually contain elements. discret than contains all elements that need to be owned or
-     * ghosted to ensure correct interaction handling of the elements in the range of one layer
+     * ghosted to ensure correct interaction handling of the elements in the range of one layer.
      *
      * \param[in] bin_to_row_ele_map bin to row element map
      * \param[in] ext_bin_to_ele_map one layer extended bin to element map
@@ -729,13 +720,13 @@ namespace BINSTRATEGY
      *
      * \param[in] discret discretization
      * \param[in] disnp current col displacement state
-     * \param[out] XAABB axis aligned binning domain
+     * \param[out] domain_bounding_box_corner_positions axis aligned binning domain
      * \param[in] set_bin_size_lower_bound_ flag indicating to set lower bound for bin size
      */
-    void ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+    void ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
         std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-        std::vector<Teuchos::RCP<Epetra_Vector>> disnp, LINALG::Matrix<3, 2>& XAABB,
-        bool set_bin_size_lower_bound_);
+        std::vector<Teuchos::RCP<Epetra_Vector>> disnp,
+        LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions, bool set_bin_size_lower_bound_);
 
     /*!
      * \brief compute lower bound for bin size as largest element in discret
@@ -745,28 +736,29 @@ namespace BINSTRATEGY
      *
      * \return lower bound for bin size based on size of elements in discret
      */
-    double ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfXAABBOfLargestEle(
+    double ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
         std::vector<Teuchos::RCP<DRT::Discretization>> discret,
         std::vector<Teuchos::RCP<Epetra_Vector>> disnp);
 
     /*!
-     * \brief create bins based on XAABB and lower bound for bin size
+     * \brief create bins based on AABB and lower bound for bin size
      *
-     * \param[in] dis current col displacement state
+     * \param[in] dis current column displacement state
      */
-    void CreateBinsBasedOnBinSizeLowerBoundAndXAABB(
+    void CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions(
         Teuchos::RCP<DRT::Discretization> dis = Teuchos::null);
 
     /*!
-     * \brief create XAABB based on discretization and compute lower bound for bin size as largest
-     * element in discret
+     * \brief create binning domain dimensions based on discretization and compute lower bound for
+     * bin size as largest element in discret
      *
      * \param[in] discret discretization
      * \param[out] XAABB axis aligned binning domain
      * \param[in] disnp current col displacement state
      * \param[in] set_bin_size_lower_bound_ flag indicating to set bin size lower bound
      */
-    void CreateXAABB(Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
+    void ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
+        Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
         Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null, bool set_bin_size_lower_bound_ = false);
 
     /*!
@@ -804,14 +796,14 @@ namespace BINSTRATEGY
     std::set<int> boundarycolbins_;
 
     /*!
-     * \brief lower bound for bin size (note: smallest existing bin might be larger)
+     * \brief lower bound for bin size (\note: smallest existing bin might be larger)
      */
     double bin_size_lower_bound_;
 
     /*!
      * \brief binning domain edges
      */
-    LINALG::Matrix<3, 2> XAABB_;
+    LINALG::Matrix<3, 2> domain_bounding_box_corner_positions_;
 
     /*!
      * \brief if simulation domain is deforming, e.g. under shear, this handler takes care of this
