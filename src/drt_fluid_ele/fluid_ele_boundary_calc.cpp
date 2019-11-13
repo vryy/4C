@@ -482,11 +482,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
             elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfac;
             if (fldparatimint_->IsNewOSTImplementation())
             {
-              if (fldparatimint_->IsOneStepTheta())
-              {
-                const double valfacn = (*val)[idim] * fac_time_densn * functfacn;
-                elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfacn;
-              }
+              const double valfacn = (*val)[idim] * fac_time_densn * functfacn;
+              elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfacn;
             }
           }  // end IsNewOSTImplementation
         }    // if (*onoff)
@@ -525,12 +522,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
             if (fldparatimint_->IsNewOSTImplementation())
             {
-              if (fldparatimint_->IsOneStepTheta())
-              {
-                const double valfacn = (*val)[0] * fac_time_densn * functfacn;
-                elevec1_epetra[inode * numdofpernode_ + idim] +=
-                    funct_(inode) * valfacn * (-unitnormal_(idim));
-              }
+              const double valfacn = (*val)[0] * fac_time_densn * functfacn;
+              elevec1_epetra[inode * numdofpernode_ + idim] +=
+                  funct_(inode) * valfacn * (-unitnormal_(idim));
             }
           }  // end IsNewOSTImplementation
         }    // if (*onoff)
@@ -789,10 +783,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 {
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    if (fldparatimint_->IsOneStepTheta())
-    {
-      dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
-    }
+    dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
   }  // end IsNewOSTImplementation
 
   //----------------------------------------------------------------------
