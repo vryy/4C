@@ -193,9 +193,12 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
    * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
   // safety checks
-  if (result_data_dofbased->MyLength() != discretization_->DofColMap()->NumMyElements())
-    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
-        discretization_->DofColMap()->NumMyElements(), result_data_dofbased->MyLength());
+  if (!discretization_->DofColMap()->SameAs(result_data_dofbased->Map()))
+  {
+    dserror(
+        "DiscretizationRuntimeVtpWriter: Received DofBasedResult's map does not match the "
+        "discretization's dof col map.");
+  }
 
   // count number of nodes and number of elements for each processor
   unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
@@ -282,9 +285,12 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
         "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
         result_num_components_per_node, result_data_nodebased->NumVectors());
 
-  if (result_data_nodebased->MyLength() != discretization_->NumMyColNodes())
-    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
-        discretization_->NumMyColNodes(), result_data_nodebased->MyLength());
+  if (!discretization_->NodeColMap()->SameAs(result_data_nodebased->Map()))
+  {
+    dserror(
+        "DiscretizationRuntimeVtpWriter: Received NodeBasedResult's map does not match the "
+        "discretization's node col map.");
+  }
 
   // count number of nodes and number of elements for each processor
   unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
@@ -357,9 +363,12 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
         "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
         result_num_components_per_element, result_data_elementbased->NumVectors());
 
-  if (result_data_elementbased->MyLength() != discretization_->NumMyColElements())
-    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
-        discretization_->NumMyColElements(), result_data_elementbased->MyLength());
+  if (!discretization_->ElementRowMap()->SameAs(result_data_elementbased->Map()))
+  {
+    dserror(
+        "DiscretizationRuntimeVtpWriter: Received ElementBasedResult's map does not match the "
+        "discretization's element row map.");
+  }
 
   // count number of elements for each processor
   unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
@@ -379,13 +388,11 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
     if (beamele != NULL) continue;
 
-    const int lid = discretization_->ElementColMap()->LID(ele->Id());
-
     for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
     {
       Epetra_Vector* column = (*result_data_elementbased)(icpe);
 
-      if (lid > -1) vtu_cell_result_data.push_back((*column)[lid]);
+      vtu_cell_result_data.push_back((*column)[iele]);
     }
 
     ++cellcounter;

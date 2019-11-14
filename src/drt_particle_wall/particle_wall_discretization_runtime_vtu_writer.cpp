@@ -108,10 +108,10 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
   // element id
   {
     Teuchos::RCP<Epetra_Vector> eleid =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
-    for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
+        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementRowMap(), true));
+    for (int iele = 0; iele < walldiscretization_->NumMyRowElements(); ++iele)
     {
-      const DRT::Element* ele = walldiscretization_->lColElement(iele);
+      const DRT::Element* ele = walldiscretization_->lRowElement(iele);
       (*eleid)[iele] = ele->Id();
     }
     runtime_vtuwriter_->AppendElementBasedResultDataVector(eleid, 1, "id");
