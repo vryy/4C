@@ -135,13 +135,6 @@ namespace BINSTRATEGY
     inline Teuchos::RCP<DRT::Discretization> const& BinDiscret() const { return bindis_; }
 
     /*!
-     * \brief get list of pointer to boundary row bins
-     *
-     * \return reference to list of pointer to boundary row bins
-     */
-    inline std::list<DRT::Element*> const& BoundaryRowBins() { return boundaryrowbins_; }
-
-    /*!
      * \brief get const list of pointer to boundary row bins
      *
      * \return reference to const list of pointer to boundary row bins
@@ -324,9 +317,7 @@ namespace BINSTRATEGY
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const double* pos,  ///< position to be converted into i,j,k
-        int* ijk                             ///< resulting i,j,k
-        ) const;
+    void ConvertPosToijk(const double* pos, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding ijk
@@ -343,9 +334,7 @@ namespace BINSTRATEGY
      *
      * \return position of which the corresponding bin id is asked for
      */
-    int ConvertPosToGid(const LINALG::Matrix<3, 1>&
-            pos  ///< position of which the corresponding bin id is asked for
-        ) const;
+    int ConvertPosToGid(const LINALG::Matrix<3, 1>& pos) const;
 
     /*!
      * \brief get 26 neighboring bin ids (one bin layer) to binID (if existing)
