@@ -230,14 +230,22 @@ namespace PARTICLEENGINE
     void DynamicLoadBalancing();
 
     /*!
-     * \brief change type of particles
+     * \brief remove or insert owned particles
+     *
+     * Remove or insert owned particles of any type in the respective container on this processor.
+     *
+     * \note In case particles are removed without directly reinserting the particles, e.g., during
+     *       phase change in a different type, the global ids must be handed to the particle unique
+     *       global id handler in order to be reused.
+     *
+     * \note All particle added need a global id assigned.
      *
      * \author Sebastian Fuchs \date 11/2018
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
+    void RemoveOrInsertOwnedParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
     /*!

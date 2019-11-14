@@ -69,14 +69,14 @@ namespace PARTICLEENGINE
         const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
     /*!
-     * \brief change type of particles
+     * \brief remove or insert owned particles
      *
      * \author Sebastian Fuchs \date 11/2018
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    virtual void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
+    virtual void RemoveOrInsertOwnedParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
 
     /*!

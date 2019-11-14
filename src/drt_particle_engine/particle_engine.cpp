@@ -463,26 +463,35 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
       PARTICLEENGINE::Owned);
 }
 
-void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
+void PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles(
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TypeChangeParticles");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles");
 
-  // skip if no particles undergo a type change on this processor
+  // number of particles to remove
   int numparticlestoremove = 0;
   for (auto typeIt : particlestoremove) numparticlestoremove += typeIt.size();
-  if (not numparticlestoremove) return;
 
-  // remove particles from containers
-  RemoveParticlesFromContainers(particlestoremove);
+  if (numparticlestoremove)
+  {
+    // remove particles from containers
+    RemoveParticlesFromContainers(particlestoremove);
 
-  // insert owned particles undergoing a type change
-  InsertOwnedParticles(particlestoinsert);
+    // check and decrease the size of all containers of owned particles
+    particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+        PARTICLEENGINE::Owned);
+  }
 
-  // check and decrease the size of all containers of owned particles
-  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-      PARTICLEENGINE::Owned);
+  // number of particles to insert
+  int numparticlestoinsert = 0;
+  for (auto typeIt : particlestoinsert) numparticlestoinsert += typeIt.size();
+
+  if (numparticlestoinsert)
+  {
+    // insert owned particles
+    InsertOwnedParticles(particlestoinsert);
+  }
 }
 
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()

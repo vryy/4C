@@ -222,6 +222,6 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() cons
     }
   }
 
-  // change type of particles
-  particleengineinterface_->TypeChangeParticles(particlestoremove, particlestoinsert);
+  // remove or insert owned particles
+  particleengineinterface_->RemoveOrInsertOwnedParticles(particlestoremove, particlestoinsert);
 }
