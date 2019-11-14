@@ -182,6 +182,29 @@ void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
     particlestogetuniquegids[i]->SetParticleGlobalID(requesteduniqueglobalids[i]);
 }
 
+void PARTICLEENGINE::ParticleEngine::CheckNumberOfUniqueGlobalIds()
+{
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // get number of particles on all processors
+  int numberofparticles = GetNumberOfParticles();
+  MPI_Allreduce(MPI_IN_PLACE, &numberofparticles, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+
+  // get number of reusable global ids on all processors
+  int numberofreusableglobalids = particleuniqueglobalidhandler_->GetNumberOfReusableGlobalIds();
+  MPI_Allreduce(MPI_IN_PLACE, &numberofreusableglobalids, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+
+  // maximum global id
+  const int maxglobalid = particleuniqueglobalidhandler_->GetMaxGlobalId();
+
+  // safety check
+  if (numberofparticles + numberofreusableglobalids != (maxglobalid + 1))
+    dserror("sum of particles and reusable global ids unequal total global ids: %d + %d != %d",
+        numberofparticles, numberofreusableglobalids, (maxglobalid + 1));
+}
+
 void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {

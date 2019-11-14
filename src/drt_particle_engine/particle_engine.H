@@ -139,6 +139,17 @@ namespace PARTICLEENGINE
         std::vector<ParticleObjShrdPtr>& particlestogetuniquegids);
 
     /*!
+     * \brief check number of unique global ids
+     *
+     * Check the number of unique global ids to ensure that all freed global ids are reused. This
+     * means the sum of all particles and of all reusable global ids should equal the number of
+     * global ids.
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void CheckNumberOfUniqueGlobalIds();
+
+    /*!
      * \brief erase particles outside bounding box
      *
      * All particles handed in are checked if they are located inside the bounding box. Particles
