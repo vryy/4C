@@ -403,7 +403,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   const int spatialDim = DRT::Problem::Instance()->NDim();
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -601,10 +601,19 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // smooth interfaces
   // *********************************************************************
   // NURBS PROBLEM?
-  if (distype == "Nurbs")
-    mtparams.set<bool>("NURBS", true);
-  else
-    mtparams.set<bool>("NURBS", false);
+  switch (distype)
+  {
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      mtparams.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      mtparams.set<bool>("NURBS", false);
+      break;
+    }
+  }
 
   // *********************************************************************
   // poroelastic meshtying

@@ -20,20 +20,6 @@ namespace INPAR
 {
   namespace PROBLEMTYPE
   {
-    /*! \brief Type of shape functions used in spatial discretitzation
-     *
-     * Assigning explicit integer values here for historic reasons. This should go away, once we
-     * consequently use this enum throughout the entire code.
-     */
-    enum ShapeFunctionType
-    {
-      shapefunction_undefined = -1,  ///< Undefined
-      shapefunction_polynomial = 1,  ///< Polynomial shape functions
-      shapefunction_nurbs = 0,       ///< NURBS shape functions
-      shapefunction_meshfree = 2,    ///< Meshfree
-      shapefunction_hdg = 3          ///< Hybridizable Discontinuous Galerkin
-    };
-
     /*! \brief Define valid parameters
      *
      * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
@@ -46,6 +32,14 @@ namespace INPAR
     /// return problem type enum for a given problem name
     PROBLEM_TYP StringToProblemType(std::string name);
 
+    /// create map of shape function names and shape function type enum
+    std::map<std::string, SHAPEFUNCTION_TYPE> StringToShapeFunctionTypeMap();
+
+    /// return shape function type enum for a given shape function name
+    SHAPEFUNCTION_TYPE StringToShapeFunctionType(std::string name);
+
+    /// return shape function name for a given shape function type
+    std::string ShapeFunctionTypeToString(SHAPEFUNCTION_TYPE shapefunctiontype);
   }  // namespace PROBLEMTYPE
 }  // namespace INPAR
 

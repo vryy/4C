@@ -437,7 +437,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
         rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+    if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        SHAPEFUNCTION_TYPE::shapefunction_hdg)
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
     else
@@ -531,7 +532,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+    if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        SHAPEFUNCTION_TYPE::shapefunction_hdg)
       scatra_ = Teuchos::rcp(
           new SCATRA::TimIntHDG(discret, solver, scatratimeparams, extraparams, output));
     else
@@ -650,7 +652,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+  if (DRT::Problem::Instance()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg)
     return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
   else if (DRT::Problem::Instance()->ProblemType() == prb_elch or
            (DRT::Problem::Instance()->ProblemType() == prb_ssi and

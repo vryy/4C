@@ -473,7 +473,7 @@ IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
       meshfile_changed_(-1),
       output_(Teuchos::null),
       binio_(false),
-      spatial_approx_("")
+      spatial_approx_(SHAPEFUNCTION_TYPE::shapefunction_undefined)
 {
   // intentionally left blank
 }
@@ -493,7 +493,7 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
       resultfile_changed_(-1),
       meshfile_changed_(-1),
       output_(DRT::Problem::Instance()->OutputControlFile()),
-      spatial_approx_(DRT::Problem::Instance()->SpatialApproximation())
+      spatial_approx_(DRT::Problem::Instance()->SpatialApproximationType())
 {
   if (output_ != Teuchos::null) binio_ = output_->BinIO();
   // not nice, but needed in order to let pre_exodus read fields without output control file

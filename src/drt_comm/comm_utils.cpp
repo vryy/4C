@@ -13,6 +13,7 @@
  *----------------------------------------------------------------------*/
 #include "comm_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_globalproblem_enums.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -398,16 +399,16 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     //    {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    std::string distype;
+    SHAPEFUNCTION_TYPE distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
       DRT::Container cont;
       dis = problem->GetDis(disnames[i]);
       name = dis->Name();
-      distype = problem->SpatialApproximation();
+      distype = problem->SpatialApproximationType();
       cont.Add("disname", name);
-      cont.Add("distype", distype);
+      cont.Add("distype", (int)distype);
       DRT::PackBuffer buffer;
       cont.Pack(buffer);
       buffer.StartPacking();
@@ -435,8 +436,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    const std::string* rdistype = cont.Get<std::string>("distype");
-    distype = *rdistype;
+    distype = (SHAPEFUNCTION_TYPE)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -444,10 +444,19 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     }
     else
     {
-      if (distype == "Nurbs")
-        dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
-      else
-        dis = Teuchos::rcp(new DRT::Discretization(name, lcomm));
+      switch (distype)
+      {
+        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+        {
+          dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
+          break;
+        }
+        default:
+        {
+          dis = Teuchos::rcp(new DRT::Discretization(name, lcomm));
+          break:
+        }
+      }
     }
     // copy the discretization to the other groups
     for (int k = 0; k < group->NumGroups(); ++k)
@@ -521,16 +530,16 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
   {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    std::string distype;
+    SHAPEFUNCTION_TYPE distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
       DRT::Container cont;
       dis = problem->GetDis(disnames[i]);
       name = dis->Name();
-      distype = problem->SpatialApproximation();
+      distype = problem->SpatialApproximationType();
       cont.Add("disname", name);
-      cont.Add("distype", distype);
+      cont.Add("distype", (int)distype);
       DRT::PackBuffer buffer;
       cont.Pack(buffer);
       buffer.StartPacking();
@@ -558,8 +567,7 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    const std::string* rdistype = cont.Get<std::string>("distype");
-    distype = *rdistype;
+    distype = (SHAPEFUNCTION_TYPE)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -567,10 +575,19 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
     }
     else
     {
-      if (distype == "Nurbs")
-        dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
-      else
-        dis = Teuchos::rcp(new DRT::Discretization(name, lcomm));
+      switch (distype)
+      {
+        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+        {
+          dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
+          break;
+        }
+        default:
+        {
+          dis = Teuchos::rcp(new DRT::Discretization(name, lcomm));
+          break;
+        }
+      }
     }
     // copy the discretization to the other groups
     for (int k = numlevels; k > 0; --k)
@@ -659,15 +676,22 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
 
   // create a common discretization that we then fill with all stuff from sender group
   std::string name = dis->Name();
-  std::string type = DRT::Problem::Instance()->SpatialApproximation();
+  SHAPEFUNCTION_TYPE type = DRT::Problem::Instance()->SpatialApproximationType();
   Teuchos::RCP<DRT::Discretization> commondis;
-  if (type == "Nurbs")
+  switch (type)
   {
-    commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
-    dserror("For Nurbs this method needs additional features!");
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
+      dserror("For Nurbs this method needs additional features!");
+      break;
+    }
+    default:
+    {
+      commondis = Teuchos::rcp(new DRT::Discretization(name, icomm));
+      break;
+    }
   }
-  else
-    commondis = Teuchos::rcp(new DRT::Discretization(name, icomm));
 
   // --------------------------------------
   // sender group fills commondis with elements and nodes and conditions
@@ -941,15 +965,22 @@ void COMM_UTILS::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const
 
   // create a common discretization that we then fill with all stuff from sender group
   std::string name = dis->Name();
-  std::string type = DRT::Problem::Instance()->SpatialApproximation();
+  SHAPEFUNCTION_TYPE type = DRT::Problem::Instance()->SpatialApproximationType();
   Teuchos::RCP<DRT::Discretization> commondis;
-  if (type == "Nurbs")
+  switch (type)
   {
-    commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
-    dserror("For Nurbs this method needs additional features!");
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
+      dserror("For Nurbs this method needs additional features!");
+      break;
+    }
+    default:
+    {
+      commondis = Teuchos::rcp(new DRT::Discretization(name, icomm));
+      break;
+    }
   }
-  else
-    commondis = Teuchos::rcp(new DRT::Discretization(name, icomm));
 
 
   // --------------------------------------

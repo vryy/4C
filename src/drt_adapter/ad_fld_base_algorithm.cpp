@@ -674,21 +674,24 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_scatra:
       {
         // HDG implements all time stepping schemes within gen-alpha
-        if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                SHAPEFUNCTION_TYPE::shapefunction_hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_dens_mom &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                     SHAPEFUNCTION_TYPE::shapefunction_hdg &&
                  (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
                      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                     SHAPEFUNCTION_TYPE::shapefunction_hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
               new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
@@ -948,7 +951,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_freesurf:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                SHAPEFUNCTION_TYPE::shapefunction_hdg &&
             (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
                 DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==

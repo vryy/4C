@@ -22,6 +22,9 @@ extern "C"
 #include "../pss_full/pss_types.h"
 }
 
+//  Forward declaration
+enum class SHAPEFUNCTION_TYPE;
+
 namespace IO
 {
   /// control class to manage a control file for output
@@ -29,13 +32,13 @@ namespace IO
   {
    public:
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        std::string type_of_spatial_approx, std::string inputfile, std::string filename, int ndim,
-        int restart, int filesteps, int create_controlfile);
+        SHAPEFUNCTION_TYPE type_of_spatial_approx, std::string inputfile, std::string filename,
+        int ndim, int restart, int filesteps, int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        std::string type_of_spatial_approx, std::string inputfile, std::string restartfilename,
-        std::string outputfilename, int ndim, int restart, int filesteps, int create_controlfile,
-        bool adaptname = true);
+        SHAPEFUNCTION_TYPE type_of_spatial_approx, std::string inputfile,
+        std::string restartfilename, std::string outputfilename, int ndim, int restart,
+        int filesteps, int create_controlfile, bool adaptname = true);
 
     /// \brief copy constructor
     /** \param[in] ocontrol   Copy this object of same type
@@ -79,21 +82,22 @@ namespace IO
     int BinIO() const { return create_controlfile_; }
 
     /// overwrites result files for the inverse analysis
-    void OverwriteResultFile(const std::string& spatial_approx);
+    void OverwriteResultFile(const SHAPEFUNCTION_TYPE& spatial_approx);
     /// creates new result files for the inverse analysis
-    void NewResultFile(int numb_run, const std::string& spatial_approx);
+    void NewResultFile(int numb_run, const SHAPEFUNCTION_TYPE& spatial_approx);
     /// creates new result files for the mlmc
     void NewResultFile(
-        const std::string& name_appendix, int numb_run, const std::string& spatial_approx);
+        const std::string& name_appendix, int numb_run, const SHAPEFUNCTION_TYPE& spatial_approx);
 
     /// creates new result files
-    void NewResultFile(std::string name, const std::string& spatial_approx);
+    void NewResultFile(std::string name, const SHAPEFUNCTION_TYPE& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
    private:
-    void WriteHeader(const std::string& control_file_name, const std::string& spatial_approx);
+    void WriteHeader(
+        const std::string& control_file_name, const SHAPEFUNCTION_TYPE& spatial_approx);
 
     void InsertRestartBackReference(int restart, const std::string& outputname);
 

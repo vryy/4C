@@ -16,6 +16,8 @@
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_inpar/inpar_problemtype.H"
+
 #include "../drt_lib/drt_discret_xfem.H"
 
 #include <string>
@@ -95,7 +97,8 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->SpatialApproximation() == "Nurbs") iter++;
+  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs)
+    iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
   for (int i = 0; i < iter; ++i)
@@ -440,7 +443,8 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximation() == "Nurbs" && !writecp_)
+  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+      !writecp_)
   {
     // cast dis to NurbsDiscretisation
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -498,10 +502,11 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
     std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
 {
+  SHAPEFUNCTION_TYPE distype = field_->problem()->SpatialApproximationType();
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
-    std::cout << field_->problem()->SpatialApproximation();
+    std::cout << INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(distype);
     std::cout << " approximation\n";
   }
 
@@ -509,23 +514,28 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   // communicated to proc 0
   Teuchos::RCP<Epetra_Map> proc0map;
 
-  if (field_->problem()->SpatialApproximation() == "Polynomial" or
-      field_->problem()->SpatialApproximation() == "Meshfree" or
-      field_->problem()->SpatialApproximation() == "HDG")
+  switch (distype)
   {
-    WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
-  }
-  else if (field_->problem()->SpatialApproximation() == "Nurbs")
-  {
-    // write real geometry coordinates
-    if (!writecp_) WriteCoordinatesForNurbsShapefunctions(geofile, dis, proc0map);
-    // write control point coordinates
-    else
+    case SHAPEFUNCTION_TYPE::shapefunction_polynomial:
+    case SHAPEFUNCTION_TYPE::shapefunction_meshfree:
+    case SHAPEFUNCTION_TYPE::shapefunction_hdg:
+    {
       WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
-  }
-  else
-  {
-    dserror("Unknown spatial approximation.");
+      break;
+    }
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      // write real geometry coordinates
+      if (!writecp_) WriteCoordinatesForNurbsShapefunctions(geofile, dis, proc0map);
+      // write control point coordinates
+      else
+        WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
+      break;
+    }
+    default:
+    {
+      dserror("Undefined spatial approximation type.");
+    }
   }
 
   return proc0map;
@@ -1676,14 +1686,19 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximation() == "Nurbs" && !writecp_)
+  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+      !writecp_)
   {
     WriteDofResultStepForNurbs(file, numdf, data, name, offset);
   }
-  else if (field_->problem()->SpatialApproximation() == "Polynomial" or
-           field_->problem()->SpatialApproximation() == "Meshfree" or
-           field_->problem()->SpatialApproximation() == "HDG" or
-           (field_->problem()->SpatialApproximation() == "Nurbs" && writecp_))
+  else if (field_->problem()->SpatialApproximationType() ==
+               SHAPEFUNCTION_TYPE::shapefunction_polynomial or
+           field_->problem()->SpatialApproximationType() ==
+               SHAPEFUNCTION_TYPE::shapefunction_meshfree or
+           field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg or
+           (field_->problem()->SpatialApproximationType() ==
+                   SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+               writecp_))
   {
     //------------------------------------------------------
     // each processor provides its result values for proc 0
@@ -1803,7 +1818,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   }
   else
   {
-    dserror("spatial approximation neither Nurbs nor Polynomial\n");
+    dserror("Undefined spatial approximation type.\n");
   }
 
   Write(file, "END TIME STEP");
@@ -1850,14 +1865,19 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximation() == "Nurbs" && !writecp_)
+  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+      !writecp_)
   {
     WriteNodalResultStepForNurbs(file, numdf, data, name, 0);
   }
-  else if (field_->problem()->SpatialApproximation() == "Polynomial" or
-           field_->problem()->SpatialApproximation() == "Meshfree" or
-           field_->problem()->SpatialApproximation() == "HDG" or
-           (field_->problem()->SpatialApproximation() == "Nurbs" && writecp_))
+  else if (field_->problem()->SpatialApproximationType() ==
+               SHAPEFUNCTION_TYPE::shapefunction_polynomial or
+           field_->problem()->SpatialApproximationType() ==
+               SHAPEFUNCTION_TYPE::shapefunction_meshfree or
+           field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg or
+           (field_->problem()->SpatialApproximationType() ==
+                   SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+               writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
     Teuchos::RCP<Epetra_MultiVector> data_proc0 =
@@ -1896,7 +1916,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   }  // polynomial || meshfree
   else
   {
-    dserror("spatial approximation neither Nurbs nor Polynomial\n");
+    dserror("Undefined spatial approximation type.\n");
   }
 
   Write(file, "END TIME STEP");

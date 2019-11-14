@@ -25,8 +25,6 @@
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
-#include "../drt_inpar/inpar_problemtype.H"
-
 namespace IO
 {
   class OutputControl;
@@ -251,7 +249,7 @@ namespace DRT
     std::string SpatialApproximation() const;
 
     //! Return type of the basis function encoded as enum
-    INPAR::PROBLEMTYPE::ShapeFunctionType SpatialApproximationType() const;
+    SHAPEFUNCTION_TYPE SpatialApproximationType() const { return shapefuntype_; }
 
     //! @}
 
@@ -670,6 +668,9 @@ namespace DRT
 
     /// the problem type
     PROBLEM_TYP probtype_;
+
+    /// Spatial approximation type
+    SHAPEFUNCTION_TYPE shapefuntype_;
 
     /// the restart step (given by command line or input file)
     int restartstep_;

@@ -27,6 +27,8 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   {
     Teuchos::Array<std::string> name;
     Teuchos::Array<int> label;
+    Teuchos::Array<std::string> shape_name;
+    Teuchos::Array<int> shape_label;
 
     // fill the arrays
     {
@@ -37,20 +39,25 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         name.push_back(i->first);
         label.push_back(i->second);
       }
+      std::map<std::string, SHAPEFUNCTION_TYPE> shape_map = StringToShapeFunctionTypeMap();
+      std::map<std::string, SHAPEFUNCTION_TYPE>::const_iterator j;
+      for (j = shape_map.begin(); j != shape_map.end(); ++j)
+      {
+        shape_name.push_back(j->first);
+        shape_label.push_back((int)j->second);
+      }
     }
 
     setStringToIntegralParameter<int>(
         "PROBLEMTYP", "Fluid_Structure_Interaction", "", name, label, &type);
+
+    setStringToIntegralParameter<int>("SHAPEFCT", "Polynomial",
+        "Defines the function spaces for the spatial approximation", shape_name, shape_label,
+        &type);
   }
 
   IntParameter("RESTART", 0, "", &type);
   DoubleParameter("RESTARTTIME", -1.0, "Used defined restart time", &type);
-  setStringToIntegralParameter<int>("SHAPEFCT", "Polynomial",
-      "Defines the function spaces for the spatial approximation",
-      tuple<std::string>("Polynomial", "Nurbs", "Meshfree", "HDG"),
-      tuple<int>(
-          shapefunction_polynomial, shapefunction_nurbs, shapefunction_meshfree, shapefunction_hdg),
-      &type);
   IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
 
 #if 0  // currently not in use
@@ -142,4 +149,56 @@ PROBLEM_TYP INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
   dserror("unsupported problem name '%s'", name.c_str());
 
   return prb_none;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::map<std::string, SHAPEFUNCTION_TYPE> INPAR::PROBLEMTYPE::StringToShapeFunctionTypeMap()
+{
+  static std::map<std::string, SHAPEFUNCTION_TYPE> string2shapefuntype;
+
+  if (string2shapefuntype.size() == 0)
+  {
+    // problem types in alphabetical order
+    string2shapefuntype["Polynomial"] = SHAPEFUNCTION_TYPE::shapefunction_polynomial;
+    string2shapefuntype["Nurbs"] = SHAPEFUNCTION_TYPE::shapefunction_nurbs;
+    string2shapefuntype["Meshfree"] = SHAPEFUNCTION_TYPE::shapefunction_meshfree;
+    string2shapefuntype["HDG"] = SHAPEFUNCTION_TYPE::shapefunction_hdg;
+  }
+
+  return string2shapefuntype;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SHAPEFUNCTION_TYPE INPAR::PROBLEMTYPE::StringToShapeFunctionType(std::string name)
+{
+  std::map<std::string, SHAPEFUNCTION_TYPE> map = StringToShapeFunctionTypeMap();
+  std::map<std::string, SHAPEFUNCTION_TYPE>::const_iterator i = map.find(name);
+  if (i != map.end()) return i->second;
+  dserror(
+      "'%s' does not name a shape function type. Check for typos or consider adding the shape "
+      "function type to the map.",
+      name.c_str());
+
+  return SHAPEFUNCTION_TYPE::shapefunction_undefined;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::string INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(SHAPEFUNCTION_TYPE shapefunctiontype)
+{
+  std::map<std::string, SHAPEFUNCTION_TYPE> map = StringToShapeFunctionTypeMap();
+
+  std::map<SHAPEFUNCTION_TYPE, std::string> reversed;
+  for (std::map<std::string, SHAPEFUNCTION_TYPE>::iterator i = map.begin(); i != map.end(); ++i)
+    reversed[i->second] = i->first;
+
+  std::map<SHAPEFUNCTION_TYPE, std::string>::const_iterator i = reversed.find(shapefunctiontype);
+  if (i != reversed.end()) return i->second;
+  dserror(
+      "Could not find the name of the given shape function type or the shapefunction is "
+      "undefined.");
+
+  return "";
 }

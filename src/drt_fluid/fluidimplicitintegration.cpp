@@ -120,7 +120,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       impedancebc_(Teuchos::null),
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
-      ndsale_((DRT::Problem::Instance()->SpatialApproximation() == "HDG") * 2),
+      ndsale_((DRT::Problem::Instance()->SpatialApproximationType() ==
+                  SHAPEFUNCTION_TYPE::shapefunction_hdg) *
+              2),
       massmat_(Teuchos::null),
       logenergy_(Teuchos::null)
 {
@@ -874,7 +876,8 @@ void FLD::FluidImplicitTimeInt::Solve()
       //     the integration error can already disturb matrix nullspace too
       //     much for sensitive problems
       //     xwall uses non-polynomial shape functions
-      if (DRT::Problem::Instance()->SpatialApproximation() == "Polynomial" &&
+      if (DRT::Problem::Instance()->SpatialApproximationType() ==
+              SHAPEFUNCTION_TYPE::shapefunction_polynomial &&
           xwall_ == Teuchos::null)
         CheckMatrixNullspace();
 

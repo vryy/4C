@@ -97,4 +97,15 @@ typedef enum _NP_TYPE
   no_nested_parallelism
 } NP_TYPE;
 
+
+/// Type of shape functions used in spatial discretization
+enum class SHAPEFUNCTION_TYPE
+{
+  shapefunction_undefined,   ///< Undefined
+  shapefunction_polynomial,  ///< Polynomial shape functions
+  shapefunction_nurbs,       ///< NURBS shape functions
+  shapefunction_meshfree,    ///< Meshfree
+  shapefunction_hdg          ///< Hybridizable Discontinuous Galerkin
+};
+
 #endif

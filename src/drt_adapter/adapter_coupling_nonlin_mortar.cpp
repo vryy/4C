@@ -211,8 +211,8 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
-  if (distype == "Nurbs") isnurbs = true;
+  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  if (distype == SHAPEFUNCTION_TYPE::shapefunction_nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
@@ -647,15 +647,22 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
-  if (distype == "Nurbs")
+  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  switch (distype)
   {
-    // ***
-    dserror("nurbs for fsi mortar not supported!");
-    input.set<bool>("NURBS", true);
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      // ***
+      dserror("nurbs for fsi mortar not supported!");
+      input.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      input.set<bool>("NURBS", false);
+      break;
+    }
   }
-  else
-    input.set<bool>("NURBS", false);
 
   // as two half pass approach is not implemented for this approach set false
   input.set<bool>("Two_half_pass", false);

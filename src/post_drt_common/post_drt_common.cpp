@@ -168,13 +168,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   const std::string probtype(type);
   problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
 
-  spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
-
-  if (spatial_approx_ != "Nurbs" and spatial_approx_ != "Polynomial" and
-      spatial_approx_ != "Meshfree" and spatial_approx_ != "HDG")
-  {
-    dserror("unknown type of spatial approximation '%s'", spatial_approx_.c_str());
-  }
+  spatial_approx_ = INPAR::PROBLEMTYPE::StringToShapeFunctionType(
+      map_read_string(&control_table_, "spatial_approximation"));
 
   /*--------------------------------------------------------------------*/
   /* collect all result groups */
@@ -623,99 +618,104 @@ void PostProblem::read_meshes()
       }
 
       // read knot vectors for nurbs discretisations
-      if (spatial_approx_ == "Nurbs")
+      switch (spatial_approx_)
       {
-        // try a dynamic cast of the discretisation to a nurbs discretisation
-        DRT::NURBS::NurbsDiscretization* nurbsdis =
-            dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
-
-        if (nurbsdis == NULL)
-          dserror("Discretization %s is not a NurbsDiscretization",
-              currfield.discretization()->Name().c_str());
-
-        Teuchos::RCP<std::vector<char>> packed_knots;
-        if (comm_->MyPID() == 0)
-          packed_knots = reader.ReadKnotvector(step);
-        else
-          packed_knots = Teuchos::rcp(new std::vector<char>());
-
-        // distribute knots to all procs
-        if (comm_->NumProc() > 1)
+        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
         {
-          DRT::Exporter exporter(nurbsdis->Comm());
+          // try a dynamic cast of the discretisation to a nurbs discretisation
+          DRT::NURBS::NurbsDiscretization* nurbsdis =
+              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
+          if (nurbsdis == NULL)
+            dserror("Discretization %s is not a NurbsDiscretization",
+                currfield.discretization()->Name().c_str());
+
+          Teuchos::RCP<std::vector<char>> packed_knots;
           if (comm_->MyPID() == 0)
-          {
-#ifdef PARALLEL
-            MPI_Request request;
-            int tag = -1;
-            int frompid = 0;
-            int topid = -1;
-
-            for (int np = 1; np < comm_->NumProc(); ++np)
-            {
-              tag = np;
-              topid = np;
-
-              exporter.ISend(
-                  frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
-            }
-#endif
-          }
+            packed_knots = reader.ReadKnotvector(step);
           else
+            packed_knots = Teuchos::rcp(new std::vector<char>());
+
+          // distribute knots to all procs
+          if (comm_->NumProc() > 1)
           {
+            DRT::Exporter exporter(nurbsdis->Comm());
+
+            if (comm_->MyPID() == 0)
+            {
 #ifdef PARALLEL
-            int length = -1;
-            int frompid = 0;
-            int mypid = comm_->MyPID();
+              MPI_Request request;
+              int tag = -1;
+              int frompid = 0;
+              int topid = -1;
 
-            std::vector<char> rblock;
+              for (int np = 1; np < comm_->NumProc(); ++np)
+              {
+                tag = np;
+                topid = np;
 
-            exporter.ReceiveAny(frompid, mypid, rblock, length);
-
-            *packed_knots = rblock;
+                exporter.ISend(
+                    frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
+              }
 #endif
+            }
+            else
+            {
+#ifdef PARALLEL
+              int length = -1;
+              int frompid = 0;
+              int mypid = comm_->MyPID();
+
+              std::vector<char> rblock;
+
+              exporter.ReceiveAny(frompid, mypid, rblock, length);
+
+              *packed_knots = rblock;
+#endif
+            }
           }
-        }
 
-        Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
+          Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
 
-        knots->Unpack(*packed_knots);
+          knots->Unpack(*packed_knots);
 
-        if (nurbsdis == NULL)
-        {
-          dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
-        }
+          if (nurbsdis == NULL)
+          {
+            dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
+          }
 
-        if (nurbsdis->Comm().NumProc() != 1)
-          nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
-        else
-          nurbsdis->FillComplete(false, false, false);
+          if (nurbsdis->Comm().NumProc() != 1)
+            nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
+          else
+            nurbsdis->FillComplete(false, false, false);
 
 
-        if (!(nurbsdis->Filled()))
-        {
-          dserror("nurbsdis was not fc\n");
-        }
+          if (!(nurbsdis->Filled()))
+          {
+            dserror("nurbsdis was not fc\n");
+          }
 
-        int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
+          int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
 
-        knots->FinishKnots(smallest_gid_in_dis);
+          knots->FinishKnots(smallest_gid_in_dis);
 
-        nurbsdis->SetKnotVector(knots);
+          nurbsdis->SetKnotVector(knots);
 
-        // do initialisation
-        currfield.discretization()->FillComplete();
-      }
-      else
-      {
-        // setup of parallel layout: create ghosting of already distributed nodes+elems
-        if (currfield.discretization()->Comm().NumProc() != 1)
-        {
-          currfield.discretization()->SetupGhostingWrongNameDoNotUse();
-        }
-        else
+          // do initialisation
           currfield.discretization()->FillComplete();
+
+          break;
+        }
+        default:
+        {
+          // setup of parallel layout: create ghosting of already distributed nodes+elems
+          if (currfield.discretization()->Comm().NumProc() != 1)
+            currfield.discretization()->SetupGhostingWrongNameDoNotUse();
+          else
+            currfield.discretization()->FillComplete();
+
+          break;
+        }
       }
 
       // -------------------------------------------------------------------
@@ -924,99 +924,104 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     }
 
     // read knot vectors for nurbs discretisations
-    if (spatial_approx_ == "Nurbs")
+    switch (spatial_approx_)
     {
-      // try a dynamic cast of the discretisation to a nurbs discretisation
-      DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
-
-      if (nurbsdis == NULL)
-        dserror("Discretization %s is not a NurbsDiscretization",
-            currfield.discretization()->Name().c_str());
-
-      Teuchos::RCP<std::vector<char>> packed_knots;
-      if (comm_->MyPID() == 0)
-        packed_knots = reader.ReadKnotvector(step);
-      else
-        packed_knots = Teuchos::rcp(new std::vector<char>());
-
-      // distribute knots to all procs
-      if (comm_->NumProc() > 1)
+      case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
       {
-        DRT::Exporter exporter(nurbsdis->Comm());
+        // try a dynamic cast of the discretisation to a nurbs discretisation
+        DRT::NURBS::NurbsDiscretization* nurbsdis =
+            dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
+        if (nurbsdis == NULL)
+          dserror("Discretization %s is not a NurbsDiscretization",
+              currfield.discretization()->Name().c_str());
+
+        Teuchos::RCP<std::vector<char>> packed_knots;
         if (comm_->MyPID() == 0)
-        {
-#ifdef PARALLEL
-          MPI_Request request;
-          int tag = -1;
-          int frompid = 0;
-          int topid = -1;
-
-          for (int np = 1; np < comm_->NumProc(); ++np)
-          {
-            tag = np;
-            topid = np;
-
-            exporter.ISend(
-                frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
-          }
-#endif
-        }
+          packed_knots = reader.ReadKnotvector(step);
         else
+          packed_knots = Teuchos::rcp(new std::vector<char>());
+
+        // distribute knots to all procs
+        if (comm_->NumProc() > 1)
         {
+          DRT::Exporter exporter(nurbsdis->Comm());
+
+          if (comm_->MyPID() == 0)
+          {
 #ifdef PARALLEL
-          int length = -1;
-          int frompid = 0;
-          int mypid = comm_->MyPID();
+            MPI_Request request;
+            int tag = -1;
+            int frompid = 0;
+            int topid = -1;
 
-          std::vector<char> rblock;
+            for (int np = 1; np < comm_->NumProc(); ++np)
+            {
+              tag = np;
+              topid = np;
 
-          exporter.ReceiveAny(frompid, mypid, rblock, length);
-
-          *packed_knots = rblock;
+              exporter.ISend(
+                  frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
+            }
 #endif
+          }
+          else
+          {
+#ifdef PARALLEL
+            int length = -1;
+            int frompid = 0;
+            int mypid = comm_->MyPID();
+
+            std::vector<char> rblock;
+
+            exporter.ReceiveAny(frompid, mypid, rblock, length);
+
+            *packed_knots = rblock;
+#endif
+          }
         }
-      }
 
-      Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
+        Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
 
-      knots->Unpack(*packed_knots);
+        knots->Unpack(*packed_knots);
 
-      if (nurbsdis == NULL)
-      {
-        dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
-      }
+        if (nurbsdis == NULL)
+        {
+          dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
+        }
 
-      if (nurbsdis->Comm().NumProc() != 1)
-        nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
-      else
-        nurbsdis->FillComplete(false, false, false);
+        if (nurbsdis->Comm().NumProc() != 1)
+          nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
+        else
+          nurbsdis->FillComplete(false, false, false);
 
 
-      if (!(nurbsdis->Filled()))
-      {
-        dserror("nurbsdis was not fc\n");
-      }
+        if (!(nurbsdis->Filled()))
+        {
+          dserror("nurbsdis was not fc\n");
+        }
 
-      int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
+        int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
 
-      knots->FinishKnots(smallest_gid_in_dis);
+        knots->FinishKnots(smallest_gid_in_dis);
 
-      nurbsdis->SetKnotVector(knots);
+        nurbsdis->SetKnotVector(knots);
 
-      // do initialisation
-      currfield.discretization()->FillComplete();
-    }
-    else
-    {
-      // setup of parallel layout: create ghosting of already distributed nodes+elems
-      if (currfield.discretization()->Comm().NumProc() != 1)
-      {
-        currfield.discretization()->SetupGhostingWrongNameDoNotUse();
-      }
-      else
+        // do initialisation
         currfield.discretization()->FillComplete();
+
+        break;
+      }
+      default:
+      {
+        // setup of parallel layout: create ghosting of already distributed nodes+elems
+        if (currfield.discretization()->Comm().NumProc() != 1)
+          currfield.discretization()->SetupGhostingWrongNameDoNotUse();
+        else
+          currfield.discretization()->FillComplete();
+
+        break;
+      }
     }
 
     // -------------------------------------------------------------------
@@ -1046,17 +1051,25 @@ PostField PostProblem::getfield(MAP* field_info)
 
   Teuchos::RCP<DRT::Discretization> dis;
 
-  if (spatial_approx_ == "Polynomial" or spatial_approx_ == "Meshfree" or spatial_approx_ == "HDG")
+  switch (spatial_approx_)
   {
-    dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
-  }
-  else if (spatial_approx_ == "Nurbs")
-  {
-    dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
-  }
-  else
-  {
-    dserror("Unknown type of spatial approximation\n");
+    case SHAPEFUNCTION_TYPE::shapefunction_polynomial:
+    case SHAPEFUNCTION_TYPE::shapefunction_hdg:
+    case SHAPEFUNCTION_TYPE::shapefunction_meshfree:
+    {
+      dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
+      break;
+    }
+    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    {
+      dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
+      break;
+    }
+    default:
+    {
+      dserror("Undefined spatial approximation type.\n");
+      break;
+    }
   }
 
   return PostField(dis, this, field_name, numnd, numele);

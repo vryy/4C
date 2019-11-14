@@ -215,7 +215,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
     Teuchos::RCP<IO::OutputControl> microcontrol =
         Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
-            microproblem->SpatialApproximation(), "micro-input-file-not-known", restartname_,
+            microproblem->SpatialApproximationType(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->FileSteps(),
             DRT::INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 

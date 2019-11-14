@@ -408,7 +408,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 
   Teuchos::RCP<IO::OutputControl> myoutputcontrol =
       Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(), probtype,
-          "Polynomial", "myinput", outname, numdim, 0, 1000));
+          SHAPEFUNCTION_TYPE::shapefunction_polynomial, "myinput", outname, numdim, 0, 1000));
   // create discretization writer with my own control settings
   Teuchos::RCP<IO::DiscretizationWriter> myoutput = ScaTraField().Discretization()->Writer();
   myoutput->SetOutput(myoutputcontrol);
