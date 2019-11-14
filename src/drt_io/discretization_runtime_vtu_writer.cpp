@@ -242,18 +242,8 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
         if (lid > -1)
           vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
         else
-        {
-          // Fixme what about the 'fillzeros' flag? for now -> dserror
-          //          if( fillzeros )
-          //            vtu_point_result_data.push_back(0.);
-          //          else
           dserror("received illegal dof local id: %d", lid);
-        }
       }
-
-      // Fixme what about the following lines?
-      //      for (int d=numdf; d<ncomponents; ++d)
-      //        vtu_point_result_data.push_back(0.);
     }
 
     pointcounter += ele->NumNode();
