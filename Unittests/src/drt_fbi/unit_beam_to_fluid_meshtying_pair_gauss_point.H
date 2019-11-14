@@ -19,7 +19,6 @@
 #include "../../../src/drt_beam3/beam3eb.H"
 #include "../../../src/drt_fluid_ele/fluid_ele.H"
 #include "../../../src/drt_geometry_pair/geometry_pair_element_functions.H"
-//#include "../../../src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../../../src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
 #include "../../../src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../../../src/drt_geometry_pair/geometry_pair_utility_classes.H"
@@ -119,13 +118,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     v_beam(9) = 0.0;
     v_beam(10) = 0.0;
     v_beam(11) = 0.0;
-
-    q_beam_rot(0) = 0.0;
-    q_beam_rot(1) = 1.0;
-    q_beam_rot(2) = 0.0;
-    q_beam_rot(3) = 0.0;
-    q_beam_rot(4) = 1.0;
-    q_beam_rot(5) = 0.0;
 
     for (unsigned int i = 0; i < beam_type::n_dof_; i++)
     {
@@ -291,7 +283,9 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     results_kfs(0, 11) = 0.0039062500000000;
 
     results_fs(0) = -1.0;
+    results_fs(3) = -0.33333333333333333;
     results_fs(6) = -1.0;
+    results_fs(9) = 0.33333333333333333;
 
     // Perform the unit tests.
     PerformGPTSPairUnitTest<beam_type, fluid_type>(pair, q_beam, beam_centerline_dofvec, q_beam_rot,
@@ -329,11 +323,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
         xrefe[3 * n + i] = q_beam(6 * n + i);
       }
     }
-    /*
-           // Get the rotational vector.
-           std::vector<double> rotrefe(6);
-           for (unsigned int i = 0; i < 6; i++) rotrefe[6] = q_beam_rot(6);
-       */
     // Cast beam element and set the geometry.
     Teuchos::RCP<DRT::ELEMENTS::Beam3eb> beam_element_cast =
         Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3eb>(beam_element, true);

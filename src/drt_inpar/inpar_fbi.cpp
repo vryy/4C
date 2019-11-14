@@ -60,6 +60,9 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
       &beam_to_fluid_meshtying);
 
+  DoubleParameter("SEARCH_RADIUS", 1000, "Search radius for beam-to-fluid volume meshtying",
+      &beam_to_fluid_meshtying);
+
   // Add the geometry pair input parameters.
   INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_fluid_meshtying);
 

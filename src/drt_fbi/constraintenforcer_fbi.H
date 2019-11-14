@@ -282,6 +282,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
+
+    /** \brief The search radius is used for the pair search and describes the maximum distance of a
+     * beam node and a respective fluid node in order for the respective element pair to be found
+     * and used for the integration
+     *
+     */
+    const double searchradius_;
   };
 }  // namespace ADAPTER
 #endif

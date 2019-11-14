@@ -42,7 +42,11 @@ ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
       edgebased_fluidstabilization(false),
       column_structure_displacement_(Teuchos::null),
       column_structure_velocity_(Teuchos::null),
-      column_fluid_velocity_(Teuchos::null)
+      column_fluid_velocity_(Teuchos::null),
+      searchradius_(DRT::Problem::Instance()
+                        ->FBIParams()
+                        .sublist("BEAM TO FLUID MESHTYING")
+                        .get<double>("SEARCH_RADIUS"))
 {
   edgebased_fluidstabilization =
       (DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(
@@ -80,8 +84,6 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
   // Vector to hand elements pointers to the bridge object
   std::map<int, std::vector<int>> pairids;
-  // todo search radius is hard-coded for the first few tries
-  const double searchradius = 0.4;
   bridge_->ResetBridge();
   // todo Specific to 'linearized penalty'. Maybe have to do something for structure+beam in
   // discretization.
@@ -95,7 +97,7 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
     const LINALG::Matrix<3, 1>& curbeamnodeposition = beamnodeiterator->second;
     std::map<int, std::set<int>> closeeles =
         searchtree_->searchElementsInRadius(*(fluid_->Discretization()), *fluidpositions_,
-            curbeamnodeposition, searchradius, 0);  // todo check label
+            curbeamnodeposition, searchradius_, 0);  // todo check label
 
     // loop over the map of beam node-IDs and fluid elements within the search radius
     for (std::map<int, std::set<int>>::const_iterator closefluideles = closeeles.begin();
