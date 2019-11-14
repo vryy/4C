@@ -32,7 +32,7 @@ variables:
     CTEST_FAIL_ON_WARNING: "1"
 
     # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
-    GITLAB_SCHEDULER_LNM_KAISER: "0"
+    GITLAB_SCHEDULER_LNM_SCHMARRN: "0"
     GITLAB_SCHEDULER_LNM_DEEP: "0"
     GITLAB_SCHEDULER_LNM_BRUTEFORCE: "0"
 
@@ -442,22 +442,22 @@ lnm-buildtest_daily_deep:
         variables:
             - $GITLAB_SCHEDULER_LNM_DEEP == "1"
 
-lnm-buildtest_daily_kaiser:
+lnm-buildtest_daily_schmarrn:
     << : *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Kaiser-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "kaiser_Q12015_gcc48_ACML_ompi162.config"
+        CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-release-nightly-build-kaiser
+      - lnm-release-nightly-build-schmarrn
     only:
         variables:
-            - $GITLAB_SCHEDULER_LNM_KAISER == "1"
+          - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
 
 
 lnm-buildtest_daily_debug:
