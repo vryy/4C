@@ -179,7 +179,7 @@ void PARTICLEWALL::WallHandlerBase::UpdateBinRowAndColMap(
 void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
 {
   // get bounding box dimension
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
+  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // iterate over row wall nodes
   for (int rowlidofnode = 0; rowlidofnode < walldiscretization_->NumMyRowNodes(); ++rowlidofnode)
@@ -214,7 +214,7 @@ void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
 
     // safety check
     for (int dim = 0; dim < 3; ++dim)
-      if (currpos(dim) < xaabb(dim, 0) or xaabb(dim, 1) < currpos(dim))
+      if (currpos(dim) < boundingbox(dim, 0) or boundingbox(dim, 1) < currpos(dim))
         dserror("node gid=%d resides outside of bounding box!", node->Id());
   }
 }
@@ -679,7 +679,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     eleids.reserve(6);
 
     // get bounding box dimension
-    LINALG::Matrix<3, 2> xaabb = binstrategy_->DomainBoundingBoxCornerPositions();
+    LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
     // reduce bounding box size to account for round-off errors
     for (int dim = 0; dim < 3; ++dim)
@@ -687,8 +687,8 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
       // periodic boundary conditions in current spatial direction
       if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim)) continue;
 
-      xaabb(dim, 0) += 1.0e-12;
-      xaabb(dim, 1) -= 1.0e-12;
+      boundingbox(dim, 0) += 1.0e-12;
+      boundingbox(dim, 1) -= 1.0e-12;
     }
 
     // init vector of corner node positions
@@ -696,14 +696,14 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     nodepositions.reserve(8);
 
     // determine corner node positions from bounding box dimension
-    nodepositions.push_back({xaabb(0, 0), xaabb(1, 0), xaabb(2, 0)});
-    nodepositions.push_back({xaabb(0, 0), xaabb(1, 1), xaabb(2, 0)});
-    nodepositions.push_back({xaabb(0, 0), xaabb(1, 1), xaabb(2, 1)});
-    nodepositions.push_back({xaabb(0, 0), xaabb(1, 0), xaabb(2, 1)});
-    nodepositions.push_back({xaabb(0, 1), xaabb(1, 0), xaabb(2, 0)});
-    nodepositions.push_back({xaabb(0, 1), xaabb(1, 1), xaabb(2, 0)});
-    nodepositions.push_back({xaabb(0, 1), xaabb(1, 1), xaabb(2, 1)});
-    nodepositions.push_back({xaabb(0, 1), xaabb(1, 0), xaabb(2, 1)});
+    nodepositions.push_back({boundingbox(0, 0), boundingbox(1, 0), boundingbox(2, 0)});
+    nodepositions.push_back({boundingbox(0, 0), boundingbox(1, 1), boundingbox(2, 0)});
+    nodepositions.push_back({boundingbox(0, 0), boundingbox(1, 1), boundingbox(2, 1)});
+    nodepositions.push_back({boundingbox(0, 0), boundingbox(1, 0), boundingbox(2, 1)});
+    nodepositions.push_back({boundingbox(0, 1), boundingbox(1, 0), boundingbox(2, 0)});
+    nodepositions.push_back({boundingbox(0, 1), boundingbox(1, 1), boundingbox(2, 0)});
+    nodepositions.push_back({boundingbox(0, 1), boundingbox(1, 1), boundingbox(2, 1)});
+    nodepositions.push_back({boundingbox(0, 1), boundingbox(1, 0), boundingbox(2, 1)});
 
     int nodeid = 0;
     for (auto& nodepos : nodepositions)
