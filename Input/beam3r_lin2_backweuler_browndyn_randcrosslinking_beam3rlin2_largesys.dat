@@ -45,9 +45,9 @@ NEGLECTINERTIA                  yes
 ---------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 ------------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   0.4
+BIN_SIZE_LOWER_BOUND            0.4
 PERIODICONOFF                   1 1 1
-BOUNDINGBOX                     0 0 0 5 5 5
+DOMAINBOUNDINGBOX               0 0 0 5 5 5
 ---------------------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
 VISCOSITY                       0.001

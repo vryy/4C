@@ -68,8 +68,8 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   1
-BOUNDINGBOX                     -3 -3 -3 3 3 3
+BIN_SIZE_LOWER_BOUND            1
+DOMAINBOUNDINGBOX               -3 -3 -3 3 3 3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym

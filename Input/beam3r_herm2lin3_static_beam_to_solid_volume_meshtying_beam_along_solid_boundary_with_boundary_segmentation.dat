@@ -72,8 +72,8 @@ INTEGRATION_POINTS                    yes
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   2
-BOUNDINGBOX                     -2 -2 -2 2 2 2
+BIN_SIZE_LOWER_BOUND            2
+DOMAINBOUNDINGBOX               -2 -2 -2 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE  0.0                     TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispy VALUE  1.14865589552918229e-01 TOLERANCE 1e-8

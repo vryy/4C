@@ -46,7 +46,7 @@ MASSLIN                rotations
 NEGLECTINERTIA         yes
 --------------------------------------------------------------------BINNING STRATEGY
 PERIODICONOFF          1 1 1
-BOUNDINGBOX            0 0 0 5 5 5
+DOMAINBOUNDINGBOX      0 0 0 5 5 5
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1                     // header_01 end
 ----------------------------------------------BROWNIAN DYNAMICS

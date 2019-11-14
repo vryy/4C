@@ -95,16 +95,18 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
         allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
 
   // periodic length safety check
-  if (particleengineinterface_->HavePBC())
+  if (particleengineinterface_->HavePeriodicBoundaryConditions())
   {
     // loop over all spatial directions
     for (int dim = 0; dim < 3; ++dim)
     {
       // check for periodic boundary condition in current spatial direction
-      if (not particleengineinterface_->HavePBC(dim)) continue;
+      if (not particleengineinterface_->HavePeriodicBoundaryConditionsInSpatialDirection(dim))
+        continue;
 
       // check periodic length in current spatial direction
-      if ((2.0 * allprocmaxinteractiondistance) > particleengineinterface_->PBCDelta(dim))
+      if ((2.0 * allprocmaxinteractiondistance) >
+          particleengineinterface_->LengthOfBinningDomainInASpatialDirection(dim))
         dserror("particles are not allowed to interact directly and across the periodic boundary!");
     }
   }

@@ -59,7 +59,7 @@ void GEO::MESHFREE::BoundingBox::Init()
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "BOUNDINGBOX"));
+      DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)

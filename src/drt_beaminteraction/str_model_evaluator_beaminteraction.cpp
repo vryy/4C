@@ -143,18 +143,15 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(DiscretPtr()->Comm().Clone());
-  bindis_ = Teuchos::rcp(new DRT::Discretization("linker", com));
-  // create discretization writer
-  bindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
-  bindis_->FillComplete(false, false, false);
-
   // construct, init and setup binning strategy
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
   binstrategy_->Init(discret_vec, disp_vec);
-  binstrategy_->Setup(bindis_, TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox());
+  binstrategy_->SetDeformingBinningDomainHandler(
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox());
+
+  bindis_ = binstrategy_->BinDiscret();
 
   // construct, init and setup beam crosslinker handler and binning strategy
   // todo: move this and its single call during partition to crosslinker submodel
@@ -210,14 +207,15 @@ void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
       (*sme_iter)->GetHalfInteractionDistance(half_interaction_distance_);
 
     if (GState().GetMyRank() == 0)
-      std::cout << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << std::endl;
+      std::cout << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << std::endl;
 
     // safety checks
-    if (half_interaction_distance_ > (0.5 * binstrategy_->CutoffRadius()))
+    if (half_interaction_distance_ > (0.5 * binstrategy_->GetMinBinSize()))
       dserror(
-          "Your half interaction distance %f is larger than half your cuttoff %f. You will not be\n"
-          "able to track all interactions like this. Increase cutoff?",
-          half_interaction_distance_, 0.5 * binstrategy_->CutoffRadius());
+          "Your half interaction distance %f is larger than half your smallest bin %f. You will "
+          "not be\n"
+          "able to track all interactions like this. Increase bin size?",
+          half_interaction_distance_, 0.5 * binstrategy_->GetMinBinSize());
     if (half_interaction_distance_ < 0)
       dserror("At least one model needs to define half interaction radius");
   }
@@ -382,7 +380,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   binstrategy_->DetermineBoundaryRowBins();
 
   // determine one layer ghosting around boundary bins determined in previous step
-  binstrategy_->DetermineBoundaryColBinsIds();
+  binstrategy_->DetermineBoundaryColBins();
 
   // standard ghosting (if a proc owns a part of nodes (and therefore dofs) of
   // an element, the element and the rest of its nodes and dofs are ghosted
@@ -396,7 +394,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *iadiscolnp);
 
-  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
+  binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
       ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp);
 
   // build row elements to bin map
@@ -455,7 +453,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
        it != ia_state_ptr_->GetBinToRowEleMap().end(); ++it)
   {
     // not doing the following if is only valid if you ensure that the largest element
-    // in the discretization (in deformed state) is smaller than the cutoff
+    // in the discretization (in deformed state) is smaller than the smalles bin size
     // which is not necessarily needed e.g. for beam contact
     //    if( boundcolbins.find( it->first ) != boundcolbins.end() )
     {
@@ -473,7 +471,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
   // 1) extend ghosting of bin discretization
   // todo: think about if you really need to assign degrees of freedom for crosslinker
   // (now only needed in case you want to write output)
-  binstrategy_->ExtendBinGhosting(rowbins_, colbins, true);
+  binstrategy_->ExtendGhostingOfBinningDiscretization(rowbins_, colbins, true);
 
   // add submodel specific bins whose content should be ghosted in problem discret
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -485,7 +483,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
       new Epetra_Map(-1, static_cast<int>(auxgids.size()), &auxgids[0], 0, bindis_->Comm()));
 
   Teuchos::RCP<Epetra_Map> ia_elecolmap =
-      binstrategy_->ExtendGhosting(ia_state_ptr_->GetMutableBinToRowEleMap(),
+      binstrategy_->GetExtendedElementColMap(ia_state_ptr_->GetMutableBinToRowEleMap(),
           ia_state_ptr_->GetMutableExtendedBinToRowEleMap(), auxmap);
 
   // 2) extend ghosting of discretization
@@ -875,10 +873,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::CheckIfBeamDiscretRedistributionNeeds
   {
     IO::cout(IO::debug) << " half interaction distance " << half_interaction_distance_ << IO::endl;
     IO::cout(IO::debug) << " gmaxdisincr " << gmaxdisincr << IO::endl;
-    IO::cout(IO::debug) << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << IO::endl;
+    IO::cout(IO::debug) << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << IO::endl;
   }
 
-  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->CutoffRadius()));
+  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->GetMinBinSize()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -999,34 +997,6 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(
-    Teuchos::RCP<Epetra_Vector> disnp_ptr, bool newxaabb, bool newcutoff)
-{
-  CheckInitSetup();
-
-  // todo: unshifted current positions are needed here
-  if (newcutoff)
-    dserror("unshifted configuration is needed (not yet here) for calculation of cutoff.");
-
-  // store structure discretization in vector
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
-  // displacement vector according to periodic boundary conditions
-  std::vector<Teuchos::RCP<Epetra_Vector>> disnp(1, disnp_ptr);
-
-  // create XAABB and optionally set cutoff radius
-  if (newxaabb)
-    binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
-        discret_vec, disnp, binstrategy_->XAABB(), newcutoff);
-  // just set cutoff radius
-  else if (newcutoff)
-    binstrategy_->SetCutoffRadius(
-        binstrategy_->ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle(discret_vec, disnp));
-
-  binstrategy_->CreateBinsBasedOnCutoffAndXAABB();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
 {
   CheckInit();
@@ -1128,20 +1098,21 @@ void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
-  double calc_cutoff =
-      binstrategy_->ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle(discret_vec, disnp_vec);
+  double bin_size_lower_bound =
+      binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
+          discret_vec, disnp_vec);
   LINALG::Matrix<3, 2> XAABB(true);
-  binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+  binstrategy_->ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
       discret_vec, disnp_vec, XAABB, false);
   if (GState().GetMyRank() == 0)
   {
     IO::cout(IO::verbose) << " \n---------------------------------------------------------- "
                           << IO::endl;
     IO::cout(IO::verbose) << " chosen/computed cutoff radius                      : "
-                          << binstrategy_->CutoffRadius() << IO::endl;
-    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : " << calc_cutoff
-                          << IO::endl;
-    IO::cout(IO::verbose) << "BOUNDINGBOX containing all elements of input discretization:\n "
+                          << binstrategy_->GetMinBinSize() << IO::endl;
+    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : "
+                          << bin_size_lower_bound << IO::endl;
+    IO::cout(IO::verbose) << "DOMAINBOUNDINGBOX containing all elements of input discretization:\n "
                           << XAABB(0, 0) << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " "
                           << XAABB(0, 1) << " " << XAABB(1, 1) << " " << XAABB(2, 1) << IO::endl;
     IO::cout(IO::verbose) << " ----------------------------------------------------------\n "

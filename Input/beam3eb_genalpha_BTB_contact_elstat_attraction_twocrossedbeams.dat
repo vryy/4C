@@ -105,8 +105,8 @@ EVERY_ITERATION                 no
 INTERVAL_STEPS                  1
 FORCES                          yes
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   3
-BOUNDINGBOX                     -0.5 -0.5 -0.5 5.5 5.5 5.5
+BIN_SIZE_LOWER_BOUND            3
+DOMAINBOUNDINGBOX               -0.5 -0.5 -0.5 5.5 5.5 5.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

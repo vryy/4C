@@ -1037,7 +1037,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
     IO::cout(IO::debug) << " max linker movement " << gmaxdisincr << IO::endl;
 
   bool linker_redist =
-      ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().CutoffRadius()));
+      ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().BinSizeLowerBound()));
 
   // store old maps prior to potential redistribution
   // this needs to be stored even no redistribution takes place later one
@@ -1904,7 +1904,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   std::vector<double> randvec;
   int count = 3;
   // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
-  double const maxmov = BinStrategy().CutoffRadius() / 1.74;
+  double const maxmov = BinStrategy().BinSizeLowerBound() / 1.74;
   DRT::Problem::Instance()->Random()->Normal(randvec, count);
   for (int dim = 0; dim < 3; ++dim)
   {

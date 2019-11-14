@@ -53,7 +53,7 @@ NEGLECTINERTIA         yes
 LOADLIN                yes
 --------------------------------------------------------------------BINNING STRATEGY
 PERIODICONOFF          1 1 1
-BOUNDINGBOX            0 0 0 10 10 10
+DOMAINBOUNDINGBOX      0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1
 ----------------------------------------------BROWNIAN DYNAMICS

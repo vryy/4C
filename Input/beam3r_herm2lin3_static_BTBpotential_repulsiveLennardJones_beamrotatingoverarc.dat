@@ -71,8 +71,8 @@ INTERVAL_STEPS                      1
 FORCES                              yes
 WRITE_FORCE_MOMENT_PER_ELEMENTPAIR  yes
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   5
-BOUNDINGBOX                     -5 -5 -5 5 5 5
+BIN_SIZE_LOWER_BOUND            5
+DOMAINBOUNDINGBOX               -5 -5 -5 5 5 5
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No

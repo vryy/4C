@@ -1157,7 +1157,17 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     XAABB(dim, 1) = globmax[dim] + cutoff;
   }
 
-  return Teuchos::rcp(new BINSTRATEGY::BinningStrategy(Comm(), cutoff, XAABB));
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+
+  // Set cutoff and bounding box size
+  binningstrategy->SetBinSizeLowerBound(cutoff);
+  binningstrategy->SetDomainBoundingBoxCornerPositions(XAABB);
+
+  // compute bins
+  binningstrategy->CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions();
+
+  return binningstrategy;
 }
 
 

@@ -78,8 +78,8 @@ E 1 - COUPLING_ID 1
 DLINE                                 1
 E 1 - COUPLING_ID 1
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   2
-BOUNDINGBOX                     -2 -2 -2 2 2 2
+BIN_SIZE_LOWER_BOUND            2
+DOMAINBOUNDINGBOX               -2 -2 -2 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE  0.0                     TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE  2.29039514904475938e-01 TOLERANCE 1e-8

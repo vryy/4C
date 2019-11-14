@@ -155,7 +155,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // set of particles located outside bounding box
   std::set<int> particlesoutsideboundingbox;
@@ -189,7 +189,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     for (int dim = 0; dim < 3; ++dim)
     {
       // particle located outside bounding box
-      if ((pos[dim] < xaabb(dim, 0)) or (pos[dim] > xaabb(dim, 1)))
+      if ((pos[dim] < boundingbox(dim, 0)) or (pos[dim] > boundingbox(dim, 1)))
       {
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
@@ -688,19 +688,25 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
 
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
 
-bool PARTICLEENGINE::ParticleEngine::HavePBC(const int dim) const
+bool PARTICLEENGINE::ParticleEngine::HavePeriodicBoundaryConditions() const
 {
-  return binstrategy_->HavePBC(dim);
+  return binstrategy_->HavePeriodicBoundaryConditionsApplied();
 }
 
-double PARTICLEENGINE::ParticleEngine::PBCDelta(const int dim) const
+bool PARTICLEENGINE::ParticleEngine::HavePeriodicBoundaryConditionsInSpatialDirection(
+    const int dim) const
 {
-  return binstrategy_->PBCDelta(dim);
+  return binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim);
 }
 
-LINALG::Matrix<3, 2>& PARTICLEENGINE::ParticleEngine::XAABB() const
+double PARTICLEENGINE::ParticleEngine::LengthOfBinningDomainInASpatialDirection(const int dim) const
 {
-  return binstrategy_->XAABB();
+  return binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
+}
+
+LINALG::Matrix<3, 2> const& PARTICLEENGINE::ParticleEngine::DomainBoundingBoxCornerPositions() const
+{
+  return binstrategy_->DomainBoundingBoxCornerPositions();
 }
 
 void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
@@ -713,18 +719,18 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
     r_ji[dim] = pos_j[dim] - pos_i[dim];
 
     // check for periodic boundary condition in current spatial direction
-    if (binstrategy_->HavePBC(dim))
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
     {
-      // periodic length in current spatial direction
-      const double pbcdelta = binstrategy_->PBCDelta(dim);
+      // binning domain length in current spatial direction
+      double binningdomainlength = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
       // shift by periodic length if particles are closer over periodic boundary
-      if (std::abs(r_ji[dim]) > (0.5 * pbcdelta))
+      if (std::abs(r_ji[dim]) > (0.5 * binningdomainlength))
       {
         if (pos_i[dim] < pos_j[dim])
-          r_ji[dim] -= pbcdelta;
+          r_ji[dim] -= binningdomainlength;
         else
-          r_ji[dim] += pbcdelta;
+          r_ji[dim] += binningdomainlength;
       }
     }
   }
@@ -774,16 +780,13 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 
 void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
 {
-  // create and init binning strategy
+  // create and init binning strategy and create bins
   binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
-  binstrategy_->Init(comm_);
+  binstrategy_->Init();
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
 {
-  // create bins
-  binstrategy_->CreateBinsBasedOnCutoffAndXAABB();
-
   // determine minimum relevant bin size
   DetermineMinRelevantBinSize();
 
@@ -865,7 +868,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
       new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), &bincolmapvec[0], 0, comm_));
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
-    dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
+    dserror("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   // make sure that all processors are either filled or unfilled
   binstrategy_->BinDiscret()->CheckFilledGlobally();
@@ -985,7 +988,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
 
   // safety check
   for (int dim = 0; dim < 3; ++dim)
-    if (binstrategy_->HavePBC(dim) and binperdir[dim] < 3)
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim) and
+        binperdir[dim] < 3)
       dserror("at least 3 bins in direction with periodic boundary conditions necessary!");
 
   // determine range of all inner bins
@@ -1140,7 +1144,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // count particles that left the computational domain
   int numparticlesoutside = 0;
@@ -1184,21 +1188,21 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       }
 
       // no periodic boundary conditions
-      if (not binstrategy_->HavePBC()) continue;
+      if (not binstrategy_->HavePeriodicBoundaryConditionsApplied()) continue;
 
       // check for periodic boundary in each spatial directions
       for (int dim = 0; dim < 3; ++dim)
       {
-        if (binstrategy_->HavePBC(dim))
+        if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
         {
-          // periodic length in current spatial direction
-          double pbc_length = binstrategy_->PBCDelta(dim);
+          // binning domain length in current spatial direction
+          double binningdomainlength = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
           // shift position by periodic length
-          if (currpos[dim] < xaabb(dim, 0))
-            currpos[dim] += pbc_length;
-          else if (currpos[dim] > xaabb(dim, 1))
-            currpos[dim] -= pbc_length;
+          if (currpos[dim] < boundingbox(dim, 0))
+            currpos[dim] += binningdomainlength;
+          else if (currpos[dim] > boundingbox(dim, 1))
+            currpos[dim] -= binningdomainlength;
         }
       }
     }

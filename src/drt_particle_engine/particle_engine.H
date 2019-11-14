@@ -321,11 +321,13 @@ namespace PARTICLEENGINE
 
     double MinBinSize() const override { return minbinsize_; };
 
-    bool HavePBC(const int dim = -1) const override;
+    bool HavePeriodicBoundaryConditions() const override;
 
-    double PBCDelta(const int dim) const override;
+    bool HavePeriodicBoundaryConditionsInSpatialDirection(const int dim) const override;
 
-    LINALG::Matrix<3, 2>& XAABB() const override;
+    double LengthOfBinningDomainInASpatialDirection(const int dim) const override;
+
+    LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries

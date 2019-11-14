@@ -106,7 +106,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     deg = 1;
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = particleengineinterface_->XAABB();
+  LINALG::Matrix<3, 2> boundingbox = particleengineinterface_->DomainBoundingBoxCornerPositions();
 
   // get bin size
   const double* binsize = particleengineinterface_->BinSize();
@@ -171,26 +171,27 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
         if (evalpos)
         {
           // check for periodic boundary condition in current spatial direction
-          if (particleengineinterface_->HavePBC(dim))
+          if (particleengineinterface_->HavePeriodicBoundaryConditionsInSpatialDirection(dim))
           {
-            // periodic length in current spatial direction
-            const double pbcdelta = particleengineinterface_->PBCDelta(dim);
+            // length of binning domain in a spatial direction
+            const double binningdomainlength =
+                particleengineinterface_->LengthOfBinningDomainInASpatialDirection(dim);
 
             // get displacement from reference position canceling out multiples of periodic length
             // in current spatial direction
-            double displacement = std::fmod(functtimederiv[0], pbcdelta);
+            double displacement = std::fmod(functtimederiv[0], binningdomainlength);
 
             // get new position
             double newpos = refpos[statedim * i + dim] + displacement;
 
             // shift by periodic length if new position is close to the periodic boundary and old
             // position is on other end domain
-            if ((newpos > (xaabb(dim, 1) - binsize[dim])) and
+            if ((newpos > (boundingbox(dim, 1) - binsize[dim])) and
                 (std::abs(newpos - pos[statedim * i + dim]) > binsize[dim]))
-              pos[statedim * i + dim] = newpos - pbcdelta;
-            else if ((newpos < (xaabb(dim, 0) + binsize[dim])) and
+              pos[statedim * i + dim] = newpos - binningdomainlength;
+            else if ((newpos < (boundingbox(dim, 0) + binsize[dim])) and
                      (std::abs(newpos - pos[statedim * i + dim]) > binsize[dim]))
-              pos[statedim * i + dim] = newpos + pbcdelta;
+              pos[statedim * i + dim] = newpos + binningdomainlength;
             else
               pos[statedim * i + dim] = newpos;
           }

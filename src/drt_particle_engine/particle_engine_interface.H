@@ -157,26 +157,35 @@ namespace PARTICLEENGINE
     virtual double MinBinSize() const = 0;
 
     /*!
-     * \brief get flag indicating periodic boundary condition
+     * \brief get flag indicating periodic boundary conditions
      *
-     * \author Sebastian Fuchs \date 05/2018
+     * \author Sebastian Fuchs \date 11/2019
      *
-     * \param[in] dim spatial direction (optional)
-     *
-     * \return flag indicating periodic boundary condition
+     * \return flag indicating periodic boundary conditions
      */
-    virtual bool HavePBC(const int dim = -1) const = 0;
+    virtual bool HavePeriodicBoundaryConditions() const = 0;
 
     /*!
-     * \brief get periodic length
+     * \brief get flag indicating periodic boundary conditions in spatial direction
      *
      * \author Sebastian Fuchs \date 05/2018
      *
      * \param[in] dim spatial direction
      *
-     * \return periodic length in spatial direction
+     * \return flag indicating periodic boundary conditions in spatial direction
      */
-    virtual double PBCDelta(const int dim) const = 0;
+    virtual bool HavePeriodicBoundaryConditionsInSpatialDirection(const int dim) const = 0;
+
+    /*!
+     * \brief get length of binning domain in a spatial direction
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] dim spatial direction
+     *
+     * \return length of binning domain in a spatial direction
+     */
+    virtual double LengthOfBinningDomainInASpatialDirection(const int dim) const = 0;
 
     /*!
      * \brief get bounding box dimensions
@@ -185,7 +194,7 @@ namespace PARTICLEENGINE
      *
      * \return bounding box dimensions
      */
-    virtual LINALG::Matrix<3, 2>& XAABB() const = 0;
+    virtual LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const = 0;
 
     //! @}
 

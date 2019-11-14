@@ -19,7 +19,9 @@ namespace INPAR
 {
   namespace BINSTRATEGY
   {
-    //! type of gap function/projection
+    /*!
+     * \ brief write either no, row or column bins for visualization
+     */
     enum writebins
     {
       none,
@@ -27,7 +29,7 @@ namespace INPAR
       cols
     };
 
-    /// set the meshfree parameters
+    /// set the binning strategy parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace BINSTRATEGY

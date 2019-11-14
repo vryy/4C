@@ -12,9 +12,9 @@ RESTART                         0
 STDOUTEVRY                      200
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   0.05
+BIN_SIZE_LOWER_BOUND            0.05
 PERIODICONOFF                   0 0 0
-BOUNDINGBOX                     -0.15 -0.025 -0.05 0.15 0.025 0.05
+DOMAINBOUNDINGBOX               -0.15 -0.025 -0.05 0.15 0.025 0.05
 WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet

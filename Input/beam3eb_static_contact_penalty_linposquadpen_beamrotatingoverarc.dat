@@ -78,8 +78,8 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   5
-BOUNDINGBOX                     -5 -5 -5 5 5 5
+BIN_SIZE_LOWER_BOUND            5
+DOMAINBOUNDINGBOX               -5 -5 -5 5 5 5
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
