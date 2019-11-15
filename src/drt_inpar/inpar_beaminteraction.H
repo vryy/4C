@@ -62,7 +62,7 @@ namespace INPAR
     {
       beam3r_line2_rigid,  ///< rigid joint
       beam3r_line2_pin,    ///< pin joint
-      truss               ///< truss
+      truss                ///< truss
     };
 
     /// type of filament

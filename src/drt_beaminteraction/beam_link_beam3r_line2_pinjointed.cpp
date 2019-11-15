@@ -69,7 +69,8 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Clone() const
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Clone()
+    const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
       Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed(*this));
