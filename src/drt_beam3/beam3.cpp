@@ -72,15 +72,15 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3"];
 
-  defs["LIN2"].AddIntVector("LIN2", 2).AddNamedInt("MAT");
+  defs["LINE2"].AddIntVector("LINE2", 2).AddNamedInt("MAT");
 
-  defs["LIN3"].AddIntVector("LIN3", 3).AddNamedInt("MAT");
+  defs["LINE3"].AddIntVector("LINE3", 3).AddNamedInt("MAT");
 
-  defs["LIN4"].AddIntVector("LIN4", 4).AddNamedInt("MAT");
+  defs["LINE4"].AddIntVector("LINE4", 4).AddNamedInt("MAT");
 
-  defs["LIN5"].AddIntVector("LIN5", 5).AddNamedInt("MAT");
+  defs["LINE5"].AddIntVector("LINE5", 5).AddNamedInt("MAT");
 
-  defs["LIN6"].AddIntVector("LIN6", 6).AddNamedInt("MAT");
+  defs["LINE6"].AddIntVector("LINE6", 6).AddNamedInt("MAT");
 }
 
 

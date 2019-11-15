@@ -9,8 +9,8 @@ elements
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
-#ifndef BeamLinkBeam3rLin2RigidJointed_H
-#define BeamLinkBeam3rLin2RigidJointed_H
+#ifndef BeamLinkBeam3rLine2RigidJointed_H
+#define BeamLinkBeam3rLine2RigidJointed_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam_link_rigidjointed.H"
@@ -32,17 +32,17 @@ namespace DRT
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkBeam3rLin2RigidJointedType : public DRT::ParObjectType
+  class BeamLinkBeam3rLine2RigidJointedType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamLinkBeam3rLin2RigidJointedType"; };
+    std::string Name() const { return "BeamLinkBeam3rLine2RigidJointedType"; };
 
-    static BeamLinkBeam3rLin2RigidJointedType& Instance() { return instance_; };
+    static BeamLinkBeam3rLine2RigidJointedType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static BeamLinkBeam3rLin2RigidJointedType instance_;
+    static BeamLinkBeam3rLine2RigidJointedType instance_;
   };
 
 
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
    \brief element for link between two 3D beam elements via a linear (2 noded) Simo-Reissner beam
    element
    */
-  class BeamLinkBeam3rLin2RigidJointed : public BeamLinkRigidJointed
+  class BeamLinkBeam3rLine2RigidJointed : public BeamLinkRigidJointed
   {
    public:
     //! @name Friends
@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Standard Constructor
     */
-    BeamLinkBeam3rLin2RigidJointed();
+    BeamLinkBeam3rLine2RigidJointed();
 
     /*!
     \brief Copy Constructor
@@ -69,12 +69,12 @@ namespace BEAMINTERACTION
     Makes a deep copy of a Element
 
     */
-    BeamLinkBeam3rLin2RigidJointed(const BeamLinkBeam3rLin2RigidJointed& old);
+    BeamLinkBeam3rLine2RigidJointed(const BeamLinkBeam3rLine2RigidJointed& old);
 
     /*!
     \brief Destructor
     */
-    virtual ~BeamLinkBeam3rLin2RigidJointed(){};
+    virtual ~BeamLinkBeam3rLine2RigidJointed(){};
 
     //! Setup [derived]
     virtual void Setup(int matnum);
@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
     */
     virtual int UniqueParObjectId() const
     {
-      return BeamLinkBeam3rLin2RigidJointedType::Instance().UniqueParObjectId();
+      return BeamLinkBeam3rLine2RigidJointedType::Instance().UniqueParObjectId();
     };
 
     /*!

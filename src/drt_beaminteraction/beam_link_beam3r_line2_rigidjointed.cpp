@@ -11,7 +11,7 @@ elements
 /*----------------------------------------------------------------------*/
 
 #include "beam_link.H"
-#include "beam_link_beam3r_lin2_rigidjointed.H"
+#include "beam_link_beam3r_line2_rigidjointed.H"
 
 #include "../drt_beam3/beam3r.H"
 
@@ -26,25 +26,25 @@ elements
 
 
 
-BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType
-    BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::instance_;
+BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType
+    BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Create(
+DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Create(
     const std::vector<char>& data)
 {
-  BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed* my_beam3rlin2 =
-      new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed();
-  my_beam3rlin2->Unpack(data);
-  return my_beam3rlin2;
+  BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed* my_beam3rline2 =
+      new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed();
+  my_beam3rline2->Unpack(data);
+  return my_beam3rline2;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed()
+BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed()
     : BeamLinkRigidJointed(),
       linkele_(Teuchos::null),
       bspotforces_(2, LINALG::SerialDenseVector(true))
@@ -53,8 +53,8 @@ BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed(
-    const BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed& old)
+BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed(
+    const BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed& old)
     : BEAMINTERACTION::BeamLinkRigidJointed(old), bspotforces_(2, LINALG::SerialDenseVector(true))
 {
   if (linkele_ != Teuchos::null)
@@ -66,17 +66,17 @@ BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Clone()
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Clone()
     const
 {
-  Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed> newlinker =
-      Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed(*this));
+  Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed> newlinker =
+      Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed(*this));
   return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Setup(int matnum)
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
 {
   CheckInit();
 
@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Setup(int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Pack(DRT::PackBuffer& data) const
 {
   CheckInitSetup();
 
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Pack(DRT::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -179,7 +179,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Unpack(const std::vector<c
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele == NULL)
-      dserror("failed to unpack Beam3r object within BeamLinkBeam3rLin2RigidJointed");
+      dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
   else
@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Unpack(const std::vector<c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForce(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForce(
     LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2)
 {
   CheckInitSetup();
@@ -218,7 +218,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateStiff(
     LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22)
 {
@@ -250,7 +250,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForceStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
     LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2,
     LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22)
@@ -287,7 +287,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::FillStateVariablesForElementEvaluation(
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::FillStateVariablesForElementEvaluation(
     LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
     std::vector<LINALG::Matrix<4, 1, double>>& Qnode) const
 {
@@ -303,14 +303,14 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::FillStateVariablesForEleme
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::GetInternalEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::GetInternalEnergy() const
 {
   return linkele_->GetInternalEnergy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::GetKineticEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::GetKineticEnergy() const
 {
   return linkele_->GetKineticEnergy();
 }

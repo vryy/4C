@@ -58,13 +58,6 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
       .AddNamedInt("GP")
       .AddNamedString("TYPE")
       .AddNamedDouble("DIAM");
-
-  defs["LIN2"]
-      .AddIntVector("LIN2", 2)
-      .AddNamedInt("MAT")
-      .AddNamedInt("GP")
-      .AddNamedString("TYPE")
-      .AddNamedDouble("DIAM");
 }
 
 /*----------------------------------------------------------------------*

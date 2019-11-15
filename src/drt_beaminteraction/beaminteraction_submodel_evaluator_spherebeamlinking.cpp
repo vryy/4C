@@ -17,7 +17,7 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beam_link_pinjointed.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_beaminteraction/spherebeamlinking_params.H"
 

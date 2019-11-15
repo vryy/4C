@@ -2448,7 +2448,7 @@ Mette S. Olufsen, Ali Nadim and Lewis A. Lipsitz: Dynamics of cerebral blood flo
 
 % *end
 % *if(GenData(Commented_Inputfile,int)==1)
-% // LIN2 (2-noded beam element), LIN3 (3-noded beam element) implemented
+% // LINE2 (2-noded beam element), LINE3 (3-noded beam element) implemented
 % // REF Coordinates of reference node to determine local z-axis
 % // MAT Material number of actual beam element
 % // AREA area of beam cross section if IKE=1,2 width of beam cross section if IKE=3
@@ -2479,10 +2479,10 @@ Mette S. Olufsen, Ali Nadim and Lewis A. Lipsitz: Dynamics of cerebral blood flo
 % *loop elems *OnlyInCond
 % *ElemsNum BEAM3 *\
 % *if(IsQuadratic==1)
-% LIN3 *ElemsConec *\ 
+% LINE3 *ElemsConec *\ 
 % *endif
 % *if(IsQuadratic==0)
-% LIN2 *ElemsConec *\ 
+% LINE2 *ElemsConec *\ 
 % *endif
 % REF *cond(x_REF) *\
 % *cond(y_REF) *\

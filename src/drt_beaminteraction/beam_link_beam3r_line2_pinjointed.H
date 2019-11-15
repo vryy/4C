@@ -9,8 +9,8 @@
 \maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
-#ifndef BeamLinkBeam3rLin2PinJointed_H
-#define BeamLinkBeam3rLin2PinJointed_H
+#ifndef BeamLinkBeam3rLine2PinJointed_H
+#define BeamLinkBeam3rLine2PinJointed_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam_link_pinjointed.H"
@@ -32,17 +32,17 @@ namespace DRT
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkBeam3rLin2PinJointedType : public DRT::ParObjectType
+  class BeamLinkBeam3rLine2PinJointedType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamLinkBeam3rLin2PinJointedType"; };
+    std::string Name() const { return "BeamLinkBeam3rLine2PinJointedType"; };
 
-    static BeamLinkBeam3rLin2PinJointedType& Instance() { return instance_; };
+    static BeamLinkBeam3rLine2PinJointedType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static BeamLinkBeam3rLin2PinJointedType instance_;
+    static BeamLinkBeam3rLine2PinJointedType instance_;
   };
 
 
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
    \brief element for link between two 3D beam elements via a linear (2 noded) Simo-Reissner beam
    element
    */
-  class BeamLinkBeam3rLin2PinJointed : public BeamLinkPinJointed
+  class BeamLinkBeam3rLine2PinJointed : public BeamLinkPinJointed
   {
    public:
     //! @name Friends
@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Standard Constructor
     */
-    BeamLinkBeam3rLin2PinJointed();
+    BeamLinkBeam3rLine2PinJointed();
 
     /*!
     \brief Copy Constructor
@@ -69,12 +69,12 @@ namespace BEAMINTERACTION
     Makes a deep copy of a Element
 
     */
-    BeamLinkBeam3rLin2PinJointed(const BeamLinkBeam3rLin2PinJointed& old);
+    BeamLinkBeam3rLine2PinJointed(const BeamLinkBeam3rLine2PinJointed& old);
 
     /*!
     \brief Destructor
     */
-    virtual ~BeamLinkBeam3rLin2PinJointed(){};
+    virtual ~BeamLinkBeam3rLine2PinJointed(){};
 
     //! Initialization [derived]
     virtual void Init(int id, const std::vector<std::pair<int, int>>& eleids,
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     */
     virtual int UniqueParObjectId() const
     {
-      return BeamLinkBeam3rLin2PinJointedType::Instance().UniqueParObjectId();
+      return BeamLinkBeam3rLine2PinJointedType::Instance().UniqueParObjectId();
     };
 
     /*!

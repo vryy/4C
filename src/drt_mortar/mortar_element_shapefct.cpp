@@ -121,7 +121,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       break;
     }
       // *********************************************************************
-      // 1D modified (hierarchical) quadratic shape functions (lin3)
+      // 1D modified (hierarchical) quadratic shape functions (line3)
       // (used in combination with linear dual LM field in 2D quadratic mortar)
       // *********************************************************************
     case MortarElement::quad1D_hierarchical:
@@ -136,7 +136,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       break;
     }
       // *********************************************************************
-      // 1D modified quadratic shape functions (lin3)
+      // 1D modified quadratic shape functions (line3)
       // (used in combination with quadr dual LM field in 2D quadratic mortar)
       // *********************************************************************
     case MortarElement::quad1D_modified:

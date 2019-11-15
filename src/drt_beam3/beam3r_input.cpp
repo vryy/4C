@@ -47,8 +47,8 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   }
 
 
-  if (linedef->HaveNamed("HERM2LIN2") or linedef->HaveNamed("HERM2LIN3") or
-      linedef->HaveNamed("HERM2LIN4") or linedef->HaveNamed("HERM2LIN5"))
+  if (linedef->HaveNamed("HERM2LINE2") or linedef->HaveNamed("HERM2LINE3") or
+      linedef->HaveNamed("HERM2LINE4") or linedef->HaveNamed("HERM2LINE5"))
     centerline_hermite_ = true;
   else
     centerline_hermite_ = false;

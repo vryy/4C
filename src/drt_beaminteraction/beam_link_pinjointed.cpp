@@ -25,7 +25,7 @@
 #include "beam_link_pinjointed.H"
 #include "beam_link_truss.H"
 
-#include "beam_link_beam3r_lin2_pinjointed.H"
+#include "beam_link_beam3r_line2_pinjointed.H"
 
 
 BEAMINTERACTION::BeamLinkPinJointedType BEAMINTERACTION::BeamLinkPinJointedType::instance_;
@@ -120,8 +120,8 @@ void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
 Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::Create(
     INPAR::BEAMINTERACTION::JointType type)
 {
-  if (type == INPAR::BEAMINTERACTION::beam3r_lin2_pin)
-    return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed());
+  if (type == INPAR::BEAMINTERACTION::beam3r_line2_pin)
+    return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed());
   else if (type == INPAR::BEAMINTERACTION::truss)
     return Teuchos::rcp(new BEAMINTERACTION::BeamLinkTruss());
   else
