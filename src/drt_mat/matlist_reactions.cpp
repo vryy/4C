@@ -71,7 +71,7 @@ DRT::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
 MAT::MatListReactions::MatListReactions() : MatList(), paramsreac_(NULL) {}
 
 /*----------------------------------------------------------------------*
- | construct the material object given material paramete     thon 11/14 |
+ | construct the material object given material parameter    thon 11/14 |
  *----------------------------------------------------------------------*/
 MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
     : MatList(params), paramsreac_(params)
@@ -153,6 +153,18 @@ void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
 
   // Pack base class material
   MAT::MatList::Pack(data);
+
+  if (paramsreac_ != NULL)
+  {
+    if (paramsreac_->local_)
+    {
+      std::vector<int>::const_iterator m;
+      for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
+      {
+        (MaterialMapRead()->find(*m))->second->Pack(data);
+      }
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -194,6 +206,34 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   MAT::MatList::ExtractfromPack(position, data, basedata);
   MAT::MatList::Unpack(basedata);
+
+  if (paramsreac_ != NULL)  // params_ are not accessible in postprocessing mode
+  {
+    // make sure the referenced materials in material list have quick access parameters
+    std::vector<int>::const_iterator m;
+    for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
+    {
+      const int actmatid = *m;
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
+      if (mat == Teuchos::null) dserror("Failed to allocate this material");
+      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(actmatid, mat));
+    }
+
+    if (paramsreac_->local_)
+    {
+      // loop map of associated local materials
+      for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
+      {
+        std::vector<char> pbtest;
+        ExtractfromPack(position, data, pbtest);
+        (MaterialMapWrite()->find(*m))->second->Unpack(pbtest);
+      }
+    }
+    // in the postprocessing mode, we do not unpack everything we have packed
+    // -> position check cannot be done in this case
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  }  // if (params_ != NULL)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
