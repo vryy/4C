@@ -207,7 +207,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   MAT::MatList::ExtractfromPack(position, data, basedata);
   MAT::MatList::Unpack(basedata);
 
-  if (paramsreac_ != NULL)  // params_ are not accessible in postprocessing mode
+  if (paramsreac_ != NULL)  // paramsreac_ are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -233,11 +233,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
     // -> position check cannot be done in this case
     if (position != data.size())
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-  }  // if (params_ != NULL)
-
-  // in the postprocessing mode, we do not unpack everything we have packed
-  // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  }
 }
 
 /*----------------------------------------------------------------------*
