@@ -392,10 +392,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetAllPossibleBspotLinks(
               double const linkdistmax = mat->LinkingLength() + mat->LinkingLengthTolerance();
 
 #ifdef DEBUG
-              if (linkdistmax > BinStrategy().CutoffRadius())
+              if (linkdistmax > BinStrategy().BinSizeLowerBound())
                 dserror(
                     "The allowed binding distance of your linker material is greater than the "
-                    "cutoff radius, this can lead to missed binding events");
+                    "lower bound for bin size, this can lead to missed binding events");
 #endif
 
               if (BEAMINTERACTION::UTILS::IsDistanceOutOfRange(
@@ -2581,10 +2581,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
 
 #ifdef DEBUG
   // safety check
-  if (linkdistmax > BinStrategy().CutoffRadius())
+  if (linkdistmax > BinStrategy().BinSizeLowerBound())
     dserror(
         "The allowed binding distance of linker %i (in case it is single bonded) is"
-        "\ngreater than the cutoff radius, this could lead to missing a binding event",
+        "\ngreater than the lower bound for bin size, this could lead to missing a binding event",
         crosslinker_i->Id());
 #endif
 
