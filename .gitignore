@@ -97,3 +97,6 @@ modules/contact_module/src/
 # VS Code
 *.vscode
 /Debug/
+
+# CLion
+.idea/
