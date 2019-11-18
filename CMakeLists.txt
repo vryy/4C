@@ -1889,6 +1889,7 @@ set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container_bundle.cpp
   src/drt_particle_engine/particle_engine.cpp
   src/drt_particle_engine/particle_communication_utils.cpp
+  src/drt_particle_engine/particle_unique_global_id.cpp
   src/drt_particle_engine/particle_runtime_vtp_writer.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE_LIB

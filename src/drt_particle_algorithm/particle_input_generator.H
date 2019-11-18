@@ -77,8 +77,9 @@ namespace PARTICLEALGORITHM
      * \note Either generate particles only on one processor or be sure that particles are not
      *       generated twice (or even more) on different processors.
      *
-     * \note Take care of setting a global id that is unique and not used by particles potentially
-     *       read in from the input file.
+     * \note There is no need to set a global id at this stage. The unique global id handler sets
+     *       the global id of all particles read in from the input file and generated herein later
+     *       on.
      *
      * \note Think about reserving (not resizing!) the vector storing the generated particles in
      *       advance if you have a rough estimate of the total number of particles being generated.

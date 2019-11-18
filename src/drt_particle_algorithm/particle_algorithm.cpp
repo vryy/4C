@@ -552,6 +552,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 {
+  // get unique global ids for all particles
+  if (not isrestarted_) particleengine_->GetUniqueGlobalIdsForAllParticles(particlestodistribute_);
+
   // erase particles outside bounding box
   particleengine_->EraseParticlesOutsideBoundingBox(particlestodistribute_);
 
@@ -634,6 +637,11 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
 void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
+
+#ifdef DEBUG
+  // check number of unique global ids
+  particleengine_->CheckNumberOfUniqueGlobalIds();
+#endif
 
   // check particle interaction distance concerning bin size
   if (particleinteraction_)
