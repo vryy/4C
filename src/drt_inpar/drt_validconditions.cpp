@@ -73,35 +73,6 @@ namespace DRT
         std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
     {
       /*--------------------------------------------------------------------*/
-      // Force Sensor
-
-      // declaration of a variable which contains all the components of the condition
-      std::vector<Teuchos::RCP<ConditionComponent>> forcesensorcomponents;
-
-      /*the condition consists of one component which has to read an integer value (the number of
-       * the dof of the node with respect to which the force is to be measured; note: numbering
-       * starts at zero):*/
-      forcesensorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("DOF Number")));
-
-      // the condition itself hast to be defined so that it is clear how to read or write such a
-      // condition in the dat file
-      Teuchos::RCP<ConditionDefinition> forcesensor =
-          Teuchos::rcp(new ConditionDefinition("FORCE SENSORS",  // name of input file section
-              "ForceSensor",                // name to get the condition from a discretization
-              "Force Sensor",               // description of condition
-              DRT::Condition::ForceSensor,  // type of condition in DRT (cf. drt_condition.H)
-              false,  // should explicit elements be generated (e.g. line elements for line contact
-                      // condition in 2D)?
-              DRT::Condition::Point));  // type of geometry the condition lives on
-
-      // after definition of the condition all its components have to be added:
-      for (unsigned i = 0; i < forcesensorcomponents.size(); ++i)
-        forcesensor->AddComponent(forcesensorcomponents[i]);
-
-      // the condition itself has to be added to the condition list
-      condlist.push_back(forcesensor);
-
-      /*--------------------------------------------------------------------*/
       // microscale boundary
 
       Teuchos::RCP<ConditionDefinition> microscale =
