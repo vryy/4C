@@ -79,7 +79,7 @@ NODE 2 DNODE 2
 NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.000000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 TRUSS3 LIN2 1 2 MAT 1 CROSS 19e-6 KINEM totlag
+1 TRUSS3 LINE2 1 2 MAT 1 CROSS 19e-6 KINEM totlag
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.3e9 NUE 0.3 DENS 1.384e-9 THEXPANS 0.0
 -------------------------------------------------------------FUNCT1

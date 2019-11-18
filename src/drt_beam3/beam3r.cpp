@@ -102,62 +102,62 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3R"];
 
-  // note: LIN2 refers to linear Lagrange interpolation of centerline AND triad field
-  defs["LIN2"]
-      .AddIntVector("LIN2", 2)
+  // note: LINE2 refers to linear Lagrange interpolation of centerline AND triad field
+  defs["LINE2"]
+      .AddIntVector("LINE2", 2)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 6)
       .AddOptionalTag("FAD");
 
-  // note: LIN3 refers to quadratic Lagrange interpolation of centerline AND triad field
-  defs["LIN3"]
-      .AddIntVector("LIN3", 3)
+  // note: LINE3 refers to quadratic Lagrange interpolation of centerline AND triad field
+  defs["LINE3"]
+      .AddIntVector("LINE3", 3)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 9)
       .AddOptionalTag("FAD");
 
-  // note: LIN4 refers to cubic Lagrange interpolation of centerline AND triad field
-  defs["LIN4"]
-      .AddIntVector("LIN4", 4)
+  // note: LINE4 refers to cubic Lagrange interpolation of centerline AND triad field
+  defs["LINE4"]
+      .AddIntVector("LINE4", 4)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 12)
       .AddOptionalTag("FAD");
 
-  // note: LIN5 refers to quartic Lagrange interpolation of centerline AND triad field
-  defs["LIN5"]
-      .AddIntVector("LIN5", 5)
+  // note: LINE5 refers to quartic Lagrange interpolation of centerline AND triad field
+  defs["LINE5"]
+      .AddIntVector("LINE5", 5)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 15)
       .AddOptionalTag("FAD");
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
-   *       LIN2 refers to linear Lagrange interpolation of the triad field*/
-  defs["HERM2LIN2"]
-      .AddIntVector("HERM2LIN2", 2)
+   *       LINE2 refers to linear Lagrange interpolation of the triad field*/
+  defs["HERM2LINE2"]
+      .AddIntVector("HERM2LINE2", 2)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 6)
       .AddOptionalTag("FAD");
 
   /* note: HERM2 refers to cubic order Hermite interpolation of centerline (2 nodes)
-   *       LIN3 refers to quadratic Lagrange interpolation of the triad field*/
-  defs["HERM2LIN3"]
-      .AddIntVector("HERM2LIN3", 3)
+   *       LINE3 refers to quadratic Lagrange interpolation of the triad field*/
+  defs["HERM2LINE3"]
+      .AddIntVector("HERM2LINE3", 3)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 9)
       .AddOptionalTag("FAD");
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
-   *       LIN4 refers to cubic Lagrange interpolation of the triad field*/
-  defs["HERM2LIN4"]
-      .AddIntVector("HERM2LIN4", 4)
+   *       LINE4 refers to cubic Lagrange interpolation of the triad field*/
+  defs["HERM2LINE4"]
+      .AddIntVector("HERM2LINE4", 4)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 12)
       .AddOptionalTag("FAD");
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
-   *       LIN5 refers to quartic Lagrange interpolation of the triad field*/
-  defs["HERM2LIN5"]
-      .AddIntVector("HERM2LIN5", 5)
+   *       LINE5 refers to quartic Lagrange interpolation of the triad field*/
+  defs["HERM2LINE5"]
+      .AddIntVector("HERM2LINE5", 5)
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 15)
       .AddOptionalTag("FAD");

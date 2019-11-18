@@ -17,8 +17,8 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beam_link.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -3144,9 +3144,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
     // create and initialize objects of beam-to-beam connections
     // Todo move this inside the create routines (or one create routine in BeamLink class)
     Teuchos::RCP<BEAMINTERACTION::BeamLink> linkelepairptr;
-    if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_rigid)
+    if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_line2_rigid)
       linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::Create();
-    else if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_pin or
+    else if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_line2_pin or
              cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::truss)
       linkelepairptr =
           BEAMINTERACTION::BeamLinkPinJointed::Create(cl_node->GetMaterial()->JointType());

@@ -459,16 +459,16 @@ void LARGEROTATIONS::directionstotriad(
 unsigned int LARGEROTATIONS::NumberingTrafo(const unsigned int j, const unsigned int numnode)
 {
   // Node numbering j=1,...,NumNode() according to Crisfield 1999:
-  // LIN2  1---2
-  // LIN3  1---2---3
-  // LIN4  1---2---3---4
-  // LIN5  1---2---3---4---5
+  // LINE2  1---2
+  // LINE3  1---2---3
+  // LINE4  1---2---3---4
+  // LINE5  1---2---3---4---5
 
   // Storage position i=0,...,NumNode()-1 of nodal quantities applied in BACI:
-  // LIN2  (1,2)
-  // LIN3  (1,3,2)
-  // LIN4  (1,4,2,3)
-  // LIN5  (1,5,2,3,4)
+  // LINE2  (1,2)
+  // LINE3  (1,3,2)
+  // LINE4  (1,4,2,3)
+  // LINE5  (1,5,2,3,4)
 
   // Initialization
   unsigned int i = 0;

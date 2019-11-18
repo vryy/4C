@@ -75,9 +75,9 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
 
-  defs["LIN2"].AddIntVector("LIN2", 2).AddNamedInt("MAT");
+  defs["LINE2"].AddIntVector("LINE2", 2).AddNamedInt("MAT");
 
-  defs["LIN3"].AddIntVector("LIN3", 3).AddNamedInt("MAT");
+  defs["LINE3"].AddIntVector("LINE3", 3).AddNamedInt("MAT");
 }
 
 /*----------------------------------------------------------------------*

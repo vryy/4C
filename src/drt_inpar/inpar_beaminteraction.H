@@ -60,9 +60,9 @@ namespace INPAR
     /// type of linker
     enum JointType
     {
-      beam3r_lin2_rigid,  ///< rigid joint
-      beam3r_lin2_pin,    ///< pin joint
-      truss               ///< truss
+      beam3r_line2_rigid,  ///< rigid joint
+      beam3r_line2_pin,    ///< pin joint
+      truss                ///< truss
     };
 
     /// type of filament
@@ -98,11 +98,11 @@ namespace INPAR
     //! Map type std::string to enum
     inline enum JointType String2JointType(const std::string& name)
     {
-      JointType type = beam3r_lin2_rigid;
-      if (boost::iequals(name, "beam3rlin2rigid"))
-        type = beam3r_lin2_rigid;
-      else if (boost::iequals(name, "beam3rlin2pin"))
-        type = beam3r_lin2_pin;
+      JointType type = beam3r_line2_rigid;
+      if (boost::iequals(name, "beam3rline2rigid"))
+        type = beam3r_line2_rigid;
+      else if (boost::iequals(name, "beam3rline2pin"))
+        type = beam3r_line2_pin;
       else if (boost::iequals(name, "truss"))
         type = truss;
       else
