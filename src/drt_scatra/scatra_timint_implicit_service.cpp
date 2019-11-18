@@ -810,87 +810,10 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
   if ((computeintegrals_ == INPAR::SCATRA::computeintegrals_initial and Step() == 0) or
       computeintegrals_ == INPAR::SCATRA::computeintegrals_repeated)
   {
-    // initialize label
-    std::string label;
+    if (outputdomainintegralstrategy_ == Teuchos::null)
+      dserror("output strategy was not initialized!");
 
-    // create parameter list
-    Teuchos::ParameterList condparams;
-
-    // determine label and element action depending on whether domain or boundary integrals are
-    // relevant
-    if (condstring == "BoundaryIntegral")
-    {
-      label = "Boundary";
-      condparams.set<int>("action", SCATRA::bd_calc_boundary_integral);
-    }
-    else if (condstring == "DomainIntegral")
-    {
-      label = "Domain";
-      condparams.set<int>("action", SCATRA::calc_domain_integral);
-    }
-    else
-      dserror("Invalid condition name!");
-
-    // extract conditions for computation of domain or boundary integrals
-    std::vector<DRT::Condition*> conditions;
-    discret_->GetCondition(condstring, conditions);
-
-    // print header
-    if (conditions.size() > 0 and myrank_ == 0)
-    {
-      std::cout << std::endl << label + " integrals:" << std::endl;
-      std::cout << "+----+-------------------------+" << std::endl;
-      std::cout << "| ID | value of integral       |" << std::endl;
-    }
-
-    // loop over all conditions
-    for (unsigned condid = 0; condid < conditions.size(); ++condid)
-    {
-      // clear state vectors on discretization
-      discret_->ClearState();
-
-      // initialize one-component result vector for value of current domain or boundary integral
-      Teuchos::RCP<Epetra_SerialDenseVector> integralvalue =
-          Teuchos::rcp(new Epetra_SerialDenseVector(1));
-
-      // compute value of current domain or boundary integral
-      discret_->EvaluateScalars(condparams, integralvalue, condstring, condid);
-      discret_->ClearState();
-
-      // output results to screen and file
-      if (myrank_ == 0)
-      {
-        // print results to screen
-        std::cout << "| " << std::setw(2) << condid << " |        " << std::setw(6)
-                  << std::scientific << std::setprecision(3) << (*integralvalue)(0) << "        |"
-                  << std::endl;
-
-        // set file name
-        const std::string filename(
-            problem_->OutputControlFile()->FileName() + "." + label + "_integrals.csv");
-
-        // open file in appropriate mode and write header at beginning
-        std::ofstream file;
-        if (Step() == 0 and condid == 0)
-        {
-          file.open(filename.c_str(), std::fstream::trunc);
-          file << "Step,Time," + label + "ID," + label + "Integral" << std::endl;
-        }
-        else
-          file.open(filename.c_str(), std::fstream::app);
-
-        // write value of current domain or boundary integral to file
-        file << Step() << "," << Time() << "," << condid << ',' << std::scientific
-             << std::setprecision(6) << (*integralvalue)(0) << std::endl;
-
-        // close file
-        file.close();
-      }  // if(myrank_ == 0)
-    }    // loop over all conditions
-
-    // print finish line to screen
-    if (conditions.size() and myrank_ == 0)
-      std::cout << "+----+-------------------------+" << std::endl;
+    outputdomainintegralstrategy_->EvaluateIntegralsAndPrintResults(this, condstring);
   }  // check whether output is applicable
 
   return;
@@ -3057,6 +2980,127 @@ void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const 
     totalscalars_[condid].resize(numdofpernode, 0.);
     meanscalars_[condid].resize(numdofpernode, 0.);
   }
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------------*
+ |  Initialize output class                                            kremheller 11/19 |
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  // extract conditions for calculation of total and mean values of transported scalars
+  scatratimint->Discretization()->GetCondition("DomainIntegral", conditionsdomain_);
+  scatratimint->Discretization()->GetCondition("BoundaryIntegral", conditionsboundary_);
+
+  if (conditionsdomain_.empty() && conditionsboundary_.empty())
+    dserror(
+        "No 'DomainIntegral' or 'BoundaryIntegral' conditions defined for scalar output by "
+        "condition!\n"
+        "Change the parameter 'COMPUTEINTEGRALS' in the SCALAR TRANSPORT DYNAMIC section \n"
+        "or include 'DESIGN DOMAIN INTEGRAL * CONDITIONS' conditions!");
+
+  domainintegralvalues_.resize(conditionsdomain_.size());
+  boundaryintegralvalues_.resize(conditionsboundary_.size());
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------------*
+ |  evaluate domain integrals and print them to file and screen        kremheller 11/19 |
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
+    const ScaTraTimIntImpl* const scatratimint, const std::string condstring)
+{
+  // initialize label
+  std::string label;
+
+  // create parameter list
+  Teuchos::ParameterList condparams;
+
+  // determine label and element action depending on whether domain or boundary integrals are
+  // relevant
+  if (condstring == "BoundaryIntegral")
+  {
+    label = "Boundary";
+    condparams.set<int>("action", SCATRA::bd_calc_boundary_integral);
+  }
+  else if (condstring == "DomainIntegral")
+  {
+    label = "Domain";
+    condparams.set<int>("action", SCATRA::calc_domain_integral);
+  }
+  else
+    dserror("Invalid condition name!");
+
+  // extract conditions for computation of domain or boundary integrals
+  std::vector<DRT::Condition*> conditions;
+  Teuchos::RCP<DRT::Discretization> discret = scatratimint->Discretization();
+  const int myrank = discret->Comm().MyPID();
+  discret->GetCondition(condstring, conditions);
+
+  // print header
+  if (conditions.size() > 0 and myrank == 0)
+  {
+    std::cout << std::endl << label + " integrals:" << std::endl;
+    std::cout << "+----+-------------------------+" << std::endl;
+    std::cout << "| ID | value of integral       |" << std::endl;
+  }
+
+  // loop over all conditions
+  for (unsigned condid = 0; condid < conditions.size(); ++condid)
+  {
+    // clear state vectors on discretization
+    discret->ClearState();
+
+    // initialize one-component result vector for value of current domain or boundary integral
+    Teuchos::RCP<Epetra_SerialDenseVector> integralvalue =
+        Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+    // compute value of current domain or boundary integral
+    discret->EvaluateScalars(condparams, integralvalue, condstring, condid);
+    discret->ClearState();
+
+    // output results to screen and file
+    if (myrank == 0)
+    {
+      // print results to screen
+      std::cout << "| " << std::setw(2) << condid << " |        " << std::setw(6) << std::scientific
+                << std::setprecision(3) << (*integralvalue)(0) << "        |" << std::endl;
+
+      // set file name
+      const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName() + "." +
+                                 label + "_integrals.csv");
+
+      // open file in appropriate mode and write header at beginning
+      std::ofstream file;
+      if (scatratimint->Step() == 0 and condid == 0)
+      {
+        file.open(filename.c_str(), std::fstream::trunc);
+        file << "Step,Time," + label + "ID," + label + "Integral" << std::endl;
+      }
+      else
+        file.open(filename.c_str(), std::fstream::app);
+
+      // write value of current domain or boundary integral to file
+      file << scatratimint->Step() << "," << scatratimint->Time() << "," << condid << ','
+           << std::scientific << std::setprecision(6) << (*integralvalue)(0) << std::endl;
+
+      // close file
+      file.close();
+    }  // if(myrank_ == 0)
+
+    if (condstring == "BoundaryIntegral")
+      boundaryintegralvalues_[condid] = (*integralvalue)(0);
+    else if (condstring == "DomainIntegral")
+      domainintegralvalues_[condid] = (*integralvalue)(0);
+    else
+      dserror("Invalid condition name!");
+  }  // loop over all conditions
+
+  // print finish line to screen
+  if (conditions.size() and myrank == 0)
+    std::cout << "+----+-------------------------+" << std::endl;
 
   return;
 }

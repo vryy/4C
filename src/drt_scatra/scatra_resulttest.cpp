@@ -459,6 +459,34 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   else if (!quantity.compare(0, 7, "numstep"))
     result = scatratimint_->Step();
 
+  // test domainintegral_ID
+  else if (!quantity.compare(0, 15, "domainintegral_"))
+  {
+    std::string suffix = quantity.substr(15);
+    const char* index(suffix.c_str());
+    char* locator(NULL);
+    // extract domain ID
+    int domain = strtol(index, &locator, 10);
+    if (domain < 0 || domain > (int)(scatratimint_->DomainIntegrals().size() - 1))
+      dserror("Value for domain integral has to lie between 0 and %i",
+          (int)(scatratimint_->DomainIntegrals().size() - 1));
+    result = scatratimint_->DomainIntegrals()[domain];
+  }
+
+  // test boundaryintegral_ID
+  else if (!quantity.compare(0, 17, "boundaryintegral_"))
+  {
+    std::string suffix = quantity.substr(17);
+    const char* index(suffix.c_str());
+    char* locator(NULL);
+    // extract boundary ID
+    int boundary = strtol(index, &locator, 10);
+    if (boundary < 0 || boundary > (int)(scatratimint_->BoundaryIntegrals().size() - 1))
+      dserror("Value for boundary integral has to lie between 0 and %i",
+          (int)(scatratimint_->DomainIntegrals().size() - 1));
+    result = scatratimint_->BoundaryIntegrals()[boundary];
+  }
+
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());

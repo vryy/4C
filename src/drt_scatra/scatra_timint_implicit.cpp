@@ -166,6 +166,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       nsd_(problem_->NDim()),
       scalarhandler_(Teuchos::null),
       outputscalarstrategy_(Teuchos::null),
+      outputdomainintegralstrategy_(Teuchos::null),
       // Initialization of degrees of freedom variables
       phin_(Teuchos::null),
       phinp_(Teuchos::null),
@@ -587,6 +588,34 @@ void SCATRA::ScaTraTimIntImpl::Setup()
           "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of mean and "
           "total scalars\n"
           "or remove the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
+  }
+
+  // -------------------------------------------------------------------
+  // preparations for domain integrals
+  // -------------------------------------------------------------------
+  if (computeintegrals_ != INPAR::SCATRA::computeintegrals_none)
+  {
+    // initialize domain integral output strategy
+    outputdomainintegralstrategy_ = Teuchos::rcp(new OutputDomainIntegralStrategy);
+    outputdomainintegralstrategy_->Init(this);
+  }
+  else
+  {
+    // input check
+    std::vector<DRT::Condition*> conditions_boundary;
+    // extract conditions for calculation of total and mean values of transported scalars
+    discret_->GetCondition("BoundaryIntegral", conditions_boundary);
+    std::vector<DRT::Condition*> conditions_domain;
+    // extract conditions for calculation of total and mean values of transported scalars
+    discret_->GetCondition("DomainIntegral", conditions_domain);
+    // input check
+    if (conditions_boundary.size() > 0 || conditions_domain.size() > 0)
+      dserror(
+          "Found 'DESIGN DOMAIN INTEGRAL SURF CONDITIONS' or 'DESIGN DOMAIN INTEGRAL VOL "
+          "CONDITIONS' condition on ScaTra discretization, but COMPUTEINTEGRALS\n"
+          "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of domain "
+          "integrals "
+          "or remove the 'DESIGN DOMAIN INTEGRAL * CONDITIONS' condition from your input file!");
   }
 
   // -------------------------------------------------------------------
@@ -3325,6 +3354,28 @@ const std::map<const int, std::vector<double>>& SCATRA::ScaTraTimIntImpl::MeanSc
   if (outputscalarstrategy_ == Teuchos::null) dserror("output strategy was not initialized!");
 
   return outputscalarstrategy_->MeanScalars();
+}
+
+/*-----------------------------------------------------------------------------*
+ |  return values of domain integrals (for output only)       kremheller 11/19 |
+ *-----------------------------------------------------------------------------*/
+const std::vector<double>& SCATRA::ScaTraTimIntImpl::DomainIntegrals() const
+{
+  if (outputdomainintegralstrategy_ == Teuchos::null)
+    dserror("output strategy for domain integration was not initialized!");
+
+  return outputdomainintegralstrategy_->DomainIntegrals();
+}
+
+/*-----------------------------------------------------------------------------*
+ |  return values of boundary integrals (for output only)     kremheller 11/19 |
+ *-----------------------------------------------------------------------------*/
+const std::vector<double>& SCATRA::ScaTraTimIntImpl::BoundaryIntegrals() const
+{
+  if (outputdomainintegralstrategy_ == Teuchos::null)
+    dserror("output strategy for domain integration was not initialized!");
+
+  return outputdomainintegralstrategy_->BoundaryIntegrals();
 }
 
 void SCATRA::ScaTraTimIntImpl::GetPointPhiValue(
