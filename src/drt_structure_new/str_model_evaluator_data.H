@@ -202,6 +202,9 @@ namespace STR
       //! read-only access to energy data
       double GetEnergyData(enum STR::EnergyType type) const;
 
+      //! read-only access to energy data
+      double GetEnergyData(const std::string type) const;
+
       //! set value for a specific energy type
       void SetValueForEnergyType(double value, enum STR::EnergyType type);
 

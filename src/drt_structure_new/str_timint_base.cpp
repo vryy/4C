@@ -392,7 +392,7 @@ Teuchos::RCP<DRT::ResultTest> STR::TIMINT::Base::CreateFieldTest()
 {
   CheckInitSetup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());
-  resulttest->Init(GetDataGlobalState());
+  resulttest->Init(GetDataGlobalState(), Integrator().EvalData());
   resulttest->Setup();
 
   return resulttest;

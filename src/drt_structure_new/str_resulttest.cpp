@@ -12,6 +12,7 @@
 
 #include "str_resulttest.H"
 #include "str_timint_base.H"
+#include "str_model_evaluator_data.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
@@ -35,7 +36,8 @@ STR::ResultTest::ResultTest()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::Init(const STR::TIMINT::BaseDataGlobalState& gstate)
+void STR::ResultTest::Init(
+    const STR::TIMINT::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
 {
   issetup_ = false;
 
@@ -43,6 +45,7 @@ void STR::ResultTest::Init(const STR::TIMINT::BaseDataGlobalState& gstate)
   veln_ = gstate.GetVelN();
   accn_ = gstate.GetAccN();
   gstate_ = Teuchos::rcpFromRef(gstate);
+  data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.GetDiscret();
 
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
@@ -249,6 +252,14 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
   {
     return GetNlnIterationNumber(quantity, special_status);
   }
+  else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
+           quantity == "total_energy" or quantity == "beam_contact" or
+           quantity == "beam_potential" or quantity == "beam_to_beam_internal" or
+           quantity == "beam_to_beam_kinetic" or quantity == "beam_to_sphere_internal" or
+           quantity == "beam_to_sphere_kinetic")
+  {
+    return GetEnergy(quantity, special_status);
+  }
   else
     dserror(
         "Quantity '%s' not supported by special result testing functionality "
@@ -270,6 +281,14 @@ double STR::ResultTest::GetNlnIterationNumber(
 
   special_status = Status::evaluated;
   return static_cast<double>(gstate_->GetNlnIterationNumber(stepn));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::ResultTest::GetEnergy(const std::string& quantity, Status& special_status) const
+{
+  special_status = Status::evaluated;
+  return data_->GetEnergyData(quantity);
 }
 
 /*----------------------------------------------------------------------------*

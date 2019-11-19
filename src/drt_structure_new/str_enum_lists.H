@@ -16,6 +16,8 @@
 
 #include <string>
 
+#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
+
 namespace STR
 {
   //! Supported types of energy contributions
@@ -49,12 +51,36 @@ namespace STR
       case beam_to_beam_link_kinetic_energy:
         return "beam_to_beam_kinetic";
       case beam_to_sphere_link_internal_energy:
-        return "beam_to_shpere_internal";
+        return "beam_to_sphere_internal";
       case beam_to_sphere_link_kinetic_energy:
         return "beam_to_sphere_kinetic";
       default:
         return "unknown_type_of_energy";
     }
+    exit(EXIT_FAILURE);
+  };
+
+  //! Map std::string to energy type
+  inline EnergyType String2EnergyType(const std::string type)
+  {
+    if (type == "internal_energy")
+      return internal_energy;
+    else if (type == "kinetic_energy")
+      return kinetic_energy;
+    else if (type == "beam_contact")
+      return beam_contact_penalty_potential;
+    else if (type == "beam_potential")
+      return beam_interaction_potential;
+    else if (type == "beam_to_beam_internal")
+      return beam_to_beam_link_internal_energy;
+    else if (type == "beam_to_beam_kinetic")
+      return beam_to_beam_link_kinetic_energy;
+    else if (type == "beam_to_sphere_internal")
+      return beam_to_sphere_link_internal_energy;
+    else if (type == "beam_to_sphere_kinetic")
+      return beam_to_sphere_link_kinetic_energy;
+    else
+      dserror("Unknown type of energy %s", type.c_str());
     exit(EXIT_FAILURE);
   };
 
