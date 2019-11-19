@@ -194,7 +194,7 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::
 }
 
 void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs(
-    const int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids)
+    int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids)
 {
   // mpi communicator
   const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
