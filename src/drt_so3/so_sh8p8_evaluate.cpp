@@ -2244,11 +2244,11 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
     //     // correct, but same speed like solution with Lapack and inaccurate
     //     {
     //       for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl) {
-    //         const int k = VOIGT6ROW_[kl];
-    //         const int l = VOIGT6COL_[kl];
+    //         const int k = VOIGT6ROW[kl];
+    //         const int l = VOIGT6COL[kl];
     //         for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij) {
-    //           const int i = VOIGT6ROW_[ij];
-    //           const int j = VOIGT6COL_[ij];
+    //           const int i = VOIGT6ROW[ij];
+    //           const int j = VOIGT6COL[ij];
     //           double rgtstrDbyrcgD_ijkl = 0.0;
     //           for (int al=0; al<NUMDIM_; ++al) {
     //             for (int be=0; be<NUMDIM_; ++be) {

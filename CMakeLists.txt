@@ -1134,6 +1134,7 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
+  src/drt_lib/voigt_notation.cpp
 )
 set(OBJS_DRT_ERROR
   src/drt_lib/drt_dserror.cpp

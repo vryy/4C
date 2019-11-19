@@ -555,12 +555,6 @@ namespace MAT
     virtual void MatrixExponentialDerivative3x3(
         const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<9, 9>& MatrixExpDeriv);
 
-    /// @name Voigt index arrays
-    //@{
-    static const int VOIGT3X3_[3][3];
-
-    //@}
-
     /// my material parameters
     MAT::PAR::PlasticElastHyper* params_;
 

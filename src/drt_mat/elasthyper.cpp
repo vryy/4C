@@ -26,6 +26,9 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "../drt_comm/comm_utils.H"              // for stat inverse analysis
 #include "../drt_inpar/inpar_statinvanalysis.H"  // for stat inverse analysis
 #include "elasthyper_service.H"
+#include "../drt_lib/voigt_notation.H"
+
+using VoigtNotation = UTILS::VoigtNotation;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -357,7 +360,7 @@ void MAT::ElastHyper::StrainEnergy(
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
-  InvariantsPrincipal<VoigtNotation::strain>(prinv, C_strain);
+  VStrainUtils::InvariantsPrincipal(prinv, C_strain);
   InvariantsModified(modinv, prinv);
 
   // loop map of associated potential summands
@@ -552,9 +555,9 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   const double ndt = n.Dot(t);
 
   static LINALG::Matrix<6, 1> bV_strain(true);
-  MatrixtoStrainLikeVoigtNotation(b, bV_strain);
+  UTILS::VOIGT::MatrixToStrainLikeVoigtNotation(b, bV_strain);
   static LINALG::Matrix<3, 1> prinv(true);
-  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, bV_strain);
+  VStrainUtils::InvariantsPrincipal(prinv, bV_strain);
 
   static LINALG::Matrix<3, 1> dPI(true);
   static LINALG::Matrix<6, 1> ddPII(true);
@@ -587,23 +590,23 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
   static LINALG::Matrix<9, 1> FV(true);
-  Matrix3x3to9x1(defgrd, FV);
+  UTILS::VOIGT::Matrix3x3to9x1(defgrd, FV);
   static LINALG::Matrix<3, 3> iF(true);
   iF.Invert(defgrd);
   static LINALG::Matrix<3, 3> iFT(true);
   iFT.UpdateT(iF);
   static LINALG::Matrix<9, 1> iFTV(true);
-  Matrix3x3to9x1(iFT, iFTV);
+  UTILS::VOIGT::Matrix3x3to9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
   static LINALG::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
   static LINALG::Matrix<9, 1> bdFV(true);
-  Matrix3x3to9x1(bdF, bdFV);
+  UTILS::VOIGT::Matrix3x3to9x1(bdF, bdFV);
   static LINALG::Matrix<3, 3> ibdF(true);
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
   static LINALG::Matrix<9, 1> ibdFV(true);
-  Matrix3x3to9x1(ibdF, ibdFV);
+  UTILS::VOIGT::Matrix3x3to9x1(ibdF, ibdFV);
   static LINALG::Matrix<9, 1> DI1DF(true);
   DI1DF.Update(2.0, FV, 0.0);
   static LINALG::Matrix<9, 1> DI2DF(true);
@@ -622,7 +625,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
   DbdndtDF.MultiplyNN(1.0, t, tempvec1x3, 1.0);
   static LINALG::Matrix<9, 1> DbdndtDFV(true);
-  Matrix3x3to9x1(DbdndtDF, DbdndtDFV);
+  UTILS::VOIGT::Matrix3x3to9x1(DbdndtDF, DbdndtDFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
   static LINALG::Matrix<1, 3> tdibdF(true);
@@ -634,7 +637,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   DibdndtDF.MultiplyNN(1.0, ibdt, ndibdF, 1.0);
   DibdndtDF.Scale(-1.0);
   static LINALG::Matrix<9, 1> DibdndtDFV(true);
-  Matrix3x3to9x1(DibdndtDF, DibdndtDFV);
+  UTILS::VOIGT::Matrix3x3to9x1(DibdndtDF, DibdndtDFV);
 
   if (temp)
     EvaluateCauchyTempDeriv(prinv, ndt, bdndt, ibdndt, temp, DsntDT, iFTV, DbdndtDFV, DibdndtDFV,
@@ -680,7 +683,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (t(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
@@ -688,7 +691,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibdt(k, 0) * ibdF(z, l) + ib(z, k) * tdibdF(0, l));
 
     // add parts originating from d/dn(d(sigma * n * t)/dI1 \otimes dI1/dF)
@@ -725,7 +728,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDt)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (n(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
@@ -733,7 +736,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDt)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
 
     // add parts originating from d/dt(d(sigma * n * t)/dI1 \otimes dI1/dF)
@@ -774,23 +777,26 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     static LINALG::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
 
+    using map = UTILS::VOIGT::IndexMappings;
+
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int m = 0; m < 3; ++m)
           for (int a = 0; a < 3; ++a)
           {
-            DiFTDF(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = -iF(l, m) * iF(a, k);
-            D2bdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+            DiFTDF(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) = -iF(l, m) * iF(a, k);
+            D2bdndtDF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 (t(k, 0) * n(m, 0) + t(m, 0) * n(k, 0)) * (l == a);
-            D2ibdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+            D2ibdndtDF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 ibdF(k, a) * (ibdt(m, 0) * ndibdF(0, l) + ibdn(m, 0) * tdibdF(0, l)) +
                 ib(m, k) * (tdibdF(0, a) * ndibdF(0, l) + tdibdF(0, l) * ndibdF(0, a)) +
                 ibdF(m, l) * (ibdt(k, 0) * ndibdF(0, a) + tdibdF(0, a) * ibdn(k, 0));
-            D2I1DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = 2.0 * (k == m) * (l == a);
-            D2I2DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+            D2I1DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+                2.0 * (k == m) * (l == a);
+            D2I2DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 2.0 * (prinv(0) * (k == m) * (l == a) + 2.0 * defgrd(m, a) * defgrd(k, l) -
                           (k == m) * C(a, l) - defgrd(k, a) * defgrd(m, l) - b(k, m) * (l == a));
-            D2I3DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+            D2I3DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
           }
 

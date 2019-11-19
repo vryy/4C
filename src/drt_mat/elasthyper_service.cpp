@@ -14,6 +14,10 @@
 #include "material_service.H"
 #include "../headers/definitions.h"
 
+#include "../drt_lib/voigt_notation.H"
+
+using VoigtNotation = UTILS::VoigtNotation;
+
 void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, int eleGID,
@@ -34,7 +38,7 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
   ddPII.Clear();
 
   // Evaluate identity tensor
-  IdentityMatrix(id2);
+  UTILS::VOIGT::IdentityMatrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
@@ -43,7 +47,7 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
   VStrainUtils::InverseTensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
-  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, C_strain);
+  VStrainUtils::InvariantsPrincipal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
   ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, eleGID);
@@ -172,12 +176,12 @@ void MAT::ElastHyperAddIsotropicStressCmat(LINALG::Matrix<6, 1>& S_stress,
   static LINALG::Matrix<6, 1> iC_stress(false);
   // 4th order identity tensor (rows and colums are stress-like)
   static LINALG::Matrix<6, 6> id4sharp(false);
-  MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress, MAT::VoigtNotation::stress>(id4sharp);
+  UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(id4sharp);
 
   // initialize matrices
-  MAT::IdentityMatrix(id2);
-  MAT::VStrainUtils::ToStressLike(C_strain, C_stress);
-  MAT::VStrainUtils::ToStressLike(iC_strain, iC_stress);
+  UTILS::VOIGT::IdentityMatrix(id2);
+  VStrainUtils::ToStressLike(C_strain, C_stress);
+  VStrainUtils::ToStressLike(iC_strain, iC_stress);
 
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
@@ -324,6 +328,8 @@ void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Mat
     S_stress(5) += prsts(al) * prdir(2, al) * prdir(0, al);  // S^31
   }
 
+  using map = UTILS::VOIGT::IndexMappings;
+
   // integration factor prfact_{al be}
   static LINALG::Matrix<6, 1> prfact1(true);
   prfact1.Clear();
@@ -331,8 +337,8 @@ void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Mat
   prfact2.Clear();
   for (int albe = 0; albe < 6; ++albe)
   {
-    const int al = VOIGT6ROW_[albe];
-    const int be = VOIGT6COL_[albe];
+    const int al = map::Voigt6ToRow(albe);
+    const int be = map::Voigt6ToCol(albe);
     double prfact1_albe = delta_(albe) / (prstr(al) * prstr(be));
     if (albe < 3) prfact1_albe -= gamma_(al) / (prstr(be) * prstr(al) * prstr(al));
     prfact1(albe) = prfact1_albe;
@@ -348,17 +354,17 @@ void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Mat
   // add elasticity 4-tensor, cf Holzapfel [1] Eq (6.180),(6.196)
   for (int kl = 0; kl < 6; ++kl)
   {
-    const int k = VOIGT6ROW_[kl];
-    const int l = VOIGT6COL_[kl];
+    const int k = map::Voigt6ToRow(kl);
+    const int l = map::Voigt6ToCol(kl);
     for (int ij = 0; ij < 6; ++ij)
     {
-      const int i = VOIGT6ROW_[ij];
-      const int j = VOIGT6COL_[ij];
+      const int i = map::Voigt6ToRow(ij);
+      const int j = map::Voigt6ToCol(ij);
       double c_ijkl = 0.0;
       for (int albe = 0; albe < 6; ++albe)
       {
-        const int al = VOIGT6ROW_[albe];
-        const int be = VOIGT6COL_[albe];
+        const int al = map::Voigt6ToRow(albe);
+        const int be = map::Voigt6ToCol(albe);
         const double fact1 = prfact1(albe);
         c_ijkl += fact1 * prdir(i, al) * prdir(j, al) * prdir(k, be) * prdir(l, be);
         if (albe >= 3)
@@ -456,7 +462,7 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
   // defgrd = F (i)
   // dfgrd = F in Voigt - Notation
   static LINALG::Matrix<9, 1> dfgrd(true);
-  Matrix3x3to9x1(defgrd, dfgrd);
+  UTILS::VOIGT::Matrix3x3to9x1(defgrd, dfgrd);
 
   // Cof(F) = J*F^(-T)
   static LINALG::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
@@ -464,7 +470,7 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
   CoFacF.Invert(defgrd);
   CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
-  Matrix3x3to9x1(CoFacF, CofF);
+  UTILS::VOIGT::Matrix3x3to9x1(CoFacF, CofF);
 
   // id4 (9x9)
   static LINALG::Matrix<9, 9> ID4(true);

@@ -110,17 +110,6 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(ddPII_new(5), 0., 1e-4);
   }
 
-  void test_InvariantsPrincipal()
-  {
-    LINALG::Matrix<3, 1> prinv;
-    InvariantsPrincipal<VoigtNotation::strain>(prinv, *C_strain_);
-
-
-    TS_ASSERT_DELTA(prinv(0), 4.1999999999999993, 1e-10)
-    TS_ASSERT_DELTA(prinv(1), 5.8386000000000005, 1e-10)
-    TS_ASSERT_DELTA(prinv(2), 2.6861119999999996, 1e-10)
-  }
-
  private:
   Teuchos::RCP<LINALG::Matrix<6, 1>> E_strain_;
   Teuchos::RCP<LINALG::Matrix<6, 1>> C_strain_;

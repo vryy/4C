@@ -479,12 +479,12 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       invfderf(ij,kl) = -0.5*(invfmat(i,k)*invfmat(l,j) + invfmat(i,l)*invfmat(k,j));
 //      std::cout << "invfderf("<<ij<<","<<kl<<") = ";
 //      std::cout << "-0.5*(invfmat("<<i<<","<<k<<")*invfmat("<<l<<","<<j<<")+invfmat("<<i<<","<<l<<")*invfmat("<<k<<","<<j<<"));";
@@ -643,12 +643,12 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
 //      std::cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
       if ( (outvoigt6 == voigt6_strain) and (ij >= NUMDIM_) )
@@ -767,16 +767,16 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       for (int mn=0; mn<MAT::NUM_STRESS_3D; ++mn)
       {
-        const int m = VOIGT6ROW_[mn];
-        const int n = VOIGT6COL_[mn];
+        const int m = VOIGT6ROW[mn];
+        const int n = VOIGT6COL[mn];
         const int klmn = MAT::NUM_STRESS_3D*kl + mn;
         double sqfdderf_ijklmn = 0.25*(id(i,k)*id(l,m)*id(j,n)+id(j,l)*id(i,m)*id(k,n)
                                        +id(i,k)*id(l,n)*id(j,m)+id(j,l)*id(i,n)*id(k,m)  // swap 'm' and 'n'
