@@ -555,7 +555,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
 {
   std::map<int, std::set<int>> colbintoelemap;
   Teuchos::RCP<Epetra_Map> extendedelecolmap =
-      binstrategy_->GetExtendedElementColMap(bintorowelemap, colbintoelemap, bincolmap_);
+      binstrategy_->ExtendElementColMap(bintorowelemap, bintorowelemap, colbintoelemap, bincolmap_);
 
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);

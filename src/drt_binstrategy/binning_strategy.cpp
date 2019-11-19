@@ -60,7 +60,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      myrank_(DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID())
+      myrank_(DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID()),
+      comm_(DRT::Problem::Instance()->GetNPGroup()->LocalComm()->Clone())
 {
   // initialize arrays
   for (int idim = 0; idim < 3; ++idim)
@@ -82,9 +83,7 @@ void BINSTRATEGY::BinningStrategy::Init(
     std::vector<Teuchos::RCP<Epetra_Vector>> disnp)
 {
   // create binning discretization
-  Teuchos::RCP<Epetra_Comm> comm =
-      Teuchos::rcp(DRT::Problem::Instance()->GetNPGroup()->LocalComm()->Clone());
-  bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm));
+  bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm_));
 
   // create discretization writer
   bindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
@@ -1224,8 +1223,8 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
     // extbintoelemap[i] than contains all bins and its corresponding elements
     // that need to be owned or ghosted to ensure correct interaction handling
     // of the elements in the range of one layer
-    Teuchos::RCP<Epetra_Map> extendedelecolmap = GetExtendedElementColMap(
-        bintoelemap, dummy1[i], Teuchos::null, newrowbins, discret[i]->ElementColMap());
+    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendElementColMap(bintoelemap, bintoelemap,
+        dummy1[i], Teuchos::null, newrowbins, discret[i]->ElementColMap());
 
     // adapt layout to extended ghosting in discret
     // first export the elements according to the processor local element column maps
@@ -1406,88 +1405,14 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   return newrowbins;
 }
 
-Teuchos::RCP<const Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
-    DRT::Discretization& mortardis, const Epetra_Map& initial_elecolmap,
-    std::map<int, std::set<int>>& slavebinelemap,
-    std::map<int, std::set<int>>& masterbinelemap) const
-{
-  std::map<int, std::set<int>> extendedghosting;
-
-  // do communication to gather all elements for extended ghosting
-  const int numproc = mortardis.Comm().NumProc();
-  for (int iproc = 0; iproc < numproc; ++iproc)
-  {
-    // get all neighboring bins around bins that contain slave elements
-    std::set<int> binset;
-    if (iproc == myrank_)
-    {
-      for (std::map<int, std::set<int>>::const_iterator iter = slavebinelemap.begin();
-           iter != slavebinelemap.end(); ++iter)
-      {
-        int binId = iter->first;
-        std::vector<int> bins;
-        // get neighboring bins
-        GetNeighborAndOwnBinIds(binId, bins);
-        binset.insert(bins.begin(), bins.end());
-      }
-    }
-    // copy set to vector in order to broadcast data
-    std::vector<int> binids(binset.begin(), binset.end());
-
-    // first: proc i tells all procs how many bins it has
-    int numbin = binids.size();
-    mortardis.Comm().Broadcast(&numbin, 1, iproc);
-    // second: proc i tells all procs which bins it has
-    binids.resize(numbin);
-
-    mortardis.Comm().Broadcast(&binids[0], numbin, iproc);
-
-    // loop over all own bins and find requested ones, fill in master elements in these bins
-    std::map<int, std::set<int>> sdata;
-    std::map<int, std::set<int>> rdata;
-
-    for (int i = 0; i < numbin; ++i)
-    {
-      sdata[binids[i]].insert(masterbinelemap[binids[i]].begin(), masterbinelemap[binids[i]].end());
-    }
-
-    LINALG::Gather<int>(sdata, rdata, 1, &iproc, mortardis.Comm());
-
-    // proc i has to store the received data
-    if (iproc == myrank_)
-    {
-      extendedghosting = rdata;
-    }
-  }
-
-  // reduce map of sets to one set and copy to a vector to create extended elecolmap
-  std::set<int> mastereleset;
-  std::map<int, std::set<int>>::iterator iter;
-  for (iter = extendedghosting.begin(); iter != extendedghosting.end(); ++iter)
-  {
-    mastereleset.insert(iter->second.begin(), iter->second.end());
-  }
-
-  // insert standard ghosting for master and slave side
-  for (int lid = 0; lid < initial_elecolmap.NumMyElements(); ++lid)
-  {
-    mastereleset.insert(initial_elecolmap.GID(lid));
-  }
-
-  std::vector<int> mastercolgids(mastereleset.begin(), mastereleset.end());
-
-  // return extendedmastercolmap
-  return Teuchos::rcp(
-      new Epetra_Map(-1, (int)mastercolgids.size(), &mastercolgids[0], 0, mortardis.Comm()));
-}
-
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::GetExtendedElementColMap(
-    std::map<int, std::set<int>>& bin_to_row_ele_map,
+Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendElementColMap(
+    std::map<int, std::set<int>> const& bin_to_row_ele_map,
+    std::map<int, std::set<int>>& bin_to_row_ele_map_to_lookup_requests,
     std::map<int, std::set<int>>& ext_bin_to_ele_map, Teuchos::RCP<Epetra_Map> bin_colmap,
     Teuchos::RCP<Epetra_Map> bin_rowmap, const Epetra_Map* ele_colmap_from_standardghosting) const
 {
   // do communication to gather all elements for extended ghosting
-  const int numproc = bindis_->Comm().NumProc();
+  const int numproc = comm_->NumProc();
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // gather set of column bins for each proc
@@ -1525,11 +1450,11 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::GetExtendedElementColMap(
 
     // first: proc i tells all procs how many bins it has
     int numbin = binids.size();
-    bindis_->Comm().Broadcast(&numbin, 1, iproc);
+    comm_->Broadcast(&numbin, 1, iproc);
     // second: proc i tells all procs which bins it has
     binids.resize(numbin);
 
-    bindis_->Comm().Broadcast(&binids[0], numbin, iproc);
+    comm_->Broadcast(&binids[0], numbin, iproc);
 
     // loop over all own bins and find requested ones, fill in elements in these bins
     std::map<int, std::set<int>> sdata;
@@ -1537,12 +1462,13 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::GetExtendedElementColMap(
 
     for (int i = 0; i < numbin; ++i)
     {
-      if (bin_to_row_ele_map.find(binids[i]) != bin_to_row_ele_map.end())
-        sdata[binids[i]].insert(
-            bin_to_row_ele_map[binids[i]].begin(), bin_to_row_ele_map[binids[i]].end());
+      if (bin_to_row_ele_map_to_lookup_requests.find(binids[i]) !=
+          bin_to_row_ele_map_to_lookup_requests.end())
+        sdata[binids[i]].insert(bin_to_row_ele_map_to_lookup_requests[binids[i]].begin(),
+            bin_to_row_ele_map_to_lookup_requests[binids[i]].end());
     }
 
-    LINALG::Gather<int>(sdata, rdata, 1, &iproc, bindis_->Comm());
+    LINALG::Gather<int>(sdata, rdata, 1, &iproc, *comm_);
 
     // proc i has to store the received data
     if (iproc == myrank_)
@@ -1565,7 +1491,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::GetExtendedElementColMap(
   std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
   // return extended elecolmap
-  return Teuchos::rcp(new Epetra_Map(-1, (int)colgids.size(), &colgids[0], 0, bindis_->Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, (int)colgids.size(), &colgids[0], 0, *comm_));
 }
 
 void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(

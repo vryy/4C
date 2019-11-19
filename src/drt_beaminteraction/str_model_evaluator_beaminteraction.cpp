@@ -482,9 +482,9 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
   Teuchos::RCP<Epetra_Map> auxmap = Teuchos::rcp(
       new Epetra_Map(-1, static_cast<int>(auxgids.size()), &auxgids[0], 0, bindis_->Comm()));
 
-  Teuchos::RCP<Epetra_Map> ia_elecolmap =
-      binstrategy_->GetExtendedElementColMap(ia_state_ptr_->GetMutableBinToRowEleMap(),
-          ia_state_ptr_->GetMutableExtendedBinToRowEleMap(), auxmap);
+  Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->ExtendElementColMap(
+      ia_state_ptr_->GetMutableBinToRowEleMap(), ia_state_ptr_->GetMutableBinToRowEleMap(),
+      ia_state_ptr_->GetMutableExtendedBinToRowEleMap(), auxmap);
 
   // 2) extend ghosting of discretization
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(ia_discret_, ia_elecolmap, true, false, true);
