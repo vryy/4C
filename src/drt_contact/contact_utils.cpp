@@ -299,8 +299,9 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       }
     }
 
-    if (problemtype != prb_structure && problemtype != prb_fsi_xfem && problemtype != prb_fpsi_xfem)
-      dserror("two half pass algorithm only implemented in structural and fsi/fpsi problems");
+    if ((problemtype != prb_structure) and (problemtype != prb_fsi_xfem) and
+        (problemtype != prb_fpsi_xfem) and (problemtype != prb_ssi))
+      dserror("two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
       dserror("two half pass algorithm only with nitsche contact formulation");

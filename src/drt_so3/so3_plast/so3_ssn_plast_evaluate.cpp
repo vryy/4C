@@ -2341,8 +2341,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>
     Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
     Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
     LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT,
+    const double* concentration, double* DsntDc)
 {
+  if (DsntDc != nullptr) dserror("Not implemented");
+
   bool el = true;
   MAT::PlasticElastHyper* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
   if (!plmat)

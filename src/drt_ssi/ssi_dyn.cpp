@@ -115,15 +115,17 @@ void ssi_drt()
   ssi->Setup();
 
   // 3.2- Read restart if needed. (Discretization called inside)
-  const int restart = problem->Restart();
+  if (ssi->IsRestart())
+  {
+    const int restart = problem->Restart();
+    const double restarttime = problem->RestartTime();
+    if (restarttime > 0.0)
+      ssi->ReadRestartfromTime(restarttime);
+    else if (restart)
+      ssi->ReadRestart(restart);
+  }
 
-  const double restarttime = problem->RestartTime();
-  if (restarttime > 0.0)
-    ssi->ReadRestartfromTime(restarttime);
-  else if (restart)
-    ssi->ReadRestart(restart);
-
-  // 3.3 AFTER restart: reset inputfilename of the problem so that results from other runs can be
+  // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
   // read
   bool flag_readscatra = DRT::INPUT::IntegralValue<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
   if (coupling == INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and

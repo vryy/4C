@@ -213,7 +213,7 @@ void CONTACT::CoNitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface&
   // do nothing
 }
 
-void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
+void CONTACT::CoNitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams)
 {
   // we already did this displacement state
   if (curr_state_eval_) return;

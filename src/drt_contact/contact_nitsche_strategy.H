@@ -73,7 +73,7 @@ namespace CONTACT
      *
      * @param[in] cparams  contact data container
      */
-    virtual void Integrate(CONTACT::ParamsInterface& cparams);
+    virtual void Integrate(const CONTACT::ParamsInterface& cparams);
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const override;

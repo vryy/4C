@@ -221,7 +221,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlock
 }
 
 
-void CONTACT::CoNitscheStrategyTsi::Integrate(CONTACT::ParamsInterface& cparams)
+void CONTACT::CoNitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cparams)
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 

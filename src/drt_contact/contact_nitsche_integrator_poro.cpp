@@ -185,7 +185,8 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
         ->GetCauchyAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction, sigma_nt, &dsntdd,
-            NULL, NULL, NULL, NULL, &dsntdn, &dsntdt, &dsntdpxi);
+            nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt, &dsntdpxi, nullptr, nullptr,
+            nullptr, nullptr, nullptr);
   }
   else
   {

@@ -154,6 +154,7 @@ namespace INPAR
       ehl,            ///< elasto-hydrodymanic lubrication
       fsi,            ///< coupled FSI problem with contact
       fpi,            ///< coupled FPI problem with contact
+      ssi,            ///< coupled SSI problem with contact
       other           ///< other problemtypes
     };
 

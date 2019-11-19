@@ -85,6 +85,10 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
         AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.rhs_p_, mele->MoData().ParentPFDof(), fc);
       break;
+    case DRT::UTILS::VecBlockType::scatra:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleRHS<1>(mele, ssi_data_.rhs_s_, mele->MoData().ParentScalarDof(), fc);
+      break;
     default:
       dserror("unknown row");
   }
@@ -125,6 +129,18 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
         AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.k_pp_, mele->MoData().ParentPFDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::displ_scatra:
+      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+          mele, ssi_data_.k_ds_, mele->MoData().ParentDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::scatra_displ:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleMatrix<1>(mele, ssi_data_.k_sd_, mele->MoData().ParentScalarDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::scatra_scatra:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleMatrix<1>(mele, ssi_data_.k_ss_, mele->MoData().ParentScalarDof(), kc);
       break;
     default:
       dserror("unknown matrix block");

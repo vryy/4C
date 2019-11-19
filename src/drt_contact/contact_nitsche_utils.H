@@ -25,7 +25,6 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-
 namespace MORTAR
 {
   class MortarElementNitscheContainer
@@ -56,6 +55,11 @@ namespace MORTAR
     virtual double* Kpp(int col) = 0;
     virtual double* Kpd(int col) = 0;
     virtual double* Kdp(int col) = 0;
+
+    virtual double* RhsS(int dof) = 0;
+    virtual double* Kss(int col) = 0;
+    virtual double* Ksd(int col) = 0;
+    virtual double* Kds(int col) = 0;
   };
 
   template <DRT::Element::DiscretizationType parent_distype>
@@ -107,6 +111,29 @@ namespace MORTAR
     std::unordered_map<int, LINALG::Matrix<num_parent_disp_dof, 1>> k_dp_;
   };
 
+  template <DRT::Element::DiscretizationType parent_distype>
+  class MortarElementNitscheDataSsi
+  {
+   public:
+    void Clear()
+    {
+      rhs_s_.Clear();
+      k_ss_.clear();
+      k_sd_.clear();
+      k_ds_.clear();
+    }
+
+    static const int num_parent_disp_dof =
+        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+    static const int num_parent_scatra_dof =
+        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+
+    LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_scatra_dof, 1>> k_ss_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_scatra_dof, 1>> k_sd_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_disp_dof, 1>> k_ds_;
+  };
 
   template <DRT::Element::DiscretizationType parent_distype>
   class MortarElementNitscheData : public MortarElementNitscheContainer
@@ -127,6 +154,11 @@ namespace MORTAR
     double* Kpp(int col) override { return poro_data_.k_pp_[col].A(); }
     double* Kpd(int col) override { return poro_data_.k_pd_[col].A(); }
     double* Kdp(int col) override { return poro_data_.k_dp_[col].A(); }
+
+    double* RhsS(int dof) override { return &ssi_data_.rhs_s_(dof); }
+    double* Kss(int col) override { return ssi_data_.k_ss_[col].A(); }
+    double* Ksd(int col) override { return ssi_data_.k_sd_[col].A(); }
+    double* Kds(int col) override { return ssi_data_.k_ds_[col].A(); }
 
     void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) override;
@@ -156,6 +188,7 @@ namespace MORTAR
       k_.clear();
       tsi_data_.Clear();
       poro_data_.Clear();
+      ssi_data_.Clear();
     }
 
    private:
@@ -170,6 +203,7 @@ namespace MORTAR
         k_;
     MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
     MORTAR::MortarElementNitscheDataPoro<parent_distype> poro_data_;
+    MORTAR::MortarElementNitscheDataSsi<parent_distype> ssi_data_;
   };
 
 }  // namespace MORTAR

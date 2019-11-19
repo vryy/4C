@@ -20,9 +20,9 @@
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_io/io.H"
@@ -4143,6 +4143,23 @@ void MORTAR::MortarInterface::CreateVolumeGhosting()
 
   switch (prb)
   {
+    case INPAR::CONTACT::ssi:
+    {
+      std::vector<std::string> tar_dis;
+      tar_dis.emplace_back("structure");
+      tar_dis.emplace_back("scatra");
+      std::vector<std::pair<int, int>> material_map;
+      material_map.emplace_back(std::pair<int, int>(0, 1));
+      material_map.emplace_back(std::pair<int, int>(1, 0));
+
+      MORTAR::UTILS::CreateVolumeGhosting(Discret(), tar_dis, material_map);
+
+      // we need to redistribute the scalar field since distribution has changed during setup
+      auto structdis = DRT::Problem::Instance()->GetDis("structure");
+      structdis->RedistributeState(1, "scalarfield");
+
+      break;
+    }
     case INPAR::CONTACT::tsi:
     {
       std::vector<std::string> tar_dis;

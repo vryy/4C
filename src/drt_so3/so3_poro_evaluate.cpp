@@ -3077,8 +3077,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyAtXi(const LINALG::Matr
 
   if (distype != DRT::Element::hex8) dserror("GetCauchyAtXi for Poro just implemented for hex8!");
 
-  so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, dsntdd, NULL, NULL, NULL, NULL, dsntdn, dsntdt,
-      dsntdpxi, NULL, NULL, NULL);
+  so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, dsntdd, nullptr, nullptr, nullptr, nullptr,
+      dsntdn, dsntdt, dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   // Add pressure to sigma_nt
   const double dot = n(0, 0) * t(0, 0) + n(1, 0) * t(1, 0) + n(2, 0) * t(2, 0);

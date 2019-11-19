@@ -61,7 +61,7 @@ namespace CONTACT
       dserror("not implemented");
     }
 
-    void Integrate(CONTACT::ParamsInterface& cparams) override;
+    void Integrate(const CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
 

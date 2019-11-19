@@ -20,6 +20,8 @@
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_contact/contact_nitsche_strategy_ssi.H"
+
 #include "../drt_inpar/inpar_scatra.H"
 
 #include "../drt_io/io_control.H"
@@ -30,6 +32,8 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+
+#include "../drt_structure_new/str_model_evaluator_contact.H"
 
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_matrixtransform.H"
@@ -46,6 +50,8 @@
  *--------------------------------------------------------------------------*/
 SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams),
+      combinedDBCMap_(Teuchos::null),
+      contact_strategy_nitsche_(Teuchos::null),
       dtele_(0.0),
       dtsolve_(0.0),
       equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
@@ -88,7 +94,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
   strategy_assemble_->AssembleScatra(
       ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
 
-  // assemble scatra-strucutre block into system matrix
+  // assemble scatra-structure block into system matrix
   strategy_assemble_->AssembleScatraStructure(ssi_matrices_->SystemMatrix(),
       ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
 
@@ -179,6 +185,15 @@ void SSI::SSIMono::EvaluateSubproblems()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
+void SSI::SSIMono::BuildCombinedDBCMap()
+{
+  const auto& structure_cond_map = StructureField()->GetDBCMapExtractor()->CondMap();
+  const auto& scatra_cond_map = ScaTraField()->DirichMaps()->CondMap();
+  combinedDBCMap_ = LINALG::MergeMap(structure_cond_map, scatra_cond_map, false);
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::BuildNullSpaces() const
 {
   switch (ScaTraField()->MatrixType())
@@ -261,6 +276,29 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
   return MapsSubProblems()->FullMap();
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::SetupContactStrategy()
+{
+  // get the contact solution strategy
+  auto contact_solution_type = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+      DRT::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
+
+  if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+            DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
+        INPAR::STR::int_standard)
+      dserror("ssi contact only with new structural time integration");
+
+    // get the contact model evaluator and store a pointer to the strategy
+    auto& model_evaluator = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
+        StructureField()->ModelEvaluator(INPAR::STR::model_contact));
+    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategySsi>(
+        model_evaluator.StrategyPtr(), true);
+  }
+}
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
@@ -318,6 +356,36 @@ void SSI::SSIMono::Output()
 
   // output structure field
   StructureField()->Output();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ReadRestart(int restart)
+{
+  // call base class
+  SSIBase::ReadRestart(restart);
+
+  // do ssi contact specific tasks
+  if (SSIInterfaceContact())
+  {
+    SetupContactStrategy();
+    SetSSIContactStates();
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ReadRestartfromTime(double restarttime)
+{
+  // call base class
+  SSIBase::ReadRestartfromTime(restarttime);
+
+  // do ssi contact specific tasks
+  if (SSIInterfaceContact())
+  {
+    SetupContactStrategy();
+    SetSSIContactStates();
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -430,6 +498,8 @@ void SSI::SSIMono::Setup()
           "interface coupling with matching interface nodes!");
     }
   }
+
+  if (SSIInterfaceContact() and !IsRestart()) SetupContactStrategy();
 }
 
 /*--------------------------------------------------------------------------*
@@ -481,6 +551,9 @@ void SSI::SSIMono::SetupSystem()
 
   // initialize global residual vector
   residual_ = LINALG::CreateVector(*DofRowMap(), true);
+
+  // build the dirichlet boundary condition map of the coupled system
+  BuildCombinedDBCMap();
 
   // initialize map extractors associated with blocks of global system matrix
   switch (ScaTraField()->MatrixType())
@@ -650,6 +723,25 @@ void SSI::SSIMono::SetupModelEvaluator() const
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(
             Teuchos::rcp(this, false), smooth_output_interface_stress)));
   }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
+{
+  // call base class
+  SSIBase::SetScatraSolution(phi);
+
+  // set state for contact evaluation
+  SetSSIContactStates();
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIMono::SetSSIContactStates() const
+{
+  if (contact_strategy_nitsche_ != Teuchos::null)
+    contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *(ScaTraField()->Phinp()));
 }
 
 /*---------------------------------------------------------------------------------*

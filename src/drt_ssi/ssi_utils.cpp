@@ -691,3 +691,87 @@ SSI::UTILS::SSISlaveSideConverter::SSISlaveSideConverter(
                                           : Teuchos::null)
 {
 }
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
+    const std::vector<DRT::Condition*>& conditionsToBeTested,
+    Teuchos::RCP<DRT::Discretization>& structdis)
+{
+  // get conditions to check against
+  std::vector<DRT::Condition*> s2iconditions;
+  structdis->GetCondition("S2ICoupling", s2iconditions);
+  std::vector<DRT::Condition*> contactconditions;
+  structdis->GetCondition("Contact", contactconditions);
+
+  // loop over all ssi conditions and check them
+  for (const auto* conditionToBeTested : conditionsToBeTested)
+  {
+    std::vector<DRT::Condition*> InterfaceS2IConditions;
+    std::vector<DRT::Condition*> InterfaceContactConditions;
+
+    const int s2iconditionID = conditionToBeTested->GetInt("S2ICouplingID");
+    const int contactconditionID = conditionToBeTested->GetInt("ContactConditionID");
+
+    if (s2iconditionID != contactconditionID)
+    {
+      dserror(
+          "For the 'SSIInterfaceContact' condition we have to demand, that the 'S2ICouplingID' and "
+          "the 'ContactConditionID' have the same value as the contact strategy factory relies on "
+          "this to set the scatra interface parameters correctly.");
+    }
+
+    // loop over all scatra-scatra interface conditions and add them to the vector, if IDs match
+    for (auto* s2icondition : s2iconditions)
+    {
+      if (s2icondition->GetInt("ConditionID") != s2iconditionID) continue;
+
+      InterfaceS2IConditions.push_back(s2icondition);
+    }
+
+    // loop over all contact conditions and add them to the vector, if IDs match
+    for (auto* contactcondition : contactconditions)
+    {
+      if (contactcondition->GetInt("Interface ID") != contactconditionID) continue;
+
+      InterfaceContactConditions.push_back(contactcondition);
+    }
+
+    if (InterfaceContactConditions.empty())
+      dserror("Did not find 'Contact' condition as defined in 'SSIInterfaceContact' condition!");
+
+    if (InterfaceS2IConditions.empty())
+      dserror(
+          "Did not find 'S2ICoupling' condition as defined in 'SSIInterfaceContact' condition!");
+
+    // now get the nodes
+    std::vector<int> InterfaceS2INodes;
+    std::vector<int> InterfaceContactNodes;
+    DRT::UTILS::FindConditionedNodes(*structdis, InterfaceS2IConditions, InterfaceS2INodes);
+    DRT::UTILS::FindConditionedNodes(*structdis, InterfaceContactConditions, InterfaceContactNodes);
+
+    // and compare whether same nodes are defined
+    for (const auto InterfaceS2INode : InterfaceS2INodes)
+    {
+      bool foundit(false);
+
+      for (const auto InterfaceContactNode : InterfaceContactNodes)
+      {
+        if (InterfaceS2INode == InterfaceContactNode) foundit = true;
+      }
+
+      if (!foundit)
+      {
+        dserror(
+            "The following conditions are defined on a non-consistent set of nodes!\n"
+            "The Conditions defined from 'SSIInterfaceContact' condition with the condition-ID: "
+            "%i:\n"
+            "'S2ICoupling' conditions with ID: %i;\n"
+            "'Contact' conditions with ID: %i;\n"
+            "The last two conditions are NOT defined on the same node-sets which is not "
+            "reasonable. Check your Input-File!",
+            conditionToBeTested->GetInt("ConditionID"), s2iconditionID, contactconditionID);
+      }
+    }
+  }
+}

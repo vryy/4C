@@ -15,6 +15,7 @@
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "drt_dofset_proxy.H"
 #include "drt_dofset_pbc.H"
 
@@ -927,4 +928,21 @@ void DRT::Discretization::UnPackCondition(
     SetCondition(condname, Teuchos::rcp(cond));
   }
   Reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::RedistributeState(unsigned nds, const std::string& name)
+{
+  // only redistribute if state has been set
+  if (HasState(nds, name))
+  {
+    // get the state and export it to the rowmap to be able to reset the state
+    auto statevec = GetState(nds, name);
+    auto statevecrowmap = LINALG::CreateVector(*DofRowMap(nds), true);
+    LINALG::Export(*statevec, *statevecrowmap);
+
+    // now set the state again
+    SetState(nds, name, statevecrowmap);
+  }
 }

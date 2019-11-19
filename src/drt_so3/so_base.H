@@ -142,6 +142,10 @@ namespace DRT
        * \param D2sntDdDT[out]  second derivative of sigma_nt w.r.t. displacements and temperature
                                 (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
                                 {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       * \param concentration[in]  concentration
+       * \param DsntDc[out]        derivative of sigma_nt w.r.t. concentration (\f[ \frac{
+                                   \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
+                                   \bold{t}}{\mathrm{d} c} \f])
        *
        * \note At the moment this method is only used for the nitsche contact formulation
        */
@@ -151,8 +155,8 @@ namespace DRT
           Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
           Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
           LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* DsntDT = NULL,
-          Epetra_SerialDenseMatrix* D2sntDdDT = NULL)
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* DsntDT,
+          Epetra_SerialDenseMatrix* D2sntDdDT, const double* concentration, double* DsntDc)
       {
         dserror("not implemented for chosen solid element");
       }
@@ -164,8 +168,8 @@ namespace DRT
           Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
           Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<2, 1>* dsntdn,
           LINALG::Matrix<2, 1>* dsntdt, LINALG::Matrix<2, 1>* dsntdpxi,
-          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* dsntdT = NULL,
-          Epetra_SerialDenseMatrix* d2sntDdDT = NULL)
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* DsntDT,
+          Epetra_SerialDenseMatrix* D2sntDdDT, const double* concentration, double* DsntDc)
       {
         dserror("not implemented for chosen solid element");
       }

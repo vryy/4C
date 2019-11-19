@@ -19,6 +19,11 @@ namespace ADAPTER
   class Coupling;
 }
 
+namespace CONTACT
+{
+  class CoNitscheStrategySsi;
+}
+
 namespace LINALG
 {
   class MultiMapExtractor;
@@ -75,6 +80,15 @@ namespace SSI
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
+    //! return unique map of all dofs that have to be constrained with DBC
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; }
+
+    //! return contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> CoNitscheStrategySsi() const
+    {
+      return contact_strategy_nitsche_;
+    }
+
     //! get vector containing positions within system matrix for specific subproblem
     Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
 
@@ -108,6 +122,10 @@ namespace SSI
       return meshtying_strategy_s2i_;
     }
 
+    void ReadRestart(int restart) override;
+
+    void ReadRestartfromTime(double restarttime) override;
+
     void Setup() override;
 
     void SetupSystem() override;
@@ -135,6 +153,9 @@ namespace SSI
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
+    //! build the combined dirichlet boundary condition map
+    void BuildCombinedDBCMap();
+
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
@@ -148,7 +169,16 @@ namespace SSI
 
     void PrepareTimeStep() override;
 
+    //! set up a pointer to the contact strategy of the structural field and store it
+    void SetupContactStrategy();
+
     void SetupModelEvaluator() const override;
+
+    //! set scatra solution on structure field
+    void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
+
+    //! set contact states needed for evaluation of ssi contact
+    void SetSSIContactStates() const;
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();
@@ -160,6 +190,12 @@ namespace SSI
 
     //! update structure state within Newton iteration
     void UpdateIterStructure();
+
+    //! dirichlet boundary condition map of monolithic system
+    Teuchos::RCP<Epetra_Map> combinedDBCMap_;
+
+    //! store contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_strategy_nitsche_;
 
     //! time for element evaluation and assembly of global system of equations
     double dtele_;

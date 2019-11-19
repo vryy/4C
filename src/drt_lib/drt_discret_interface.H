@@ -344,6 +344,15 @@ namespace DRT
      *  \return Returns NULL if condition with that name does not exist */
     virtual DRT::Condition* GetCondition(const std::string& name) const = 0;
 
+    /*!
+     * @brief Redistributes the state, required if column map has changed due to a former call of
+     * `FillComplete`
+     *
+     * @param[in] nds:   number of dofset
+     * @param[in] name:  Name of solution state
+     */
+    virtual void RedistributeState(unsigned nds, const std::string& name) = 0;
+
     /** \brief Set a reference to a data vector
      *
      *  Using this method, a reference to a vector can

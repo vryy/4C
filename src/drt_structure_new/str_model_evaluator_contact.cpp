@@ -16,33 +16,21 @@
 #include "str_dbc.H"
 #include "str_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_sparsematrix.H"
 
 #include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
 #include "../solver_nonlin_nox/nox_nln_group.H"
 #include "../solver_nonlin_nox/nox_nln_solver_linesearchbased.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
 
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_contact/contact_strategy_factory.H"
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_aug_plot.H"
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Contact::Contact()
-    : eval_contact_ptr_(Teuchos::null), strategy_ptr_(Teuchos::null)
-{
-  // empty
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -408,8 +396,7 @@ void STR::MODELEVALUATOR::Contact::ReadRestart(IO::DiscretizationReader& ioreade
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::UpdateStepState(const double& timefac_n)
 {
-  // add the contact forces to the old structural residual state
-  // vector
+  // add the contact forces to the old structural residual state vector
   Teuchos::RCP<const Epetra_Vector> strcontactrhs_ptr =
       Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
   if (not strcontactrhs_ptr.is_null())

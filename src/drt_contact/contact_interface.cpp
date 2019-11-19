@@ -29,6 +29,7 @@
 
 #include "../drt_binstrategy/binning_strategy.H"
 
+#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
 
 #include "../drt_lib/drt_utils_rebalancing.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
@@ -1532,6 +1533,9 @@ void CONTACT::CoInterface::PreEvaluate(const int& step, const int& iter)
     // time scales directly with the proc number !
     ExportNodalNormals();
   }
+
+  // set condition specific parameters needed for evaluation
+  SetConditionSpecificParameters();
 
   // compute scaling between coupling types
   //  if(nonSmoothContact_)
@@ -14815,6 +14819,18 @@ void CONTACT::CoInterface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) c
   if (cnode.CoData().Getg() < initcontactval) cnode.Active() = true;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::SetConditionSpecificParameters()
+{
+  if (InterfaceParams().isSublist("ContactS2ICoupling"))
+  {
+    // read interface parameters and set them to the scatra boundary parameter class
+    auto& s2icouplinglist = InterfaceParams().sublist("ContactS2ICoupling", true);
+    DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(s2icouplinglist);
+  }
 }
 
 /*----------------------------------------------------------------------------*
