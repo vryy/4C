@@ -161,7 +161,7 @@ namespace PARTICLEENGINE
      * \param[in,out] preparedglobalids     prepared global ids
      */
     void PrepareRequestedGlobalIdsForAllProcs(
-        const int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids);
+        int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids);
 
     /*!
      * \brief extract requested global ids on master processor
