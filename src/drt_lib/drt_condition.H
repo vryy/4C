@@ -198,7 +198,6 @@ namespace DRT
       ReinitializationTaylorGalerkin,
       FluctHydro_StatisticsSurf,
       FluctHydro_StatisticsLine,
-      ForceSensor,
       FlowRateThroughLine_2D,
       FlowRateThroughSurface_3D,
       ImpulsRateThroughSurface_3D,

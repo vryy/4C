@@ -281,8 +281,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "line condition for beam-to-surface interaction: ";
   else if (Type() == BeamToSolidSurfaceMeshtyingSurface)
     os << "surface condition for beam-to-surface interaction: ";
-  else if (Type() == ForceSensor)
-    os << "marking points in a system where force sensors are applied: ";
   else if (Type() == FlowRateThroughLine_2D)
     os << "Monitor flow rate through an line interface: ";
   else if (Type() == FlowRateThroughSurface_3D)
