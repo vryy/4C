@@ -107,7 +107,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   // get the problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // what's the current problem type?
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);

@@ -57,7 +57,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
     Kba_ = Teuchos::rcp(new std::vector<LINALG::SerialDenseMatrix>(
         numgpt_, LINALG::SerialDenseMatrix(5, neas_, true)));
 
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
     if (probtype == prb_tsi)
     {
       KaT_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_, nen_, true));

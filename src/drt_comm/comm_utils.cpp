@@ -47,7 +47,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   int color = 1;
   int ngroup = 1;
-  NP_TYPE npType = no_nested_parallelism;
+  NestedParallelismType npType = no_nested_parallelism;
 
   // parse command line and separate configuration arguments
   std::vector<char*> conf(0);
@@ -302,7 +302,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
  | constructor nested parallelism group                     ghamm 03/12 |
  *----------------------------------------------------------------------*/
 COMM_UTILS::NestedParGroup::NestedParGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
-    Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NP_TYPE npType)
+    Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NestedParallelismType npType)
     : groupId_(groupId),
       ngroup_(ngroup),
       lpidgpid_(lpidgpid),
@@ -399,7 +399,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     //    {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    SHAPEFUNCTION_TYPE distype;
+    ShapeFunctionType distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
@@ -436,7 +436,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    distype = (SHAPEFUNCTION_TYPE)cont.GetInt("distype");
+    distype = (ShapeFunctionType)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -446,7 +446,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
     {
       switch (distype)
       {
-        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+        case ShapeFunctionType::shapefunction_nurbs:
         {
           dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
           break;
@@ -530,7 +530,7 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
   {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    SHAPEFUNCTION_TYPE distype;
+    ShapeFunctionType distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
@@ -567,7 +567,7 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    distype = (SHAPEFUNCTION_TYPE)cont.GetInt("distype");
+    distype = (ShapeFunctionType)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -577,7 +577,7 @@ void COMM_UTILS::BroadcastDiscretizations(int instance)
     {
       switch (distype)
       {
-        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+        case ShapeFunctionType::shapefunction_nurbs:
         {
           dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
           break;
@@ -676,11 +676,11 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
 
   // create a common discretization that we then fill with all stuff from sender group
   std::string name = dis->Name();
-  SHAPEFUNCTION_TYPE type = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType type = DRT::Problem::Instance()->SpatialApproximationType();
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (type)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");
@@ -965,11 +965,11 @@ void COMM_UTILS::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const
 
   // create a common discretization that we then fill with all stuff from sender group
   std::string name = dis->Name();
-  SHAPEFUNCTION_TYPE type = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType type = DRT::Problem::Instance()->SpatialApproximationType();
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (type)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");

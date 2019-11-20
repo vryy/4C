@@ -32,15 +32,15 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     // fill the arrays
     {
-      std::map<std::string, PROBLEM_TYP> map = StringToProblemTypeMap();
-      std::map<std::string, PROBLEM_TYP>::const_iterator i;
+      std::map<std::string, ProblemType> map = StringToProblemTypeMap();
+      std::map<std::string, ProblemType>::const_iterator i;
       for (i = map.begin(); i != map.end(); ++i)
       {
         name.push_back(i->first);
         label.push_back(i->second);
       }
-      std::map<std::string, SHAPEFUNCTION_TYPE> shape_map = StringToShapeFunctionTypeMap();
-      std::map<std::string, SHAPEFUNCTION_TYPE>::const_iterator j;
+      std::map<std::string, ShapeFunctionType> shape_map = StringToShapeFunctionTypeMap();
+      std::map<std::string, ShapeFunctionType>::const_iterator j;
       for (j = shape_map.begin(); j != shape_map.end(); ++j)
       {
         shape_name.push_back(j->first);
@@ -70,9 +70,9 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, PROBLEM_TYP> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
+std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
 {
-  static std::map<std::string, PROBLEM_TYP> string2prbtype;
+  static std::map<std::string, ProblemType> string2prbtype;
 
   if (string2prbtype.size() == 0)
   {
@@ -141,10 +141,10 @@ std::map<std::string, PROBLEM_TYP> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PROBLEM_TYP INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
+ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
 {
-  std::map<std::string, PROBLEM_TYP> map = StringToProblemTypeMap();
-  std::map<std::string, PROBLEM_TYP>::const_iterator i = map.find(name);
+  std::map<std::string, ProblemType> map = StringToProblemTypeMap();
+  std::map<std::string, ProblemType>::const_iterator i = map.find(name);
   if (i != map.end()) return i->second;
   dserror("unsupported problem name '%s'", name.c_str());
 
@@ -153,17 +153,17 @@ PROBLEM_TYP INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, SHAPEFUNCTION_TYPE> INPAR::PROBLEMTYPE::StringToShapeFunctionTypeMap()
+std::map<std::string, ShapeFunctionType> INPAR::PROBLEMTYPE::StringToShapeFunctionTypeMap()
 {
-  static std::map<std::string, SHAPEFUNCTION_TYPE> string2shapefuntype;
+  static std::map<std::string, ShapeFunctionType> string2shapefuntype;
 
   if (string2shapefuntype.size() == 0)
   {
     // problem types in alphabetical order
-    string2shapefuntype["Polynomial"] = SHAPEFUNCTION_TYPE::shapefunction_polynomial;
-    string2shapefuntype["Nurbs"] = SHAPEFUNCTION_TYPE::shapefunction_nurbs;
-    string2shapefuntype["Meshfree"] = SHAPEFUNCTION_TYPE::shapefunction_meshfree;
-    string2shapefuntype["HDG"] = SHAPEFUNCTION_TYPE::shapefunction_hdg;
+    string2shapefuntype["Polynomial"] = ShapeFunctionType::shapefunction_polynomial;
+    string2shapefuntype["Nurbs"] = ShapeFunctionType::shapefunction_nurbs;
+    string2shapefuntype["Meshfree"] = ShapeFunctionType::shapefunction_meshfree;
+    string2shapefuntype["HDG"] = ShapeFunctionType::shapefunction_hdg;
   }
 
   return string2shapefuntype;
@@ -171,30 +171,30 @@ std::map<std::string, SHAPEFUNCTION_TYPE> INPAR::PROBLEMTYPE::StringToShapeFunct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SHAPEFUNCTION_TYPE INPAR::PROBLEMTYPE::StringToShapeFunctionType(std::string name)
+ShapeFunctionType INPAR::PROBLEMTYPE::StringToShapeFunctionType(std::string name)
 {
-  std::map<std::string, SHAPEFUNCTION_TYPE> map = StringToShapeFunctionTypeMap();
-  std::map<std::string, SHAPEFUNCTION_TYPE>::const_iterator i = map.find(name);
+  std::map<std::string, ShapeFunctionType> map = StringToShapeFunctionTypeMap();
+  std::map<std::string, ShapeFunctionType>::const_iterator i = map.find(name);
   if (i != map.end()) return i->second;
   dserror(
       "'%s' does not name a shape function type. Check for typos or consider adding the shape "
       "function type to the map.",
       name.c_str());
 
-  return SHAPEFUNCTION_TYPE::shapefunction_undefined;
+  return ShapeFunctionType::shapefunction_undefined;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(SHAPEFUNCTION_TYPE shapefunctiontype)
+std::string INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(ShapeFunctionType shapefunctiontype)
 {
-  std::map<std::string, SHAPEFUNCTION_TYPE> map = StringToShapeFunctionTypeMap();
+  std::map<std::string, ShapeFunctionType> map = StringToShapeFunctionTypeMap();
 
-  std::map<SHAPEFUNCTION_TYPE, std::string> reversed;
-  for (std::map<std::string, SHAPEFUNCTION_TYPE>::iterator i = map.begin(); i != map.end(); ++i)
+  std::map<ShapeFunctionType, std::string> reversed;
+  for (std::map<std::string, ShapeFunctionType>::iterator i = map.begin(); i != map.end(); ++i)
     reversed[i->second] = i->first;
 
-  std::map<SHAPEFUNCTION_TYPE, std::string>::const_iterator i = reversed.find(shapefunctiontype);
+  std::map<ShapeFunctionType, std::string>::const_iterator i = reversed.find(shapefunctiontype);
   if (i != reversed.end()) return i->second;
   dserror(
       "Could not find the name of the given shape function type or the shapefunction is "

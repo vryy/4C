@@ -1237,7 +1237,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
 )
 {
   int geleid = -1;
-  if (DRT::Problem::Instance()->ProblemType() == prb_acou) geleid = eid_;
+  if (DRT::Problem::Instance()->GetProblemType() == prb_acou) geleid = eid_;
 
   const Teuchos::RCP<const MAT::ScatraMat>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);

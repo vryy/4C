@@ -121,7 +121,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
       ndsale_((DRT::Problem::Instance()->SpatialApproximationType() ==
-                  SHAPEFUNCTION_TYPE::shapefunction_hdg) *
+                  ShapeFunctionType::shapefunction_hdg) *
               2),
       massmat_(Teuchos::null),
       logenergy_(Teuchos::null)
@@ -282,8 +282,8 @@ void FLD::FluidImplicitTimeInt::Init()
     // XWall: enrichment with spaldings law
     if (DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
-      if (DRT::Problem::Instance()->ProblemType() == prb_fsi ||
-          DRT::Problem::Instance()->ProblemType() == prb_fluid_ale)
+      if (DRT::Problem::Instance()->GetProblemType() == prb_fsi ||
+          DRT::Problem::Instance()->GetProblemType() == prb_fluid_ale)
         xwall_ = Teuchos::rcp(
             new XWallAleFSI(discret_, numdim_, params_, dbcmaps_, stressmanager_, dispnp_, gridv_));
       else
@@ -582,7 +582,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
   TimeLoop();
 
   // print the results of time measurements
-  if (DRT::Problem::Instance()->ProblemType() != prb_fluid_topopt)
+  if (DRT::Problem::Instance()->GetProblemType() != prb_fluid_topopt)
   {
     Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
         COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
@@ -877,7 +877,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       //     much for sensitive problems
       //     xwall uses non-polynomial shape functions
       if (DRT::Problem::Instance()->SpatialApproximationType() ==
-              SHAPEFUNCTION_TYPE::shapefunction_polynomial &&
+              ShapeFunctionType::shapefunction_polynomial &&
           xwall_ == Teuchos::null)
         CheckMatrixNullspace();
 

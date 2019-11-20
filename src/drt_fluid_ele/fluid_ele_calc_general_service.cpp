@@ -3340,7 +3340,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateImmersedInformation(
     const std::vector<int>& lm)
 {
   DRT::Problem* globalproblem = DRT::Problem::Instance();
-  if (globalproblem->ProblemType() != prb_immersed_cell)
+  if (globalproblem->GetProblemType() != prb_immersed_cell)
     dserror(
         "UpdateImmersedInformation() not intended to be used with ProblemType other than "
         "prb_immersed_cell.\n"
@@ -3559,7 +3559,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   // check if fluid interacton is switched ON
   // if NOT : just mark isimmersed and isboundaryimmersed elements
   int isfluidinteraction = 1;
-  if (globalproblem->ProblemType() == prb_immersed_cell)
+  if (globalproblem->GetProblemType() == prb_immersed_cell)
     isfluidinteraction =
         (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
 
@@ -3874,7 +3874,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SearchImmersedBoundaryElement
   DRT::Problem* globalproblem = DRT::Problem::Instance();
 
   // throw an error if problem type is not provided
-  if (globalproblem->ProblemType() != prb_immersed_membrane_fsi)
+  if (globalproblem->GetProblemType() != prb_immersed_membrane_fsi)
     dserror(
         "Function SearchImmersedBoundaryElements() currently just implemented for problem type "
         "'prb_immersed_membrane_fsi'!");
@@ -3961,7 +3961,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetLeastSquaresMatrixImmersed
   DRT::Problem* globalproblem = DRT::Problem::Instance();
 
   // throw an error if problem type is not provided
-  if (globalproblem->ProblemType() != prb_immersed_membrane_fsi)
+  if (globalproblem->GetProblemType() != prb_immersed_membrane_fsi)
     dserror(
         "Function GetLeastSquaresMatrixImmersedBoundary() currently just implemented for problem "
         "type 'prb_immersed_membrane_fsi'!");
@@ -4071,7 +4071,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     Teuchos::RCP<DRT::Discretization> fluid_dis = Teuchos::null;
     Teuchos::RCP<DRT::Discretization> struct_dis = Teuchos::null;
 
-    if (globalproblem->ProblemType() == prb_immersed_cell)
+    if (globalproblem->GetProblemType() == prb_immersed_cell)
     {
       // get discretizations
       fluid_dis = globalproblem->GetDis("porofluid");

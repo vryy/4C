@@ -274,11 +274,11 @@ void ADAPTER::CouplingMortar::SetupInterface(
   input.setParameters(inputc);
 
   // is this a nurbs problem?
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   bool nurbs;
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       nurbs = true;
       break;
@@ -549,10 +549,10 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   input.setParameters(inputmortar);
 
   // is this a nurbs problem?
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       // ***
       dserror("nurbs for fsi mortar not supported!");

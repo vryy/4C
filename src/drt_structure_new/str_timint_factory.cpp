@@ -154,7 +154,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   if (probtype == prb_fsi or probtype == prb_fsi_redmodels or probtype == prb_fsi_lung or
       probtype == prb_gas_fsi or probtype == prb_ac_fsi or probtype == prb_biofilm_fsi or
@@ -206,7 +206,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::BuildDataGl
   Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr = Teuchos::null;
 
   // what's the current problem type?
-  PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType prbtype = DRT::Problem::Instance()->GetProblemType();
 
   switch (prbtype)
   {

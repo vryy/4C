@@ -112,7 +112,7 @@ Teuchos::RCP<STR::MODELEVALUATOR::Generic>
 STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
 {
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> contact_model_ptr = Teuchos::null;
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   switch (probtype)
   {
     case prb_xcontact:
@@ -135,7 +135,7 @@ Teuchos::RCP<STR::MODELEVALUATOR::Generic>
 STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
 {
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr = Teuchos::null;
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   switch (probtype)
   {
     case prb_struct_ale:

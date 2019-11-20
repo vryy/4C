@@ -349,7 +349,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     fflush(stdout);
   }
 
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
 
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
@@ -401,9 +401,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from DRT::Problem
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   const int spatialDim = DRT::Problem::Instance()->NDim();
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -603,7 +603,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // NURBS PROBLEM?
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       mtparams.set<bool>("NURBS", true);
       break;

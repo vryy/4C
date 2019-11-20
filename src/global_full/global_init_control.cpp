@@ -28,7 +28,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
   int group = problem->GetNPGroup()->GroupId();
   int ngroups = problem->GetNPGroup()->NumGroups();
-  NP_TYPE npType = problem->GetNPGroup()->NpType();
+  NestedParallelismType npType = problem->GetNPGroup()->NpType();
   int restartgroup = 0;
   int myrank = lcomm->MyPID();
 

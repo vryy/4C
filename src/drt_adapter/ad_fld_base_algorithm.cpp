@@ -99,7 +99,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -675,7 +675,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {
         // HDG implements all time stepping schemes within gen-alpha
         if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                SHAPEFUNCTION_TYPE::shapefunction_hdg &&
+                ShapeFunctionType::shapefunction_hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_dens_mom &&
@@ -683,7 +683,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
         else if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                     SHAPEFUNCTION_TYPE::shapefunction_hdg &&
+                     ShapeFunctionType::shapefunction_hdg &&
                  (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
                      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -691,7 +691,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
         else if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                     SHAPEFUNCTION_TYPE::shapefunction_hdg &&
+                     ShapeFunctionType::shapefunction_hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
               new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
@@ -952,7 +952,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                SHAPEFUNCTION_TYPE::shapefunction_hdg &&
+                ShapeFunctionType::shapefunction_hdg &&
             (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
                 DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -1286,7 +1286,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // the inflow computation can only deal with standard fluid problems so far
   // extensions for xfluid, fsi problems have to be added if necessary

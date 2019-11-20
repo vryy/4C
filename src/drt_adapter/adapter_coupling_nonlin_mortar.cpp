@@ -211,8 +211,8 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
-  if (distype == SHAPEFUNCTION_TYPE::shapefunction_nurbs) isnurbs = true;
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  if (distype == ShapeFunctionType::shapefunction_nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
@@ -647,10 +647,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       // ***
       dserror("nurbs for fsi mortar not supported!");

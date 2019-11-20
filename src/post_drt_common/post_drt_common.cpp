@@ -620,7 +620,7 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       switch (spatial_approx_)
       {
-        case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+        case ShapeFunctionType::shapefunction_nurbs:
         {
           // try a dynamic cast of the discretisation to a nurbs discretisation
           DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -926,7 +926,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     // read knot vectors for nurbs discretisations
     switch (spatial_approx_)
     {
-      case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+      case ShapeFunctionType::shapefunction_nurbs:
       {
         // try a dynamic cast of the discretisation to a nurbs discretisation
         DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1053,14 +1053,14 @@ PostField PostProblem::getfield(MAP* field_info)
 
   switch (spatial_approx_)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_polynomial:
-    case SHAPEFUNCTION_TYPE::shapefunction_hdg:
-    case SHAPEFUNCTION_TYPE::shapefunction_meshfree:
+    case ShapeFunctionType::shapefunction_polynomial:
+    case ShapeFunctionType::shapefunction_hdg:
+    case ShapeFunctionType::shapefunction_meshfree:
     {
       dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
       break;
     }
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
       break;

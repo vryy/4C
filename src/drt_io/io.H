@@ -41,7 +41,7 @@ namespace DRT
   class Discretization;
 }
 
-enum class SHAPEFUNCTION_TYPE;
+enum class ShapeFunctionType;
 
 /// IO: input/output facility
 namespace IO
@@ -415,7 +415,7 @@ namespace IO
     //! do we want binary output
     bool binio_;
 
-    SHAPEFUNCTION_TYPE spatial_approx_;
+    ShapeFunctionType spatial_approx_;
   };
 
 

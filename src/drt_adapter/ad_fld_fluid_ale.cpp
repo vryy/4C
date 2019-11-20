@@ -49,7 +49,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
   {
     nds_master = 2;
   }
@@ -211,7 +211,7 @@ void ADAPTER::FluidAle::Output()
   // monolithically from an partitioned fsi scheme (e.g. fsi prestress simulation).
   // TODO (Thon): this is not the nice way, but fluid-ale and xfem problems may have now FSI
   // interface, so we can not do this in general :(
-  if (DRT::Problem::Instance()->ProblemType() == prb_fsi)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_fsi)
   {
     // we want to be able to restart monolithically from an partitioned fsi scheme
     const int uprestart = timeparams_.get<int>("RESTARTEVRY");

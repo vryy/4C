@@ -88,8 +88,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   const Teuchos::ParameterList& tsic = DRT::Problem::Instance()->TSIContactParams();
 
   // read Problem Type and Problem Dimension from DRT::Problem
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
-  SHAPEFUNCTION_TYPE distype = DRT::Problem::Instance()->SpatialApproximationType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   const int dim = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -354,7 +354,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_undefined &&
-        distype != SHAPEFUNCTION_TYPE::shapefunction_nurbs)
+        distype != ShapeFunctionType::shapefunction_nurbs)
       dserror(
           "ERROR: Consistent dual shape functions in boundary elements only for linear shape "
           "functions or NURBS.");
@@ -600,7 +600,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   // ---------------------------------------------------------------------
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       params.set<bool>("NURBS", true);
       break;

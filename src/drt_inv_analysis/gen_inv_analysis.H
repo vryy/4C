@@ -148,7 +148,7 @@ namespace STR
     int nmp_;
 
     /// forward problem type given in dat-file FORWARD_PROBLEMTYP
-    PROBLEM_TYP forward_prb_type_;
+    ProblemType forward_prb_type_;
 
     /// number of dimensions of forward problem
     int ndim_;

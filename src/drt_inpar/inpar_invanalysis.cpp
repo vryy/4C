@@ -99,8 +99,8 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
     // fill the arrays
     {
-      std::map<std::string, PROBLEM_TYP> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
-      std::map<std::string, PROBLEM_TYP>::const_iterator i;
+      std::map<std::string, ProblemType> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
+      std::map<std::string, ProblemType>::const_iterator i;
       for (i = map.begin(); i != map.end(); ++i)
       {
         name.push_back(i->first);

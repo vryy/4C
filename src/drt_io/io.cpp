@@ -473,7 +473,7 @@ IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
       meshfile_changed_(-1),
       output_(Teuchos::null),
       binio_(false),
-      spatial_approx_(SHAPEFUNCTION_TYPE::shapefunction_undefined)
+      spatial_approx_(ShapeFunctionType::shapefunction_undefined)
 {
   // intentionally left blank
 }

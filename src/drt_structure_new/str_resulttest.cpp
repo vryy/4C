@@ -45,7 +45,7 @@ void STR::ResultTest::Init(const STR::TIMINT::BaseDataGlobalState& gstate)
   gstate_ = Teuchos::rcpFromRef(gstate);
   strudisc_ = gstate.GetDiscret();
 
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale and
       (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
     dserror("Material displ. are not yet considered!");
   else

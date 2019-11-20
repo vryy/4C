@@ -47,7 +47,7 @@ MAT::PAR::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber(
       sourceconst_(matdata->GetDouble("SOURCE")),
       myintmethod_(*(matdata->Get<std::string>("METHOD")))
 {
-  if (DRT::Problem::Instance()->ProblemType() != prb_immersed_cell)
+  if (DRT::Problem::Instance()->GetProblemType() != prb_immersed_cell)
     dserror(
         "Material 'BioChemoMechanoCellActiveFiber' is only available in problems of type "
         "Immersed_CellMigration.\n"

@@ -27,7 +27,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::Result
   mysol_ = fluid.velnp_;
 
   // quantities not implemented in the HDG formulation
-  if (DRT::Problem::Instance()->SpatialApproximationType() != SHAPEFUNCTION_TYPE::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() != ShapeFunctionType::shapefunction_hdg)
   {
     mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
     mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);

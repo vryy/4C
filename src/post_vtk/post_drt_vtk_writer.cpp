@@ -258,11 +258,11 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     result->next_result(groupname);
   }
   if (not(field_->problem()->SpatialApproximationType() ==
-              SHAPEFUNCTION_TYPE::shapefunction_polynomial or
+              ShapeFunctionType::shapefunction_polynomial or
           field_->problem()->SpatialApproximationType() ==
-              SHAPEFUNCTION_TYPE::shapefunction_meshfree or
-          field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg or
-          field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs))
+              ShapeFunctionType::shapefunction_meshfree or
+          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
+          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs))
     dserror(
         "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
         "given type.");

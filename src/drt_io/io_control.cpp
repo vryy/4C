@@ -40,7 +40,7 @@ extern "C"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    SHAPEFUNCTION_TYPE spatial_approx, std::string inputfile, std::string outputname, int ndim,
+    ShapeFunctionType spatial_approx, std::string inputfile, std::string outputname, int ndim,
     int restart, int filesteps, int create_controlfile)
     : problemtype_(problemtype),
       inputfile_(inputfile),
@@ -103,7 +103,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    SHAPEFUNCTION_TYPE spatial_approx, std::string inputfile, std::string restartname,
+    ShapeFunctionType spatial_approx, std::string inputfile, std::string restartname,
     std::string outputname, int ndim, int restart, int filesteps, int create_controlfile,
     bool adaptname)
     : problemtype_(problemtype),
@@ -225,7 +225,7 @@ IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::OverwriteResultFile(const SHAPEFUNCTION_TYPE& spatial_approx)
+void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -236,7 +236,7 @@ void IO::OutputControl::OverwriteResultFile(const SHAPEFUNCTION_TYPE& spatial_ap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(int numb_run, const SHAPEFUNCTION_TYPE& spatial_approx)
+void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
   {
@@ -257,7 +257,7 @@ void IO::OutputControl::NewResultFile(int numb_run, const SHAPEFUNCTION_TYPE& sp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::OutputControl::NewResultFile(
-    const std::string& name_appendix, int numb_run, const SHAPEFUNCTION_TYPE& spatial_approx)
+    const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
@@ -268,7 +268,7 @@ void IO::OutputControl::NewResultFile(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name, const SHAPEFUNCTION_TYPE& spatial_approx)
+void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
@@ -279,7 +279,7 @@ void IO::OutputControl::NewResultFile(std::string name, const SHAPEFUNCTION_TYPE
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void IO::OutputControl::WriteHeader(
-    const std::string& control_file_name, const SHAPEFUNCTION_TYPE& spatial_approx)
+    const std::string& control_file_name, const ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)
   {

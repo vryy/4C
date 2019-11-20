@@ -97,7 +97,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs)
+  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs)
     iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
@@ -443,7 +443,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
       !writecp_)
   {
     // cast dis to NurbsDiscretisation
@@ -502,7 +502,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
     std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
 {
-  SHAPEFUNCTION_TYPE distype = field_->problem()->SpatialApproximationType();
+  ShapeFunctionType distype = field_->problem()->SpatialApproximationType();
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
@@ -516,14 +516,14 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 
   switch (distype)
   {
-    case SHAPEFUNCTION_TYPE::shapefunction_polynomial:
-    case SHAPEFUNCTION_TYPE::shapefunction_meshfree:
-    case SHAPEFUNCTION_TYPE::shapefunction_hdg:
+    case ShapeFunctionType::shapefunction_polynomial:
+    case ShapeFunctionType::shapefunction_meshfree:
+    case ShapeFunctionType::shapefunction_hdg:
     {
       WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
       break;
     }
-    case SHAPEFUNCTION_TYPE::shapefunction_nurbs:
+    case ShapeFunctionType::shapefunction_nurbs:
     {
       // write real geometry coordinates
       if (!writecp_) WriteCoordinatesForNurbsShapefunctions(geofile, dis, proc0map);
@@ -1686,18 +1686,18 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
       !writecp_)
   {
     WriteDofResultStepForNurbs(file, numdf, data, name, offset);
   }
   else if (field_->problem()->SpatialApproximationType() ==
-               SHAPEFUNCTION_TYPE::shapefunction_polynomial or
+               ShapeFunctionType::shapefunction_polynomial or
            field_->problem()->SpatialApproximationType() ==
-               SHAPEFUNCTION_TYPE::shapefunction_meshfree or
-           field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg or
+               ShapeFunctionType::shapefunction_meshfree or
+           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
            (field_->problem()->SpatialApproximationType() ==
-                   SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+                   ShapeFunctionType::shapefunction_nurbs &&
                writecp_))
   {
     //------------------------------------------------------
@@ -1865,18 +1865,18 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
       !writecp_)
   {
     WriteNodalResultStepForNurbs(file, numdf, data, name, 0);
   }
   else if (field_->problem()->SpatialApproximationType() ==
-               SHAPEFUNCTION_TYPE::shapefunction_polynomial or
+               ShapeFunctionType::shapefunction_polynomial or
            field_->problem()->SpatialApproximationType() ==
-               SHAPEFUNCTION_TYPE::shapefunction_meshfree or
-           field_->problem()->SpatialApproximationType() == SHAPEFUNCTION_TYPE::shapefunction_hdg or
+               ShapeFunctionType::shapefunction_meshfree or
+           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
            (field_->problem()->SpatialApproximationType() ==
-                   SHAPEFUNCTION_TYPE::shapefunction_nurbs &&
+                   ShapeFunctionType::shapefunction_nurbs &&
                writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
