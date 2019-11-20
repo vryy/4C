@@ -177,43 +177,6 @@ macro(post_processing arg nproc stresstype straintype startstep)
 endmacro(post_processing)
 endif()
 
-# CODE TESTING
-macro(codetesting arg)
-
-   if (${arg} STREQUAL check_unused_input_params)
-
-      add_test(NAME ${arg}-ct
-      COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_input_params.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}")
-
-      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
-      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
-
-   elseif (${arg} STREQUAL check_unused_inpar_params)
-
-      add_test(NAME ${arg}-ct
-       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_params.py ${PROJECT_SOURCE_DIR}")
-      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
-      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
-
-   elseif (${arg} STREQUAL check_unused_inpar_materials)
-
-      add_test(NAME ${arg}-ct
-       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_materials.py ${PROJECT_SOURCE_DIR}")
-      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
-      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
-
-   elseif (${arg} STREQUAL check_nightly_testcases)
-
-      add_test(NAME ${arg}-ct
-      COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_nightly_testcases.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/")
-
-      set_tests_properties(${arg}-ct PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
-      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
-
-   endif()
-
-endmacro(codetesting)
-
 # test for visualization of MueLu multigrid aggregates
 macro(muelu_agg2vtk arg nlevel nblock nproc scaling)
 
@@ -379,46 +342,7 @@ baci_test(cardiovascular0d_4elementwindkessel_structure_direct_stat_new_struc 2 
 baci_test(cardiovascular0d_4elementwindkessel_structure_direct_genalpha_new_struc 2 "" minimal)
 baci_test(cardiovascular0d_4elementwindkessel_structure_direct_ost_new_struc 2 "")
 baci_test(cardiovascular0d_arterialproxdist_structure_direct_genalpha_new_struc 2 "")
-#baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 1 "")
-#baci_test_restartonly(cardiovascular0d_syspulcirculation_2chamber_structure_direct_genalpha_new_struc 1 10) #this one MUST be placed behind test case 'cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc'
-#baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 2 "")
-#baci_test_restartonly(cardiovascular0d_syspulcirculation_2chamber_structure_simple_genalpha_new_struc 2 10) #this one MUST be placed behind test case 'cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc'
-#baci_test(cardiovascular0d_syspulcirculation_2chamber_structurecontactdual_direct_genalpha_new_struc 2 "")
 baci_test(cardiovascular0d_syspulcirculation_4chamber_structure_simple_genalpha_new_struc 2 "")
-# these tests are not intended for nightly testing
-# nevertheless do not delete them they are very important
-# (if any questions, read their remarks!!)
-#baci_test(combust_instat_inclined_couette_theta066 1 "")
-#baci_test(combust_instat_inclined_couette_theta1 1 "")
-#baci_test(combust_stat_inclined_couette_convdom_nitsche 1 "")
-#baci_test(combust_stat_inclined_couette 1 "")
-#baci_test(combust_stat_inclined_couette_decoupled 1 "")
-#baci_test(combust_stat_planar_bodyforce_neumann 1 "")
-##baci_test(combust_beltrami_8x8x8_ost 2 "")
-##baci_test(combust_beltrami_8x8x8_ost_2iter 2 "")
-##baci_test(combust_beltrami_8x8x8_bdf2_2iter 1 "")
-##baci_test(combust_beltrami_8x8x8_afgenalpha_2iter 2 "")
-##baci_test(combust_beltrami_8x8x8_ost_2iter_edge_based 2 4)
-##baci_test(combust_beltrami_8x8x8_ost_05_2iter_edge_based 1 "")
-##baci_test(combust_beltrami_8x8x8_genalpha_2iter_edge_based 1 "")
-##baci_test(combust_beltrami_8x8x8_ost_2iter_edge_based_gradjump 1 "")
-##baci_test(combust_constpressurejump 2 "")
-##baci_test(combust_instat_timeInt_2Dduct 2 "")
-##baci_test(combust_instat_timeInt_basic1Dduct 2 3)
-##baci_test(combust_instat_timeIntEP_1Dduct_FGIFRS 2 "")
-##baci_test(combust_instat_timeIntEPNew_1Dduct 2 "" minimal)
-##baci_test(combust_instat_timeIntMixed_1Dduct_FGIFRS_reverse 1 "")
-##baci_test(combust_instat_timeIntMixed_1Dduct_FGIFRS_reverse 2 "")
-##baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_reverse 1 "")
-##baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_reverse 2 "")
-##baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_redis 1 "")
-##baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_redis 2 "")
-##baci_test(combust_instat_timeIntSLEPNew_1Dduct 1 "")
-##baci_test(combust_instat_timeIntSLEPNew_1Dduct 2 "")
-##baci_test(combust_levelsetcut_horizontal 2 "")
-##baci_test(combust_levelsetcut_vertical 2 "")
-##baci_test(combust_material_blending 2 "")
-##baci_test(combust_poiseuille 2 "")
 baci_test(consinter3D_tsi_hex8_tet4 2 "")
 baci_test(consinter3D_tsi_hex27_hex27 2 "")
 baci_test(constr2D_MPC_angle 2 "")
@@ -437,19 +361,10 @@ baci_test(constr3D_shrinking_ost_simple 2 "")
 baci_test(constr3D_shrinking_ost_uzawa 2 "")
 baci_test(constr3D_shrinking_stat_direct 2 "")
 baci_test(constr3Dpen_shrinking_stat_direct 2 "")
-#baci_test(constr2D_MPC_angle_new_struc 2 "")
-#baci_test(constr2D_MPC_dist_new_struc 2 "" minimal)
-#baci_test(constr2D_fsi_new_struc 2 "")
 baci_test(constr2D_shrinking_new_struc 2 "")
-#baci_test(constr3D_MPC_STI_trlike_new_struc 2 "")
-#baci_test(constr3D_MPC_direct_new_struc 2 "")
-#post_processing(constr3D_MPC_direct_new_struc 2 ndxyz ndxyz 25)
-#baci_test(constr3D_MPC_direct_sti_new_struc 2 "")
-#baci_test(constr3D_NormComp_STI_new_struc 2 "")
 baci_test(constr3D_shrinking_new_struc 2 "")
 baci_test(constr3D_shrinking_ost_direct_new_struc 2 "")
 baci_test(constr3D_shrinking_ost_simple_new_struc 2 "")
-#baci_test(constr3D_shrinking_ost_uzawa_new_struc 2 "")
 baci_test(constr3D_shrinking_stat_direct_new_struc 2 "")
 baci_test(constr3Dpen_shrinking_stat_direct_new_struc 2 "")
 baci_test(contact2D_adhesion_fixedbound_new_struc 2 "")
@@ -990,7 +905,6 @@ baci_test(invana_reg0_lbfgs100_full_unif 3 "")
 baci_test(invana_cube2by2_displ 2 " " minimal)
 baci_test(invana_cube2by2_unif_displ 3 "")
 baci_test(invana_cube2by2_unif_displ 1 " ")
-#baci_test(invana_cube2by2_lbfgs_elasthyper 2 "")
 baci_test(invana_cube_levenbergmarquardt_elasthyper 2 "")
 baci_test(invana_levenbergmarquardt_coupled_inverse_analysis 2 "")
 baci_test(invana_levenbergmarquardt_fsi 2 "")
@@ -1456,7 +1370,6 @@ post_processing(sohex8_multiscale_macro 1 "" "" 3 "" "_el7_gp7")
 endif()
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_remodel 2 " ")
-# baci_test(sohex8_surfactant 2 30)
 baci_test(sohex8fbar_cooks_nl_new_struc 2 "")
 result_file(sohex8fbar_cooks_nl_new_struc 2 energy xxx_energy.csv sohex8fbar_cooks_nl_new_struc_energy.csv 1e-8)
 baci_test(sohex8fbar_cooks_nl_ptc_new_struc 2 "")
@@ -1640,7 +1553,6 @@ baci_test(topopt_opti_1step_instat_theta1_fd 2 "")
 baci_test(topopt_opti_1step_instat_theta1_fd_eledens 2 "")
 baci_test(topopt_opti_1step_instat_theta1_min 2 "")
 baci_test(topopt_opti_instat_theta1 2 "")
-# baci_test(topopt_opti_snake_multiple_constr 2 "")
 baci_test(topopt_opti_snake_one_constr 1 "")
 baci_test(topopt_opti_workflow_without_fluid_low_tol 2 "")
 baci_test(truss3_genalpha_test1 1 "")
@@ -1797,10 +1709,6 @@ baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_movingInterface 1 ""
 baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_movingInterface 4 "")
 baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_movingInterface_OneDofset 1 "")
 baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_movingInterface_OneDofset 4 "")
-#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_shrinkingInterface 3 "")
-#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_shrinkingInterface 4 "")
-#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_breathingInterface 3 "")
-#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_breathingInterface 4 "")
 baci_test(xtwophase_bubble_16x16_poiseuille_flow_pEOS_noGP 2 "")
 baci_test(xtwophase_bubble_16x16_shear_flow_bodyforce_full_EOS 2 "")
 baci_test(xtwophase_bubble_16x16_shear_flow_bodyforce_pEOS_GP 2 "")
@@ -1987,7 +1895,6 @@ baci_test(xfsi_fluid_pusher_monolithic_1storder_noDirich 3 "")
 baci_test(xfsi_mono_matching_ale 1 "")
 baci_test(xfsi_combo_LSWDBC_MeshXFSIMono_comp_struct_fsi_2D_mono_BGS2x2 4 "")
 baci_test(xfsi_combo_LSNeumann_MeshXFSIMono_comp_struct_fsi_2D_mono_BGS2x2 4 "")
-#baci_test(xfsi_combo_XFF_comp_struct_fsi_2D_mono 4 "")
 baci_test(xfsi_comp_struct_fsi_2D_mono_newton_restarts 4 "2")
 baci_test(xfsi_comp_struct_fsi_2D_mono 4 "2")
 baci_test(xfsi_comp_struct_fsi_2D_mono_cln 4 "")
@@ -2102,16 +2009,10 @@ baci_test(immersed_bending_struct_part_forcecoup_AITKEN_h8 3 "2")
 baci_test(immersed_oscillating_struct_part_forcecoup_h8 3 "")
 baci_test(immersed_moving_cylinder_part_dispcoup_h8  3 "")
 baci_test(immersed_compressing_struct_part_dispcoup_h8  3 "")
-#baci_test(immersed_poro_moving_cylindrical_cell_part_forcecoup_h8  3 "")
 baci_test(immersed_poro_oscillating_struct_part_forcecoup_h8 3 "")
-#baci_test(immersed_poro_bending_struct_part_dispcoup_AITKEN_h8 3 "")
-#baci_test(immersed_poro_moving_cylindrical_cell_proteolytic2WC_forcecoup_h8 3 "")
-#baci_test(immersed_poro_moving_cylindrical_cell_proteolytic2WC_surfacesegregation_forcecoup_h8 3 "")
 baci_test(immersed_poro_cell_initialization_krylov 3 "" )
-#baci_test(immersed_ale_two_bending_struct_part_forcecoup_h8 1 "" )
 baci_test(immersed_cell_contraction_mature_focal_adhesion 3 "" )
 baci_test(immersed_cell_biochemo_mechano_pureProtrusion_h8 2 "" )
-#baci_test(immersed_cell_biochemo_mechano_pureContraction_dashpot_h8 2 "" )
 baci_test(immersed_cell_adhesiondynamics_penalty_heterogeneous_reaction_h8_quad4 3 "")
 baci_test(immersed_cell_biochemo_mechano_passivematerial_h8 2 "")
 baci_test(immersed_poro_oscillating_cylinder_h8 3 "")
@@ -2127,11 +2028,6 @@ baci_framework_test(tutorial_fsi_3d 2 fsi_part_struct_solver.xml)
 
 # cut test
 cut_test(2)
-
-# codetesting( check_unused_input_params )
-# codetesting( check_unused_inpar_params )
-# codetesting( check_unused_inpar_materials )
-# codetesting( check_nightly_testcases )
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
@@ -2154,11 +2050,6 @@ baci_test(meshtying3D_duallagr_muelu_contact1 2 "")
 baci_test(meshtying3D_duallagr_muelu_contact1_new_struct 2 "")
 baci_test(meshtying3D_duallagr_muelu_contact2 2 "")
 baci_test(meshtying3D_duallagr_muelu_contact2_new_struct 2 "")
-
-# meshtying saddlepoint formulation
-#baci_test(meshtying3D_contactsp_duallagr_simple 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
-#baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
-#baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
 
 # 2 block contact (saddlepoint formulation)
 baci_test(contact3D_lin_duallagr_SP 2 "")
@@ -2226,7 +2117,6 @@ baci_test(acou_2d_ssprk 2 "")
 baci_test(acou_pat_2d_classrk4 2 "")
 baci_test(acou_pat_trac_pml 2 "")
 baci_test(acou_pat_1d_expleuler_inv 2 "")
-#baci_test(acou_pat_1d_impleuler_inv_sol 2 "")to be done in near future
 endif (HAVE_DEAL_II)
 
 # brownian dynamic test cases using random numbers from Boost Random libraries
