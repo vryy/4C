@@ -620,20 +620,6 @@ namespace BINSTRATEGY
         std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
         bool repartition = false) const;
 
-    /// fixme: the following function needs to be replaced by GetExtendedElementColMap()
-    /*!
-        \brief Extend ghosting of mortar master interface discretization
-
-        \param mortardis Discretization of mortar interface
-        \param initial_elecolmap Initial element col map for standard ghosting
-        \param slavebinelemap Map of bins and assigned slave elements
-        \param masterbinelemenap Map of bins and assigned master elements
-        \return Element map with extended ghosting for master side of mortar problem
-        */
-    Teuchos::RCP<const Epetra_Map> ExtendGhosting(DRT::Discretization& mortardis,
-        const Epetra_Map& initial_elecolmap, std::map<int, std::set<int>>& slavebinelemap,
-        std::map<int, std::set<int>>& masterbinelemap) const;
-
     /*!
      * \brief ghosting is extended to one layer
      *
@@ -643,15 +629,17 @@ namespace BINSTRATEGY
      * ghosted to ensure correct interaction handling of the elements in the range of one layer.
      *
      * \param[in] bin_to_row_ele_map bin to row element map
+     * \param[in] bin_to_row_ele_map_to_lookup_requests bin to row element map to look-up requested
+     *            elements from other procs
      * \param[in] ext_bin_to_ele_map one layer extended bin to element map
-     * \param[in] bin_colmap bin colmun map
-     * \param[in] bin_rowmap bin row map
-     * \param[in] ele_colmap_from_standardghosting element column map based on standard ghosting
+     * \param[in] bin_colmap bin colmun map \param[in] bin_rowmap bin row map \param[in]
+     * ele_colmap_from_standardghosting element column map based on standard ghosting
      *
      * \return extended element column map
      */
-    Teuchos::RCP<Epetra_Map> GetExtendedElementColMap(
-        std::map<int, std::set<int>>& bin_to_row_ele_map,
+    Teuchos::RCP<Epetra_Map> ExtendElementColMap(
+        std::map<int, std::set<int>> const& bin_to_row_ele_map,
+        std::map<int, std::set<int>>& bin_to_row_ele_map_to_lookup_requests,
         std::map<int, std::set<int>>& ext_bin_to_ele_map,
         Teuchos::RCP<Epetra_Map> bin_colmap = Teuchos::null,
         Teuchos::RCP<Epetra_Map> bin_rowmap = Teuchos::null,
@@ -848,6 +836,11 @@ namespace BINSTRATEGY
      * \brief my rank
      */
     int myrank_;
+
+    /*!
+     * \brief local communicator
+     */
+    Teuchos::RCP<Epetra_Comm> comm_;
   };  // namespace BINSTRATEGY
 
   /*!
