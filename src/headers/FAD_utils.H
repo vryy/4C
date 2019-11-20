@@ -19,13 +19,17 @@
 
 namespace FADUTILS
 {
-  /*!
-  \brief Cast of FAD to double
-  */
+  /**
+   * \brief Cast of FAD to double.
+   *
+   * This function will be used for FAD types, since the double version is specialized (see next
+   * function). We pass the value of the FAD variable to this function again. By doing so this
+   * function can also handle nested FAD types, i.e. higher order derivatives.
+   */
   template <typename scalar_type>
   inline double CastToDouble(scalar_type a)
   {
-    return a.val();
+    return CastToDouble(a.val());
   }
 
   /*!
