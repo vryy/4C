@@ -234,9 +234,6 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
-    // get particle states stored in container
-    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
-
     // reset particle position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::Position, 1.0, PARTICLEENGINE::LastIterPosition);
     container->UpdateState(0.0, PARTICLEENGINE::Velocity, 1.0, PARTICLEENGINE::LastIterVelocity);
@@ -244,17 +241,17 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
         0.0, PARTICLEENGINE::Acceleration, 1.0, PARTICLEENGINE::LastIterAcceleration);
 
     // reset angular velocity state of all particles
-    if (particlestates.count(PARTICLEENGINE::AngularVelocity))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity))
       container->UpdateState(
           0.0, PARTICLEENGINE::AngularVelocity, 1.0, PARTICLEENGINE::LastIterAngularVelocity);
 
     // reset angular acceleration state of all particles
-    if (particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::AngularAcceleration, 1.0,
           PARTICLEENGINE::LastIterAngularAcceleration);
 
     // reset modified acceleration state of all particles
-    if (particlestates.count(PARTICLEENGINE::ModifiedAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::ModifiedAcceleration, 1.0,
           PARTICLEENGINE::LastIterModifiedAcceleration);
   }
@@ -416,9 +413,6 @@ void PASI::PASI_PartTwoWayCoup::SaveParticleStates()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
-    // get particle states stored in container
-    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
-
     // reset particle position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::LastIterPosition, 1.0, PARTICLEENGINE::Position);
     container->UpdateState(0.0, PARTICLEENGINE::LastIterVelocity, 1.0, PARTICLEENGINE::Velocity);
@@ -426,17 +420,17 @@ void PASI::PASI_PartTwoWayCoup::SaveParticleStates()
         0.0, PARTICLEENGINE::LastIterAcceleration, 1.0, PARTICLEENGINE::Acceleration);
 
     // reset angular velocity state of all particles
-    if (particlestates.count(PARTICLEENGINE::AngularVelocity))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity))
       container->UpdateState(
           0.0, PARTICLEENGINE::LastIterAngularVelocity, 1.0, PARTICLEENGINE::AngularVelocity);
 
     // reset angular acceleration state of all particles
-    if (particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::LastIterAngularAcceleration, 1.0,
           PARTICLEENGINE::AngularAcceleration);
 
     // reset modified acceleration state of all particles
-    if (particlestates.count(PARTICLEENGINE::ModifiedAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::LastIterModifiedAcceleration, 1.0,
           PARTICLEENGINE::ModifiedAcceleration);
   }

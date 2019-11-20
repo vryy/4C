@@ -607,6 +607,16 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT(particleStates.find(PARTICLEENGINE::Mass) != particleStates.end());
   }
 
+  void test_HaveStoredState()
+  {
+    TS_ASSERT(container_->HaveStoredState(PARTICLEENGINE::Position));
+    TS_ASSERT(container_->HaveStoredState(PARTICLEENGINE::Velocity));
+    TS_ASSERT(container_->HaveStoredState(PARTICLEENGINE::Mass));
+
+    TS_ASSERT(not container_->HaveStoredState(PARTICLEENGINE::Acceleration));
+    TS_ASSERT(not container_->HaveStoredState(PARTICLEENGINE::Density));
+  }
+
   void test_ContainerSize() { TS_ASSERT_EQUALS(container_->ContainerSize(), 7); }
 
   void test_ParticlesStored() { TS_ASSERT_EQUALS(container_->ParticlesStored(), 3); }

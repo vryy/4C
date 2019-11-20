@@ -193,7 +193,7 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
         dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
 
       // container contains current particle state
-      if (not(container->GetStoredStates()).count(particleState))
+      if (not container->HaveStoredState(particleState))
         dserror("state '%s' not found in container!",
             PARTICLEENGINE::EnumToStateName(particleState).c_str());
 

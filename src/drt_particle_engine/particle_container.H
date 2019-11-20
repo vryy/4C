@@ -348,6 +348,22 @@ namespace PARTICLEENGINE
     inline const std::set<StateEnum>& GetStoredStates() const { return storedstates_; };
 
     /*!
+     * \brief get flag indicating stored state
+     *
+     * Get a flag that is indicating if a state is stored in the particle container.
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] stateEnum particle state enum
+     *
+     * \return flag indicating stored state
+     */
+    inline bool HaveStoredState(StateEnum stateEnum) const
+    {
+      return storedstates_.count(stateEnum);
+    };
+
+    /*!
      * \brief get size of particle container
      *
      * \author Sebastian Fuchs \date 03/2018
