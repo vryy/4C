@@ -253,10 +253,12 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
     return GetNlnIterationNumber(quantity, special_status);
   }
   else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
-           quantity == "total_energy" or quantity == "beam_contact" or
-           quantity == "beam_potential" or quantity == "beam_to_beam_internal" or
-           quantity == "beam_to_beam_kinetic" or quantity == "beam_to_sphere_internal" or
-           quantity == "beam_to_sphere_kinetic")
+           quantity == "total_energy" or quantity == "beam_contact_penalty_potential" or
+           quantity == "beam_interaction_potential" or
+           quantity == "beam_to_beam_link_internal_energy" or
+           quantity == "beam_to_beam_link_kinetic_energy" or
+           quantity == "beam_to_sphere_link_internal_energy" or
+           quantity == "beam_to_sphere_link_kinetic_energy")
   {
     return GetEnergy(quantity, special_status);
   }

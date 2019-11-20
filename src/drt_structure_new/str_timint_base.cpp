@@ -380,7 +380,7 @@ void STR::TIMINT::Base::InitializeEnergyFileStreamAndWriteHeaders()
   for (auto& energy_data : evaldata.GetEnergyData())
   {
     dataio_->GetEnergyOutputStream()
-        << std::setw(24) << STR::EnergyType2String(energy_data.first) + ",";
+        << std::setw(36) << STR::EnergyType2String(energy_data.first) + ",";
   }
 
   dataio_->GetEnergyOutputStream() << std::setw(24) << "total_energy" << std::endl;
@@ -796,7 +796,7 @@ void STR::TIMINT::Base::OutputEnergy() const
 
     for (auto& energy_data : evaldata.GetEnergyData())
     {
-      energy_output_stream << std::setw(23) << energy_data.second << std::setw(1) << ",";
+      energy_output_stream << std::setw(35) << energy_data.second << std::setw(1) << ",";
       total_energy += energy_data.second;
     }
 
