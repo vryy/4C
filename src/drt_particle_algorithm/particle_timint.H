@@ -78,8 +78,7 @@ namespace PARTICLEALGORITHM
      * \author Sebastian Fuchs \date 07/2018
      */
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const bool modifiedstates);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!
      * \brief write restart of particle time integration
@@ -186,9 +185,6 @@ namespace PARTICLEALGORITHM
 
     //! time step size
     double dt_;
-
-    //! modified velocity and acceleration states
-    bool modifiedstates_;
   };
 
   /*!
@@ -223,8 +219,8 @@ namespace PARTICLEALGORITHM
      * \author Sebastian Fuchs \date 07/2018
      */
     void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const bool modifiedstates) override;
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+        override;
 
     /*!
      * \brief time integration scheme specific pre-interaction routine

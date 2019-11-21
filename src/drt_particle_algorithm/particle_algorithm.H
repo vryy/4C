@@ -257,15 +257,6 @@ namespace PARTICLEALGORITHM
      */
     void SetupInitialStates();
 
-    /*!
-     * \brief check particle types for modified states
-     *
-     * \author Sebastian Fuchs \date 07/2018
-     *
-     * \return flag indicating modified states
-     */
-    bool HaveModifiedStates();
-
     //! @}
 
     /*!
