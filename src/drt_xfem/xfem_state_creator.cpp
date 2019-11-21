@@ -294,7 +294,7 @@ void XFEM::StateCreator::AddCutterStates(Teuchos::RCP<GEO::CutWizard>& wizard)
 Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState() const
 {
   Teuchos::RCP<XFEM::XFieldState> state = Teuchos::null;
-  PROBLEM_TYP prb_type = DRT::Problem::Instance()->ProblemType();
+  ProblemType prb_type = DRT::Problem::Instance()->GetProblemType();
   switch (prb_type)
   {
     case prb_fluid_xfem:
@@ -313,7 +313,7 @@ Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState() const
 Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldFieldState() const
 {
   Teuchos::RCP<XFEM::XFieldState> state = Teuchos::null;
-  PROBLEM_TYP prb_type = DRT::Problem::Instance()->ProblemType();
+  ProblemType prb_type = DRT::Problem::Instance()->GetProblemType();
   switch (prb_type)
   {
     case prb_fluid_xfem:

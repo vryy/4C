@@ -674,8 +674,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const Teuchos::ParameterList& stru = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // read Problem Type and Problem Dimension from DRT::Problem
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   const int dim = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -1154,10 +1154,19 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // NURBS contact
   // *********************************************************************
-  if (distype == "Nurbs")
-    cparams.set<bool>("NURBS", true);
-  else
-    cparams.set<bool>("NURBS", false);
+  switch (distype)
+  {
+    case ShapeFunctionType::shapefunction_nurbs:
+    {
+      cparams.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      cparams.set<bool>("NURBS", false);
+      break;
+    }
+  }
 
   // *********************************************************************
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");

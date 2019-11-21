@@ -274,12 +274,21 @@ void ADAPTER::CouplingMortar::SetupInterface(
   input.setParameters(inputc);
 
   // is this a nurbs problem?
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   bool nurbs;
-  if (distype == "Nurbs")
-    nurbs = true;
-  else
-    nurbs = false;
+  switch (distype)
+  {
+    case ShapeFunctionType::shapefunction_nurbs:
+    {
+      nurbs = true;
+      break;
+    }
+    default:
+    {
+      nurbs = false;
+      break;
+    }
+  }
   input.set<bool>("NURBS", nurbs);
 
   // set valid parameter values
@@ -540,15 +549,22 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   input.setParameters(inputmortar);
 
   // is this a nurbs problem?
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
-  if (distype == "Nurbs")
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  switch (distype)
   {
-    // ***
-    dserror("nurbs for fsi mortar not supported!");
-    input.set<bool>("NURBS", true);
+    case ShapeFunctionType::shapefunction_nurbs:
+    {
+      // ***
+      dserror("nurbs for fsi mortar not supported!");
+      input.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      input.set<bool>("NURBS", false);
+      break;
+    }
   }
-  else
-    input.set<bool>("NURBS", false);
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();

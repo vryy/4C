@@ -254,7 +254,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   // SAFETY CHECKS
   // read parameter list and problem type
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
 

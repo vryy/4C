@@ -61,9 +61,9 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from DRT::Problem
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   int dim = DRT::Problem::Instance()->NDim();
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -261,10 +261,19 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // smooth interfaces
   // *********************************************************************
   // NURBS PROBLEM?
-  if (distype == "Nurbs")
-    params.set<bool>("NURBS", true);
-  else
-    params.set<bool>("NURBS", false);
+  switch (distype)
+  {
+    case ShapeFunctionType::shapefunction_nurbs:
+    {
+      params.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      params.set<bool>("NURBS", false);
+      break;
+    }
+  }
 
   // *********************************************************************
   // poroelastic meshtying

@@ -329,7 +329,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   if (ccond.size())
   {
     // what's the current problem type?
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
     // ToDo: once the new structural time integration can handle
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
@@ -413,7 +413,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // get the problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // what's the current problem type?
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
   switch (probtype)
   {
     case prb_fsi:
@@ -619,7 +619,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // show default parameters
@@ -796,7 +796,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
   ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 
   DRT::Problem* problem = DRT::Problem::Instance();
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
 
   switch (probtype)
   {
@@ -846,7 +846,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
 
   // create auxiliary time integrator, can be seen as a wrapper for ti_strategy
   Teuchos::RCP<STR::TimAda> wrapper_adaptive =
@@ -891,7 +891,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
-  PROBLEM_TYP probtype = problem->ProblemType();
+  ProblemType probtype = problem->GetProblemType();
 
   switch (probtype)
   {

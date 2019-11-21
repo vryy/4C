@@ -50,7 +50,7 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // and the - not necessary - input file name
   Teuchos::RCP<IO::OutputControl> optioutput =
       Teuchos::rcp(new IO::OutputControl(optidis->Comm(), problem->ProblemName(),
-          problem->SpatialApproximation(), problem->OutputControlFile()->InputFileName(),
+          problem->SpatialApproximationType(), problem->OutputControlFile()->InputFileName(),
           TOPOPT::modifyFilename(problem->OutputControlFile()->FileName(), "xxx_opti_",
               (bool)DRT::Problem::Instance()->Restart(), true),
           problem->NDim(), problem->Restart(), problem->OutputControlFile()->FileSteps(),

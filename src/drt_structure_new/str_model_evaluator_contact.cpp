@@ -138,7 +138,7 @@ void STR::MODELEVALUATOR::Contact::PostSetup(Teuchos::ParameterList& cparams)
 void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
 {
   // print messages for multifield problems (e.g FSI)
-  const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   if ((probtype != prb_structure) and (GState().GetMyRank() == 0))
   {
     // warnings

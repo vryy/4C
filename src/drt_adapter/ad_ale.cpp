@@ -62,7 +62,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
-  const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization

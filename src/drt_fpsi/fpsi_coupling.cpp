@@ -318,7 +318,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // what's the current problem type? Is it a fps3i problem?
-      PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+      ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
       if (probtype == prb_fps3i)
       {

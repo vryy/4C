@@ -83,7 +83,7 @@ typedef enum _PROBLEM_TYP
   prb_uq,                     // uncertainty quantification
   prb_var_chemdiff,           // chemical diffusion (using a variational setting)
   prb_xcontact                // eXtended contact formulation / inequality level-set approach
-} PROBLEM_TYP;
+} ProblemType;
 
 
 /*----------------------------------------------------------------------*/
@@ -95,6 +95,17 @@ typedef enum _NP_TYPE
   every_group_read_dat_file,
   separate_dat_files,
   no_nested_parallelism
-} NP_TYPE;
+} NestedParallelismType;
+
+
+/// Type of shape functions used in spatial discretization
+enum class ShapeFunctionType
+{
+  shapefunction_undefined,   ///< Undefined
+  shapefunction_polynomial,  ///< Polynomial shape functions
+  shapefunction_nurbs,       ///< NURBS shape functions
+  shapefunction_meshfree,    ///< Meshfree
+  shapefunction_hdg          ///< Hybridizable Discontinuous Galerkin
+};
 
 #endif

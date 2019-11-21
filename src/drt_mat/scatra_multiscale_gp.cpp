@@ -448,7 +448,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
     if (restart) adaptname = false;
 
     Teuchos::RCP<IO::OutputControl> microcontrol = Teuchos::rcp(new IO::OutputControl(
-        microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximation(),
+        microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximationType(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         DRT::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
         DRT::INPUT::IntegralValue<bool>(

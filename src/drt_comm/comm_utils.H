@@ -105,7 +105,8 @@ namespace COMM_UTILS
   {
    public:
     NestedParGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
-        Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NP_TYPE npType);
+        Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm,
+        NestedParallelismType npType);
 
     NestedParGroup(NestedParGroup& npgroup);
 
@@ -139,7 +140,7 @@ namespace COMM_UTILS
     Teuchos::RCP<Epetra_Comm> SubComm() { return subcomm_; }
 
     /// return nested parallelism type
-    NP_TYPE NpType() { return npType_; }
+    NestedParallelismType NpType() { return npType_; }
 
    private:
     /// group id
@@ -161,7 +162,7 @@ namespace COMM_UTILS
     Teuchos::RCP<Epetra_Comm> subcomm_;
 
     /// nested parallelism type
-    NP_TYPE npType_;
+    NestedParallelismType npType_;
   };
 
 

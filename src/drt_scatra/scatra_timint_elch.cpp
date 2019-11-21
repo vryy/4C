@@ -1697,7 +1697,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
           "The only solvertype supported by the ELCH diffusion-conduction framework is the "
           "non-linear solver!!");
 
-    if (problem_->ProblemType() != prb_ssi and
+    if (problem_->GetProblemType() != prb_ssi and
         DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");

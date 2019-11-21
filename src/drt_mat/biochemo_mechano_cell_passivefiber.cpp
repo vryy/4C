@@ -29,7 +29,7 @@ MAT::PAR::BioChemoMechanoCellPassiveFiber::BioChemoMechanoCellPassiveFiber(
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  if (problem->ProblemType() == prb_immersed_cell)
+  if (problem->GetProblemType() == prb_immersed_cell)
   {
     if (DRT::INPUT::IntegralValue<int>(
             problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"), "MATERIALTANGENT"))

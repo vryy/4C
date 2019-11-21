@@ -83,7 +83,7 @@ void immersed_problem_drt()
   {
     case INPAR::IMMERSED::partitioned:
     {
-      switch (DRT::Problem::Instance()->ProblemType())
+      switch (DRT::Problem::Instance()->GetProblemType())
       {
         case prb_immersed_fsi:
         {

@@ -27,7 +27,7 @@ void ntainp_ccadiscret(
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
   int group = problem->GetNPGroup()->GroupId();
-  NP_TYPE npType = problem->GetNPGroup()->NpType();
+  NestedParallelismType npType = problem->GetNPGroup()->NpType();
 
 
 

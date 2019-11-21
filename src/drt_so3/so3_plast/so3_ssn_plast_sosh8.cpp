@@ -505,7 +505,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   dDp_inc_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = DRT::Problem::Instance()->SemiSmoothPlastParams();
-  plparams.set<PROBLEM_TYP>("PROBLEM_TYP", DRT::Problem::Instance()->ProblemType());
+  plparams.set<ProblemType>("ProblemType", DRT::Problem::Instance()->GetProblemType());
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)

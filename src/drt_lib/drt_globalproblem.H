@@ -25,8 +25,6 @@
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
-#include "../drt_inpar/inpar_problemtype.H"
-
 namespace IO
 {
   class OutputControl;
@@ -219,7 +217,7 @@ namespace DRT
 
     /// manipulate problem type
     // needed for forward problem calculations in inverse analysis
-    void SetProblemType(PROBLEM_TYP targettype);
+    void SetProblemType(ProblemType targettype);
 
     //@}
 
@@ -227,7 +225,7 @@ namespace DRT
     /// Once and for all definitions
 
     /// give enum of my problem type
-    PROBLEM_TYP ProblemType() const;
+    ProblemType GetProblemType() const;
 
     /// give string name of my problem type
     std::string ProblemName() const;
@@ -251,7 +249,7 @@ namespace DRT
     std::string SpatialApproximation() const;
 
     //! Return type of the basis function encoded as enum
-    INPAR::PROBLEMTYPE::ShapeFunctionType SpatialApproximationType() const;
+    ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
 
     //! @}
 
@@ -305,7 +303,7 @@ namespace DRT
         std::map<int, int> lpidgpid,      //!< map of local and global proc ids
         Teuchos::RCP<Epetra_Comm> lcomm,  //!< local communicator
         Teuchos::RCP<Epetra_Comm> gcomm,  //!< global communicator
-        NP_TYPE npType                    //!< nested parallelism type
+        NestedParallelismType npType      //!< nested parallelism type
     );
 
     /// nested parallelism group initialized from an existing NPgroup
@@ -669,7 +667,10 @@ namespace DRT
     static std::vector<Problem*> instances_;
 
     /// the problem type
-    PROBLEM_TYP probtype_;
+    ProblemType probtype_;
+
+    /// Spatial approximation type
+    ShapeFunctionType shapefuntype_;
 
     /// the restart step (given by command line or input file)
     int restartstep_;

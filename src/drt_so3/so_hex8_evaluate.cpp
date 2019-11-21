@@ -1208,7 +1208,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_interpolate_velocity_to_point:
     {
       static bool is_immersed_ale_fsi =
-          (DRT::Problem::Instance()->ProblemType() == prb_immersed_ale_fsi);
+          (DRT::Problem::Instance()->GetProblemType() == prb_immersed_ale_fsi);
       static DRT::Condition* porocondition = discretization.GetCondition("PoroCoupling");
       bool is_ale_structure = false;
       if (is_immersed_ale_fsi)

@@ -578,11 +578,11 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     Epetra_SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (DRT::Problem::Instance(0)->ProblemType() == prb_acou)
+    if (DRT::Problem::Instance(0)->GetProblemType() == prb_acou)
       initParams.set<int>("action", ACOU::project_dirich_field);
-    else if (DRT::Problem::Instance(0)->ProblemType() == prb_elemag)
+    else if (DRT::Problem::Instance(0)->GetProblemType() == prb_elemag)
       initParams.set<int>("action", ELEMAG::project_dirich_field);
-    else if (DRT::Problem::Instance(0)->ProblemType() == prb_scatra)
+    else if (DRT::Problem::Instance(0)->GetProblemType() == prb_scatra)
       initParams.set<int>("action", SCATRA::project_dirich_field);
     else
       initParams.set<int>(

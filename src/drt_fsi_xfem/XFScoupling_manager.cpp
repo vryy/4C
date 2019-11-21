@@ -138,7 +138,7 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(
   C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
 
 
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling
   // matrixes(merged)

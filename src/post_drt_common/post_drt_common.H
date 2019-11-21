@@ -142,10 +142,10 @@ class PostProblem
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  PROBLEM_TYP Problemtype() { return problemtype_; }
+  ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  std::string SpatialApproximation() { return spatial_approx_; }
+  ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
 
   //! returns stress type
   std::string stresstype() { return stresstype_; }
@@ -212,10 +212,10 @@ class PostProblem
   std::string filter_;
 
   //! type of the problem we post process
-  PROBLEM_TYP problemtype_;
+  ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
-  std::string spatial_approx_;
+  ShapeFunctionType spatial_approx_;
 
   //! number of dimensions
   int ndim_;

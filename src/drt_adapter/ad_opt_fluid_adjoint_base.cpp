@@ -85,8 +85,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // and the - not necessary - input file name
   Teuchos::RCP<IO::OutputControl> adjointoutput =
       Teuchos::rcp(new IO::OutputControl(actdis->Comm(), problem->ProblemName(),
-          problem->SpatialApproximation(), problem->OutputControlFile()->InputFileName(), filename,
-          problem->NDim(), problem->Restart(), problem->OutputControlFile()->FileSteps(),
+          problem->SpatialApproximationType(), problem->OutputControlFile()->InputFileName(),
+          filename, problem->NDim(), problem->Restart(), problem->OutputControlFile()->FileSteps(),
           DRT::INPUT::IntegralValue<int>(problem->IOParams(), "OUTPUT_BIN")));
 
   Teuchos::RCP<IO::DiscretizationWriter> output =

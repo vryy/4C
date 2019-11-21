@@ -59,7 +59,7 @@ void ntacal()
   int restart = DRT::Problem::Instance()->Restart();
 
   // choose the entry-routine depending on the problem type
-  switch (DRT::Problem::Instance()->ProblemType())
+  switch (DRT::Problem::Instance()->GetProblemType())
   {
     case prb_structure:
     case prb_polymernetwork:
@@ -238,8 +238,8 @@ void ntacal()
       break;
 
     default:
-      dserror(
-          "solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());
+      dserror("solution of unknown problemtyp %d requested",
+          DRT::Problem::Instance()->GetProblemType());
       break;
   }
 }

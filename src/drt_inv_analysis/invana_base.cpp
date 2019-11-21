@@ -84,7 +84,7 @@ void INVANA::InvanaBase::SetupIO()
   // a new controlfile with this name
   Teuchos::RCP<IO::OutputControl> controlfile = Teuchos::null;
   controlfile = Teuchos::rcp(new IO::OutputControl(Discret()->Comm(), problem->ProblemName(),
-      problem->SpatialApproximation(), problem->OutputControlFile()->InputFileName(), filename,
+      problem->SpatialApproximationType(), problem->OutputControlFile()->InputFileName(), filename,
       problem->NDim(), 0, problem->OutputControlFile()->FileSteps(), binio));
 
   // give this one to the discretization to be used in the field output
