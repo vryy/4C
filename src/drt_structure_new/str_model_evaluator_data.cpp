@@ -529,6 +529,20 @@ double STR::MODELEVALUATOR::Data::GetEnergyData(enum STR::EnergyType type) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+double STR::MODELEVALUATOR::Data::GetEnergyData(const std::string type) const
+{
+  if (type == "total_energy")
+  {
+    double total_energy = 0.0;
+    for (auto& energy_data : GetEnergyData()) total_energy += energy_data.second;
+    return total_energy;
+  }
+  else
+    return GetEnergyData(STR::String2EnergyType(type));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::InsertEnergyTypeToBeConsidered(enum STR::EnergyType type)
 {
   energy_data_[type] = 0.0;

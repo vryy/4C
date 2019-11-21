@@ -40,6 +40,10 @@ namespace STR
   {
     class BaseDataGlobalState;
   }  // namespace TIMINT
+  namespace MODELEVALUATOR
+  {
+    class Data;
+  }  // namespace MODELEVALUATOR
 
   /*! \brief Structure specific result test class */
   class ResultTest : public DRT::ResultTest
@@ -60,7 +64,8 @@ namespace STR
     virtual ~ResultTest(){};
 
     //! initialization of class variables
-    virtual void Init(const STR::TIMINT::BaseDataGlobalState& gstate);
+    virtual void Init(
+        const STR::TIMINT::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);
 
     //! setup of class variables
     virtual void Setup();
@@ -137,6 +142,18 @@ namespace STR
      *  \author hiermeier \date 11/17 */
     double GetNlnIterationNumber(const std::string& quantity, Status& special_status) const;
 
+    /** \brief Get the value for a specific energy (internal, kinetic, total, etc.)
+     *
+     *  If the energy is accessible, it will be returned and special_status flag is set to
+     *  evaluated. If not, error is thrown in STR::MODELEVALUATOR::Data
+     *
+     *  \param[in]  quantity        name of the energy
+     *  \param[out] special_status  status of the special result test
+     *  \return     The requested energy
+     *
+     *  \author kremheller \date 11/19 */
+    double GetEnergy(const std::string& quantity, Status& special_status) const;
+
    protected:
     //! flag which indicates if the Init() routine has already been called
     bool isinit_;
@@ -162,6 +179,8 @@ namespace STR
 
     //! pointer to the global state object of the structural time integration
     Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState> gstate_;
+    //! pointer to the data container of the structural time integration
+    Teuchos::RCP<const STR::MODELEVALUATOR::Data> data_;
   };  // class ResultTest
 
   /*----------------------------------------------------------------------------*/
