@@ -627,7 +627,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<int>("ost cont and press",
         DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    fluidtimeparams->set<bool>("ost new", DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST"));
+    bool ostnew = DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    // if the time integration strategy is not even a one step theta strategy, it cannot be the
+    // new one step theta strategy either. As it seems, so far there is no sanity check of the
+    // input file
+    if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
+    {
+#ifdef DEBUG
+      dserror(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file!\n");
+#endif
+      printf(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file! In this run, NEW_OST is set to false!\n");
+      ostnew = false;
+    }
+    fluidtimeparams->set<bool>("ost new", ostnew);
 
     fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
@@ -1398,7 +1420,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     fluidtimeparams->set<int>("ost cont and press",
         DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    fluidtimeparams->set<bool>("ost new", DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST"));
+    bool ostnew = DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    // if the time integration strategy is not even a one step theta strategy, it cannot be the
+    // new one step theta strategy either. As it seems, so far there is no sanity check of the
+    // input file
+    if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
+    {
+#ifdef DEBUG
+      dserror(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file!\n");
+#endif
+      printf(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file! In this run, NEW_OST is set to false!\n");
+      ostnew = false;
+    }
+    fluidtimeparams->set<bool>("ost new", ostnew);
 
     fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 

@@ -37,9 +37,9 @@ GAMMA                           1.0
 LINEAR_SOLVER                   3
 TIMEINTEGR                      Np_Gen_Alpha
 NONLINITER                      Newton
-ALPHA_F                         1.0
-ALPHA_M                         1.0
-GAMMA                           1.0
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+GAMMA                           0.5
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicfluidsplit
 MAXTIME                         0.0005
@@ -19269,9 +19269,9 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 3e-3 3.1e-3 10000
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 3043 QUANTITY velx VALUE 1.29383824271353661e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 3043 QUANTITY vely VALUE -6.90144379166576132e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 3043 QUANTITY velz VALUE -3.87248326719420483e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 3043 QUANTITY pressure VALUE 1.10177775256421184e+00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 3043 QUANTITY velx VALUE 5.17725289666651906e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY vely VALUE -1.56051086097765975e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY velz VALUE -1.49910381953575789e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY pressure VALUE -1.53818437773795846e+00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

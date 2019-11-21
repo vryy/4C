@@ -275,11 +275,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   // TODO: Provide "forcing" for #Turbulence#!
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    if (fldparatimint_->IsOneStepTheta())
-    {
-      BodyForce(ele, (fldparatimint_->Time() - fldparatimint_->Dt()), fldpara_->PhysicalType(),
-          ebofon_, eprescpgn_, escabofon_);
-    }
+    BodyForce(ele, (fldparatimint_->Time() - fldparatimint_->Dt()), fldpara_->PhysicalType(),
+        ebofon_, eprescpgn_, escabofon_);
   }  // end IsNewOSTImplementation
 
   // if not available, the arrays for the subscale quantities have to be
