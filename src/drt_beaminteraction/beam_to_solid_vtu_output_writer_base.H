@@ -92,7 +92,7 @@ namespace BEAMINTERACTION
     //! Pointer to the global vtk input file options.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
 
-    //! TODO steinbrecher
+    //! Time at which a restart simulation is started.
     const double restart_time_;
   };
 
