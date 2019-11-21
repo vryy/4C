@@ -90,10 +90,6 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
       fflush(stdout);
     }
 
-    PARTICLEENGINE::TypeEnum particleType;
-    int globalid(-1);
-    PARTICLEENGINE::ParticleStates particlestates;
-
     // note that the last block is special....
     for (int block = 0; block < nblock; ++block)
     {
@@ -115,6 +111,10 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             std::istringstream linestream;
             linestream.str(line);
 
+            PARTICLEENGINE::TypeEnum particletype;
+            int globalid(-1);
+            PARTICLEENGINE::ParticleStates particlestates;
+
             std::string typelabel;
             std::string type;
 
@@ -128,18 +128,42 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
 
             if (poslabel != "POS") dserror("expected particle position label 'POS'!");
 
-            // get enum of particle types
-            particleType = PARTICLEENGINE::EnumFromTypeName(type);
+            // get enum of particle type
+            particletype = PARTICLEENGINE::EnumFromTypeName(type);
 
-            // allocate memory to hold particle states
-            particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
+            // allocate memory to hold particle position state
+            particlestates.resize(PARTICLEENGINE::Position + 1);
 
             // set position state
             particlestates[PARTICLEENGINE::Position] = pos;
 
+            // optional particle radius
+            {
+              std::string radlabel;
+              std::vector<double> rad(1);
+
+              // read in optional particle radius
+              linestream >> radlabel;
+              if (linestream)
+              {
+                if (radlabel != "RAD") dserror("expected particle radius label 'RAD'!");
+
+                linestream >> rad[0];
+
+                if (not linestream) dserror("expected radius if radius label 'RAD' is set!");
+              }
+
+              // allocate memory to hold particle radius state
+              if (particlestates.size() < (PARTICLEENGINE::Radius + 1))
+                particlestates.resize(PARTICLEENGINE::Radius + 1);
+
+              // set radius state
+              particlestates[PARTICLEENGINE::Radius] = rad;
+            }
+
             // construct and store read in particle object
             particles.emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
-                particleType, globalid, particlestates));
+                particletype, globalid, particlestates));
 
             ++bcount;
             if (block != nblock - 1)  // last block takes all the rest

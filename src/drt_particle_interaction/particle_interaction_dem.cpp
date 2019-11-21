@@ -257,15 +257,25 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 {
-  // get type of (random) particle radius distribution
-  INPAR::PARTICLE::RadiusDistribution radiusdistributiontype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RadiusDistribution>(
-          params_dem_, "RADIUSDISTRIBUTION");
+  // get allowed bounds for particle radius
+  double r_min = params_dem_.get<double>("MIN_RADIUS");
+  double r_max = params_dem_.get<double>("MAX_RADIUS");
+
+  // safety checks
+  if (r_min < 0.0) dserror("negative minimum allowed particle radius!");
+  if (not(r_max > 0.0)) dserror("non-positive maximum allowed particle radius!");
+  if (r_min > r_max)
+    dserror("minimum allowed particle radius larger than maximum allowed particle radius!");
+
+  // get type of initial particle radius assignment
+  INPAR::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::InitialRadiusAssignment>(
+          params_dem_, "INITIAL_RADIUS");
 
   switch (radiusdistributiontype)
   {
-    // no (random) particle radius distribution
-    case INPAR::PARTICLE::NoRadiusDistribution:
+    // particle radius from particle material
+    case INPAR::PARTICLE::RadiusFromParticleMaterial:
     {
       // iterate over particle types
       for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -284,13 +294,47 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
         const MAT::PAR::ParticleMaterialBase* material =
             particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
+        // safety checks
+        if (material->initRadius_ < r_min)
+          dserror("material particle radius smaller than minimum allowed particle radius!");
+
+        if (material->initRadius_ > r_max)
+          dserror("material particle radius larger than maximum allowed particle radius!");
+
         // (initial) radius of current phase
         std::vector<double> initradius(1);
         initradius[0] = material->initRadius_;
 
         // set initial radius for all particles of current type
-        particlecontainerbundle_->SetStateSpecificContainer(
-            initradius, PARTICLEENGINE::Radius, typeEnum);
+        container->SetState(initradius, PARTICLEENGINE::Radius);
+      }
+
+      break;
+    }
+    // particle radius from particle input
+    case INPAR::PARTICLE::RadiusFromParticleInput:
+    {
+      // note: particle radius set as read in from input file, only safety checks here
+
+      // iterate over particle types
+      for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+      {
+        // get container of owned particles of current particle type
+        PARTICLEENGINE::ParticleContainer* container =
+            particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+        // get number of particles stored in container
+        const int particlestored = container->ParticlesStored();
+
+        // no owned particles of current particle type
+        if (particlestored <= 0) continue;
+
+        // safety checks
+        if (container->GetMinValueOfState(PARTICLEENGINE::Radius) < r_min)
+          dserror("minimum particle radius negative!");
+
+        if (container->GetMaxValueOfState(PARTICLEENGINE::Radius) > r_max)
+          dserror("maximum particle radius larger than maximum allowed particle radius!");
       }
 
       break;
@@ -299,15 +343,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
     case INPAR::PARTICLE::NormalRadiusDistribution:
     case INPAR::PARTICLE::LogNormalRadiusDistribution:
     {
-      // get allowed bounds for particle radius
-      double r_min = params_dem_.get<double>("MIN_RADIUS");
-      double r_max = params_dem_.get<double>("MAX_RADIUS");
-
-      // safety checks
-      if (not(r_min > 0.0)) dserror("non-positive minimum particle radius!");
-      if (not(r_max > 0.0)) dserror("non-positive maximum particle radius!");
-      if (r_min > r_max) dserror("minimum particle radius larger than maximum particle radius!");
-
       // get variance of random particle radius distribution
       double variance = params_dem_.get<double>("RADIUSDISTRIBUTION_VAR");
 
