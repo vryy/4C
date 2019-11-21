@@ -155,8 +155,16 @@ void PASI::PartitionedAlgo::ParticleStep()
 
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
 
-  // integrate particle time step
-  particlealgorithm_->Integrate();
+  // integrate time step
+  particlealgorithm_->IntegrateTimeStep();
+}
+
+void PASI::PartitionedAlgo::PostEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::PostEvaluateTimeStep");
+
+  // post evaluate time step
+  particlealgorithm_->PostEvaluateTimeStep();
 }
 
 void PASI::PartitionedAlgo::ExtractInterfaceStates()

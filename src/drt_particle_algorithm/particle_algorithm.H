@@ -128,11 +128,18 @@ namespace PARTICLEALGORITHM
     void PrepareTimeStep(bool print_header = true);
 
     /*!
-     * \brief integrate particle time step
+     * \brief integrate time step
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void Integrate();
+    void IntegrateTimeStep();
+
+    /*!
+     * \brief post evaluate time step
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void PostEvaluateTimeStep();
 
     /*!
      * \brief output particle time step

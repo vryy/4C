@@ -197,8 +197,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     // counter and print header
     PrepareTimeStep();
 
-    // integrate particle time step
-    Integrate();
+    // integrate time step
+    IntegrateTimeStep();
+
+    // post evaluate time step
+    PostEvaluateTimeStep();
 
     // output particle time step
     Output();
@@ -225,9 +228,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
 
   // set current write result flag
   SetCurrentWriteResultFlag();
+
+  // prepare time step
+  if (particleinteraction_) particleinteraction_->PrepareTimeStep();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
+void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
 {
   // time integration scheme specific pre-interaction routine
   particletimint_->PreInteractionRoutine();
@@ -246,6 +252,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
 
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
+{
+  // post evaluate time step
+  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::Output() const

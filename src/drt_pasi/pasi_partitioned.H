@@ -145,6 +145,13 @@ namespace PASI
     void ParticleStep();
 
     /*!
+     * \brief post evaluate time step
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void PostEvaluateTimeStep();
+
+    /*!
      * \brief extract interface states
      *
      * Extract the interface states displacement, velocity, and acceleration from the structural

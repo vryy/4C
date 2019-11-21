@@ -314,6 +314,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
+void PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep");
+}
+
 void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions");
@@ -338,6 +343,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep");
 
   // evaluate phase change
   if (phasechange_) phasechange_->EvaluatePhaseChange();

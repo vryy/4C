@@ -101,11 +101,14 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
 
   while (NotFinished())
   {
-    // counter and print header
+    // prepare time step
     PrepareTimeStep();
 
     // iteration loop between coupled fields
     Outerloop();
+
+    // post evaluate time step
+    PostEvaluateTimeStep();
 
     // output of fields
     Output();
