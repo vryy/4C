@@ -56,7 +56,6 @@ CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 INITIALFIELD                    field_by_function
 ITEMAX                          10
-NEW_OST                         Yes
 NONLINITER Newton //fixed_point_like
 PREDICTOR                       steady_state
 STARTFUNCNO                     1

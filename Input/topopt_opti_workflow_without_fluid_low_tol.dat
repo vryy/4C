@@ -53,7 +53,6 @@ INITIALFIELD                    zero_field // field_by_function
 INITSTATITEMAX                  5
 ITEMAX                          10
 LINEAR_SOLVER                   1
-NEW_OST                         Yes
 NONLINEARBC                   no
 NONLINITER                      Newton //fixed_point_like
 NUMSTASTEPS                     0
