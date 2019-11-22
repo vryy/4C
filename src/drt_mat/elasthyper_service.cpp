@@ -16,8 +16,6 @@
 
 #include "../drt_lib/voigt_notation.H"
 
-using VoigtNotation = UTILS::VoigtNotation;
-
 void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, int eleGID,
@@ -176,7 +174,8 @@ void MAT::ElastHyperAddIsotropicStressCmat(LINALG::Matrix<6, 1>& S_stress,
   static LINALG::Matrix<6, 1> iC_stress(false);
   // 4th order identity tensor (rows and colums are stress-like)
   static LINALG::Matrix<6, 6> id4sharp(false);
-  UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(id4sharp);
+  UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VOIGT::NotationType::stress,
+      UTILS::VOIGT::NotationType::stress>(id4sharp);
 
   // initialize matrices
   UTILS::VOIGT::IdentityMatrix(id2);

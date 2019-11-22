@@ -15,7 +15,7 @@ growth laws.
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"
-
+#include "../drt_lib/voigt_notation.H"
 
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -692,7 +692,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // elastic fiber stretch
     LINALG::Matrix<3, 3> C(true);
-    VectorToMatrix(C, Cvec, MAT::voigt_strain);
+    VStrainUtils::ToMatrix(Cvec, C);
 
     LINALG::Matrix<3, 1> CDir(true);
     CDir.MultiplyNN(1.0, C, refdir_);
@@ -800,7 +800,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
 
   // transform Cdach into a vector
   LINALG::Matrix<6, 1> Cdachvec(true);
-  MatrixToVector(Cdach, Cdachvec, MAT::voigt_strain);
+  VStrainUtils::MatrixToVector(Cdach, Cdachvec);
 
   //--------------------------------------------------------------------------------------
   // call material law with elastic part of defgr and elastic part of glstrain
@@ -820,14 +820,14 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   LINALG::Matrix<3, 3> Sdach(true);
-  VectorToMatrix(Sdach, Sdachvec, MAT::voigt_stress);
+  VStressUtils::ToMatrix(Sdachvec, Sdach);
 
   LINALG::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
   LINALG::Matrix<3, 3> S(true);
   S.MultiplyNN(F_ginv, tmp);
 
-  MatrixToVector(S, *stress, MAT::voigt_stress);
+  VStressUtils::MatrixToVector(S, *stress);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +
@@ -843,69 +843,6 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
 }
 
 
-
-/*----------------------------------------------------------------------*
- | transform vector in voigt notation into symmetric                    |
- | 2Tensor (in matrix notation)                              Thon 01/15 |
- *----------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::VectorToMatrix(
-    LINALG::Matrix<3, 3>& Matrix, const LINALG::Matrix<6, 1>& Vector, const MAT::VoigtType Type)
-{
-  double alpha;
-
-  switch (Type)
-  {
-    case MAT::voigt_stress:
-      alpha = 1.0;
-      break;
-    case MAT::voigt_strain:
-      alpha = 0.5;
-      break;
-    default:
-      dserror("No supported VoigtType!");
-      alpha = 1.0;
-      break;
-  }
-
-  Matrix(0, 0) = Vector(0);
-  Matrix(0, 1) = alpha * Vector(3);
-  Matrix(0, 2) = alpha * Vector(5);
-  Matrix(1, 0) = Matrix(0, 1);  // alpha*Vector(3);
-  Matrix(1, 1) = Vector(1);
-  Matrix(1, 2) = alpha * Vector(4);
-  Matrix(2, 0) = Matrix(0, 2);  // alpha*Vector(5);
-  Matrix(2, 1) = Matrix(1, 2);  // alpha*Vector(4);
-  Matrix(2, 2) = Vector(2);
-}
-
-/*----------------------------------------------------------------------*
- | ///transform symmetric 2Tensor(in matrix notation) into voigt        |
- | notation ( e.g. vector notation)                          Thon 01/15 |
- *----------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::MatrixToVector(
-    const LINALG::Matrix<3, 3>& Matrix, LINALG::Matrix<6, 1>& Vector, const MAT::VoigtType Type)
-{
-  double alpha;
-  switch (Type)
-  {
-    case MAT::voigt_stress:
-      alpha = 1.0;
-      break;
-    case MAT::voigt_strain:
-      alpha = 2.0;
-      break;
-    default:
-      dserror("No supported VoigtType!");
-      alpha = 1.0;
-      break;
-  }
-  Vector(0) = Matrix(0, 0);
-  Vector(1) = Matrix(1, 1);
-  Vector(2) = Matrix(2, 2);
-  Vector(3) = alpha * Matrix(0, 1);
-  Vector(4) = alpha * Matrix(1, 2);
-  Vector(5) = alpha * Matrix(0, 2);
-}
 
 /*----------------------------------------------------------------------*
  | pull back of a symmertic elastic 4th order tensor (in matrix/voigt   |

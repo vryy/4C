@@ -1797,45 +1797,6 @@ void DRT::ELEMENTS::Membrane<distype>::mem_cmat_globaltolocal(
 }  // DRT::ELEMENTS::Membrane::mem_cmat_globaltolocal
 
 /*-------------------------------------------------------------------------------------------------*
- |  transforms matrix to "stress-like" voigt notation                                 fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_matrixtovoigt(
-    const LINALG::Matrix<3, 3>& matrix, LINALG::Matrix<6, 1>& voigt) const
-{
-  voigt(0) = matrix(0, 0);
-  voigt(1) = matrix(1, 1);
-  voigt(2) = matrix(2, 2);
-  voigt(3) = 0.5 * (matrix(0, 1) + matrix(1, 0));
-  voigt(4) = 0.5 * (matrix(1, 2) + matrix(2, 1));
-  voigt(5) = 0.5 * (matrix(0, 2) + matrix(2, 0));
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_matrixtovoigt
-
-/*-------------------------------------------------------------------------------------------------*
- |  transforms "stress-like" voigt notation to matrix                                 fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_voigttomatrix(
-    const LINALG::Matrix<6, 1>& voigt, LINALG::Matrix<3, 3>& matrix) const
-{
-  matrix(0, 0) = voigt(0);
-  matrix(1, 1) = voigt(1);
-  matrix(2, 2) = voigt(2);
-  matrix(0, 1) = voigt(3);
-  matrix(1, 2) = voigt(4);
-  matrix(0, 2) = voigt(5);
-  matrix(1, 0) = voigt(3);
-  matrix(2, 1) = voigt(4);
-  matrix(2, 0) = voigt(5);
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_voigttomatrix
-
-/*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

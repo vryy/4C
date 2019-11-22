@@ -7,39 +7,7 @@
 #include "voigt_notation.H"
 #include <Sacado.hpp>
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template <typename T>
-void UTILS::VOIGT::MatrixToStressLikeVoigtNotation(
-    LINALG::Matrix<3, 3, T> const& in, LINALG::Matrix<6, 1, T>& out)
-{
-  for (int i = 0; i < 3; ++i) out(i) = in(i, i);
-  out(3) = 0.5 * (in(0, 1) + in(1, 0));
-  out(4) = 0.5 * (in(1, 2) + in(2, 1));
-  out(5) = 0.5 * (in(0, 2) + in(2, 0));
-}
-
-void UTILS::VOIGT::MatrixToStrainLikeVoigtNotation(
-    LINALG::Matrix<3, 3> const& in, LINALG::Matrix<6, 1>& out)
-{
-  for (int i = 0; i < 3; ++i) out(i) = in(i, i);
-  out(3) = in(0, 1) + in(1, 0);
-  out(4) = in(1, 2) + in(2, 1);
-  out(5) = in(0, 2) + in(2, 0);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void UTILS::VOIGT::StressLikeVoigtNotationToMatrix(
-    LINALG::Matrix<6, 1> const& in, LINALG::Matrix<3, 3>& out)
-{
-  for (int i = 0; i < 3; ++i) out(i, i) = in(i);
-  out(0, 1) = out(1, 0) = in(3);
-  out(1, 2) = out(2, 1) = in(4);
-  out(0, 2) = out(2, 0) = in(5);
-}
-
+using NotationType = UTILS::VOIGT::NotationType;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -54,26 +22,22 @@ void UTILS::VOIGT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix
   out(8) = in(2, 0);
 }
 
+template <NotationType rows_notation, NotationType cols_notation>
+void UTILS::VOIGT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
+{
+  id.Clear();
 
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::strain>::unscale_fac_[6] = {
-    1.0, 1.0, 1.0, 0.5, 0.5, 0.5};
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::stress>::unscale_fac_[6] = {
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::strain>::scale_fac_[6] = {
-    1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::stress>::scale_fac_[6] = {
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-
+  for (unsigned int i = 3; i < 6; ++i)
+    id(i, i) =
+        0.5 * VoigtUtils<rows_notation>::ScaleFactor(i) * VoigtUtils<cols_notation>::ScaleFactor(i);
+}
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<3, 1>& vec_a,
     const LINALG::Matrix<3, 1>& vec_b, LINALG::Matrix<6, 1>& ab_ba)
 {
@@ -92,7 +56,7 @@ void UTILS::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
     const LINALG::Matrix<6, 1>& strain, const LINALG::Matrix<3, 1>& vec, LINALG::Matrix<3, 1>& res)
 {
@@ -106,7 +70,7 @@ void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
     const unsigned pow, const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_pow)
 {
@@ -141,7 +105,7 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::InverseTensor(
     const LINALG::Matrix<6, 1>& tens, LINALG::Matrix<6, 1>& tens_inv)
 {
@@ -165,28 +129,14 @@ void UTILS::VOIGT::VoigtUtils<type>::InverseTensor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
-void UTILS::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
-{
-  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor(i);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <UTILS::VoigtNotation type>
-void UTILS::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
-{
-  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);
-}
-
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::ToStressLike(
     const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
 {
   for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i);
 }
 
-template <UTILS::VoigtNotation type>
+template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::ToStrainLike(
     const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
 {
@@ -194,31 +144,72 @@ void UTILS::VOIGT::VoigtUtils<type>::ToStrainLike(
     vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i) * VStrainUtils::ScaleFactor(i);
 }
 
-template <UTILS::VoigtNotation rows_notation, UTILS::VoigtNotation cols_notation>
-void UTILS::VOIGT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
+template <NotationType type>
+void UTILS::VOIGT::VoigtUtils<type>::ToMatrix(
+    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<3, 3>& tensor_out)
 {
-  id.Clear();
-
-  for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
-
-  for (unsigned int i = 3; i < 6; ++i)
-    id(i, i) =
-        0.5 * VoigtUtils<rows_notation>::ScaleFactor(i) * VoigtUtils<cols_notation>::ScaleFactor(i);
+  for (int i = 0; i < 3; ++i) tensor_out(i, i) = vtensor_in(i);
+  tensor_out(0, 1) = tensor_out(1, 0) = UnscaleFactor(3) * vtensor_in(3);
+  tensor_out(1, 2) = tensor_out(2, 1) = UnscaleFactor(4) * vtensor_in(4);
+  tensor_out(0, 2) = tensor_out(2, 0) = UnscaleFactor(5) * vtensor_in(5);
 }
 
+template <NotationType type>
+template <typename T>
+void UTILS::VOIGT::VoigtUtils<type>::MatrixToVector(
+    const LINALG::Matrix<3, 3, T>& tensor_in, LINALG::Matrix<6, 1, T>& vtensor_out)
+{
+  for (int i = 0; i < 3; ++i) vtensor_out(i) = tensor_in(i, i);
+  vtensor_out(3) = 0.5 * ScaleFactor(3) * (tensor_in(0, 1) + tensor_in(1, 0));
+  vtensor_out(4) = 0.5 * ScaleFactor(4) * (tensor_in(1, 2) + tensor_in(2, 1));
+  vtensor_out(5) = 0.5 * ScaleFactor(5) * (tensor_in(0, 2) + tensor_in(2, 0));
+}
 
-template void UTILS::VOIGT::MatrixToStressLikeVoigtNotation<double>(
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <NotationType type>
+void UTILS::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
+{
+  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor(i);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <NotationType type>
+void UTILS::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
+{
+  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);
+}
+
+template <>
+const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::unscale_fac_[6] = {
+    1.0, 1.0, 1.0, 0.5, 0.5, 0.5};
+template <>
+const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::unscale_fac_[6] = {
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+template <>
+const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::scale_fac_[6] = {
+    1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
+template <>
+const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::scale_fac_[6] = {
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+
+// explicit template declarations
+template class UTILS::VOIGT::VoigtUtils<NotationType::strain>;
+template class UTILS::VOIGT::VoigtUtils<NotationType::stress>;
+
+template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::MatrixToVector<double>(
+    LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
+template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::MatrixToVector<double>(
     LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
 
 using FAD = Sacado::Fad::DFad<double>;
-template void UTILS::VOIGT::MatrixToStressLikeVoigtNotation<FAD>(
+template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::MatrixToVector<FAD>(
+    LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
+template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::MatrixToVector<FAD>(
     LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
 
-template class UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::strain>;
-template class UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::stress>;
-
-
-template void UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VoigtNotation::stress,
-    UTILS::VoigtNotation::stress>(LINALG::Matrix<6, 6>& id);
-template void UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VoigtNotation::stress,
-    UTILS::VoigtNotation::strain>(LINALG::Matrix<6, 6>& id);
+template void UTILS::VOIGT::FourthOrderIdentityMatrix<NotationType::stress, NotationType::stress>(
+    LINALG::Matrix<6, 6>& id);
+template void UTILS::VOIGT::FourthOrderIdentityMatrix<NotationType::stress, NotationType::strain>(
+    LINALG::Matrix<6, 6>& id);

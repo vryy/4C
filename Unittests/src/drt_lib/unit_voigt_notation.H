@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 
-\brief unittests for the function library
+\brief unittests for utilities concerning voigt notation
 
 \level 3
 
@@ -24,11 +24,9 @@ namespace UTILS
   }
 }  // namespace UTILS
 
-// class implementation
 class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
 {
  public:
-  /// Setup Testsuite
   void setUp() override
   {
     tens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
@@ -79,38 +77,37 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     (*itens_strain)(5) = 2 * -0.0208824;
   }
 
-  /// Tear down test suite
   void tearDown() override {}
 
-  void test_conversion_stress()
+  void test_MatrixToVector_StressLike()
   {
     LINALG::Matrix<6, 1> cmp_stress(false);
 
-    MatrixToStressLikeVoigtNotation(*tens, cmp_stress);
+    VStressUtils::MatrixToVector(*tens, cmp_stress);
 
     for (int i = 0; i < 6; ++i) TS_ASSERT_DELTA(cmp_stress(i), (*tens_stress)(i), 1e-10);
   }
 
-  void test_conversion_strain()
+  void test_MatrixToVector_StrainLike()
   {
     LINALG::Matrix<6, 1> cmp_strain(false);
 
-    MatrixToStrainLikeVoigtNotation(*tens, cmp_strain);
+    VStrainUtils::MatrixToVector(*tens, cmp_strain);
 
     for (int i = 0; i < 6; ++i) TS_ASSERT_DELTA(cmp_strain(i), (*tens_strain)(i), 1e-10);
   }
 
-  void test_determinant_stress()
+  void test_Determinant_StressLike()
   {
     TS_ASSERT_DELTA(VStressUtils::Determinant(*tens_stress), 1.7143620000000002, 1e-10);
   }
 
-  void test_determinant_strain()
+  void test_Determinant_StrainLike()
   {
     TS_ASSERT_DELTA(VStrainUtils::Determinant(*tens_strain), 1.7143620000000002, 1e-10);
   }
 
-  void test_invariants_principal_stress()
+  void test_InvariantsPrincipal_StressLike()
   {
     LINALG::Matrix<3, 1> prinv(false);
     VStressUtils::InvariantsPrincipal(prinv, *tens_stress);
@@ -119,7 +116,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
   }
 
-  void test_invariants_principal_strain()
+  void test_InvariantsPrincipal_StrainLike()
   {
     LINALG::Matrix<3, 1> prinv(false);
     VStrainUtils::InvariantsPrincipal(prinv, *tens_strain);
@@ -128,7 +125,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
   }
 
-  void test_inverse_stress()
+  void test_InverseStressLike()
   {
     LINALG::Matrix<6, 1> itens_stress_result(false);
     VStressUtils::InverseTensor(*tens_stress, itens_stress_result);
@@ -137,7 +134,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
       TS_ASSERT_DELTA(itens_stress_result(i), (*itens_stress)(i), 1e-5);
   }
 
-  void test_inverse_strain()
+  void test_InverseStrainLike()
   {
     LINALG::Matrix<6, 1> itens_strain_result(false);
     VStrainUtils::InverseTensor(*tens_strain, itens_strain_result);
@@ -146,7 +143,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
       TS_ASSERT_DELTA(itens_strain_result(i), (*itens_strain)(i), 1e-5);
   }
 
-  void test_to_stress_like()
+  void test_ToStressLike()
   {
     LINALG::Matrix<6, 1> strain_to_stress(false);
     LINALG::Matrix<6, 1> stress_to_stress(false);
@@ -160,7 +157,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_to_strain_like()
+  void test_ToStrainLike()
   {
     LINALG::Matrix<6, 1> strain_to_strain(false);
     LINALG::Matrix<6, 1> stress_to_strain(false);
@@ -186,6 +183,20 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(id(3), 0.0, 1e-10);
     TS_ASSERT_DELTA(id(4), 0.0, 1e-10);
     TS_ASSERT_DELTA(id(5), 0.0, 1e-10);
+  }
+
+  void test_StrainLikeToMatrix()
+  {
+    LINALG::Matrix<3, 3> matrix(false);
+    VStrainUtils::ToMatrix(*tens_strain, matrix);
+    TS_ASSERT_EQUALS(matrix, *tens);
+  }
+
+  void test_StressLikeToMatrix()
+  {
+    LINALG::Matrix<3, 3> matrix(false);
+    VStressUtils::ToMatrix(*tens_stress, matrix);
+    TS_ASSERT_EQUALS(matrix, *tens);
   }
 
  private:

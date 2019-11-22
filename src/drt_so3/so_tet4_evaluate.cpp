@@ -8,6 +8,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/voigt_notation.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -56,6 +57,7 @@ void writeComment(const std::string v)
 }
 #endif  // PRINT_DEBUG
 
+using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
@@ -2431,11 +2433,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     for (int a = 0; a < NUMDIM_SOTET4; ++a)
       for (int b = 0; b < NUMDIM_SOTET4; ++b)
       {
-        DFDxi(VOIGT3X3NONSYM_[a][b], 0) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        DFDxi(VOIGT3X3NONSYM_[a][b], 1) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        DFDxi(VOIGT3X3NONSYM_[a][b], 2) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
 
@@ -2460,25 +2462,28 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
       for (int n = 0; n < NUMDIM_SOTET4; ++n)
         for (int k = 0; k < NUMNOD_SOTET4; ++k)
         {
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 0) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 0) +=
               deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
               N_XYZ_Xsec(k, 4) * invJ(n, 2);
 
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 1) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 1) +=
               deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
               N_XYZ_Xsec(k, 5) * invJ(n, 2);
 
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 2) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + 2) +=
               deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
               N_XYZ_Xsec(k, 2) * invJ(n, 2);
 
           for (int l = 0; l < NUMDIM_SOTET4; ++l)
-            D2sntDdDxi_m(k * 3 + m, l) +=
-                DsntDF(VOIGT3X3NONSYM_[m][n], 0) *
-                D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + l);
+            D2sntDdDxi_m(k * 3 + m, l) += DsntDF(VoigtMapping::NonSymToVoigt9(m, n), 0) *
+                                          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n),
+                                              NODDOF_SOTET4 * (NODDOF_SOTET4 * k + m) + l);
         }
   }
 

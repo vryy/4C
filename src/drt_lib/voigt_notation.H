@@ -12,28 +12,36 @@
 
 namespace UTILS
 {
-  /// Voigt notation types
-  enum class VoigtNotation
-  {
-    /// stress-like Voigt notation
-    /// A vector in stress-like Voigt notation, contains the off-diagonal values only once.
-    stress,
-    /// strain-like Voigt notation
-    /// A vector in strain-like Voigt notation, contains the sum of corresponding off-diagonal
-    /// values.
-    strain
-  };
-
   namespace VOIGT
   {
+    /*! Voigt notation types
+     *
+     * This enum can be used whenever the distinction between stress- and strain-like Voigt notation
+     * is important. The classical Voigt notation is only meaningful for symmetric tensors.
+     */
+    enum class NotationType
+    {
+      /// stress-like Voigt notation
+      ///
+      /// A vector in stress-like Voigt notation, contains the off-diagonal values only once.
+      stress,
+      /// strain-like Voigt notation
+      ///
+      /// A vector in strain-like Voigt notation, contains the sum of corresponding off-diagonal
+      /// values.
+      strain
+    };
+
     /*--------------------------------------------------------------------------*/
     /** \brief Utility routines for the perturbed Voigt tensor notation
+     *
+     * \tparam type specific NotationType this class operates on
      */
-    template <VoigtNotation type>
+    template <NotationType type>
     class VoigtUtils
     {
      public:
-      /// constructor
+      /// instantiation is forbidden
       VoigtUtils() = delete;
 
       /** \brief compute power of a symmetric 3x3 matrix in perturbed Voigt notation
@@ -132,6 +140,33 @@ namespace UTILS
       static void ToStrainLike(
           const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out);
 
+      /*!
+       * Converts a <type>-like tensor in Voigt notation to a matrix
+       * @param vtensor_in tensor in <type>-like Voigt notation
+       * @param vtensor_out tensor as a matrix
+       */
+      static void ToMatrix(
+          const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<3, 3>& tensor_out);
+
+
+      /*! Copy matrix contents to <type>-like Voigt notation
+       *
+       *          A_00 A_01 A_02
+       * Matrix   A_10 A_11 A_12   is converted to the Voigt vector below:
+       *          A_20 A_21 A_22
+       *
+       * Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*k*(A_01 + A_10);
+       *          V_4 = 0.5*k*(A_12 + A_21); V_5 = 0.5*k*(A_02 + A_20)
+       *
+       * where k is the scale factor for <type>-like Voigt notation.
+       *
+       * @param tensor_in the matrix to copy from
+       * @param[out] vtensor_out target tensor in <type>-like Voigt notation
+       */
+      template <typename T>
+      static void MatrixToVector(
+          const LINALG::Matrix<3, 3, T>& tensor_in, LINALG::Matrix<6, 1, T>& vtensor_out);
+
       /// access scaling factors
       static inline double ScaleFactor(unsigned i) { return scale_fac_[i]; };
 
@@ -171,7 +206,7 @@ namespace UTILS
       /**
        * \brief Compute the product of three matrix entries
        *
-       * The entries are correctly scaled depending on the VoigtNotation type of the tensor
+       * The entries are correctly scaled depending on the VoigtNotation type of the tensor.
        * @param vtensor the tensor in voigt notaion
        * @param i first entry's Voigt index
        * @param j second entry's Voigt inde
@@ -186,34 +221,6 @@ namespace UTILS
       }
     };
 
-    /// Convert matrix to "stress-like" Voigt notation
-    ///          A_00 A_01 A_02
-    /// Matrix   A_10 A_11 A_12   is converted to the (stress-like) vector below:
-    ///          A_20 A_21 A_22
-    ///
-    /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*(A_01 + A_10); V_4 = 0.5*(A_12 +
-    /// A_21); V_5 = 0.5*(A_02 + A_20)
-    template <typename T>
-    void MatrixToStressLikeVoigtNotation(
-        LINALG::Matrix<3, 3, T> const& in, LINALG::Matrix<6, 1, T>& out);
-
-    /// Convert matrix to "strain-like" Voigt notation
-    ///          A_00 A_01 A_02
-    /// Matrix   A_10 A_11 A_12   is converted to the (strain-like) vector below:
-    ///          A_20 A_21 A_22
-    ///
-    /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = (A_01 + A_10); V_4 = (A_12 + A_21); V_5 =
-    /// (A_02 + A_20)
-    void MatrixToStrainLikeVoigtNotation(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<6, 1>& out);
-
-
-    /// Convert "stress-like" Voigt notation to matrix
-    ///
-    /// Vector   V_0 V_1 V_2 V_3 V_4 V_5   (stress-like) is converted to the matrix below:
-    ///
-    /// Matrix   A_00 = V_0; A_11 = V_1; A_22 = V_2; A_01 = A_10 = V_3; A_21 = A_12 = V_4; A_20 =
-    /// A_02 = V_5
-    void StressLikeVoigtNotationToMatrix(LINALG::Matrix<6, 1> const& in, LINALG::Matrix<3, 3>& out);
 
     /// convert non-symmetric 2-tensor to 9x1 vector
     ///          A_00 A_01 A_02
@@ -241,7 +248,7 @@ namespace UTILS
      * @tparam cols_notation  Voigt notation used for the columns
      * @param id (out) : Voigt-Matrix
      */
-    template <VoigtNotation rows_notation, VoigtNotation cols_notation>
+    template <NotationType rows_notation, NotationType cols_notation>
     void FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id);
 
     /// collection of index mappings from matrix to Voigt-notation or vice versa
@@ -255,7 +262,7 @@ namespace UTILS
        */
       static inline int Voigt6ToRow(unsigned int i)
       {
-        assertRangeVoigt(i);
+        assertRangeVoigtIndex(i);
         static constexpr int VOIGT6ROW[6] = {0, 1, 2, 0, 1, 2};
         return VOIGT6ROW[i];
       };
@@ -263,7 +270,7 @@ namespace UTILS
       /// from 6-Voigt index to corresponding 2-tensor col index
       static inline int Voigt6ToCol(unsigned int i)
       {
-        assertRangeVoigt(i);
+        assertRangeVoigtIndex(i);
         static constexpr int VOIGT6COL[6] = {0, 1, 2, 1, 2, 0};
         return VOIGT6COL[i];
       };
@@ -272,7 +279,7 @@ namespace UTILS
       // TODO doesn't this need to check if strain or stress notation?
       static inline int SymToVoigt6(unsigned int row, unsigned int col)
       {
-        assertRangeMatrix(row, col);
+        assertRangeMatrixIndex(row, col);
         static constexpr int VOIGT3X3SYM[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
         return VOIGT3X3SYM[row][col];
       };
@@ -280,7 +287,7 @@ namespace UTILS
       /// from non-symmetric 2-tensor index pair to 9-Voigt index
       static inline int NonSymToVoigt9(unsigned int row, unsigned int col)
       {
-        assertRangeMatrix(row, col);
+        assertRangeMatrixIndex(row, col);
         static constexpr int VOIGT3X3NONSYM[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
         return VOIGT3X3NONSYM[row][col];
       };
@@ -290,8 +297,8 @@ namespace UTILS
       static inline int Voigt6x6To4Tensor(
           unsigned int voigt_row, unsigned int voigt_col, unsigned int target_index)
       {
-        assertRangeVoigt(voigt_row);
-        assertRangeVoigt(voigt_col);
+        assertRangeVoigtIndex(voigt_row);
+        assertRangeVoigtIndex(voigt_col);
         dsassert(target_index < 4, "target index for fourth order tensor out of range");
         static constexpr int FOURTH[6][6][4] = {
             {{0, 0, 0, 0}, {0, 0, 1, 1}, {0, 0, 2, 2}, {0, 0, 0, 1}, {0, 0, 1, 2}, {0, 0, 0, 2}},
@@ -307,13 +314,13 @@ namespace UTILS
       IndexMappings() = delete;
 
      private:
-      static inline void assertRangeMatrix(unsigned int row, unsigned int col)
+      static inline void assertRangeMatrixIndex(unsigned int row, unsigned int col)
       {
         dsassert(row < 3, "given row index out of range [0,2]");
         dsassert(col < 3, "given col index out of range [0,2]");
       }
 
-      static inline void assertRangeVoigt(unsigned int index)
+      static inline void assertRangeVoigtIndex(unsigned int index)
       {
         dsassert(index < 6, "given index out of range [0,5]");
       }
@@ -321,7 +328,7 @@ namespace UTILS
   }  // namespace VOIGT
 }  // namespace UTILS
 
-using VStrainUtils = UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::strain>;
-using VStressUtils = UTILS::VOIGT::VoigtUtils<UTILS::VoigtNotation::stress>;
+using VStrainUtils = UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>;
+using VStressUtils = UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>;
 
 #endif  // VOIGT_NOTATION_H

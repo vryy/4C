@@ -27,8 +27,6 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "../drt_matelast/visco_generalizedgenmax.H"
 #include "../drt_lib/voigt_notation.H"
 
-using VoigtNotation = UTILS::VoigtNotation;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -561,6 +559,8 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
 
   UTILS::VOIGT::IdentityMatrix(id2);
+
+  using VoigtNotation = UTILS::VOIGT::NotationType;
   UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(id4sharp);
   UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::strain>(id4);
 

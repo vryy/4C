@@ -460,7 +460,7 @@ void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadStructuralTensor(
     AradM_.MultiplyNT(1.0, dir, dir, 0.0);
 
     // radial structural tensor in "stress-like" Voigt notation
-    UTILS::VOIGT::MatrixToStressLikeVoigtNotation(AradM_, Aradv_);
+    VStressUtils::MatrixToVector(AradM_, Aradv_);
   }
   // Cylinder flag defined in .dat file, dummy AXI, CIR and RAD directions are written till
   // location of element center in reference configuration is available
@@ -549,7 +549,7 @@ void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadCylinder(
   AcirM_.MultiplyNT(1.0, cirdir, cirdir, 0.0);
 
   // radial structural tensor in "stress-like" Voigt notation
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(AradM_, Aradv_);
+  VStressUtils::MatrixToVector(AradM_, Aradv_);
 
   return;
 }
@@ -677,7 +677,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(
   // calculate circumferential residual stress
   double sig = 0.0;
   LINALG::Matrix<6, 1> Acir_strain(true);
-  UTILS::VOIGT::MatrixToStrainLikeVoigtNotation(AcirM_, Acir_strain);
+  VStrainUtils::MatrixToVector(AcirM_, Acir_strain);
 
   // total circumferential Cauchy stress ("membrane stress")
   double sig_tot = (params_->p_mean_ * params_->ri_) / params_->t_ref_;
@@ -1123,28 +1123,28 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateKinQuantElast(LINALG::Matrix<3, 3> c
   // inverse inelastic right Cauchy-Green
   static LINALG::Matrix<3, 3> iCinM(true);
   iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(iCinM, iCinv);
+  VStressUtils::MatrixToVector(iCinM, iCinv);
 
   // inverse right Cauchy-Green
   static LINALG::Matrix<3, 3> iCM(true);
   static LINALG::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrd, *defgrd, 0.0);
   iCM.Invert(CM);
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(iCM, iCv);
+  VStressUtils::MatrixToVector(iCM, iCv);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
   static LINALG::Matrix<3, 3> tmp(true);
   static LINALG::Matrix<3, 3> iCinCiCinM;
   tmp.MultiplyNN(1.0, iCinM, CM, 0.0);
   iCinCiCinM.MultiplyNN(1.0, tmp, iCinM, 0.0);
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(iCinCiCinM, iCinCiCinv);
+  VStressUtils::MatrixToVector(iCinCiCinM, iCinCiCinv);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
   tmp.MultiplyNN(1.0, *defgrd, iFinM, 0.0);
   static LINALG::Matrix<3, 3> CeM(true);
   CeM.MultiplyTN(1.0, tmp, tmp, 0.0);
   static LINALG::Matrix<6, 1> Ce_strain(true);
-  UTILS::VOIGT::MatrixToStrainLikeVoigtNotation(CeM, Ce_strain);
+  VStrainUtils::MatrixToVector(CeM, Ce_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
   VStrainUtils::InvariantsPrincipal(prinv, Ce_strain);
@@ -1465,7 +1465,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateStressCmatMembrane(LINALG::Matrix<3,
 
   static LINALG::Matrix<3, 3> stressM(true);
   stressM = stress_fad.ConverttoDouble();
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(stressM, stress);
+  VStressUtils::MatrixToVector(stressM, stress);
 
   // Derivative of 2nd Piola Kirchhoff stress w.r.t. the inverse growth deformation gradient
   for (int i = 0; i < 3; ++i)
@@ -1489,7 +1489,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateStressCmatMembrane(LINALG::Matrix<3,
   YM.Update(1.0, ZM, 0.0);
   YM.Update(1.0, ZTM, 1.0);
   static LINALG::Matrix<6, 1> Yv(true);
-  UTILS::VOIGT::MatrixToStressLikeVoigtNotation(YM, Yv);
+  VStressUtils::MatrixToVector(YM, Yv);
   static LINALG::Matrix<6, 6> dYdC(true);
   dYdC.Clear();
   MAT::AddtoCmatHolzapfelProduct(dYdC, Yv, -0.5);
@@ -1681,7 +1681,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const&
   EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dummy, gp, eleGID);
   pk2v_glob.Update(1.0, stressmem, 1.0);
   cmat_glob.Update(1.0, cmatmem, 1.0);
-  UTILS::VOIGT::StressLikeVoigtNotationToMatrix(pk2v_glob, pk2M_glob);
+  VStressUtils::ToMatrix(pk2v_glob, pk2M_glob);
 
   return;
 }

@@ -262,12 +262,6 @@ namespace MAT
     //! Calculates the kronecker delta. Returns 1 for i==j otherwise 0
     virtual int Kron(int i, int j);
 
-    //! Caluclates the non-voigt-index pair out of a voigt index
-    virtual void VoigtIndex(int p, int* i, int* j);
-
-    //! Calculates the voigt-index out of a non-voigt index pair
-    virtual void VoigtIndex(int i, int j, int* p);
-
     //! Returns the pullback of the 4th order tensor in voigt notation
     virtual void Pullback4thTensorVoigt(const double jacobian, const LINALG::Matrix<3, 3>& defgr,
         const LINALG::Matrix<6, 6>& cmat_eul, LINALG::Matrix<6, 6>* cmat_lag);

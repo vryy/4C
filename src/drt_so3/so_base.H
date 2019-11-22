@@ -217,10 +217,6 @@ namespace DRT
      protected:
       //! kinematic type
       INPAR::STR::KinemType kintype_;
-      //! from symmetric 2-tensor index pair to 6-Voigt index
-      static const int VOIGT3X3SYM_[3][3];
-      //! from non-symmetric 2-tensor index pair to 9-Voigt index
-      static const int VOIGT3X3NONSYM_[3][3];
 
      private:
       /** \brief interface ptr

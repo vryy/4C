@@ -28,8 +28,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "elasthyper_service.H"
 #include "../drt_lib/voigt_notation.H"
 
-using VoigtNotation = UTILS::VoigtNotation;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -555,7 +553,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   const double ndt = n.Dot(t);
 
   static LINALG::Matrix<6, 1> bV_strain(true);
-  UTILS::VOIGT::MatrixToStrainLikeVoigtNotation(b, bV_strain);
+  VStrainUtils::MatrixToVector(b, bV_strain);
   static LINALG::Matrix<3, 1> prinv(true);
   VStrainUtils::InvariantsPrincipal(prinv, bV_strain);
 

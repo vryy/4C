@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/voigt_notation.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -35,6 +36,8 @@
 #include "../drt_mat/micromaterial.H"
 
 #include "../headers/definitions.h"
+
+using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
@@ -1345,14 +1348,16 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         // effective pressure at Gauss point
         const double effpressure = prshfct.Dot(pres);  // pN*ep'
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
-        LINALG::Matrix<NUMDFGR_, 1> tinvdefgrad;
-        Matrix2TensorToVector9Voigt(tinvdefgrad, invdefgrad, true);
+        LINALG::Matrix<NUMDFGR_, 1> tinvdefgrad_vct;
+        LINALG::Matrix<NUMDIM_, NUMDIM_> invdefgrad_t;
+        invdefgrad_t.UpdateT(invdefgrad);
+        ::UTILS::VOIGT::Matrix3x3to9x1(invdefgrad_t, tinvdefgrad_vct);
 
         // derivative of WmT := F^{-T}_{,F} in Voigt vector notation
         LINALG::Matrix<NUMDFGR_, NUMDFGR_> WmT;
         InvVector9VoigtDiffByItself(WmT, invdefgrad, true);
         // WmT := WmT + fvT*fvT'
-        WmT.MultiplyNT(1.0, tinvdefgrad, tinvdefgrad, 1.0);
+        WmT.MultiplyNT(1.0, tinvdefgrad_vct, tinvdefgrad_vct, 1.0);
 
         // material derivatives of shape functions
         LINALG::Matrix<NUMDIM_, NUMNOD_> derivsmat;
@@ -1367,8 +1372,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         {
           for (int ij = 0; ij < NUMDFGR_; ++ij)
           {
-            const int i = VOIGT9ROW_[ij];
-            const int j = VOIGT9COL_[ij];
+            const int i = VOIGT9ROW_INCONSISTENT_[ij];
+            const int j = VOIGT9COL_INCONSISTENT_[ij];
             const int k = m * NODDISP_ + i;
             iboplin[m][ij] = k;
             boplin(ij, k) = derivsmat(j, m);
@@ -1397,7 +1402,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
             InvVector6VoigtDiffByItself(invrgtstrDbyrgtstrD, invrgtstrD);
 
             // C^d_{,U^d} = (U^d . U^d)_{,U^d}
-            SqVector6VoigtDiffByItself(rcgDbyrgtstrD, rgtstrD);
+            SqVector6VoigtDiffByItself(
+                rcgDbyrgtstrD, rgtstrD, ::UTILS::VOIGT::NotationType::strain);
 
             // displ-based deformation gradient as Voigt matrix
             LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_> defgradDm;
@@ -1432,7 +1438,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
             // derivative of ass. right Cauchy-Green with respect to ass. material stretch tensor
             // C^{ass}_{,U^{ass}}
             LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> rcgbyrgtstr;
-            SqVector6VoigtDiffByItself(rcgbyrgtstr, rgtstr);
+            SqVector6VoigtDiffByItself(rcgbyrgtstr, rgtstr, ::UTILS::VOIGT::NotationType::strain);
 
             // C^{ass}_{,d} = 2 * bop
             // C^{ass}_{AB,k} = 2 B_{ABk}
@@ -1471,13 +1477,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
               {
                 for (int CB = 0; CB < NUMDFGR_; ++CB)
                 {
-                  const int C = VOIGT9ROW_[CB];
-                  const int B = VOIGT9COL_[CB];
+                  const int C = VOIGT9ROW_INCONSISTENT_[CB];
+                  const int B = VOIGT9COL_INCONSISTENT_[CB];
                   double pseudoidenity_CBk = 0.0;
                   for (int D = 0; D < NUMDIM_; ++D)
                   {
-                    const int CD = VOIGT3X3SYM_[NUMDIM_ * C + D];
-                    const int DB = VOIGT3X3SYM_[NUMDIM_ * D + B];
+                    const int CD = VoigtMapping::SymToVoigt6(C, D);
+                    const int DB = VoigtMapping::SymToVoigt6(D, B);
                     const double CDfact = (C == D) ? 1.0 : 0.5;
                     const double DBfact = (D == B) ? 1.0 : 0.5;
                     pseudoidenity_CBk += CDfact * invrgtstrDbydisp(CD, k) * rgtstr(D, B) +
@@ -1498,17 +1504,17 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                 const int m = k / NODDISP_;
                 for (int aB = 0; aB < NUMDFGR_; ++aB)
                 {
-                  const int a = VOIGT9ROW_[aB];
-                  const int B = VOIGT9COL_[aB];
+                  const int a = VOIGT9ROW_INCONSISTENT_[aB];
+                  const int B = VOIGT9COL_INCONSISTENT_[aB];
                   double defgradbydisp_aBk = 0.0;
                   for (int C = 0; C < NUMDIM_; ++C)
                   {
-                    const int CB = VOIGT3X3_[NUMDIM_ * C + B];
+                    const int CB = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * C + B];
                     defgradbydisp_aBk += defgradD(a, C) * pseudoidenity(CB, k);
                   }
                   for (int C = 0; C < NUMDIM_; ++C)
                   {
-                    const int aC = VOIGT3X3_[NUMDIM_ * a + C];
+                    const int aC = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * a + C];
                     if (k == iboplin[m][aC])
                       defgradbydisp_aBk += boplin(aC, k) * invrgtstrDtimesrgtstr(C, B);
                   }
@@ -1525,14 +1531,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
             else if (eastype_ == soh8_eassosh8)
             {
               EasConstraintAndTangent<NUMEAS_SOSH8_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
-                  rcgbyrgtstr, detdefgrad, tinvdefgrad, WmT, cmat, stress, effpressure, detJ_w, cb,
-                  defgradbydisp, prshfct, M);
+                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
+                  cb, defgradbydisp, prshfct, M);
             }
             else if (eastype_ == soh8_easa)
             {
               EasConstraintAndTangent<NUMEAS_A_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
-                  rcgbyrgtstr, detdefgrad, tinvdefgrad, WmT, cmat, stress, effpressure, detJ_w, cb,
-                  defgradbydisp, prshfct, M);
+                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
+                  cb, defgradbydisp, prshfct, M);
             }
             else
             {
@@ -1582,8 +1588,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                     }
                     for (int EF = 0; EF < MAT::NUM_STRESS_3D; ++EF)
                     {
-                      const int E = VOIGT6ROW_[EF];
-                      const int F = VOIGT6COL_[EF];
+                      const int E = VoigtMapping::Voigt6ToRow(EF);
+                      const int F = VoigtMapping::Voigt6ToCol(EF);
                       // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
                       // and
                       // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
@@ -1613,8 +1619,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                       double rcgDbybydisp_EFdk = 0.0;
                       for (int a = 0; a < NUMDIM_; ++a)
                       {
-                        const int aE = VOIGT3X3_[NUMDIM_ * a + E];
-                        const int aF = VOIGT3X3_[NUMDIM_ * a + F];
+                        const int aE = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * a + E];
+                        const int aF = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * a + F];
                         if (E == F)  // make strain-like 6-Voigt vector
                           rcgDbybydisp_EFdk += 2.0 * boplin(aE, d) * boplin(aF, k);
                         else  // thus setting  V_EF + V_FE if E!=F
@@ -1720,12 +1726,12 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                 {
                   for (int BC = 0; BC < NUMDFGR_; ++BC)
                   {
-                    const int B = VOIGT9ROW_[BC];
-                    const int C = VOIGT9COL_[BC];
+                    const int B = VOIGT9ROW_INCONSISTENT_[BC];
+                    const int C = VOIGT9COL_INCONSISTENT_[BC];
                     double invdefgradtimesboplin_BCd = 0.0;
                     for (int a = 0; a < NUMDIM_; ++a)
                     {
-                      const int aC = VOIGT3X3_[NUMDIM_ * a + C];
+                      const int aC = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * a + C];
                       invdefgradtimesboplin_BCd += invdefgrad(B, a) * boplin(aC, d);
                     }
                     invdefgradtimesboplin(BC, d) = invdefgradtimesboplin_BCd;
@@ -1788,12 +1794,12 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                     {
                       for (int D = 0; D < NUMDIM_; ++D)
                       {
-                        const int DB = VOIGT3X3SYM_[NUMDIM_ * D + B];
+                        const int DB = VoigtMapping::SymToVoigt6(D, B);
                         const double DBfact = (D == B) ? 1.0 : 0.5;
                         for (int C = 0; C < NUMDIM_; ++C)
                         {
-                          const int BC = VOIGT3X3_[NUMDIM_ * B + C];
-                          const int CD = VOIGT3X3SYM_[NUMDIM_ * C + D];
+                          const int BC = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * B + C];
+                          const int CD = VoigtMapping::SymToVoigt6(C, D);
                           const double CDfact = (C == D) ? 1.0 : 0.5;
                           defgradbybydisp_dk += invdefgradtimesboplin(BC, d) * CDfact *
                                                     invrgtstrDbydisp(CD, k) * rgtstr(D, B)  // (1)
@@ -1841,7 +1847,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         // (dFv'*fvT) = dFv'*fvT
         LINALG::Matrix<NUMDISP_, 1> defgradbydisptimestinvdefgrad;
         if ((gradmatrix != NULL) or (dargmatrix != NULL))
-          defgradbydisptimestinvdefgrad.MultiplyTN(defgradbydisp, tinvdefgrad);
+          defgradbydisptimestinvdefgrad.MultiplyTN(defgradbydisp, tinvdefgrad_vct);
 
         // derivative of pressure contribution in internal force with respect to pressure
         // (-G) = -(dFv'*fvT)*pN * Fdet*detJ*wp(i);
@@ -2054,7 +2060,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>
         invcg.MultiplyTN(defgrd, defgrd);
         invcg.Invert();
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> invcgv;
-        Matrix2TensorToVector6Voigt(invcgv, invcg, voigt6_stress);
+        VStressUtils::MatrixToVector(invcg, invcgv);
         // store stress
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         {
@@ -2068,8 +2074,8 @@ void DRT::ELEMENTS::So_sh8p8::Stress(LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>
       if (elestress == NULL) dserror("stress data not available");
       // push forward
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> defgraddefgradT;
-      Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-          defgraddefgradT, defgrd, true, voigt6_stress, voigt6_strain);
+      Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT, defgrd, true,
+          ::UTILS::VOIGT::NotationType::stress, ::UTILS::VOIGT::NotationType::strain);
       // (deviatoric/isochoric) Cauchy stress vector
       LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cauchyv;
       cauchyv.MultiplyNN(1.0 / detdefgrd, defgraddefgradT, stress);
@@ -2126,8 +2132,8 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
       if (elestrain == NULL) dserror("strain data not available");
       // create push forward 6x6 matrix
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTdefgrad;
-      Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-          invdefgradTdefgrad, invdefgrd, false, voigt6_strain, voigt6_stress);
+      Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad, invdefgrd, false,
+          ::UTILS::VOIGT::NotationType::strain, ::UTILS::VOIGT::NotationType::stress);
       // push forward
       LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eastrain;
       eastrain.MultiplyNN(invdefgradTdefgrad, glstrain);
