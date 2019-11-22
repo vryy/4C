@@ -69,7 +69,6 @@ CONVFORM convective //conservative
 GMSH_OUTPUT                     no
 INITIALFIELD                    field_by_function
 ITEMAX                          5
-NEW_OST                         Yes
 NONLINITER Newton //fixed_point_like
 PREDICTOR                       steady_state
 STARTFUNCNO                     1
