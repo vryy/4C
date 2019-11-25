@@ -22,12 +22,12 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::Assemb
     const
 {
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-          ->GetCmm()
+          ->GetCff()
           ->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty stiffness was unsuccessful!\n");
 
   return Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-      ->GetCmm();
+      ->GetCff();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -41,10 +41,10 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureStiffness() const
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidForce() const
 {
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFm())
+      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFf())
           ->Map()));
-  f->Update(1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFm()),
+  f->Update(-1.0,
+      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFf()),
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");
