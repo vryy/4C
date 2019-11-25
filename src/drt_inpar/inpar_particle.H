@@ -219,10 +219,11 @@ namespace INPAR
       LogNormalSurfaceEnergyDistribution
     };
 
-    //! type of (random) particle radius distribution
-    enum RadiusDistribution
+    //! type of initial particle radius assignment
+    enum InitialRadiusAssignment
     {
-      NoRadiusDistribution,
+      RadiusFromParticleMaterial,
+      RadiusFromParticleInput,
       NormalRadiusDistribution,
       LogNormalRadiusDistribution
     };
