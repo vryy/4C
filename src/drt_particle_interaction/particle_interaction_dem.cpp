@@ -331,7 +331,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 
         // safety checks
         if (container->GetMinValueOfState(PARTICLEENGINE::Radius) < r_min)
-          dserror("minimum particle radius negative!");
+          dserror("minimum particle radius smaller than minimum allowed particle radius!");
 
         if (container->GetMaxValueOfState(PARTICLEENGINE::Radius) > r_max)
           dserror("maximum particle radius larger than maximum allowed particle radius!");
