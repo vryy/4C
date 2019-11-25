@@ -99,7 +99,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -627,7 +627,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<int>("ost cont and press",
         DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    fluidtimeparams->set<bool>("ost new", DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST"));
+    bool ostnew = DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    // if the time integration strategy is not even a one step theta strategy, it cannot be the
+    // new one step theta strategy either. As it seems, so far there is no sanity check of the
+    // input file
+    if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
+    {
+#ifdef DEBUG
+      dserror(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file!\n");
+#endif
+      printf(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file! In this run, NEW_OST is set to false!\n");
+      ostnew = false;
+    }
+    fluidtimeparams->set<bool>("ost new", ostnew);
 
     fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
@@ -674,21 +696,24 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_scatra:
       {
         // HDG implements all time stepping schemes within gen-alpha
-        if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                ShapeFunctionType::shapefunction_hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_dens_mom &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                     ShapeFunctionType::shapefunction_hdg &&
                  (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
                      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                     ShapeFunctionType::shapefunction_hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
               new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
@@ -948,7 +973,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_freesurf:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&
+        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+                ShapeFunctionType::shapefunction_hdg &&
             (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
                 DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -1282,7 +1308,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // the inflow computation can only deal with standard fluid problems so far
   // extensions for xfluid, fsi problems have to be added if necessary
@@ -1394,7 +1420,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     fluidtimeparams->set<int>("ost cont and press",
         DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    fluidtimeparams->set<bool>("ost new", DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST"));
+    bool ostnew = DRT::INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    // if the time integration strategy is not even a one step theta strategy, it cannot be the
+    // new one step theta strategy either. As it seems, so far there is no sanity check of the
+    // input file
+    if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
+    {
+#ifdef DEBUG
+      dserror(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file!\n");
+#endif
+      printf(
+          "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
+          "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
+          "Strategy. \n"
+          "This is impossible. \n"
+          "Please change your input file! In this run, NEW_OST is set to false!\n");
+      ostnew = false;
+    }
+    fluidtimeparams->set<bool>("ost new", ostnew);
 
     fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
@@ -1486,8 +1534,24 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("max nonlin iter steps", fdyn.get<int>("ITEMAX"));
   // maximum number of nonlinear iteration steps for initial stationary solution
   fluidtimeparams->set<int>("max nonlin iter steps init stat sol", fdyn.get<int>("INITSTATITEMAX"));
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>("tolerance for nonlin iter", fdyn.get<double>("CONVTOL"));
+
+  // parameter list containing the nonlinear solver tolerances
+  const Teuchos::ParameterList& nonlinsolvertolerances =
+      fdyn.sublist("NONLINEAR SOLVER TOLERANCES");
+
+  // stop nonlinear iteration when the velocity residual is below this tolerance
+  fluidtimeparams->set<double>(
+      "velocity residual tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_RES"));
+  // stop nonlinear iteration when the pressure residual is below this tolerance
+  fluidtimeparams->set<double>(
+      "pressure residual tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_RES"));
+  // stop nonlinear iteration when the relative velocity increment is below this tolerance
+  fluidtimeparams->set<double>(
+      "velocity increment tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_INC"));
+  // stop nonlinear iteration when the relative pressure increment is below this tolerance
+  fluidtimeparams->set<double>(
+      "pressure increment tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_INC"));
+
   // set convergence check
   fluidtimeparams->set<std::string>("CONVCHECK", fdyn.get<std::string>("CONVCHECK"));
   // set recomputation of residual after solution has convergenced

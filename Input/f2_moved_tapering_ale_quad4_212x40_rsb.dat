@@ -29,7 +29,6 @@ NONLINITER                      Newton
 PREDICTOR                       steady_state
 INITIALFIELD                    zero_field
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-12
 INCONSISTENT_RESIDUAL           No
 LIFTDRAG                        No
 CONVFORM                        convective
@@ -42,6 +41,11 @@ THETA                           1
 NUMSTEP                         100
 ITEMAX                          10
 MAXTIME                         1.0//1.0/(0.005*200)
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-12
+TOL_VEL_INC	  1.0E-12
+TOL_PRES_RES	  1.0E-12
+TOL_PRES_INC	  1.0E-12
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

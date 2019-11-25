@@ -71,8 +71,8 @@ namespace DRT
     the values of the current director angles minus reference director angles, respectively
 
     The element is capable of using higher order functions from linear to quartic. Please make sure
-    you put the nodes in the right order in the input file. LIN2  1---2 LIN3  1---3---2 LIN4
-    1---4---2---3 LIN5  1---5---2---3---4 LIN6  1---6---2---3---4---5
+    you put the nodes in the right order in the input file. LINE2  1---2 LINE3  1---3---2 LINE4
+    1---4---2---3 LINE5  1---5---2---3---4 LINE6  1---6---2---3---4---5
 
     author cyron (cyron @lnm.mw.tum.de)
     */

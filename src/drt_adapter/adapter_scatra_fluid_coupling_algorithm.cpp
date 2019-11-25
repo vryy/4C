@@ -90,7 +90,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
   // set also initial field
   SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams());
 
-  if (DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
+  if (DRT::Problem::Instance()->GetProblemType() != prb_fluid_xfem_ls)
   {
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0

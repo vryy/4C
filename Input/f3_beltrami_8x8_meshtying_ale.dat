@@ -24,7 +24,6 @@ ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-08
 ITEMAX                          3
 MAXTIME                         0.05
 NONLINITER                      Newton
@@ -43,6 +42,11 @@ MESHTYING                       Condensed_Bmat_merged
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 COMPUTE_DIVU                    no // yes
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-08
+TOL_VEL_INC	  1e-08
+TOL_PRES_RES	  1e-08
+TOL_PRES_INC	  1e-08
 -----------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

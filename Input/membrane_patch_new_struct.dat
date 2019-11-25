@@ -1,8 +1,5 @@
 //
 // Maintainer: Sebastian Fuchs
-// fuchs@lnm.mw.tum.de
-// https://www.lnm.mw.tum.de/staff/sebastian-fuchs/
-// 089/289-15262
 //
 ==================================================================
                   General Data File BACI
@@ -42,6 +39,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Membrane_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2 ELAST_IsoNeoHooke MUE 100
+-------------------------------------------------RESULT DESCRIPTION
+STRUCTURE SPECIAL QUANTITY internal_energy VALUE 1.12500000000000e+00 TOLERANCE 1e-10
+STRUCTURE SPECIAL QUANTITY kinetic_energy VALUE 5.00000000000000e-03 TOLERANCE 1e-10
+STRUCTURE SPECIAL QUANTITY total_energy VALUE 1.13000000000000e+00 TOLERANCE 1e-10
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a*x
 COMPONENT 1 FUNCTION b

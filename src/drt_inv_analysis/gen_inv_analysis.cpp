@@ -132,7 +132,7 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
 
   ndim_ = DRT::Problem::Instance()->NDim();
 
-  forward_prb_type_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(iap, "FORWARD_PROBLEMTYP");
+  forward_prb_type_ = DRT::INPUT::IntegralValue<ProblemType>(iap, "FORWARD_PROBLEMTYP");
   materialhashistory_ = false;
 
   switch (DRT::INPUT::IntegralValue<INPAR::STR::MeasurementType>(iap, "MEASUREMENT_TYPE"))
@@ -1268,7 +1268,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
             Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
         binningstrategy->Init(dis);
-        binningstrategy->WeightedPartitioning(dis, stdelecolmap, stdnodecolmap);
+        binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
+            dis, stdelecolmap, stdnodecolmap);
       }
     }
   }

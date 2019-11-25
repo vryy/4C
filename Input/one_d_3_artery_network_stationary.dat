@@ -73,13 +73,13 @@ NODE 6 COORD 17.320508075688775 17.320508075688775 17.320508075688775
 NODE 7 COORD -15.0 0.0 0.0
 NODE 8 COORD -30.0 0.0 0.0
 -------------------------------------------------------------ARTERY ELEMENTS
-1 ART LIN2 1 2 MAT 1 GP 3 TYPE PressureBased DIAM 24.0
-2 ART LIN2 2 3 MAT 1 GP 2 TYPE PressureBased DIAM 24.0
-3 ART LIN2 3 4 MAT 1 GP 1 TYPE PressureBased DIAM 24.0
-4 ART LIN2 4 5 MAT 1 GP 5 TYPE PressureBased DIAM 24.0
-5 ART LIN2 5 6 MAT 1 GP 4 TYPE PressureBased DIAM 24.0
-6 ART LIN2 4 7 MAT 1 GP 5 TYPE PressureBased DIAM 24.0
-7 ART LIN2 7 8 MAT 1 GP 4 TYPE PressureBased DIAM 24.0
+1 ART LINE2 1 2 MAT 1 GP 3 TYPE PressureBased DIAM 24.0
+2 ART LINE2 2 3 MAT 1 GP 2 TYPE PressureBased DIAM 24.0
+3 ART LINE2 3 4 MAT 1 GP 1 TYPE PressureBased DIAM 24.0
+4 ART LINE2 4 5 MAT 1 GP 5 TYPE PressureBased DIAM 24.0
+5 ART LINE2 5 6 MAT 1 GP 4 TYPE PressureBased DIAM 24.0
+6 ART LINE2 4 7 MAT 1 GP 5 TYPE PressureBased DIAM 24.0
+7 ART LINE2 7 8 MAT 1 GP 4 TYPE PressureBased DIAM 24.0
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS

@@ -42,7 +42,6 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-12
 RESULTSEVRY                           1
 RESTARTEVRY                     0
 NUMSTEP                         3
@@ -57,6 +56,11 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 CALCERROR                       kimmoin_instat_navier_stokes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-12
+TOL_VEL_INC	  1.0E-12
+TOL_PRES_RES	  1.0E-12
+TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall

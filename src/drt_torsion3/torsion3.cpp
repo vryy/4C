@@ -65,8 +65,6 @@ void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TORSION3"];
 
   defs["LINE3"].AddIntVector("LINE3", 3).AddNamedInt("MAT").AddNamedString("BENDINGPOTENTIAL");
-
-  defs["LIN3"].AddIntVector("LIN3", 3).AddNamedInt("MAT").AddNamedString("BENDINGPOTENTIAL");
 }
 
 

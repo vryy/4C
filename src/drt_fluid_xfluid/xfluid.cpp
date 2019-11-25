@@ -2413,7 +2413,11 @@ void FLD::XFluid::Solve()
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double ittol = params_->get<double>("tolerance for nonlin iter");
+  const double velrestol = params_->get<double>("velocity residual tolerance");
+  const double velinctol = params_->get<double>("velocity increment tolerance");
+  const double presrestol = params_->get<double>("pressure residual tolerance");
+  const double presinctol = params_->get<double>("pressure increment tolerance");
+  const double ittol = std::min(std::min(std::min(velrestol, presrestol), velinctol), presinctol);
 
   //------------------------------ turn adaptive solver tolerance on/off
   const bool isadapttol = params_->get<bool>("ADAPTCONV");
@@ -2434,12 +2438,15 @@ void FLD::XFluid::Solve()
 
   if (myrank_ == 0)
   {
+    printf("+------------+-------------+-------------+-------------+-------------+\n");
     printf(
-        "+------------+-------------------+--------------+--------------+--------------+-----------"
-        "---+\n");
+        "|- step/max -|-- vel-res --|-- pre-res --|-- vel-inc --|-- pre-inc "
+        "--|\n");
     printf(
-        "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
-        "---|\n");
+        "|-   norm   -|-- abs. L2 --|-- abs. L2 --|-- rel. L2 --|-- rel. L2 "
+        "--|\n");
+    printf("|-   tol    -| %10.3E  | %10.3E  | %10.3E  | %10.3E  |\n", velrestol, presrestol,
+        velinctol, presinctol);
   }
 
   while (stopnonliniter == false)
@@ -2485,7 +2492,7 @@ void FLD::XFluid::Solve()
     // that would not vanish due to the projection
     if (projector_ != Teuchos::null) projector_->ApplyPT(*state_->Residual());
 
-    if (ConvergenceCheck(itnum, itemax_, ittol)) break;
+    if (ConvergenceCheck(itnum, itemax_, velrestol, velinctol, presrestol, presinctol)) break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
@@ -2624,7 +2631,8 @@ void FLD::XFluid::Solve()
 #endif
 }
 
-bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
+bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol,
+    const double velinctol, const double presrestol, const double presinctol)
 {
   bool stopnonliniter = false;
 
@@ -2670,8 +2678,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
   {
     if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-          itnum, itemax, ittol, vresnorm_, presnorm_);
+      printf("|   --/%3d   | %10.3E  | %10.3E  |      --     |      --     |", itemax, vresnorm_,
+          presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
       {
@@ -2688,32 +2696,29 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-    if (vresnorm_ <= ittol and presnorm_ <= ittol and incvelnorm_L2_ / velnorm_L2_ <= ittol and
-        incprenorm_L2_ / prenorm_L2_ <= ittol)
+    if (vresnorm_ <= velrestol and presnorm_ <= presrestol and
+        incvelnorm_L2_ / velnorm_L2_ <= velinctol and incprenorm_L2_ / prenorm_L2_ <= presinctol)
     {
       stopnonliniter = true;
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum,
-            itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-            incprenorm_L2_ / prenorm_L2_);
+        printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
+            presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
         if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
         {
           printf(",tf=%10.3E", dtfilter_);
         }
         printf(")\n");
-        printf(
-            "+------------+-------------------+--------------+--------------+--------------+-------"
-            "-------+\n");
+        printf("+------------+-------------+-------------+-------------+-------------+\n");
 
         FILE* errfile = params_->get<FILE*>("err file", NULL);
         if (errfile != NULL)
         {
           fprintf(errfile,
-              "fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
+              "fluid solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
               "pinc=%10.3E\n",
-              itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+              itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
               incprenorm_L2_ / prenorm_L2_);
         }
       }
@@ -2721,9 +2726,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
     else  // if not yet converged
         if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum,
-          itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-          incprenorm_L2_ / prenorm_L2_);
+      printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
+          presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
       printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
       {
@@ -2736,8 +2740,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
   // warn if itemax is reached without convergence, but proceed to
   // next timestep...
   if ((itnum == itemax) and
-      (vresnorm_ > ittol or presnorm_ > ittol or incvelnorm_L2_ / velnorm_L2_ > ittol or
-          incprenorm_L2_ / prenorm_L2_ > ittol))
+      (vresnorm_ > velrestol or presnorm_ > presrestol or
+          incvelnorm_L2_ / velnorm_L2_ > velinctol or incprenorm_L2_ / prenorm_L2_ > presinctol))
   {
     stopnonliniter = true;
     if (myrank_ == 0)
@@ -2750,9 +2754,9 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double ittol)
       if (errfile != NULL)
       {
         fprintf(errfile,
-            "fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  "
+            "fluid unconverged solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  "
             "vinc=%10.3E  pinc=%10.3E\n",
-            itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+            itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
             incprenorm_L2_ / prenorm_L2_);
       }
     }

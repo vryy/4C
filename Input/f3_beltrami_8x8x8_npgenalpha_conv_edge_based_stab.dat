@@ -36,7 +36,6 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-06
 GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
@@ -53,6 +52,11 @@ RESULTSEVRY                           1 //8
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                           yes

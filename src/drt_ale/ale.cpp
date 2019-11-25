@@ -525,7 +525,7 @@ void ALE::Ale::OutputRestart(bool& datawritten)
   // info dedicated to user's eyes staring at standard out
   // Print restart info only in case of pure ALE problem. Coupled problems
   // print their own restart info.
-  if (DRT::Problem::Instance()->ProblemType() == prb_ale)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_ale)
   {
     if (discret_->Comm().MyPID() == 0)
       IO::cout << "====== Restart written in step " << step_ << IO::endl;
@@ -555,7 +555,7 @@ void ALE::Ale::PrepareTimeStep()
 
   // Print time step header only in case of pure ALE problem. Coupled problems
   // print their own time step header.
-  if (DRT::Problem::Instance()->ProblemType() == prb_ale) PrintTimeStepHeader();
+  if (DRT::Problem::Instance()->GetProblemType() == prb_ale) PrintTimeStepHeader();
 
   // Update local coordinate systems (which may be time dependent)
   if (locsysman_ != Teuchos::null)

@@ -380,9 +380,9 @@ void STR::TimInt::createAllEpetraVectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  if ((DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+  if ((DRT::Problem::Instance()->GetProblemType() == prb_struct_ale and
           (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0) or
-      (DRT::Problem::Instance()->ProblemType() == prb_immersed_cell and
+      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
           DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
               "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
   {
@@ -578,7 +578,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
-  const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   const std::string probname = DRT::Problem::Instance()->ProblemName();
   if (probtype != prb_structure && !myrank_)
   {
@@ -718,6 +718,30 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             std::cout << "================================================================\n"
                       << std::endl;
           }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Standard Multi Scale strategy ================================"
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Dual Multi Scale strategy ===================================="
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
           else if (soltype == INPAR::CONTACT::solution_lagmult &&
                    DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                        INPAR::MORTAR::lagmult_const)
@@ -843,6 +867,30 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             std::cout << "===== const Lagrange multiplier strategy ======================="
                       << std::endl;
             std::cout << "===== (Condensed formulation) =================================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Standard Rough Contact strategy ================================"
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
+                      << std::endl;
+            std::cout << "================================================================\n"
+                      << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_multiscale &&
+                   shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================"
+                      << std::endl;
+            std::cout << "===== Dual Rough Contact strategy ===================================="
+                      << std::endl;
+            std::cout << "===== (Pure displacement formulation) =========================="
                       << std::endl;
             std::cout << "================================================================\n"
                       << std::endl;
@@ -3165,7 +3213,7 @@ void STR::TimInt::OutputPatspec()
 void STR::TimInt::OutputCell()
 {
   if (porositysplitter_ == Teuchos::null and
-      DRT::Problem::Instance()->ProblemType() == prb_immersed_cell)
+      DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell)
   {
     if (DRT::ImmersedFieldExchangeManager::Instance()->IsPureConfinementSimulation())
     {

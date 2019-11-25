@@ -85,8 +85,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // and the - not necessary - input file name
   Teuchos::RCP<IO::OutputControl> adjointoutput =
       Teuchos::rcp(new IO::OutputControl(actdis->Comm(), problem->ProblemName(),
-          problem->SpatialApproximation(), problem->OutputControlFile()->InputFileName(), filename,
-          problem->NDim(), problem->Restart(), problem->OutputControlFile()->FileSteps(),
+          problem->SpatialApproximationType(), problem->OutputControlFile()->InputFileName(),
+          filename, problem->NDim(), problem->Restart(), problem->OutputControlFile()->FileSteps(),
           DRT::INPUT::IntegralValue<int>(problem->IOParams(), "OUTPUT_BIN")));
 
   Teuchos::RCP<IO::DiscretizationWriter> output =
@@ -188,8 +188,22 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
       DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn, "NONLINITER"));
   // maximum number of nonlinear iteration steps
   fluidadjointtimeparams->set<int>("max nonlin iter steps", fdyn.get<int>("ITEMAX"));
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidadjointtimeparams->set<double>("tolerance for nonlin iter", fdyn.get<double>("CONVTOL"));
+
+  // parameter list containing the nonlinear solver tolerances
+  const Teuchos::ParameterList& nonlinsolvertolerances =
+      fdyn.sublist("NONLINEAR SOLVER TOLERANCES");
+  // stop nonlinear iteration when the velocity residual is below this tolerance
+  fluidadjointtimeparams->set<double>(
+      "velocity residual tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_RES"));
+  // stop nonlinear iteration when the pressure residual is below this tolerance
+  fluidadjointtimeparams->set<double>(
+      "pressure residual tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_RES"));
+  // stop nonlinear iteration when the relative velocity increment is below this tolerance
+  fluidadjointtimeparams->set<double>(
+      "velocity increment tolerance", nonlinsolvertolerances.get<double>("TOL_VEL_INC"));
+  // stop nonlinear iteration when the relative pressure increment is below this tolerance
+  fluidadjointtimeparams->set<double>(
+      "pressure increment tolerance", nonlinsolvertolerances.get<double>("TOL_PRES_INC"));
   // set convergence check
   fluidadjointtimeparams->set<std::string>("CONVCHECK", fdyn.get<std::string>("CONVCHECK"));
   // set adaptive linear solver tolerance

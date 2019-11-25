@@ -758,6 +758,7 @@ set(OBJS_DRT_RED_AIRWAYS_LIB
 set(OBJS_DRT_INPAR
   src/drt_inpar/drt_boolifyparameters.cpp
   src/drt_inpar/drt_validconditions.cpp
+  src/drt_inpar/drt_validcontactconstitutivelaw.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
   src/drt_inpar/inpar_cardiovascular0d.cpp
@@ -925,9 +926,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
   src/drt_beaminteraction/beam_link.cpp
   src/drt_beaminteraction/beam_link_rigidjointed.cpp
-  src/drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.cpp
+  src/drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.cpp
   src/drt_beaminteraction/beam_link_pinjointed.cpp
-  src/drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.cpp
+  src/drt_beaminteraction/beam_link_beam3r_line2_pinjointed.cpp
   src/drt_beaminteraction/beam_link_truss.cpp
   src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
   src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
@@ -1889,6 +1890,7 @@ set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container_bundle.cpp
   src/drt_particle_engine/particle_engine.cpp
   src/drt_particle_engine/particle_communication_utils.cpp
+  src/drt_particle_engine/particle_unique_global_id.cpp
   src/drt_particle_engine/particle_runtime_vtp_writer.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE_LIB
@@ -2105,6 +2107,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_lib/drt_elementreader.cpp
   src/drt_lib/drt_inputreader.cpp
   src/drt_lib/drt_linedefinition.cpp
+  src/drt_contact_constitutivelaw/constitutivelaw_definition.cpp
   src/drt_lib/drt_materialdefinition.cpp
   src/drt_lib/drt_nodereader.cpp
   src/drt_lib/drt_particlereader.cpp
@@ -2244,7 +2247,18 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_scatra.cpp
   src/drt_w1/wall1_scatra_evaluate.cpp
 )
+set(OBJS_DRT_ROUGH_CONTACT
+  src/drt_contact_constitutivelaw/contactconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/contactconstitutivelaw_parameter.cpp
+  src/drt_contact_constitutivelaw/brokenrational_contactconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/cubic_contactconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/linear_contactconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/power_contactconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
+  )
+  
 set(OBJS_DRT_CONTACT
+  src/drt_contact_constitutivelaw/contact_constitutivelaw_interface.cpp
   src/drt_contact/contact_abstract_strategy.cpp
   src/drt_contact/contact_noxinterface.cpp
   src/drt_contact/contact_coupling2d.cpp
@@ -2834,6 +2848,7 @@ add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
+add_library(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
 add_library(drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB})
 add_library(drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL})
 add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
@@ -2872,6 +2887,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_cut
   drt_lib_inpar
   drt_lib_io
+  drt_lib_roughcontact
   drt_lib_nurbs
   drt_lib_binstrategy
   drt_lib_particleengine

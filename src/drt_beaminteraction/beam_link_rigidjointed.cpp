@@ -22,7 +22,7 @@
 
 #include "beam_link_rigidjointed.H"
 
-#include "beam_link_beam3r_lin2_rigidjointed.H"
+#include "beam_link_beam3r_line2_rigidjointed.H"
 
 BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedType::instance_;
 
@@ -289,7 +289,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
 Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> BEAMINTERACTION::BeamLinkRigidJointed::Create()
 {
   // for now, we always use a 2-noded linear Reissner element
-  return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed());
+  return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed());
 }
 
 /*----------------------------------------------------------------------------*

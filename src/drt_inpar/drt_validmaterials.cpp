@@ -3346,7 +3346,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "MAT_Crosslinker", "material for a linkage between beams", INPAR::MAT::m_crosslinkermat));
 
     AddNamedReal(matdef, "MATNUM", "number of beam elasthyper material");
-    AddNamedString(matdef, "JOINTTYPE", "type of joint (rigid or pin)", "beam3rlin2rigid");
+    AddNamedString(matdef, "JOINTTYPE", "type of joint (rigid or pin)", "beam3rline2rigid");
     AddNamedReal(matdef, "LINKINGLENGTH", "distance between the two binding domains of a linker");
     AddNamedReal(matdef, "LINKINGLENGTHTOL",
         "tolerance for linker length in the sense: length +- tolerance");

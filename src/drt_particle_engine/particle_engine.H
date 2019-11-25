@@ -32,6 +32,7 @@ namespace PARTICLEENGINE
   class ParticleContainer;
   class ParticleContainerBundle;
   class ParticleObject;
+  class ParticleUniqueGlobalIdHandler;
   class ParticleRuntimeVtpWriter;
 }  // namespace PARTICLEENGINE
 
@@ -125,6 +126,30 @@ namespace PARTICLEENGINE
     void WriteParticleRuntimeOutput(const int step, const double time) const;
 
     /*!
+     * \brief get unique global ids for all particles
+     *
+     * All particles handed in do not have a unique global id yet. In this method a unique global id
+     * is assigned to each particle.
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     *
+     * \param[in] particlestogetuniquegids particles to get unique global ids
+     */
+    void GetUniqueGlobalIdsForAllParticles(
+        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids);
+
+    /*!
+     * \brief check number of unique global ids
+     *
+     * Check the number of unique global ids to ensure that all freed global ids are reused. This
+     * means the sum of all particles and of all reusable global ids should equal the number of
+     * global ids.
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void CheckNumberOfUniqueGlobalIds();
+
+    /*!
      * \brief erase particles outside bounding box
      *
      * All particles handed in are checked if they are located inside the bounding box. Particles
@@ -205,14 +230,22 @@ namespace PARTICLEENGINE
     void DynamicLoadBalancing();
 
     /*!
-     * \brief change type of particles
+     * \brief remove or insert owned particles
+     *
+     * Remove or insert owned particles of any type in the respective container on this processor.
+     *
+     * \note In case particles are removed without directly reinserting the particles, e.g., during
+     *       phase change in a different type, the global ids must be handed to the particle unique
+     *       global id handler in order to be reused.
+     *
+     * \note All particle added need a global id assigned.
      *
      * \author Sebastian Fuchs \date 11/2018
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
+    void RemoveOrInsertOwnedParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
     /*!
@@ -321,11 +354,13 @@ namespace PARTICLEENGINE
 
     double MinBinSize() const override { return minbinsize_; };
 
-    bool HavePBC(const int dim = -1) const override;
+    bool HavePeriodicBoundaryConditions() const override;
 
-    double PBCDelta(const int dim) const override;
+    bool HavePeriodicBoundaryConditionsInSpatialDirection(const int dim) const override;
 
-    LINALG::Matrix<3, 2>& XAABB() const override;
+    double LengthOfBinningDomainInASpatialDirection(const int dim) const override;
+
+    LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries
@@ -412,6 +447,20 @@ namespace PARTICLEENGINE
      */
     void SetupParticleContainerBundle(
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
+
+    /*!
+     * \brief init particle unique global identifier handler
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void InitParticleUniqueGlobalIdHandler();
+
+    /*!
+     * \brief setup particle unique global identifier handler
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     */
+    void SetupParticleUniqueGlobalIdHandler() const;
 
     /*!
      * \brief setup data storage
@@ -711,6 +760,9 @@ namespace PARTICLEENGINE
 
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! particle unique global identifier handler
+    std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler> particleuniqueglobalidhandler_;
 
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;

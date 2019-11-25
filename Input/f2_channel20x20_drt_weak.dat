@@ -32,9 +32,13 @@ ALPHA_F                         0.6666
 ALPHA_M                         0.8333
 GAMMA                           0.6666
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
 NONLINEARBC                     yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CHARELELENGTH_PC                root_of_volume
 --------------------------------------------------------------------SOLVER 1

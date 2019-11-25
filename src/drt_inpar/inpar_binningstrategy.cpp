@@ -25,17 +25,26 @@ void INPAR::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   Teuchos::ParameterList& binningstrategy = list->sublist("BINNING STRATEGY", false, "");
 
 
-  DoubleParameter("CUTOFF_RADIUS", -1.0,
-      "Cutoff radius for influence of meshfree points on each other.", &binningstrategy);
+  DoubleParameter("BIN_SIZE_LOWER_BOUND", -1.0,
+      "Lower bound for bin size. Exact bin size is computed via (Domain edge "
+      "length)/BIN_SIZE_LOWER_BOUND. This also determines the number of bins in each spatial "
+      "direction",
+      &binningstrategy);
+
   setNumericStringParameter("BIN_PER_DIR", "-1 -1 -1",
-      "Number of bins per direction (x, y, z) in particle simulations.", &binningstrategy);
+      "Number of bins per direction (x, y, z) in particle simulations. Either Define this value or "
+      "BIN_SIZE_LOWER_BOUND",
+      &binningstrategy);
 
   setNumericStringParameter("PERIODICONOFF", "0 0 0",
-      "Turn of/off peridodic boundary conditions in each direction", &binningstrategy);
+      "Turn on/off periodic boundary conditions in each spatial direction", &binningstrategy);
 
-  setNumericStringParameter("BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
-      "Bounding box for binning strategy in particle simulations.", &binningstrategy);
+  setNumericStringParameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+      "Bounding box for computational domain using binning strategy. Specify diagonal corner "
+      "points",
+      &binningstrategy);
 
-  setStringToIntegralParameter<int>("WRITEBINS", "none", "Visualize none, row or column bins",
+  setStringToIntegralParameter<int>("WRITEBINS", "none",
+      "Write none, row or column bins for visualization",
       tuple<std::string>("none", "rows", "cols"), tuple<int>(none, rows, cols), &binningstrategy);
 }

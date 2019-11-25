@@ -79,11 +79,15 @@ ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           0.66
 THETA                           0.66 //0.66
-CONVTOL                         1e-13
 START_THETA                     0.66 //0.66
 STRONG_REDD_3D_COUPLING_TYPE    no
 GMSH_OUTPUT                     yes
 NEW_OST                         yes
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-13
+TOL_VEL_INC	  1e-13
+TOL_PRES_RES	  1e-13
+TOL_PRES_INC	  1e-13
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    No

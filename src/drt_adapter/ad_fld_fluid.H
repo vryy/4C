@@ -286,7 +286,8 @@ namespace ADAPTER
         ) = 0;
 
     /// convergence check
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol) = 0;
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double velrestol,
+        const double velinctol, const double presrestol, const double presinctol) = 0;
 
     /// update at end of iteration step
     virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) = 0;

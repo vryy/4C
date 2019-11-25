@@ -94,26 +94,9 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(1, 2, 3, 4, 5, 6), &fdyn);
 
   setStringToIntegralParameter<int>("CONVCHECK", "L_2_norm", "norm for convergence check",
-      tuple<std::string>(
-          //"L_infinity_norm",
-          //"L_1_norm",
-          "L_2_norm"
-          //"L_2_norm_without_residual_at_itemax"
-          ),
-      tuple<std::string>(
-          //"use max norm (ccarat)",
-          //"use abs. norm (ccarat)",
-          "compute L2 errors of increments (relative) and residuals (absolute)"
-          //"same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for
-          // turbulence calculations, startup phase)"
-          ),
-      tuple<int>(
-          // fncc_Linf,
-          // fncc_L1,
-          fncc_L2
-          // fncc_L2_wo_res
-          ),
-      &fdyn);
+      tuple<std::string>("L_2_norm"),
+      tuple<std::string>("compute L2 errors of increments (relative) and residuals (absolute)"),
+      tuple<int>(fncc_L2), &fdyn);
 
   BoolParameter("INCONSISTENT_RESIDUAL", "No",
       "do not evaluate residual after solution has converged (->faster)", &fdyn);
@@ -266,11 +249,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
       yesnotuple, yesnovalue, &fdyn);
 
-  /*  setStringToIntegralParameter<int>("SPLITFLUID","no",
-                                 "If yes, the fluid matrix is splitted into a block sparse matrix
-     for velocity and pressure degrees of freedom (similar to SIMPLER flag)",
-                                 yesnotuple,yesnovalue,&fdyn);*/
-
   setStringToIntegralParameter<int>("ADAPTCONV", "yes",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", yesnotuple,
       yesnovalue, &fdyn);
@@ -306,7 +284,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
   DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
 
-  DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &fdyn);
   DoubleParameter("START_THETA", 1.0, "Time integration factor for starting scheme", &fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE", "no",
@@ -331,6 +308,21 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Do not evaluate ghosted elements but communicate them --> faster if element call is "
       "expensive",
       &fdyn);
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_nln = fdyn.sublist("NONLINEAR SOLVER TOLERANCES", false, "");
+
+  DoubleParameter(
+      "TOL_VEL_RES", 1e-6, "Tolerance for convergence check of velocity residual", &fdyn_nln);
+
+  DoubleParameter(
+      "TOL_VEL_INC", 1e-6, "Tolerance for convergence check of velocity increment", &fdyn_nln);
+
+  DoubleParameter(
+      "TOL_PRES_RES", 1e-6, "Tolerance for convergence check of pressure residual", &fdyn_nln);
+
+  DoubleParameter(
+      "TOL_PRES_INC", 1e-6, "Tolerance for convergence check of pressure increment", &fdyn_nln);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION", false, "");
 

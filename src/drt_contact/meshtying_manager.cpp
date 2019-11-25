@@ -349,7 +349,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     fflush(stdout);
   }
 
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
 
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
@@ -401,9 +401,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from DRT::Problem
-  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   const int spatialDim = DRT::Problem::Instance()->NDim();
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -601,10 +601,19 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // smooth interfaces
   // *********************************************************************
   // NURBS PROBLEM?
-  if (distype == "Nurbs")
-    mtparams.set<bool>("NURBS", true);
-  else
-    mtparams.set<bool>("NURBS", false);
+  switch (distype)
+  {
+    case ShapeFunctionType::shapefunction_nurbs:
+    {
+      mtparams.set<bool>("NURBS", true);
+      break;
+    }
+    default:
+    {
+      mtparams.set<bool>("NURBS", false);
+      break;
+    }
+  }
 
   // *********************************************************************
   // poroelastic meshtying

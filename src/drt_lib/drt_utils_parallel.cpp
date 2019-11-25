@@ -68,7 +68,8 @@ void DRT::UTILS::RedistributeDiscretizationsByBinning(
 
     binningstrategy->Init(vector_of_discretizations);
 
-    binningstrategy->WeightedPartitioning(vector_of_discretizations, stdelecolmap, stdnodecolmap);
+    binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
+        vector_of_discretizations, stdelecolmap, stdnodecolmap);
 
     // revert extended ghosting if requested
     if (revertextendedghosting)

@@ -40,7 +40,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-06
 INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          50
 LIFTDRAG                        No
@@ -57,6 +56,11 @@ TIMEINTEGR                      One_Step_Theta                //BDF2
 TIMESTEP                        0.01
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //Barrenechea_Franca_Valentin_Wall

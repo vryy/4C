@@ -95,24 +95,24 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3K"];
 
-  defs["LIN2"]
-      .AddIntVector("LIN2", 2)
+  defs["LINE2"]
+      .AddIntVector("LINE2", 2)
       .AddNamedInt("WK")
       .AddNamedInt("ROTVEC")
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 6)
       .AddOptionalTag("FAD");
 
-  defs["LIN3"]
-      .AddIntVector("LIN3", 3)
+  defs["LINE3"]
+      .AddIntVector("LINE3", 3)
       .AddNamedInt("WK")
       .AddNamedInt("ROTVEC")
       .AddNamedInt("MAT")
       .AddNamedDoubleVector("TRIADS", 9)
       .AddOptionalTag("FAD");
 
-  defs["LIN4"]
-      .AddIntVector("LIN4", 4)
+  defs["LINE4"]
+      .AddIntVector("LINE4", 4)
       .AddNamedInt("WK")
       .AddNamedInt("ROTVEC")
       .AddNamedInt("MAT")

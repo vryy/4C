@@ -72,7 +72,7 @@ void INVANA::OptimizerBase::Init(Teuchos::RCP<InvanaBase> optprob)
   // file in the problem! Therefore dont increase counter again here!
   bool adaptname = false;
   Teuchos::RCP<IO::OutputControl> controlfile = Teuchos::rcp(new IO::OutputControl(
-      OptProb()->Comm(), problem->ProblemName(), problem->SpatialApproximation(),
+      OptProb()->Comm(), problem->ProblemName(), problem->SpatialApproximationType(),
       problem->OutputControlFile()->InputFileName(), problem->OutputControlFile()->RestartName(),
       problem->OutputControlFile()->FileName(), problem->NDim(), problem->Restart(),
       problem->OutputControlFile()->FileSteps(), binio, adaptname));

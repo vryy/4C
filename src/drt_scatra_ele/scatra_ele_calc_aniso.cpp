@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
 )
 {
   int geleid = -1;
-  if (DRT::Problem::Instance()->ProblemType() == prb_acou) geleid = my::eid_;
+  if (DRT::Problem::Instance()->GetProblemType() == prb_acou) geleid = my::eid_;
 
   const Teuchos::RCP<const MAT::ScatraMatAniso>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);

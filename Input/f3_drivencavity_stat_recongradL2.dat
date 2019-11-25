@@ -43,7 +43,6 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton
 ITEMAX                          25
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-9
 RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         1
@@ -58,6 +57,11 @@ LIFTDRAG                        no
 VELGRAD_PROJ_SOLVER             2
 GMSH_OUTPUT                     Yes
 VELGRAD_PROJ_METHOD             L2_projection
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-9
+TOL_VEL_INC	  1.0E-9
+TOL_PRES_RES	  1.0E-9
+TOL_PRES_INC	  1.0E-9
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

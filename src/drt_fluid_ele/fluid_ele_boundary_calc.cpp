@@ -465,9 +465,10 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
             // evaluate function at current gauss point
             functfac =
                 DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idim, coordgpref, time);
-            functfacn = DRT::Problem::Instance()
-                            ->Funct(functnum - 1)
-                            .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
+            if (fldparatimint_->IsNewOSTImplementation())
+              functfacn = DRT::Problem::Instance()
+                              ->Funct(functnum - 1)
+                              .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
           }
           else
           {
@@ -476,14 +477,13 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           }
 
           const double valfac = (*val)[idim] * fac_time_dens * functfac;
-          const double valfacn = (*val)[idim] * fac_time_densn * functfacn;
           for (int inode = 0; inode < bdrynen_; ++inode)
           {
             elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfac;
             if (fldparatimint_->IsNewOSTImplementation())
             {
-              if (fldparatimint_->IsOneStepTheta())
-                elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfacn;
+              const double valfacn = (*val)[idim] * fac_time_densn * functfacn;
+              elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfacn;
             }
           }  // end IsNewOSTImplementation
         }    // if (*onoff)
@@ -503,9 +503,10 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
             // evaluate function at current gauss point
             functfac =
                 DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idim, coordgpref, time);
-            functfacn = DRT::Problem::Instance()
-                            ->Funct(functnum - 1)
-                            .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
+            if (fldparatimint_->IsNewOSTImplementation())
+              functfacn = DRT::Problem::Instance()
+                              ->Funct(functnum - 1)
+                              .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
           }
           else
           {
@@ -514,7 +515,6 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           }
 
           const double valfac = (*val)[0] * fac_time_dens * functfac;
-          const double valfacn = (*val)[0] * fac_time_densn * functfacn;
           for (int inode = 0; inode < bdrynen_; ++inode)
           {
             elevec1_epetra[inode * numdofpernode_ + idim] +=
@@ -522,9 +522,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
             if (fldparatimint_->IsNewOSTImplementation())
             {
-              if (fldparatimint_->IsOneStepTheta())
-                elevec1_epetra[inode * numdofpernode_ + idim] +=
-                    funct_(inode) * valfacn * (-unitnormal_(idim));
+              const double valfacn = (*val)[0] * fac_time_densn * functfacn;
+              elevec1_epetra[inode * numdofpernode_ + idim] +=
+                  funct_(inode) * valfacn * (-unitnormal_(idim));
             }
           }  // end IsNewOSTImplementation
         }    // if (*onoff)
@@ -783,10 +783,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 {
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    if (fldparatimint_->IsOneStepTheta())
-    {
-      dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
-    }
+    dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
   }  // end IsNewOSTImplementation
 
   //----------------------------------------------------------------------

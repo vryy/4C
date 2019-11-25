@@ -209,11 +209,15 @@ ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           1
 THETA                           0.5
-CONVTOL                         1e-06
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
 OSEENFIELDFUNCNO                -1
 COMPUTE_EKIN                    No
+------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ------------------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    No

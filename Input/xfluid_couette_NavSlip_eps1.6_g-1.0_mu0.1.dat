@@ -113,9 +113,13 @@ ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           1
 THETA                           0.66
-CONVTOL                         1e-12
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-12
+TOL_VEL_INC	  1e-12
+TOL_PRES_RES	  1e-12
+TOL_PRES_INC	  1e-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based //residual_based //residual_based //residual_based, edge_based
 INCONSISTENT                    No

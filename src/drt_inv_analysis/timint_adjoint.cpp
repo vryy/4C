@@ -110,7 +110,7 @@ void STR::TimIntAdjoint::CreateWriter()
                             filename.substr(pos + 1 + prefix.length());
 
   Teuchos::RCP<IO::OutputControl> controlfile = Teuchos::rcp(new IO::OutputControl(discret_->Comm(),
-      DRT::Problem::Instance()->ProblemName(), DRT::Problem::Instance()->SpatialApproximation(),
+      DRT::Problem::Instance()->ProblemName(), DRT::Problem::Instance()->SpatialApproximationType(),
       DRT::Problem::Instance()->OutputControlFile()->InputFileName(), filenameout,
       DRT::Problem::Instance()->NDim(), 0,
       DRT::Problem::Instance()->OutputControlFile()->FileSteps(),

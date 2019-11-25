@@ -69,7 +69,6 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         200
@@ -84,6 +83,11 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200

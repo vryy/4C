@@ -31,7 +31,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
   switch (method)
   {
     case INPAR::FSI::DirichletNeumannSlideale:
-      switch (DRT::Problem::Instance()->ProblemType())
+      switch (DRT::Problem::Instance()->GetProblemType())
       {
         case (prb_fsi):
         case (prb_fsi_redmodels):
@@ -44,7 +44,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case INPAR::FSI::DirichletNeumannVolCoupl:
-      switch (DRT::Problem::Instance()->ProblemType())
+      switch (DRT::Problem::Instance()->GetProblemType())
       {
         case (prb_fsi):
         case (prb_fsi_redmodels):
@@ -57,7 +57,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case INPAR::FSI::DirichletNeumann:
-      switch (DRT::Problem::Instance()->ProblemType())
+      switch (DRT::Problem::Instance()->GetProblemType())
       {
         case (prb_fsi):
         case (prb_fsi_redmodels):

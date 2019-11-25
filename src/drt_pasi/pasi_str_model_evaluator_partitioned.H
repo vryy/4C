@@ -4,23 +4,23 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PASI_STR_MODEL_EVALUATOR_PARTITIONED_H
 #define PASI_STR_MODEL_EVALUATOR_PARTITIONED_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_structure_new/str_model_evaluator_generic.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 01/2017 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace ADAPTER
 {
@@ -28,7 +28,7 @@ namespace ADAPTER
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 01/2017 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace STR
 {

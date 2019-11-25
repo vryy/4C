@@ -116,6 +116,20 @@ namespace PARTICLEENGINE
 
     void Unpack(const std::vector<char>& data) override;
 
+    //! \name set particle object members
+    //! @{
+
+    /*!
+     * \brief set global id of particle
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] particleglobalid global id of particle
+     */
+    inline void SetParticleGlobalID(int particleglobalid) { particleglobalid_ = particleglobalid; };
+
+    //! @}
+
     //! \name get particle object members
     //! @{
 

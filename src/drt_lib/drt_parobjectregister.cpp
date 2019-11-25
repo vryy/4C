@@ -167,8 +167,8 @@
 #include "../drt_acou/acou_sol_ele.H"
 #include "../drt_elemag/elemag_ele.H"
 #include "../drt_elemag/elemag_diff_ele.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
 #include "../drt_beaminteraction/beam_link_truss.H"
 #include "../drt_mat/activefiber.H"
 #include "../drt_mat/biochemo_mechano_cell_activefiber.H"
@@ -387,8 +387,8 @@ std::string DRT::ParObjectList()
     << " " << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
     << MAT::BioChemoMechanoCellPassiveFiberType::Instance().Name() << " "
     << INVANA::ParticleDataType::Instance().Name() << " "
-    << BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Instance().Name() << " "
-    << BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Instance().Name() << " "
+    << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
+    << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
     << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
 

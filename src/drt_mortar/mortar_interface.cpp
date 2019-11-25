@@ -1157,7 +1157,17 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     XAABB(dim, 1) = globmax[dim] + cutoff;
   }
 
-  return Teuchos::rcp(new BINSTRATEGY::BinningStrategy(Comm(), cutoff, XAABB));
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+
+  // Set cutoff and bounding box size
+  binningstrategy->SetBinSizeLowerBound(cutoff);
+  binningstrategy->SetDomainBoundingBoxCornerPositions(XAABB);
+
+  // compute bins
+  binningstrategy->CreateBinsBasedOnBinSizeLowerBoundAndBinningDomainDimensions();
+
+  return binningstrategy;
 }
 
 
@@ -1561,8 +1571,10 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
 
       // Extend ghosting of the master elements
-      Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
-          Discret(), *newelecolmap, slavebinelemap, masterbinelemap);
+      std::map<int, std::set<int>> ext_bin_to_ele_map;
+      Teuchos::RCP<const Epetra_Map> extendedmastercolmap =
+          binningstrategy->ExtendElementColMap(slavebinelemap, masterbinelemap, ext_bin_to_ele_map,
+              Teuchos::null, Teuchos::null, newelecolmap.get());
 
       // adapt layout to extended ghosting in the discretization
       // first export the elements according to the processor local element column maps

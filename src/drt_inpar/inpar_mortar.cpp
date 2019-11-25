@@ -202,6 +202,11 @@ void INPAR::MORTAR::SetValidConditions(
   contactcomponents.push_back(
       Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContactSurface")));
 
+  contactcomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ConstitutiveLawID", true)));
+  contactcomponents.push_back(
+      Teuchos::rcp(new IntConditionComponent("ConstitutiveLawID", false, true, true)));
+
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",
           "Line Contact Coupling", DRT::Condition::Contact, true, DRT::Condition::Line));
@@ -276,10 +281,6 @@ void INPAR::MORTAR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mortar edge/corner condition
 
-  //  std::vector<Teuchos::RCP<ConditionComponent> > nscomponents;
-  //  nscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  //  nscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",3)));
-
   Teuchos::RCP<ConditionDefinition> edgemrtr =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR EDGE CONDITIONS 3D", "mrtredge",
           "Geometrical edge for 3D contact", DRT::Condition::EdgeMrtr, true, DRT::Condition::Line));
@@ -288,12 +289,6 @@ void INPAR::MORTAR::SetValidConditions(
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D",
           "mrtrcorner", "Geometrical corner for 2D/3D contact", DRT::Condition::CornerMrtr, true,
           DRT::Condition::Point));
-
-  //  for (unsigned i=0; i<nscomponents.size(); ++i)
-  //  {
-  //    edgemrtr->AddComponent(nscomponents[i]);
-  //    cornermrtr->AddComponent(nscomponents[i]);
-  //  }
 
   condlist.push_back(edgemrtr);
   condlist.push_back(cornermrtr);

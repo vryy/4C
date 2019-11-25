@@ -74,13 +74,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
         emesh(tvi, tui) +=
             v * (+convvelint_1 * (-vderiv_0_0 * deriv_(1, ui) + vderiv_0_1 * deriv_(0, ui)));
 
-        emesh(tvi, tuip) +=
+        emesh(tvi, tuip) -=
             v * (+convvelint_0 * (-vderiv_0_0 * deriv_(1, ui) + vderiv_0_1 * deriv_(0, ui)));
 
         emesh(tvip, tui) +=
             v * (+convvelint_1 * (-vderiv_1_0 * deriv_(1, ui) + vderiv_1_1 * deriv_(0, ui)));
 
-        emesh(tvip, tuip) +=
+        emesh(tvip, tuip) -=
             v * (+convvelint_0 * (-vderiv_1_0 * deriv_(1, ui) + vderiv_1_1 * deriv_(0, ui)));
       }
     }
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
     for (int ui = 0; ui < nen_; ++ui)
     {
       const int tui = 3 * ui;
-      emesh(tvi, tui + 1) += v * (deriv_(0, vi) * deriv_(1, ui) - deriv_(0, ui) * deriv_(1, vi));
+      emesh(tvi, tui + 1) -= v * (deriv_(0, vi) * deriv_(1, ui) - deriv_(0, ui) * deriv_(1, vi));
       emesh(tvip, tui) += v * (deriv_(0, vi) * deriv_(1, ui) - deriv_(0, ui) * deriv_(1, vi));
     }
   }
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
       const int tui = 3 * ui;
       emesh(tvipp, tui) += v * (deriv_(0, ui) * vderiv_1_1 - deriv_(1, ui) * vderiv_1_0);
 
-      emesh(tvipp, tui + 1) += v * (deriv_(0, ui) * vderiv_0_1 - deriv_(1, ui) * vderiv_0_0);
+      emesh(tvipp, tui + 1) -= v * (deriv_(0, ui) * vderiv_0_1 - deriv_(1, ui) * vderiv_0_0);
     }
   }
 

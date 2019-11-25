@@ -90,6 +90,7 @@ namespace SCATRA
   class OutputScalarsStrategyBase;
   class OutputScalarsStrategyDomain;
   class OutputScalarsStrategyCondition;
+  class OutputDomainIntegralStrategy;
 
   /*!
    * \brief implicit time integration for scalar transport problems
@@ -613,6 +614,12 @@ namespace SCATRA
 
     //! return mean values of transported scalars
     const std::map<const int, std::vector<double>>& MeanScalars() const;
+
+    //! return values of domain integrals
+    const std::vector<double>& DomainIntegrals() const;
+
+    //! return values of boundary integrals
+    const std::vector<double>& BoundaryIntegrals() const;
 
     //! return micro-scale coupling flux for macro-micro coupling in multi-scale simulations
     const double& Q() const { return q_; };
@@ -1144,6 +1151,9 @@ namespace SCATRA
     //! scalar mangager
     Teuchos::RCP<OutputScalarsStrategyBase> outputscalarstrategy_;
 
+    //! domain integral manager
+    Teuchos::RCP<OutputDomainIntegralStrategy> outputdomainintegralstrategy_;
+
     //! phi at time n
     Teuchos::RCP<Epetra_Vector> phin_;
     //! phi at time n+1
@@ -1605,6 +1615,56 @@ namespace SCATRA
     //! evaluate mean and total scalars and print them to file and screen
     virtual void EvaluateIntegralsAndPrintResults(const ScaTraTimIntImpl* const scatratimint,
         const std::string& fname, Teuchos::ParameterList& eleparams);
+  };
+
+  /*========================================================================*/
+  /*========================================================================*/
+  /*!
+   * \brief Strategy evaluating domain integrals on given condition
+   */
+  class OutputDomainIntegralStrategy
+  {
+   public:
+    /*========================================================================*/
+    //! @name Constructors and destructors and related methods
+    /*========================================================================*/
+
+    //! Standard Constructor
+    OutputDomainIntegralStrategy()
+        : conditionsdomain_(),
+          conditionsboundary_(),
+          domainintegralvalues_(),
+          boundaryintegralvalues_(){};
+
+    //! Destructor
+    virtual ~OutputDomainIntegralStrategy(){};
+
+    //! initialize time integration
+    void Init(const ScaTraTimIntImpl* const scatratimint);
+
+    //! evaluate domain integrals and print to screen
+    void EvaluateIntegralsAndPrintResults(
+        const ScaTraTimIntImpl* const scatratimint, const std::string condstring);
+
+    /*========================================================================*/
+    //! @name Access methods
+    /*========================================================================*/
+
+    //! return values of domain integrals
+    const std::vector<double>& DomainIntegrals() const { return domainintegralvalues_; };
+
+    //! return values of boundary
+    const std::vector<double>& BoundaryIntegrals() const { return boundaryintegralvalues_; };
+
+   private:
+    //! vector of 'DomainIntegral'-conditions
+    std::vector<DRT::Condition*> conditionsdomain_;
+    //! vector of 'BoundaryIntegral'-conditions
+    std::vector<DRT::Condition*> conditionsboundary_;
+    //! vector of 'DomainIntegral'-values
+    std::vector<double> domainintegralvalues_;
+    //! vector of 'BoundaryIntegral'-values
+    std::vector<double> boundaryintegralvalues_;
   };
 
 

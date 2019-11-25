@@ -21,7 +21,6 @@ STAB_MOM_REF     1.0
 NONLINITER       Newton
 ITEMAX           10
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-10
 TIMEINTEGR       Stationary
 MAXTIME          1.0
 NUMSTEP          1
@@ -32,6 +31,11 @@ CALCERROR        byfunct
 STARTFUNCNO      1
 CALCERRORFUNCNO  2
 BODYFORCEFUNCNO  3
+-------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------------------------------SOLVER 1
 SOLVER           Superlu
 ---------------------------------------------------------MATERIALS

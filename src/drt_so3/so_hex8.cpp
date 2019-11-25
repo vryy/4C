@@ -140,8 +140,8 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (pstype_ == INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale or
-      (DRT::Problem::Instance()->ProblemType() == prb_immersed_cell and
+  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale or
+      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
           DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
               "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
   {
@@ -187,8 +187,8 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   if (pstype_ == INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale or
-      (DRT::Problem::Instance()->ProblemType() == prb_immersed_cell and
+  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale or
+      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
           DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
               "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
   {

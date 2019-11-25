@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_twowaycoup.H"
 
@@ -31,7 +31,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -44,23 +44,19 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init pasi algorithm                                        sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Init()
 {
   // call base class init
   PASI::PartitionedAlgo::Init();
 
-  // construct state and increment vectors
-  forcenp_ = LINALG::CreateVector(*structurefield_->DofRowMap(), true);
-  dispincnp_ = LINALG::CreateVector(*structurefield_->DofRowMap(), true);
-  forceincnp_ = LINALG::CreateVector(*structurefield_->DofRowMap(), true);
+  // construct interface force
+  intfforcenp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+
+  // construct interface increment states
+  intfdispincnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfforceincnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
 }
 
-/*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Setup()
 {
   // call base class setup
@@ -85,9 +81,6 @@ void PASI::PASI_PartTwoWayCoup::Setup()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | read restart information for given time step               sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::ReadRestart(int restartstep)
 {
   // call base class read restart
@@ -96,13 +89,10 @@ void PASI::PASI_PartTwoWayCoup::ReadRestart(int restartstep)
   IO::DiscretizationReader reader(structurefield_->Discretization(), restartstep);
   if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
-  // get forcenp_ from restart
-  reader.ReadVector(forcenp_, "forcenp_");
+  // get interface force from restart
+  reader.ReadVector(intfforcenp_, "intfforcenp");
 }
 
-/*---------------------------------------------------------------------------*
- | partitioned two way coupled timeloop                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Timeloop()
 {
   // safety checks
@@ -122,9 +112,6 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | iteration loop between coupled fields                      sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Outerloop()
 {
   int itnum = 0;
@@ -133,9 +120,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                                |\n");
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                         |\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
@@ -147,38 +134,41 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     // increment number of iteration
     ++itnum;
 
-    // update the current states in every iteration
-    IterUpdateStates(structurefield_->Dispnp(), forcenp_);
+    // reset increment states
+    ResetIncrementStates(intfdispnp_, intfforcenp_);
 
-    // set wall forces
-    SetWallForces(forcenp_);
-
-    // structural time step
-    StructStep();
-
-    // set structural states
-    SetStructStates();
+    // set interface states
+    SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
 
     // reset particle states
     ResetParticleStates();
 
-    // clear wall forces
-    ClearWallForces();
+    // clear interface forces
+    ClearInterfaceForces();
 
     // particle time step
     ParticleStep();
 
-    // get wall forces
-    GetWallForces();
+    // get interface forces
+    GetInterfaceForces();
+
+    // set interface forces
+    SetInterfaceForces(intfforcenp_);
+
+    // structural time step
+    StructStep();
+
+    // extract interface states
+    ExtractInterfaceStates();
+
+    // build increment states
+    BuildIncrementStates();
 
     // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
   }
 }
 
-/*---------------------------------------------------------------------------*
- | output of fields                                           sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Output()
 {
   // output of structure field
@@ -186,50 +176,45 @@ void PASI::PASI_PartTwoWayCoup::Output()
 
   // write interface force in restart
   if (writerestartevery_ and Step() % writerestartevery_ == 0)
-    structurefield_->Discretization()->Writer()->WriteVector("forcenp_", forcenp_);
+    structurefield_->Discretization()->Writer()->WriteVector("intfforcenp", intfforcenp_);
 
   // output of particle field
   ParticleOutput();
 }
 
-/*---------------------------------------------------------------------------*
- | update the current states in every iteration               sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::IterUpdateStates(
-    Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> forcenp)
+void PASI::PASI_PartTwoWayCoup::ResetIncrementStates(
+    Teuchos::RCP<const Epetra_Vector> intfdispnp, Teuchos::RCP<const Epetra_Vector> intfforcenp)
 {
-  // store last solutions (current states)
-  // will be compared in ConvergenceCheck to the solutions
-  // obtained from the next Structure and Particle steps
-  dispincnp_->Update(1.0, *dispnp, 0.0);
-  forceincnp_->Update(1.0, *forcenp, 0.0);
+  intfdispincnp_->Update(1.0, *intfdispnp, 0.0);
+  intfforceincnp_->Update(1.0, *intfforcenp, 0.0);
 }
 
-/*---------------------------------------------------------------------------*
- | set wall forces                                            sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::SetWallForces(Teuchos::RCP<const Epetra_Vector> forcenp)
+void PASI::PASI_PartTwoWayCoup::BuildIncrementStates()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SetWallForces");
+  intfdispincnp_->Update(1.0, *intfdispnp_, -1.0);
+  intfforceincnp_->Update(1.0, *intfforcenp_, -1.0);
+}
 
-  double normwallforce(0.0);
-  forcenp->Norm2(&normwallforce);
+void PASI::PASI_PartTwoWayCoup::SetInterfaceForces(Teuchos::RCP<const Epetra_Vector> intfforcenp)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SetInterfaceForces");
+
+  double normintfforce(0.0);
+  intfforcenp->Norm2(&normintfforce);
 
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
+    // clang-format off
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of wall forces: " << std::setprecision(7) << normwallforce << std::endl;
+    std::cout << " Norm of interface forces: " << std::setprecision(7) << normintfforce << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
+    // clang-format on
   }
 
-  // apply wall force on structure discretization
-  structurefield_->ApplyInterfaceForce(
-      structurefield_->Interface()->ExtractPASICondVector(forcenp));
+  // apply interface force on structure discretization
+  structurefield_->ApplyInterfaceForce(intfforcenp);
 }
 
-/*---------------------------------------------------------------------------*
- | reset particle states                                      sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::ResetParticleStates");
@@ -275,12 +260,9 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | clear wall forces                                          sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::ClearWallForces()
+void PASI::PASI_PartTwoWayCoup::ClearInterfaceForces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::ClearWallForces");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::ClearInterfaceForces");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -294,16 +276,13 @@ void PASI::PASI_PartTwoWayCoup::ClearWallForces()
   if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
 #endif
 
-  // clear wall forces
+  // clear interface forces
   walldatastate->GetMutableForceCol()->PutScalar(0.0);
 }
 
-/*---------------------------------------------------------------------------*
- | get wall forces                                            sfuchs 04/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::GetWallForces()
+void PASI::PASI_PartTwoWayCoup::GetInterfaceForces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::GetWallForces");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::GetInterfaceForces");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -317,18 +296,15 @@ void PASI::PASI_PartTwoWayCoup::GetWallForces()
   if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
 #endif
 
-  // clear wall forces
-  forcenp_->PutScalar(0.0);
+  // clear interface forces
+  intfforcenp_->PutScalar(0.0);
 
-  // assemble wall forces
-  Epetra_Export exporter(walldatastate->GetForceCol()->Map(), forcenp_->Map());
-  int err = forcenp_->Export(*walldatastate->GetForceCol(), exporter, Add);
-  if (err) dserror("export of wall forces failed with err=%d", err);
+  // assemble interface forces
+  Epetra_Export exporter(walldatastate->GetForceCol()->Map(), intfforcenp_->Map());
+  int err = intfforcenp_->Export(*walldatastate->GetForceCol(), exporter, Add);
+  if (err) dserror("export of interface forces failed with err=%d", err);
 }
 
-/*---------------------------------------------------------------------------*
- | convergence check for structure and particles fields       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
 {
   // convergence check based on the scalar increment
@@ -340,59 +316,56 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
   double forceincnorm_L2(0.0);
   double forcenorm_L2(0.0);
 
-  // build the current displacement increment
-  dispincnp_->Update(1.0, *(structurefield_->Dispnp()), -1.0);
+  // build L2-norm of interface displacement increment and interface displacement
+  intfdispincnp_->Norm2(&dispincnorm_L2);
+  intfdispnp_->Norm2(&dispnorm_L2);
 
-  // build the L2-norm of the displacement increment and the displacement
-  dispincnp_->Norm2(&dispincnorm_L2);
-  structurefield_->Dispnp()->Norm2(&dispnorm_L2);
-
-  // build the current force increment
-  forceincnp_->Update(1.0, *forcenp_, -1.0);
-
-  // build the L2-norm of the force increment and the force
-  forceincnp_->Norm2(&forceincnorm_L2);
-  forcenp_->Norm2(&forcenorm_L2);
+  // build L2-norm of interface force increment and interface force
+  intfforceincnp_->Norm2(&forceincnorm_L2);
+  intfforcenp_->Norm2(&forcenorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
   if (forcenorm_L2 < 1e-6) forcenorm_L2 = 1.0;
 
-  // absolute and relative displacement increment
-  double abs_disp_inc = dispincnorm_L2;
+  // scaled and relative displacement increment
+  double disp_inc = dispincnorm_L2 / (Dt() * sqrt(intfdispincnp_->GlobalLength()));
   double rel_disp_inc = dispincnorm_L2 / dispnorm_L2;
 
-  // absolute and relative force increment
-  double abs_force_inc = forceincnorm_L2;
+  // scaled and relative force increment
+  double force_inc = forceincnorm_L2 / (Dt() * sqrt(intfforceincnp_->GlobalLength()));
   double rel_force_inc = forceincnorm_L2 / forcenorm_L2;
 
   // print the incremental based convergence check to the screen
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
-    printf("|  step/max  |  tol       [norm]  |  abs-disp-inc  |  rel-disp-inc  |  abs-force-inc  |  rel-force-inc  |\n");
-    printf("|   %3d/%3d  | %10.3E [L_2 ]  |    %10.3E  |    %10.3E  |     %10.3E  |     %10.3E  |\n", itnum, itmax_, ittol_, abs_disp_inc, rel_disp_inc, abs_force_inc, rel_force_inc);
-    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
+    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
+    printf("|  step/max  |  tol       [norm]  |   disp-inc  |  disp-rel-inc  |  force-inc  |  force-rel-inc  |\n");
+    printf("|   %3d/%3d  | %10.3E [L_2 ]  | %10.3E  |    %10.3E  | %10.3E  |     %10.3E  |\n", itnum, itmax_, ittol_, disp_inc, rel_disp_inc, force_inc, rel_force_inc);
+    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
     // clang-format on
   }
 
+  const bool isconverged = disp_inc <= ittol_ and rel_disp_inc <= ittol_ and force_inc <= ittol_ and
+                           rel_force_inc <= ittol_;
+
   // converged
-  if (rel_disp_inc <= ittol_ and rel_force_inc <= ittol_)
+  if (isconverged)
   {
     stopnonliniter = true;
 
     if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     {
       // clang-format off
-      printf("|  Outer iteration loop converged (based on relative increments) after iteration %3d/%3d !              |\n", itnum, itmax_);
-      printf("+-------------------------------------------------------------------------------------------------------+\n");
+      printf("|  Outer iteration loop converged after iteration %3d/%3d !                                      |\n", itnum, itmax_);
+      printf("+------------------------------------------------------------------------------------------------+\n");
       // clang-format on
     }
   }
 
-  // stop if itemax is reached without convergence
-  if ((itnum == itmax_) and (rel_disp_inc > ittol_ or rel_force_inc > ittol_))
+  // stop if maximum iteration number is reached without convergence
+  if ((itnum == itmax_) and (not isconverged))
   {
     stopnonliniter = true;
 
@@ -402,8 +375,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                                 |\n", itmax_);
-        printf("+-------------------------------------------------------------------------------------------------------+\n");
+        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                          |\n", itmax_);
+        printf("+------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
     }
@@ -413,8 +386,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                       |\n", itmax_);
-        printf("+-------------------------------------------------------------------------------------------------------+\n");
+        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                |\n", itmax_);
+        printf("+------------------------------------------------------------------------------------------------+\n");
         // clang-format on
       }
       dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
@@ -424,9 +397,6 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
   return stopnonliniter;
 }
 
-/*---------------------------------------------------------------------------*
- | save particle states                                       sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::SaveParticleStates()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SaveParticleStates");
@@ -472,20 +442,14 @@ void PASI::PASI_PartTwoWayCoup::SaveParticleStates()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-PASI::PASI_PartTwoWayCoup_ForceRelax::PASI_PartTwoWayCoup_ForceRelax(
+PASI::PASI_PartTwoWayCoup_DispRelax::PASI_PartTwoWayCoup_DispRelax(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PASI_PartTwoWayCoup(comm, params), omega_(params.get<double>("STARTOMEGA"))
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | iteration loop between coupled fields with relaxed forces  sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
+void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -493,16 +457,21 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED FORCES                                            |\n");
-    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED DISPLACEMENTS                              |\n");
+    printf("+------------------------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
-  // init the relaxed input
-  Teuchos::RCP<Epetra_Vector> forcenp = LINALG::CreateVector(*(structurefield_->DofRowMap()), true);
+  // construct and init relaxed interface states
+  Teuchos::RCP<Epetra_Vector> intfdispnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfdispnp->Update(1.0, *intfdispnp_, 0.0);
 
-  forcenp->Update(1.0, *forcenp_, 0.0);
+  Teuchos::RCP<Epetra_Vector> intfvelnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfvelnp->Update(1.0, *intfvelnp_, 0.0);
+
+  Teuchos::RCP<Epetra_Vector> intfaccnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfaccnp->Update(1.0, *intfaccnp_, 0.0);
 
   // save particle states
   SaveParticleStates();
@@ -512,29 +481,35 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     // increment number of iteration
     ++itnum;
 
-    // update the states to the last solutions obtained
-    IterUpdateStates(structurefield_->Dispnp(), forcenp);
+    // reset increment states
+    ResetIncrementStates(intfdispnp, intfforcenp_);
 
-    // set wall forces
-    SetWallForces(forcenp);
-
-    // structural time step
-    StructStep();
-
-    // set structural states
-    SetStructStates();
+    // set interface states
+    SetInterfaceStates(intfdispnp, intfvelnp, intfaccnp);
 
     // reset particle states
     ResetParticleStates();
 
-    // clear wall forces
-    ClearWallForces();
+    // clear interface forces
+    ClearInterfaceForces();
 
     // particle time step
     ParticleStep();
 
-    // get wall forces
-    GetWallForces();
+    // get interface forces
+    GetInterfaceForces();
+
+    // set interface forces
+    SetInterfaceForces(intfforcenp_);
+
+    // structural time step
+    StructStep();
+
+    // extract interface states
+    ExtractInterfaceStates();
+
+    // build increment states
+    BuildIncrementStates();
 
     // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
@@ -542,64 +517,64 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     // calculate relaxation parameter
     CalcOmega(omega_, itnum);
 
-    // force relaxation
-    forcenp->Update(omega_, *forceincnp_, 1.0);
+    // perform relaxation of interface states
+    PerformRelaxationInterfaceStates(intfdispnp, intfvelnp, intfaccnp);
   }
 }
 
-/*---------------------------------------------------------------------------*
- | calculate relaxation parameter                             sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::CalcOmega(double& omega, const int itnum)
+void PASI::PASI_PartTwoWayCoup_DispRelax::CalcOmega(double& omega, const int itnum)
 {
   // output constant relaxation parameter
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     std::cout << "Fixed relaxation parameter: " << omega << std::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::PASI_PartTwoWayCoup_ForceRelaxAitken(
+void PASI::PASI_PartTwoWayCoup_DispRelax::PerformRelaxationInterfaceStates(
+    Teuchos::RCP<Epetra_Vector> intfdispnp, Teuchos::RCP<Epetra_Vector> intfvelnp,
+    Teuchos::RCP<Epetra_Vector> intfaccnp)
+{
+  // displacement relaxation
+  intfdispnp->Update(omega_, *intfdispincnp_, 1.0);
+
+  // velocities and accelerations consistent to relaxed displacements
+  intfvelnp->Update(1.0, *intfdispnp_, 0.0);
+  intfvelnp->Update(1.0 / Dt(), *intfdispnp, -1.0 / Dt());
+
+  intfaccnp->Update(1.0, *intfvelnp_, 0.0);
+  intfaccnp->Update(1.0 / Dt(), *intfvelnp, -1.0 / Dt());
+}
+
+PASI::PASI_PartTwoWayCoup_DispRelaxAitken::PASI_PartTwoWayCoup_DispRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PASI_PartTwoWayCoup_ForceRelax(comm, params),
+    : PASI_PartTwoWayCoup_DispRelax(comm, params),
       maxomega_(params.get<double>("MAXOMEGA")),
       minomega_(params.get<double>("MINOMEGA"))
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init pasi algorithm                                        sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init()
+void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::Init()
 {
   // call base class init
-  PASI::PASI_PartTwoWayCoup_ForceRelax::Init();
+  PASI::PASI_PartTwoWayCoup_DispRelax::Init();
 
-  // construct old increment vector
-  forceincnpold_ = LINALG::CreateVector(*structurefield_->DofRowMap(), true);
+  // construct interface states
+  intfdispincnpold_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart information for given time step               sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::ReadRestart(int restartstep)
+void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::ReadRestart(int restartstep)
 {
   // call base class read restart
-  PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart(restartstep);
+  PASI::PASI_PartTwoWayCoup_DispRelax::ReadRestart(restartstep);
 
   IO::DiscretizationReader reader(structurefield_->Discretization(), restartstep);
   if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
-  // get omega_ from restart
-  omega_ = reader.ReadDouble("omega_");
+  // get relaxation parameter from restart
+  omega_ = reader.ReadDouble("omega");
 }
 
-/*---------------------------------------------------------------------------*
- | output of fields                                           sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Output()
+void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::Output()
 {
   // output of structure field
   StructOutput();
@@ -607,44 +582,39 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Output()
   // write interface force and relaxation parameter in restart
   if (writerestartevery_ and Step() % writerestartevery_ == 0)
   {
-    structurefield_->Discretization()->Writer()->WriteVector("forcenp_", forcenp_);
-    structurefield_->Discretization()->Writer()->WriteDouble("omega_", omega_);
+    structurefield_->Discretization()->Writer()->WriteVector("intfforcenp", intfforcenp_);
+    structurefield_->Discretization()->Writer()->WriteDouble("omega", omega_);
   }
 
   // output of particle field
   ParticleOutput();
 }
 
-/*---------------------------------------------------------------------------*
- | calculate relaxation parameter                             sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega, const int itnum)
+void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::CalcOmega(double& omega, const int itnum)
 {
-  // Aitken relaxation following PhD thesis U. Kuettler, equation (3.5.29)
+  Teuchos::RCP<Epetra_Vector> intfdispincnpdiff =
+      LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> forceincnpdiff =
-      LINALG::CreateVector(*structurefield_->DofRowMap(), true);
-  forceincnpdiff->Update(1.0, *forceincnp_, (-1.0), *forceincnpold_, 0.0);
+  double dispincnpdiffnorm(0.0);
+  intfdispincnpdiff->Norm2(&dispincnpdiffnorm);
 
-  double forceincnpdiffnorm(0.0);
-  forceincnpdiff->Norm2(&forceincnpdiffnorm);
-
-  if (forceincnpdiffnorm <= 1e-06)
+  if (dispincnpdiffnorm <= 1e-06)
   {
     if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
-      std::cout << "Warning: The norm of force increment is to small to use it for Aitken "
+      std::cout << "Warning: The norm of displacement increment is to small to use it for Aitken "
                    "relaxation. Reuse previous Aitken relaxation parameter instead!"
                 << std::endl;
   }
 
   // in first iteration reuse Aitken relaxation parameter from previous step
-  if (itnum != 1 and forceincnpdiffnorm > 1e-06)
+  if (itnum != 1 and dispincnpdiffnorm > 1e-06)
   {
-    double forceincsdot(0.0);
-    forceincnpdiff->Dot(*forceincnp_, &forceincsdot);
+    double dispincsdot(0.0);
+    intfdispincnpdiff->Dot(*intfdispincnp_, &dispincsdot);
 
     // update Aitken relaxation parameter
-    omega = omega * (1.0 - (forceincsdot) / (forceincnpdiffnorm * forceincnpdiffnorm));
+    omega = omega * (1.0 - (dispincsdot) / (dispincnpdiffnorm * dispincnpdiffnorm));
 
     // allowed range for Aitken relaxation parameter
     if (omega < minomega_)
@@ -665,10 +635,10 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega, const 
     }
   }
 
-  // update force increment
-  forceincnpold_->Update(1.0, *forceincnp_, 0.0);
-
   // output Aitken relaxation parameter
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     std::cout << "Aitken relaxation parameter: " << omega << std::endl;
+
+  // store current interface displacement increment for next iteration
+  intfdispincnpold_->Update(1.0, *intfdispincnp_, 0.0);
 }

@@ -46,7 +46,7 @@ FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm() {}
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Timeloop()
 {
-  if (DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_fluid_xfem)
   {
     if (Comm().MyPID() == 0)
       std::cout << YELLOW_LIGHT << "Integrate routine for MOVING INTERFACES" << END_COLOR << "\n"

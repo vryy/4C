@@ -18,6 +18,7 @@
 #include "particle_container.H"
 #include "particle_container_bundle.H"
 #include "particle_object.H"
+#include "particle_unique_global_id.H"
 #include "particle_runtime_vtp_writer.H"
 
 #include "../drt_particle_algorithm/particle_algorithm_utils.H"
@@ -69,6 +70,9 @@ void PARTICLEENGINE::ParticleEngine::Init()
   // init particle container bundle
   InitParticleContainerBundle();
 
+  // init particle unique global identifier handler
+  InitParticleUniqueGlobalIdHandler();
+
   // init particle runtime vtp writer
   InitParticleVtpWriter();
 }
@@ -81,6 +85,9 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 
   // setup particle container bundle
   SetupParticleContainerBundle(particlestatestotypes);
+
+  // setup particle unique global identifier handler
+  SetupParticleUniqueGlobalIdHandler();
 
   // setup data storage
   SetupDataStorage(particlestatestotypes);
@@ -99,12 +106,16 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   particlecontainerbundle_->GetPackedParticleObjectsOfAllContainers(particlebuffer);
 
   // get bin discretization writer
-  Teuchos::RCP<IO::DiscretizationWriter> binwriter = binstrategy_->BinDiscret()->Writer();
+  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+      Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 
   binwriter->NewStep(step, time);
 
   // write particle data
   binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
+
+  // write restart of particle unique global identifier handler
+  particleuniqueglobalidhandler_->WriteRestart(binwriter);
 
   // write restart of runtime vtp writer
   particlevtpwriter_->WriteRestart(step, time);
@@ -138,6 +149,9 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
   if (position != particledata->size())
     dserror("mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
 
+  // read restart of particle unique global identifier handler
+  particleuniqueglobalidhandler_->ReadRestart(reader);
+
   // read restart of runtime vtp writer
   particlevtpwriter_->ReadRestart(reader);
 }
@@ -151,11 +165,51 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
+void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
+    std::vector<ParticleObjShrdPtr>& particlestogetuniquegids)
+{
+  std::vector<int> requesteduniqueglobalids;
+  requesteduniqueglobalids.reserve(particlestogetuniquegids.size());
+
+  // draw requested number of global ids
+  particleuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
+
+  // number of particles to get unique ids
+  int numparticles = particlestogetuniquegids.size();
+
+  // iterate over particles objects
+  for (int i = 0; i < numparticles; ++i)
+    particlestogetuniquegids[i]->SetParticleGlobalID(requesteduniqueglobalids[i]);
+}
+
+void PARTICLEENGINE::ParticleEngine::CheckNumberOfUniqueGlobalIds()
+{
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // get number of particles on all processors
+  int numberofparticles = GetNumberOfParticles();
+  MPI_Allreduce(MPI_IN_PLACE, &numberofparticles, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+
+  // get number of reusable global ids on all processors
+  int numberofreusableglobalids = particleuniqueglobalidhandler_->GetNumberOfReusableGlobalIds();
+  MPI_Allreduce(MPI_IN_PLACE, &numberofreusableglobalids, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+
+  // maximum global id
+  const int maxglobalid = particleuniqueglobalidhandler_->GetMaxGlobalId();
+
+  // safety check
+  if (numberofparticles + numberofreusableglobalids != (maxglobalid + 1))
+    dserror("sum of particles and reusable global ids unequal total global ids: %d + %d != %d",
+        numberofparticles, numberofreusableglobalids, (maxglobalid + 1));
+}
+
 void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // set of particles located outside bounding box
   std::set<int> particlesoutsideboundingbox;
@@ -189,10 +243,19 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     for (int dim = 0; dim < 3; ++dim)
     {
       // particle located outside bounding box
-      if ((pos[dim] < xaabb(dim, 0)) or (pos[dim] > xaabb(dim, 1)))
+      if ((pos[dim] < boundingbox(dim, 0)) or (pos[dim] > boundingbox(dim, 1)))
       {
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
+
+#ifdef DEBUG
+        if (particlestocheck[i]->ReturnParticleGlobalID() < 0)
+          dserror("no global id assigned to particle!");
+#endif
+
+        // insert freed global id
+        particleuniqueglobalidhandler_->InsertFreedGlobalId(
+            particlestocheck[i]->ReturnParticleGlobalID());
 
         break;
       }
@@ -400,26 +463,35 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
       PARTICLEENGINE::Owned);
 }
 
-void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
+void PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles(
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TypeChangeParticles");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles");
 
-  // skip if no particles undergo a type change on this processor
+  // number of particles to remove
   int numparticlestoremove = 0;
   for (auto typeIt : particlestoremove) numparticlestoremove += typeIt.size();
-  if (not numparticlestoremove) return;
 
-  // remove particles from containers
-  RemoveParticlesFromContainers(particlestoremove);
+  if (numparticlestoremove)
+  {
+    // remove particles from containers
+    RemoveParticlesFromContainers(particlestoremove);
 
-  // insert owned particles undergoing a type change
-  InsertOwnedParticles(particlestoinsert);
+    // check and decrease the size of all containers of owned particles
+    particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+        PARTICLEENGINE::Owned);
+  }
 
-  // check and decrease the size of all containers of owned particles
-  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-      PARTICLEENGINE::Owned);
+  // number of particles to insert
+  int numparticlestoinsert = 0;
+  for (auto typeIt : particlestoinsert) numparticlestoinsert += typeIt.size();
+
+  if (numparticlestoinsert)
+  {
+    // insert owned particles
+    InsertOwnedParticles(particlestoinsert);
+  }
 }
 
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
@@ -688,19 +760,25 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
 
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
 
-bool PARTICLEENGINE::ParticleEngine::HavePBC(const int dim) const
+bool PARTICLEENGINE::ParticleEngine::HavePeriodicBoundaryConditions() const
 {
-  return binstrategy_->HavePBC(dim);
+  return binstrategy_->HavePeriodicBoundaryConditionsApplied();
 }
 
-double PARTICLEENGINE::ParticleEngine::PBCDelta(const int dim) const
+bool PARTICLEENGINE::ParticleEngine::HavePeriodicBoundaryConditionsInSpatialDirection(
+    const int dim) const
 {
-  return binstrategy_->PBCDelta(dim);
+  return binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim);
 }
 
-LINALG::Matrix<3, 2>& PARTICLEENGINE::ParticleEngine::XAABB() const
+double PARTICLEENGINE::ParticleEngine::LengthOfBinningDomainInASpatialDirection(const int dim) const
 {
-  return binstrategy_->XAABB();
+  return binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
+}
+
+LINALG::Matrix<3, 2> const& PARTICLEENGINE::ParticleEngine::DomainBoundingBoxCornerPositions() const
+{
+  return binstrategy_->DomainBoundingBoxCornerPositions();
 }
 
 void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
@@ -713,18 +791,18 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
     r_ji[dim] = pos_j[dim] - pos_i[dim];
 
     // check for periodic boundary condition in current spatial direction
-    if (binstrategy_->HavePBC(dim))
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
     {
-      // periodic length in current spatial direction
-      const double pbcdelta = binstrategy_->PBCDelta(dim);
+      // binning domain length in current spatial direction
+      double binningdomainlength = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
       // shift by periodic length if particles are closer over periodic boundary
-      if (std::abs(r_ji[dim]) > (0.5 * pbcdelta))
+      if (std::abs(r_ji[dim]) > (0.5 * binningdomainlength))
       {
         if (pos_i[dim] < pos_j[dim])
-          r_ji[dim] -= pbcdelta;
+          r_ji[dim] -= binningdomainlength;
         else
-          r_ji[dim] += pbcdelta;
+          r_ji[dim] += binningdomainlength;
       }
     }
   }
@@ -774,16 +852,13 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 
 void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
 {
-  // create and init binning strategy
+  // create and init binning strategy and create bins
   binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
-  binstrategy_->Init(comm_);
+  binstrategy_->Init();
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
 {
-  // create bins
-  binstrategy_->CreateBinsBasedOnCutoffAndXAABB();
-
   // determine minimum relevant bin size
   DetermineMinRelevantBinSize();
 
@@ -865,7 +940,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
       new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), &bincolmapvec[0], 0, comm_));
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
-    dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
+    dserror("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   // make sure that all processors are either filled or unfilled
   binstrategy_->BinDiscret()->CheckFilledGlobally();
@@ -886,6 +961,20 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 {
   // setup particle container bundle
   particlecontainerbundle_->Setup(particlestatestotypes);
+}
+
+void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
+{
+  // create and init particle unique global identifier handler
+  particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler>(
+      new PARTICLEENGINE::ParticleUniqueGlobalIdHandler(comm_));
+  particleuniqueglobalidhandler_->Init();
+}
+
+void PARTICLEENGINE::ParticleEngine::SetupParticleUniqueGlobalIdHandler() const
+{
+  // setup particle container bundle
+  particleuniqueglobalidhandler_->Setup();
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
@@ -985,7 +1074,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
 
   // safety check
   for (int dim = 0; dim < 3; ++dim)
-    if (binstrategy_->HavePBC(dim) and binperdir[dim] < 3)
+    if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim) and
+        binperdir[dim] < 3)
       dserror("at least 3 bins in direction with periodic boundary conditions necessary!");
 
   // determine range of all inner bins
@@ -1050,7 +1140,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   // init receiving vector
   std::vector<int> receivedbins;
 
-  // insert received bins
+  // unpack and store received data
   for (auto& p : rdata)
   {
     int msgsource = p.first;
@@ -1070,9 +1160,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
       }
     }
 
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1140,7 +1229,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // count particles that left the computational domain
   int numparticlesoutside = 0;
@@ -1178,27 +1267,37 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       {
         (particlestoremove[typeEnum]).insert(ownedindex);
 
+        // get global id of particle
+        const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
+
+#ifdef DEBUG
+        if (currglobalid[0] < 0) dserror("no global id assigned to particle!");
+#endif
+
+        // insert freed global id
+        particleuniqueglobalidhandler_->InsertFreedGlobalId(currglobalid[0]);
+
         ++numparticlesoutside;
 
         continue;
       }
 
       // no periodic boundary conditions
-      if (not binstrategy_->HavePBC()) continue;
+      if (not binstrategy_->HavePeriodicBoundaryConditionsApplied()) continue;
 
       // check for periodic boundary in each spatial directions
       for (int dim = 0; dim < 3; ++dim)
       {
-        if (binstrategy_->HavePBC(dim))
+        if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim))
         {
-          // periodic length in current spatial direction
-          double pbc_length = binstrategy_->PBCDelta(dim);
+          // binning domain length in current spatial direction
+          double binningdomainlength = binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 
           // shift position by periodic length
-          if (currpos[dim] < xaabb(dim, 0))
-            currpos[dim] += pbc_length;
-          else if (currpos[dim] > xaabb(dim, 1))
-            currpos[dim] -= pbc_length;
+          if (currpos[dim] < boundingbox(dim, 0))
+            currpos[dim] += binningdomainlength;
+          else if (currpos[dim] > boundingbox(dim, 1))
+            currpos[dim] -= binningdomainlength;
         }
       }
     }
@@ -1286,7 +1385,19 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     int ownerofparticle = pidlist[i];
 
     // particle outside of computational domain
-    if (ownerofparticle == -1) ++numparticlesoutside;
+    if (ownerofparticle == -1)
+    {
+      ++numparticlesoutside;
+
+#ifdef DEBUG
+      if (particlestodistribute[i]->ReturnParticleGlobalID() < 0)
+        dserror("no global id assigned to particle!");
+#endif
+
+      // insert freed global id
+      particleuniqueglobalidhandler_->InsertFreedGlobalId(
+          particlestodistribute[i]->ReturnParticleGlobalID());
+    }
     // particle is owned by this processor
     else if (myrank_ == ownerofparticle)
       particlestokeep[typeEnum].push_back(
@@ -1350,12 +1461,17 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
 
-#ifdef DEBUG
       // particle left computational domain
       if (gidofbin == -1)
-        dserror("on processor %d a particle left the computational domain without being detected!",
-            myrank_);
+      {
+#ifdef DEBUG
+        if (not particlestoremove[typeEnum].count(ownedindex))
+          dserror(
+              "on processor %d a particle left the computational domain without being detected!",
+              myrank_);
 #endif
+        continue;
+      }
 
       // particle remains owned on this processor
       if (binrowmap_->LID(gidofbin) >= 0) continue;
@@ -1535,7 +1651,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
-  // ---- pack data for sending ----
+  // pack data for sending
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
   {
     if (particlestosend[torank].empty()) continue;
@@ -1556,7 +1672,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   // communicate data via non-buffered send from proc to proc
   PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-  // ---- unpack and store received data ----
+  // unpack and store received data
   for (auto& p : rdata)
   {
     int msgsource = p.first;
@@ -1599,7 +1715,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
-  // ---- pack data for sending ----
+  // pack data for sending
   for (auto& p : directghosting)
   {
     DRT::PackBuffer data;
@@ -1618,10 +1734,9 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   // init receiving map
   std::map<TypeEnum, std::map<int, std::pair<int, int>>> receiveddirectghosting;
 
-  // ---- unpack and store received data ----
+  // unpack and store received data
   for (auto& p : rdata)
   {
-    int msgsource = p.first;
     std::vector<char>& rmsg = p.second;
 
     std::vector<char>::size_type position = 0;
@@ -1647,9 +1762,8 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
       }
     }
 
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 
   // validate flags denoting validity of direct ghosting
@@ -1682,6 +1796,8 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       const ParticleStates& particleStates = particleobject->ReturnParticleStates();
 
 #ifdef DEBUG
+      if (globalid < 0) dserror("no global id assigned to particle!");
+
       // get bin of particle
       int gidofbin = particleobject->ReturnBinGid();
 

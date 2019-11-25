@@ -4,17 +4,17 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_utils.H"
 
 /*---------------------------------------------------------------------------*
- | modification of time parameters of subproblems             sfuchs 02/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
     const Teuchos::ParameterList& pasi_params, Teuchos::ParameterList& particle_params,
@@ -72,9 +72,6 @@ void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
   }
 }
 
-/*---------------------------------------------------------------------------*
- | print particle structure interaction logo                  sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::UTILS::Logo()
 {
   std::cout << "============================ Welcome to =============================="

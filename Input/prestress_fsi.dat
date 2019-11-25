@@ -60,12 +60,16 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTASTEPS                     0
 THETA                           0.66
 START_THETA                     0.67
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 3043 QUANTITY velx VALUE 6.241645479e+00 TOLERANCE 1e-7
 FLUID DIS fluid NODE 3043 QUANTITY vely VALUE -7.135300732e-04 TOLERANCE 1e-6

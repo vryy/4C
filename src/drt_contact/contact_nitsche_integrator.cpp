@@ -410,7 +410,8 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
       }
     }
   }
-  else if (stype_ == INPAR::CONTACT::solution_penalty)
+  else if ((stype_ == INPAR::CONTACT::solution_penalty) ||
+           stype_ == INPAR::CONTACT::solution_multiscale)
   {
     if (gap < 0.)
     {

@@ -30,7 +30,6 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-08
 GRIDVEL                         BE
 ITEMAX                          15
 MAXTIME                         100000
@@ -48,6 +47,11 @@ INITIALFIELD                    hit_comte_bellot_corrsin_initial_field
 STARTFUNCNO                     -1
 LINEAR_SOLVER                   1
 INCONSISTENT_RESIDUAL           yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-08
+TOL_VEL_INC	  1e-08
+TOL_PRES_RES	  1e-08
+TOL_PRES_INC	  1e-08
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 -------------------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION

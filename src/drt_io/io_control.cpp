@@ -24,6 +24,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "../drt_inpar/inpar_problemtype.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 #include <revision.H>
@@ -38,7 +40,7 @@ extern "C"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    std::string spatial_approx, std::string inputfile, std::string outputname, int ndim,
+    ShapeFunctionType spatial_approx, std::string inputfile, std::string outputname, int ndim,
     int restart, int filesteps, int create_controlfile)
     : problemtype_(problemtype),
       inputfile_(inputfile),
@@ -101,7 +103,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    std::string spatial_approx, std::string inputfile, std::string restartname,
+    ShapeFunctionType spatial_approx, std::string inputfile, std::string restartname,
     std::string outputname, int ndim, int restart, int filesteps, int create_controlfile,
     bool adaptname)
     : problemtype_(problemtype),
@@ -223,7 +225,7 @@ IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::OverwriteResultFile(const std::string& spatial_approx)
+void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -234,7 +236,7 @@ void IO::OutputControl::OverwriteResultFile(const std::string& spatial_approx)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(int numb_run, const std::string& spatial_approx)
+void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
   {
@@ -255,7 +257,7 @@ void IO::OutputControl::NewResultFile(int numb_run, const std::string& spatial_a
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::OutputControl::NewResultFile(
-    const std::string& name_appendix, int numb_run, const std::string& spatial_approx)
+    const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
@@ -266,7 +268,7 @@ void IO::OutputControl::NewResultFile(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name, const std::string& spatial_approx)
+void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
@@ -277,7 +279,7 @@ void IO::OutputControl::NewResultFile(std::string name, const std::string& spati
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void IO::OutputControl::WriteHeader(
-    const std::string& control_file_name, const std::string& spatial_approx)
+    const std::string& control_file_name, const ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)
   {
@@ -301,7 +303,8 @@ void IO::OutputControl::WriteHeader(
                  << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
-                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
+                 << "spatial_approximation = \""
+                 << INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 

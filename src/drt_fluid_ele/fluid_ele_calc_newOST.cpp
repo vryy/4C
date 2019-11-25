@@ -1350,7 +1350,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
     //    double fac_densam= (fldparatimint_->IsOneStepTheta()) ? fac_*dens_theta_ : fac_*densam_;
     double fac_densam;
     if (fldparatimint_->IsNewOSTImplementation())
-      fac_densam = fldparatimint_->IsOneStepTheta() ? fac_ * dens_theta_ : fac_ * densam_;
+      fac_densam = fac_ * dens_theta_;
     else
       fac_densam = fac_ * densam_;
     // End of IsNewOSTImplementation()
@@ -1651,13 +1651,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
 
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    if (fldparatimint_->IsOneStepTheta())
-    {
-      static LINALG::Matrix<nsd_, nsd_> viscstress_added;
+    static LINALG::Matrix<nsd_, nsd_> viscstress_added;
 
-      viscstress_added.Update(1.0, viscstress, 1.0, viscstressn, 0.0);
-      tmp.Multiply(viscstress_added, derxy_);
-    }
+    viscstress_added.Update(1.0, viscstress, 1.0, viscstressn, 0.0);
+    tmp.Multiply(viscstress_added, derxy_);
   }
   else
     tmp.Multiply(viscstress, derxy_);
@@ -1694,10 +1691,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
       {
         if (not fldparatimint_->IsImplPressure())
         {
-          if (fldparatimint_->IsOneStepTheta())
-          {
-            conti_stab_and_vol_visc_rhs -= rhsfacn * tau_(2) * conres_oldn_;
-          }
+          conti_stab_and_vol_visc_rhs -= rhsfacn * tau_(2) * conres_oldn_;
         }
       }  // end IsNewOSTImplementation
     }
@@ -1811,10 +1805,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
     velforce.Update(press * rhsfac, derxy_, 1.0);
     if (fldparatimint_->IsNewOSTImplementation())
     {
-      if (fldparatimint_->IsOneStepTheta())
-      {
-        velforce.Update(pressn * rhsfacn, derxy_, 1.0);
-      }
+      velforce.Update(pressn * rhsfacn, derxy_, 1.0);
     }  // end IsNewOSTImplementation
   }
   else
@@ -1870,10 +1861,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
     {
       if (not fldparatimint_->IsImplPressure())
       {
-        if (fldparatimint_->IsOneStepTheta())
-        {
-          preforce.Update(-rhsfacn * vdivn_, funct_, 1.0);
-        }
+        preforce.Update(-rhsfacn * vdivn_, funct_, 1.0);
       }
     }  // end IsNewOSTImplementation
   }

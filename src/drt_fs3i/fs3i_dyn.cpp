@@ -36,7 +36,7 @@ void fs3i_dyn()
   Teuchos::RCP<FS3I::FS3I_Base> fs3i;
 
   // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   switch (probtype)
   {

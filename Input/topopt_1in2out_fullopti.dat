@@ -60,14 +60,12 @@ INITFUNCNO                      1
 INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_no
 ------------------------------------------------------FLUID DYNAMIC
-CONVTOL                         1e-13
 GMSH_OUTPUT                     no
 INFNORMSCALING                  no
 INITIALFIELD                    zero_field//field_by_function
 INITSTATITEMAX                  5
 ITEMAX                          10
 LINEAR_SOLVER                   1
-NEW_OST                         Yes
 NONLINITER                      Newton //fixed_point_like
 NUMSTASTEPS                     0
 PHYSICAL_TYPE                   Topology_optimization
@@ -78,6 +76,11 @@ STARTFUNCNO                     1
 STEADYSTEP                      -1
 THETA                           1.0
 TIMEINTEGR                      Stationary
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-13
+TOL_VEL_INC	  1e-13
+TOL_PRES_RES	  1e-13
+TOL_PRES_INC	  1e-13
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

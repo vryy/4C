@@ -75,9 +75,6 @@ void DRT::ELEMENTS::Truss3CLType::SetupElementDefinition(
       .AddNamedInt("MAT")
       .AddNamedDouble("CROSS")
       .AddNamedString("KINEM");
-
-  defs["LIN2"].AddIntVector("LIN2", 2).AddNamedInt("MAT").AddNamedDouble("CROSS").AddNamedString(
-      "KINEM");
 }
 
 

@@ -31,7 +31,6 @@ THETA                           0.66 //0.66
 NONLINITER                      Newton //fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-13
 NUMSTASTEPS                     0 //5
 START_THETA                     0.66
 INITIALFIELD                    zero_field //field_by_function //zero_field
@@ -43,6 +42,11 @@ ALPHA_M                         1.0
 GAMMA                           0.66
 OST_CONT_PRESS                  Cont_impl_Press_impl
 NEW_OST                         yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-13
+TOL_VEL_INC	  1.0E-13
+TOL_PRES_RES	  1.0E-13
+TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent

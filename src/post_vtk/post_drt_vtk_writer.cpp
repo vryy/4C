@@ -257,14 +257,15 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     result = Teuchos::rcp(new PostResult(field_));
     result->next_result(groupname);
   }
-
-  if (not(field_->problem()->SpatialApproximation() == "Polynomial" or
-          field_->problem()->SpatialApproximation() == "Meshfree" or
-          field_->problem()->SpatialApproximation() == "HDG" or
-          field_->problem()->SpatialApproximation() == "Nurbs"))
+  if (not(field_->problem()->SpatialApproximationType() ==
+              ShapeFunctionType::shapefunction_polynomial or
+          field_->problem()->SpatialApproximationType() ==
+              ShapeFunctionType::shapefunction_meshfree or
+          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
+          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs))
     dserror(
-        "Only polynomial or meshfree or Nurbs approximations can be written with the VTK filter");
-
+        "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
+        "given type.");
   // need dummy structure that is required for the generic writer interface
   // but not needed by the vtk writer.
   std::map<std::string, std::vector<std::ofstream::pos_type>> dummy;

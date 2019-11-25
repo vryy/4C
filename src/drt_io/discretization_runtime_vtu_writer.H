@@ -66,6 +66,8 @@ class DiscretizationRuntimeVtuWriter
 
   /** \brief append result vector with num_dof values per node to output data
    *
+   *  \note This method only accepts results based on col maps
+   *
    *  \author grill
    *  \date 03/17 */
   void AppendDofBasedResultDataVector(const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
@@ -74,6 +76,8 @@ class DiscretizationRuntimeVtuWriter
 
   /** \brief append result vector with num_components values per node to output data
    *
+   *  \note This method only accepts results based on col maps
+   *
    *  \author grill
    *  \date 03/17 */
   void AppendNodeBasedResultDataVector(
@@ -81,6 +85,8 @@ class DiscretizationRuntimeVtuWriter
       unsigned int result_num_components_per_node, const std::string& resultname);
 
   /** \brief append result vector with num_components values per element to output data
+   *
+   *  \note This method only accepts results based on row maps
    *
    *  \author grill
    *  \date 03/17 */

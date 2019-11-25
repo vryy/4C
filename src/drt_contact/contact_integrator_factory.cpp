@@ -73,6 +73,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
       break;
     }
     case INPAR::CONTACT::solution_penalty:
+    case INPAR::CONTACT::solution_multiscale:
     {
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(p_mortar, "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts)

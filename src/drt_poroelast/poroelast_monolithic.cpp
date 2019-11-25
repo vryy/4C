@@ -2276,7 +2276,7 @@ void POROELAST::Monolithic::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix, 
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::EvalCellMigrationSpecific()
 {
-  if (DRT::Problem::Instance()->ProblemType() == prb_immersed_cell)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell)
   {
     DRT::ImmersedFieldExchangeManager* exchange_manager =
         DRT::ImmersedFieldExchangeManager::Instance();

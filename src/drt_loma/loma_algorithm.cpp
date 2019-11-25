@@ -829,7 +829,8 @@ bool LOMA::Algorithm::ConvergenceCheck(int itnum)
     std::cout << "\n****************************************\n              FLUID "
                  "CHECK\n****************************************\n";
   }
-  fluidstopnonliniter = FluidField()->ConvergenceCheck(itnum, itmax_, ittol_);
+  fluidstopnonliniter =
+      FluidField()->ConvergenceCheck(itnum, itmax_, ittol_, ittol_, ittol_, ittol_);
 
   // scatra convergence check
   if (Comm().MyPID() == 0)

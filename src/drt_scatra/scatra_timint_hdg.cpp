@@ -384,7 +384,8 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
       // binning strategy is created and parallel redistribution is performed
       binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
       binningstrategy->Init(dis);
-      binningstrategy->WeightedPartitioning(dis, stdelecolmap, stdnodecolmap);
+      binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
+          dis, stdelecolmap, stdnodecolmap);
     }
   }
 

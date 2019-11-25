@@ -239,10 +239,6 @@ namespace STR
       /// build ele to bin map
       virtual void BuildRowEleToBinMap();
 
-      /// create new bins
-      virtual void CreateNewBins(
-          Teuchos::RCP<Epetra_Vector> disnp_ptr, bool newxaabb, bool newcutoff);
-
       /// print some information about binning
       virtual void PrintBinningInfoToScreen() const;
 

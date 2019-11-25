@@ -90,10 +90,8 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     std::string tmp2;
     int filecount = 0;
 
-    int particlecounter = 0;
-
     PARTICLEENGINE::TypeEnum particleType;
-    int globalid(0);
+    int globalid(-1);
     PARTICLEENGINE::ParticleStates particlestates;
 
     // allocate memory to hold particle states
@@ -131,14 +129,9 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             // set position state
             particlestates[PARTICLEENGINE::Position] = pos;
 
-            // set global id
-            globalid = particlecounter;
-
             // construct and store read in particle object
             particles.emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
                 particleType, globalid, particlestates));
-
-            ++particlecounter;
 
             ++bcount;
             if (block != nblock - 1)  // last block takes all the rest

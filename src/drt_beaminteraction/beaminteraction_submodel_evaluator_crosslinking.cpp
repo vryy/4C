@@ -17,8 +17,8 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beam_link.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.H"
-#include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
+#include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -392,10 +392,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetAllPossibleBspotLinks(
               double const linkdistmax = mat->LinkingLength() + mat->LinkingLengthTolerance();
 
 #ifdef DEBUG
-              if (linkdistmax > BinStrategy().CutoffRadius())
+              if (linkdistmax > BinStrategy().BinSizeLowerBound())
                 dserror(
                     "The allowed binding distance of your linker material is greater than the "
-                    "cutoff radius, this can lead to missed binding events");
+                    "lower bound for bin size, this can lead to missed binding events");
 #endif
 
               if (BEAMINTERACTION::UTILS::IsDistanceOutOfRange(
@@ -1037,7 +1037,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
     IO::cout(IO::debug) << " max linker movement " << gmaxdisincr << IO::endl;
 
   bool linker_redist =
-      ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().CutoffRadius()));
+      ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().BinSizeLowerBound()));
 
   // store old maps prior to potential redistribution
   // this needs to be stored even no redistribution takes place later one
@@ -1904,7 +1904,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   std::vector<double> randvec;
   int count = 3;
   // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
-  double const maxmov = BinStrategy().CutoffRadius() / 1.74;
+  double const maxmov = BinStrategy().BinSizeLowerBound() / 1.74;
   DRT::Problem::Instance()->Random()->Normal(randvec, count);
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -2581,10 +2581,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
 
 #ifdef DEBUG
   // safety check
-  if (linkdistmax > BinStrategy().CutoffRadius())
+  if (linkdistmax > BinStrategy().BinSizeLowerBound())
     dserror(
         "The allowed binding distance of linker %i (in case it is single bonded) is"
-        "\ngreater than the cutoff radius, this could lead to missing a binding event",
+        "\ngreater than the lower bound for bin size, this could lead to missing a binding event",
         crosslinker_i->Id());
 #endif
 
@@ -3144,9 +3144,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
     // create and initialize objects of beam-to-beam connections
     // Todo move this inside the create routines (or one create routine in BeamLink class)
     Teuchos::RCP<BEAMINTERACTION::BeamLink> linkelepairptr;
-    if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_rigid)
+    if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_line2_rigid)
       linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::Create();
-    else if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_pin or
+    else if (cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_line2_pin or
              cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::truss)
       linkelepairptr =
           BEAMINTERACTION::BeamLinkPinJointed::Create(cl_node->GetMaterial()->JointType());

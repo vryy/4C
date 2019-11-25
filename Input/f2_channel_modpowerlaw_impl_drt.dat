@@ -26,7 +26,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-06
 GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
@@ -46,6 +45,11 @@ TIMESTEP                        0.05
 RESULTSEVRY                     10
 PREDICTOR                       explicit_second_order_midpoint
 INCONSISTENT_RESIDUAL           yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

@@ -559,7 +559,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   double Lp = 0.0;
   if (probtype == prb_fps3i)
   {

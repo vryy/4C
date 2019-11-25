@@ -672,7 +672,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
   TimeUpdate();
 
   // Output for UQ Problemtype
-  if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
   {
     // CouplingTo3DParams are used to hand over UQ run information
     OutputUQ(CouplingTo3DParams);
@@ -1895,7 +1895,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       if (err) dserror("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_v0", qexp_);
     }
-    if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
     {
       Epetra_Export exporter(acini_max_strain_location_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_max_strain_location_, exporter, Zero);
@@ -2035,7 +2035,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     output_.WriteVector("acini_volumetric_strain", qexp_);
     LINALG::Export(*acini_e_volume0_, *qexp_);
     output_.WriteVector("acini_v0", qexp_);
-    if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
     {
       LINALG::Export(*acini_max_strain_location_, *qexp_);
       output_.WriteVector("acini_max_strain_location", qexp_);
@@ -2247,7 +2247,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   LINALG::Export(*qexp_, *acini_e_volume_strain_);
   reader.ReadVector(qexp_, "acini_v0");
   LINALG::Export(*qexp_, *acini_e_volume0_);
-  if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+  if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
   {
     reader.ReadVector(qexp_, "acini_max_strain_location");
     LINALG::Export(*qexp_, *acini_max_strain_location_);

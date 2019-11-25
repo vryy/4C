@@ -333,7 +333,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   }
   else
   {
-    if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
       dserror(
           "UQ requires accurate computation of max ILT thickness, Set CALC_ACCURATE_MAX_ILT_THICK "
           "to yes");

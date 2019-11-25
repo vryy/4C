@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 01/2017 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
 
@@ -25,13 +25,15 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_structure/stru_aux.H"
+
 #include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 01/2017 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PASI::PartitionedAlgo::PartitionedAlgo(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -40,9 +42,6 @@ PASI::PartitionedAlgo::PartitionedAlgo(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init pasi algorithm                                        sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::Init()
 {
   // reset setup flag
@@ -54,13 +53,18 @@ void PASI::PartitionedAlgo::Init()
   // init particle algorithm
   InitParticleAlgorithm();
 
+  // set communication object at the interface
+  interface_ = structurefield_->Interface();
+
+  // construct interface states
+  intfdispnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfvelnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfaccnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+
   // set init flag
   SetIsInit(true);
 }
 
-/*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::Setup()
 {
   // check correct initialization
@@ -73,9 +77,6 @@ void PASI::PartitionedAlgo::Setup()
   SetIsSetup(true);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart information for given time step               sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ReadRestart(int restartstep)
 {
   // read restart information for structure field
@@ -87,13 +88,13 @@ void PASI::PartitionedAlgo::ReadRestart(int restartstep)
   // set time and step after restart
   SetTimeStep(structurefield_->TimeOld(), restartstep);
 
-  // set structural states
-  SetStructStates();
+  // extract interface states
+  ExtractInterfaceStates();
+
+  // set interface states
+  SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
-/*---------------------------------------------------------------------------*
- | perform result tests                                       sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
 {
   // get instance of global problem
@@ -114,9 +115,6 @@ void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
   problem->TestAll(comm);
 }
 
-/*---------------------------------------------------------------------------*
- | prepare time step                                          sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
 {
   // increment time and step
@@ -130,9 +128,6 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
   particlealgorithm_->PrepareTimeStep(false);
 }
 
-/*---------------------------------------------------------------------------*
- | structural time step                                       sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructStep()
 {
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
@@ -148,9 +143,6 @@ void PASI::PartitionedAlgo::StructStep()
   structurefield_->Solve();
 }
 
-/*---------------------------------------------------------------------------*
- | particle time step                                         sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleStep()
 {
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
@@ -166,12 +158,19 @@ void PASI::PartitionedAlgo::ParticleStep()
   particlealgorithm_->Integrate();
 }
 
-/*---------------------------------------------------------------------------*
- | set structural states                                      sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::SetStructStates()
+void PASI::PartitionedAlgo::ExtractInterfaceStates()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructStates");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ExtractInterfaceStates");
+
+  intfdispnp_ = interface_->ExtractPASICondVector(structurefield_->Dispnp());
+  intfvelnp_ = interface_->ExtractPASICondVector(structurefield_->Velnp());
+  intfaccnp_ = interface_->ExtractPASICondVector(structurefield_->Accnp());
+}
+
+void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+    Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetInterfaceStates");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -189,9 +188,9 @@ void PASI::PartitionedAlgo::SetStructStates()
 #endif
 
   // export displacement, velocity and acceleration states
-  LINALG::Export(*structurefield_->Dispnp(), *walldatastate->GetMutableDispCol());
-  LINALG::Export(*structurefield_->Velnp(), *walldatastate->GetMutableVelCol());
-  LINALG::Export(*structurefield_->Accnp(), *walldatastate->GetMutableAccCol());
+  LINALG::Export(*intfdispnp, *walldatastate->GetMutableDispCol());
+  LINALG::Export(*intfvelnp, *walldatastate->GetMutableVelCol());
+  LINALG::Export(*intfaccnp, *walldatastate->GetMutableAccCol());
 
   // export column to row displacements (no communication)
   LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
@@ -201,16 +200,14 @@ void PASI::PartitionedAlgo::SetStructStates()
 
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
+    // clang-format off
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of wall displacements: " << std::setprecision(7) << normwalldisp
-              << std::endl;
+    std::cout << " Norm of interface displacements: " << std::setprecision(7) << normwalldisp << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
+    // clang-format on
   }
 }
 
-/*---------------------------------------------------------------------------*
- | output of structure field                                  sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructOutput()
 {
   // calculate stresses, strains, energies
@@ -223,18 +220,12 @@ void PASI::PartitionedAlgo::StructOutput()
   structurefield_->Output();
 }
 
-/*---------------------------------------------------------------------------*
- | output of particle field                                   sfuchs 02/2017 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleOutput()
 {
   // write output to files
   particlealgorithm_->Output();
 }
 
-/*---------------------------------------------------------------------------*
- | init structure field                                       sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::InitStructureField()
 {
   // get instance of global problem
@@ -266,9 +257,6 @@ void PASI::PartitionedAlgo::InitStructureField()
   BuildStructureModelEvaluator();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle algorithm                                    sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::InitParticleAlgorithm()
 {
   // get instance of global problem
@@ -285,9 +273,6 @@ void PASI::PartitionedAlgo::InitParticleAlgorithm()
   particlealgorithm_->Init(initialparticles);
 }
 
-/*---------------------------------------------------------------------------*
- | build and register structure model evaluator               sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
 {
   // if adapter base has not already been set up outside.

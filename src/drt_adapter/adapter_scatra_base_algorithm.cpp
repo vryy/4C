@@ -90,7 +90,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -437,7 +437,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
         rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+    if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        ShapeFunctionType::shapefunction_hdg)
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
     else
@@ -531,7 +532,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+    if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        ShapeFunctionType::shapefunction_hdg)
       scatra_ = Teuchos::rcp(
           new SCATRA::TimIntHDG(discret, solver, scatratimeparams, extraparams, output));
     else
@@ -597,7 +599,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
   if (probtype == prb_elch or (probtype == prb_sti and discret->Name() == "scatra" and
@@ -650,10 +652,10 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
     return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
-  else if (DRT::Problem::Instance()->ProblemType() == prb_elch or
-           (DRT::Problem::Instance()->ProblemType() == prb_ssi and
+  else if (DRT::Problem::Instance()->GetProblemType() == prb_elch or
+           (DRT::Problem::Instance()->GetProblemType() == prb_ssi and
                DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                    INPAR::SSI::scatratiminttype_elch))
