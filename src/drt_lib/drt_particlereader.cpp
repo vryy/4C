@@ -74,11 +74,15 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     // open input file at the right position
     // note that stream is valid on proc 0 only!
     std::ifstream file;
-    if (myrank == 0)
+    if (!myrank)
     {
       file.open(inputfile_name.c_str());
       file.seekg(reader_.ExcludedSectionPosition(sectionname_));
     }
+
+    std::string line;
+    int filecount = 0;
+    bool endofsection = false;
 
     if (!myrank && !reader_.MyOutputFlag())
     {
@@ -86,45 +90,49 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
       fflush(stdout);
     }
 
-    std::string tmp;
-    std::string tmp2;
-    int filecount = 0;
-
     PARTICLEENGINE::TypeEnum particleType;
     int globalid(-1);
     PARTICLEENGINE::ParticleStates particlestates;
-
-    // allocate memory to hold particle states
-    particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
 
     // note that the last block is special....
     for (int block = 0; block < nblock; ++block)
     {
       double t1 = time.ElapsedTime();
 
-      if (0 == myrank)
+      if (!myrank and !endofsection)
       {
-#if defined(HAVE_PARMETIS)
-        if (!reader_.MyOutputFlag()) printf("block %d ", block);
-#endif
-
         int bcount = 0;
-        for (; file; ++filecount)
-        {
-          file >> tmp;
 
-          if (tmp == "TYPE")
+        for (; getline(file, line); ++filecount)
+        {
+          if (line.find("--") == 0)
           {
+            endofsection = true;
+            break;
+          }
+          else
+          {
+            std::istringstream linestream;
+            linestream.str(line);
+
+            std::string typelabel;
             std::string type;
+
+            std::string poslabel;
             std::vector<double> pos(3);
 
             // read in particle type and position
-            file >> type >> tmp2 >> pos[0] >> pos[1] >> pos[2];
+            linestream >> typelabel >> type >> poslabel >> pos[0] >> pos[1] >> pos[2];
 
-            if (tmp2 != "POS") dserror("expected particle position!");
+            if (typelabel != "TYPE") dserror("expected particle type label 'TYPE'!");
+
+            if (poslabel != "POS") dserror("expected particle position label 'POS'!");
 
             // get enum of particle types
             particleType = PARTICLEENGINE::EnumFromTypeName(type);
+
+            // allocate memory to hold particle states
+            particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
 
             // set position state
             particlestates[PARTICLEENGINE::Position] = pos;
@@ -141,10 +149,6 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
                 break;
               }
           }
-          else if (tmp.find("--") == 0)
-            break;
-          else
-            dserror("unexpected word '%s'", tmp.c_str());
         }
       }
 
