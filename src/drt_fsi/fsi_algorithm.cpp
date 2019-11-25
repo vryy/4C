@@ -172,8 +172,6 @@ void FSI::Algorithm::Output()
   // Discretizations.
   StructureField()->Output();
   MBFluidField()->Output();
-  StructureField()->Discretization()->Writer()->ClearMapCache();
-  MBFluidField()->Discretization()->Writer()->ClearMapCache();
 }
 
 

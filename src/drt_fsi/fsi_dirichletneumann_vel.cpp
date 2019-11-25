@@ -164,7 +164,12 @@ void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
   vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
+  StructureField()->Discretization()->Writer()->ClearMapCache();
+  MBFluidField()->Discretization()->Writer()->ClearMapCache();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 
 void FSI::DirichletNeumannVel::Timeloop(
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
