@@ -90,7 +90,6 @@ HPCOEFF			- vector containing NUMSUBSETS entries for the Hall-Petch coefficients
 \level 3
 
 \maintainer Jan Schnabel
-            jan-eike.schnabel@hzg.de
 */
 
 /*----------------------------------------------------------------------*
@@ -124,10 +123,10 @@ namespace MAT
       CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~CrystalPlasticity() {}
+      virtual ~CrystalPlasticity() = default;
 
       //! create material instance
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //-----------------------------------------------------------------------------
       /*                                                                           */
@@ -136,39 +135,39 @@ namespace MAT
       //-----------------------------------------------------------------------------
 
       //! tolerance for local Newton iteration [--]
-      const double tol;
+      const double tol_;
       //! Young's modulus [MPa]
-      const double youngs;
+      const double youngs_;
       //! Poisson's ratio [--]
-      const double poissonratio;
+      const double poissonratio_;
       //! mass density [ton/mm³]
-      const double density;
+      const double density_;
       //! lattice type, i.e. 'FCC', 'BCC', 'HCP', 'D019' or 'L10'
-      const std::string latticetype;
+      const std::string latticetype_;
       //! c to a ratio of the crystal's unit cell [--]
-      const double c_to_a_ratio;
+      const double c_to_a_ratio_;
       //! lattice constant a [mm]
-      const double lattice_constant;
+      const double lattice_constant_;
       //! total number of slip systems
-      const double num_slip_sys;
+      const double num_slip_sys_;
       //! number of slip system subsets
-      const int num_sub_sets;
+      const int num_sub_sets_;
       //! vector with num_slip_sys entries specifying to which subset the slip systems belong
-      const std::vector<int> sub_set_members;
+      const std::vector<int> sub_set_members_;
       //! vector with num_sub_sets entries for rate sensitivity exponents
-      const std::vector<int> rate_exp;
+      const std::vector<int> rate_exp_;
       //! vector with num_sub_sets entries for reference shear rates
-      const std::vector<double> ref_shear_rate;
+      const std::vector<double> ref_shear_rate_;
       //! vector with num_sub_sets entries for dislocation generation coefficients
-      const std::vector<double> dislocation_gen_coeff;
+      const std::vector<double> dislocation_gen_coeff_;
       //! vector with num_sub_sets entries for dynamic dislocation removal coefficients
-      const std::vector<double> dislocation_dyn_rec_coeff;
+      const std::vector<double> dislocation_dyn_rec_coeff_;
       //! vector with num_sub_sets entries for the lattice resistance to slip (Peierl's barrier)
-      const std::vector<double> lattice_resistance;
+      const std::vector<double> lattice_resistance_;
       //! microstructural parameters, e.g. grain size; vector with num_sub_sets entries
-      const std::vector<double> microstructural_boundaries;
+      const std::vector<double> microstructural_boundaries_;
       //! vector with num_sub_sets entries for the Hall-Petch coefficients
-      const std::vector<double> Hall_Petch_coeff;
+      const std::vector<double> Hall_Petch_coeff_;
 
       //-----------------------------------------------------------------------------
       /** @}                                                                       */
@@ -188,7 +187,7 @@ namespace MAT
 
     static CrystalPlasticityType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrystalPlasticityType instance_;
@@ -217,16 +216,16 @@ namespace MAT
     //-----------------------------------------------------------------------------
 
     //! Return unique ParObject id
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return CrystalPlasticityType::Instance().UniqueParObjectId();
     }
 
     //! Pack this class so it can be communicated
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     //! Unpack data from a char vector into this class
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -241,29 +240,29 @@ namespace MAT
     //-----------------------------------------------------------------------------
 
     //! return material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_crystplast; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_crystplast; }
 
     //! check whether element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new CrystalPlasticity(*this));
     }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -278,59 +277,59 @@ namespace MAT
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! set up the slip directions and slip plane normals for the given lattice type
-    virtual void SetupLatticeVectors();
+    void SetupLatticeVectors();
 
     //! read lattice orientation matrix from .dat file
-    virtual void SetupLatticeOrientation(DRT::INPUT::LineDefinition* linedef);
+    void SetupLatticeOrientation(DRT::INPUT::LineDefinition* linedef);
 
     //! update internal variables
-    virtual void Update();
+    void Update() override;
 
     //! evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //! [IN] deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,      //! [IN] Green-Lagrange strain
-        Teuchos::ParameterList& params,                        //! [IN] model parameter list
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient
+        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  //!< [IN] Green-Lagrange strain
+        Teuchos::ParameterList& params,                    //!< [IN] model parameter list
         LINALG::Matrix<NUM_STRESS_3D, 1>*
-            stress,  //! [OUT] (mandatory) second Piola-Kirchhoff stress
+            stress,  //!< [OUT] (mandatory) second Piola-Kirchhoff stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
-            cmat,  //! [OUT] (mandatory) material stiffness matrix
-        const int eleGID);
+            cmat,  //!< [OUT] (mandatory) material stiffness matrix
+        const int eleGID) override;
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
-    virtual void MillerBravaisToMiller(
+    void MillerBravaisToMiller(
         std::vector<LINALG::Matrix<4, 1>>&
-            SlipNorHex,  //! [IN] vector of slip plane normals in Miller-Bravais index notation
+            SlipNorHex,  //!< [IN] vector of slip plane normals in Miller-Bravais index notation
         std::vector<LINALG::Matrix<4, 1>>&
-            SlipDirHex  //! [IN] vector of slip directions in Miller-Bravais index notation
+            SlipDirHex  //!< [IN] vector of slip directions in Miller-Bravais index notation
     );
 
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res
     //! as well as the stress PK2_res for a given deformation gradient F
-    virtual void NewtonRaphson(LINALG::Matrix<3, 3>& F,  //! [IN] deformation gradient
-        std::vector<double>& gamma_res,                  //! [OUT] result vector of plastic shears
-        std::vector<double>& def_dens_res,               //! [OUT] result vector of defect densities
-        LINALG::Matrix<3, 3>& PK2_res,                   //! [OUT] 2nd Piola-Kirchhoff stress
-        LINALG::Matrix<3, 3>& FP_res                     //! [OUT] plastic deformation gradient
+    void NewtonRaphson(LINALG::Matrix<3, 3>& F,  //!< [IN] deformation gradient
+        std::vector<double>& gamma_res,          //!< [OUT] result vector of plastic shears
+        std::vector<double>& def_dens_res,       //!< [OUT] result vector of defect densities
+        LINALG::Matrix<3, 3>& PK2_res,           //!< [OUT] 2nd Piola-Kirchhoff stress
+        LINALG::Matrix<3, 3>& FP_res             //!< [OUT] plastic deformation gradient
     );
 
     //! Evaluates the flow rule for a given total deformation gradient F,
     //! and a given vector of plastic shears gamma_trial and
     //! sets up the respective residuals residuals_trial, the 2nd Piola-Kirchhoff stress PK2_trial
     //! and trial defect densities def_dens_trial
-    virtual void SetupFlowRule(LINALG::Matrix<3, 3> F,  //! [IN] deformation gradient
-        std::vector<double> gamma_trial,                //! [OUT] trial vector of plastic shears
-        LINALG::Matrix<3, 3>& FP_trial,                 //! [OUT] plastic deformation gradient
-        std::vector<double>& def_dens_trial,            //! [OUT] trial vector of defect densities
-        LINALG::Matrix<3, 3>& PK2_trial,                //! [OUT] 2nd Piola-Kirchhoff stress
-        std::vector<double>& residuals_trial            //! [OUT] vector of residuals
+    void SetupFlowRule(LINALG::Matrix<3, 3> F,  //!< [IN] deformation gradient
+        std::vector<double> gamma_trial,        //!< [OUT] trial vector of plastic shears
+        LINALG::Matrix<3, 3>& FP_trial,         //!< [OUT] plastic deformation gradient
+        std::vector<double>& def_dens_trial,    //!< [OUT] trial vector of defect densities
+        LINALG::Matrix<3, 3>& PK2_trial,        //!< [OUT] 2nd Piola-Kirchhoff stress
+        std::vector<double>& residuals_trial    //!< [OUT] vector of residuals
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation
-    virtual bool NeedsDefgrd() { return true; };
+    bool NeedsDefgrd() override { return true; };
 
 
     //-----------------------------------------------------------------------------
@@ -372,7 +371,7 @@ namespace MAT
     double dt;
 
     //! indicator whether the material model has been initialized already
-    bool isinit = false;
+    bool isinit_ = false;
 
     //-----------------------------------------------------------------------------
     /*                                                                           */
@@ -383,47 +382,47 @@ namespace MAT
     //! General Properties:
     //!-------------------
     //! tolerance for local Newton Raphson iteration
-    double Tol;
+    double Tol_;
 
     //! Elastic Properties:
     //!-------------------------
     //! Young's Modulus
-    double E;
+    double E_;
     //! Poisson's ratio
-    double Poisson;
+    double Poisson_;
 
     //! Crystal Properties:
     //!-------------------
     //! Lattice type
-    std::string LatticeType;
+    std::string LatticeType_;
     //! c to a ratio of the crystal's unit cell
-    double CtoA;
+    double CtoA_;
     //! Lattice constant a of unit cell
-    double LatticeConstant;
+    double LatticeConstant_;
     //! Index to which subset a slip system belongs
-    std::vector<int> SubSetIndex;
+    std::vector<int> SubSetIndex_;
 
     //! Viscoplastic Properties:
     //!------------------------
     //! TODO RATE EXPONENT INPUT
     //! reference shear rates
-    std::vector<double> Gamma0;
+    std::vector<double> Gamma0_;
 
     //! Dislocation Generation/Recovery:
     //!--------------------------------
     //! dislocation generation coefficients
-    std::vector<double> Dislocation_Gen_Coeff;
+    std::vector<double> Dislocation_Gen_Coeff_;
     //! dynamic dislocation removal coefficients
-    std::vector<double> Dislocation_Dyn_Rec_Coeff;
+    std::vector<double> Dislocation_Dyn_Rec_Coeff_;
 
     //! Initial Slip System Strengths:
     //!------------------------------
     //! lattice resistances to slip
-    std::vector<double> TauY_0;
+    std::vector<double> TauY_0_;
     //! microstructural parameters which are relevant for Hall-Petch strengthening, e.g., grain size
-    std::vector<double> Micro_Boundary_Dist;
+    std::vector<double> Micro_Boundary_Dist_;
     //! Hall-Petch coefficients corresponding to above microstructural boundaries
-    std::vector<double> Hall_Petch_Coeffs;
+    std::vector<double> Hall_Petch_Coeffs_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -441,25 +440,25 @@ namespace MAT
     //! Elastic Properties:
     //!-------------------------
     //! 1st lamé constant
-    double Lambda;
+    double Lambda_;
     //! Shear modulus / 2nd Lame constant
-    double Mu;
+    double Mu_;
     //! Bulk modulus
-    double K;
+    double K_;
 
     //! Crystal Properties:
     //!-------------------
     //! number of slip systems
-    int slip_sys_count;
+    int slip_sys_count_;
     //! magnitudes of Burgers vectors
-    Teuchos::RCP<std::vector<double>> Burgers_Mag;
+    std::vector<double> Burgers_Mag_;
     //! lattice orientation in terms of rotation matrix with respect to global coordinates
-    Teuchos::RCP<LINALG::Matrix<3, 3>> LatticeOrientation;
+    LINALG::Matrix<3, 3> LatticeOrientation_;
     //! slip plane normals and slip directions
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 1>>> SlipNor;
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 1>>> SlipDir;
+    std::vector<LINALG::Matrix<3, 1>> SlipNor_;
+    std::vector<LINALG::Matrix<3, 1>> SlipDir_;
     //! slip system identifier
-    Teuchos::RCP<std::vector<std::string>> SlipSysID;
+    std::vector<std::string> SlipSysID_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -476,23 +475,23 @@ namespace MAT
 
     //! old, i.e. at t=t_n
     //! deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_last;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_last_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_last;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_last_;
     //! vector of plastic shears
-    Teuchos::RCP<std::vector<std::vector<double>>> gamma_last;
+    Teuchos::RCP<std::vector<std::vector<double>>> gamma_last_;
     //! vector of defect densities
-    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_last;
+    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_last_;
 
     //! current, i.e. at t=t_n+1
     //!  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_curr;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_curr_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_curr;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_curr_;
     //! vector of plastic shears
-    Teuchos::RCP<std::vector<std::vector<double>>> gamma_curr;
+    Teuchos::RCP<std::vector<std::vector<double>>> gamma_curr_;
     //! vector of defect densities
-    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_curr;
+    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_curr_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */

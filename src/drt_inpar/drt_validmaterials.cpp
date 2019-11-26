@@ -75,7 +75,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Newtonian fluid
   {
-    Teuchos::RCP<MaterialDefinition> m =
+    auto m =
         Teuchos::rcp(new MaterialDefinition("MAT_fluid", "Newtonian fluid", INPAR::MAT::m_fluid));
 
     AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
@@ -88,8 +88,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Weakly compressible fluid according to Murnaghan-Tait
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_fluid_murnaghantait", "Weakly compressible fluid according to Murnaghan-Tait",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_fluid_murnaghantait",
+        "Weakly compressible fluid according to Murnaghan-Tait",
         INPAR::MAT::m_fluid_murnaghantait));
 
     AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
@@ -105,10 +105,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Linear law (pressure-dependent) for the density and the viscosity
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_fluid_linear_density_viscosity",
-            "Linear law (pressure-dependent) for the density and the viscosity",
-            INPAR::MAT::m_fluid_linear_density_viscosity));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_fluid_linear_density_viscosity",
+        "Linear law (pressure-dependent) for the density and the viscosity",
+        INPAR::MAT::m_fluid_linear_density_viscosity));
 
     AddNamedReal(m, "REFDENSITY", "reference density");
     AddNamedReal(m, "REFVISCOSITY", "reference viscosity");
@@ -123,9 +122,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Weakly compressible fluid
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_fluid_weakly_compressible",
-            "Weakly compressible fluid", INPAR::MAT::m_fluid_weakly_compressible));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_fluid_weakly_compressible",
+        "Weakly compressible fluid", INPAR::MAT::m_fluid_weakly_compressible));
 
     AddNamedReal(m, "VISCOSITY", "viscosity");
     AddNamedReal(m, "REFDENSITY", "reference density");
@@ -138,7 +136,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // fluid with non-linear viscosity according to Carreau-Yasuda
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_carreauyasuda",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_carreauyasuda",
         "fluid with non-linear viscosity according to Carreau-Yasuda",
         INPAR::MAT::m_carreauyasuda));
 
@@ -155,7 +153,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // fluid with nonlinear viscosity according to a modified power law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_modpowerlaw",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_modpowerlaw",
         "fluid with nonlinear viscosity according to a modified power law",
         INPAR::MAT::m_modpowerlaw));
 
@@ -170,7 +168,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // fluid with non-linear viscosity according to Herschel-Bulkley
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_herschelbulkley",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_herschelbulkley",
         "fluid with non-linear viscosity according to Herschel-Bulkley",
         INPAR::MAT::m_herschelbulkley));
 
@@ -189,7 +187,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // "yoghurt-type" fluid with nonlinear viscosity according to a power law
   // and extended by an Arrhenius-type term to account for temperature dependence
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_yoghurt", "yoghurt-type fluid with nonlinear viscosity", INPAR::MAT::m_yoghurt));
 
     AddNamedReal(m, "SHC", "specific heat capacity at constant pressure (J/(kg*K))");
@@ -207,7 +205,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // fluid flow in a permeable material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_permeable", "permeability for flow in porous media", INPAR::MAT::m_permeable_fluid));
 
     AddNamedString(m, "TYPE", "Problem type: Darcy or Darcy-Stokes", "Darcy-Stokes");
@@ -222,7 +220,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // lubrication material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_lubrication", "lubrication material", INPAR::MAT::m_lubrication));
 
     AddNamedInt(m, "LUBRICATIONLAWID", "lubrication law id");
@@ -235,9 +233,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // constant lubrication material law
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_constant",
-            "constant lubrication material law", INPAR::MAT::m_lubrication_law_constant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_constant",
+        "constant lubrication material law", INPAR::MAT::m_lubrication_law_constant));
 
     AddNamedReal(m, "VISCOSITY", "lubricant viscosity");
 
@@ -247,9 +244,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Barus viscosity lubrication material law
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_barus",
-            "barus lubrication material law", INPAR::MAT::m_lubrication_law_barus));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_barus",
+        "barus lubrication material law", INPAR::MAT::m_lubrication_law_barus));
 
     AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
     AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
@@ -260,9 +256,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Roeland viscosity lubrication material law
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_roeland",
-            "roeland lubrication material law", INPAR::MAT::m_lubrication_law_roeland));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_roeland",
+        "roeland lubrication material law", INPAR::MAT::m_lubrication_law_roeland));
 
     AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
     AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
@@ -276,7 +271,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MAT_scatra", "scalar transport material", INPAR::MAT::m_scatra));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
@@ -291,9 +286,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_reaction_poro", "scalar transport material",
-            INPAR::MAT::m_scatra_reaction_poroECM));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_reaction_poro",
+        "scalar transport material", INPAR::MAT::m_scatra_reaction_poroECM));
 
     AddNamedInt(m, "NUMSCAL", "number of scalars for these elements");
     AddNamedIntVector(m, "STOICH", "reaction stoichometrie list", "NUMSCAL");
@@ -310,7 +304,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_scatra_reaction", "advanced reaction material", INPAR::MAT::m_scatra_reaction));
 
     AddNamedInt(m, "NUMSCAL", "number of scalars for these elements");
@@ -327,7 +321,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport bond material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_scatra_bondreac", "bond dynamics material", INPAR::MAT::m_scatra_bondreac));
 
     AddNamedInt(m, "NUMSCAL", "number of reactions for these elements");
@@ -352,9 +346,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Chemical Diffusion material (using a variational setting)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_variational_chemicaldiffusion",
-            "chemical diffusion under a variational formulation", INPAR::MAT::m_var_chemdiffusion));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_variational_chemicaldiffusion",
+        "chemical diffusion under a variational formulation", INPAR::MAT::m_var_chemdiffusion));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
     AddNamedReal(m, "REFMU", "Reference Chemical potential", 0.0, true);
@@ -376,10 +369,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in fluid)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_fluid",
-            "advanced reaction material for multiphase porous flow (species in fluid)",
-            INPAR::MAT::m_scatra_multiporo_fluid));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_fluid",
+        "advanced reaction material for multiphase porous flow (species in fluid)",
+        INPAR::MAT::m_scatra_multiporo_fluid));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
     AddNamedInt(m, "PHASEID", "ID of fluid phase the scalar is associated with");
@@ -397,10 +389,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in volume fraction)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_volfrac",
-            "advanced reaction material for multiphase porous flow (species in volfrac)",
-            INPAR::MAT::m_scatra_multiporo_volfrac));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_volfrac",
+        "advanced reaction material for multiphase porous flow (species in volfrac)",
+        INPAR::MAT::m_scatra_multiporo_volfrac));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
     AddNamedInt(m, "PHASEID", "ID of fluid phase the scalar is associated with");
@@ -414,11 +405,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in solid)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_solid",
-            "advanced reaction material for multiphase "
-            "porous flow (species in solid)",
-            INPAR::MAT::m_scatra_multiporo_solid));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_solid",
+        "advanced reaction material for multiphase "
+        "porous flow (species in solid)",
+        INPAR::MAT::m_scatra_multiporo_solid));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
     // no phaseID because only one solid phase
@@ -432,10 +422,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (temperature)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_temperature",
-            "advanced reaction material for multiphase porous flow (temperature)",
-            INPAR::MAT::m_scatra_multiporo_temperature));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_temperature",
+        "advanced reaction material for multiphase porous flow (temperature)",
+        INPAR::MAT::m_scatra_multiporo_temperature));
 
     AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid dofs");
     AddNamedRealVector(m, "CP_FLUID", "heat capacity fluid phases", "NUMFLUIDPHASES");
@@ -456,7 +445,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport chemotaxis material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_scatra_chemotaxis", "chemotaxis material", INPAR::MAT::m_scatra_chemotaxis));
 
     AddNamedInt(m, "NUMSCAL", "number of chemotactic pairs for these elements");
@@ -469,7 +458,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // anisotropic scalar transport material (with potential reaction coefficient)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_scatra_aniso", "anisotropic scalar transport material", INPAR::MAT::m_scatra_aniso));
 
     AddNamedReal(m, "DIFF1", "kinematic diffusivity component 1");
@@ -482,9 +471,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // scalar transport material for multi-scale approach
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiscale",
-            "scalar transport material for multi-scale approach", INPAR::MAT::m_scatra_multiscale));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiscale",
+        "scalar transport material for multi-scale approach", INPAR::MAT::m_scatra_multiscale));
 
     AddNamedString(m, "MICROFILE", "input file for micro scale", "filename.dat");
     AddNamedInt(m, "MICRODIS_NUM", "number of micro-scale discretization");
@@ -502,7 +490,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Myocard muscle material (with complicated reaction coefficient)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MAT_myocard", "Myocard muscle material", INPAR::MAT::m_myocard));
 
     AddNamedReal(m, "DIFF1", "conductivity in fiber direction");
@@ -520,7 +508,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material according to mixture-fraction approach
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_mixfrac", "material according to mixture-fraction approach", INPAR::MAT::m_mixfrac));
 
     AddNamedReal(m, "KINVISC", "kinematic viscosity");
@@ -534,7 +522,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material according to Sutherland law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_sutherland", "material according to Sutherland law", INPAR::MAT::m_sutherland));
 
     AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
@@ -551,7 +539,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material for temperature-dependent water according to VDI Waermeatlas
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_tempdepwater",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_tempdepwater",
         "material for temperature-dependent water", INPAR::MAT::m_tempdepwater));
 
     AddNamedReal(m, "CRITDENS", "critical density (kg/m^3)");
@@ -565,7 +553,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material according to Sutherland law with Arrhenius-type chemical
   // kinetics (species)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_spec",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_spec",
         "Arrhenius-type chemical kinetics (species)", INPAR::MAT::m_arrhenius_spec));
 
     AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
@@ -584,7 +572,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material according to Sutherland law with Arrhenius-type chemical
   // kinetics (temperature)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_temp",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_temp",
         "Arrhenius-type chemical kinetics (temperature)", INPAR::MAT::m_arrhenius_temp));
 
     AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
@@ -605,7 +593,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material according to Sutherland law with Arrhenius-type chemical
   // kinetics (progress variable)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv",
         "material with Arrhenius-type chemical kinetics (progress variable)",
         INPAR::MAT::m_arrhenius_pv));
 
@@ -631,7 +619,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // kinetics due to Ferziger and Echekki (1993) (original version and
   // modification by Poinsot and Veynante (2005)) (progress variable)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ferech_pv",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ferech_pv",
         "material with Ferziger-Echekki (1993) chemical kinetics (progress variable)",
         INPAR::MAT::m_ferech_pv));
 
@@ -655,7 +643,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material parameters for ion species in electrolyte solution (gjb 07/08)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ion",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ion",
         "material parameters for ion species in electrolyte solution", INPAR::MAT::m_ion));
 
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
@@ -672,7 +660,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material parameters for ion species in electrolyte solution (ehrl 07/12)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_newman",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_newman",
         "material parameters for ion species in electrolyte solution", INPAR::MAT::m_newman));
 
     AddNamedReal(m, "VALENCE", "valence (= charge number)");
@@ -701,10 +689,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material parameters for ion species in electrolyte solution for multi-scale approach (fang
   // 07/17)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_newman_multiscale",
-            "material parameters for ion species in electrolyte solution for multi-scale approach",
-            INPAR::MAT::m_newman_multiscale));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_newman_multiscale",
+        "material parameters for ion species in electrolyte solution for multi-scale approach",
+        INPAR::MAT::m_newman_multiscale));
 
     AddNamedReal(m, "VALENCE", "valence (= charge number)");
     AddNamedInt(m, "DIFFCOEF", "curve number for diffusion coefficient");
@@ -736,7 +723,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // electrode material (fang 02/15)
   {
-    Teuchos::RCP<MaterialDefinition> matelectrode = Teuchos::rcp(
+    auto matelectrode = Teuchos::rcp(
         new MaterialDefinition("MAT_electrode", "electrode material", INPAR::MAT::m_electrode));
 
     // diffusivity and electronic conductivity
@@ -792,7 +779,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection (gjb 07/08)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_matlist", "list/collection of materials, i.e. material IDs", INPAR::MAT::m_matlist));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
@@ -807,10 +794,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection with reactions (thon 09/14)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_matlist_reactions",
-            "list/collection of materials, i.e. material IDs and list of reactions",
-            INPAR::MAT::m_matlist_reactions));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_matlist_reactions",
+        "list/collection of materials, i.e. material IDs and list of reactions",
+        INPAR::MAT::m_matlist_reactions));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
     AddNamedInt(m, "NUMMAT", "number of materials in list");
@@ -825,10 +811,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection with bond reactions
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_matlist_bondreacs",
-            "list/collection of materials, i.e. material IDs and list of bond reactions",
-            INPAR::MAT::m_matlist_bondreacs));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_matlist_bondreacs",
+        "list/collection of materials, i.e. material IDs and list of bond reactions",
+        INPAR::MAT::m_matlist_bondreacs));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
     AddNamedInt(m, "NUMMAT", "number of materials in list");
@@ -843,10 +828,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection with chemotaxis (thon 06/15)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_matlist_chemotaxis",
-            "list/collection of materials, i.e. material IDs and list of chemotactic pairs",
-            INPAR::MAT::m_matlist_chemotaxis));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_matlist_chemotaxis",
+        "list/collection of materials, i.e. material IDs and list of chemotactic pairs",
+        INPAR::MAT::m_matlist_chemotaxis));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
     AddNamedInt(m, "NUMMAT", "number of materials in list");
@@ -861,8 +845,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection with reactions AND chemotaxis (thon 06/15)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_matlist_chemo_reac",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_matlist_chemo_reac",
         "list/collection of materials, i.e. material IDs and list of reactive/chemotactic pairs",
         INPAR::MAT::m_matlist_chemoreac));
 
@@ -881,7 +864,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection (ehrl 11/12)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_elchmat",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_elchmat",
         "specific list/collection of species and phases for elch applications",
         INPAR::MAT::m_elchmat));
 
@@ -899,7 +882,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // material collection (ehrl 11/12)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_elchphase",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_elchphase",
         "material parameters for ion species in electrolyte solution", INPAR::MAT::m_elchphase));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope",
@@ -916,9 +899,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // de St.Venant--Kirchhoff
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_StVenantKirchhoff",
-            "de St.Venant--Kirchhoff material", INPAR::MAT::m_stvenant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_StVenantKirchhoff",
+        "de St.Venant--Kirchhoff material", INPAR::MAT::m_stvenant));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -931,9 +913,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // de St.Venant--Kirchhoff with temperature
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
-            "Thermo St.Venant--Kirchhoff material", INPAR::MAT::m_thermostvenant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
+        "Thermo St.Venant--Kirchhoff material", INPAR::MAT::m_thermostvenant));
 
     AddNamedInt(m, "YOUNGNUM",
         "number of Young's modulus in list (if 1 Young is const, if >1 Young is temperature) "
@@ -959,10 +940,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Linear thermo-elastic St.Venant Kirchhoff / plastic von Mises
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticLinElast",
-            "Thermo-elastic St.Venant Kirchhoff / plastic von Mises material",
-            INPAR::MAT::m_thermopllinelast));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticLinElast",
+        "Thermo-elastic St.Venant Kirchhoff / plastic von Mises material",
+        INPAR::MAT::m_thermopllinelast));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -984,9 +964,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Finite strain superelasticity of shape memory alloys
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_SuperElastSMA",
-            "finite strain superelastic shape memory alloy", INPAR::MAT::m_superelast));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_SuperElastSMA",
+        "finite strain superelastic shape memory alloy", INPAR::MAT::m_superelast));
 
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "YOUNG", "Young's modulus");
@@ -1029,10 +1008,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Thermo-hyperelasticity / finite strain von-Mises plasticity
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticHyperElast",
-            "Thermo-hyperelastic / finite strain plastic von Mises material",
-            INPAR::MAT::m_thermoplhyperelast));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticHyperElast",
+        "Thermo-hyperelastic / finite strain plastic von Mises material",
+        INPAR::MAT::m_thermoplhyperelast));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -1053,8 +1031,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Hyperelasticity / finite strain von-Mises plasticity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_Struct_PlasticNlnLogNeoHooke",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNlnLogNeoHooke",
         "hyperelastic / finite strain plastic von Mises material", INPAR::MAT::m_plnlnlogneohooke));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
@@ -1073,9 +1050,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Plastic linear elastic St.Venant Kirchhoff / von Mises
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
-            "elastic St.Venant Kirchhoff / plastic von Mises material", INPAR::MAT::m_pllinelast));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
+        "elastic St.Venant Kirchhoff / plastic von Mises material", INPAR::MAT::m_pllinelast));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -1092,7 +1068,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Robinson's visco-plastic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_Struct_Robinson", "Robinson's visco-plastic material", INPAR::MAT::m_vp_robinson));
 
     AddNamedString(m, "KIND", "kind of Robinson material", "arya_narloyz");
@@ -1122,7 +1098,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Elasto-plastic material with damage, based on MAT_Struct_PlasticLinElast
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Damage",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Damage",
         "elasto-plastic von Mises material with ductile damage", INPAR::MAT::m_elpldamage));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
@@ -1147,9 +1123,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000]
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_Struct_AAANeoHooke", "aneurysm wall material according to Raghavan and Vorp [2000]",
-        INPAR::MAT::m_aaaneohooke));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAANeoHooke",
+        "aneurysm wall material according to Raghavan and Vorp [2000]", INPAR::MAT::m_aaaneohooke));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "BETA", "2nd parameter");
@@ -1161,11 +1136,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000]
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAANeoHookeStopro",
-            "aneurysm wall material according to Raghavan and Vorp [2000] with stochastic "
-            "modelling of beta",
-            INPAR::MAT::m_aaaneohooke_stopro));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAANeoHookeStopro",
+        "aneurysm wall material according to Raghavan and Vorp [2000] with stochastic "
+        "modelling of beta",
+        INPAR::MAT::m_aaaneohooke_stopro));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "BETA", "2nd parameter");
@@ -1179,7 +1153,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // AAA thrombus material according to GASSER et. al. [2008]
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAAGasser",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAAGasser",
         "AAA thrombus material according to GASSER [2008]", INPAR::MAT::m_aaagasser));
 
     AddNamedReal(m, "DENS", "mass density");
@@ -1205,7 +1179,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000] with damage Simo
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_Raghavan_Damage",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Raghavan_Damage",
         "aneurysm wall material according to Raghavan and Vorp [2000] with damage",
         INPAR::MAT::m_aaaraghavanvorp_damage));
 
@@ -1225,9 +1199,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // aneurysm wall material SEF according  to Raghavan and Vorp [2000],
   // parameters according to mixed effects model
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_Struct_AAA_MixedEffects", "aneurysm wall material according to Mixed Effects Model",
-        INPAR::MAT::m_aaa_mixedeffects));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAA_MixedEffects",
+        "aneurysm wall material according to Mixed Effects Model", INPAR::MAT::m_aaa_mixedeffects));
 
     AddNamedReal(m, "AGE", "age");
     AddNamedReal(m, "REFDIA", "subrenal diameter");
@@ -1240,7 +1213,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Visco-elastic Neo-Hookean material law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_VISCONEOHOOKE",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_VISCONEOHOOKE",
         "visco-elastic neo-Hookean material law", INPAR::MAT::m_visconeohooke));
     AddNamedReal(m, "YOUNGS_SLOW", "???");
     AddNamedReal(m, "POISSON", "???");
@@ -1255,7 +1228,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Visco-elastic anisotropic fiber material law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_VISCOANISO",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_VISCOANISO",
         "visco-elastic anisotropic fibre material law", INPAR::MAT::m_viscoanisotropic));
 
     AddNamedReal(m, "KAPPA", "dilatation modulus");
@@ -1277,11 +1250,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Structural micro-scale approach: material parameters are calculated from microscale simulation
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Struct_Multiscale",
-            "Structural micro-scale approach: material parameters are calculated from microscale "
-            "simulation",
-            INPAR::MAT::m_struct_multiscale));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Multiscale",
+        "Structural micro-scale approach: material parameters are calculated from microscale "
+        "simulation",
+        INPAR::MAT::m_struct_multiscale));
 
     AddNamedString(m, "MICROFILE", "inputfile for microstructure", "filename.dat");
     AddNamedInt(m, "MICRODIS_NUM", "Number of microscale discretization");
@@ -1293,7 +1265,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // collection of hyperelastic materials
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ElastHyper",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ElastHyper",
         "list/collection of hyperelastic materials, i.e. material IDs", INPAR::MAT::m_elasthyper));
 
     AddNamedInt(m, "NUMMAT", "number of materials/potentials in list");
@@ -1307,7 +1279,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // viscohyperelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ViscoElastHyper",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ViscoElastHyper",
         "Viscohyperelastic material compatible with the collection of hyperelastic materials",
         INPAR::MAT::m_viscoelasthyper));
 
@@ -1322,8 +1294,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // collection of hyperelastic materials for finite strain plasticity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_PlasticElastHyper", "list/collection of hyperelastic materials, i.e. material IDs",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PlasticElastHyper",
+        "list/collection of hyperelastic materials, i.e. material IDs",
         INPAR::MAT::m_plelasthyper));
 
     AddNamedInt(m, "NUMMAT", "number of materials/potentials in list");
@@ -1370,8 +1342,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // collection of hyperelastic materials for finite strain plasticity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_PlasticElastHyperVCU", "list/collection of hyperelastic materials, i.e. material IDs",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PlasticElastHyperVCU",
+        "list/collection of hyperelastic materials, i.e. material IDs",
         INPAR::MAT::m_plelasthyperVCU));
 
     AddNamedInt(m, "NUMMAT", "number of materials/potentials in list");
@@ -1420,9 +1392,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "ELAST_CoupLogNeoHooke", "logarithmic neo-Hooke material acc. to Bonet and Wood",
-        INPAR::MAT::mes_couplogneohooke));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupLogNeoHooke",
+        "logarithmic neo-Hooke material acc. to Bonet and Wood", INPAR::MAT::mes_couplogneohooke));
 
     AddNamedString(m, "MODE",
         "parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
@@ -1435,7 +1406,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // Saint-Venant-Kirchhoff as elastic summand
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_CoupSVK", "Saint-Venant-Kirchhoff as elastic summand", INPAR::MAT::mes_coupSVK));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
@@ -1447,7 +1418,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // Simo-Pister type material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_CoupSimoPister", "Simo-Pister type material", INPAR::MAT::mes_coupsimopister));
 
     AddNamedReal(m, "MUE", "material constant");
@@ -1458,9 +1429,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // logarithmic mixed neo-Hooke material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupLogMixNeoHooke",
-            "mixed logarithmic neo-Hooke material", INPAR::MAT::mes_couplogmixneohooke));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupLogMixNeoHooke",
+        "mixed logarithmic neo-Hooke material", INPAR::MAT::mes_couplogmixneohooke));
 
     AddNamedString(m, "MODE",
         "parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
@@ -1473,7 +1443,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled exponential material for compressible material (according to Weikenmeier_2014)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupExpPol",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupExpPol",
         "compressible, isochoric exponential material law for soft tissue",
         INPAR::MAT::mes_coupexppol));
     AddNamedReal(m, "A", "material constant");
@@ -1489,7 +1459,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   // compressible neo-Hooke material acc. to Holzapfel
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupNeoHooke",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupNeoHooke",
         "compressible neo-Hooke material acc. to Holzapfel", INPAR::MAT::mes_coupneohooke));
 
     AddNamedReal(m, "YOUNG", "Young's modulus", 0.0, true);
@@ -1499,9 +1469,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
   // Mooney Rivlin  material acc. to Holzapfel
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupMooneyRivlin",
-            "Mooney - Rivlin material acc. to Holzapfel", INPAR::MAT::mes_coupmooneyrivlin));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupMooneyRivlin",
+        "Mooney - Rivlin material acc. to Holzapfel", INPAR::MAT::mes_coupmooneyrivlin));
 
     AddNamedReal(m, "C1", "material constant", 0.0, true);
     AddNamedReal(m, "C2", "material constant", 0.0, true);
@@ -1513,7 +1482,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled Blatz and Ko material acc. to Holzapfel
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupBlatzKo",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupBlatzKo",
         "Blatz and Ko material acc. to Holzapfel", INPAR::MAT::mes_coupblatzko));
 
     AddNamedReal(m, "MUE", "Shear modulus");
@@ -1526,7 +1495,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric contribution of Neo-Hooke
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoNeoHooke",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoNeoHooke",
         "isochoric part of  neo-Hooke material acc. to Holzapfel", INPAR::MAT::mes_isoneohooke));
 
     AddNamedReal(m, "MUE", "Shear modulus");
@@ -1537,10 +1506,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric and volumetric contribution of HU dependent NeoHooke
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolHUDependentNeoHooke",
-            "isochoric and volumetric part of HU dependent neo-Hooke material",
-            INPAR::MAT::mes_isovolHUdependentneohooke));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolHUDependentNeoHooke",
+        "isochoric and volumetric part of HU dependent neo-Hooke material",
+        INPAR::MAT::mes_isovolHUdependentneohooke));
 
     AddNamedReal(m, "ALPHA_MAX", "");
     AddNamedReal(m, "CT_MIN", "");
@@ -1554,8 +1522,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric and volumetric contribution of AAAGasser
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "ELAST_IsoVolAAAGasser", "isochoric and volumetric part of AAAGasser material (thrombus)",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolAAAGasser",
+        "isochoric and volumetric part of AAAGasser material (thrombus)",
         INPAR::MAT::mes_isovolaaagasser));
 
     AddNamedReal(m, "CLUM", "luminal stiffness parameter (2.62e3)");
@@ -1582,7 +1550,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric contribution of Yeoh
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoYeoh",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoYeoh",
         "isochoric part of  Yeoh material acc. to Holzapfel", INPAR::MAT::mes_isoyeoh));
 
     AddNamedReal(m, "C1", "Linear modulus");
@@ -1596,7 +1564,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   // isochoric contribution of iso1pow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_Iso1Pow", "isochoric part of general power material", INPAR::MAT::mes_iso1pow));
 
     AddNamedReal(m, "C", "material parameter");
@@ -1607,7 +1575,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric contribution of iso2pow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_Iso2Pow", "isochoric part of general power material", INPAR::MAT::mes_iso2pow));
 
     AddNamedReal(m, "C", "material parameter");
@@ -1619,7 +1587,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   // contribution of coup1pow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_Coup1Pow", "part of general power material", INPAR::MAT::mes_coup1pow));
 
     AddNamedReal(m, "C", "material parameter");
@@ -1630,7 +1598,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // contribution of coup2pow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_Coup2Pow", "part of general power material", INPAR::MAT::mes_coup2pow));
 
     AddNamedReal(m, "C", "material parameter");
@@ -1641,7 +1609,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // contribution of coup3pow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_Coup3Pow", "part of general power material", INPAR::MAT::mes_coup3pow));
 
     AddNamedReal(m, "C", "material parameter");
@@ -1653,7 +1621,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   // contribution of coup13apow
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_Coup13aPow",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_Coup13aPow",
         "hyperelastic potential summand for multiplicative coupled invariants I1 and I3",
         INPAR::MAT::mes_coup13apow));
 
@@ -1667,7 +1635,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   // isochoric contribution of expo
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpoPow",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpoPow",
         "isochoric part of  exponential material acc. to Holzapfel", INPAR::MAT::mes_isoexpopow));
 
     AddNamedReal(m, "K1", "material parameter");
@@ -1681,8 +1649,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric contribution of mooney rivlin
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "ELAST_IsoMooneyRivlin", "isochoric part of  Mooney-Rivlin material acc. to Holzapfel",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoMooneyRivlin",
+        "isochoric part of  Mooney-Rivlin material acc. to Holzapfel",
         INPAR::MAT::mes_isomooneyrivlin));
 
     AddNamedReal(m, "C1", "Linear modulus for first invariant");
@@ -1693,9 +1661,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // test material to test elasthyper-toolbox
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_IsoTestMaterial",
-            "test material to test elasthyper-toolbox", INPAR::MAT::mes_isotestmaterial));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoTestMaterial",
+        "test material to test elasthyper-toolbox", INPAR::MAT::mes_isotestmaterial));
 
     AddNamedReal(m, "C1", "Modulus for first invariant");
     AddNamedReal(m, "C2", "Modulus for second invariant");
@@ -1705,7 +1672,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // general fiber material for remodeling
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_RemodelFiber",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_RemodelFiber",
         "General fiber material for remodeling", INPAR::MAT::mes_remodelfiber));
 
     AddNamedInt(m, "NUMMAT", "number of materials/potentials in list");
@@ -1723,9 +1690,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_VolSussmanBathe",
-            "volumetric part of  SussmanBathe material", INPAR::MAT::mes_volsussmanbathe));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_VolSussmanBathe",
+        "volumetric part of  SussmanBathe material", INPAR::MAT::mes_volsussmanbathe));
 
     AddNamedReal(m, "KAPPA", "dilatation modulus");
 
@@ -1736,7 +1702,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // volumetric penalty contribution
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_VolPenalty",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_VolPenalty",
         "Penalty formulation for the volumetric part", INPAR::MAT::mes_volpenalty));
 
     AddNamedReal(m, "EPSILON", "penalty parameter");
@@ -1748,7 +1714,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Ogden
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_VolOgden", "Ogden formulation for the volumetric part", INPAR::MAT::mes_vologden));
 
     AddNamedReal(m, "KAPPA", "dilatation modulus");
@@ -1761,7 +1727,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // volumetric power law contribution
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_VolPow", "Power law formulation for the volumetric part", INPAR::MAT::mes_volpow));
 
     AddNamedReal(m, "A", "prefactor of power law");
@@ -1773,9 +1739,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one exponential fiber family
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoActive", "anisotropic active fiber",
-            INPAR::MAT::mes_coupanisoexpoactive));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoActive",
+        "anisotropic active fiber", INPAR::MAT::mes_coupanisoexpoactive));
 
     AddNamedReal(m, "K1", "linear constant");
     AddNamedReal(m, "K2", "exponential constant");
@@ -1796,7 +1761,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one exponential fiber family
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpo",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpo",
         "anisotropic part with one exp. fiber", INPAR::MAT::mes_coupanisoexpo));
 
     AddNamedReal(m, "K1", "linear constant");
@@ -1814,7 +1779,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one pow-like fiber family
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoPow",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoPow",
         "anisotropic part with one pow-like fiber", INPAR::MAT::mes_coupanisopow));
 
     AddNamedReal(m, "K", "linear constant");
@@ -1836,9 +1801,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with two exponential fiber families
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoTwoCoup",
-            "anisotropic part with two exp. fibers", INPAR::MAT::mes_coupanisoexpotwocoup));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoTwoCoup",
+        "anisotropic part with two exp. fibers", INPAR::MAT::mes_coupanisoexpotwocoup));
 
     AddNamedReal(m, "A4", "linear anisotropic constant for fiber 1");
     AddNamedReal(m, "B4", "exponential anisotropic constant for fiber 1");
@@ -1858,9 +1822,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with two exponential fiber families
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke",
-            "anisotropic part with one neo Hookean fiber", INPAR::MAT::mes_coupanisoneohooke));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke",
+        "anisotropic part with one neo Hookean fiber", INPAR::MAT::mes_coupanisoneohooke));
 
     AddNamedReal(m, "C", "linear constant");
     AddNamedReal(m, "GAMMA", "angle");
@@ -1875,11 +1838,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // coupled anisotropic material with the stress given by a simplified version of the contraction
   // law of Bestel-Clement-Sorine
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_AnisoActiveStress_Evolution",
-            "anisotropic part with one fiber with coefficient given by a simplification of the "
-            "activation-contraction law of Bestel-Clement-Sorine-2001",
-            INPAR::MAT::mes_anisoactivestress_evolution));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_AnisoActiveStress_Evolution",
+        "anisotropic part with one fiber with coefficient given by a simplification of the "
+        "activation-contraction law of Bestel-Clement-Sorine-2001",
+        INPAR::MAT::mes_anisoactivestress_evolution));
 
     AddNamedReal(m, "SIGMA", "Contractility (maximal stress)");
     AddNamedReal(m, "TAUC0", "Initial value for the active stress");
@@ -1908,10 +1870,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with variable stress coefficient
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_VarProp",
-            "anisotropic part with one neo Hookean fiber with variable coefficient",
-            INPAR::MAT::mes_coupanisoneohooke_varprop));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_VarProp",
+        "anisotropic part with one neo Hookean fiber with variable coefficient",
+        INPAR::MAT::mes_coupanisoneohooke_varprop));
 
     AddNamedReal(m, "C", "linear constant");
     AddNamedInt(
@@ -1928,7 +1889,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric anisotropic material with one exponential fiber family
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoAnisoExpo",
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoAnisoExpo",
         "anisotropic part with one exp. fiber", INPAR::MAT::mes_isoanisoexpo));
 
     AddNamedReal(m, "K1", "linear constant");
@@ -1946,10 +1907,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // structural tensor
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_StructuralTensor",
-            "Parameter for structural tensor strategy in anisotropic materials",
-            INPAR::MAT::mes_structuraltensorstratgy));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_StructuralTensor",
+        "Parameter for structural tensor strategy in anisotropic materials",
+        INPAR::MAT::mes_structuraltensorstratgy));
 
     // choose between:
     // "Standard"
@@ -1976,11 +1936,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // transversely isotropic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("ELAST_CoupTransverselyIsotropic",
-            "transversely part of a simple othotropic, transversely "
-            "isotropic hyperelastic constitutive equation",
-            INPAR::MAT::mes_couptransverselyisotropic));
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupTransverselyIsotropic",
+        "transversely part of a simple othotropic, transversely "
+        "isotropic hyperelastic constitutive equation",
+        INPAR::MAT::mes_couptransverselyisotropic));
 
     AddNamedReal(m, "ALPHA", "1-st constant");
     AddNamedReal(m, "BETA", "2-nd constant");
@@ -1996,7 +1955,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // coupled Varga material acc. to Holzapfel
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_CoupVarga", "Varga material acc. to Holzapfel", INPAR::MAT::mes_coupvarga));
 
     AddNamedReal(m, "MUE", "Shear modulus");
@@ -2008,7 +1967,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric Varga material acc. to Holzapfel
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "ELAST_IsoVarga", "Isochoric Varga material acc. to Holzapfel", INPAR::MAT::mes_isovarga));
 
     AddNamedReal(m, "MUE", "Shear modulus");
@@ -2020,7 +1979,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isotropic viscous contribution of myocardial matrix (chapelle12)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("VISCO_CoupMyocard",
+    auto m = Teuchos::rcp(new MaterialDefinition("VISCO_CoupMyocard",
         "Isotropic viscous contribution of myocardial matrix", INPAR::MAT::mes_coupmyocard));
 
     AddNamedReal(m, "N", "material parameter");
@@ -2031,7 +1990,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // isochoric rate dependent viscos material, modified from Pioletti,1997
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("VISCO_IsoRateDep",
+    auto m = Teuchos::rcp(new MaterialDefinition("VISCO_IsoRateDep",
         "Isochoric rate dependent viscous material", INPAR::MAT::mes_isoratedep));
 
     AddNamedReal(m, "N", "material parameter");
@@ -2042,7 +2001,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // viscos contribution to visohyperelastic material according to SLS-Model
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "VISCO_GenMax", "Viscous contribution according to SLS-Model", INPAR::MAT::mes_genmax));
 
     AddNamedReal(m, "TAU", "relaxation parameter");
@@ -2057,7 +2016,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // viscos contribution to visohyperelastic material according to FSLS-Model
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "VISCO_Fract", "Viscous contribution according to FSLS-Model", INPAR::MAT::mes_fract));
 
     AddNamedReal(m, "TAU", "relaxation parameter");
@@ -2070,7 +2029,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // viscous contribution of a branch of a generalized Maxwell model
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "VISCO_PART", "Viscous contribution of a viscoelastic Branch", INPAR::MAT::mes_viscopart));
 
     AddNamedReal(m, "TAU", "dynamic viscosity divided by young's modulus of the branch");
@@ -2080,9 +2039,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // viscoelatic branches of a generalized Maxwell model
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("VISCO_GeneralizedGenMax",
-            "Viscoelastic Branches of generalized Maxwell", INPAR::MAT::mes_generalizedgenmax));
+    auto m = Teuchos::rcp(new MaterialDefinition("VISCO_GeneralizedGenMax",
+        "Viscoelastic Branches of generalized Maxwell", INPAR::MAT::mes_generalizedgenmax));
 
     AddNamedInt(m, "NUMBRANCH", "number of viscoelastic branches");
     AddNamedIntVector(m, "MATIDS", "the list material IDs", "NUMBRANCH");
@@ -2095,7 +2053,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // description of a viscoelatic branch of a generalized Maxwell model
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("VISCO_BRANCH",
+    auto m = Teuchos::rcp(new MaterialDefinition("VISCO_BRANCH",
         "Viscoelastic Branch (viscous and elastic contribution)", INPAR::MAT::mes_viscobranch));
 
     AddNamedInt(m, "NUMMAT", "number of materials in the viscoelastic branch");
@@ -2111,7 +2069,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 1D Artery material with constant properties
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_CNST_ART", "artery with constant properties", INPAR::MAT::m_cnst_art));
 
     AddNamedReal(m, "VISCOSITY",
@@ -2137,7 +2095,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // Fourier's law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("THERM_FourierIso",
+    auto m = Teuchos::rcp(new MaterialDefinition("THERM_FourierIso",
         "isotropic (linear) Fourier's law of heat conduction", INPAR::MAT::m_th_fourier_iso));
 
     AddNamedReal(m, "CAPA", "volumetric heat capacity");
@@ -2150,7 +2108,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // Fourier's law for multiple phases with variable conductivity and capacity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("THERM_FourierVar",
+    auto m = Teuchos::rcp(new MaterialDefinition("THERM_FourierVar",
         "isotropic (linear) Fourier's law of heat conduction with T-dependent conductivity. Use t "
         "in FUNCT for temperature!",
         INPAR::MAT::m_th_fourier_var));
@@ -2169,7 +2127,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // consolidation manager providing all common methods
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_Consolidation", "manager for consolidation tracking", INPAR::MAT::m_consolidation));
     AddNamedReal(m, "SOLIDUS", "solidus temperature");
     AddNamedReal(m, "LIQUIDUS", "liquidus temperature (set to liquidus for isothermal)");
@@ -2182,7 +2140,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material for heat transport due to Fourier-type thermal conduction and the Soret effect (fang
   // 06/15)
   {
-    Teuchos::RCP<MaterialDefinition> matsoret = Teuchos::rcp(new MaterialDefinition("MAT_soret",
+    auto matsoret = Teuchos::rcp(new MaterialDefinition("MAT_soret",
         "material for heat transport due to Fourier-type thermal conduction and the Soret effect",
         INPAR::MAT::m_soret));
 
@@ -2199,7 +2157,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // integration point based growth
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_GrowthVolumetric", "volumetric growth", INPAR::MAT::m_growth_volumetric));
 
     AddNamedInt(m, "GROWTHLAW", "number of growth law in input file");
@@ -2214,10 +2172,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // collection of hyperelastic materials for membranes
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ElastHyper",
-            "list/collection of hyperelastic materials for membranes, i.e. material IDs",
-            INPAR::MAT::m_membrane_elasthyper));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ElastHyper",
+        "list/collection of hyperelastic materials for membranes, i.e. material IDs",
+        INPAR::MAT::m_membrane_elasthyper));
 
     AddNamedInt(m, "NUMMAT", "number of materials/potentials in list");
     AddNamedIntVector(m, "MATIDS", "the list material/potential IDs", "NUMMAT");
@@ -2230,9 +2187,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // active strain membrane material for gastric electromechanics
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ActiveStrain",
-            "active strain membrane material", INPAR::MAT::m_membrane_activestrain));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ActiveStrain",
+        "active strain membrane material", INPAR::MAT::m_membrane_activestrain));
 
     AddNamedInt(m, "MATIDPASSIVE", "MATID for the passive material", false);
     AddNamedInt(m, "SCALIDVOLTAGE", "ID of the scalar that represents the (SMC) voltage", false);
@@ -2248,9 +2204,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // growth and remodeling (homogenized constrained mixture model)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_GrowthRemodel_ElastHyper", "growth and remodeling",
-            INPAR::MAT::m_growthremodel_elasthyper));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthRemodel_ElastHyper",
+        "growth and remodeling", INPAR::MAT::m_growthremodel_elasthyper));
 
     AddNamedInt(m, "NUMMATRF", "number of remodelfiber materials in list", false);
     AddNamedInt(
@@ -2293,8 +2248,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // multiplicative split of deformation gradient in elastic and inelastic parts
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_MultiplicativeSplitDefgradElastHyper", "multiplicative split of deformation gradient",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_MultiplicativeSplitDefgradElastHyper",
+        "multiplicative split of deformation gradient",
         INPAR::MAT::m_multiplicative_split_defgrad_elasthyper));
 
     AddNamedInt(m, "NUMMATEL", "number of elastic materials/potentials in list", 0, false);
@@ -2311,11 +2266,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // simple isotropic, volumetric growth; growth is linearly dependent on scalar mapped to material
   // configuration, constant material density
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarIso",
-            "scalar dependent isotropic growth law; volume change linearly dependent on scalar (in "
-            "material configuration)",
-            INPAR::MAT::mfi_lin_scalar_iso));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarIso",
+        "scalar dependent isotropic growth law; volume change linearly dependent on scalar (in "
+        "material configuration)",
+        INPAR::MAT::mfi_lin_scalar_iso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_GrowthFac", "isotropic growth factor due to scalar 1");
@@ -2330,11 +2284,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // growth is linearly dependent on scalar mapped to material configuration, constant material
   // density
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarAniso",
-            "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
-            "volume change linearly dependent on scalar (in material configuration)",
-            INPAR::MAT::mfi_lin_scalar_aniso));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarAniso",
+        "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
+        "volume change linearly dependent on scalar (in material configuration)",
+        INPAR::MAT::mfi_lin_scalar_aniso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_GrowthFac", "anisotropic growth factor due to scalar 1");
@@ -2352,11 +2305,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // scalar mapped to material configuration, constant material density, nonlinear behavior
   // prescribed by polynomial in input file
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarIso",
-            "scalar dependent isotropic growth law; volume change nonlinearly dependent on scalar"
-            "(in material configuration)",
-            INPAR::MAT::mfi_poly_scalar_iso));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarIso",
+        "scalar dependent isotropic growth law; volume change nonlinearly dependent on scalar"
+        "(in material configuration)",
+        INPAR::MAT::mfi_poly_scalar_iso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
@@ -2374,11 +2326,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // growth is dependent on a scalar mapped to material configuration, constant material
   // density, nonlinear behavior prescribed by polynomial in input file
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarAniso",
-            "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
-            "volume change linearly dependent on scalar (in material configuration)",
-            INPAR::MAT::mfi_poly_scalar_aniso));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarAniso",
+        "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
+        "volume change linearly dependent on scalar (in material configuration)",
+        INPAR::MAT::mfi_poly_scalar_aniso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
@@ -2397,7 +2348,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
   {
-    Teuchos::RCP<MaterialDefinition> mm = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
+    auto mm = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
         "integration point based and scalar dependent interpolation between to materials",
         INPAR::MAT::m_sc_dep_interp));
 
@@ -2413,10 +2364,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
-            "growth law depending on elastic stretch in fiber direction, growth in fiber direction",
-            INPAR::MAT::m_growth_aniso_strain));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
+        "growth law depending on elastic stretch in fiber direction, growth in fiber direction",
+        INPAR::MAT::m_growth_aniso_strain));
 
     AddNamedReal(m, "TAU", "growth time scale");
     AddNamedReal(m, "TAU_REV", "reverse growth time scale");
@@ -2435,8 +2385,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_GrowthAnisoStress",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStress",
         "growth law depending on elastic Mandel stress, growth perpendicular to fiber direction",
         INPAR::MAT::m_growth_aniso_stress));
 
@@ -2458,11 +2407,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in
   // time)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrainConstTrig",
-            "growth law depending on prescribed constant elastic stretch in fiber direction, "
-            "growth in fiber direction",
-            INPAR::MAT::m_growth_aniso_strain_const_trig));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrainConstTrig",
+        "growth law depending on prescribed constant elastic stretch in fiber direction, "
+        "growth in fiber direction",
+        INPAR::MAT::m_growth_aniso_strain_const_trig));
 
     AddNamedReal(m, "TAU", "growth time scale");
     AddNamedReal(m, "TAU_REV", "reverse growth time scale");
@@ -2481,11 +2429,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in
   // time)
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStressConstTrig",
-            "growth law depending on prescribed constant elastic Mandel stress, growth "
-            "perpendicular to fiber direction",
-            INPAR::MAT::m_growth_aniso_stress_const_trig));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStressConstTrig",
+        "growth law depending on prescribed constant elastic Mandel stress, growth "
+        "perpendicular to fiber direction",
+        INPAR::MAT::m_growth_aniso_stress_const_trig));
 
     AddNamedReal(m, "TAU", "growth time scale");
     AddNamedReal(m, "TAU_REV", "reverse growth time scale");
@@ -2504,7 +2451,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // isotropic growth law (cf. Diss Tinkl 2015, LNM)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_GrowthIsoStress", "stress-dependent growth law", INPAR::MAT::m_growth_iso_stress));
 
     AddNamedReal(m, "THETAPLUS", "maximal growth stretch");
@@ -2523,7 +2470,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // simple atherosclerosis growth law, scalar-dependent volumetric growth
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_GrowthAC", "scalar depended volumetric growth", INPAR::MAT::m_growth_ac));
 
     AddNamedInt(m, "SCALAR1", "number of first growth inducing scalar");
@@ -2538,7 +2485,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // atherosclerosis growth law, scalar depended growth in radial direction
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadial",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadial",
         "scalar depended growth in radial direction", INPAR::MAT::m_growth_ac_radial));
 
     AddNamedInt(m, "SCALAR1", "number of first growth inducing scalar");
@@ -2553,9 +2500,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // atherosclerosis growth law, scalar depended growth in radial direction
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadialRefConc",
-            "scalar depended growth in radial direction", INPAR::MAT::m_growth_ac_radial_refconc));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadialRefConc",
+        "scalar depended growth in radial direction", INPAR::MAT::m_growth_ac_radial_refconc));
 
     AddNamedInt(m, "SCALAR1", "number of first growth inducing scalar");
     AddNamedReal(m, "ALPHA", "volume per first scalar's mass density");
@@ -2569,7 +2515,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // constant rate growth law
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_GrowthConst", "constant growth law", INPAR::MAT::m_growth_const));
 
     AddNamedReal(m, "THETARATE", "reference value for mandelstress");
@@ -2582,9 +2528,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // growth and remodeling of arteries
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_ConstraintMixture",
-            "growth and remodeling of arteries", INPAR::MAT::m_constraintmixture));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ConstraintMixture",
+        "growth and remodeling of arteries", INPAR::MAT::m_constraintmixture));
 
     AddNamedReal(m, "DENS", "Density");
     AddNamedReal(m, "MUE", "Shear Modulus");
@@ -2628,7 +2573,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // optimization modeling
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MAT_opti", "optimization material", INPAR::MAT::m_opti_dens));
 
     AddNamedReal(m, "MINPORO", "minimal porosity");
@@ -2641,7 +2586,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_StructPoro", "wrapper for structure poroelastic material", INPAR::MAT::m_structporo));
 
     AddNamedInt(m, "MATID", "ID of structure material");
@@ -2653,7 +2598,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // linear law for porosity in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinear",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinear",
         "linear constitutive law for porosity", INPAR::MAT::m_poro_law_linear));
 
     AddNamedReal(m, "BULKMODULUS", "bulk modulus of porous medium");
@@ -2663,7 +2608,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // constant law for porosity in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawConstant",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawConstant",
         "constant constitutive law for porosity", INPAR::MAT::m_poro_law_constant));
 
     AppendMaterialDefinition(matlist, m);
@@ -2671,7 +2616,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // neo-hookean law for porosity in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawNeoHooke",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawNeoHooke",
         "NeoHookean-like constitutive law for porosity",
         INPAR::MAT::m_poro_law_logNeoHooke_Penalty));
 
@@ -2683,16 +2628,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_PoroLawIncompSkel", "porosity law for incompressible skeleton phase",
-        INPAR::MAT::m_poro_law_incompr_skeleton));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawIncompSkel",
+        "porosity law for incompressible skeleton phase", INPAR::MAT::m_poro_law_incompr_skeleton));
 
     AppendMaterialDefinition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinBiot",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinBiot",
         "linear biot model for porosity law", INPAR::MAT::m_poro_law_linear_biot));
 
     AddNamedReal(m, "INVBIOTMODULUS", "inverse Biot modulus of porous medium");
@@ -2703,9 +2647,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity depending on the density
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_PoroLawDensityDependent",
-            "porosity depending on the density", INPAR::MAT::m_poro_law_density_dependent));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawDensityDependent",
+        "porosity depending on the density", INPAR::MAT::m_poro_law_density_dependent));
 
     AddNamedInt(m, "DENSITYLAWID", "material ID of density law");
 
@@ -2714,18 +2657,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // density law for constant density in porous multiphase medium
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_PoroDensityLawConstant",
-            "density law for constant density in porous multiphase medium",
-            INPAR::MAT::m_poro_densitylaw_constant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroDensityLawConstant",
+        "density law for constant density in porous multiphase medium",
+        INPAR::MAT::m_poro_densitylaw_constant));
 
     AppendMaterialDefinition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // density law for constant density in porous multiphase medium
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_PoroDensityLawExp", "density law for pressure dependent exponential function",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PoroDensityLawExp",
+        "density law for pressure dependent exponential function",
         INPAR::MAT::m_poro_densitylaw_exp));
 
     AddNamedReal(m, "BULKMODULUS", "bulk modulus of porous medium");
@@ -2734,10 +2676,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // permeability law for constant permeability in porous multiphase medium
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawConstant",
-            "permeability law for constant permeability in porous multiphase medium",
-            INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawConstant",
+        "permeability law for constant permeability in porous multiphase medium",
+        INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant));
 
     AddNamedReal(m, "VALUE", "constant value of permeability");
     AppendMaterialDefinition(matlist, m);
@@ -2746,10 +2687,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // permeability law for permeability depending on saturation according to (saturation)^exp
   // in porous multiphase medium
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawExp",
-            "permeability law depending on saturation in porous multiphase medium",
-            INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawExp",
+        "permeability law depending on saturation in porous multiphase medium",
+        INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp));
 
     AddNamedReal(m, "EXP", "exponent of the saturation of this phase");
     AddNamedReal(m, "MIN_SAT", "minimum saturation which is used for calculation");
@@ -2758,10 +2698,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // viscosity law for constant viscosity in porous multiphase medium
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawConstant",
-            "viscosity law for constant viscosity in porous multiphase medium",
-            INPAR::MAT::m_fluidporo_viscositylaw_constant));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawConstant",
+        "viscosity law for constant viscosity in porous multiphase medium",
+        INPAR::MAT::m_fluidporo_viscositylaw_constant));
 
     AddNamedReal(m, "VALUE", "constant value of viscosity");
     AppendMaterialDefinition(matlist, m);
@@ -2769,10 +2708,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // viscosity law for viscosity-dependency modelling cell adherence
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawCellAdherence",
-            "visosity law depending on pressure gradient in porous multiphase medium",
-            INPAR::MAT::m_fluidporo_viscositylaw_celladh));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawCellAdherence",
+        "visosity law depending on pressure gradient in porous multiphase medium",
+        INPAR::MAT::m_fluidporo_viscositylaw_celladh));
 
     AddNamedReal(m, "VISC_0", "Visc0 parameter for modelling cell adherence");
     AddNamedReal(m, "XI", "xi parameter for modelling cell adherence");
@@ -2782,8 +2720,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_StructPoroReaction", "wrapper for structure porelastic material with reaction",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_StructPoroReaction",
+        "wrapper for structure porelastic material with reaction",
         INPAR::MAT::m_structpororeaction));
 
     AddNamedInt(m, "MATID", "ID of structure material");
@@ -2797,8 +2735,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_StructPoroReactionECM", "wrapper for structure porelastic material with reaction",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_StructPoroReactionECM",
+        "wrapper for structure porelastic material with reaction",
         INPAR::MAT::m_structpororeactionECM));
 
     AddNamedInt(m, "MATID", "ID of structure material");
@@ -2812,7 +2750,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // fluid flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_FluidPoro", "flow in deformable porous media", INPAR::MAT::m_fluidporo));
 
     AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
@@ -2830,9 +2768,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhase",
-            "multi phase flow in deformable porous media", INPAR::MAT::m_fluidporo_multiphase));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhase",
+        "multi phase flow in deformable porous media", INPAR::MAT::m_fluidporo_multiphase));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
     AddNamedReal(m, "PERMEABILITY", "permeability of medium");
@@ -2847,10 +2784,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // multiphase flow in a poroelastic material with reactions
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhaseReactions",
-            "multi phase flow in deformable porous media and list of reactions",
-            INPAR::MAT::m_fluidporo_multiphase_reactions));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhaseReactions",
+        "multi phase flow in deformable porous media and list of reactions",
+        INPAR::MAT::m_fluidporo_multiphase_reactions));
 
     AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
     AddNamedReal(m, "PERMEABILITY", "permeability of medium");
@@ -2867,9 +2803,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one reaction for multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSingleReaction",
-            "advanced reaction material", INPAR::MAT::m_fluidporo_singlereaction));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSingleReaction",
+        "advanced reaction material", INPAR::MAT::m_fluidporo_singlereaction));
 
     AddNamedInt(m, "NUMSCAL", "number of scalars coupled with this problem");
     AddNamedInt(m, "TOTALNUMDOF", "total number of multiphase-dofs");
@@ -2884,8 +2819,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one phase for multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_FluidPoroSinglePhase", "one phase for multiphase flow in deformable porous media",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhase",
+        "one phase for multiphase flow in deformable porous media",
         INPAR::MAT::m_fluidporo_singlephase));
 
     AddNamedInt(m, "DENSITYLAWID", "ID of density law");
@@ -2900,8 +2835,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one volume fraction for multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_FluidPoroSingleVolFrac", "one phase for multiphase flow in deformable porous media",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSingleVolFrac",
+        "one phase for multiphase flow in deformable porous media",
         INPAR::MAT::m_fluidporo_singlevolfrac));
 
     AddNamedReal(m, "DENSITY", "reference/initial density");
@@ -2920,10 +2855,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one volume fraction pressure for multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroVolFracPressure",
-            "one volume fraction pressure for multiphase flow in deformable porous media",
-            INPAR::MAT::m_fluidporo_volfracpressure));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroVolFracPressure",
+        "one volume fraction pressure for multiphase flow in deformable porous media",
+        INPAR::MAT::m_fluidporo_volfracpressure));
 
     AddNamedReal(m, "PERMEABILITY", "permeability of phase");
     AddNamedInt(m, "VISCOSITYLAWID", "ID of viscosity law");
@@ -2936,10 +2870,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofDiffPressure",
-            "one degrree of freedom for multiphase flow in deformable porous media",
-            INPAR::MAT::m_fluidporo_phasedof_diffpressure));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofDiffPressure",
+        "one degrree of freedom for multiphase flow in deformable porous media",
+        INPAR::MAT::m_fluidporo_phasedof_diffpressure));
 
     AddNamedInt(m, "PHASELAWID", "ID of pressure-saturation law");
     AddNamedInt(m, "NUMDOF", "number of DoFs", 0);
@@ -2952,10 +2885,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofPressure",
-            "one degrree of freedom for multiphase flow in deformable porous media",
-            INPAR::MAT::m_fluidporo_phasedof_pressure));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofPressure",
+        "one degrree of freedom for multiphase flow in deformable porous media",
+        INPAR::MAT::m_fluidporo_phasedof_pressure));
 
     AddNamedInt(m, "PHASELAWID", "ID of pressure-saturation law");
 
@@ -2965,10 +2897,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofSaturation",
-            "one degrree of freedom for multiphase flow in deformable porous media",
-            INPAR::MAT::m_fluidporo_phasedof_saturation));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofSaturation",
+        "one degrree of freedom for multiphase flow in deformable porous media",
+        INPAR::MAT::m_fluidporo_phasedof_saturation));
 
     AddNamedInt(m, "PHASELAWID", "ID of pressure-saturation law");
 
@@ -2978,7 +2909,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // saturated law for pressure-saturation law in porous media problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawLinear",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawLinear",
         "saturated fluid phase of porous medium", INPAR::MAT::m_fluidporo_phaselaw_linear));
 
     AddNamedReal(m, "RELTENSION", "relative interface tensions");
@@ -2993,7 +2924,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // tangent law for pressure-saturation law in porous media multiphase problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawTangent",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawTangent",
         "tangent fluid phase of porous medium", INPAR::MAT::m_fluidporo_phaselaw_tangent));
 
     AddNamedReal(m, "RELTENSION", "relative interface tensions");
@@ -3009,9 +2940,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // constraint law for pressure-saturation law in porous media multiphase problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
-        new MaterialDefinition("MAT_PhaseLawConstraint", "constraint fluid phase of porous medium",
-            INPAR::MAT::m_fluidporo_phaselaw_constraint));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawConstraint",
+        "constraint fluid phase of porous medium", INPAR::MAT::m_fluidporo_phaselaw_constraint));
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3019,8 +2949,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // pressure-saturation law defined by functions in porous media multiphase problems
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_PhaseLawByFunction", "fluid phase of porous medium defined by functions",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawByFunction",
+        "fluid phase of porous medium defined by functions",
         INPAR::MAT::m_fluidporo_phaselaw_byfunction));
 
     AddNamedInt(m, "FUNCTPRES", "ID of function for differential pressure", 0);
@@ -3035,7 +2965,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // elastic spring
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MAT_Struct_Spring", "elastic spring", INPAR::MAT::m_spring));
 
     AddNamedReal(m, "STIFFNESS", "spring constant");
@@ -3082,11 +3012,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // material parameter definition for a Simo-Reissner type beam element
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
-        Teuchos::rcp(new MaterialDefinition("MAT_BeamReissnerElastHyper",
-            "material parameters for a Simo-Reissner type beam element based on "
-            "hyperelastic stored energy function",
-            INPAR::MAT::m_beam_reissner_elast_hyper));
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamReissnerElastHyper",
+        "material parameters for a Simo-Reissner type beam element based on "
+        "hyperelastic stored energy function",
+        INPAR::MAT::m_beam_reissner_elast_hyper));
 
 
     AddNamedReal(matdef, "YOUNG", "Young's modulus");
@@ -3129,12 +3058,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material parameter definition for a Simo-Reissner type beam element,
   // specified via 'modal' constitutive parameters (see comment above)
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
-        Teuchos::rcp(new MaterialDefinition("MAT_BeamReissnerElastHyper_ByModes",
-            "material parameters for a Simo-Reissner type beam element based on "
-            "hyperelastic stored energy function, specified for individual "
-            "deformation modes",
-            INPAR::MAT::m_beam_reissner_elast_hyper_bymodes));
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamReissnerElastHyper_ByModes",
+        "material parameters for a Simo-Reissner type beam element based on "
+        "hyperelastic stored energy function, specified for individual "
+        "deformation modes",
+        INPAR::MAT::m_beam_reissner_elast_hyper_bymodes));
 
 
     AddNamedReal(matdef, "EA", "axial rigidity");
@@ -3179,11 +3107,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // material parameter definition for a Kirchhoff-Love type beam element
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
-        Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffElastHyper",
-            "material parameters for a Kirchhoff-Love type beam element based on "
-            "hyperelastic stored energy function",
-            INPAR::MAT::m_beam_kirchhoff_elast_hyper));
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffElastHyper",
+        "material parameters for a Kirchhoff-Love type beam element based on "
+        "hyperelastic stored energy function",
+        INPAR::MAT::m_beam_kirchhoff_elast_hyper));
 
 
     AddNamedReal(matdef, "YOUNG", "Young's modulus");
@@ -3225,12 +3152,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material parameter definition for a Kirchhoff-Love type beam element,
   // specified via 'modal' constitutive parameters (see comment above)
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
-        Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffElastHyper_ByModes",
-            "material parameters for a Kirchhoff-Love type beam element based on "
-            "hyperelastic stored energy function, specified for individual "
-            "deformation modes",
-            INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes));
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffElastHyper_ByModes",
+        "material parameters for a Kirchhoff-Love type beam element based on "
+        "hyperelastic stored energy function, specified for individual "
+        "deformation modes",
+        INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes));
 
 
     AddNamedReal(matdef, "EA", "axial rigidity");
@@ -3274,11 +3200,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // material parameter definition for a torsion-free, isotropic
   // Kirchhoff-Love type beam element
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
-        Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffTorsionFreeElastHyper",
-            "material parameters for a torsion-free, isotropic Kirchhoff-Love "
-            "type beam element based on hyperelastic stored energy function",
-            INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper));
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffTorsionFreeElastHyper",
+        "material parameters for a torsion-free, isotropic Kirchhoff-Love "
+        "type beam element based on hyperelastic stored energy function",
+        INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper));
 
 
     AddNamedReal(matdef, "YOUNG", "Young's modulus");
@@ -3309,7 +3234,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // Kirchhoff-Love type beam element,
   // specified via 'modal' constitutive parameters (see comment above)
   {
-    Teuchos::RCP<MaterialDefinition> matdef =
+    auto matdef =
         Teuchos::rcp(new MaterialDefinition("MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes",
             "material parameters for a torsion-free, isotropic Kirchhoff-Love "
             "type beam element based on hyperelastic stored energy function, "
@@ -3342,7 +3267,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // material for a crosslinker in a biopolymer simulation
   {
-    Teuchos::RCP<MaterialDefinition> matdef = Teuchos::rcp(new MaterialDefinition(
+    auto matdef = Teuchos::rcp(new MaterialDefinition(
         "MAT_Crosslinker", "material for a linkage between beams", INPAR::MAT::m_crosslinkermat));
 
     AddNamedReal(matdef, "MATNUM", "number of beam elasthyper material");
@@ -3370,7 +3295,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 0D Acinar material base
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_0D_MAXWELL_ACINUS", "0D acinar material", INPAR::MAT::m_0d_maxwell_acinus));
 
     AddNamedReal(m, "Stiffness1", "first stiffness");
@@ -3385,9 +3310,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 0D NeoHookean Acinar material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN",
-            "0D acinar material neohookean", INPAR::MAT::m_0d_maxwell_acinus_neohookean));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN",
+        "0D acinar material neohookean", INPAR::MAT::m_0d_maxwell_acinus_neohookean));
 
     AddNamedReal(m, "Stiffness1", "first stiffness");
     AddNamedReal(m, "Stiffness2", "second stiffness");
@@ -3400,9 +3324,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 0D Exponential Acinar material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_EXPONENTIAL",
-            "0D acinar material exponential", INPAR::MAT::m_0d_maxwell_acinus_exponential));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_EXPONENTIAL",
+        "0D acinar material exponential", INPAR::MAT::m_0d_maxwell_acinus_exponential));
 
     AddNamedReal(m, "Stiffness1", "first stiffness");
     AddNamedReal(m, "Stiffness2", "second stiffness");
@@ -3415,9 +3338,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 0D Exponential Acinar material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL", "0D acinar material doubleexponential",
-        INPAR::MAT::m_0d_maxwell_acinus_doubleexponential));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL",
+        "0D acinar material doubleexponential", INPAR::MAT::m_0d_maxwell_acinus_doubleexponential));
 
     AddNamedReal(m, "Stiffness1", "first stiffness");
     AddNamedReal(m, "Stiffness2", "second stiffness");
@@ -3430,9 +3352,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // 0D Ogden Acinar material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_OGDEN",
-            "0D acinar material ogden", INPAR::MAT::m_0d_maxwell_acinus_ogden));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_OGDEN",
+        "0D acinar material ogden", INPAR::MAT::m_0d_maxwell_acinus_ogden));
 
     AddNamedReal(m, "Stiffness1", "first stiffness");
     AddNamedReal(m, "Stiffness2", "second stiffness");
@@ -3445,9 +3366,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // O2 hemoglobin saturation material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_HEMOGLOBIN_SATURATION",
-            "0D O2 hemoglobin saturation material", INPAR::MAT::m_0d_o2_hemoglobin_saturation));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_HEMOGLOBIN_SATURATION",
+        "0D O2 hemoglobin saturation material", INPAR::MAT::m_0d_o2_hemoglobin_saturation));
 
     AddNamedReal(m, "PerVolumeBlood", "how much of blood satisfies this rule (usually 100ml)");
     AddNamedReal(m, "O2SaturationPerVolBlood",
@@ -3462,9 +3382,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*--------------------------------------------------------------------*/
   // O2 air saturation material
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_AIR_SATURATION",
-            "0D O2 air saturation material", INPAR::MAT::m_0d_o2_air_saturation));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_AIR_SATURATION",
+        "0D O2 air saturation material", INPAR::MAT::m_0d_o2_air_saturation));
 
     AddNamedReal(m, "AtmosphericPressure", "The atmospheric pressure");
     AddNamedReal(m, "NumberOfO2PerVO2", "Number of O2 moles per unit volume of O2");
@@ -3475,7 +3394,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // particle material sph fluid
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHFluid",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHFluid",
         "particle material for SPH fluid", INPAR::MAT::m_particle_sph_fluid));
 
     AddNamedReal(m, "INITRADIUS", "initial radius");
@@ -3498,9 +3417,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // particle material sph boundary
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHBoundary",
-            "particle material for SPH boundary", INPAR::MAT::m_particle_sph_boundary));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHBoundary",
+        "particle material for SPH boundary", INPAR::MAT::m_particle_sph_boundary));
 
     AddNamedReal(m, "INITRADIUS", "initial radius");
     AddNamedReal(m, "INITDENSITY", "initial density");
@@ -3515,7 +3433,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // particle material dem
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_ParticleDEM", "particle material for DEM", INPAR::MAT::m_particle_dem));
 
     AddNamedReal(m, "INITRADIUS", "initial radius of particle");
@@ -3527,7 +3445,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // particle wall material dem
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_ParticleWallDEM", "particle wall material for DEM", INPAR::MAT::m_particle_wall_dem));
 
     AddNamedReal(m, "FRICT_COEFF_TANG", "friction coefficient for tangential contact", -1.0, true);
@@ -3540,7 +3458,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // acoustic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MAT_Acoustic", "acoustic material", INPAR::MAT::m_acousticmat));
 
     AddNamedReal(m, "DENSITY", "mass density");
@@ -3552,7 +3470,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // acoustic solid material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_AcousticSol", "acoustic solid material", INPAR::MAT::m_acousticsolmat));
 
     AddNamedReal(m, "DENSITY", "mass density");
@@ -3566,7 +3484,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // electromagnetic material
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_Electromagnetic", "Electromagnetic material", INPAR::MAT::m_electromagneticmat));
 
     AddNamedReal(m, "CONDUCTIVITY", "electrical conductivity");
@@ -3580,7 +3498,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // active fiber formation for the modeling of living cells
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ACTIVEFIBER",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ACTIVEFIBER",
         "active fiber formation for the modeling of living cells", INPAR::MAT::m_activefiber));
 
     AddNamedReal(m, "DENS", "Density");
@@ -3600,10 +3518,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // biochemo-mechano coupled active stress fiber formation for cells
   {
-    Teuchos::RCP<MaterialDefinition> m =
-        Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_ACTIVE",
-            "biochemo-mechano coupled active stress fiber formation for cells",
-            INPAR::MAT::m_biochemomechano_active));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_ACTIVE",
+        "biochemo-mechano coupled active stress fiber formation for cells",
+        INPAR::MAT::m_biochemomechano_active));
 
     AddNamedReal(m, "DENS", "Density");
     AddNamedInt(
@@ -3625,8 +3542,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // biochemo-mechano coupled passive fiber formation for cells
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_BIOCHEMOMECHANO_PASSIVE", "biochemo-mechano coupled cytoskeleton formation for cells",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_PASSIVE",
+        "biochemo-mechano coupled cytoskeleton formation for cells",
         INPAR::MAT::m_biochemomechano_passive));
 
     AddNamedInt(m, "IDMATELAST", "number of elastic material in input file");
@@ -3638,7 +3555,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // General mixture models (used for prestretching and for homogenized constrained mixture models)
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
 
     AddNamedReal(m, "DENS", "");
@@ -3655,7 +3572,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Mixture constituent for ElastHyper toolbox
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MIX_Constituent_ElastHyper", "ElastHyper toolbox", INPAR::MAT::mix_elasthyper));
 
     AddNamedInt(m, "NUMMAT", "number of summands");
@@ -3667,7 +3584,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Base mixture rule for solid mixtures
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+    auto m = Teuchos::rcp(
         new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
 
     AppendMaterialDefinition(matlist, m);
@@ -3676,7 +3593,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // crystal plasticity
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+    auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_crystal_plasticity", " Crystal plasticity ", INPAR::MAT::m_crystplast));
     AddNamedReal(m, "TOL", "tolerance for local Newton iteration");
     AddNamedReal(m, "YOUNG", "Young's modulus");

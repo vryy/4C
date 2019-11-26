@@ -8,7 +8,6 @@ See the header file for a detailed description.
 \level 3
 
 \maintainer Jan Schnabel
-            jan-eike.schnabel@hzg.de
 */
 /*----------------------------------------------------------------------*
  | headers                                                              |
@@ -23,23 +22,23 @@ See the header file for a detailed description.
  *----------------------------------------------------------------------*/
 MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      tol(matdata->GetDouble("TOL")),
-      youngs(matdata->GetDouble("YOUNG")),
-      poissonratio(matdata->GetDouble("NUE")),
-      density(matdata->GetDouble("DENS")),
-      latticetype(*matdata->Get<std::string>("LAT")),
-      c_to_a_ratio(matdata->GetDouble("CTOA")),
-      lattice_constant(matdata->GetDouble("ABASE")),
-      num_slip_sys(matdata->GetInt("NUMSLIPSYS")),
-      num_sub_sets(matdata->GetInt("NUMSUBSETS")),
-      sub_set_members(*matdata->Get<std::vector<int>>("SUBSETMEMBERS")),
-      rate_exp(*matdata->Get<std::vector<int>>("RATEEXP")),
-      ref_shear_rate(*matdata->Get<std::vector<double>>("GAMMADOTREF")),
-      dislocation_gen_coeff(*matdata->Get<std::vector<double>>("DISGENCOEFF")),
-      dislocation_dyn_rec_coeff(*matdata->Get<std::vector<double>>("DISDYNRECCOEFF")),
-      lattice_resistance(*matdata->Get<std::vector<double>>("TAUY0")),
-      microstructural_boundaries(*matdata->Get<std::vector<double>>("GBS")),
-      Hall_Petch_coeff(*matdata->Get<std::vector<double>>("HPCOEFF"))
+      tol_(matdata->GetDouble("TOL")),
+      youngs_(matdata->GetDouble("YOUNG")),
+      poissonratio_(matdata->GetDouble("NUE")),
+      density_(matdata->GetDouble("DENS")),
+      latticetype_(*matdata->Get<std::string>("LAT")),
+      c_to_a_ratio_(matdata->GetDouble("CTOA")),
+      lattice_constant_(matdata->GetDouble("ABASE")),
+      num_slip_sys_(matdata->GetInt("NUMSLIPSYS")),
+      num_sub_sets_(matdata->GetInt("NUMSUBSETS")),
+      sub_set_members_(*matdata->Get<std::vector<int>>("SUBSETMEMBERS")),
+      rate_exp_(*matdata->Get<std::vector<int>>("RATEEXP")),
+      ref_shear_rate_(*matdata->Get<std::vector<double>>("GAMMADOTREF")),
+      dislocation_gen_coeff_(*matdata->Get<std::vector<double>>("DISGENCOEFF")),
+      dislocation_dyn_rec_coeff_(*matdata->Get<std::vector<double>>("DISDYNRECCOEFF")),
+      lattice_resistance_(*matdata->Get<std::vector<double>>("TAUY0")),
+      microstructural_boundaries_(*matdata->Get<std::vector<double>>("GBS")),
+      Hall_Petch_coeff_(*matdata->Get<std::vector<double>>("HPCOEFF"))
 {
 }
 
@@ -70,7 +69,7 @@ DRT::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
  *----------------------------------------------------------------------*/
-MAT::CrystalPlasticity::CrystalPlasticity() : params_(NULL) {}
+MAT::CrystalPlasticity::CrystalPlasticity() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public)                                            |
@@ -91,30 +90,30 @@ void MAT::CrystalPlasticity::Pack(DRT::PackBuffer& data) const
 
   // pack matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not yet initialised, i.e. at start of simulation, nothing to pack
-  if (!(isinit and (F_curr != Teuchos::null)))
+  if (!(isinit_ and (F_curr_ != Teuchos::null)))
   {
     histsize = 0;
   }
   else
   {
     // if material is initialized already (restart): size equates number of Gauss points
-    histsize = F_last->size();
+    histsize = F_last_->size();
   }
   AddtoPack(data, histsize);  // length of history vector(s)
 
   for (int var = 0; var < histsize; ++var)
   {
     // insert history vectors to AddtoPack
-    AddtoPack(data, F_last->at(var));
-    AddtoPack(data, FP_last->at(var));
-    AddtoPack(data, gamma_last->at(var));
-    AddtoPack(data, def_dens_last->at(var));
+    AddtoPack(data, (*F_last_)[var]);
+    AddtoPack(data, (*FP_last_)[var]);
+    AddtoPack(data, (*gamma_last_)[var]);
+    AddtoPack(data, (*def_dens_last_)[var]);
   }
 
 }  // Pack()
@@ -153,31 +152,31 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
-  if (histsize == 0) isinit = false;
+  if (histsize == 0) isinit_ = false;
 
-  if (params_ != NULL)
+  if (params_ != nullptr)
   {
-    F_last = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-    FP_last = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-    gamma_last = Teuchos::rcp(new std::vector<std::vector<double>>);
-    def_dens_last = Teuchos::rcp(new std::vector<std::vector<double>>);
+    F_last_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+    FP_last_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+    gamma_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
+    def_dens_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
     for (int var = 0; var < histsize; ++var)
     {
       LINALG::Matrix<3, 3> tmp_matrix(true);
-      std::vector<double> tmp_vect(slip_sys_count);
+      std::vector<double> tmp_vect(slip_sys_count_);
 
       ExtractfromPack(position, data, tmp_matrix);
-      F_last->push_back(tmp_matrix);
+      F_last_->push_back(tmp_matrix);
 
       ExtractfromPack(position, data, tmp_matrix);
-      FP_last->push_back(tmp_matrix);
+      FP_last_->push_back(tmp_matrix);
 
       ExtractfromPack(position, data, tmp_vect);
-      gamma_last->push_back(tmp_vect);
+      gamma_last_->push_back(tmp_vect);
 
       ExtractfromPack(position, data, tmp_vect);
-      def_dens_last->push_back(tmp_vect);
+      def_dens_last_->push_back(tmp_vect);
     }
 
     // in the postprocessing mode, we do not unpack everything we have packed
@@ -197,20 +196,20 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   // General Properties:
   //-------------------
   // tolerance for local Newton Raphson iteration
-  Tol = params_->tol;
+  Tol_ = params_->tol_;
 
   // Elastic Properties:
   //-------------------------
   // Young's Modulus
-  E = params_->youngs;
+  E_ = params_->youngs_;
   // Poisson's ratio
-  Poisson = params_->poissonratio;
+  Poisson_ = params_->poissonratio_;
   // 1st lamé constant
-  Lambda = (Poisson * E) / ((1.0 + Poisson) * (1.0 - 2.0 * Poisson));
+  Lambda_ = (Poisson_ * E_) / ((1.0 + Poisson_) * (1.0 - 2.0 * Poisson_));
   // Shear modulus / 2nd Lame constant
-  Mu = E / (2.0 * (1.0 + Poisson));
+  Mu_ = E_ / (2.0 * (1.0 + Poisson_));
   // Bulk modulus
-  K = E / (3.0 - (6.0 * Poisson));
+  K_ = E_ / (3.0 - (6.0 * Poisson_));
 
   // Crystal Properties:
   //-------------------
@@ -223,99 +222,99 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   this->SetupLatticeOrientation(linedef);
 
   // rotate lattice vectors according to lattice orientation
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    LINALG::Matrix<3, 1> UnrotatedNor = SlipNor->at(i);
-    LINALG::Matrix<3, 1> UnrotatedDir = SlipDir->at(i);
+    LINALG::Matrix<3, 1> UnrotatedNor = SlipNor_[i];
+    LINALG::Matrix<3, 1> UnrotatedDir = SlipDir_[i];
 
-    SlipNor->at(i).MultiplyNN(*LatticeOrientation, UnrotatedNor);
-    SlipDir->at(i).MultiplyNN(*LatticeOrientation, UnrotatedDir);
+    SlipNor_[i].MultiplyNN(LatticeOrientation_, UnrotatedNor);
+    SlipDir_[i].MultiplyNN(LatticeOrientation_, UnrotatedDir);
   }
   // TODO ADD TEST WHETHER INPUT ROTATION MATRIX IS ORTHOGONAL Q*Q^T=I TO AVOID UNWANTED SCALING OF
   // LATTICE VECTORS!
 
   // Index to which subset a slip system belongs
-  SubSetIndex = params_->sub_set_members;
+  SubSetIndex_ = params_->sub_set_members_;
 
   // Viscoplastic Properties:
   //------------------------
   // TODO RATE EXPONENT INPUT
   // reference shear rates
-  Gamma0 = params_->ref_shear_rate;
+  Gamma0_ = params_->ref_shear_rate_;
 
   // Dislocation Generation/Recovery:
   //--------------------------------
   // dislocation generation coefficients
-  Dislocation_Gen_Coeff = params_->dislocation_gen_coeff;
+  Dislocation_Gen_Coeff_ = params_->dislocation_gen_coeff_;
   // dynamic dislocation removal coefficients
-  Dislocation_Dyn_Rec_Coeff = params_->dislocation_dyn_rec_coeff;
+  Dislocation_Dyn_Rec_Coeff_ = params_->dislocation_dyn_rec_coeff_;
 
   // Initial Slip System Strengths:
   //------------------------------
   // lattice resistances to slip
-  TauY_0 = params_->lattice_resistance;
+  TauY_0_ = params_->lattice_resistance_;
   // microstructural parameters which are relevant for Hall-Petch strengthening, e.g., grain size
-  Micro_Boundary_Dist = params_->microstructural_boundaries;
+  Micro_Boundary_Dist_ = params_->microstructural_boundaries_;
   // Hall-Petch coefficients corresponding to above microstructural boundaries
-  Hall_Petch_Coeffs = params_->Hall_Petch_coeff;
+  Hall_Petch_Coeffs_ = params_->Hall_Petch_coeff_;
 
 
 
   // initialize history variables
 
-  F_last = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  F_curr = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  F_last_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  F_curr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
 
-  FP_last = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  FP_curr = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  FP_last_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  FP_curr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
 
-  gamma_last = Teuchos::rcp(new std::vector<std::vector<double>>);
-  gamma_curr = Teuchos::rcp(new std::vector<std::vector<double>>);
+  gamma_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
+  gamma_curr_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
-  def_dens_last = Teuchos::rcp(new std::vector<std::vector<double>>);
-  def_dens_curr = Teuchos::rcp(new std::vector<std::vector<double>>);
+  def_dens_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
+  def_dens_curr_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
   // set size to number of  Gauss points so each Gauss Point has its own set of history data
-  F_last->resize(numgp);
-  F_curr->resize(numgp);
+  F_last_->resize(numgp);
+  F_curr_->resize(numgp);
 
-  FP_last->resize(numgp);
-  FP_curr->resize(numgp);
+  FP_last_->resize(numgp);
+  FP_curr_->resize(numgp);
 
-  gamma_last->resize(numgp);
-  gamma_curr->resize(numgp);
+  gamma_last_->resize(numgp);
+  gamma_curr_->resize(numgp);
 
-  def_dens_last->resize(numgp);
-  def_dens_curr->resize(numgp);
+  def_dens_last_->resize(numgp);
+  def_dens_curr_->resize(numgp);
 
   // set initial values
-  std::vector<double> emptyvect(slip_sys_count);
-  for (int i = 0; i < slip_sys_count; i++) emptyvect.at(i) = 0.0;
+  std::vector<double> emptyvect(slip_sys_count_);
+  for (int i = 0; i < slip_sys_count_; i++) emptyvect.at(i) = 0.0;
 
   for (int i = 0; i < numgp; i++)
   {
-    F_last->at(i) = Identity3();
-    F_curr->at(i) = Identity3();
+    (*F_last_)[i] = Identity3();
+    (*F_curr_)[i] = Identity3();
 
-    FP_last->at(i) = Identity3();
-    FP_curr->at(i) = Identity3();
+    (*FP_last_)[i] = Identity3();
+    (*FP_curr_)[i] = Identity3();
 
-    gamma_last->at(i).resize(slip_sys_count);
-    gamma_curr->at(i).resize(slip_sys_count);
+    (*gamma_last_)[i].resize(slip_sys_count_);
+    (*gamma_curr_)[i].resize(slip_sys_count_);
 
-    gamma_last->at(i) = emptyvect;
-    gamma_curr->at(i) = emptyvect;
+    (*gamma_last_)[i] = emptyvect;
+    (*gamma_curr_)[i] = emptyvect;
 
-    def_dens_last->at(i).resize(slip_sys_count);
-    def_dens_curr->at(i).resize(slip_sys_count);
+    (*def_dens_last_)[i].resize(slip_sys_count_);
+    (*def_dens_curr_)[i].resize(slip_sys_count_);
 
-    for (int j = 0; j < slip_sys_count; j++)
-      def_dens_last->at(i).at(j) = 1e5;  // TODO GET INITIAL DIS DENS ROM INPUT LINE
+    for (int j = 0; j < slip_sys_count_; j++)
+      (*def_dens_last_)[i][j] = 1e5;  // TODO GET INITIAL DIS DENS ROM INPUT LINE
 
-    def_dens_curr->at(i) = emptyvect;
+    (*def_dens_curr_)[i] = emptyvect;
   }
 
-  isinit = true;
+  isinit_ = true;
   return;
 }  // Setup()
 
@@ -326,38 +325,38 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
 void MAT::CrystalPlasticity::Update()
 {
   // update values of last step t_n to current values at time step t_n+1
-  F_last = F_curr;
-  FP_last = FP_curr;
-  gamma_last = gamma_curr;
-  def_dens_last = def_dens_curr;
+  F_last_ = F_curr_;
+  FP_last_ = FP_curr_;
+  gamma_last_ = gamma_curr_;
+  def_dens_last_ = def_dens_curr_;
 
   // empty vectors of current data
-  F_curr = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  FP_curr = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  gamma_curr = Teuchos::rcp(new std::vector<std::vector<double>>);
-  def_dens_curr = Teuchos::rcp(new std::vector<std::vector<double>>);
+  F_curr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  FP_curr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  gamma_curr_ = Teuchos::rcp(new std::vector<std::vector<double>>);
+  def_dens_curr_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
   // get the size of the vector (use the last vector, because it includes latest results, current is
   // already empty)
-  const int histsize = F_last->size();
-  F_curr->resize(histsize);
-  FP_curr->resize(histsize);
-  gamma_curr->resize(histsize);
-  def_dens_curr->resize(histsize);
+  const int histsize = F_last_->size();
+  F_curr_->resize(histsize);
+  FP_curr_->resize(histsize);
+  gamma_curr_->resize(histsize);
+  def_dens_curr_->resize(histsize);
 
   LINALG::Matrix<3, 3> emptymat(true);
-  std::vector<double> emptyvect(slip_sys_count);
-  for (int i = 0; i < slip_sys_count; i++)
+  std::vector<double> emptyvect(slip_sys_count_);
+  for (int i = 0; i < slip_sys_count_; i++)
   {
     emptyvect.at(i) = 0.0;
   }
 
   for (int i = 0; i < histsize; i++)
   {
-    F_curr->at(i) = emptymat;
-    FP_curr->at(i) = emptymat;
-    gamma_curr->at(i) = emptyvect;
-    def_dens_curr->at(i) = emptyvect;
+    (*F_curr_)[i] = emptymat;
+    (*FP_curr_)[i] = emptymat;
+    (*gamma_curr_)[i] = emptyvect;
+    (*def_dens_curr_)[i] = emptyvect;
   }
 
 
@@ -382,7 +381,7 @@ void MAT::CrystalPlasticity::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   dt = params.get<double>("delta time");
 
   // set current deformation gradient
-  F_curr->at(gp) = *defgrd;
+  (*F_curr_)[gp] = *defgrd;
 
 
   // local Newton-Raphson to determine plastic shears
@@ -393,7 +392,7 @@ void MAT::CrystalPlasticity::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // call Newton-Raphson method with current deformation gradient
   this->NewtonRaphson(
-      F_curr->at(gp), gamma_curr->at(gp), def_dens_curr->at(gp), PK2_res, FP_curr->at(gp));
+      (*F_curr_)[gp], (*gamma_curr_)[gp], (*def_dens_curr_)[gp], PK2_res, (*FP_curr_)[gp]);
 
   // update stress results
   (*stress)(0) = PK2_res(0, 0);
@@ -412,346 +411,339 @@ void MAT::CrystalPlasticity::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 void MAT::CrystalPlasticity::SetupLatticeVectors()
 {
   // extract lattice type from user input
-  LatticeType = params_->latticetype;
+  LatticeType_ = params_->latticetype_;
 
   // assign number of slip systems that corresponds to the given lattice
-  if (LatticeType == "L10" || LatticeType == "D019")
+  if (LatticeType_ == "L10" || LatticeType_ == "D019")
   {
-    slip_sys_count = 12;
+    slip_sys_count_ = 12;
   }
-  else if (LatticeType == "TEST")
+  else if (LatticeType_ == "TEST")
   {
-    slip_sys_count = 1;
+    slip_sys_count_ = 1;
   }
 
   // check whether the number of slip systems given by the user coincides with the lattice type
-  if (params_->num_slip_sys != slip_sys_count)
+  if (params_->num_slip_sys_ != slip_sys_count_)
   {
     dserror(
         "Given number of slip systems NUMSLIPSYS = %d does not match the expected number for "
         "%s lattices!",
-        params_->num_slip_sys, LatticeType.c_str());
+        params_->num_slip_sys_, LatticeType_.c_str());
   }
 
-  // initialize slip plane normals and directions
-  SlipNor = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 1>>);
-  SlipDir = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 1>>);
-
-  // initialize slip system ID vector
-  SlipSysID = Teuchos::rcp(new std::vector<std::string>);
-
   // resize to number of slip systems
-  SlipNor->resize(slip_sys_count);
-  SlipDir->resize(slip_sys_count);
-  SlipSysID->resize(slip_sys_count);
+  SlipNor_.resize(slip_sys_count_);
+  SlipDir_.resize(slip_sys_count_);
+  SlipSysID_.resize(slip_sys_count_);
 
   // import c to a ratio of unit cell as provided by the user
-  CtoA = params_->c_to_a_ratio;
+  CtoA_ = params_->c_to_a_ratio_;
 
   // set up corresponding set of slip planes depending on the chosen crystallographic lattice
   // L10 super lattice
-  if (LatticeType == "L10")
+  if (LatticeType_ == "L10")
   {
     // ordinary slip systems
-    SlipSysID->at(0) = "ordinary_1";
+    SlipSysID_[0] = "ordinary_1";
 
-    SlipNor->at(0)(0, 0) = 1.0;
-    SlipNor->at(0)(1, 0) = 1.0;
-    SlipNor->at(0)(2, 0) = 1.0 / CtoA;
+    SlipNor_[0](0, 0) = 1.0;
+    SlipNor_[0](1, 0) = 1.0;
+    SlipNor_[0](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(0)(0, 0) = 1.0 / 2.0;
-    SlipDir->at(0)(1, 0) = -1.0 / 2.0;
-    SlipDir->at(0)(2, 0) = 0.0 * CtoA;
+    SlipDir_[0](0, 0) = 1.0 / 2.0;
+    SlipDir_[0](1, 0) = -1.0 / 2.0;
+    SlipDir_[0](2, 0) = 0.0 * CtoA_;
 
-    SlipSysID->at(1) = "ordinary_2";
+    SlipSysID_[1] = "ordinary_2";
 
-    SlipNor->at(1)(0, 0) = -1.0;
-    SlipNor->at(1)(1, 0) = -1.0;
-    SlipNor->at(1)(2, 0) = 1.0 / CtoA;
+    SlipNor_[1](0, 0) = -1.0;
+    SlipNor_[1](1, 0) = -1.0;
+    SlipNor_[1](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(1)(0, 0) = 1.0 / 2.0;
-    SlipDir->at(1)(1, 0) = -1.0 / 2.0;
-    SlipDir->at(1)(2, 0) = 0.0 * CtoA;
+    SlipDir_[1](0, 0) = 1.0 / 2.0;
+    SlipDir_[1](1, 0) = -1.0 / 2.0;
+    SlipDir_[1](2, 0) = 0.0 * CtoA_;
 
-    SlipSysID->at(2) = "ordinary_3";
+    SlipSysID_[2] = "ordinary_3";
 
-    SlipNor->at(2)(0, 0) = 1.0;
-    SlipNor->at(2)(1, 0) = -1.0;
-    SlipNor->at(2)(2, 0) = 1.0 / CtoA;
+    SlipNor_[2](0, 0) = 1.0;
+    SlipNor_[2](1, 0) = -1.0;
+    SlipNor_[2](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(2)(0, 0) = 1.0 / 2.0;
-    SlipDir->at(2)(1, 0) = 1.0 / 2.0;
-    SlipDir->at(2)(2, 0) = 0.0 * CtoA;
+    SlipDir_[2](0, 0) = 1.0 / 2.0;
+    SlipDir_[2](1, 0) = 1.0 / 2.0;
+    SlipDir_[2](2, 0) = 0.0 * CtoA_;
 
-    SlipSysID->at(3) = "ordinary_4";
+    SlipSysID_[3] = "ordinary_4";
 
-    SlipNor->at(3)(0, 0) = -1.0;
-    SlipNor->at(3)(1, 0) = 1.0;
-    SlipNor->at(3)(2, 0) = 1.0 / CtoA;
+    SlipNor_[3](0, 0) = -1.0;
+    SlipNor_[3](1, 0) = 1.0;
+    SlipNor_[3](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(3)(0, 0) = 1.0 / 2.0;
-    SlipDir->at(3)(1, 0) = 1.0 / 2.0;
-    SlipDir->at(3)(2, 0) = 0.0 * CtoA;
+    SlipDir_[3](0, 0) = 1.0 / 2.0;
+    SlipDir_[3](1, 0) = 1.0 / 2.0;
+    SlipDir_[3](2, 0) = 0.0 * CtoA_;
 
     // super slip systems
-    SlipSysID->at(4) = "super_1";
+    SlipSysID_[4] = "super_1";
 
-    SlipNor->at(4)(0, 0) = 1.0;
-    SlipNor->at(4)(1, 0) = 1.0;
-    SlipNor->at(4)(2, 0) = 1.0 / CtoA;
+    SlipNor_[4](0, 0) = 1.0;
+    SlipNor_[4](1, 0) = 1.0;
+    SlipNor_[4](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(4)(0, 0) = 0.0;
-    SlipDir->at(4)(1, 0) = 1.0;
-    SlipDir->at(4)(2, 0) = -1.0 * CtoA;
+    SlipDir_[4](0, 0) = 0.0;
+    SlipDir_[4](1, 0) = 1.0;
+    SlipDir_[4](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(5) = "super_2";
+    SlipSysID_[5] = "super_2";
 
-    SlipNor->at(5)(0, 0) = 1.0;
-    SlipNor->at(5)(1, 0) = 1.0;
-    SlipNor->at(5)(2, 0) = 1.0 / CtoA;
+    SlipNor_[5](0, 0) = 1.0;
+    SlipNor_[5](1, 0) = 1.0;
+    SlipNor_[5](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(5)(0, 0) = 1.0;
-    SlipDir->at(5)(1, 0) = 0.0;
-    SlipDir->at(5)(2, 0) = -1.0 * CtoA;
+    SlipDir_[5](0, 0) = 1.0;
+    SlipDir_[5](1, 0) = 0.0;
+    SlipDir_[5](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(6) = "super_3";
+    SlipSysID_[6] = "super_3";
 
-    SlipNor->at(6)(0, 0) = 1.0;
-    SlipNor->at(6)(1, 0) = -1.0;
-    SlipNor->at(6)(2, 0) = -1.0 / CtoA;
+    SlipNor_[6](0, 0) = 1.0;
+    SlipNor_[6](1, 0) = -1.0;
+    SlipNor_[6](2, 0) = -1.0 / CtoA_;
 
-    SlipDir->at(6)(0, 0) = 0.0;
-    SlipDir->at(6)(1, 0) = 1.0;
-    SlipDir->at(6)(2, 0) = -1.0 * CtoA;
+    SlipDir_[6](0, 0) = 0.0;
+    SlipDir_[6](1, 0) = 1.0;
+    SlipDir_[6](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(7) = "super_4";
+    SlipSysID_[7] = "super_4";
 
-    SlipNor->at(7)(0, 0) = 1.0;
-    SlipNor->at(7)(1, 0) = -1.0;
-    SlipNor->at(7)(2, 0) = 1.0 / CtoA;
+    SlipNor_[7](0, 0) = 1.0;
+    SlipNor_[7](1, 0) = -1.0;
+    SlipNor_[7](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(7)(0, 0) = 1.0;
-    SlipDir->at(7)(1, 0) = 0.0;
-    SlipDir->at(7)(2, 0) = -1.0 * CtoA;
+    SlipDir_[7](0, 0) = 1.0;
+    SlipDir_[7](1, 0) = 0.0;
+    SlipDir_[7](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(8) = "super_5";
+    SlipSysID_[8] = "super_5";
 
-    SlipNor->at(8)(0, 0) = 1.0;
-    SlipNor->at(8)(1, 0) = 1.0;
-    SlipNor->at(8)(2, 0) = -1.0 / CtoA;
+    SlipNor_[8](0, 0) = 1.0;
+    SlipNor_[8](1, 0) = 1.0;
+    SlipNor_[8](2, 0) = -1.0 / CtoA_;
 
-    SlipDir->at(8)(0, 0) = 0.0;
-    SlipDir->at(8)(1, 0) = -1.0;
-    SlipDir->at(8)(2, 0) = -1.0 * CtoA;
+    SlipDir_[8](0, 0) = 0.0;
+    SlipDir_[8](1, 0) = -1.0;
+    SlipDir_[8](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(9) = "super_6";
+    SlipSysID_[9] = "super_6";
 
-    SlipNor->at(9)(0, 0) = 1.0;
-    SlipNor->at(9)(1, 0) = 1.0;
-    SlipNor->at(9)(2, 0) = -1.0 / CtoA;
+    SlipNor_[9](0, 0) = 1.0;
+    SlipNor_[9](1, 0) = 1.0;
+    SlipNor_[9](2, 0) = -1.0 / CtoA_;
 
-    SlipDir->at(9)(0, 0) = -1.0;
-    SlipDir->at(9)(1, 0) = 0.0;
-    SlipDir->at(9)(2, 0) = -1.0 * CtoA;
+    SlipDir_[9](0, 0) = -1.0;
+    SlipDir_[9](1, 0) = 0.0;
+    SlipDir_[9](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(10) = "super_7";
+    SlipSysID_[10] = "super_7";
 
-    SlipNor->at(10)(0, 0) = 1.0;
-    SlipNor->at(10)(1, 0) = -1.0;
-    SlipNor->at(10)(2, 0) = 1.0 / CtoA;
+    SlipNor_[10](0, 0) = 1.0;
+    SlipNor_[10](1, 0) = -1.0;
+    SlipNor_[10](2, 0) = 1.0 / CtoA_;
 
-    SlipDir->at(10)(0, 0) = 0.0;
-    SlipDir->at(10)(1, 0) = -1.0;
-    SlipDir->at(10)(2, 0) = -1.0 * CtoA;
+    SlipDir_[10](0, 0) = 0.0;
+    SlipDir_[10](1, 0) = -1.0;
+    SlipDir_[10](2, 0) = -1.0 * CtoA_;
 
-    SlipSysID->at(11) = "super_8";
+    SlipSysID_[11] = "super_8";
 
-    SlipNor->at(11)(0, 0) = 1.0;
-    SlipNor->at(11)(1, 0) = -1.0;
-    SlipNor->at(11)(2, 0) = -1.0 / CtoA;
+    SlipNor_[11](0, 0) = 1.0;
+    SlipNor_[11](1, 0) = -1.0;
+    SlipNor_[11](2, 0) = -1.0 / CtoA_;
 
-    SlipDir->at(11)(0, 0) = -1.0;
-    SlipDir->at(11)(1, 0) = 0.0;
-    SlipDir->at(11)(2, 0) = -1.0 * CtoA;
+    SlipDir_[11](0, 0) = -1.0;
+    SlipDir_[11](1, 0) = 0.0;
+    SlipDir_[11](2, 0) = -1.0 * CtoA_;
   }
   // D019 super lattice
-  else if (LatticeType == "D019")
+  else if (LatticeType_ == "D019")
   {
     // initialize slip plane normals and directions for Miller-Bravais indices
-    std::vector<LINALG::Matrix<4, 1>> SlipNorHex(slip_sys_count);
-    std::vector<LINALG::Matrix<4, 1>> SlipDirHex(slip_sys_count);
+    std::vector<LINALG::Matrix<4, 1>> SlipNorHex(slip_sys_count_);
+    std::vector<LINALG::Matrix<4, 1>> SlipDirHex(slip_sys_count_);
 
     // NOTE: the c to a ratio is incorporated during transformation from Miller-Bravais to Miller
 
     // prismatic slip systems
-    SlipSysID->at(0) = "prismatic_1";
+    SlipSysID_[0] = "prismatic_1";
 
-    SlipNorHex.at(0)(0, 0) = 1.0;
-    SlipNorHex.at(0)(1, 0) = -1.0;
-    SlipNorHex.at(0)(2, 0) = 0.0;
-    SlipNorHex.at(0)(3, 0) = 0.0;
+    SlipNorHex[0](0, 0) = 1.0;
+    SlipNorHex[0](1, 0) = -1.0;
+    SlipNorHex[0](2, 0) = 0.0;
+    SlipNorHex[0](3, 0) = 0.0;
 
-    SlipDirHex.at(0)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(0)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(0)(2, 0) = -2.0 / 3.0;
-    SlipDirHex.at(0)(3, 0) = 0.0;
+    SlipDirHex[0](0, 0) = 1.0 / 3.0;
+    SlipDirHex[0](1, 0) = 1.0 / 3.0;
+    SlipDirHex[0](2, 0) = -2.0 / 3.0;
+    SlipDirHex[0](3, 0) = 0.0;
 
-    SlipSysID->at(1) = "prismatic_2";
+    SlipSysID_[1] = "prismatic_2";
 
-    SlipNorHex.at(1)(0, 0) = 0.0;
-    SlipNorHex.at(1)(1, 0) = 1.0;
-    SlipNorHex.at(1)(2, 0) = -1.0;
-    SlipNorHex.at(1)(3, 0) = 0.0;
+    SlipNorHex[1](0, 0) = 0.0;
+    SlipNorHex[1](1, 0) = 1.0;
+    SlipNorHex[1](2, 0) = -1.0;
+    SlipNorHex[1](3, 0) = 0.0;
 
-    SlipDirHex.at(1)(0, 0) = -2.0 / 3.0;
-    SlipDirHex.at(1)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(1)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(1)(3, 0) = 0.0;
+    SlipDirHex[1](0, 0) = -2.0 / 3.0;
+    SlipDirHex[1](1, 0) = 1.0 / 3.0;
+    SlipDirHex[1](2, 0) = 1.0 / 3.0;
+    SlipDirHex[1](3, 0) = 0.0;
 
-    SlipSysID->at(2) = "prismatic_3";
+    SlipSysID_[2] = "prismatic_3";
 
-    SlipNorHex.at(2)(0, 0) = 1.0;
-    SlipNorHex.at(2)(1, 0) = 0.0;
-    SlipNorHex.at(2)(2, 0) = -1.0;
-    SlipNorHex.at(2)(3, 0) = 0.0;
+    SlipNorHex[2](0, 0) = 1.0;
+    SlipNorHex[2](1, 0) = 0.0;
+    SlipNorHex[2](2, 0) = -1.0;
+    SlipNorHex[2](3, 0) = 0.0;
 
-    SlipDirHex.at(2)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(2)(1, 0) = -2.0 / 3.0;
-    SlipDirHex.at(2)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(2)(3, 0) = 0.0;
+    SlipDirHex[2](0, 0) = 1.0 / 3.0;
+    SlipDirHex[2](1, 0) = -2.0 / 3.0;
+    SlipDirHex[2](2, 0) = 1.0 / 3.0;
+    SlipDirHex[2](3, 0) = 0.0;
 
     // basal slip systems
 
-    SlipSysID->at(3) = "basal_1";
+    SlipSysID_[3] = "basal_1";
 
-    SlipNorHex.at(3)(0, 0) = 0.0;
-    SlipNorHex.at(3)(1, 0) = 0.0;
-    SlipNorHex.at(3)(2, 0) = 0.0;
-    SlipNorHex.at(3)(3, 0) = 1.0;
+    SlipNorHex[3](0, 0) = 0.0;
+    SlipNorHex[3](1, 0) = 0.0;
+    SlipNorHex[3](2, 0) = 0.0;
+    SlipNorHex[3](3, 0) = 1.0;
 
-    SlipDirHex.at(3)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(3)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(3)(2, 0) = -2.0 / 3.0;
-    SlipDirHex.at(3)(3, 0) = 0.0;
+    SlipDirHex[3](0, 0) = 1.0 / 3.0;
+    SlipDirHex[3](1, 0) = 1.0 / 3.0;
+    SlipDirHex[3](2, 0) = -2.0 / 3.0;
+    SlipDirHex[3](3, 0) = 0.0;
 
-    SlipSysID->at(4) = "basal_2";
+    SlipSysID_[4] = "basal_2";
 
-    SlipNorHex.at(4)(0, 0) = 0.0;
-    SlipNorHex.at(4)(1, 0) = 0.0;
-    SlipNorHex.at(4)(2, 0) = 0.0;
-    SlipNorHex.at(4)(3, 0) = 1.0;
+    SlipNorHex[4](0, 0) = 0.0;
+    SlipNorHex[4](1, 0) = 0.0;
+    SlipNorHex[4](2, 0) = 0.0;
+    SlipNorHex[4](3, 0) = 1.0;
 
-    SlipDirHex.at(4)(0, 0) = -2.0 / 3.0;
-    SlipDirHex.at(4)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(4)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(4)(3, 0) = 0.0;
+    SlipDirHex[4](0, 0) = -2.0 / 3.0;
+    SlipDirHex[4](1, 0) = 1.0 / 3.0;
+    SlipDirHex[4](2, 0) = 1.0 / 3.0;
+    SlipDirHex[4](3, 0) = 0.0;
 
-    SlipSysID->at(5) = "basal_3";
+    SlipSysID_[5] = "basal_3";
 
-    SlipNorHex.at(5)(0, 0) = 0.0;
-    SlipNorHex.at(5)(1, 0) = 0.0;
-    SlipNorHex.at(5)(2, 0) = 0.0;
-    SlipNorHex.at(5)(3, 0) = 1.0;
+    SlipNorHex[5](0, 0) = 0.0;
+    SlipNorHex[5](1, 0) = 0.0;
+    SlipNorHex[5](2, 0) = 0.0;
+    SlipNorHex[5](3, 0) = 1.0;
 
-    SlipDirHex.at(5)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(5)(1, 0) = -2.0 / 3.0;
-    SlipDirHex.at(5)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(5)(3, 0) = 0.0;
+    SlipDirHex[5](0, 0) = 1.0 / 3.0;
+    SlipDirHex[5](1, 0) = -2.0 / 3.0;
+    SlipDirHex[5](2, 0) = 1.0 / 3.0;
+    SlipDirHex[5](3, 0) = 0.0;
 
     // pyramidal slip systems
 
-    SlipSysID->at(6) = "pyramidal_1";
+    SlipSysID_[6] = "pyramidal_1";
 
-    SlipNorHex.at(6)(0, 0) = 1.0;
-    SlipNorHex.at(6)(1, 0) = 1.0;
-    SlipNorHex.at(6)(2, 0) = -2.0;
-    SlipNorHex.at(6)(3, 0) = 1.0;
+    SlipNorHex[6](0, 0) = 1.0;
+    SlipNorHex[6](1, 0) = 1.0;
+    SlipNorHex[6](2, 0) = -2.0;
+    SlipNorHex[6](3, 0) = 1.0;
 
-    SlipDirHex.at(6)(0, 0) = -1.0 / 3.0;
-    SlipDirHex.at(6)(1, 0) = -1.0 / 3.0;
-    SlipDirHex.at(6)(2, 0) = 2.0 / 3.0;
-    SlipDirHex.at(6)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[6](0, 0) = -1.0 / 3.0;
+    SlipDirHex[6](1, 0) = -1.0 / 3.0;
+    SlipDirHex[6](2, 0) = 2.0 / 3.0;
+    SlipDirHex[6](3, 0) = 6.0 / 3.0;
 
-    SlipSysID->at(7) = "pyramidal_2";
+    SlipSysID_[7] = "pyramidal_2";
 
-    SlipNorHex.at(7)(0, 0) = 1.0;
-    SlipNorHex.at(7)(1, 0) = -2.0;
-    SlipNorHex.at(7)(2, 0) = 1.0;
-    SlipNorHex.at(7)(3, 0) = 1.0;
+    SlipNorHex[7](0, 0) = 1.0;
+    SlipNorHex[7](1, 0) = -2.0;
+    SlipNorHex[7](2, 0) = 1.0;
+    SlipNorHex[7](3, 0) = 1.0;
 
-    SlipDirHex.at(7)(0, 0) = -1.0 / 3.0;
-    SlipDirHex.at(7)(1, 0) = 2.0 / 3.0;
-    SlipDirHex.at(7)(2, 0) = -1.0 / 3.0;
-    SlipDirHex.at(7)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[7](0, 0) = -1.0 / 3.0;
+    SlipDirHex[7](1, 0) = 2.0 / 3.0;
+    SlipDirHex[7](2, 0) = -1.0 / 3.0;
+    SlipDirHex[7](3, 0) = 6.0 / 3.0;
 
-    SlipSysID->at(8) = "pyramidal_3";
+    SlipSysID_[8] = "pyramidal_3";
 
-    SlipNorHex.at(8)(0, 0) = -2.0;
-    SlipNorHex.at(8)(1, 0) = 1.0;
-    SlipNorHex.at(8)(2, 0) = 1.0;
-    SlipNorHex.at(8)(3, 0) = 1.0;
+    SlipNorHex[8](0, 0) = -2.0;
+    SlipNorHex[8](1, 0) = 1.0;
+    SlipNorHex[8](2, 0) = 1.0;
+    SlipNorHex[8](3, 0) = 1.0;
 
-    SlipDirHex.at(8)(0, 0) = 2.0 / 3.0;
-    SlipDirHex.at(8)(1, 0) = -1.0 / 3.0;
-    SlipDirHex.at(8)(2, 0) = -1.0 / 3.0;
-    SlipDirHex.at(8)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[8](0, 0) = 2.0 / 3.0;
+    SlipDirHex[8](1, 0) = -1.0 / 3.0;
+    SlipDirHex[8](2, 0) = -1.0 / 3.0;
+    SlipDirHex[8](3, 0) = 6.0 / 3.0;
 
-    SlipSysID->at(9) = "pyramidal_4";
+    SlipSysID_[9] = "pyramidal_4";
 
-    SlipNorHex.at(9)(0, 0) = -1.0;
-    SlipNorHex.at(9)(1, 0) = -1.0;
-    SlipNorHex.at(9)(2, 0) = 2.0;
-    SlipNorHex.at(9)(3, 0) = 1.0;
+    SlipNorHex[9](0, 0) = -1.0;
+    SlipNorHex[9](1, 0) = -1.0;
+    SlipNorHex[9](2, 0) = 2.0;
+    SlipNorHex[9](3, 0) = 1.0;
 
-    SlipDirHex.at(9)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(9)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(9)(2, 0) = -2.0 / 3.0;
-    SlipDirHex.at(9)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[9](0, 0) = 1.0 / 3.0;
+    SlipDirHex[9](1, 0) = 1.0 / 3.0;
+    SlipDirHex[9](2, 0) = -2.0 / 3.0;
+    SlipDirHex[9](3, 0) = 6.0 / 3.0;
 
-    SlipSysID->at(10) = "pyramidal_5";
+    SlipSysID_[10] = "pyramidal_5";
 
-    SlipNorHex.at(10)(0, 0) = -1.0;
-    SlipNorHex.at(10)(1, 0) = 2.0;
-    SlipNorHex.at(10)(2, 0) = -1.0;
-    SlipNorHex.at(10)(3, 0) = 1.0;
+    SlipNorHex[10](0, 0) = -1.0;
+    SlipNorHex[10](1, 0) = 2.0;
+    SlipNorHex[10](2, 0) = -1.0;
+    SlipNorHex[10](3, 0) = 1.0;
 
-    SlipDirHex.at(10)(0, 0) = 1.0 / 3.0;
-    SlipDirHex.at(10)(1, 0) = -2.0 / 3.0;
-    SlipDirHex.at(10)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(10)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[10](0, 0) = 1.0 / 3.0;
+    SlipDirHex[10](1, 0) = -2.0 / 3.0;
+    SlipDirHex[10](2, 0) = 1.0 / 3.0;
+    SlipDirHex[10](3, 0) = 6.0 / 3.0;
 
-    SlipSysID->at(11) = "pyramidal_6";
+    SlipSysID_[11] = "pyramidal_6";
 
-    SlipNorHex.at(11)(0, 0) = 2.0;
-    SlipNorHex.at(11)(1, 0) = -1.0;
-    SlipNorHex.at(11)(2, 0) = -1.0;
-    SlipNorHex.at(11)(3, 0) = 1.0;
+    SlipNorHex[11](0, 0) = 2.0;
+    SlipNorHex[11](1, 0) = -1.0;
+    SlipNorHex[11](2, 0) = -1.0;
+    SlipNorHex[11](3, 0) = 1.0;
 
-    SlipDirHex.at(11)(0, 0) = -2.0 / 3.0;
-    SlipDirHex.at(11)(1, 0) = 1.0 / 3.0;
-    SlipDirHex.at(11)(2, 0) = 1.0 / 3.0;
-    SlipDirHex.at(11)(3, 0) = 6.0 / 3.0;
+    SlipDirHex[11](0, 0) = -2.0 / 3.0;
+    SlipDirHex[11](1, 0) = 1.0 / 3.0;
+    SlipDirHex[11](2, 0) = 1.0 / 3.0;
+    SlipDirHex[11](3, 0) = 6.0 / 3.0;
 
     // transform Miller-Bravais index notation of hexagonal lattices to Miller index notation of
     // cubic lattices
     MAT::CrystalPlasticity::MillerBravaisToMiller(SlipNorHex, SlipDirHex);
   }
-  else if (LatticeType == "HCP" or LatticeType == "BCC" or LatticeType == "FCC")
+  else if (LatticeType_ == "HCP" or LatticeType_ == "BCC" or LatticeType_ == "FCC")
   {
-    dserror("Sorry, %s lattices are not yet supported", LatticeType.c_str());
+    dserror("Sorry, %s lattices are not yet supported", LatticeType_.c_str());
   }
   // academic test lattice containing only one slip system
-  else if (LatticeType == "TEST")
+  else if (LatticeType_ == "TEST")
   {
-    SlipSysID->at(0) = "test_1";
+    SlipSysID_[0] = "test_1";
 
-    SlipNor->at(0)(0, 0) = 1.0;
-    SlipNor->at(0)(1, 0) = 0.0;
-    SlipNor->at(0)(2, 0) = 1.0;
+    SlipNor_[0](0, 0) = 1.0;
+    SlipNor_[0](1, 0) = 0.0;
+    SlipNor_[0](2, 0) = 1.0;
 
-    SlipDir->at(0)(0, 0) = 1.0;
-    SlipDir->at(0)(1, 0) = 0.0;
-    SlipDir->at(0)(2, 0) = -1.0;
+    SlipDir_[0](0, 0) = 1.0;
+    SlipDir_[0](1, 0) = 0.0;
+    SlipDir_[0](2, 0) = -1.0;
   }
   else
   {
@@ -763,12 +755,12 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
 
   // test whether directions and normals are perpendicular
   std::vector<LINALG::Matrix<1, 1>> PerpTest;
-  PerpTest.resize(slip_sys_count);
+  PerpTest.resize(slip_sys_count_);
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    PerpTest.at(i).MultiplyTN(SlipDir->at(i), SlipNor->at(i));
-    if (PerpTest.at(i)(0, 0) != 0.0)
+    PerpTest[i].MultiplyTN(SlipDir_[i], SlipNor_[i]);
+    if (PerpTest[i](0, 0) != 0.0)
     {
       dserror(
           "Warning, slip direction and slip plane normal of slip system "
@@ -778,30 +770,29 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   }
 
   // determine magnitude of Burgers vector
-  Burgers_Mag = Teuchos::rcp(new std::vector<double>);
-  Burgers_Mag->resize(slip_sys_count);
+  Burgers_Mag_.resize(slip_sys_count_);
   LINALG::Matrix<3, 1> tmp_scale;
 
   // import lattice constant from user input
-  LatticeConstant = params_->lattice_constant;
+  LatticeConstant_ = params_->lattice_constant_;
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    tmp_scale = SlipDir->at(i);
-    tmp_scale.Scale(LatticeConstant);
-    Burgers_Mag->at(i) = tmp_scale.Norm2();
+    tmp_scale = SlipDir_[i];
+    tmp_scale.Scale(LatticeConstant_);
+    Burgers_Mag_[i] = tmp_scale.Norm2();
   }
 
   // normalize slip plane normals
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    SlipNor->at(i).Scale(1.0 / SlipNor->at(i).Norm2());
+    SlipNor_[i].Scale(1.0 / SlipNor_[i].Norm2());
   }
 
   // normalize slip directions
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    SlipDir->at(i).Scale(1.0 / SlipDir->at(i).Norm2());
+    SlipDir_[i].Scale(1.0 / SlipDir_[i].Norm2());
   }
   return;
 }
@@ -813,8 +804,6 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
 
 void MAT::CrystalPlasticity::SetupLatticeOrientation(DRT::INPUT::LineDefinition* linedef)
 {
-  LatticeOrientation = Teuchos::rcp(new LINALG::Matrix<3, 3>);
-
   std::vector<double> fiber1;
   std::vector<double> fiber2;
   std::vector<double> fiber3;
@@ -829,9 +818,9 @@ void MAT::CrystalPlasticity::SetupLatticeOrientation(DRT::INPUT::LineDefinition*
     // assemble rotation matrix
     for (int i = 0; i < 3; i++)
     {
-      (*LatticeOrientation)(i, 0) = fiber1.at(i);
-      (*LatticeOrientation)(i, 1) = fiber2.at(i);
-      (*LatticeOrientation)(i, 2) = fiber3.at(i);
+      LatticeOrientation_(i, 0) = fiber1.at(i);
+      LatticeOrientation_(i, 1) = fiber2.at(i);
+      LatticeOrientation_(i, 2) = fiber3.at(i);
     }
   }
   // error
@@ -855,13 +844,13 @@ void MAT::CrystalPlasticity::MillerBravaisToMiller(
 {
   for (int unsigned i = 0; i < SlipNorHex.size(); i++)
   {
-    SlipNor->at(i)(0, 0) = SlipNorHex.at(i)(0, 0);
-    SlipNor->at(i)(1, 0) = (SlipNorHex.at(i)(0, 0) + 2.0 * SlipNorHex.at(i)(1, 0)) / sqrt(3.0);
-    SlipNor->at(i)(2, 0) = SlipNorHex.at(i)(3, 0) / CtoA;
+    SlipNor_[i](0, 0) = SlipNorHex.at(i)(0, 0);
+    SlipNor_[i](1, 0) = (SlipNorHex.at(i)(0, 0) + 2.0 * SlipNorHex.at(i)(1, 0)) / sqrt(3.0);
+    SlipNor_[i](2, 0) = SlipNorHex.at(i)(3, 0) / CtoA_;
 
-    SlipDir->at(i)(0, 0) = 1.5 * SlipDirHex.at(i)(0, 0);
-    SlipDir->at(i)(1, 0) = sqrt(3.0) * (0.5 * SlipDirHex.at(i)(0, 0) + SlipDirHex.at(i)(1, 0));
-    SlipDir->at(i)(2, 0) = SlipDirHex.at(i)(3, 0) * CtoA;
+    SlipDir_[i](0, 0) = 1.5 * SlipDirHex.at(i)(0, 0);
+    SlipDir_[i](1, 0) = sqrt(3.0) * (0.5 * SlipDirHex.at(i)(0, 0) + SlipDirHex.at(i)(1, 0));
+    SlipDir_[i](2, 0) = SlipDirHex.at(i)(3, 0) * CtoA_;
   }
   return;
 }
@@ -884,15 +873,15 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
   // elastic predictor
   //--------------------------------------------------------------------------
   // assume load step is elastic, i.e., there is no change in plastic shear
-  std::vector<double> gamma_trial = gamma_last->at(gp);
+  std::vector<double> gamma_trial = gamma_last_->at(gp);
 
   // trial values of internal variables
-  std::vector<double> def_dens_trial(slip_sys_count);
+  std::vector<double> def_dens_trial(slip_sys_count_);
   LINALG::Matrix<3, 3> PK2_trial;
   LINALG::Matrix<3, 3> FP_trial;
 
   // residuals
-  std::vector<double> residuals_trial(slip_sys_count);
+  std::vector<double> residuals_trial(slip_sys_count_);
   double totalResidual;
 
   // empty matrix
@@ -910,14 +899,14 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
     this->SetupFlowRule(F, gamma_trial, FP_trial, def_dens_trial, PK2_trial, residuals_trial);
 
     // determine total residuum as norm of the vector of slip system residuals
-    for (int i = 0; i < slip_sys_count; i++)
+    for (int i = 0; i < slip_sys_count_; i++)
     {
       totalResidual += pow(residuals_trial.at(i), 2.0);
     }
     totalResidual = sqrt(totalResidual);
 
     // convergence check
-    if (totalResidual < Tol)
+    if (totalResidual < Tol_)
     {
       converged = true;
 
@@ -952,14 +941,14 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
       // change of residuals.at(j) with perturbation of gamma_trial_.at(i)
 
       // perturb single shears
-      for (int i = 0; i < slip_sys_count; i++)
+      for (int i = 0; i < slip_sys_count_; i++)
       {
         // perturbed vector of plastic shears
-        std::vector<double> gamma_pert(slip_sys_count);
+        std::vector<double> gamma_pert(slip_sys_count_);
         // resultant vector of residuals
-        std::vector<double> residuals_pert(slip_sys_count);
+        std::vector<double> residuals_pert(slip_sys_count_);
         // resultant vector of defect densities
-        std::vector<double> def_dens_pert(slip_sys_count);
+        std::vector<double> def_dens_pert(slip_sys_count_);
         // resultant 2nd PK stress
         LINALG::Matrix<3, 3> PK2_pert(true);
         // resultant plastic part of deformation gradient
@@ -975,9 +964,9 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
         this->SetupFlowRule(F, gamma_pert, FP_pert, def_dens_pert, PK2_pert, residuals_pert);
 
         // finite difference
-        if (LatticeType == "L10" || LatticeType == "D019")
+        if (LatticeType_ == "L10" || LatticeType_ == "D019")
         {
-          for (int j = 0; j < slip_sys_count; j++)
+          for (int j = 0; j < slip_sys_count_; j++)
           {
             ResidualStiffness_12x12(j, i) =
                 (residuals_pert.at(j) - residuals_trial.at(j)) / gammaEps;
@@ -985,9 +974,9 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
             residuals_trial_LIN_12(i) = -residuals_trial.at(i);
           }
         }
-        else if (LatticeType == "TEST")
+        else if (LatticeType_ == "TEST")
         {
-          for (int j = 0; j < slip_sys_count; j++)
+          for (int j = 0; j < slip_sys_count_; j++)
           {
             ResidualStiffness_1x1(j, i) = (residuals_pert.at(j) - residuals_trial.at(j)) / gammaEps;
 
@@ -997,26 +986,26 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& F, std::vector<
       }
 
       // solve resultant system of equations
-      if (LatticeType == "L10" || LatticeType == "D019")
+      if (LatticeType_ == "L10" || LatticeType_ == "D019")
       {
         NRSolver_12x12.SetMatrix(ResidualStiffness_12x12);
         NRSolver_12x12.SetVectors(d_gamma_trial_12, residuals_trial_LIN_12);
         NRSolver_12x12.Solve();
 
         // update vector of plastic shears to new trial value
-        for (int i = 0; i < slip_sys_count; i++)
+        for (int i = 0; i < slip_sys_count_; i++)
         {
           gamma_trial.at(i) += d_gamma_trial_12(i);
         }
       }
-      else if (LatticeType == "TEST")
+      else if (LatticeType_ == "TEST")
       {
         NRSolver_1x1.SetMatrix(ResidualStiffness_1x1);
         NRSolver_1x1.SetVectors(d_gamma_trial_1, residuals_trial_LIN_1);
         NRSolver_1x1.Solve();
 
         // update vector of plastic shears to new trial value
-        for (int i = 0; i < slip_sys_count; i++)
+        for (int i = 0; i < slip_sys_count_; i++)
         {
           gamma_trial.at(i) += d_gamma_trial_1(i);
         }
@@ -1044,11 +1033,11 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
     LINALG::Matrix<3, 3>& PK2_trial, std::vector<double>& residuals_trial)
 {
   // set up trial increment of plastic shear for each slip system
-  std::vector<double> delta_gamma_trial(slip_sys_count);
+  std::vector<double> delta_gamma_trial(slip_sys_count_);
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    delta_gamma_trial.at(i) = gamma_trial.at(i) - gamma_last->at(gp).at(i);
+    delta_gamma_trial[i] = gamma_trial[i] - (*gamma_last_)[gp][i];
   }
 
   // determine trial defect densities that would result from delta_gamma_trial
@@ -1056,21 +1045,20 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
 
   double total_dislocation_density = 0.0;
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
     // dislocation generation
     //  TODO EQUATION
-    def_dens_trial.at(i) =
-        def_dens_last->at(gp).at(i) +
-        (1.0 / (Burgers_Mag->at(i) * Dislocation_Gen_Coeff.at(SubSetIndex.at(i) - 1))) *
-            sqrt(def_dens_last->at(gp).at(i)) * abs(delta_gamma_trial.at(i));
+    def_dens_trial[i] = (*def_dens_last_)[gp][i] +
+                        (1.0 / (Burgers_Mag_[i] * Dislocation_Gen_Coeff_[SubSetIndex_[i] - 1])) *
+                            sqrt((*def_dens_last_)[gp][i]) * abs(delta_gamma_trial[i]);
 
     // dynamic recovery
-    def_dens_trial.at(i) -= Dislocation_Dyn_Rec_Coeff.at(SubSetIndex.at(i) - 1) *
-                            def_dens_last->at(gp).at(i) * abs(delta_gamma_trial.at(i));
+    def_dens_trial[i] -= Dislocation_Dyn_Rec_Coeff_[SubSetIndex_[i] - 1] *
+                         (*def_dens_last_)[gp][i] * abs(delta_gamma_trial[i]);
 
     // determine updated total defect densities
-    total_dislocation_density += def_dens_trial.at(i);
+    total_dislocation_density += def_dens_trial[i];
   }
 
   // kinematics and plastic velocity gradient
@@ -1081,9 +1069,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
   LINALG::Matrix<3, 3> LP_trial(true);
   LINALG::Matrix<3, 3> TempMat;
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
-    TempMat.MultiplyNT(delta_gamma_trial.at(i), SlipDir->at(i), SlipNor->at(i));
+    TempMat.MultiplyNT(delta_gamma_trial.at(i), SlipDir_[i], SlipNor_[i]);
     LP_trial.Update(LP_trial, TempMat);
   }
 
@@ -1093,7 +1081,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
   Uni_IplusLP_trial.Scale(pow(Uni_IplusLP_trial.Determinant(), -1.0 / 3.0));
 
   // determine trial plastic deformation gradient
-  FP_trial.MultiplyNN(Uni_IplusLP_trial, FP_last->at(gp));
+  FP_trial.MultiplyNN(Uni_IplusLP_trial, (*FP_last_)[gp]);
 
   // determine trial stress
   //--------------------------------------------------------------------------
@@ -1117,9 +1105,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
   // 2nd Piola-Kirchhoff stress
   // S = lambda * ln_Jacobi_trial * inv_CE + mu * (Identity3() - inv_CE)
 
-  PK2_trial.Update(Lambda * ln_Jacobi_trial, inv_CE, 1.0);
-  PK2_trial.Update(Mu, Identity3(), 1.0);
-  PK2_trial.Update(-Mu, inv_CE, 1.0);
+  PK2_trial.Update(Lambda_ * ln_Jacobi_trial, inv_CE, 1.0);
+  PK2_trial.Update(Mu_, Identity3(), 1.0);
+  PK2_trial.Update(-Mu_, inv_CE, 1.0);
 
   // Mandel stress
   LINALG::Matrix<3, 3> M;
@@ -1128,28 +1116,28 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
   // setting up Residua with flow/creep rule
   //--------------------------------------------------------------------------
 
-  for (int i = 0; i < slip_sys_count; i++)
+  for (int i = 0; i < slip_sys_count_; i++)
   {
     // resolved shear stress/Schmid stress
     LINALG::Matrix<1, 1> RSS(true);
 
     LINALG::Matrix<3, 1> TempVec(true);
 
-    TempVec.MultiplyNN(M, SlipNor->at(i));
+    TempVec.MultiplyNN(M, SlipNor_[i]);
 
-    RSS.MultiplyTN(SlipDir->at(i), TempVec);
+    RSS.MultiplyTN(SlipDir_[i], TempVec);
 
     // work hardening
 
     // lattice resistance
-    double tau_Y0 = TauY_0.at(SubSetIndex.at(i) - 1);
+    double tau_Y0 = TauY_0_[SubSetIndex_[i] - 1];
 
     // Hall-Petch strengthening term
-    double HP_strengthening = Hall_Petch_Coeffs.at(SubSetIndex.at(i) - 1) *
-                              (1.0 / sqrt(Micro_Boundary_Dist.at(SubSetIndex.at(i) - 1)));
+    double HP_strengthening = Hall_Petch_Coeffs_[SubSetIndex_[i] - 1] *
+                              (1.0 / sqrt(Micro_Boundary_Dist_[SubSetIndex_[i] - 1]));
 
     // work hardening hardening increment due to accumulated dislocation density
-    double delta_tau_Y = 0.5 * Mu * Burgers_Mag->at(i) * sqrt(total_dislocation_density);
+    double delta_tau_Y = 0.5 * Mu_ * Burgers_Mag_[i] * sqrt(total_dislocation_density);
 
     // slip system strength, i.e. tau_Y = tau_Y0 + HP_strengthening + delta_tau_Y
     double tau_Y = tau_Y0 + HP_strengthening + delta_tau_Y;
@@ -1161,11 +1149,11 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
 
     gamma_dot = abs(RSS(0, 0)) / tau_Y;
     gamma_dot = pow(gamma_dot, 50.0);  // TODO EXPONENT AUS DAT FILE HOLEN
-    gamma_dot = gamma_dot * Gamma0.at(SubSetIndex.at(i) - 1);
+    gamma_dot = gamma_dot * Gamma0_[SubSetIndex_[i] - 1];
     gamma_dot = std::copysign(gamma_dot, RSS(0, 0));
 
     // set up corresponding residual
-    residuals_trial.at(i) = delta_gamma_trial.at(i) / dt - gamma_dot;
+    residuals_trial[i] = delta_gamma_trial[i] / dt - gamma_dot;
   }
   return;
 }  // FlowRuleSetup()
@@ -1180,10 +1168,10 @@ void MAT::CrystalPlasticity::VisNames(std::map<std::string, int>& names)
   std::string ID;
 
   // plastic shears on single systems
-  for (int sys = 0; sys < slip_sys_count; sys++)
+  for (int sys = 0; sys < slip_sys_count_; sys++)
   {
     ID = "plastic_shear_";
-    ID += SlipSysID->at(sys);
+    ID += SlipSysID_[sys];
     names[ID] = 1;  // scalar
   }
 
@@ -1192,10 +1180,10 @@ void MAT::CrystalPlasticity::VisNames(std::map<std::string, int>& names)
   names[ID] = 1;  // scalar
 
   // dislocation densities on single systems
-  for (int sys = 0; sys < slip_sys_count; sys++)
+  for (int sys = 0; sys < slip_sys_count_; sys++)
   {
     ID = "dislocation_density_";
-    ID += SlipSysID->at(sys);
+    ID += SlipSysID_[sys];
     names[ID] = 1;  // scalar
   }
 
@@ -1212,14 +1200,14 @@ bool MAT::CrystalPlasticity::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // plastic shears gamma
-  for (int sys = 0; sys < slip_sys_count; sys++)
+  for (int sys = 0; sys < slip_sys_count_; sys++)
   {
-    if (name == "plastic_shear_" + SlipSysID->at(sys))
+    if (name == "plastic_shear_" + SlipSysID_[sys])
     {
       if ((int)data.size() != 1) dserror("size mismatch");
       for (int gp_index = 0; gp_index < numgp; gp_index++)
       {
-        data[0] = gamma_last->at(gp_index).at(sys);
+        data[0] = (*gamma_last_)[gp_index][sys];
       }
     }
   }
@@ -1232,23 +1220,23 @@ bool MAT::CrystalPlasticity::VisData(
     for (int gp_index = 0; gp_index < numgp; gp_index++)
     {
       gamma_acc = 0.0;
-      for (int sys = 0; sys < slip_sys_count; sys++)
+      for (int sys = 0; sys < slip_sys_count_; sys++)
       {
-        gamma_acc += abs(gamma_last->at(gp_index).at(sys));
+        gamma_acc += abs((*gamma_last_)[gp_index][sys]);
       }
       data[0] = gamma_acc;
     }
   }
 
   // dislocation densities
-  for (int sys = 0; sys < slip_sys_count; sys++)
+  for (int sys = 0; sys < slip_sys_count_; sys++)
   {
-    if (name == "dislocation_density_" + SlipSysID->at(sys))
+    if (name == "dislocation_density_" + SlipSysID_[sys])
     {
       if ((int)data.size() != 1) dserror("size mismatch");
       for (int gp_index = 0; gp_index < numgp; gp_index++)
       {
-        data[0] = def_dens_last->at(gp_index).at(sys);
+        data[0] = (*def_dens_last_)[gp_index][sys];
       }
     }
   }
@@ -1261,9 +1249,9 @@ bool MAT::CrystalPlasticity::VisData(
     for (int gp_index = 0; gp_index < numgp; gp_index++)
     {
       dis_dens_acc = 0.0;
-      for (int sys = 0; sys < slip_sys_count; sys++)
+      for (int sys = 0; sys < slip_sys_count_; sys++)
       {
-        dis_dens_acc += def_dens_last->at(gp_index).at(sys);
+        dis_dens_acc += (*def_dens_last_)[gp_index][sys];
       }
       data[0] = dis_dens_acc;
     }
