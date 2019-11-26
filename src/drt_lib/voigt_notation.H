@@ -143,22 +143,18 @@ namespace UTILS
       /*!
        * Converts a <type>-like tensor in Voigt notation to a matrix
        * @param vtensor_in tensor in <type>-like Voigt notation
-       * @param vtensor_out tensor as a matrix
+       * @param tensor_out tensor as a matrix
        */
-      static void ToMatrix(
+      static void VectorToMatrix(
           const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<3, 3>& tensor_out);
 
 
-      /*! Copy matrix contents to <type>-like Voigt notation
+      /*! Copy matrix contents to type-like Voigt notation
        *
-       *          A_00 A_01 A_02
-       * Matrix   A_10 A_11 A_12   is converted to the Voigt vector below:
-       *          A_20 A_21 A_22
+       * Matrix [A_00 A_01 A_02; A_10 A_11 A_12; A_20 A_21 A_22] is converted to the Voigt vector
+       * [A_00; A_11; A_22; 0.5*k*(A_01 + A_10); 0.5*k*(A_12 + A_21); 0.5*k*(A_02 + A_20)]
        *
-       * Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*k*(A_01 + A_10);
-       *          V_4 = 0.5*k*(A_12 + A_21); V_5 = 0.5*k*(A_02 + A_20)
-       *
-       * where k is the scale factor for <type>-like Voigt notation.
+       * where k is the scale factor for type-like Voigt notation.
        *
        * @param tensor_in the matrix to copy from
        * @param[out] vtensor_out target tensor in <type>-like Voigt notation
@@ -276,7 +272,6 @@ namespace UTILS
       };
 
       /// from symmetric 2-tensor index pair to 6-Voigt index
-      // TODO doesn't this need to check if strain or stress notation?
       static inline int SymToVoigt6(unsigned int row, unsigned int col)
       {
         assertRangeMatrixIndex(row, col);
@@ -325,10 +320,14 @@ namespace UTILS
         dsassert(index < 6, "given index out of range [0,5]");
       }
     };
+
+    //! typedefs for improved readability
+    //! @{
+    using Stresses = VoigtUtils<UTILS::VOIGT::NotationType::stress>;
+    using Strains = VoigtUtils<UTILS::VOIGT::NotationType::strain>;
+    //! @}
+
   }  // namespace VOIGT
 }  // namespace UTILS
-
-using VStrainUtils = UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>;
-using VStressUtils = UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>;
 
 #endif  // VOIGT_NOTATION_H

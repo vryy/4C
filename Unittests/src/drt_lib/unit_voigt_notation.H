@@ -83,7 +83,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<6, 1> cmp_stress(false);
 
-    VStressUtils::MatrixToVector(*tens, cmp_stress);
+    UTILS::VOIGT::Stresses::MatrixToVector(*tens, cmp_stress);
 
     for (int i = 0; i < 6; ++i) TS_ASSERT_DELTA(cmp_stress(i), (*tens_stress)(i), 1e-10);
   }
@@ -92,25 +92,25 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<6, 1> cmp_strain(false);
 
-    VStrainUtils::MatrixToVector(*tens, cmp_strain);
+    UTILS::VOIGT::Strains::MatrixToVector(*tens, cmp_strain);
 
     for (int i = 0; i < 6; ++i) TS_ASSERT_DELTA(cmp_strain(i), (*tens_strain)(i), 1e-10);
   }
 
   void test_Determinant_StressLike()
   {
-    TS_ASSERT_DELTA(VStressUtils::Determinant(*tens_stress), 1.7143620000000002, 1e-10);
+    TS_ASSERT_DELTA(UTILS::VOIGT::Stresses::Determinant(*tens_stress), 1.7143620000000002, 1e-10);
   }
 
   void test_Determinant_StrainLike()
   {
-    TS_ASSERT_DELTA(VStrainUtils::Determinant(*tens_strain), 1.7143620000000002, 1e-10);
+    TS_ASSERT_DELTA(UTILS::VOIGT::Strains::Determinant(*tens_strain), 1.7143620000000002, 1e-10);
   }
 
   void test_InvariantsPrincipal_StressLike()
   {
     LINALG::Matrix<3, 1> prinv(false);
-    VStressUtils::InvariantsPrincipal(prinv, *tens_stress);
+    UTILS::VOIGT::Stresses::InvariantsPrincipal(prinv, *tens_stress);
     TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
     TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
@@ -119,7 +119,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   void test_InvariantsPrincipal_StrainLike()
   {
     LINALG::Matrix<3, 1> prinv(false);
-    VStrainUtils::InvariantsPrincipal(prinv, *tens_strain);
+    UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, *tens_strain);
     TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
     TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
@@ -128,7 +128,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   void test_InverseStressLike()
   {
     LINALG::Matrix<6, 1> itens_stress_result(false);
-    VStressUtils::InverseTensor(*tens_stress, itens_stress_result);
+    UTILS::VOIGT::Stresses::InverseTensor(*tens_stress, itens_stress_result);
 
     for (unsigned i = 0; i < 6; ++i)
       TS_ASSERT_DELTA(itens_stress_result(i), (*itens_stress)(i), 1e-5);
@@ -137,7 +137,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   void test_InverseStrainLike()
   {
     LINALG::Matrix<6, 1> itens_strain_result(false);
-    VStrainUtils::InverseTensor(*tens_strain, itens_strain_result);
+    UTILS::VOIGT::Strains::InverseTensor(*tens_strain, itens_strain_result);
 
     for (unsigned i = 0; i < 6; ++i)
       TS_ASSERT_DELTA(itens_strain_result(i), (*itens_strain)(i), 1e-5);
@@ -147,8 +147,8 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<6, 1> strain_to_stress(false);
     LINALG::Matrix<6, 1> stress_to_stress(false);
-    VStrainUtils::ToStressLike(*tens_strain, strain_to_stress);
-    VStressUtils::ToStressLike(*tens_stress, stress_to_stress);
+    UTILS::VOIGT::Strains::ToStressLike(*tens_strain, strain_to_stress);
+    UTILS::VOIGT::Stresses::ToStressLike(*tens_stress, stress_to_stress);
 
     for (unsigned i = 0; i < 6; ++i)
     {
@@ -161,8 +161,8 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<6, 1> strain_to_strain(false);
     LINALG::Matrix<6, 1> stress_to_strain(false);
-    VStrainUtils::ToStrainLike(*tens_strain, strain_to_strain);
-    VStressUtils::ToStrainLike(*tens_stress, stress_to_strain);
+    UTILS::VOIGT::Strains::ToStrainLike(*tens_strain, strain_to_strain);
+    UTILS::VOIGT::Stresses::ToStrainLike(*tens_stress, stress_to_strain);
 
     for (unsigned i = 0; i < 6; ++i)
     {
@@ -185,17 +185,17 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(id(5), 0.0, 1e-10);
   }
 
-  void test_StrainLikeToMatrix()
+  void test_StrainLike_VectorToMatrix()
   {
     LINALG::Matrix<3, 3> matrix(false);
-    VStrainUtils::ToMatrix(*tens_strain, matrix);
+    UTILS::VOIGT::Strains::VectorToMatrix(*tens_strain, matrix);
     TS_ASSERT_EQUALS(matrix, *tens);
   }
 
-  void test_StressLikeToMatrix()
+  void test_StressLike_VectorToMatrix()
   {
     LINALG::Matrix<3, 3> matrix(false);
-    VStressUtils::ToMatrix(*tens_stress, matrix);
+    UTILS::VOIGT::Stresses::VectorToMatrix(*tens_stress, matrix);
     TS_ASSERT_EQUALS(matrix, *tens);
   }
 

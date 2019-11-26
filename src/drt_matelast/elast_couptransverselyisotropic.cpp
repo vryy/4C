@@ -205,7 +205,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
 
   // switch to stress notation
   LINALG::Matrix<6, 1> rcg_s(false);
-  VStrainUtils::ToStressLike(rcg, rcg_s);
+  UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_s);
 
   LINALG::Matrix<6, 1> rcg_inv_s(false);
   UpdateSecondPiolaKirchhoffStress(stress, rcg_s, rcg_inv_s);
@@ -305,7 +305,7 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
   LINALG::Matrix<6, 1> rcg_quad(false);
-  VStrainUtils::PowerOfSymmetricTensor(2, rcg, rcg_quad);
+  UTILS::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
   I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
         AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
 
@@ -323,7 +323,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   const double gamma = params_->gamma_;
 
   // compute inverse right Cauchy Green tensor
-  VStressUtils::InverseTensor(rcg_s, rcg_inv_s);
+  UTILS::VOIGT::Stresses::InverseTensor(rcg_s, rcg_inv_s);
 
   // (0) contribution
   {
@@ -340,10 +340,10 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   // (2) contribution
   {
     LINALG::Matrix<3, 1> ca(true);
-    VStressUtils::MultiplyTensorVector(rcg_s, A_, ca);
+    UTILS::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
 
     LINALG::Matrix<6, 1> caa_aac(true);
-    VStressUtils::SymmetricOuterProduct(ca, A_, caa_aac);
+    UTILS::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
 
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);

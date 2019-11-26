@@ -692,7 +692,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // elastic fiber stretch
     LINALG::Matrix<3, 3> C(true);
-    VStrainUtils::ToMatrix(Cvec, C);
+    UTILS::VOIGT::Strains::VectorToMatrix(Cvec, C);
 
     LINALG::Matrix<3, 1> CDir(true);
     CDir.MultiplyNN(1.0, C, refdir_);
@@ -800,7 +800,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
 
   // transform Cdach into a vector
   LINALG::Matrix<6, 1> Cdachvec(true);
-  VStrainUtils::MatrixToVector(Cdach, Cdachvec);
+  UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
   //--------------------------------------------------------------------------------------
   // call material law with elastic part of defgr and elastic part of glstrain
@@ -820,14 +820,14 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   LINALG::Matrix<3, 3> Sdach(true);
-  VStressUtils::ToMatrix(Sdachvec, Sdach);
+  UTILS::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
 
   LINALG::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
   LINALG::Matrix<3, 3> S(true);
   S.MultiplyNN(F_ginv, tmp);
 
-  VStressUtils::MatrixToVector(S, *stress);
+  UTILS::VOIGT::Stresses::MatrixToVector(S, *stress);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +

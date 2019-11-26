@@ -83,7 +83,6 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
 
     LINALG::Matrix<6, 1> prod(false);
 
-    using vmap = IndexMappings;
     for (unsigned p = 1; p < pow; ++p)
     {
       std::fill(prod.A(), prod.A() + 6, 0.0);
@@ -91,9 +90,10 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
       for (unsigned i = 0; i < 3; ++i)
         for (unsigned j = i; j < 3; ++j)
           for (unsigned k = 0; k < 3; ++k)
-            prod(vmap::SymToVoigt6(i, j), 0) += strain_pow(vmap::SymToVoigt6(i, k), 0) *
-                                                unscale_fac_[vmap::SymToVoigt6(k, j)] *
-                                                strain(vmap::SymToVoigt6(k, j), 0);
+            prod(IndexMappings::SymToVoigt6(i, j), 0) +=
+                strain_pow(IndexMappings::SymToVoigt6(i, k), 0) *
+                unscale_fac_[IndexMappings::SymToVoigt6(k, j)] *
+                strain(IndexMappings::SymToVoigt6(k, j), 0);
 
       std::copy(prod.A(), prod.A() + 6, strain_pow.A());
     }
@@ -141,11 +141,11 @@ void UTILS::VOIGT::VoigtUtils<type>::ToStrainLike(
     const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
 {
   for (unsigned i = 0; i < 6; ++i)
-    vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i) * VStrainUtils::ScaleFactor(i);
+    vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i) * Strains::ScaleFactor(i);
 }
 
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::ToMatrix(
+void UTILS::VOIGT::VoigtUtils<type>::VectorToMatrix(
     const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<3, 3>& tensor_out)
 {
   for (int i = 0; i < 3; ++i) tensor_out(i, i) = vtensor_in(i);

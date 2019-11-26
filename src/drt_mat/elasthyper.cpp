@@ -358,7 +358,7 @@ void MAT::ElastHyper::StrainEnergy(
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
-  VStrainUtils::InvariantsPrincipal(prinv, C_strain);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
   InvariantsModified(modinv, prinv);
 
   // loop map of associated potential summands
@@ -553,9 +553,9 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   const double ndt = n.Dot(t);
 
   static LINALG::Matrix<6, 1> bV_strain(true);
-  VStrainUtils::MatrixToVector(b, bV_strain);
+  UTILS::VOIGT::Strains::MatrixToVector(b, bV_strain);
   static LINALG::Matrix<3, 1> prinv(true);
-  VStrainUtils::InvariantsPrincipal(prinv, bV_strain);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, bV_strain);
 
   static LINALG::Matrix<3, 1> dPI(true);
   static LINALG::Matrix<6, 1> ddPII(true);

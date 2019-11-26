@@ -42,10 +42,10 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
   // Invert Right Cauchy Green Strain tensor
-  VStrainUtils::InverseTensor(C_strain, iC_strain);
+  UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
-  VStrainUtils::InvariantsPrincipal(prinv, C_strain);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
   ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, eleGID);
@@ -179,8 +179,8 @@ void MAT::ElastHyperAddIsotropicStressCmat(LINALG::Matrix<6, 1>& S_stress,
 
   // initialize matrices
   UTILS::VOIGT::IdentityMatrix(id2);
-  VStrainUtils::ToStressLike(C_strain, C_stress);
-  VStrainUtils::ToStressLike(iC_strain, iC_stress);
+  UTILS::VOIGT::Strains::ToStressLike(C_strain, C_stress);
+  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
 
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
@@ -397,7 +397,7 @@ void MAT::ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Ma
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
 {
   static LINALG::Matrix<6, 1> iC_stress(false);
-  VStrainUtils::ToStressLike(iC_strain, iC_stress);
+  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants

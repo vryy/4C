@@ -1054,7 +1054,7 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
       ce_stresslike(i) = 0.5 * ce(i);
 
   LINALG::Matrix<3, 1> prinv;
-  VStrainUtils::InvariantsPrincipal(prinv, ce);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, ce);
 
   LINALG::Matrix<3, 1> dPI;
   LINALG::Matrix<6, 1> ddPII;

@@ -2060,7 +2060,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>
         invcg.MultiplyTN(defgrd, defgrd);
         invcg.Invert();
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> invcgv;
-        VStressUtils::MatrixToVector(invcg, invcgv);
+        ::UTILS::VOIGT::Stresses::MatrixToVector(invcg, invcgv);
         // store stress
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         {

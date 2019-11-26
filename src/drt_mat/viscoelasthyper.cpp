@@ -552,10 +552,10 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<33, 1> modxi(true);
 
   EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-  VStrainUtils::InverseTensor(C_strain, iC_strain);
-  VStrainUtils::ToStressLike(iC_strain, iC_stress);
-  VStrainUtils::ToStressLike(C_strain, C_stress);
-  VStrainUtils::InvariantsPrincipal(prinv, C_strain);
+  UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
+  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  UTILS::VOIGT::Strains::ToStressLike(C_strain, C_stress);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
 
 
   UTILS::VOIGT::IdentityMatrix(id2);
@@ -1054,9 +1054,9 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(LINALG::Matrix<6, 1>& 
     LINALG::Matrix<6, 1> ddPII(true);
 
     EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-    VStrainUtils::InverseTensor(C_strain, iC_strain);
+    UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
 
-    VStrainUtils::InvariantsPrincipal(prinv, C_strain);
+    UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
     ElastHyperEvaluateInvariantDerivatives(
         prinv, dPI, ddPII, branchpotsum, branchProperties, eleGID);
 

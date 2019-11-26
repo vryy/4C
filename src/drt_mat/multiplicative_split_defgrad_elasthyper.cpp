@@ -348,31 +348,31 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // inverse inelastic right Cauchy-Green
   static LINALG::Matrix<3, 3> iCinM(true);
   iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
-  VStressUtils::MatrixToVector(iCinM, iCinV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCinM, iCinV);
 
   // inverse right Cauchy-Green
   static LINALG::Matrix<3, 3> iCM(true);
   static LINALG::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrad, *defgrad, 0.0);
   iCM.Invert(CM);
-  VStressUtils::MatrixToVector(iCM, iCV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
   static LINALG::Matrix<3, 3> tmp(true);
   static LINALG::Matrix<3, 3> iCinCiCinM;
   tmp.MultiplyNN(1.0, iCinM, CM, 0.0);
   iCinCiCinM.MultiplyNN(1.0, tmp, iCinM, 0.0);
-  VStressUtils::MatrixToVector(iCinCiCinM, iCinCiCinV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
   tmp.MultiplyNN(1.0, *defgrad, iFinM, 0.0);
   static LINALG::Matrix<3, 3> CeM(true);
   CeM.MultiplyTN(1.0, tmp, tmp, 0.0);
   static LINALG::Matrix<6, 1> CeV_strain(true);
-  VStrainUtils::MatrixToVector(CeM, CeV_strain);
+  UTILS::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  VStrainUtils::InvariantsPrincipal(prinv, CeV_strain);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, CeV_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);
