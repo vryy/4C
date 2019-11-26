@@ -104,6 +104,7 @@ HPCOEFF			- vector containing NUMSUBSETS entries for the Hall-Petch coefficients
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  | class definitions                                           			|
@@ -338,28 +339,6 @@ namespace MAT
     /*                                                                           */
     //-----------------------------------------------------------------------------
 
-
-    //-----------------------------------------------------------------------------
-    /*                                                                           */
-    /** \name auxiliary methods                                                  */
-    /** @{                                                                       */
-    //-----------------------------------------------------------------------------
-
-    //! returns 3x3 identity matrix
-    LINALG::Matrix<3, 3> Identity3() const
-    {
-      LINALG::Matrix<3, 3> I3(true);
-      for (int i = 0; i < 3; i++) I3(i, i) = 1.0;
-      return I3;
-    }
-
-    //-----------------------------------------------------------------------------
-    /** @}                                                                       */
-    /*  end of auxiliary methods                                                 */
-    /*                                                                           */
-    //-----------------------------------------------------------------------------
-
-
    private:
     //! model parameters
     MAT::PAR::CrystalPlasticity* params_;
@@ -373,6 +352,8 @@ namespace MAT
     //! indicator whether the material model has been initialized already
     bool isinit_ = false;
 
+    //! 3x3 identity matrix
+    LINALG::Matrix<3, 3> Identity3;
     //-----------------------------------------------------------------------------
     /*                                                                           */
     /** \name User Input                                                         */

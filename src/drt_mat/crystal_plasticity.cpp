@@ -258,7 +258,8 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   // Hall-Petch coefficients corresponding to above microstructural boundaries
   Hall_Petch_Coeffs_ = params_->Hall_Petch_coeff_;
 
-
+  // set up 3x3 identity matrix
+  LINALG::IdentityMatrix(Identity3);
 
   // initialize history variables
 
@@ -293,11 +294,11 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
 
   for (int i = 0; i < numgp; i++)
   {
-    (*F_last_)[i] = Identity3();
-    (*F_curr_)[i] = Identity3();
+    (*F_last_)[i] = Identity3;
+    (*F_curr_)[i] = Identity3;
 
-    (*FP_last_)[i] = Identity3();
-    (*FP_curr_)[i] = Identity3();
+    (*FP_last_)[i] = Identity3;
+    (*FP_curr_)[i] = Identity3;
 
     (*gamma_last_)[i].resize(slip_sys_count_);
     (*gamma_curr_)[i].resize(slip_sys_count_);
@@ -1077,7 +1078,8 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
 
   // take unimodular part of I + L_p to ensure plastic incompressibility
   LINALG::Matrix<3, 3> Uni_IplusLP_trial(true);
-  Uni_IplusLP_trial.Update(Identity3(), LP_trial);
+
+  Uni_IplusLP_trial.Update(Identity3, LP_trial);
   Uni_IplusLP_trial.Scale(pow(Uni_IplusLP_trial.Determinant(), -1.0 / 3.0));
 
   // determine trial plastic deformation gradient
@@ -1103,10 +1105,10 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> F, std::vector<d
   inv_CE.Invert(CE);
 
   // 2nd Piola-Kirchhoff stress
-  // S = lambda * ln_Jacobi_trial * inv_CE + mu * (Identity3() - inv_CE)
+  // S = lambda * ln_Jacobi_trial * inv_CE + mu * (Identity3 - inv_CE)
 
   PK2_trial.Update(Lambda_ * ln_Jacobi_trial, inv_CE, 1.0);
-  PK2_trial.Update(Mu_, Identity3(), 1.0);
+  PK2_trial.Update(Mu_, Identity3, 1.0);
   PK2_trial.Update(-Mu_, inv_CE, 1.0);
 
   // Mandel stress
