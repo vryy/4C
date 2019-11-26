@@ -230,22 +230,34 @@ namespace PARTICLEENGINE
     void DynamicLoadBalancing();
 
     /*!
-     * \brief remove or insert owned particles
+     * \brief hand over particles to be removed
      *
-     * Remove or insert owned particles of any type in the respective container on this processor.
+     * Hand over owned particles of any type to be removed in the respective container on this
+     * processor.
      *
      * \note In case particles are removed without directly reinserting the particles, e.g., during
      *       phase change in a different type, the global ids must be handed to the particle unique
-     *       global id handler in order to be reused.
+     *       global id handler beforehand in order to be reused.
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] particlestoremove particles to be removed from containers on this processor
+     */
+    void HandOverParticlesToBeRemoved(std::vector<std::set<int>>& particlestoremove) override;
+
+    /*!
+     * \brief hand over particles to be inserted
+     *
+     * Hand over owend particles of any type to be inserted in the respective container on this
+     * processor.
      *
      * \note All particle added need a global id assigned.
      *
      * \author Sebastian Fuchs \date 11/2018
      *
-     * \param[in] particlestoremove particles to be removed from containers on this processor
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void RemoveOrInsertOwnedParticles(std::vector<std::set<int>>& particlestoremove,
+    void HandOverParticlesToBeInserted(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
     /*!
