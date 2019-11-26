@@ -21,9 +21,10 @@ namespace ADAPTER
   class FluidMovingBoundary;
 
 }  // namespace ADAPTER
-namespace GEO
+
+namespace FBI
 {
-  class SearchTree;
+  class FBIGeometryCoupler;
 }
 namespace ADAPTER
 {
@@ -54,34 +55,12 @@ namespace ADAPTER
     virtual void Evaluate();
 
     /**
-     * \brief Ghosts ALL beams to all processors in order to do the search
-     *
-     * \note For now we assume that we only have beam elements in the structure discretization
-     */
-
-    virtual void ExtendBeamGhosting();
-
-    /**
-     * \brief Handles the parallel communication necessary to create the beam-fluid pairs
-     *
-     * For now the pairs have to be evaluated on the proc owning the beam element to ensure that
-     * every pair is only evaluated once. This function handles all necessary communication to send
-     * the data from the owner of the fluid element ( which did the search) to the owner of the beam
-     * element ( who ensures uniqueness of the beam segments). This becomes obsolete as soon as the
-     * geoemtry pair is adapted to handle the communication of the tracking data instead.
-     *
-     * \params[in] pairids  a map containing a map relating all beam element ids to a set of fluid
-     * elements ids which they potentially cut
-     */
-    virtual void PreparePairCreation(std::map<int, std::vector<int>>& pairids);
-
-    /**
      * \brief Creates all possible interaction pairs
      *
      * \params[in] pairids a map containing a map relating all beam element ids to a set of fluid
      * elements ids which they potentially cut
      */
-    virtual void CreatePairs(std::map<int, std::vector<int>> pairids);
+    virtual void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -126,23 +105,11 @@ namespace ADAPTER
     {
       return fluid_;
     };
-    /// Get function for the search tree
-    virtual Teuchos::RCP<const GEO::SearchTree> GetSearchtree() const final { return searchtree_; };
 
     /// Get function for the bridge object
     virtual const Teuchos::RCP<ADAPTER::FBIConstraintBridge> GetBridge() const final
     {
       return bridge_;
-    };
-    /// Get function for the fludi positions
-    virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetFluidPositions() const final
-    {
-      return fluidpositions_;
-    };
-    /// Get function for the beam positions
-    virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetBeamPositions() const final
-    {
-      return beampositions_;
     };
 
     /// Get function for the structure and the fluid discretization
@@ -153,8 +120,9 @@ namespace ADAPTER
     }
 
    protected:
-    /// Standard constructor
-    FBIConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge);
+    /// You will have to use the ADAPTER::ConstraintEnforcerFactory
+    FBIConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
+        Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler);
 
     // Do we need set-routines here?
 
@@ -225,20 +193,6 @@ namespace ADAPTER
       return Teuchos::null;
     };
 
-    /**
-     * \brief Computes the reference nodal positions needed for the search
-     *
-     */
-    virtual void ComputeFixedPositions(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions) const;
-
-    /**
-     * \brief Computes the reference current positions needed for the search
-     */
-    virtual void ComputeCurrentPositions(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,
-        Teuchos::RCP<const Epetra_Vector> disp) const;
-
    private:
     FBIConstraintenforcer() = delete;
     /// underlying fluid of the FSI problem
@@ -246,15 +200,6 @@ namespace ADAPTER
 
     /// underlying structure of the FSI problem
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
-
-    /// 3D seach tree for embedded discretization
-    Teuchos::RCP<GEO::SearchTree> searchtree_;
-
-    /// Map storing the nodal positions of the fluid for the search
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> fluidpositions_;
-
-    /// Map storing the centerline positions of the beam for the search
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> beampositions_;
 
     /// Vector containing both field discretizations
     Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations_;
@@ -273,8 +218,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge_;
 
-    /// Flag determining the fluid stabilization type
-    bool edgebased_fluidstabilization;
+    Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler_;
 
     /// Displacement of the structural column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_structure_displacement_;
@@ -282,13 +226,6 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
-
-    /** \brief The search radius is used for the pair search and describes the maximum distance of a
-     * beam node and a respective fluid node in order for the respective element pair to be found
-     * and used for the integration
-     *
-     */
-    const double searchradius_;
   };
 }  // namespace ADAPTER
 #endif

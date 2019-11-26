@@ -15,6 +15,7 @@
 #include "constraintenforcer_fbi_penalty.H"
 #include "ad_fbi_constraintbridge.H"
 #include "ad_fbi_constraintbridge_penalty.H"
+#include "immersed_geometry_coupler_fbi.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 
@@ -26,5 +27,6 @@ Teuchos::RCP<ADAPTER::FBIConstraintenforcer> ADAPTER::ConstraintEnforcerFactory:
 {
   Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge =
       Teuchos::rcp(new ADAPTER::FBIConstraintBridgePenalty());
-  return Teuchos::rcp(new ADAPTER::FBIPenaltyConstraintenforcer(bridge));
+  Teuchos::RCP<FBI::FBIGeometryCoupler> coupler = Teuchos::rcp(new FBI::FBIGeometryCoupler());
+  return Teuchos::rcp(new ADAPTER::FBIPenaltyConstraintenforcer(bridge, coupler));
 }

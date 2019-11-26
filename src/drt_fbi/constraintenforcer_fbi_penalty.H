@@ -27,6 +27,11 @@ namespace GEO
   class SearchTree;
 }
 
+namespace FBI
+{
+  class FBIGeometryCoupler;
+}
+
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -41,8 +46,9 @@ namespace ADAPTER
 
    protected:
     /// Standard constructor
-    FBIPenaltyConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge)
-        : FBIConstraintenforcer(bridge){};
+    FBIPenaltyConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
+        Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler)
+        : FBIConstraintenforcer(bridge, geometrycoupler){};
 
     // Do we need set-routines here?
 
