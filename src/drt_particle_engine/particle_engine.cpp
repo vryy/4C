@@ -165,6 +165,13 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
+void PARTICLEENGINE::ParticleEngine::FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids)
+{
+  // insert freed global id
+  for (const int currfreegid : freeuniquegids)
+    particleuniqueglobalidhandler_->InsertFreedGlobalId(currfreegid);
+}
+
 void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
     std::vector<ParticleObjShrdPtr>& particlestogetuniquegids)
 {

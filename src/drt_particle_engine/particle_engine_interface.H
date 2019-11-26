@@ -58,6 +58,25 @@ namespace PARTICLEENGINE
     virtual ~ParticleEngineInterface(){};
 
     /*!
+     * \brief free unique global ids
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] freeuniquegids free unique global ids
+     */
+    virtual void FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids) = 0;
+
+    /*!
+     * \brief get unique global ids for all particles
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] particlestogetuniquegids particles to get unique global ids
+     */
+    virtual void GetUniqueGlobalIdsForAllParticles(
+        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids) = 0;
+
+    /*!
      * \brief refresh specific states of particles of specific types
      *
      * \author Sebastian Fuchs \date 05/2018

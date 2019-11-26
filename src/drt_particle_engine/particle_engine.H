@@ -126,17 +126,28 @@ namespace PARTICLEENGINE
     void WriteParticleRuntimeOutput(const int step, const double time) const;
 
     /*!
+     * \brief free unique global ids
+     *
+     * All unique global ids handed in are freed in order to be reassigned.
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] freeuniquegids free unique global ids
+     */
+    void FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids) override;
+
+    /*!
      * \brief get unique global ids for all particles
      *
      * All particles handed in do not have a unique global id yet. In this method a unique global id
      * is assigned to each particle.
      *
-     * \author Sebastian Fuchs \date 09/2018
+     * \author Sebastian Fuchs \date 11/2019
      *
      * \param[in] particlestogetuniquegids particles to get unique global ids
      */
     void GetUniqueGlobalIdsForAllParticles(
-        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids);
+        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids) override;
 
     /*!
      * \brief check number of unique global ids
