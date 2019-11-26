@@ -568,6 +568,13 @@ namespace DRT
       /// @name Voigt vector/matrix converters
       //@{
 
+      //! \note uses an inconsistent Voigt notation
+      static void Matrix2TensorToVector9Voigt_Inconsistent(
+          LINALG::Matrix<NUMDFGR_, 1>& fvct,             ///< (out) 9x1 Voigt vector
+          const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< (in) 3x3 matrix
+          const bool transpose = false                   ///< use transposed input 3x3 matrix
+      );
+
       /// Derivative of inverse of non-symmetric 2-tensor with respect to itself
       ///
       /// In index notation:

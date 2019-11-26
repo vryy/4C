@@ -359,6 +359,33 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
 }
 
 
+void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt_Inconsistent(
+    LINALG::Matrix<NUMDFGR_, 1>& fvct, const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,
+    const bool transpose)
+{
+  const int* voigt9row = NULL;
+  const int* voigt9col = NULL;
+  if (transpose)
+  {
+    voigt9row = &(VOIGT9COL_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9ROW_INCONSISTENT_[0]);
+  }
+  else
+  {
+    voigt9row = &(VOIGT9ROW_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9COL_INCONSISTENT_[0]);
+  }
+
+  for (int ij = 0; ij < NUMDFGR_; ++ij)
+  {
+    const int i = voigt9row[ij];
+    const int j = voigt9col[ij];
+    fvct(ij, 0) = fmat(i, j);  // F_ij
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

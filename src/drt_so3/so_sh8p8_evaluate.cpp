@@ -1349,9 +1349,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         const double effpressure = prshfct.Dot(pres);  // pN*ep'
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
         LINALG::Matrix<NUMDFGR_, 1> tinvdefgrad_vct;
-        LINALG::Matrix<NUMDIM_, NUMDIM_> invdefgrad_t;
-        invdefgrad_t.UpdateT(invdefgrad);
-        ::UTILS::VOIGT::Matrix3x3to9x1(invdefgrad_t, tinvdefgrad_vct);
+        Matrix2TensorToVector9Voigt_Inconsistent(tinvdefgrad_vct, invdefgrad, true);
 
         // derivative of WmT := F^{-T}_{,F} in Voigt vector notation
         LINALG::Matrix<NUMDFGR_, NUMDFGR_> WmT;
