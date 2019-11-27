@@ -510,12 +510,6 @@ namespace DRT
       void mem_cmat_globaltolocal(const LINALG::Matrix<6, 6>& cmat_trafo,
           const LINALG::Matrix<6, 6>& cmat_global, LINALG::Matrix<6, 6>& cmat_local) const;
 
-      // transforms matrix to vector in stress-like voigt notation
-      void mem_matrixtovoigt(const LINALG::Matrix<3, 3>& matrix, LINALG::Matrix<6, 1>& voigt) const;
-
-      // transforms vector in stress-like voigt notation to matrix
-      void mem_voigttomatrix(const LINALG::Matrix<6, 1>& voigt, LINALG::Matrix<3, 3>& matrix) const;
-
       // determine deformation gradient in global frame on membrane surface
       void mem_defgrd_global(const LINALG::Matrix<noddof_, 1>& dXds1,
           const LINALG::Matrix<noddof_, 1>& dXds2, const LINALG::Matrix<noddof_, 1>& dxds1,

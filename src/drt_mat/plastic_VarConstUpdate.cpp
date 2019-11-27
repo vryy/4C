@@ -24,6 +24,9 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 #include "../drt_mat/material_service.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/voigt_notation.H"
+
+using vmap = UTILS::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -575,10 +578,11 @@ void MAT::PlasticElastHyperVCU::EvalDceDlp(const LINALG::Matrix<3, 3> fpi,
       for (int b = 0; b < 3; b++)
         for (int i = 0; i < 6; i++)
           if (i <= 2)
-            dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a], i) -= fpi(A, b) * Dexp(VOIGT3X3_[b][a], i);
+            dFpiDdeltaDp(vmap::NonSymToVoigt9(A, a), i) -=
+                fpi(A, b) * Dexp(vmap::SymToVoigt6(b, a), i);
           else
-            dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a], i) -=
-                2. * fpi(A, b) * Dexp(VOIGT3X3_[b][a], i);  // fixme factor 2
+            dFpiDdeltaDp(vmap::NonSymToVoigt9(A, a), i) -=
+                2. * fpi(A, b) * Dexp(vmap::SymToVoigt6(b, a), i);  // fixme factor 2
 
   dceDdeltalp.Multiply(dcedfpi, dFpiDdeltaDp);
 
@@ -618,7 +622,7 @@ void MAT::PlasticElastHyperVCU::YieldFunction(const double last_ai,
 
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++) MandelStr(i, k) += ce(i, j) * str(VOIGT3X3_[j][k]);
+      for (int k = 0; k < 3; k++) MandelStr(i, k) += ce(i, j) * str(vmap::SymToVoigt6(j, k));
 
   // Compute the trace of the mandel stresses
   LINALG::Matrix<3, 3> id2;
@@ -790,7 +794,8 @@ void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3x6(
   // Zusatz: 1. Map MatExpFirstDer from [6](3,3) to (6,6)
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 3; j++)
-      for (int k = j; k < 3; k++) dexp_mat(i, VOIGT3X3NONSYM_[j][k]) += MatrixExp1stDeriv[i](j, k);
+      for (int k = j; k < 3; k++)
+        dexp_mat(i, vmap::NonSymToVoigt9(j, k)) += MatrixExp1stDeriv[i](j, k);
 
 
   // 2. Map MatExp2ndDeriv from [6][6]3x3 to [6]6x6
@@ -799,8 +804,8 @@ void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3x6(
       for (int k = 0; k < 3; k++)
         for (int l = k; l < 3; l++)
         {
-          MatrixExp2ndDerivVoigt[I](J, VOIGT3X3NONSYM_[k][l]) = MatrixExp2ndDeriv[I][J](k, l);
-          MatrixExp2ndDerivVoigt[J](I, VOIGT3X3NONSYM_[k][l]) = MatrixExp2ndDeriv[I][J](k, l);
+          MatrixExp2ndDerivVoigt[I](J, vmap::NonSymToVoigt9(k, l)) = MatrixExp2ndDeriv[I][J](k, l);
+          MatrixExp2ndDerivVoigt[J](I, vmap::NonSymToVoigt9(k, l)) = MatrixExp2ndDeriv[I][J](k, l);
         }
 
   return;
@@ -1049,7 +1054,7 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
       ce_stresslike(i) = 0.5 * ce(i);
 
   LINALG::Matrix<3, 1> prinv;
-  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, ce);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, ce);
 
   LINALG::Matrix<3, 1> dPI;
   LINALG::Matrix<6, 1> ddPII;
@@ -1094,16 +1099,16 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
   //    CeFpiTC.Multiply(CeM,FpiTC);
   LINALG::Matrix<3, 3> tmp;
   tmp.Multiply(RCG, *fpi);
-  Matrix3x3to9x1(tmp, CFpi);
+  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpi);
   tmp33.Multiply(tmp, ce3x3);
-  Matrix3x3to9x1(tmp33, CFpiCe);
+  UTILS::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe);
 
 
 
   tmp.Invert(ce3x3);
   tmp33.Multiply(*fpi, tmp);
   tmp.Multiply(RCG, tmp33);
-  Matrix3x3to9x1(tmp, CFpiCei);
+  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpiCei);
 }
 void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int eleGID, const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<3, 3>* fpi, LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc)
@@ -1178,16 +1183,16 @@ void MAT::PlasticElastHyperVCU::Ce2ndDeriv(const LINALG::Matrix<3, 3>* defgrd,
         for (int C = 0; C < 6; C++)
           for (int D = 0; D < 6; D++)
           {
-            DDceDdLpDdLpVoigt[VOIGT3X3NONSYM_[a][d]](C, D) +=
+            DDceDdLpDdLpVoigt[vmap::NonSymToVoigt9(a, d)](C, D) +=
                 (1. + (D > 2)) * (1. + (C > 2)) *
-                (exp_dLp_cetrial(a, b) * D2exp_VOIGT[VOIGT3X3_[b][d]](C, D) +
-                    D2exp_VOIGT[VOIGT3X3_[a][b]](C, D) * exp_dLp_cetrial(d, b));
+                (exp_dLp_cetrial(a, b) * D2exp_VOIGT[vmap::SymToVoigt6(b, d)](C, D) +
+                    D2exp_VOIGT[vmap::SymToVoigt6(a, b)](C, D) * exp_dLp_cetrial(d, b));
             for (int c = 0; c < 3; c++)
-              DDceDdLpDdLpVoigt[VOIGT3X3NONSYM_[a][d]](C, D) +=
+              DDceDdLpDdLpVoigt[vmap::NonSymToVoigt9(a, d)](C, D) +=
                   (1. + (C > 2)) * (1. + (D > 2)) *
-                  (Dexp_dLp_mat(VOIGT3X3_[a][b], C) * cetrial(b, c) *
-                          Dexp_dLp_mat(VOIGT3X3_[c][d], D) +
-                      Dexp_dLp_mat(VOIGT3X3_[a][b], D) * cetrial(b, c) *
-                          Dexp_dLp_mat(VOIGT3X3_[c][d], C));
+                  (Dexp_dLp_mat(vmap::SymToVoigt6(a, b), C) * cetrial(b, c) *
+                          Dexp_dLp_mat(vmap::SymToVoigt6(c, d), D) +
+                      Dexp_dLp_mat(vmap::SymToVoigt6(a, b), D) * cetrial(b, c) *
+                          Dexp_dLp_mat(vmap::SymToVoigt6(c, d), C));
           }
 }

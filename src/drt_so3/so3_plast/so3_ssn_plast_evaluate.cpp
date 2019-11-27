@@ -16,17 +16,18 @@
 #include "so3_ssn_plast_fwd.hpp"
 
 #include "../../drt_lib/drt_globalproblem.H"
+#include "../../drt_lib/voigt_notation.H"
 #include "../../drt_mat/plasticelasthyper.H"
-#include "../../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../../drt_mat/material_service.H"
 #include "../../drt_inpar/inpar_structure.H"
 #include "../../drt_structure_new/str_elements_paramsinterface.H"
 #include "../../linalg/linalg_serialdensematrix.H"
-#include "../../linalg/linalg_serialdensevector.H"
 #include "../../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../../drt_mat/fourieriso.H"
+
+using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                            seitz 07/13 |
@@ -2169,11 +2170,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
       {
-        DFDxi(VOIGT3X3NONSYM_[a][b], 0) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        DFDxi(VOIGT3X3NONSYM_[a][b], 1) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        DFDxi(VOIGT3X3NONSYM_[a][b], 2) +=
+        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
 
@@ -2202,25 +2203,28 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
       for (int n = 0; n < nsd_; ++n)
         for (int k = 0; k < nen_; ++k)
         {
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
               deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
               N_XYZ_Xsec(k, 4) * invJ(n, 2);
 
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
               deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
               N_XYZ_Xsec(k, 5) * invJ(n, 2);
 
-          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
+          D2FDxiDd(
+              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
               deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
               N_XYZ_Xsec(k, 2) * invJ(n, 2);
 
           for (int l = 0; l < nsd_; ++l)
-            D2sntDdDxi_m(k * 3 + m, l) +=
-                DsntDF(VOIGT3X3NONSYM_[m][n], 0) *
-                D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + l);
+            D2sntDdDxi_m(k * 3 + m, l) += DsntDF(VoigtMapping::NonSymToVoigt9(m, n), 0) *
+                                          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n),
+                                              numdofpernode_ * (numdofpernode_ * k + m) + l);
         }
   }
   InvalidEleData();
@@ -2300,8 +2304,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(const LINALG::Matrix<
     for (int j = 0; j < nsd_; ++j)
       for (int a = 0; a < nsd_; ++a)
       {
-        d_nttn_v_dn(VOIGT3X3SYM_[i][j], a) += .5 * ((i == a) * t(j) + (j == a) * t(i));
-        d_nttn_v_dt(VOIGT3X3SYM_[i][j], a) += .5 * ((i == a) * n(j) + (j == a) * n(i));
+        d_nttn_v_dn(VoigtMapping::SymToVoigt6(i, j), a) += .5 * ((i == a) * t(j) + (j == a) * t(i));
+        d_nttn_v_dt(VoigtMapping::SymToVoigt6(i, j), a) += .5 * ((i == a) * n(j) + (j == a) * n(i));
       }
   if (DsntDn) DsntDn->MultiplyTN(d_nttn_v_dn, cauchy_expol);
   if (DsntDt) DsntDt->MultiplyTN(d_nttn_v_dt, cauchy_expol);
@@ -3028,7 +3032,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          dq_dF_v(VOIGT3X3NONSYM_[a][b], c) =
+          dq_dF_v(VoigtMapping::NonSymToVoigt9(a, b), c) =
               k0 / DetF() * (tmp2(c) * InvDefgrd()(b, a) + tmp(a, c) * iFn(b));
 
     d2q_dT_dd_m.MultiplyTN(dq_dF_v, dFdd);

@@ -15,11 +15,14 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/voigt_notation.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
+
+using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
 
 
 /*----------------------------------------------------------------------*/
@@ -356,22 +359,21 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(LINALG::Matrix<NUMDFGR_, 1>& fvct,
-    const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, const bool transpose)
+void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt_Inconsistent(
+    LINALG::Matrix<NUMDFGR_, 1>& fvct, const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,
+    const bool transpose)
 {
   const int* voigt9row = NULL;
   const int* voigt9col = NULL;
   if (transpose)
   {
-    voigt9row = &(VOIGT9COL_[0]);
-    voigt9col = &(VOIGT9ROW_[0]);
+    voigt9row = &(VOIGT9COL_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9ROW_INCONSISTENT_[0]);
   }
   else
   {
-    voigt9row = &(VOIGT9ROW_[0]);
-    voigt9col = &(VOIGT9COL_[0]);
+    voigt9row = &(VOIGT9ROW_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9COL_INCONSISTENT_[0]);
   }
 
   for (int ij = 0; ij < NUMDFGR_; ++ij)
@@ -385,48 +387,11 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(LINALG::Matrix<NUMDFGR
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector6Voigt(
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& bvct, const LINALG::Matrix<NUMDIM_, NUMDIM_>& bmat,
-    const VoigtType outvoigt6)
-{
-  for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
-  {
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
-    if (ij < NUMDIM_)
-      bvct(ij) = bmat(i, j);  // B_ij
-    else if (outvoigt6 == voigt6_strain)
-      bvct(ij) = bmat(i, j) + bmat(j, i);  // B_ij+B_ji
-    else
-      bvct(ij) = bmat(i, j);  // B_ij
-  }
 
-  return;
-}
+/*----------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Vector6VoigtToMatrix2Tensor(LINALG::Matrix<NUMDIM_, NUMDIM_>& bmat,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& bvct, const VoigtType invoigt6)
-{
-  for (int j = 0; j < NUMDIM_; ++j)
-  {
-    for (int i = 0; i < NUMDIM_; ++i)
-    {
-      const int ij = VOIGT3X3SYM_[NUMDIM_ * i + j];
-      if (i == j)
-        bmat(i, j) = bvct(ij);
-      else if (invoigt6 == voigt6_strain)
-        bmat(i, j) = 0.5 * bvct(ij);
-      else
-        bmat(i, j) = bvct(ij);
-    }
-  }
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*/
@@ -441,19 +406,19 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
   const int* voigt9col = NULL;
   if (transpose)
   {
-    voigt9row = &(VOIGT9COL_[0]);
-    voigt9col = &(VOIGT9ROW_[0]);
+    voigt9row = &(VOIGT9COL_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9ROW_INCONSISTENT_[0]);
   }
   else
   {
-    voigt9row = &(VOIGT9ROW_[0]);
-    voigt9col = &(VOIGT9COL_[0]);
+    voigt9row = &(VOIGT9ROW_INCONSISTENT_[0]);
+    voigt9col = &(VOIGT9COL_INCONSISTENT_[0]);
   }
 
   for (int kl = 0; kl < NUMDFGR_; ++kl)
   {
-    const int k = VOIGT9ROW_[kl];
-    const int l = VOIGT9COL_[kl];
+    const int k = VOIGT9ROW_INCONSISTENT_[kl];
+    const int l = VOIGT9COL_INCONSISTENT_[kl];
     for (int ij = 0; ij < NUMDFGR_; ++ij)
     {
       const int i = voigt9row[ij];
@@ -479,12 +444,12 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       invfderf(ij,kl) = -0.5*(invfmat(i,k)*invfmat(l,j) + invfmat(i,l)*invfmat(k,j));
 //      std::cout << "invfderf("<<ij<<","<<kl<<") = ";
 //      std::cout << "-0.5*(invfmat("<<i<<","<<k<<")*invfmat("<<l<<","<<j<<")+invfmat("<<i<<","<<l<<")*invfmat("<<k<<","<<j<<"));";
@@ -565,19 +530,19 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 
   for (int kl = 0; kl < MAT::NUM_STRESS_3D; ++kl)
   {
-    const int k = VOIGT6ROW_[kl];
-    const int l = VOIGT6COL_[kl];
+    const int k = VoigtMapping::Voigt6ToRow(kl);
+    const int l = VoigtMapping::Voigt6ToCol(kl);
     for (int mn = kl; mn < MAT::NUM_STRESS_3D; ++mn)
     {
-      const int m = VOIGT6ROW_[mn];
-      const int n = VOIGT6COL_[mn];
+      const int m = VoigtMapping::Voigt6ToRow(mn);
+      const int n = VoigtMapping::Voigt6ToCol(mn);
       const int klmn = MAT::NUM_STRESS_3D * kl + mn;
       const int mnkl = MAT::NUM_STRESS_3D * mn + kl;
       for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
       {
         //    std::cout << "[\n";
-        const int i = VOIGT6ROW_[ij];
-        const int j = VOIGT6COL_[ij];
+        const int i = VoigtMapping::Voigt6ToRow(ij);
+        const int j = VoigtMapping::Voigt6ToCol(ij);
         double invbvdderb_ijklmn;
         invbvdderb_ijklmn = 0.25 * ((ibt(i, m) * ibt(n, k) + ibt(i, n) * ibt(m, k)) * ibt(l, j) +
                                        ibt(i, k) * (ibt(l, m) * ibt(n, j) + ibt(l, n) * ibt(m, j)) +
@@ -629,7 +594,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& sqfderf,
-    const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, const VoigtType outvoigt6)
+    const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, ::UTILS::VOIGT::NotationType outvoigt6)
 {
   // VERIFIED
 
@@ -643,12 +608,12 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
 //      std::cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
       if ( (outvoigt6 == voigt6_strain) and (ij >= NUMDIM_) )
@@ -661,7 +626,8 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
 //    std::cout << "]," << std::endl;
   }
 #else
-  if (outvoigt6 != voigt6_strain) dserror("Can only produce row of strain-like type");
+  if (outvoigt6 != ::UTILS::VOIGT::NotationType::strain)
+    dserror("Can only produce row of strain-like type");
 
   sqfderf(0, 0) = 2.0 * fmat(0, 0);
   sqfderf(1, 0) = 0.0;
@@ -727,12 +693,12 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
   for (int ij=0; ij<NUMDFGR_; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT9ROW_[ij];
-    const int j = VOIGT9COL_[ij];
+    const int i = VOIGT9ROW_INCONSISTENT_[ij];
+    const int j = VOIGT9COL_INCONSISTENT_[ij];
     for (int kl=0; kl<NUMDFGR_; ++kl)
     {
-      const int k = VOIGT9ROW_[kl];
-      const int l = VOIGT9COL_[kl];
+      const int k = VOIGT9ROW_INCONSISTENT_[kl];
+      const int l = VOIGT9COL_INCONSISTENT_[kl];
 //      std::cout << "i=" << i << ", j=" << j << ", k=" << k << ", l=" << l << std::endl;
       if (transpose)  // swap indices of fmat
         sqfderf(ij,kl) = id(i,k)*fmat(j,l) + id(j,l)*fmat(k,i);
@@ -767,16 +733,16 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    std::cout << "[";
-    const int i = VOIGT6ROW_[ij];
-    const int j = VOIGT6COL_[ij];
+    const int i = VOIGT6ROW[ij];
+    const int j = VOIGT6COL[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
+      const int k = VOIGT6ROW[kl];
+      const int l = VOIGT6COL[kl];
       for (int mn=0; mn<MAT::NUM_STRESS_3D; ++mn)
       {
-        const int m = VOIGT6ROW_[mn];
-        const int n = VOIGT6COL_[mn];
+        const int m = VOIGT6ROW[mn];
+        const int n = VOIGT6COL[mn];
         const int klmn = MAT::NUM_STRESS_3D*kl + mn;
         double sqfdderf_ijklmn = 0.25*(id(i,k)*id(l,m)*id(j,n)+id(j,l)*id(i,m)*id(k,n)
                                        +id(i,k)*id(l,n)*id(j,m)+id(j,l)*id(i,n)*id(k,m)  // swap 'm' and 'n'
@@ -936,13 +902,13 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
   //  std::cout << std::endl;
   for (int kl = 0; kl < NUMDFGR_; ++kl)
   {
-    const int k = VOIGT9ROW_[kl];
-    const int l = VOIGT9COL_[kl];
+    const int k = VOIGT9ROW_INCONSISTENT_[kl];
+    const int l = VOIGT9COL_INCONSISTENT_[kl];
     for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
     {
       //    std::cout << "[";
-      const int i = VOIGT6ROW_[ij];
-      const int j = VOIGT6COL_[ij];
+      const int i = VoigtMapping::Voigt6ToRow(ij);
+      const int j = VoigtMapping::Voigt6ToCol(ij);
       if (j == l)
         if (transpose)
         {
@@ -978,18 +944,18 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,                  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose,                                        ///< 3x3 input matrix is transposed
-    const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-    const VoigtType colvoigt6   ///< 6-Voigt vector layout on columns of 6x6 matrix
+    ::UTILS::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+    ::UTILS::VOIGT::NotationType colvoigt6   ///< 6-Voigt vector layout on columns of 6x6 matrix
 )
 {
   for (int ab = 0; ab < MAT::NUM_STRESS_3D; ++ab)
   {
-    const int a = VOIGT6ROW_[ab];
-    const int b = VOIGT6COL_[ab];
+    const int a = VoigtMapping::Voigt6ToRow(ab);
+    const int b = VoigtMapping::Voigt6ToCol(ab);
     for (int AB = 0; AB < MAT::NUM_STRESS_3D; ++AB)
     {
-      const int A = VOIGT6ROW_[AB];
-      const int B = VOIGT6COL_[AB];
+      const int A = VoigtMapping::Voigt6ToRow(AB);
+      const int B = VoigtMapping::Voigt6ToCol(AB);
       if (transpose)
       {
         bm(AB, ab) = bt(A, a) * bt(B, b);
@@ -1000,8 +966,10 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
         bm(AB, ab) = bt(a, A) * bt(b, B);
         if (ab >= NUMDIM_) bm(AB, ab) += bt(b, A) * bt(a, B);
       }
-      if ((colvoigt6 == voigt6_stress) and (ab >= NUMDIM_)) bm(AB, ab) *= 0.5;
-      if ((rowvoigt6 == voigt6_strain) and (AB >= NUMDIM_)) bm(AB, ab) *= 2.0;
+      if ((colvoigt6 == ::UTILS::VOIGT::NotationType::stress) and (ab >= NUMDIM_))
+        bm(AB, ab) *= 0.5;
+      if ((rowvoigt6 == ::UTILS::VOIGT::NotationType::strain) and (AB >= NUMDIM_))
+        bm(AB, ab) *= 2.0;
     }
   }
 

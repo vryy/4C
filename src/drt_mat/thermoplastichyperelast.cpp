@@ -1390,7 +1390,7 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
 
       // be careful we save the disturbed RCG in tensor notation, i.e. (3x3)
       // to insert the corresponding terms in cmat (6x6) copy the terms to
-      // their correct position using array VOIGT3X3SYM_ as is done, e.g. in
+      // their correct position using array VOIGT3X3SYM as is done, e.g. in
       // neohooke or so3_plast
       double array[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
 

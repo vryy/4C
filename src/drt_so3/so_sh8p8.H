@@ -17,6 +17,14 @@
 // forward declarations
 struct _SOH8_DATA;
 
+namespace UTILS
+{
+  namespace VOIGT
+  {
+    enum class NotationType;
+  }
+}  // namespace UTILS
+
 namespace DRT
 {
   // forward declarations
@@ -124,15 +132,7 @@ namespace DRT
         iso_enforced   ///< volumetric contribution is split of material stress reponse
       };
 
-      /// Type of Voigt vector
-      enum VoigtType
-      {
-        voigt6_strain,  ///< strain-like vector [ E11, E22, E33, 2*E12, 2*E23, 2*E31 ]
-        voigt6_stress,  ///< stress-like vector [ S11, S22, S33, S12, S23, S31 ]
-        voigt9          ///< non-symmetric vector [ F11, F22, F33, F12, F23, F31, F13, F32, F21 ]
-      };
-
-      // LinearizationType
+      /// LinearizationType
       enum LinearizationType
       {
         lin_sixth = 0,  ///< minimum linearisation to achieve anti-locking
@@ -173,15 +173,16 @@ namespace DRT
       static const int NUMEAS_SOSH8_ = 7;  ///< number of EAS parameters of sosh8-like EAS
       static const int NUMEAS_A_ = 1;      ///< number of EAS parameters of A-type EAS
 
-      // Voigt index arrays
-      static const int VOIGT6ROW_[];    ///< 6-Voigt row index of corresponding 2-tensor
-      static const int VOIGT6COL_[];    ///< 6-Voigt column index of corresponding 2-tensor
-      static const int VOIGT9ROW_[];    ///< 9-Voigt row index of corresponding 2-tensor
-      static const int VOIGT9COL_[];    ///< 9-Voigt column index of corresponding 2-tensor
-      static const int VOIGT3X3_[];     ///< go from 2-tensor index pair to 9-Voigt index
-                                        ///< by [NUMDIM_*i+j] for any i,j=0,1,2
-      static const int VOIGT3X3SYM_[];  ///< go from symmetric 2-tensor index pair to 6-Voigt index
-                                        ///< by [NUMDIM_*i+j] for any i,j=0,1,2
+      /// @name Inconsistent Voigt notation used for shell elements
+      ///@{
+      static const int VOIGT9ROW_INCONSISTENT_[];  ///< 9-Voigt row index of corresponding 2-tensor
+      static const int
+          VOIGT9COL_INCONSISTENT_[];  ///< 9-Voigt column index of corresponding 2-tensor
+      static const int
+          VOIGT3X3NONSYM_INCONSISTENT_[];  ///< go from 2-tensor index pair to 9-Voigt index
+                                           ///< by [NUMDIM_*i+j] for any i,j=0,1,2
+
+      ///@}
 
       // Ordering of element displacement and pressure DOFs
       static const int DISPTODISPPRES_[];  ///< 24 displacement into 32 total DOFs
@@ -567,59 +568,11 @@ namespace DRT
       /// @name Voigt vector/matrix converters
       //@{
 
-      /// Convert 3x3 matrix of non-sym 2-tensor in 9x1 Voigt vector
-      ///
-      /// From
-      ///\f[
-      ///   [\boldsymbol{F}] = \left[\begin{array}{ccc}
-      ///   F_{11} & F_{12} & F_{13} \\ F_{21} & F_{22} & F_{23} \\ F_{31} & F_{32} & F_{33}
-      ///   \end{array}\right]
-      ///\f]
-      /// to
-      ///\f[
-      ///   \tilde{\mathbf{F}} = \left[\begin{array}{c}
-      ///   F_{11} \\ F_{22} \\ F_{33} \\ F_{12} \\ F_{23} \\ F_{31} \\ F_{13} \\ F_{32} \\ F_{21}
-      ///   \end{array}\right]
-      ///\f]
-      static void Matrix2TensorToVector9Voigt(
+      //! \note uses an inconsistent Voigt notation
+      static void Matrix2TensorToVector9Voigt_Inconsistent(
           LINALG::Matrix<NUMDFGR_, 1>& fvct,             ///< (out) 9x1 Voigt vector
           const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< (in) 3x3 matrix
           const bool transpose = false                   ///< use transposed input 3x3 matrix
-      );
-
-      /// Convert 3x3 matrix of sym 2-tensor in 9-Voigt vector
-      ///
-      /// From
-      ///\f[
-      ///   [\boldsymbol{B}] = \left[\begin{array}{ccc}
-      ///   B_{11} & B_{12} & B_{31} \\ B_{12} & B_{22} & B_{23} \\ B_{31} & B_{23} & B_{33}
-      ///   \end{array}\right]
-      ///\f]
-      /// to if \i strain-like vector
-      ///\f[
-      ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
-      ///   B_{11} \\ B_{22} \\ B_{33} \\ 2 B_{12} \\ 2 B_{23} \\ 2 B_{31}
-      ///   \end{array}\right]
-      ///\f]
-      /// or to if \i stress-like vector
-      ///\f[
-      ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
-      ///   B_{11} \\ B_{22} \\ B_{33} \\ B_{12} \\ B_{23} \\ B_{31}
-      ///   \end{array}\right]
-      ///\f]
-      static void Matrix2TensorToVector6Voigt(
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& bvct,   ///< 6-Voigt vector
-          const LINALG::Matrix<NUMDIM_, NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
-          const VoigtType outvoigt6 = voigt6_strain      ///< type of 6-Voigt vector
-      );
-
-      /// convert 6-Voigt vector into matrix of 2-tensor
-      ///
-      /// opposite of #Matrix2TensorToVector6Voigt
-      static void Vector6VoigtToMatrix2Tensor(
-          LINALG::Matrix<NUMDIM_, NUMDIM_>& bmat,             ///< 3x3 sym 2-tensor
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& bvct,  ///< 6-Voigt vector
-          const VoigtType invoigt6 = voigt6_strain            ///< type of 6-Voigt vector
       );
 
       /// Derivative of inverse of non-symmetric 2-tensor with respect to itself
@@ -681,8 +634,7 @@ namespace DRT
       static void SqVector6VoigtDiffByItself(LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
                                                  sqfderf,  ///< diff. squared matrix
           const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,    ///< symmetric 2-tensor
-          const VoigtType outvoigt6 = voigt6_strain        ///< 6-Voigt row type of resulting matrix
-      );
+          ::UTILS::VOIGT::NotationType outvoigt6);
 
       /// Derivative of "square" of non-symmetric 2-tensor by itself
       ///
@@ -776,8 +728,9 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
           const LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
           const bool transpose,                        ///< 3x3 input matrix is transposed
-          const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-          const VoigtType colvoigt6   ///< 6-Voigt vector layout on columns of 6x6 matrix
+          ::UTILS::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+          ::UTILS::VOIGT::NotationType
+              colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
       );
 
       //@}

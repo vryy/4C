@@ -20,6 +20,8 @@
 #include "../drt_mat/material_service.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_lib/voigt_notation.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
@@ -202,8 +204,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
   if (ResetInvariants(rcg, &params)) return;
 
   // switch to stress notation
-  LINALG::Matrix<6, 1> rcg_s(rcg);
-  MAT::ConvertStrainToStressNotation(rcg_s);
+  LINALG::Matrix<6, 1> rcg_s(false);
+  UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_s);
 
   LINALG::Matrix<6, 1> rcg_inv_s(false);
   UpdateSecondPiolaKirchhoffStress(stress, rcg_s, rcg_inv_s);
@@ -235,6 +237,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
     cmat.MultiplyNT(delta, AA_, rcg_inv_s, 1.0);
   }
 
+  using vmap = UTILS::VOIGT::IndexMappings;
   // (2) contribution
   {
     const double delta = -alpha;
@@ -242,15 +245,15 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
     {
       for (unsigned b = 0; b < 6; ++b)
       {
-        const unsigned i = MAT::IMap::fourth_[a][b][0];
-        const unsigned j = MAT::IMap::fourth_[a][b][1];
-        const unsigned k = MAT::IMap::fourth_[a][b][2];
-        const unsigned l = MAT::IMap::fourth_[a][b][3];
+        const unsigned i = vmap::Voigt6x6To4Tensor(a, b, 0);
+        const unsigned j = vmap::Voigt6x6To4Tensor(a, b, 1);
+        const unsigned k = vmap::Voigt6x6To4Tensor(a, b, 2);
+        const unsigned l = vmap::Voigt6x6To4Tensor(a, b, 3);
 
-        cmat(a, b) += delta * (A_(i) * A_(l) * identity[MAT::IMap::second_[j][k]] +
-                                  A_(i) * A_(k) * identity[MAT::IMap::second_[j][l]] +
-                                  A_(k) * A_(j) * identity[MAT::IMap::second_[i][l]] +
-                                  A_(l) * A_(j) * identity[MAT::IMap::second_[i][k]]);
+        cmat(a, b) += delta * (A_(i) * A_(l) * identity[vmap::SymToVoigt6(j, k)] +
+                                  A_(i) * A_(k) * identity[vmap::SymToVoigt6(j, l)] +
+                                  A_(k) * A_(j) * identity[vmap::SymToVoigt6(i, l)] +
+                                  A_(l) * A_(j) * identity[vmap::SymToVoigt6(i, k)]);
       }
     }
   }
@@ -262,14 +265,14 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
     {
       for (unsigned b = 0; b < 6; ++b)
       {
-        const unsigned i = MAT::IMap::fourth_[a][b][0];
-        const unsigned j = MAT::IMap::fourth_[a][b][1];
-        const unsigned k = MAT::IMap::fourth_[a][b][2];
-        const unsigned l = MAT::IMap::fourth_[a][b][3];
+        const unsigned i = vmap::Voigt6x6To4Tensor(a, b, 0);
+        const unsigned j = vmap::Voigt6x6To4Tensor(a, b, 1);
+        const unsigned k = vmap::Voigt6x6To4Tensor(a, b, 2);
+        const unsigned l = vmap::Voigt6x6To4Tensor(a, b, 3);
 
         cmat(a, b) +=
-            delta * (rcg_inv_s(MAT::IMap::second_[i][k]) * rcg_inv_s(MAT::IMap::second_[j][l]) +
-                        rcg_inv_s(MAT::IMap::second_[i][l]) * rcg_inv_s(MAT::IMap::second_[j][k]));
+            delta * (rcg_inv_s(vmap::SymToVoigt6(i, k)) * rcg_inv_s(vmap::SymToVoigt6(j, l)) +
+                        rcg_inv_s(vmap::SymToVoigt6(i, l)) * rcg_inv_s(vmap::SymToVoigt6(j, k)));
       }
     }
   }
@@ -302,7 +305,7 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
   LINALG::Matrix<6, 1> rcg_quad(false);
-  MAT::VStrainUtils::PowerOfSymmetricTensor(2, rcg, rcg_quad);
+  UTILS::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
   I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
         AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
 
@@ -320,7 +323,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   const double gamma = params_->gamma_;
 
   // compute inverse right Cauchy Green tensor
-  MAT::VStressUtils::InverseTensor(rcg_s, rcg_inv_s);
+  UTILS::VOIGT::Stresses::InverseTensor(rcg_s, rcg_inv_s);
 
   // (0) contribution
   {
@@ -337,10 +340,10 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   // (2) contribution
   {
     LINALG::Matrix<3, 1> ca(true);
-    MAT::VStressUtils::MultiplyTensorVector(rcg_s, A_, ca);
+    UTILS::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
 
     LINALG::Matrix<6, 1> caa_aac(true);
-    MAT::VStressUtils::SymmetricOuterProduct(ca, A_, caa_aac);
+    UTILS::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
 
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);
