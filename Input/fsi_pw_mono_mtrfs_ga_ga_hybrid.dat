@@ -52,6 +52,7 @@ RESULTSEVRY                     1
 ADAPTIVEDIST                    0.001
 HYBRID_FILL_LEVEL               0
 HYBRIDFULL                      yes
+HYBRID_IMBALANCE_TOL            1.03
 INNERPREC                       PreconditionedKrylov
 ITEMAX                          20
 LINEARBLOCKSOLVER               HybridSchwarz

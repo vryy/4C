@@ -227,6 +227,9 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "or on interface procs only (no)",
       &fsimono);
 
+  DoubleParameter("HYBRID_IMBALANCE_TOL", 1.1,
+      "Relative imbalance of sudomain size for repartitioning in hybrid preconditioner", &fsimono);
+
   BoolParameter("INFNORMSCALING", "Yes", "Scale Blocks with row infnorm?", &fsimono);
 
   setStringToIntegralParameter<int>("INNERPREC", "PreconditionedKrylov",
