@@ -23,7 +23,8 @@
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../drt_lib/epetra_utils.H"
 
 //#define LAGRANGE_FUNC

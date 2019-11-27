@@ -21,7 +21,7 @@
 
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 #include "../drt_lib/drt_discret_faces.H"
 

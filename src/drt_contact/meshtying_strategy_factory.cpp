@@ -35,7 +35,7 @@
 
 #include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_ParameterList.hpp>
 

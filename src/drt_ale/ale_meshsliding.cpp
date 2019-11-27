@@ -17,7 +17,8 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

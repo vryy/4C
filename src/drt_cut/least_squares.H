@@ -17,7 +17,7 @@
 
 #include <vector>
 #include "Epetra_SerialDenseSolver.h"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 namespace GEO

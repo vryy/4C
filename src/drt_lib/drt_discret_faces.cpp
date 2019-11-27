@@ -19,7 +19,8 @@
 #include "drt_exporter.H"
 
 #include "drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"

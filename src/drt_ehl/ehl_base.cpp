@@ -27,7 +27,7 @@ algorithms
 #include "../drt_lubrication/lubrication_timint_implicit.H"
 #include "../drt_mat/lubrication_mat.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_lib/drt_matchingoctree.H"
 

@@ -69,6 +69,7 @@ namespace PARTICLEALGORITHM
    *
    * \author Sebastian Fuchs \date 04/2018
    */
+
   class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
   {
    public:

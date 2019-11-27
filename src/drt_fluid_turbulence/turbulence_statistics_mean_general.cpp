@@ -15,7 +15,8 @@ means are computed as time averages
 #include "turbulence_statistics_mean_general.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_io/io.H"
 

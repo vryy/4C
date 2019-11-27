@@ -14,6 +14,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/membrane_elasthyper.H"

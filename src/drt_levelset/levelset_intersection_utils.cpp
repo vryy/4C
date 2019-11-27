@@ -24,7 +24,7 @@
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/element_volume.H"
 #include "../drt_geometry/element_coordtrafo.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_scatra_ele/scatra_ele_parameter_std.H"
 

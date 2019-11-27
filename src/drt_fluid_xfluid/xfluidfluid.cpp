@@ -27,7 +27,7 @@
 #include "../drt_io/io.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"

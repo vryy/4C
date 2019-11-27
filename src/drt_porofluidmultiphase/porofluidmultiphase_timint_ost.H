@@ -10,7 +10,7 @@
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_
 #define SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "porofluidmultiphase_timint_implicit.H"
 
 namespace POROFLUIDMULTIPHASE

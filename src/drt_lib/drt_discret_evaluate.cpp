@@ -17,7 +17,7 @@
 #include "drt_function.H"
 #include "drt_parobjectfactory.H"
 #include "drt_elements_paramsinterface.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "drt_assemblestrategy.H"
 #include "Epetra_SerialDenseMatrix.h"

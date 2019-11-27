@@ -38,7 +38,7 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

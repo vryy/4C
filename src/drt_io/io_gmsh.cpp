@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils.H"  // LINALG::Export
+#include "../linalg/linalg_utils_densematrix_manipulation.H"  // LINALG::Export
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/position_array.H"

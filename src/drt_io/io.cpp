@@ -14,7 +14,8 @@
 
 #include "io.H"
 #include "io_control.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"

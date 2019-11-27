@@ -21,7 +21,7 @@
 #include "../drt_inpar/inpar_contact.H"
 
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_lib/drt_utils_parallel.H"
 

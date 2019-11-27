@@ -17,7 +17,7 @@
 #include "contact_interface.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../drt_mortar/mortar_element.H"
 #include "contact_nitsche_utils.H"
 #include "../drt_lib/drt_globalproblem.H"

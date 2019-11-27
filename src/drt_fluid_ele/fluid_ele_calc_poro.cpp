@@ -32,7 +32,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 
 //#include "Sacado.hpp"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 
 #include "../drt_inpar/inpar_poroelast.H"
 

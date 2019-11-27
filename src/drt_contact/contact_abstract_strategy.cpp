@@ -28,7 +28,10 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"

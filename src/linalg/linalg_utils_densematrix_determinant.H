@@ -2,7 +2,7 @@
 /*! \file
 \file linalg_utils_densematrix_determinant.H
 
-\brief Determinant functions for dense matrices up to 4x4.
+\brief Determinant functions for dense matrices up to 4x4 and LU determinant.
 
 <pre>
 \level 0
@@ -15,9 +15,11 @@
 #ifndef LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
 #define LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
 
-
 #include "linalg_fixedsizematrix.H"
-
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "../drt_lib/drt_exporter.H"
+#include "linalg_blocksparsematrix.H"
 
 namespace LINALG
 {
@@ -102,6 +104,14 @@ namespace LINALG
             a30 * a02 * a21 * a13 - a31 * a12 * a20 * a03 - a30 * a01 * a12 * a23;
     return det;
   }
+
+  /*!
+   \brief Determinant of a nonsymmetric matrix using LU
+
+   \return the determinant of the matrix A
+   */
+  double DeterminantLU(const Epetra_SerialDenseMatrix& A);
+
 }  // namespace LINALG
 
 #endif

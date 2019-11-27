@@ -10,7 +10,7 @@
 
 #include "ssi_partitioned_2wc.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"

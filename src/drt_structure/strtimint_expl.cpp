@@ -24,7 +24,7 @@
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

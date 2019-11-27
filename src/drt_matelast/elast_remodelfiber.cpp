@@ -16,7 +16,7 @@ COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/material_service.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 
 

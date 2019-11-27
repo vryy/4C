@@ -17,7 +17,7 @@
 #include "fluid_timint_topopt.H"
 #include "fluid_timint_stat.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
 namespace FLD

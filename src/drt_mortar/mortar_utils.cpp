@@ -13,7 +13,8 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../linalg/linalg_multiply.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"

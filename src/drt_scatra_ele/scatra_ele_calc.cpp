@@ -34,7 +34,7 @@
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "scatra_ele_calc.H"
 

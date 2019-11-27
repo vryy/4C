@@ -24,7 +24,8 @@ bridge between the xfluid class and the cut-library
 #include "../drt_cut/cut_point.H"
 
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_fluid.H"

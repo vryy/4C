@@ -23,7 +23,10 @@
 #include "../drt_mortar/mortar_element.H"
 
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_inpar/inpar_mortar.H"
 #include <Epetra_FEVector.h>

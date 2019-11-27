@@ -17,7 +17,8 @@
 #include "pat_imagereconstruction.H"
 
 #include "Epetra_CrsMatrix.h"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"

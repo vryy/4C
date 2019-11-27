@@ -10,7 +10,7 @@
 
 #include "beam_to_solid_volume_meshtying_pair_gauss_point.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 

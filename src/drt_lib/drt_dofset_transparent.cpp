@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "drt_dofset_transparent.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 DRT::TransparentDofSet::TransparentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)

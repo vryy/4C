@@ -35,7 +35,10 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
 #include "../drt_adapter/ad_art_net.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_print.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |

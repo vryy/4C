@@ -19,7 +19,8 @@ interface
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_fsi/fsi_matrixtransform.H"

@@ -19,6 +19,8 @@
 #include "../drt_adapter/ad_porofluidmultiphase.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
+#include "../linalg/linalg_utils_densematrix_communication.H"
+
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"

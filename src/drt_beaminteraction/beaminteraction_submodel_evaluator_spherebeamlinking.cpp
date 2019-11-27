@@ -21,7 +21,7 @@
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_beaminteraction/spherebeamlinking_params.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 

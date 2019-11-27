@@ -14,7 +14,8 @@
 
 #include "../drt_contact/contact_node.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 

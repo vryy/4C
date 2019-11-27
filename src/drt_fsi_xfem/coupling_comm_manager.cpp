@@ -22,7 +22,7 @@ transform matrixes, vectors, ...
 
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 

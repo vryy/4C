@@ -15,7 +15,7 @@
 #include "../drt_lib/drt_utils_reference_configuration.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|

@@ -23,7 +23,7 @@
 #include "../drt_mortar/mortar_element.H"
 
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_inpar/inpar_mortar.H"
 

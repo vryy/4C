@@ -17,7 +17,9 @@
 
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_sparsematrixbase.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include "../drt_io/io.H"
 

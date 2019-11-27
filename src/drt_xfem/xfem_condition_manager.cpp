@@ -17,7 +17,8 @@ builds the bridge between the xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "Epetra_IntVector.h"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_cut/cut_volumecell.H"
 

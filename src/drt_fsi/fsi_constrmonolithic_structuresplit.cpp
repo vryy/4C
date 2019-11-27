@@ -24,7 +24,7 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"

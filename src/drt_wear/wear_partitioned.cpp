@@ -52,7 +52,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialComm.h"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 

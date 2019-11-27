@@ -13,7 +13,7 @@
 #include "constraint_element3.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include <iostream>
 #include "../drt_lib/drt_dofset_transparent.H"

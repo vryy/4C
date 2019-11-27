@@ -26,7 +26,6 @@
 #include "../drt_levelset/levelset_dyn.H"
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_lubrication/lubrication_dyn.H"
-#include "../drt_opti/topopt_dyn.H"
 #include "../drt_particle_algorithm/particle_sim.H"
 #include "../drt_pasi/pasi_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"

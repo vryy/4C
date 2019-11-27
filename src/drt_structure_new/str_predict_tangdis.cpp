@@ -21,7 +21,8 @@
 #include "str_model_evaluator_data.H"
 
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"

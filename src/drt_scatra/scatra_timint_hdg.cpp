@@ -14,7 +14,7 @@
 #include "../drt_scatra_ele/scatra_ele_hdg.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_assemblestrategy.H"

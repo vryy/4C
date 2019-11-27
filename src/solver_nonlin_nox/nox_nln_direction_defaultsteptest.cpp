@@ -13,7 +13,7 @@
 #include "nox_nln_group.H"
 
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

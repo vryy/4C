@@ -24,7 +24,7 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/every_iteration_writer.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 #include "../drt_geometry/element_volume.H"
 
 /*----------------------------------------------------------------------------*

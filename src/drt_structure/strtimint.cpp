@@ -59,7 +59,9 @@
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_plast/so3_ssn_plast_eletypes.H"

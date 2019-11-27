@@ -24,7 +24,7 @@
 
 #include "../drt_structure/stru_aux.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_io/io.H"
 

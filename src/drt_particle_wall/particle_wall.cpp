@@ -34,7 +34,8 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
 

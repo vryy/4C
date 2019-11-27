@@ -16,7 +16,7 @@
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
 #include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
 #include "../drt_fluid_turbulence/turbulence_hit_initial_field.H"

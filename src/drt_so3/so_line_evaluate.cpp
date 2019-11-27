@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so_line.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_discret.H"

@@ -15,7 +15,7 @@
 #include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 
 #include "../drt_lib/drt_discret_xfem.H"

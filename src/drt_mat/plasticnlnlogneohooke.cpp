@@ -27,7 +27,7 @@
 #include "matpar_bundle.H"
 #include "material_service.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 

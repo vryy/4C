@@ -34,6 +34,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_wear/wear_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"
 

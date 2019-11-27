@@ -11,7 +11,7 @@
 #include "so_surface.H"
 #include "../headers/definitions.h"
 #include "../headers/standardtypes.h"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"

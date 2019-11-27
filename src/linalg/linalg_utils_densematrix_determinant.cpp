@@ -1,0 +1,45 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\file linalg_utils_densematrix_determinant.cpp
+
+\brief Determinant functions for dense matrices up to 4x4 and LU determinant
+
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+
+*-----------------------------------------------------------------------*/
+
+#include "../headers/compiler_definitions.h" /* access to fortran routines */
+#include "linalg_utils_densematrix_determinant.H"
+#include "../drt_lib/drt_dserror.H"
+
+/*----------------------------------------------------------------------*
+ |  (public)                                                 mwgee 05/08|
+ *----------------------------------------------------------------------*/
+double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
+{
+#ifdef DEBUG
+  if (A.M() != A.N()) dserror("Matrix is not square");
+#endif
+  Epetra_SerialDenseMatrix tmp(A);
+  Epetra_LAPACK lapack;
+  const int n = tmp.N();
+  const int m = tmp.M();
+  std::vector<int> ipiv(n);
+  int info;
+  lapack.GETRF(m, n, tmp.A(), tmp.LDA(), &ipiv[0], &info);
+  if (info < 0)
+    dserror("Lapack's dgetrf returned %d", info);
+  else if (info > 0)
+    return 0.0;
+  double d = tmp(0, 0);
+  for (int i = 1; i < n; ++i) d *= tmp(i, i);
+  // swapping rows of A changes the sign of the determinant, so we have to
+  // undo lapack's permutation w.r.t. the determinant
+  // note the fortran indexing convention in ipiv
+  for (int i = 0; i < n; ++i)
+    if (ipiv[i] != i + 1) d *= -1.0;
+  return d;
+}

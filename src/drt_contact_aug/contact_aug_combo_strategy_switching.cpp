@@ -19,7 +19,9 @@
 
 #include "../drt_io/io_pstream.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 

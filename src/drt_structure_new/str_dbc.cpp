@@ -17,7 +17,8 @@
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_densematrix_manipulation.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_locsys.H"

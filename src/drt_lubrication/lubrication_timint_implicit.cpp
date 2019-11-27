@@ -15,7 +15,9 @@
 #include "../drt_lubrication_ele/lubrication_ele_action.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_print.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 

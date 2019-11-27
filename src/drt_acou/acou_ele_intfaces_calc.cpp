@@ -17,7 +17,7 @@ Integrate internal face terms on an internal faces element
 #include "acou_ele_action.H"
 #include "acou_ele_intfaces_calc.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_lib/drt_discret_faces.H"
 

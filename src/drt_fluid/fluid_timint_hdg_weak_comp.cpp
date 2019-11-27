@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_io/io_control.H"
