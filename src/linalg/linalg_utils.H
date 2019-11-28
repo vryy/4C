@@ -2021,6 +2021,24 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
     return const_rcp_fun_t<_Ret, _Tp>(__f);
   }
 
+  /// Returns a dim x dim identity matrix
+  template <unsigned int dim>
+  void IdentityMatrix(LINALG::Matrix<dim, dim>& identity_matrix)
+  {
+    for (unsigned int i = 0; i < dim; i++)
+    {
+      for (unsigned int j = 0; j < dim; j++)
+      {
+        if (i == j)
+          identity_matrix(i, j) = 1.0;
+        else
+          identity_matrix(i, j) = 0.0;
+      }
+    }
+
+    return;
+  }
+
 }  // namespace LINALG
 
 #endif  // #ifndef LINALG_UTILS_H
