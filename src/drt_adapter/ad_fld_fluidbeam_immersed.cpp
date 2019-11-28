@@ -22,9 +22,9 @@
 ADAPTER::FluidBeamImmersed::FluidBeamImmersed(
     const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
-                            prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
-               ->FluidField();
+  fluidadapter_ = Teuchos::rcp(new FluidBaseAlgorithm(prbdyn,
+                                   DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
+                      ->FluidField();
   // make sure
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true) == Teuchos::null)
     dserror("Failed to create the correct underlying fluid adapter");
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidBeamImmersed::Discretization()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidBeamImmersed::Interface() const
 {
-  return fluid_->Interface();
+  return fluidadapter_->Interface();
 }
 
 

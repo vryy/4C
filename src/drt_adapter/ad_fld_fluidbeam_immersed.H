@@ -34,13 +34,13 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    virtual const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() override { return fluidadapter_; }
 
     /// return the boundary discretization that matches the structure discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+    Teuchos::RCP<DRT::Discretization> Discretization() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const;
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
 
     //@}
 
@@ -49,28 +49,28 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// start new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// update at time step end
-    virtual void Update();
+    void Update() override;
 
     /// output results
-    virtual void Output();
+    void Output() override;
 
     /// read restart information for given time step
-    virtual double ReadRestart(int step);
+    double ReadRestart(int step) override;
 
     /*========================================================================*/
     //! @name Solver calls
     /*========================================================================*/
 
     /// nonlinear solve
-    virtual void NonlinearSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
+    void NonlinearSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, double dt);
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -78,7 +78,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
     //@}
 
     /*========================================================================*/
@@ -86,10 +86,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
 
     /// extract the interface velocity at time t^n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
     //@}
 
     /*========================================================================*/
@@ -101,10 +101,10 @@ namespace ADAPTER
     /// Not used for IMMERSED yet !
 
     /// get the maximum number of iterations from the fluid field
-    virtual int Itemax() const { return fluid_->Itemax(); }
+    int Itemax() const override { return fluidadapter_->Itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    virtual void SetItemax(int itemax) { FluidField()->SetItemax(itemax); }
+    void SetItemax(int itemax) override { FluidField()->SetItemax(itemax); }
 
     //@}
 
@@ -113,14 +113,14 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
 
     /// create the testing of fields
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return fluid_->Veln(); }
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return fluidadapter_->Veln(); }
 
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return fluid_->Velnp(); }
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return fluidadapter_->Velnp(); }
 
     /** \brief Here additional contributions to the system matrix can be set
      *
@@ -132,12 +132,12 @@ namespace ADAPTER
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
 
-    virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
+    void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) override;
 
    private:
     /// fluid base algorithm object
-    Teuchos::RCP<ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<ADAPTER::Fluid> fluidadapter_;
   };
 
 }  // namespace ADAPTER
