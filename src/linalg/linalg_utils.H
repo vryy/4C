@@ -2023,16 +2023,16 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
 
   /// Returns a dim x dim identity matrix
   template <unsigned int dim>
-  void IdentityMatrix(LINALG::Matrix<dim, dim>& I)
+  void IdentityMatrix(LINALG::Matrix<dim, dim>& identity_matrix)
   {
     for (unsigned int i = 0; i < dim; i++)
     {
       for (unsigned int j = 0; j < dim; j++)
       {
         if (i == j)
-          I(i, j) = 1.0;
+          identity_matrix(i, j) = 1.0;
         else
-          I(i, j) = 0.0;
+          identity_matrix(i, j) = 0.0;
       }
     }
 

@@ -140,35 +140,35 @@ namespace MAT
       //! Young's modulus [MPa]
       const double youngs_;
       //! Poisson's ratio [--]
-      const double poissonratio_;
+      const double poisson_;
       //! mass density [ton/mm³]
       const double density_;
       //! lattice type, i.e. 'FCC', 'BCC', 'HCP', 'D019' or 'L10'
-      const std::string latticetype_;
+      const std::string lattice_;
       //! c to a ratio of the crystal's unit cell [--]
-      const double c_to_a_ratio_;
+      const double ctoa_;
       //! lattice constant a [mm]
-      const double lattice_constant_;
+      const double lattice_const_;
       //! total number of slip systems
       const double num_slip_sys_;
       //! number of slip system subsets
       const int num_sub_sets_;
       //! vector with num_slip_sys entries specifying to which subset the slip systems belong
-      const std::vector<int> sub_set_members_;
+      const std::vector<int> sub_set_mem_;
       //! vector with num_sub_sets entries for rate sensitivity exponents
       const std::vector<int> rate_exp_;
       //! vector with num_sub_sets entries for reference shear rates
       const std::vector<double> ref_shear_rate_;
       //! vector with num_sub_sets entries for dislocation generation coefficients
-      const std::vector<double> dislocation_gen_coeff_;
+      const std::vector<double> dis_gen_coeff_;
       //! vector with num_sub_sets entries for dynamic dislocation removal coefficients
-      const std::vector<double> dislocation_dyn_rec_coeff_;
+      const std::vector<double> dis_dyn_rec_coeff_;
       //! vector with num_sub_sets entries for the lattice resistance to slip (Peierl's barrier)
-      const std::vector<double> lattice_resistance_;
+      const std::vector<double> lat_resist_;
       //! microstructural parameters, e.g. grain size; vector with num_sub_sets entries
-      const std::vector<double> microstructural_boundaries_;
+      const std::vector<double> micro_bound_;
       //! vector with num_sub_sets entries for the Hall-Petch coefficients
-      const std::vector<double> Hall_Petch_coeff_;
+      const std::vector<double> hp_coeff_;
 
       //-----------------------------------------------------------------------------
       /** @}                                                                       */
@@ -353,7 +353,7 @@ namespace MAT
     bool isinit_ = false;
 
     //! 3x3 identity matrix
-    LINALG::Matrix<3, 3> Identity3;
+    LINALG::Matrix<3, 3> identity3;
     //-----------------------------------------------------------------------------
     /*                                                                           */
     /** \name User Input                                                         */
@@ -363,47 +363,47 @@ namespace MAT
     //! General Properties:
     //!-------------------
     //! tolerance for local Newton Raphson iteration
-    double Tol_;
+    double newton_tolerance_;
 
     //! Elastic Properties:
     //!-------------------------
     //! Young's Modulus
-    double E_;
+    double youngs_mod_;
     //! Poisson's ratio
-    double Poisson_;
+    double poisson_ratio_;
 
     //! Crystal Properties:
     //!-------------------
     //! Lattice type
-    std::string LatticeType_;
+    std::string lattice_type_;
     //! c to a ratio of the crystal's unit cell
-    double CtoA_;
+    double c_to_a_ratio_;
     //! Lattice constant a of unit cell
-    double LatticeConstant_;
+    double lattice_constant_;
     //! Index to which subset a slip system belongs
-    std::vector<int> SubSetIndex_;
+    std::vector<int> subset_index_;
 
     //! Viscoplastic Properties:
     //!------------------------
     //! TODO RATE EXPONENT INPUT
     //! reference shear rates
-    std::vector<double> Gamma0_;
+    std::vector<double> gamma_dot_0_;
 
     //! Dislocation Generation/Recovery:
     //!--------------------------------
     //! dislocation generation coefficients
-    std::vector<double> Dislocation_Gen_Coeff_;
+    std::vector<double> dislocation_generation_coeff_;
     //! dynamic dislocation removal coefficients
-    std::vector<double> Dislocation_Dyn_Rec_Coeff_;
+    std::vector<double> dislocation_dyn_recovery_coeff_;
 
     //! Initial Slip System Strengths:
     //!------------------------------
     //! lattice resistances to slip
-    std::vector<double> TauY_0_;
+    std::vector<double> tau_y_0_;
     //! microstructural parameters which are relevant for Hall-Petch strengthening, e.g., grain size
-    std::vector<double> Micro_Boundary_Dist_;
+    std::vector<double> micro_boundary_distance_;
     //! Hall-Petch coefficients corresponding to above microstructural boundaries
-    std::vector<double> Hall_Petch_Coeffs_;
+    std::vector<double> hall_petch_coeffs_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -421,25 +421,25 @@ namespace MAT
     //! Elastic Properties:
     //!-------------------------
     //! 1st lamé constant
-    double Lambda_;
+    double lambda_;
     //! Shear modulus / 2nd Lame constant
-    double Mu_;
+    double mue_;
     //! Bulk modulus
-    double K_;
+    double bulk_mod_;
 
     //! Crystal Properties:
     //!-------------------
     //! number of slip systems
-    int slip_sys_count_;
+    int slip_system_count_;
     //! magnitudes of Burgers vectors
-    std::vector<double> Burgers_Mag_;
+    std::vector<double> burgers_vector_mag_;
     //! lattice orientation in terms of rotation matrix with respect to global coordinates
-    LINALG::Matrix<3, 3> LatticeOrientation_;
+    LINALG::Matrix<3, 3> lattice_orientation_;
     //! slip plane normals and slip directions
-    std::vector<LINALG::Matrix<3, 1>> SlipNor_;
-    std::vector<LINALG::Matrix<3, 1>> SlipDir_;
+    std::vector<LINALG::Matrix<3, 1>> slip_plane_normal_;
+    std::vector<LINALG::Matrix<3, 1>> slip_direction_;
     //! slip system identifier
-    std::vector<std::string> SlipSysID_;
+    std::vector<std::string> slip_system_id_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -456,23 +456,23 @@ namespace MAT
 
     //! old, i.e. at t=t_n
     //! deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_last_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> deform_grad_last_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_last_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> plastic_deform_grad_last_;
     //! vector of plastic shears
     Teuchos::RCP<std::vector<std::vector<double>>> gamma_last_;
     //! vector of defect densities
-    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_last_;
+    Teuchos::RCP<std::vector<std::vector<double>>> defect_densities_last_;
 
     //! current, i.e. at t=t_n+1
     //!  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> F_curr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> deform_grad_current_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> FP_curr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> plastic_deform_grad_current_;
     //! vector of plastic shears
-    Teuchos::RCP<std::vector<std::vector<double>>> gamma_curr_;
+    Teuchos::RCP<std::vector<std::vector<double>>> gamma_current_;
     //! vector of defect densities
-    Teuchos::RCP<std::vector<std::vector<double>>> def_dens_curr_;
+    Teuchos::RCP<std::vector<std::vector<double>>> defect_density_current_;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
