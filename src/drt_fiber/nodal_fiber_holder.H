@@ -41,7 +41,6 @@ namespace DRT
      * in a Teuchos::ParameterList.
      */
     class NodalFiberHolder
-        : public std::unordered_map<FiberType, const std::vector<LINALG::Matrix<3, 1>>>
     {
      public:
       /*!
@@ -60,6 +59,12 @@ namespace DRT
        */
       const std::vector<LINALG::Matrix<3, 1>>& GetFiber(FiberType type) const;
 
+      /**
+       * Returns the number of fibers stored in the fiber holder
+       * @return number of fibers
+       */
+      unsigned int Size() const;
+
       /*!
        * \brief Print a short summary of the Map into an output stream.
        *
@@ -71,9 +76,25 @@ namespace DRT
        */
       friend std::ostream& operator<<(std::ostream& os, const NodalFiberHolder& holder)
       {
-        os << "NodalFiberHolder {Count=" << holder.size() << "}";
+        os << "NodalFiberHolder {Count=" << holder.Size() << "}";
         return os;
       }
+
+      /*!
+       * \brief Returns true of the map of both NodalFiberHolders are the same
+       * @param holder1 reference to the first holder
+       * @param holder2 reference to the second holder
+       * @return
+       */
+      friend bool operator==(
+          const DRT::FIBER::NodalFiberHolder& holder1, const DRT::FIBER::NodalFiberHolder& holder2)
+      {
+        return holder1.map_ == holder2.map_;
+      }
+
+     private:
+      /// Map holding GP fibers of different names
+      std::unordered_map<FiberType, const std::vector<LINALG::Matrix<3, 1>>> map_;
     };
   }  // namespace FIBER
 }  // namespace DRT

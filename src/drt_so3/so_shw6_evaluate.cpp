@@ -32,7 +32,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  CheckMaterialPostSetup(params);
+  EnsureMaterialPostSetup(params);
 
   // get parameter interface
   SetParamsInterfacePtr(params);

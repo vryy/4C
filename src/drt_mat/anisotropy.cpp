@@ -380,3 +380,18 @@ void MAT::Anisotropy::UnpackFiberVector(std::vector<char>::size_type& position,
     vct.emplace_back(mat);
   }
 }
+
+/*----------------------------------------------------------------------------*/
+// explicit instantiation of template functions
+template void MAT::Anisotropy::PackFiberVector(
+    DRT::PackBuffer& buffer, const std::vector<std::vector<LINALG::Matrix<3, 3>>>& vct) const;
+template void MAT::Anisotropy::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<LINALG::Matrix<3, 3>>>& vct) const;
+template void MAT::Anisotropy::PackFiberVector(
+    DRT::PackBuffer& buffer, const std::vector<std::vector<LINALG::Matrix<3, 1>>>& vct) const;
+template void MAT::Anisotropy::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<LINALG::Matrix<3, 1>>>& vct) const;
+template void MAT::Anisotropy::PackFiberVector(
+    DRT::PackBuffer& buffer, const std::vector<std::vector<LINALG::Matrix<6, 1>>>& vct) const;
+template void MAT::Anisotropy::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<LINALG::Matrix<6, 1>>>& vct) const;

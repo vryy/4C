@@ -41,7 +41,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  CheckMaterialPostSetup(params);
+  EnsureMaterialPostSetup(params);
 
   InvalidEleData();
   if (distype == DRT::Element::nurbs27) GetNurbsEleInfo(&discretization);

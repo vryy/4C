@@ -152,12 +152,11 @@ void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::Para
 }
 
 // Check, whether the material post setup routine was
-void DRT::ELEMENTS::So_base::CheckMaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::So_base::EnsureMaterialPostSetup(Teuchos::ParameterList& params)
 {
   if (!material_post_setup)
   {
     MaterialPostSetup(params);
-    material_post_setup = true;
   }
 }
 
@@ -165,4 +164,5 @@ void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
   SolidMaterial()->PostSetup(params);
+  material_post_setup = true;
 }

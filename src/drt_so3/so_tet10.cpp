@@ -534,8 +534,8 @@ void DRT::ELEMENTS::So_tet10::MaterialPostSetup(Teuchos::ParameterList& params)
     // params.set("gpfiberlist2", gpfiber2);
   }
 
-  // Call PostSetup
-  SolidMaterial()->PostSetup(params);
+  // Call super post setup
+  So_base::MaterialPostSetup(params);
 
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.

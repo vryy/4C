@@ -37,7 +37,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  CheckMaterialPostSetup(params);
+  EnsureMaterialPostSetup(params);
 
   LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20> elemat2(elemat2_epetra.A(), true);

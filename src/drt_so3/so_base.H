@@ -223,7 +223,7 @@ namespace DRT
        *
        * @param params Container for additional information
        */
-      void CheckMaterialPostSetup(Teuchos::ParameterList& params);
+      void EnsureMaterialPostSetup(Teuchos::ParameterList& params);
 
       /*!
        * \brief This method calls the PostSetup routine of all materials.

@@ -33,7 +33,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  CheckMaterialPostSetup(params);
+  EnsureMaterialPostSetup(params);
 
   LINALG::Matrix<81, 81> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<81, 81> elemat2(elemat2_epetra.A(), true);

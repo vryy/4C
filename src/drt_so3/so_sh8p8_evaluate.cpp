@@ -50,7 +50,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  CheckMaterialPostSetup(params);
+  EnsureMaterialPostSetup(params);
 
   LINALG::Matrix<NUMDOF_, NUMDOF_> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_, NUMDOF_> elemat2(elemat2_epetra.A(), true);
