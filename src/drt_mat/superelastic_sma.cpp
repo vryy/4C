@@ -41,6 +41,9 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/voigt_notation.H"
+
+using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
 
 /*----------------------------------------------------------------------*
@@ -1186,59 +1189,6 @@ double MAT::SuperElasticSMA::Idev(int i, int j, int k, int l)
 }  // Idev()
 
 /*---------------------------------------------------------------------*
- | transform voigt to tensor notation (public)           hemmler 09/16 |
- *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::VoigtIndex(int p, int* i, int* j)
-{
-  switch (p)
-  {
-    case 0:
-      *i = 0;
-      *j = 0;
-      break;
-    case 1:
-      *i = 1;
-      *j = 1;
-      break;
-    case 2:
-      *i = 2;
-      *j = 2;
-      break;
-    case 3:
-      *i = 0;
-      *j = 1;
-      break;
-    case 4:
-      *i = 1;
-      *j = 2;
-      break;
-    case 5:
-      *i = 0;
-      *j = 2;
-      break;
-  }
-}  // voigtindex()
-
-/*---------------------------------------------------------------------*
- | transform tensor to voigt notation (public)           hemmler 09/16 |
- *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::VoigtIndex(int i, int j, int* p)
-{
-  if (i == 0 && j == 0)
-    *p = 0;
-  else if (i == 1 && j == 1)
-    *p = 1;
-  else if (i == 2 && j == 2)
-    *p = 2;
-  else if ((i == 0 && j == 1) || (i == 1 && j == 0))
-    *p = 3;
-  else if ((i == 1 && j == 2) || (i == 2 && j == 1))
-    *p = 4;
-  else if ((i == 0 && j == 2) || (i == 2 && j == 0))
-    *p = 5;
-}  // voigtindex()
-
-/*---------------------------------------------------------------------*
  | Pullback of material tangent                          hemmler 09/16 |
  *---------------------------------------------------------------------*/
 void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
@@ -1255,8 +1205,10 @@ void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
     {
       int M;
       int N;
-      VoigtIndex(p, &i, &j);
-      VoigtIndex(q, &k, &l);
+      i = VoigtMapping::Voigt6ToRow(p);
+      j = VoigtMapping::Voigt6ToCol(p);
+      k = VoigtMapping::Voigt6ToRow(q);
+      l = VoigtMapping::Voigt6ToCol(q);
 
       for (int A = 0; A < 3; A++)
       {
@@ -1266,8 +1218,8 @@ void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
           {
             for (int D = 0; D < 3; D++)
             {
-              VoigtIndex(A, B, &M);
-              VoigtIndex(C, D, &N);
+              M = VoigtMapping::SymToVoigt6(A, B);
+              N = VoigtMapping::SymToVoigt6(C, D);
 
               (*cmatLag)(p, q) += 1.0 / jacobian * defgrdinv(i, A) * defgrdinv(j, B) *
                                   defgrdinv(k, C) * defgrdinv(l, D) * cmatEul(M, N);

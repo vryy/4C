@@ -1231,4 +1231,19 @@ template void MAT::AddtoCmatHolzapfelProduct<double>(
     LINALG::Matrix<6, 6, double>&, const LINALG::Matrix<6, 1, double>&, const double scalar);
 template void MAT::AddtoCmatHolzapfelProduct<FAD>(
     LINALG::Matrix<6, 6, FAD>&, const LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
+<<<<<<< HEAD
+template void MAT::MatrixtoStressLikeVoigtNotation<double>(
+    LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
+template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(
+    LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
 
+template class MAT::VoigtUtils<MAT::VoigtNotation::strain>;
+template class MAT::VoigtUtils<MAT::VoigtNotation::stress>;
+
+template void MAT::IdentityMatrix<6>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::stress>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::strain>(LINALG::Matrix<6, 6>& id);
+=======
+>>>>>>> master

@@ -12,6 +12,7 @@
 /*----------------------------------------------------------------------*/
 #include "so_sh8p8.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_lib/voigt_notation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -120,12 +121,12 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
   {
     for (int CB = 0; CB < NUMDFGR_; ++CB)
     {
-      const int C = VOIGT9ROW_[CB];
-      const int B = VOIGT9COL_[CB];
+      const int C = VOIGT9ROW_INCONSISTENT_[CB];
+      const int B = VOIGT9COL_INCONSISTENT_[CB];
       double pseudoidentity_CBe = 0.0;
       for (int D = 0; D < NUMDIM_; ++D)
       {
-        const int DB = VOIGT3X3SYM_[NUMDIM_ * D + B];
+        const int DB = ::UTILS::VOIGT::IndexMappings::SymToVoigt6(D, B);
         const double DBfact = (D == B) ? 1.0 : 0.5;
         pseudoidentity_CBe += invrgtstrD(C, D) * DBfact * rgtstrbyalpha(DB, e);
       }
@@ -141,12 +142,12 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
   {
     for (int aB = 0; aB < NUMDFGR_; ++aB)
     {
-      const int a = VOIGT9ROW_[aB];
-      const int B = VOIGT9COL_[aB];
+      const int a = VOIGT9ROW_INCONSISTENT_[aB];
+      const int B = VOIGT9COL_INCONSISTENT_[aB];
       double defgradbyalpha_aBe = 0.0;
       for (int C = 0; C < NUMDIM_; ++C)
       {
-        const int CB = VOIGT3X3_[NUMDIM_ * C + B];
+        const int CB = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * C + B];
         defgradbyalpha_aBe += defgradD(a, C) * pseudoidentity(CB, e);
       }
       defgradbyalpha(aB, e) = defgradbyalpha_aBe;

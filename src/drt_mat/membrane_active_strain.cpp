@@ -558,8 +558,8 @@ void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
     {
       int M;
       int N;
-      TensorIndices(p, &i, &j);
-      TensorIndices(q, &k, &l);
+      Tensor2x2Indices(p, &i, &j);
+      Tensor2x2Indices(q, &k, &l);
 
       for (int A = 0; A < 2; ++A)
       {
@@ -569,8 +569,8 @@ void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
           {
             for (int D = 0; D < 2; ++D)
             {
-              VoigtIndex(A, B, &M);
-              VoigtIndex(C, D, &N);
+              Voigt3Index(A, B, &M);
+              Voigt3Index(C, D, &N);
 
               (*cmat_reference)(p, q) += defgrd_active_inv_red(i, A) * defgrd_active_inv_red(j, B) *
                                          defgrd_active_inv_red(k, C) * defgrd_active_inv_red(l, D) *
@@ -587,7 +587,7 @@ void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
 /*---------------------------------------------------------------------*
  | transform voigt to tensor notation                                  |
  *---------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::TensorIndices(int p, int* i, int* j)
+void MAT::Membrane_ActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
 {
   switch (p)
   {
@@ -604,12 +604,12 @@ void MAT::Membrane_ActiveStrain::TensorIndices(int p, int* i, int* j)
       *j = 1;
       break;
   }
-}  // MAT::Membrane_ActiveStrain::VoigtIndex
+}  // MAT::Membrane_ActiveStrain::Voigt3Index
 
 /*---------------------------------------------------------------------*
  | transform tensor to voigt notation (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::VoigtIndex(int i, int j, int* p)
+void MAT::Membrane_ActiveStrain::Voigt3Index(int i, int j, int* p)
 {
   if (i == 0 && j == 0)
     *p = 0;
@@ -617,4 +617,4 @@ void MAT::Membrane_ActiveStrain::VoigtIndex(int i, int j, int* p)
     *p = 1;
   else if ((i == 0 && j == 1) || (i == 1 && j == 0))
     *p = 2;
-}  // MAT::Membrane_ActiveStrain::VoigtIndex
+}  // MAT::Membrane_ActiveStrain::Voigt3Index

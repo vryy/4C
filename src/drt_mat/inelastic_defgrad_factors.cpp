@@ -14,6 +14,7 @@
 #include "material_service.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/voigt_notation.H"
 
 
 /*--------------------------------------------------------------------*
@@ -560,7 +561,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
   // calculate F_{in,j}^{-1} . G . F_{in,j}^{-1} with F_{in,j}, the j-th factor of F_{in}
   temp.MultiplyNN(1.0, iFinjM, Parameter()->Growthdirmat(), 0.0);
   iFinjGiFinj.MultiplyNN(1.0, temp, iFinjM, 0.0);
-  Matrix3x3to9x1(iFinjGiFinj, diFinjddetJ9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(iFinjGiFinj, diFinjddetJ9x1);
 
   // diFinjdC = - growthfac*det(F)*(c-c_{ref})/2.0 (F_{in,j}^{-1} . G . F_{in,j}^{-1}) \otimes
   // C^{-1}
@@ -598,7 +599,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
   // of F_{in}
   tmp.MultiplyNN(1.0, iFinjM, Parameter()->Growthdirmat(), 0.0);
   diFinjdcM.MultiplyNN(scalefac, tmp, iFinjM, 0.0);
-  Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
 
   // dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(1.0, dSdiFinj, diFinjdc9x1, 1.0);
@@ -1042,7 +1043,7 @@ void MAT::InelasticDefgradPolyScalarAniso::EvaluateAdditionalCmat(
   // calculate F_{in,j}^{-1} . G . F_{in,j}^{-1} with F_{in,j}, the j-th factor of F_{in}
   temp.MultiplyNN(1.0, iFinjM, Parameter()->Growthdirmat(), 0.0);
   iFinjGiFinj.MultiplyNN(1.0, temp, iFinjM, 0.0);
-  Matrix3x3to9x1(iFinjGiFinj, diFinjddetJ9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(iFinjGiFinj, diFinjddetJ9x1);
 
   // diFinjdC = - growthfac*det(F)*(c-c_{ref})/2.0 (F_{in,j}^{-1} . G . F_{in,j}^{-1}) \otimes
   // C^{-1}
@@ -1087,7 +1088,7 @@ void MAT::InelasticDefgradPolyScalarAniso::EvaluateODStiffMat(
   // of F_{in}
   tmp.MultiplyNN(1.0, iFinjM, Parameter()->Growthdirmat(), 0.0);
   diFinjdcM.MultiplyNN(scalefac, tmp, iFinjM, 0.0);
-  Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
 
   // dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(1.0, dSdiFinj, diFinjdc9x1, 1.0);

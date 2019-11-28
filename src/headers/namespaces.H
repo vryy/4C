@@ -1926,6 +1926,15 @@ namespace UTILS
   namespace MOR
   {
   }  // namespace MOR
+
+  /*! \brief Utilities for the Voigt notation
+   *
+   * All functionality concerning manipulation of tensors in Voigt notation should be gathered here.
+   *
+   */
+  namespace VOIGT
+  {
+  }
 }  // namespace UTILS
 
 /*! \brief Algorithms for volumetric mortar coupling

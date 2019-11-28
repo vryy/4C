@@ -19,6 +19,7 @@ multiplicatively into elastic and inelastic parts
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "elasthyper_service.H"
+#include "../drt_lib/voigt_notation.H"
 
 
 /*--------------------------------------------------------------------*
@@ -347,31 +348,31 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // inverse inelastic right Cauchy-Green
   static LINALG::Matrix<3, 3> iCinM(true);
   iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
-  MatrixtoStressLikeVoigtNotation(iCinM, iCinV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCinM, iCinV);
 
   // inverse right Cauchy-Green
   static LINALG::Matrix<3, 3> iCM(true);
   static LINALG::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrad, *defgrad, 0.0);
   iCM.Invert(CM);
-  MatrixtoStressLikeVoigtNotation(iCM, iCV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
   static LINALG::Matrix<3, 3> tmp(true);
   static LINALG::Matrix<3, 3> iCinCiCinM;
   tmp.MultiplyNN(1.0, iCinM, CM, 0.0);
   iCinCiCinM.MultiplyNN(1.0, tmp, iCinM, 0.0);
-  MatrixtoStressLikeVoigtNotation(iCinCiCinM, iCinCiCinV);
+  UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
   tmp.MultiplyNN(1.0, *defgrad, iFinM, 0.0);
   static LINALG::Matrix<3, 3> CeM(true);
   CeM.MultiplyTN(1.0, tmp, tmp, 0.0);
   static LINALG::Matrix<6, 1> CeV_strain(true);
-  MatrixtoStrainLikeVoigtNotation(CeM, CeV_strain);
+  UTILS::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, CeV_strain);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, CeV_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);
@@ -382,13 +383,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // C * F_{in}^{-1}
   static LINALG::Matrix<3, 3> CiFinM(true);
   CiFinM.MultiplyNN(1.0, CM, iFinM, 0.0);
-  Matrix3x3to9x1(CiFinM, CiFin9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(CiFinM, CiFin9x1);
 
   // C * F_{in}^{-1} * C_e
   static LINALG::Matrix<3, 3> CiFinCeM(true);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFinCeM.MultiplyNN(1.0, tmp, CeM, 0.0);
-  Matrix3x3to9x1(CiFinCeM, CiFinCe9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(CiFinCeM, CiFinCe9x1);
 
   // C * F_{in}^{-1} * C_e^{-1}
   static LINALG::Matrix<3, 3> CiFiniCeM(true);
@@ -396,7 +397,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   iCeM.Invert(CeM);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
-  Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
+  UTILS::VOIGT::Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
 
   return;
 }

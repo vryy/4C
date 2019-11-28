@@ -245,10 +245,10 @@ namespace MAT
         LINALG::Matrix<3, 3>* cmat_reference);
 
     // transform voigt to tensor notation
-    void TensorIndices(int p, int* i, int* j);
+    void Tensor2x2Indices(int p, int* i, int* j);
 
     // transform tensor to voigt notation
-    void VoigtIndex(int i, int j, int* p);
+    void Voigt3Index(int i, int j, int* p);
 
    protected:
     /// vector of fiber vectors

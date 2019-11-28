@@ -923,8 +923,12 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltanWithoutWeights(
   // partitioning, treating the graph columns as hyperedges and the
   // graph rows as vertices.
 
-  // debug (mayr) Set imbalance tolerance to avoid empty procs
-  paramlist.set("IMBALANCE_TOL", "1.03");
+  // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
+  const Teuchos::ParameterList& fsimono =
+      DRT::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+  const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
+  paramlist.set("IMBALANCE_TOL", imbalance_tol);
+
   //  paramlist.set("partitioning method", "hypergraph");
   //  paramlist.set("PARTITIONING METHOD", "HYPERGRAPH");
   //

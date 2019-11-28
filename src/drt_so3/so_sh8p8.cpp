@@ -88,25 +88,18 @@ void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 bborn 03/09|
  *----------------------------------------------------------------------*/
-// 6-Voigt C-index                                        0 1 2  3 4 5
-const int DRT::ELEMENTS::So_sh8p8::VOIGT6ROW_[MAT::NUM_STRESS_3D] = {0, 1, 2, 0, 1, 2};
-const int DRT::ELEMENTS::So_sh8p8::VOIGT6COL_[MAT::NUM_STRESS_3D] = {0, 1, 2, 1, 2, 0};
-
 // 9-Voigt C-index                                         0 1 2  3 4 5  6 7 8
-const int DRT::ELEMENTS::So_sh8p8::VOIGT9ROW_[NUMDFGR_] = {0, 1, 2, 0, 1, 2, 0, 2, 1};
-const int DRT::ELEMENTS::So_sh8p8::VOIGT9COL_[NUMDFGR_] = {0, 1, 2, 1, 2, 0, 2, 1, 0};
+// TODO this notation does not fit our usual definitions
+const int DRT::ELEMENTS::So_sh8p8::VOIGT9ROW_INCONSISTENT_[NUMDFGR_] = {0, 1, 2, 0, 1, 2, 0, 2, 1};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT9COL_INCONSISTENT_[NUMDFGR_] = {0, 1, 2, 1, 2, 0, 2, 1, 0};
 
 // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
 // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
 // Access : 3*i+j
 // 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
-const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3_[NUMDFGR_] = {0, 3, 6, 8, 1, 4, 5, 7, 2};
-
-// tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
-// C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
-// Access : 3*i+j
-// 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
-const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3SYM_[NUMDFGR_] = {0, 3, 5, 3, 1, 4, 5, 4, 2};
+// TODO this notation does not fit our usual definitions
+const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3NONSYM_INCONSISTENT_[NUMDFGR_] = {
+    0, 3, 6, 8, 1, 4, 5, 7, 2};
 
 // 24 displacement and 8 pressure DOFs into 32 total element DOFs
 const int DRT::ELEMENTS::So_sh8p8::DISPTODISPPRES_[NUMDISP_] = {

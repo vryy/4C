@@ -61,13 +61,6 @@ namespace MAT
 
   }  // namespace PAR
 
-  /// type of vector/tensor in voigt notation
-  enum VoigtType
-  {
-    voigt_strain,  ///< strain vector/tensor in voigt notation
-    voigt_stress   ///< stress vector/tensor in voigt notation
-  };
-
   /*----------------------------------------------------------------------*/
   /*! \class Growth
        \brief Wrapper material for volumetric growth
@@ -415,22 +408,6 @@ namespace MAT
     void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
         LINALG::Matrix<3, 1>& fiber_vector);
 
-    //    LINALG::Matrix<3,3> CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Matrix,
-    //                        const LINALG::Matrix<3,3>& );
-    //
-    //    double CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
-    //                        const LINALG::Matrix<3,3>& Mderiv,
-    //                        const double i,
-    //                        const double j);
-
-    /// transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
-    static void VectorToMatrix(LINALG::Matrix<3, 3>& Matrix, const LINALG::Matrix<6, 1>& Vector,
-        const MAT::VoigtType Type);
-
-    /// transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
-    static void MatrixToVector(const LINALG::Matrix<3, 3>& Matrix, LINALG::Matrix<6, 1>& Vector,
-        const MAT::VoigtType Type);
-
     /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
     /// via the 2th order deformation gradient (also in matrix notation)
     static LINALG::Matrix<6, 6> PullBack4Tensor(
@@ -445,12 +422,6 @@ namespace MAT
     // Setup 4-Tensor from 6x6 Voigt notation
     static void Setup4Tensor(
         double (&FourTensor)[3][3][3][3], const LINALG::Matrix<6, 6>& VoigtMatrix);
-
-    //    //Setup 6x6 matrix in Voigt notation from 4-Tensor
-    //    void Setup6x6VoigtMatrix(
-    //        LINALG::Matrix<6,6>& VoigtMatrix,
-    //        const double(&FourTensor)[3][3][3][3]
-    //    );
 
     // Print Four Tensor
     void PrintFourTensor(double (&FourTensor)[3][3][3][3]);

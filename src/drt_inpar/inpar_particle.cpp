@@ -318,16 +318,17 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::LogNormalSurfaceEnergyDistribution),
       &particledyndem);
 
-  DoubleParameter("MIN_RADIUS", -1.0, "minimum expected particle radius", &particledyndem);
-  DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
+  DoubleParameter("MIN_RADIUS", 0.0, "minimum allowed particle radius", &particledyndem);
+  DoubleParameter("MAX_RADIUS", 0.0, "maximum allowed particle radius", &particledyndem);
   DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
 
-  // type of (random) particle radius distribution
-  setStringToIntegralParameter<int>("RADIUSDISTRIBUTION", "NoRadiusDistribution",
-      "type of (random) particle radius distribution",
-      tuple<std::string>(
-          "NoRadiusDistribution", "NormalRadiusDistribution", "LogNormalRadiusDistribution"),
-      tuple<int>(INPAR::PARTICLE::NoRadiusDistribution, INPAR::PARTICLE::NormalRadiusDistribution,
+  // type of initial particle radius assignment
+  setStringToIntegralParameter<int>("INITIAL_RADIUS", "RadiusFromParticleMaterial",
+      "type of initial particle radius assignment",
+      tuple<std::string>("RadiusFromParticleMaterial", "RadiusFromParticleInput",
+          "NormalRadiusDistribution", "LogNormalRadiusDistribution"),
+      tuple<int>(INPAR::PARTICLE::RadiusFromParticleMaterial,
+          INPAR::PARTICLE::RadiusFromParticleInput, INPAR::PARTICLE::NormalRadiusDistribution,
           INPAR::PARTICLE::LogNormalRadiusDistribution),
       &particledyndem);
 
