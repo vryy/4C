@@ -674,6 +674,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_lung.cpp
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
+  src/drt_adapter/ad_fld_fluidbeam_immersed.cpp
   src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
@@ -704,6 +705,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_ssiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
+  src/drt_adapter/ad_str_fbiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
   src/drt_adapter/ad_str_pasiwrapper.cpp
   src/drt_adapter/ad_str_structalewrapper.cpp
@@ -1244,8 +1246,9 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_debugwriter.cpp
   src/drt_fsi/fsi_dirichletneumann_factory.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
-  src/drt_fsi/fsi_dirichletneumann_disp.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
+  src/drt_fsi/fsi_dirichletneumann_disp.cpp
+  src/drt_fsi/fsi_dirichletneumann_vel.cpp
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp

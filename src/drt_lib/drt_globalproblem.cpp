@@ -2034,6 +2034,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
+    case prb_fbi:
+    {
+      // create empty discretizations
+      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+
+      AddDis("structure", structdis);
+      AddDis("fluid", fluiddis);
+
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+      break;
+    }
     case prb_immersed_fsi:
     case prb_immersed_membrane_fsi:
     {

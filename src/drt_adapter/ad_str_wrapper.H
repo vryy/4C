@@ -136,6 +136,12 @@ namespace ADAPTER
       return structure_->Discretization();
     }
 
+    /// read only access to discretization
+    virtual Teuchos::RCP<const DRT::Discretization> GetDiscretization() const
+    {
+      return structure_->Discretization();
+    }
+
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() { return structure_->HaveConstraint(); }
 

@@ -969,6 +969,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_immersed_membrane_fsi:
       case prb_gas_fsi:
       case prb_biofilm_fsi:
+      case prb_fbi:
       case prb_fluid_ale:
       case prb_freesurf:
       {  //

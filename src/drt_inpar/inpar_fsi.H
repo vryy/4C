@@ -165,8 +165,9 @@ namespace INPAR
     /// Coupling variable for Dirichlet-Neumann algorithms
     enum CoupVarPart
     {
-      disp, /*!< displacement coupling*/
-      force /*!< force coupling*/
+      disp,  /*!< displacement coupling*/
+      force, /*!< force coupling*/
+      vel    /*!<velocity coupling*/
     };
 
     //@}

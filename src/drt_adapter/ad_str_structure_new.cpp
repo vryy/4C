@@ -5,7 +5,6 @@
 
 \maintainer  Anh-Tu Vuong
 
-
 \level 3
 
 */
@@ -19,6 +18,7 @@
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"
 #include "ad_str_fpsiwrapper.H"
+#include "ad_str_fbiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_structalewrapper.H"
 #include "ad_str_multiphysicswrapper_cellmigration.H"
@@ -421,6 +421,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     case prb_immersed_cell:
+    case prb_fbi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
@@ -939,6 +940,16 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
               Teuchos::rcp(new FSIStructureWrapper(ti_strategy));  // case of partitioned fsi
         }
       }
+      break;
+    }
+    case prb_fbi:
+    {
+      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+      if (DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == INPAR::FSI::DirichletNeumann)
+        str_wrapper_ = Teuchos::rcp(new FBIStructureWrapper(ti_strategy));
+      else
+        dserror("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
     case prb_immersed_fsi:

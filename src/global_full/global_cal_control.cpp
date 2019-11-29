@@ -117,6 +117,9 @@ void ntacal()
     case prb_fps3i:
       fs3i_dyn();
       break;
+    case prb_fbi:
+      fsi_immersed_drt();
+      break;
 
     case prb_ale:
       dyn_ale_drt();
