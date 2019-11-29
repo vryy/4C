@@ -33,10 +33,10 @@ typedef enum _FSI_COUPLING
 {
   fsi_coupling_freesurface = -1,
   fsi_coupling_undefined = 0,
-  fsi_basic_sequ_stagg = 1,
-  fsi_iter_stagg_fixed_rel_param = 4,
-  fsi_iter_stagg_AITKEN_rel_param = 5,
-  fsi_iter_stagg_steep_desc = 6,
+  fsi_basic_sequ_stagg = 1,            /*< sequential coupling (no iteration!) */
+  fsi_iter_stagg_fixed_rel_param = 4,  /*!< fixed-point solver with fixed relaxation parameter */
+  fsi_iter_stagg_AITKEN_rel_param = 5, /*!< fixed-point solver with Aitken relaxation parameter */
+  fsi_iter_stagg_steep_desc = 6, /* fixed-point solver with steepest descent relaxation parameter */
   fsi_iter_stagg_CHEB_rel_param = 7,
   fsi_iter_stagg_AITKEN_rel_force = 8,
   fsi_iter_stagg_steep_desc_force = 9,
@@ -51,11 +51,12 @@ typedef enum _FSI_COUPLING
   fsi_iter_constr_monolithicstructuresplit,
   fsi_iter_constr_monolithicfluidsplit,
   fsi_iter_xfem_monolithic,
-  fsi_iter_stagg_NLCG,
-  fsi_iter_stagg_MFNK_FD,
-  fsi_iter_stagg_MFNK_FSI,
-  fsi_iter_stagg_MPE,
-  fsi_iter_stagg_RRE,
+  fsi_iter_stagg_NLCG, /*!< nonlinear CG solver (pretty much steepest descent with finite difference
+                          Jacobian */
+  fsi_iter_stagg_MFNK_FD,  /*!< matrix free Newton Krylov with finite difference Jacobian */
+  fsi_iter_stagg_MFNK_FSI, /*!< matrix free Newton Krylov with FSI specific Jacobian */
+  fsi_iter_stagg_MPE,      /*!< minimal polynomial extrapolation */
+  fsi_iter_stagg_RRE,      /*!< reduced rank extrapolation */
   fsi_pseudo_structureale,
   fsi_iter_fluidfluid_monolithicstructuresplit,
   fsi_iter_fluidfluid_monolithicfluidsplit,
