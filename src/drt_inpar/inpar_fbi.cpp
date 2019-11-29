@@ -32,7 +32,7 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   /* parameters for beam to fluid meshtying */
 
-  Teuchos::ParameterList& beam_to_fluid_mestying =
+  Teuchos::ParameterList& beam_to_fluid_meshtying =
       fbi.sublist("BEAM TO FLUID MESHTYING", false, "");
 
   setStringToIntegralParameter<BeamToFluidDiscretization>("MESHTYING_DISCRETIZATION", "none",
@@ -40,19 +40,19 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("none", "gauss_point_to_segment"),
       tuple<FBI::BeamToFluidDiscretization>(
           BeamToFluidDiscretization::none, BeamToFluidDiscretization::gauss_point_to_segment),
-      &beam_to_fluid_mestying);
+      &beam_to_fluid_meshtying);
 
   setStringToIntegralParameter<BeamToFluidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
       "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
       tuple<BeamToFluidConstraintEnforcement>(
           BeamToFluidConstraintEnforcement::none, BeamToFluidConstraintEnforcement::penalty),
-      &beam_to_fluid_mestying);
+      &beam_to_fluid_meshtying);
 
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-Fluid volume meshtying",
-      &beam_to_fluid_mestying);
+      &beam_to_fluid_meshtying);
 
   IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
-      &beam_to_fluid_mestying);
+      &beam_to_fluid_meshtying);
 
   // Add the geometry pair input parameters.
   INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_fluid_meshtying);
@@ -60,26 +60,26 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
 
   // Create subsection for runtime vtk output.
-  Teuchos::ParameterList& beam_to_fluid_mestying_vtk =
-      beam_to_fluid_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
+  Teuchos::ParameterList& beam_to_fluid_meshtying_vtk =
+      fbi.sublist("RUNTIME VTK OUTPUT", false, "");
 
   // Whether to write vtp output at all for beam to fluid meshtying.
   setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
       "Enable / disable beam-to-fluid mesh tying output.", yesnotuple, yesnovalue,
-      &beam_to_fluid_mestying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
   setStringToIntegralParameter<int>("NODAL_FORCES", "No",
       "Enable / disable output of the resulting nodal forces due to beam to Fluid interaction.",
-      yesnotuple, yesnovalue, &beam_to_fluid_mestying_vtk);
+      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
 
   setStringToIntegralParameter<int>("SEGMENTATION", "No",
       "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
-      &beam_to_fluid_mestying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
   setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
       "Enable / disable output of used integration points. If the contact method has 'forces' at "
       "the integration point, they will also be output.",
-      yesnotuple, yesnovalue, &beam_to_fluid_mestying_vtk);
+      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
 
   // ...
 }
