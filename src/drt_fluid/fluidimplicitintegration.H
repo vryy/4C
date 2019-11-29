@@ -964,6 +964,16 @@ namespace FLD
     ///< Update slave dofs for multifield simulations with fluid mesh tying
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
 
+    /** \brief Here additional contributions to the system matrix can be set
+     *
+     * To enforce weak dirichlet conditions as they arise from meshtying for example, such
+     * contributions can be added here and will be assembled into the system matrix
+     *
+     * \params[in] matrix fluid_dof x fluid_dof linear matrix containing entries that need
+     * to be assembled into the overall fluid system matrix
+     */
+    virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
+
    protected:
     // don't want = operator and cctor
     // FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
@@ -1087,6 +1097,11 @@ namespace FLD
     */
     virtual void LiftDrag() const;
 
+    /**
+     * \brief Here, the coupling contributions collected in the linear matrix couplingcontributions_
+     * will be added to the system matrix
+     */
+    virtual void AssembleCouplingContributions();
 
     //! @name general algorithm parameters
 
@@ -1397,7 +1412,7 @@ namespace FLD
 
     //@}
 
-    /*! \biref Compute kinetic energy and write it to file
+    /*! \brief Compute kinetic energy and write it to file
      *
      *  Kinetic energy of the system is calculated as \f$E_{kin} = \frac{1}{2}u^TMu\f$
      *  with the velocity vector \f$u\f$ and the mass matrix \f$M\f$. Then, it is
@@ -1415,6 +1430,12 @@ namespace FLD
 
     /// output stream for energy-file
     Teuchos::RCP<std::ofstream> logenergy_;
+
+    /** \brief This matrix can be used to hold contributions to the system matrix like such that
+     * arise from meshtying methods or in general weak Dirichlet conditions
+     *
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> couplingcontributions_;
 
   };  // class FluidImplicitTimeInt
 

@@ -675,6 +675,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
   src/drt_adapter/ad_fld_fluidbeam_immersed.cpp
+  src/drt_adapter/ad_fld_fbi_wrapper.cpp
   src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_ac_fsi.cpp

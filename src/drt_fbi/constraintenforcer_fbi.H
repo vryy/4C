@@ -84,6 +84,9 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<Epetra_Vector> MasterToSlave();
 
+    /// Interface to do preparations to solve the fluid
+    virtual void PrepareFluidSolve(){};
+
     virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
     {
       return structure_;

@@ -96,6 +96,8 @@ namespace ADAPTER
     /// Clears the pair vector and builds the pairs anew
     virtual void ResetBridge();
 
+    virtual void PrepareFluidSolve(){};
+
    protected:
     /// Standard constructor
     FBIConstraintBridge();
@@ -114,10 +116,11 @@ namespace ADAPTER
 
     Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>>
         meshtying_pairs_;  // todo make this private?
-   private:
+
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
 
+   private:
     /// data container holding all geometry related evaluation data
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
   };

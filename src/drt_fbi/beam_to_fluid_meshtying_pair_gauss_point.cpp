@@ -105,7 +105,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the fluid.  todo check consistency
-      force += v_fluid;
+      if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
+               ->GetWeakDirichletFlag())
+        force += v_fluid;
       force -= v_beam;
       //      force.Scale(penalty_parameter); we want to scale this later on in order to seperate
       //      discretization approach from constraitn enforcement technique

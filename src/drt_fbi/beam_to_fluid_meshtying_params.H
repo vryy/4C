@@ -47,6 +47,15 @@ namespace FBI
      */
     void Setup();
 
+    /// Sets the flag to compute only force contributions from the beam
+    void SetWeakDirichletFlag() { calcfluidweakdirichletforce_ = true; }
+
+    /// Sets the flag to compute force contributions from beam and fluid
+    void UnsetWeakDirichletFlag() { calcfluidweakdirichletforce_ = false; }
+
+    /// Returns \ref calcfluidweakdirichletforce_
+    bool GetWeakDirichletFlag() { return calcfluidweakdirichletforce_; }
+
     /**
      * \brief Returns the isinit_ flag.
      */
@@ -119,6 +128,17 @@ namespace FBI
 
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
+
+    /**
+     * \brief Flag to keep track if the RHS contribution for the weak Dirichlet enforcement of the
+     * kinematic continuity condition is requested
+     *
+     * In the case of a DirichletNeumann the right-hand side contribution C_fs*v_s leads to the
+     * unnecessary costly creation of a non-local sparse matrix and matrix-vector product. Instead,
+     * the contributions of the fluid "force" introduced by the beam DOFs can be calculated directly
+     * on pair level
+     */
+    bool calcfluidweakdirichletforce_;
   };
 
 }  // namespace FBI

@@ -59,6 +59,7 @@
 #include "ad_fld_fluid_fpsi.H"
 #include "ad_fld_fluid_fsi_msht.H"
 #include "ad_fld_fluid_fsi.H"
+#include "ad_fld_fbi_wrapper.H"
 #include "ad_fld_fluid_ac_fsi.H"
 #include "ad_fld_lung.H"
 #include "ad_fld_poro.H"
@@ -1015,6 +1016,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         else if (coupling == fsi_iter_sliding_monolithicfluidsplit or
                  coupling == fsi_iter_sliding_monolithicstructuresplit)
           fluid_ = Teuchos::rcp(new FluidFSIMsht(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+        else if (probtype == prb_fbi)
+          fluid_ = Teuchos::rcp(new FluidFBI(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
         else
           fluid_ = Teuchos::rcp(new FluidFSI(

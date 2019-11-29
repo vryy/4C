@@ -124,7 +124,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
                   ShapeFunctionType::shapefunction_hdg) *
               2),
       massmat_(Teuchos::null),
-      logenergy_(Teuchos::null)
+      logenergy_(Teuchos::null),
+      couplingcontributions_(Teuchos::null)
 {
   return;
 }
@@ -1083,6 +1084,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // call standard loop over elements
   EvaluateMatAndRHS(eleparams);
+  AssembleCouplingContributions();
   ClearStateAssembleMatAndRHS();
 
   //----------------------------------------------------------------------
@@ -6697,6 +6699,42 @@ void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ * Set external contributions to the system matrix as they appear in meshtying |
+ * problems                                                                    |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetCouplingContributions(
+    Teuchos::RCP<LINALG::SparseMatrix> contributing_matrix)
+{
+  if (couplingcontributions_ == Teuchos::null)
+    couplingcontributions_ = Teuchos::rcp(new LINALG::SparseMatrix(
+        *discret_->DofRowMap(), 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  // Note that we are passing the pointer to the coupling matrix here and do not copy the content!
+  // So make sure the matrix contains the correct values at the moment of the assembly procedure!
+  couplingcontributions_ = contributing_matrix;
+}
+
+/*----------------------------------------------------------------------------*
+ * Assemble coupling contributions into the system matrix                     |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::AssembleCouplingContributions()
+{
+  if (couplingcontributions_ != Teuchos::null)
+  {
+    // For now we assume to have a linear matrix, so we add the matrix itself to the system matrix
+    sysmat_->Add(*couplingcontributions_, false, 1.0, 1.0);
+
+    // Add the matrix multiplied with the solution of the last time step to the rhs
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    int err = couplingcontributions_->Multiply(false, *velnp_, *tmp);
+
+    if (err != 0) dserror(" Linalg Sparse Matrix Multiply threw error code %i ", err);
+
+    err = residual_->Update(-1.0, *tmp, 1.0);
+
+    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+  }
+}
 /*----------------------------------------------------------------------*
  | Initialize forcing for HIT and peridic hill                  bk 04/15|
  *----------------------------------------------------------------------*/

@@ -84,7 +84,7 @@ namespace ADAPTER
      *
      * \returns f force/rhs matrix
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleSlaveForce() const override;
+    virtual Teuchos::RCP<Epetra_Vector> AssembleSlaveForce() override;
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve() override;

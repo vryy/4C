@@ -19,10 +19,10 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 namespace ADAPTER
 {
-  class ConstraintEnforcerFactory;
   class FBIConstraintBridgePenalty : public FBIConstraintBridge  // todo fix this
   {
-    friend ConstraintEnforcerFactory;
+    friend class ConstraintEnforcerFactory;
+    friend class FBIPenaltyConstraintenforcer;
 
    public:
     /// empty destructor
@@ -49,23 +49,7 @@ namespace ADAPTER
     /// Clears the pair vector and builds the pairs anew
     virtual void ResetBridge() override;
 
-    /// Matrix containing only slave side contributions \f$C_ss\f$
-    Teuchos::RCP<LINALG::SparseMatrix const> const GetCss() { return Css_; };
-
-    /// Matrix containing only master side contributions \f$C_mm\f$
-    Teuchos::RCP<LINALG::SparseMatrix const> const GetCmm() { return Cmm_; };
-
-    /// Matrix containing mixed slave side contributions \f$C_ms\f$
-    Teuchos::RCP<LINALG::SparseMatrix const> const GetCms() { return Cms_; };
-
-    /// Matrix containing mixed master side contributions \f$C_sm\f$
-    Teuchos::RCP<LINALG::SparseMatrix const> const GetCsm() { return Csm_; };
-
-    /// Force vector acting on the master side \f$f_m\f$
-    Teuchos::RCP<Epetra_FEVector const> const GetFm() { return fm_; };
-
-    /// Force vector acting on the slave side \f$f_s\f$
-    Teuchos::RCP<Epetra_FEVector const> const GetFs() { return fs_; };
+    virtual void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
    protected:
     /// Standard constructor
@@ -76,6 +60,30 @@ namespace ADAPTER
           Csm_(Teuchos::null),
           fm_(Teuchos::null),
           fs_(Teuchos::null){};
+
+    /// Sets the flag to compute only force contributions from the beam
+    void SetWeakDirichletFlag();
+
+    /// Sets the flag to compute force contributions from beam and fluid
+    void UnsetWeakDirichletFlag();
+
+    /// Matrix containing only slave side contributions \f$C_ss\f$
+    Teuchos::RCP<LINALG::SparseMatrix> const GetCss() { return Css_; };
+
+    /// Matrix containing only master side contributions \f$C_mm\f$
+    Teuchos::RCP<LINALG::SparseMatrix> const GetCmm() { return Cmm_; };
+
+    /// Matrix containing mixed slave side contributions \f$C_ms\f$
+    Teuchos::RCP<LINALG::SparseMatrix> const GetCms() { return Cms_; };
+
+    /// Matrix containing mixed master side contributions \f$C_sm\f$
+    Teuchos::RCP<LINALG::SparseMatrix> const GetCsm() { return Csm_; };
+
+    /// Force vector acting on the master side \f$f_m\f$
+    Teuchos::RCP<Epetra_FEVector> const GetFm() { return fm_; };
+
+    /// Force vector acting on the slave side \f$f_s\f$
+    Teuchos::RCP<Epetra_FEVector> const GetFs() { return fs_; };
 
    private:
     /// Coupling matrix containing only slave side contributions \f$C_ss\f$

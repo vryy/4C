@@ -122,6 +122,19 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return fluid_->Velnp(); }
 
+    /** \brief Here additional contributions to the system matrix can be set
+     *
+     * To enforce weak dirichlet conditions as they arise from meshtying for example, such
+     * contributions can be added here and will be assembled into the system matrix
+     *
+     * \params[in] matrix fluid_dof x fluid_dof matrix containing weak dirichlet entries that need
+     * to be assembled into the overall fluid system matrix
+     */
+    virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
+
+    virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
+        Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) override;
+
    private:
     /// fluid base algorithm object
     Teuchos::RCP<ADAPTER::Fluid> fluid_;

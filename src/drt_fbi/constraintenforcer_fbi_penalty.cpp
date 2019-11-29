@@ -25,14 +25,6 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::Assemb
           ->GetCmm()
           ->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty stiffness was unsuccessful!\n");
-  Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-      ->GetCmm()
-      ->Scale(1.0);
-  /*  std::cout << "Fluid stiffness is "
-              << *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-                         ->GetCmm())
-              << std::endl;
-              */
 
   return Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
       ->GetCmm();
@@ -51,7 +43,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleMaste
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFm())
           ->Map()));
-  f->Update(-1.0,
+  f->Update(1.0,
       *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFm()),
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
@@ -66,10 +58,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleSlave
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs())
           ->Map()));
-  f->Update(1.0,
+  f->Update(-1.0,
       *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs()),
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");
   return f;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIPenaltyConstraintenforcer::PrepareFluidSolve()
+{
+  GetBridge()->PrepareFluidSolve();
 }

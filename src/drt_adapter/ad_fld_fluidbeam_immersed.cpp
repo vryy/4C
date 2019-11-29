@@ -15,6 +15,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "ad_fld_fluidbeam_immersed.H"
+#include "ad_fld_fbi_wrapper.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -24,6 +25,9 @@ ADAPTER::FluidBeamImmersed::FluidBeamImmersed(
   fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
                             prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
                ->FluidField();
+  // make sure
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true) == Teuchos::null)
+    dserror("Failed to create the correct underlying fluid adapter");
 
   return;
 }
@@ -126,4 +130,21 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::IntegrateInterfaceShape(
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidBeamImmersed::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FluidBeamImmersed::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix)
+{
+  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)
+      ->SetCouplingContributions(matrix);
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FluidBeamImmersed::ApplyInterfaceValues(
+    Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
+{
+  FluidField()->AddContributionToExternalLoads(iforce);
 }
