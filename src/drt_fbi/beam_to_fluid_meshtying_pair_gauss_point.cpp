@@ -1,9 +1,9 @@
-/*!
-\file beam_to_fluid_meshtying_pair_gauss_point.cpp
+/*----------------------------------------------------------------------*/
+/*! \file
 
-\brief Meshtying element for meshtying between a 3D beam and a 3D fluid element.
+\brief Meshtying element for meshtying between a 1D beam and a 3D fluid element.
 
-\level 3
+\level 1
 \maintainer Nora Hagmeyer
 */
 
@@ -11,13 +11,13 @@
 #include "beam_to_fluid_meshtying_pair_gauss_point.H"
 #include "beam_to_fluid_meshtying_pair_base.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
 
 
@@ -32,21 +32,17 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam,
   // Empty constructor.
 }
 
+/*------------------------------------------------------------------------------------------------*/
 
-/**
- *
- */
 template <typename beam, typename fluid>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
     LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
-  // Call Evaluate on the geometry Pair. Only do this once for meshtying.
+  // Call Evaluate on the geometry Pair
   if (!this->meshtying_is_evaluated_)
   {
-    //  std::cout << "Meshtying is being evaluated for beam positions " << this->ele1poscur_
-    //            << " and fluid positions " << this->ele2poscur_ << std::endl;
     this->CastGeometryPair()->Evaluate(
         this->ele1poscur_, this->ele2poscur_, this->line_to_volume_segments_);
     this->meshtying_is_evaluated_ = true;
@@ -54,19 +50,20 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
   // If there are no intersection segments, return no contact status.
   if (this->line_to_volume_segments_.size() == 0) return false;
+
   // Initialize variables for position and force vectors.
-  LINALG::TMatrix<double, 3, 1> dr_beam_ref;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_beam;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_fluid;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_fluid;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force2;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> force_element_1(true);
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, fluid::n_dof_, 1> force_element_2(true);
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, fluid::n_dof_, 1> force_element_f(true);
-  LINALG::TMatrix<double, 1, beam::n_nodes_ * beam::n_val_> N_beam(true);
-  LINALG::TMatrix<double, 1, fluid::n_nodes_ * fluid::n_val_> N_fluid(true);
+  LINALG::Matrix<3, 1, double> dr_beam_ref;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_fluid;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force2;
+  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
+  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
+  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_f(true);
+  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
   if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
@@ -91,7 +88,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
          i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
-      const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
+      const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
           this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
@@ -101,35 +98,21 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
-      /*      std::cout << "segment-length= " << beam_segmentation_factor
-                      << " and jacobian= " << segment_jacobian << std::endl;
-      */
       // Get the current positions on beam and fluid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam,
-          this->Element1());  // need beam velocity here -> hand in from outside? No..
-      GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2pos_,
-          r_fluid);  // need fluid velocity here -> hand in from outside? No.. we do not compute the
-                     // force here
-                     /*
-                           std::cout << "eta= " << projected_gauss_point.GetEta() << ", beampos=" << this->ele1pos_
-                                     << " und rbeam= " << r_beam << std::endl;
-                     */
-      /*      std::cout << "xi= " << projected_gauss_point.GetXi() << ", fluidpos= " <<
-         this->ele2pos_
-                      << "und rfluid=" << r_fluid << std::endl;
-      */
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
+
       N_beam.Clear();
       N_fluid.Clear();
+
+      // Evaluate the chapefunctions at the current gauss point
       beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
           std::integral_constant<unsigned int, 1>{}, this->Element1());
       fluid::EvaluateShapeFunction(N_fluid, projected_gauss_point.GetXi(),
           std::integral_constant<unsigned int, 3>{}, this->Element2());
-      /*
-            std::cout << "N_fluid=" << N_fluid << std::endl;
-            std::cout << "gw= " << projected_gauss_point.GetGaussWeight() << std::endl;
-            std::cout << "fluid_nval= " << fluid::n_val_ << std::endl;
-            std::cout << "fluid_nodes= " << fluid::n_nodes_ << std::endl;
-      */
+
+      // assemble fluid mass matrix
       if (stiffmat22 != NULL)
       {
         for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
@@ -143,6 +126,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
 
+      // assemble beam mass matrix
       if (stiffmat11 != NULL)
       {
         for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
@@ -156,9 +140,8 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
                       N_beam(i_beam_node2 * beam::n_val_ + i_beam_val2) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
-      //
-      //
-      //     std::cout << "beam_nval= " << beam::n_val_ << std::endl;
+
+      // assemble fluid beam coupling matrix
       if (stiffmat21 != NULL)
       {
         for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
@@ -171,8 +154,8 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
                       N_fluid(i_fluid_node1) * N_beam(i_beam_node2 * beam::n_val_ + i_beam_val2) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
-      //
 
+      // assemble fluid beam coupling matrix
       if (stiffmat12 != NULL)
       {
         for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
@@ -185,20 +168,13 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
                       N_fluid(i_fluid_node2) * N_beam(i_beam_node1 * beam::n_val_ + i_beam_val1) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
-      //
-
-
-      //      std::cout << "deltar_fluid= " << r_fluid(0).dx(12) << std::endl;
     }
   }
 
-  //  std::cout << "force_element_1= " << force_element_1 << std::endl;
-  //  std::cout << "force_element_2= " << force_element_2 << std::endl;
-  // Fill in the entries for the local matrices and vectors.
+  // assemble structure force vector
   {
     if (forcevec1 != NULL)
     {
-      // $f_1$
       for (unsigned int i_dof1 = 0; i_dof1 < beam::n_dof_; i_dof1++)
       {
         for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
@@ -207,9 +183,10 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
           (*forcevec1)(i_dof1) -= (*stiffmat12)(i_dof1, i_dof2) * this->ele2vel_(i_dof2).val();
       }
     }
+
+    // assemble fluid force vector
     if (forcevec2 != NULL)
     {
-      // $f_2$
       if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
                ->GetWeakDirichletFlag())
 
@@ -231,18 +208,20 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         }
     }
   }
-  //  std::cout << "pair stiffmat is " << *stiffmat22 << std::endl;
+
   // Return true as there are meshtying contributions.
   return true;
 }
 
+/*------------------------------------------------------------------------------------------------*/
+
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::EvaluatePenaltyForce(
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force,
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam) const
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
 {
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_fluid;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
 
   GEOMETRYPAIR::EvaluatePosition<beam>(
       projected_gauss_point.GetEta(), this->ele1vel_, v_beam, this->Element1());

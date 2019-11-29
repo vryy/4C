@@ -1,9 +1,9 @@
-/*!
-\file beam_to_fluid_meshtying_pair_factory.cpp
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Create the pairs for beam to fluid meshtying depending on the input parameters..
 
-\level 3
+\level 2
 \maintainer Nora Hagmeyer
 */
 
@@ -14,7 +14,7 @@
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_inpar/inpar_fbi.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
 
 /**
  *
@@ -57,7 +57,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
       default:
-        dserror("Wrong element type for solid element.");
+        dserror("Wrong element type for fluid element.");
     }
   }
   else

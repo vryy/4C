@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
-/*!
-\file beam_to_fluid_meshtying_pair_factory.H
+/*! \file
 
 \brief Factory to create appropriate beam to fluid meshtying pair for the desired discretization
 approach
 
 \maintainer Nora Hagmeyer
 
-\level 3
+\level 2
 */
 /*----------------------------------------------------------------------*/
 

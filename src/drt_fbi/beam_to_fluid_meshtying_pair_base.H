@@ -1,23 +1,21 @@
-/*!
-\file beam_to_fluid_meshtying_pair_base.H
+/*----------------------------------------------------------------------*/
+/*! \file
 
-\brief Base meshtying element for meshtying between a 3D beam and a 3D fluid element.
+\brief Base meshtying element for meshtying between a 1D beam and a 3D fluid element.
 
-\level 3
+\level 2
 \maintainer Nora Hagmeyer
 */
-// End doxygen header.
-
 
 #ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 #define BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 
+// todo declutter
 #include "../drt_beaminteraction/beam_contact_pair.H"
-
 #include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 
@@ -27,43 +25,43 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename volume>
   class GeometryPairLineToVolume;
+  class LineTo3DEvaluationData;
+  class GeometryEvaluationDataBase;
 }  // namespace GEOMETRYPAIR
 
 
 namespace BEAMINTERACTION
 {
   /**
-   * \brief Class for beam to solid meshtying.
-   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
+   * \brief Class representing a pair of elements for beam to fluid meshtying
+   *
+   * \params[in] beam Type from GEOMETRYPAIR::ElementDiscretization representing the beam.
+   * \params[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
    */
   template <typename beam, typename fluid>
-  class BeamToFluidMeshtyingPairBase : public BeamContactPair
+  class BeamToFluidMeshtyingPairBase
+      : public BeamContactPair  // todo can i just derice from beamtosolidmeshtyingpairbase?
   {
-   protected:
-    /**
-     * \brief Standard Constructor
-     */
-    BeamToFluidMeshtyingPairBase();
-
    public:
     /**
-     * \brief Destructor.
+     * \brief empty Destructor.
      */
     virtual ~BeamToFluidMeshtyingPairBase(){};
+
     /**
      * \brief Initialize the contact pair.
      */
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
         std::vector<DRT::Element const*> elements);
 
     /**
-     * \brief Setup the contact pair.
+     * \brief Setup the contact pair and set information on the current position of the elements in
+     * the pair
      */
     void Setup() override;
 
@@ -143,7 +141,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const override
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not yet implemented!");
     }
@@ -152,7 +150,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const override
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not yet implemented!");
     }
@@ -196,32 +194,37 @@ namespace BEAMINTERACTION
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
         const Teuchos::ParameterList& visualization_params) const override;
 
+    /**
+     * \brief Create the geometry pair for this contact pair.
+     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
+     */
+    void CreateGeometryPair(
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+        override;
+
    private:  //! Type to be used for scalar AD variables. This can not be inherited from the base
              //! class.
     typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + fluid::n_dof_> TYPE_BTS_VMT_AD;
 
    protected:
-    /**
-     * \brief Create the geometry pair for this contact pair.
-     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
+    /** \brief You will have to use the FBI::PairFactory
+     *
      */
-    void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
-            geometry_evaluation_data_ptr);
+    BeamToFluidMeshtyingPairBase();
 
-    virtual void EvaluatePenaltyForce(LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force,
-        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam) const
+    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
     {
       dserror("Not implemented yet!\n");
     };
 
-    void EvaluateBeamPosition(
-        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const;
+    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
 
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
-     * @return RPC with the type of geometry pair for this beam contact pair.
+     * \returns RPC with the type of geometry pair for this beam contact pair.
      */
     inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, fluid>>
     CastGeometryPair() const
@@ -234,20 +237,20 @@ namespace BEAMINTERACTION
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> ele1pos_;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, fluid::n_dof_, 1> ele2pos_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1pos_;
+    LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2pos_;
 
     //! Current nodal velocities of the two elements.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> ele1vel_;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, fluid::n_dof_, 1> ele2vel_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1vel_;
+    LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2vel_;
 
     //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPEBTS, beam::n_dof_, 1> ele1posref_;
-    LINALG::TMatrix<TYPEBTS, fluid::n_dof_, 1> ele2posref_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1posref_;
+    LINALG::Matrix<fluid::n_dof_, 1, TYPEBTS> ele2posref_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPEBTS, beam::n_dof_, 1> ele1poscur_;
-    LINALG::TMatrix<TYPEBTS, fluid::n_dof_, 1> ele2poscur_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1poscur_;
+    LINALG::Matrix<fluid::n_dof_, 1, TYPEBTS> ele2poscur_;
 
     //! Vector with the segments of the line to volume pair.
     std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;

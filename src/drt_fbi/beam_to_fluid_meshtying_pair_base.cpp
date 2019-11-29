@@ -1,9 +1,9 @@
-/*!
-\file beam_to_fluid_meshtying_pair_base.cpp
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Base meshtying element for meshtying between a 3D beam and a 3D fluid element.
 
-\level 3
+\level 2
 
 \maintainer Nora Hagmeyer
 */
@@ -29,13 +29,12 @@
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "../drt_beaminteraction/beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 
 
-/**
- *
- */
+
 template <typename beam, typename fluid>
 BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtyingPairBase()
     : BeamContactPair(), meshtying_is_evaluated_(false), line_to_volume_segments_()
@@ -43,34 +42,26 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtying
   // Empty constructor.
 }
 
-
-/**
- *
- */
+/*------------------------------------------------------------------------------------------------*/
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
-  // Call Init of base class, the geometry pair will be created and initialized there.
-  BeamContactPair::Init(params_ptr, geometry_evaluation_data_ptr, elements);
+  // Call Init of base class
+  BeamContactPair::Init(params_ptr, elements);
 }
+/*------------------------------------------------------------------------------------------------*/
 
-
-/**
- *
- */
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
-    fluid>::Setup()  // todo Muss ich die Positionen nochmal berehcnen obwohl ich sie in der Suche
-                     // schon berechnet hab? Vielleicht in extra Funktion reingeben und immer vor
-                     // PreEvaluate rufen?
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Setup()
 {
   CheckInit();
 
   // Call setup of base class first.
   BeamContactPair::Setup();
+
+  if (geometry_pair_ == Teuchos::null) dserror("No geometry pair was created\n");
 
   // Initialize reference nodal positions (and tangents) for beam element
   for (unsigned int i = 0; i < beam::n_dof_; i++) ele1posref_(i) = 0.0;
@@ -150,9 +141,11 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
  */
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Set up the geometry pair, it will be initialized in the Init call of the base class.
+  // Make sure that the contact pair is not initialized yet
+  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
+  // Set up the geometry pair
   geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
       geometry_evaluation_data_ptr);
 }
@@ -274,12 +267,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_fluid;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force_integration_point;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_fluid;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -317,9 +310,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -347,8 +340,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::EvaluateBeamPosition(
-    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(
