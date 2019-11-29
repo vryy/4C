@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
-\file fsi_dirichletneumann_vel.H
+/*! \file
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 
@@ -86,7 +85,7 @@ namespace FSI
      *
      * You will have to use the FSI::DirichletNeumannFactory to create an instance of this class
      */
-    explicit DirichletNeumannVel(const Epetra_Comm &comm);
+    explicit DirichletNeumannVel(const Epetra_Comm& comm);
 
    public:
     /// setup this object
@@ -120,16 +119,10 @@ namespace FSI
     virtual Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
     // todo use or throw error
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override
-    {
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
 
     // todo use or throw error
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) override
-    {
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) override;
 
    private:
     /**
