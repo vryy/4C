@@ -17,6 +17,13 @@
 
 #include "fsi_dirichletneumann.H"
 
+// Forward declarations
+
+namespace ADAPTER
+{
+  class FBIConstraintenforcer;
+}
+
 namespace FSI
 {
   /**
@@ -109,6 +116,7 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override;
 
     /// Computes initial guess for the next iteration
+
     virtual Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
     // todo use or throw error

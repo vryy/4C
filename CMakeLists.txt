@@ -1237,6 +1237,7 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FSI
+  src/drt_fbi/constraintenforcer_fbi.cpp
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
   src/drt_fsi/fs_monolithic.cpp
   src/drt_fsi/fsi_algorithm.cpp
