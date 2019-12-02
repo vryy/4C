@@ -1230,7 +1230,7 @@ namespace CONTACT
     @param[in/out] kt Global Jacobian matrix
     @param[in/out] f Global residual vector
     @param[in] timeStep Current time step
-    @param[in] nonlinearIteration Currnet nonlinear iteration step
+    @param[in] nonlinearIteration Current nonlinear iteration step
     @param[in] predictor Is this called during the predictor?
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -1833,9 +1833,10 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> CreateDeterministicLMDofRowMap(const Epetra_Map& gsdofrowmap) const;
 
     /*!
-    \brief Calculate mean velocity of interface for binning
+    \brief Calculate absolute value of mean velocity of interface for binning
 
     For each interface, extract its velocity DOFs and compute their mean value.
+    Then, take the absolute value and store it to #ivel_.
 
     \param[in] velocity Vector with velocities for all solid DOFs
     */

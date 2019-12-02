@@ -1482,7 +1482,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
   else if (Redundant() == INPAR::MORTAR::redundant_none)
   {
     // nothing to do here, we work with the given non-redundant distribution
-    // of both slave and master nodes to the individual processsors. However
+    // of both slave and master nodes to the individual processors. However
     // we want ALL procs to be part of the interface discretization, not only
     // the ones that do own or ghost any nodes in the natural distribution of
     // idiscret_. This makes dynamic redistribution easier!
@@ -1556,7 +1556,8 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       /* Ask the discretization to initialize the elements. We need this, since the setup of the
        * binning strategy relies on some element information.
        * Note: This should be cheap, since we don't assign new degrees of freedom. Still, we skip
-       * initialization of elements, if we know, that the discretization will be redistriuted again.
+       * initialization of elements, if we know, that the discretization will be redistributed
+       * again.
        */
       Discret().FillComplete(false, isFinalParallelDistribution, false);
 
