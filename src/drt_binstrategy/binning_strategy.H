@@ -632,8 +632,9 @@ namespace BINSTRATEGY
      * \param[in] bin_to_row_ele_map_to_lookup_requests bin to row element map to look-up requested
      *            elements from other procs
      * \param[in] ext_bin_to_ele_map one layer extended bin to element map
-     * \param[in] bin_colmap bin colmun map \param[in] bin_rowmap bin row map \param[in]
-     * ele_colmap_from_standardghosting element column map based on standard ghosting
+     * \param[in] bin_colmap bin colmun map
+     * \param[in] bin_rowmap bin row map
+     * \param[in] ele_colmap_from_standardghosting element column map based on standard ghosting
      *
      * \return extended element column map
      */
