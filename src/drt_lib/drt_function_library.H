@@ -73,7 +73,7 @@ namespace DRT
                        function will be evaluated
        * @param x     (i) The point in 3-dimensional space in which the
                        function will be evaluated
-       * @param deg   (i) maximum time derivative degree, has to be 1 for this implementation
+       * @param deg   (i) maximum time derivative degree, has to be 0 or 1 for this implementation
          @return vector containing value and derivative
        */
       std::vector<double> EvaluateTimeDerivative(int index,  ///< component of function

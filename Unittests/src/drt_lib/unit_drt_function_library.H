@@ -194,12 +194,19 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
         expectedTimeDerivative(at123, 1), 1e-15);
   }
 
-  void test_ShouldThrow_When_EvaluateTimeDerivative_DegreeNot1()
+  void test_EvaluateTimeDerivative_Degree0()
+  {
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 0)[0],
+        expected(at123, withOrigin(at111)), 1e-15);
+  }
+
+  void test_ShouldThrow_When_EvaluateTimeDerivative_DegreeGreater1()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
     TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 2));
-    TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 0));
   }
 
   void test_ShouldThrow_When_EvaluatedComponentNegative()

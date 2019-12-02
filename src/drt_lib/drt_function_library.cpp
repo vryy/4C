@@ -495,7 +495,10 @@ double DRT::UTILS::TranslatedFunction::Evaluate(const int index, const double* x
 std::vector<double> DRT::UTILS::TranslatedFunction::EvaluateTimeDerivative(
     const int index, const double* x, const double t, const unsigned deg)
 {
-  if (deg != 1) dserror("Only first derivative is implemented");
+  if (deg == 0) return std::vector<double>{Evaluate(index, x, t)};
+
+  if (deg != 1) dserror("Time derivative only implemented for degree <= 1");
+
   if (index < 0 or index >= localFunction_->NumberComponents())
     dserror("Index must be between 0 and %d but is %d.", localFunction_->NumberComponents(), index);
 
