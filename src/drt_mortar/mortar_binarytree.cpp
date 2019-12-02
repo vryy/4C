@@ -70,7 +70,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
     // check what to do with left child
     if (leftchild_->Elelist().size() == 0)
     {
-      dserror("ERROR: InitializeTree:Processor has no leftchild elements-->return;");
+      dserror("Processor has no leftchild elements.");
       return;
     }
     else
@@ -87,7 +87,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
     // check what to do with right child
     if (rightchild_->Elelist().size() == 0)
     {
-      dserror("ERROR: InitializeTree:Processor has no rightchild elements-->return;");
+      dserror("Processor has no rightchild elements.");
       return;
     }
     else
@@ -193,7 +193,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
       int gid = Elelist()[i];
       DRT::Element* element = Discret().gElement(gid);
-      if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+      if (!element) dserror("Cannot find element with gid %\n", gid);
       DRT::Node** nodes = element->Points();
 
       // vector of values of Hesse-Normalform of nodes of elements
@@ -203,7 +203,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       for (int k = 0; k < element->NumPoint(); ++k)
       {
         MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
-        if (!mrtrnode) dserror("ERROR: Null pointer!");
+        if (!mrtrnode) dserror("Null pointer!");
         const double* posnode = mrtrnode->X();
 
         // split along chosen area
@@ -217,14 +217,14 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
                       posnode[1] * Dopnormals()(splittingnormal, 1) +
                       posnode[2] * Dopnormals()(splittingnormal, 2);
         else
-          dserror("ERROR: Problem dimension must be 2D or 3D!");
+          dserror("Problem dimension must be 2D or 3D!");
 
         if (axbycz[k] >= d) isright = true;
         if (axbycz[k] < d) isleft = true;
       }
 
       if (isright == false && isleft == false)
-        dserror("ERROR: Current element could neither be sorted into left- or right-child node!");
+        dserror("Current element could neither be sorted into left- or right-child node!");
 
       // if element is split through, it is sorted into left treenode
       if (isright == true && isleft == true) isright = false;
@@ -264,7 +264,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       else if (type_ == MASTER_INNER)
         lefttype = MASTER_LEAF;
       else
-        dserror("ERROR: Invalid TreeNodeType");
+        dserror("Invalid TreeNodeType");
     }
     else
     {
@@ -273,7 +273,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       else if (type_ == MASTER_INNER)
         lefttype = MASTER_INNER;
       else
-        dserror("ERROR: Invalid TreeNodeType");
+        dserror("Invalid TreeNodeType");
     }
 
     // is the new right child treenode a leaf node?
@@ -284,7 +284,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       else if (type_ == MASTER_INNER)
         righttype = MASTER_LEAF;
       else
-        dserror("ERROR: Invalid TreeNodeType");
+        dserror("Invalid TreeNodeType");
     }
     else
     {
@@ -293,7 +293,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       else if (type_ == MASTER_INNER)
         righttype = MASTER_INNER;
       else
-        dserror("ERROR: Invalid TreeNodeType");
+        dserror("Invalid TreeNodeType");
     }
 
     // build left child treenode
@@ -331,7 +331,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
   }
 
   else
-    dserror("ERROR: Only 1 or 0 elements in map-->TreeNode cannot be devided!!");
+    dserror("Only 1 or 0 elements in map-->TreeNode cannot be devided!!");
 
   return;
 }
@@ -545,7 +545,7 @@ void MORTAR::BinaryTree::InitSearchElements()
   {
     int gid = selements_->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     MortarElement* sele = dynamic_cast<MortarElement*>(ele);
 
     sele->MoData().SearchElements().resize(0);
@@ -612,7 +612,7 @@ void MORTAR::BinaryTree::SetEnlarge()
   {
     int gid = selements_->GID(i);
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) dserror("Cannot find element with gid %\n", gid);
     MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
@@ -623,13 +623,13 @@ void MORTAR::BinaryTree::SetEnlarge()
   {
     int gid = melements_->GID(i);
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) dserror("Cannot find element with gid %\n", gid);
     MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
-  if (lmin <= 0.0) dserror("ERROR: Minimal element length <= 0!");
+  if (lmin <= 0.0) dserror("Minimal element length <= 0!");
 
   // set the class variables
   Enlarge() = Eps() * lmin;
