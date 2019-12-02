@@ -9,8 +9,8 @@
 */
 
 
-#ifndef UNIT_DRT_SLMFUNCTION_H
-#define UNIT_DRT_SLMFUNCTION_H
+#ifndef UNIT_DRT_FUNCTION_LIBRARY_H
+#define UNIT_DRT_FUNCTION_LIBRARY_H
 
 #include <cxxtest/TestSuite.h>
 #include "../../../src/drt_lib/drt_function.H"
@@ -44,6 +44,16 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
   {
    public:
     double Evaluate(const int index, const double* x, double t) override { return A_CONSTANT; };
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, double t, const unsigned int deg) override
+    {
+      return std::vector<double>(2, 0.0);
+    };
+    std::vector<double> EvaluateSpatialDerivative(
+        const int index, const double* x, const double t) override
+    {
+      return std::vector<double>(3, 0);
+    }
     int NumberComponents() override { return 3; };
   };
 
@@ -55,6 +65,18 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     {
       return (x[0] * x[0] + 2 * x[1] * x[1] + 4 * x[2] * x[2]);
     };
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, double t, const unsigned int deg) override
+    {
+      auto result = std::vector<double>(2, 0.0);
+      result[0] = Evaluate(index, x, t);
+      return result;
+    };
+    std::vector<double> EvaluateSpatialDerivative(
+        const int index, const double* x, const double t) override
+    {
+      return std::vector<double>{2 * x[0], 4 * x[1], 8 * x[2]};
+    }
     int NumberComponents() override { return 1; };
   };
 
@@ -63,6 +85,20 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
   {
    public:
     double Evaluate(const int index, const double* x, double t) override { return t; };
+
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, double t, const unsigned int deg) override
+    {
+      auto result = std::vector<double>(2, 0.0);
+      result[0] = Evaluate(index, x, t);
+      result[1] = 1;
+      return result;
+    };
+    std::vector<double> EvaluateSpatialDerivative(
+        const int index, const double* x, const double t) override
+    {
+      return std::vector<double>(3, 0);
+    }
     int NumberComponents() override { return 3; };
   };
 
@@ -122,6 +158,50 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), expected(at123, withOrigin(at111)), 1e-15);
   }
 
+  void test_EvaluateTimeDerivative_ConstantOrigin_ConstantLocal()
+  {
+    Teuchos::RCP<Function> testFunction = Teuchos::rcp(new TranslatedFunction(constant, constant));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
+  }
+
+  void test_EvaluateTimeDerivative_ConstantOrigin_SpaceDependentLocal()
+  {
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(constant, scalarField));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 0, 1)[1], 0, 1e-15);
+  }
+
+  void test_EvaluateTimeDerivative_MovingOrigin_ConstantLocal()
+  {
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(linearTime, constant));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 1)[1], 0, 1e-15);
+  }
+
+  void test_EvaluateTimeDerivative_MovingOrigin_SpaceDependentLocal()
+  {
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1],
+        expectedTimeDerivative(at111, 0), 1e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 1, 1)[1],
+        expectedTimeDerivative(at111, 1), 1e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 0, 1)[1],
+        expectedTimeDerivative(at123, 0), 1e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 1)[1],
+        expectedTimeDerivative(at123, 1), 1e-15);
+  }
+
+  void test_ShouldThrow_When_EvaluateTimeDerivative_DegreeNot1()
+  {
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
+    TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 2));
+    TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 0));
+  }
+
   void test_ShouldThrow_When_EvaluatedComponentNegative()
   {
     Teuchos::RCP<Function> testFunction =
@@ -142,15 +222,20 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
   }
 
  private:
-  double expected(const double* at, const double* withOrigin)
+  inline double expected(const double* at, const double* withOrigin)
   {
     return (at[0] - withOrigin[0]) * (at[0] - withOrigin[0]) +
            2 * (at[1] - withOrigin[1]) * (at[1] - withOrigin[1]) +
            4 * (at[2] - withOrigin[2]) * (at[2] - withOrigin[2]);
   }
 
+  inline double expectedTimeDerivative(const double* at, const double time)
+  {
+    return -2 * (at[0] - time) - 4 * (at[1] - time) - 8 * (at[2] - time);
+  }
+
   /// for readability
-  const double* withOrigin(const double* at) { return at; }
+  inline const double* withOrigin(const double* at) { return at; }
 };
 
 
