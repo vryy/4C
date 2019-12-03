@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file ad_str_fbiwrapper.cpp
 
-\brief Structural adapter for Fluid-beam interaction problems containing the interface
-       and methods dependent on the interface
+\brief Structural adapter for Fluid-beam interaction problems
 
 \maintainer Nora Hagmeyer
 
-\level 3
+\level 2
 */
 
 #include "ad_str_fbiwrapper.H"
@@ -69,13 +67,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIStructureWrapper::RelaxationSolve(
 }
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void ADAPTER::FBIStructureWrapper::RebuildInterface()
-{
-  dserror("This does not work correctly yet");
-  FBIStructureWrapper::RebuildInterface();
-  eletypeextractor_ = Teuchos::rcp(new BEAMINTERACTION::UTILS::MapExtractor);
-  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(structure_->Discretization(), eletypeextractor_);
-}
+void ADAPTER::FBIStructureWrapper::RebuildInterface() { dserror("Not implemented yet"); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -109,9 +101,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIStructureWrapper::ExtractInterfaceDispn(
 void ADAPTER::FBIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
   FSIModelEvaluator()->GetInterfaceForceNpPtr()->Update(
-      1.0, *iforce, 0.0);  // todo This has to be changed for mixed structure. Need a mapextractor.
+      1.0, *iforce, 0.0);  // todo This has to be changed for mixed structure
   return;
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIStructureWrapper::SetupMultiMapExtractor()

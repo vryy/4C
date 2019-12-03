@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file ad_str_fbiwrapper.H
 
-\brief Structural adapter for Fluid-beam interaction problems containing the interface to the
-structure and methods dependent on the interface
+\brief Structural adapter for Fluid-beam interaction problems
 
 \maintainer Nora Hagmeyer
 
-\level 3
+\level 2
 */
 
 #ifndef FBI_STRUCTURE_WRAPPER_H
@@ -44,10 +42,10 @@ namespace ADAPTER
     virtual ~FBIStructureWrapper() { ; }
 
     /// extracts interface velocities at \f$t_{n}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
     /// extracts interface velocities at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
 
     /// Predictor for interface velocities
     virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceVelnp();
@@ -57,20 +55,19 @@ namespace ADAPTER
      * Overloads RelaxationSolve of base class with an error message, because it is not implemented
      * for fluid-beam interaction yet
      */
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-        Teuchos::RCP<Epetra_Vector> iforce) override;
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix() override { dserror("Not yet implemented\n"); };
+    void UseBlockMatrix() override { dserror("Not yet implemented\n"); };
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() override;
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() override;
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp() override;
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp() override;
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() override;
+    Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() override;
 
     /** \brief Apply interface forces to structural solver
      *
@@ -78,13 +75,15 @@ namespace ADAPTER
      * step. This implementation overloads the base class function because we are not using a
      * condition for the interface, since we expect all beam elements to be immersed.
      */
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) override;
+    void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// rebuild FSI interface from structure side
-    virtual void RebuildInterface() override;
+    void RebuildInterface() override;
 
+    /// Setup the multi map extractor after ghosting of the structure discretization
     virtual void SetupMultiMapExtractor();
 
+    /// Get Runtime VTK Output data
     virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> GetIOData();
 
    private:
