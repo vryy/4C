@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file constraintenforcer_fbi_factory.cpp
 
 \brief Factory to create the appropriate constraint enforcement strategy for fluid-beam interaction
 

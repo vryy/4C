@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file constraintenforcer_fbi_penalty.H
 
 \brief Implements the constraintenforcement technique of a penalty approach (Mortar and GPTS) (for
 fluid-beam interaction).
@@ -13,8 +12,8 @@ fluid-beam interaction).
 #define CONSTRAINTENFORCER_FBI_PENALTY_H
 
 #include "Teuchos_RCP.hpp"
-#include "../linalg/linalg_utils.H"
 #include "constraintenforcer_fbi.H"
+#include <Epetra_Vector.h>
 
 namespace ADAPTER
 {
@@ -32,6 +31,10 @@ namespace FBI
   class FBIGeometryCoupler;
 }
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;

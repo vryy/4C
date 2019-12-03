@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file constraintenforcer_fbi.H
 
 \brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
 interaction.
@@ -12,8 +11,11 @@ interaction.
 #ifndef CONSTRAINTENFORCER_FBI_H
 #define CONSTRAINTENFORCER_FBI_H
 
+#include "../drt_lib/drt_dserror.H"
+
 #include <Teuchos_RCP.hpp>
-#include "../linalg/linalg_utils.H"
+#include <Epetra_Vector.h>
+#include <vector>
 
 namespace ADAPTER
 {
@@ -22,9 +24,18 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
+namespace DRT
+{
+  class Discretization;
+  class Element;
+}  // namespace DRT
 namespace FBI
 {
   class FBIGeometryCoupler;
+}
+namespace LINALG
+{
+  class SparseMatrix;
 }
 namespace ADAPTER
 {

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file constraintenforcer_fbi_penalty.cpp
 
 \brief Implements the constraint enforcement technique of a penalty approach (Mortar and GPTS) (for
 fluid-beam interaction)
@@ -10,12 +9,13 @@ fluid-beam interaction)
 \maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
-#include "constraintenforcer_fbi_penalty.H"
-#include "constraintenforcer_fbi.H"
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "beam_to_fluid_meshtying_params.H"
+#include "constraintenforcer_fbi_penalty.H"
+#include "constraintenforcer_fbi.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_adapter/ad_fld_moving_boundary.H"
+#include "../linalg/linalg_utils.H"
 #include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*/

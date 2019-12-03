@@ -12,13 +12,17 @@
 #ifndef BEAM_TO_FLUID_MESHTYING_PARAMS_H
 #define BEAM_TO_FLUID_MESHTYING_PARAMS_H
 
-
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_fbi.H"
-
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
+namespace INPAR
+{
+  namespace FBI
+  {
+    enum class BeamToFluidConstraintEnforcement;
+    enum class BeamToFluidDiscretization;
+  }  // namespace FBI
+}  // namespace INPAR
 namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams;
