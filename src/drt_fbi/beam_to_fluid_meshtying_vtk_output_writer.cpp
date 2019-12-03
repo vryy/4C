@@ -18,7 +18,7 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_params.H"
 #include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_base.H"
 #include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
@@ -53,8 +53,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-        output_params_ptr,
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
     double restart_time)
 {
   CheckInit();
@@ -119,27 +118,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntime(
   if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
 
   WriteOutputBeamToFluidMeshTying(couplingenforcer, i_step, time);
-}
-
-/**
- *
- */
-// Fixme This method is not used right now. Either use it or remove it
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntimeIteration(
-    const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
-    int i_step, double time) const
-{
-  CheckInitSetup();
-
-  if (output_params_ptr_->GetOutputEveryIteration())
-  {
-    // Get the time step and time for the output file. If output is desired at every iteration, the
-    // values are padded.
-    int i_step = 10000 * i_step + i_iteration;
-    double time = time + 1e-8 * i_iteration;
-
-    WriteOutputBeamToFluidMeshTying(couplingenforcer, i_step, time);
-  }
 }
 
 /**

@@ -129,6 +129,8 @@ namespace ADAPTER
       return discretizations_;
     }
 
+    virtual void PrintViolation();
+
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *

@@ -19,7 +19,6 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
   class BeamToSolidVtuOutputWriterBase;
 }  // namespace BEAMINTERACTION
 namespace STR
@@ -33,7 +32,10 @@ namespace ADAPTER
 {
   class FBIConstraintenforcer;
 }
-
+namespace FBI
+{
+  class BeamToFluidMeshtyingVtkOutputParams;
+}
 
 namespace BEAMINTERACTION
 {
@@ -66,8 +68,7 @@ namespace BEAMINTERACTION
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */
     void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-            output_params_ptr,
+        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
         double restart_time);
 
     /**
@@ -121,7 +122,7 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Parameter container for output.
-    Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;

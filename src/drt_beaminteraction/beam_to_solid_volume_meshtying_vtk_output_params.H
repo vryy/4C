@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
      */
     bool GetIntegrationPointsOutputFlag() const { return integration_points_; }
 
-   private:
+   protected:
     /**
      * \brief Checks the init and setup status.
      */
@@ -121,7 +121,6 @@ namespace BEAMINTERACTION
       if (!isinit_) dserror("Init() has not been called, yet!");
     }
 
-   private:
     //! Flag if object is initialized.
     bool isinit_;
 

@@ -26,6 +26,8 @@
 #include "../drt_fbi/beam_to_fluid_meshtying_params.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <iostream>
+#include "../drt_io/io_control.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -71,6 +73,17 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
     if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
 
     MBFluidField()->NonlinearSolve(Teuchos::null, Teuchos::null);
+
+    std::ofstream log;
+    if (MBFluidField()->Discretization()->Comm().MyPID() == 0)
+    {
+      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      s.append(".penalty");
+      log.open(s.c_str(), std::ofstream::app);
+      log << Time() << " " << Step();
+      log.close();
+    }
+    constraint_manager_->PrintViolation();
 
     MBFluidField()->SetItemax(itemax);
 

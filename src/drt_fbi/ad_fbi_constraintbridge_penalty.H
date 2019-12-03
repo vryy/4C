@@ -33,6 +33,7 @@ namespace ADAPTER
     friend class ConstraintEnforcerFactory;
     friend class FBIPenaltyConstraintenforcer;                          // todo why?
     friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;  // todo why?
+    friend class FBIConstraintenforcer;
 
    public:
     /// empty destructor

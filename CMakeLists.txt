@@ -1245,6 +1245,7 @@ set(OBJS_DRT_FBI
   src/drt_fbi/beam_to_fluid_meshtying_pair_factory.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.cpp
   src/drt_fbi/beam_to_fluid_meshtying_params.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_params.cpp
   src/drt_fbi/constraintenforcer_fbi_factory.cpp
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
   src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp

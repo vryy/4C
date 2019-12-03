@@ -12,6 +12,7 @@ interaction.
 
 #include "constraintenforcer_fbi.H"
 #include "ad_fbi_constraintbridge.H"
+#include "ad_fbi_constraintbridge_penalty.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_geometry_pair/geometry_pair.H"
@@ -27,6 +28,8 @@ interaction.
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_discret_faces.H"
 #include "immersed_geometry_coupler_fbi.H"
+#include <iostream>
+#include "../drt_io/io_control.H"
 
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
@@ -63,14 +66,24 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
         ->SetupMultiMapExtractor();
   }
+  std::ofstream log;
+  if ((*discretizations_)[1]->Comm().MyPID() == 0)
+  {
+    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    s.append(".penalty");
+    log.open(s.c_str(), std::ofstream::out);
+    log << "Time Step ViolationNorm FluidViolationNorm StructureViolationNorm" << std::endl;
+    log.close();
+  }
 }
 
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIConstraintenforcer::Evaluate()
 {
-  // We use the column vectors here, because currently the search is based on neighboring nodes, but
-  // the element pairs are created using the elements needing all information on all their DOFs
+  // We use the column vectors here, because currently the search is based on neighboring nodes,
+  // but the element pairs are created using the elements needing all information on all their
+  // DOFs
   column_structure_displacement_ =
       DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
   column_structure_velocity_ =
@@ -87,8 +100,9 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
       column_fluid_velocity_);  // todo make this a vector? At some point we probably need the ale
                                 // displacements as well
 
-  // For now we need to separate the pair creation from the search, since the search takes place on
-  // the fluid elements owner, while (for now) the pair has to be created on the beam element owner
+  // For now we need to separate the pair creation from the search, since the search takes place
+  // on the fluid elements owner, while (for now) the pair has to be created on the beam element
+  // owner
   CreatePairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
@@ -163,7 +177,8 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
     if (ele_ptrs[0]->Owner() != structure_->Discretization()->Comm().MyPID())
       dserror(
-          "For now we can only create the pair on the beam owner, but beam element owner is %i and "
+          "For now we can only create the pair on the beam owner, but beam element owner is %i "
+          "and "
           "we are on proc %i \n",
           ele_ptrs[0]->Owner(), structure_->Discretization()->Comm().MyPID());
 
@@ -223,10 +238,51 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   BEAMINTERACTION::UTILS::GetCurrentElementDis(
       *(fluid_->Discretization()), elements[1], column_fluid_velocity_, vel_tmp);
 
-  // todo This is a very crude way to seperate the pressure from the velocity dofs.. maybe just use
-  // a extractor?
+  // todo This is a very crude way to seperate the pressure from the velocity dofs.. maybe just
+  // use a extractor?
   for (unsigned int i = 0; i < vel_tmp.size(); i++)
   {
     if ((i + 1) % 4) fluid_dofvec->push_back(vel_tmp[i]);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FBIConstraintenforcer::PrintViolation()
+{
+  Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()->Map());
+
+  int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+                ->GetCff()
+                ->Multiply(false,
+                    *(Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()),
+                    *violation);
+
+  if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
+
+  err = violation->Update(1.0, *AssembleFluidForce(), 0.0);
+  if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+
+  double norm, normf, norms;
+  double norm_vel;
+
+  Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
+
+  violation->Norm2(&norm);
+  if (norm_vel > 1e-15) normf = norm / norm_vel;
+
+  Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
+      ->Velnp()
+      ->MaxValue(&norm_vel);
+  if (norm_vel > 1e-15) norms = norm / norm_vel;
+
+  std::ofstream log;
+  if ((*discretizations_)[1]->Comm().MyPID() == 0)
+  {
+    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    s.append(".penalty");
+    log.open(s.c_str(), std::ofstream::app);
+    log << " " << norm << " " << normf << " " << norms << std::endl;
   }
 }

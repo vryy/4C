@@ -19,13 +19,10 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
 
-namespace BEAMINTERACTION
-{
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
-}
-
 namespace FBI
 {
+  class BeamToFluidMeshtyingVtkOutputParams;
+
   /**
    * \brief Class for beam to fluid meshtying parameters.
    */
@@ -119,8 +116,7 @@ namespace FBI
      * \brief Returns a pointer to the vtk output parameters.
      * @return Pointer to vtk output parameters.
      */
-    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-    GetVtkOuputParamsPtr() const
+    const Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVtkOuputParamsPtr() const
     {
       return output_params_;
     }
@@ -157,7 +153,7 @@ namespace FBI
     bool calcfluidweakdirichletforce_;
 
     /// VTK output params. For now I see no reason to overload this
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_;
+    Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
   };
 
 }  // namespace FBI

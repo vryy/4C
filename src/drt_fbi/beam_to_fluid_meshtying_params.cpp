@@ -11,8 +11,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "beam_to_fluid_meshtying_params.H"
 #include "../drt_inpar/inpar_fbi.H"
-#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.H"
-
+#include "beam_to_fluid_meshtying_vtk_output_params.H"
 
 /**
  *
@@ -28,7 +27,6 @@ FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
 {
   // Empty Constructor.
 }
-
 
 /**
  *
@@ -63,8 +61,8 @@ void FBI::BeamToFluidMeshtyingParams::Init()
   isinit_ = true;
 
   // Create and get vtk output parameter
-  output_params_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>(
-      new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams());
+  output_params_ = Teuchos::rcp<FBI::BeamToFluidMeshtyingVtkOutputParams>(
+      new FBI::BeamToFluidMeshtyingVtkOutputParams());
   output_params_->Init();
   output_params_->Setup();
 }
