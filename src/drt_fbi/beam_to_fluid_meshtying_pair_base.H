@@ -10,14 +10,7 @@
 #ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 #define BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 
-// todo declutter
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_geometry_pair/geometry_pair_utility_classes.H"
-
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-
+#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.H"
 
 // Forward declarations.
 namespace LINALG
@@ -45,19 +38,14 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename fluid>
   class BeamToFluidMeshtyingPairBase
-      : public BeamContactPair  // todo can i just derice from beamtosolidmeshtyingpairbase?
+      : public BeamToSolidVolumeMeshtyingPairBase<beam,
+            fluid>  // todo can i just derice from beamtosolidmeshtyingpairbase?
   {
    public:
     /**
      * \brief empty Destructor.
      */
     virtual ~BeamToFluidMeshtyingPairBase(){};
-
-    /**
-     * \brief Initialize the contact pair.
-     */
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        std::vector<DRT::Element const*> elements);
 
     /**
      * \brief Setup the contact pair and set information on the current position of the elements in
@@ -100,11 +88,6 @@ namespace BEAMINTERACTION
         const std::vector<double>& fluid_nodal_dofvec) override;
 
     /**
-     *\brief Unset meshtying_is evaluated in order to reevaluate the geometry pair todo maybe we
-     *find something better than a public method?
-     */
-    void UnsetEvaluationFlag() { meshtying_is_evaluated_ = false; }
-    /**
      * \brief Print information about this beam contact element pair to screen.
      */
     void Print(std::ostream& out) const override;
@@ -113,72 +96,6 @@ namespace BEAMINTERACTION
      * \brief Print this beam contact element pair to screen.
      */
     void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
-
-    /**
-     * \brief Check if this pair is in contact. The correct value is only returned after PreEvaluate
-     * and Evaluate are run on the geometry pair.
-     * @return true if it is in contact.
-     */
-    inline bool GetContactFlag() const override
-    {
-      // The element pair is assumed to be active when we have at least one active contact point
-      if (line_to_volume_segments_.size() > 0)
-        return true;
-      else
-        return false;
-    };
-
-    /**
-     * \brief Get number of active contact point pairs on this element pair. Not yet implemented.
-     */
-    unsigned int GetNumAllActiveContactPointPairs() const override
-    {
-      dserror("not yet implemented!");
-      return 0;
-    };
-
-    /**
-     * \brief Get coordinates of all active contact points on element1. Not yet implemented.
-     */
-    void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get coordinates of all active contact points on element2. Not yet implemented.
-     */
-    void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
-     */
-    void GetAllActiveContactForces(std::vector<double>& forces) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) gap values of this contact pair. Not yet implemented.
-     */
-    void GetAllActiveContactGaps(std::vector<double>& gaps) const override
-    {
-      dserror("not yet implemented!");
-    }
-
-    /**
-     * \brief Get energy of penalty contact. Not yet implemented.
-     */
-    double GetEnergy() const override
-    {
-      dserror("not implemented yet!");
-      return 0.0;
-    }
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.
@@ -212,6 +129,9 @@ namespace BEAMINTERACTION
      */
     BeamToFluidMeshtyingPairBase();
 
+    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
+
     virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
         LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
@@ -219,41 +139,13 @@ namespace BEAMINTERACTION
       dserror("Not implemented yet!\n");
     };
 
-    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
-
-    /**
-     * \brief Return a cast of the geometry pair to the type for this contact pair.
-     * \returns RPC with the type of geometry pair for this beam contact pair.
-     */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, fluid>>
-    CastGeometryPair() const
-    {
-      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, fluid>>(
-          geometry_pair_, true);
-    };
-
-    //! Flag if the meshtying has been evaluated in this newton step already.
-    bool meshtying_is_evaluated_;
-
-    //! Current nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1pos_;
-    LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2pos_;
-
     //! Current nodal velocities of the two elements.
     LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1vel_;
     LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2vel_;
 
-    //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1posref_;
-    LINALG::Matrix<fluid::n_dof_, 1, TYPEBTS> ele2posref_;
-
     //! Current nodal positions (and tangents) of the two elements.
     LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1poscur_;
     LINALG::Matrix<fluid::n_dof_, 1, TYPEBTS> ele2poscur_;
-
-    //! Vector with the segments of the line to volume pair.
-    std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;
   };
 }  // namespace BEAMINTERACTION
 

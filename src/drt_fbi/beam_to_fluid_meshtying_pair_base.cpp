@@ -37,133 +37,27 @@
 
 template <typename beam, typename fluid>
 BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtyingPairBase()
-    : BeamContactPair(), meshtying_is_evaluated_(false), line_to_volume_segments_()
+    : BeamToSolidVolumeMeshtyingPairBase<beam, fluid>()
 {
   // Empty constructor.
-}
-
-/*------------------------------------------------------------------------------------------------*/
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    std::vector<DRT::Element const*> elements)
-{
-  // Call Init of base class
-  BeamContactPair::Init(params_ptr, elements);
 }
 /*------------------------------------------------------------------------------------------------*/
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Setup()
 {
-  CheckInit();
+  this->CheckInit();
 
-  // Call setup of base class first.
-  BeamContactPair::Setup();
-
-  if (geometry_pair_ == Teuchos::null) dserror("No geometry pair was created\n");
-
-  // Initialize reference nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1posref_(i) = 0.0;
-
-  // Set reference nodal positions (and tangents) for beam element
-  for (unsigned int n = 0; n < beam::n_nodes_; ++n)
-  {
-    const DRT::Node* node = Element1()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d) = node->X()[d];
-
-    // tangents
-    if (beam::n_val_ == 2)
-    {
-      LINALG::Matrix<3, 1> tan;
-      const DRT::ElementType& eot = Element1()->ElementType();
-      if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-      {
-        dserror("ERROR: Beam3tofluidmeshtying: beam::n_val_=2 detected for beam3 element");
-      }
-      else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
-      {
-        const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(Element1());
-        if (ele->HermiteCenterlineInterpolation())
-          tan = ele->Tref()[n];
-        else
-          dserror(
-              "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
-              "Hermite CL");
-      }
-      else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
-      {
-        const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(Element1());
-        tan = ele->Tref()[n];
-      }
-      else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
-      {
-        const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(Element1());
-        tan = ele->Tref()[n];
-      }
-      else
-      {
-        dserror("ERROR: Beam3tosolidmeshtying: Invalid beam element type");
-      }
-
-      for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d + 3) = tan(d, 0);
-    }
-  }
-
-  // Initialize reference nodal positions for fluid element
-  for (unsigned int i = 0; i < fluid::n_dof_; i++) ele2posref_(i) = 0.0;
-
-  // Set reference nodal positions for fluid element
-  for (unsigned int n = 0; n < fluid::n_nodes_; ++n)
-  {
-    const DRT::Node* node = Element2()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele2posref_(3 * n + d) = node->X()[d];
-  }
-
-  // Initialize current nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_(i) = 0.0;
+  BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::Setup();
 
   // Initialize current nodal velocities for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1vel_(i) = 0.0;
-
-  // Initialize current nodal positions for fluid element
-  for (unsigned int i = 0; i < fluid::n_dof_; i++) ele2pos_(i) = 0.0;
+  for (unsigned int i = 0; i < beam::n_dof_; i++) this->ele1vel_(i) = 0.0;
 
   // Initialize current nodal velocities for fluid element
-  for (unsigned int i = 0; i < fluid::n_dof_; i++) ele2vel_(i) = 0.0;
+  for (unsigned int i = 0; i < fluid::n_dof_; i++) this->ele2vel_(i) = 0.0;
 
-  issetup_ = true;
+  this->issetup_ = true;
 }
-
-
-/**
- *
- */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-{
-  // Make sure that the contact pair is not initialized yet
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-  // Set up the geometry pair
-  geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
-      geometry_evaluation_data_ptr);
-}
-
-
-/**
- *
- */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::PreEvaluate()
-{
-  // Call PreEvaluate on the geometry Pair.
-  if (!meshtying_is_evaluated_)
-  {
-    CastGeometryPair()->PreEvaluate(ele1poscur_, ele2poscur_, line_to_volume_segments_);
-  }
-}
-
 
 /**
  *
@@ -177,24 +71,44 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    ele1pos_(i) = TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
-    ele1poscur_(i) = beam_centerline_dofvec[i];
-    ele1vel_(i) =
+    this->ele1pos_(i) = TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
+    this->ele1poscur_(i) = beam_centerline_dofvec[i];
+    this->ele1vel_(i) =
         TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
   }
 
   // Fluid element.
   for (unsigned int i = 0; i < fluid::n_dof_; i++)
   {
-    ele2pos_(i) =
+    this->ele2pos_(i) =
         TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
-    ele2poscur_(i) = fluid_nodal_dofvec[i];
-    ele2vel_(i) = TYPE_BTS_VMT_AD(
+    this->ele2poscur_(i) = fluid_nodal_dofvec[i];
+    this->ele2vel_(i) = TYPE_BTS_VMT_AD(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
-    /*    if (fluid_nodal_dofvec[fluid::n_dof_ + i] > 0.5)
-          printf("Velocity greater than 0.5 while reading in! It's:%f\n",
-              fluid_nodal_dofvec[fluid::n_dof_ + i]);
-              */
+  }
+}
+
+template <typename beam, typename fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+{
+  // Make sure that the contact pair is not initialized yet
+  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
+  // Set up the geometry pair
+  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
+      geometry_evaluation_data_ptr);
+}
+
+/**
+ *
+ */
+template <typename beam, typename fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::PreEvaluate()
+{
+  // Call PreEvaluate on the geometry Pair.
+  if (!this->meshtying_is_evaluated_)
+  {
+    this->CastGeometryPair()->PreEvaluate(ele1poscur_, ele2poscur_, this->line_to_volume_segments_);
   }
 }
 
@@ -204,16 +118,17 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Print(std::ostream& out) const
 {
-  CheckInitSetup();
+  this->CheckInitSetup();
 
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
   out << "\nInstance of BeamToFluidMeshtyingPair"
-      << "\nBeam EleGID:  " << Element1()->Id() << "\nFluid EleGID: " << Element2()->Id();
+      << "\nBeam EleGID:  " << this->Element1()->Id()
+      << "\nFluid EleGID: " << this->Element2()->Id();
 
-  out << "\n\nele1 dofvec: " << ele1pos_;
-  out << "\nele2 dofvec: " << ele2pos_;
-  out << "\nn_segments: " << line_to_volume_segments_.size();
+  out << "\n\nele1 dofvec: " << this->ele1pos_;
+  out << "\nele2 dofvec: " << this->ele2pos_;
+  out << "\nn_segments: " << this->line_to_volume_segments_.size();
   out << "\n";
   out << "------------------------------------------------------------------------\n";
 }
@@ -226,24 +141,24 @@ template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
     fluid>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
 {
-  CheckInitSetup();
+  this->CheckInitSetup();
 
   // Only display information if a segment exists for this pair.
-  if (line_to_volume_segments_.size() == 0) return;
+  if (this->line_to_volume_segments_.size() == 0) return;
 
   // Display the number of segments and segment length.
-  out << "beam ID " << Element1()->Id() << ", fluid ID " << Element2()->Id() << ":";
-  out << " n_segments = " << line_to_volume_segments_.size() << "\n";
+  out << "beam ID " << this->Element1()->Id() << ", fluid ID " << this->Element2()->Id() << ":";
+  out << " n_segments = " << this->line_to_volume_segments_.size() << "\n";
 
   // Loop over segments and display information about them.
-  for (unsigned int index_segment = 0; index_segment < line_to_volume_segments_.size();
+  for (unsigned int index_segment = 0; index_segment < this->line_to_volume_segments_.size();
        index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << line_to_volume_segments_[index_segment].GetEtaA() << ", "
-        << line_to_volume_segments_[index_segment].GetEtaB() << "]";
+    out << "eta in [" << this->line_to_volume_segments_[index_segment].GetEtaA() << ", "
+        << this->line_to_volume_segments_[index_segment].GetEtaB() << "]";
     out << ", Gauss points = "
-        << line_to_volume_segments_[index_segment].GetNumberOfProjectionPoints();
+        << this->line_to_volume_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
 }
@@ -281,7 +196,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     std::vector<double>& force = visualization->GetMutablePointDataVector("force");
 
     // Loop over the segments on the beam.
-    for (const auto& segment : line_to_volume_segments_)
+    for (const auto& segment : this->line_to_volume_segments_)
     {
       // Add the integration points.
       for (const auto& projection_point : segment.GetProjectionPoints())
@@ -291,8 +206,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
         u = r;
         u -= X;
         GEOMETRYPAIR::EvaluatePosition<fluid>(
-            projection_point.GetXi(), ele2pos_, r_fluid, Element2());
-        EvaluatePenaltyForce(force_integration_point, projection_point, v_beam);
+            projection_point.GetXi(), this->ele2pos_, r_fluid, this->Element2());
+        this->EvaluatePenaltyForce(force_integration_point, projection_point, v_beam);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
           point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
@@ -319,13 +234,15 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
 
     // Loop over the segments on the beam.
-    for (const auto& segment : line_to_volume_segments_)
+    for (const auto& segment : this->line_to_volume_segments_)
     {
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
       {
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1posref_, X, Element1());
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1pos_, r, Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point, this->ele1posref_, X, this->Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point, this->ele1pos_, r, this->Element1());
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
