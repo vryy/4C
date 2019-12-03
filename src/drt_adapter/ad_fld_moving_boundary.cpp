@@ -14,11 +14,11 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include "ad_fld_fbi_movingboundary.H"
 #include "ad_fld_fluid_ale.H"
 #include "ad_fld_fluid_ale_immersed.H"
 #include "ad_fld_fluid_xfem.H"
 #include "ad_fld_fluid_immersed.H"
-#include "ad_fld_fluidbeam_immersed.H"
 #include "ad_fld_fluid_ale_immersed.H"
 #include "ad_fld_fluid_ale_xfem.H"
 
@@ -71,7 +71,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     }
     case prb_fbi:
     {
-      fluid_ = Teuchos::rcp(new FluidBeamImmersed(prbdyn, condname));
+      fluid_ = Teuchos::rcp(new FBIFluidMB(prbdyn, condname));
       break;
     }
     default:

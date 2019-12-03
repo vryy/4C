@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file ad_fld_fluidbeam_immersed.H
 
 \brief Fluid field adapter for immersed-fluids (beam)
 
@@ -15,19 +14,19 @@
 #define ADAPTER_FLUIDBEAM_IMMERSED_H
 
 #include "ad_fld_moving_boundary.H"
-#include "ad_fld_base_algorithm.H"
 
 namespace ADAPTER
 {
   // forward declarations
   class Coupling;
+  class Fluid;
 
   /// fluid with moving interfaces
-  class FluidBeamImmersed : public FluidMovingBoundary
+  class FBIFluidMB : public FluidMovingBoundary
   {
    public:
     /// constructor
-    explicit FluidBeamImmersed(const Teuchos::ParameterList& prbdyn, std::string condname);
+    explicit FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /*========================================================================*/
     //! @name Misc
@@ -96,15 +95,11 @@ namespace ADAPTER
     //! @name Number of Newton iterations
     /*========================================================================*/
 
-    //! For simplified FD MFNK solve we want to temporally limit the
-    /// number of Newton steps inside the fluid solver
-    /// Not used for IMMERSED yet !
-
     /// get the maximum number of iterations from the fluid field
-    int Itemax() const override { return fluidadapter_->Itemax(); }
+    int Itemax() const override;
 
     /// set the maximum number of iterations for the fluid field
-    void SetItemax(int itemax) override { FluidField()->SetItemax(itemax); }
+    void SetItemax(int itemax) override;
 
     //@}
 
@@ -118,9 +113,11 @@ namespace ADAPTER
     /// create the testing of fields
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return fluidadapter_->Veln(); }
+    /// Get velocity ate tiemstep n
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
 
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return fluidadapter_->Velnp(); }
+    /// Get velocity at timestep n+1
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
 
     /** \brief Here additional contributions to the system matrix can be set
      *

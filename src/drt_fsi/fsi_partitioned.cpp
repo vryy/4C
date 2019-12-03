@@ -22,8 +22,6 @@
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/ad_fld_fluid_immersed.H"
-#include "../drt_adapter/ad_fld_fluidbeam_immersed.H"
-
 #include "../drt_fluid_xfluid/xfluid.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -48,6 +46,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -971,7 +970,7 @@ void FSI::Partitioned::ReadRestart(int step)
       double omega = -1234.0;
 
       if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField()) != Teuchos::null ||
-          Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(MBFluidField()) != Teuchos::null)
+          Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField()) != Teuchos::null)
       {
         IO::DiscretizationReader reader(MBFluidField()->FluidField()->Discretization(), step);
         omega = reader.ReadDouble("omega");

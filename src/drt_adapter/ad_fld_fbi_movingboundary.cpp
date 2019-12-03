@@ -1,26 +1,23 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file ad_fld_fluidbeam_immersed.cpp
 
 \brief Fluid field adapter for immersed fluids (beam)
 
 \level 3
 
 \maintainer Nora Hagmeyer
-</pre>
 */
 /*----------------------------------------------------------------------*/
+#include "ad_fld_fbi_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "ad_fld_fbi_movingboundary.H"
+#include "ad_fld_base_algorithm.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "ad_fld_fluidbeam_immersed.H"
-#include "ad_fld_fbi_wrapper.H"
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidBeamImmersed::FluidBeamImmersed(
-    const Teuchos::ParameterList& prbdyn, std::string condname)
+ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluidadapter_ = Teuchos::rcp(new FluidBaseAlgorithm(prbdyn,
                                    DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
@@ -35,7 +32,7 @@ ADAPTER::FluidBeamImmersed::FluidBeamImmersed(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidBeamImmersed::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FBIFluidMB::Discretization()
 {
   return FluidField()->Discretization();
 }
@@ -43,7 +40,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidBeamImmersed::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidBeamImmersed::Interface() const
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FBIFluidMB::Interface() const
 {
   return fluidadapter_->Interface();
 }
@@ -51,22 +48,22 @@ Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidBeamImmersed::Interf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBeamImmersed::PrepareTimeStep() { FluidField()->PrepareTimeStep(); }
+void ADAPTER::FBIFluidMB::PrepareTimeStep() { FluidField()->PrepareTimeStep(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBeamImmersed::Update() { FluidField()->Update(); }
+void ADAPTER::FBIFluidMB::Update() { FluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBeamImmersed::Output() { FluidField()->StatisticsAndOutput(); }
+void ADAPTER::FBIFluidMB::Output() { FluidField()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidBeamImmersed::ReadRestart(int step)
+double ADAPTER::FBIFluidMB::ReadRestart(int step)
 {
   FluidField()->ReadRestart(step);
   return FluidField()->Time();
@@ -75,7 +72,7 @@ double ADAPTER::FluidBeamImmersed::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBeamImmersed::NonlinearSolve(
+void ADAPTER::FBIFluidMB::NonlinearSolve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   FluidField()->Solve();
@@ -84,7 +81,7 @@ void ADAPTER::FluidBeamImmersed::NonlinearSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   dserror("RelaxationSolve not yet implemented");
@@ -94,7 +91,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceForces()
 {
   return FluidField()->ExtractInterfaceForces();
 }
@@ -102,7 +99,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceVelnp()
 {
   return FluidField()->ExtractInterfaceVelnp();
 }
@@ -110,7 +107,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceVelnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceVeln()
 {
   return FluidField()->ExtractInterfaceVeln();
 }
@@ -118,7 +115,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::ExtractInterfaceVeln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::IntegrateInterfaceShape()
 {
   // Actually we do not need this here, because this will be handled in the coupling.
   return FluidField()->IntegrateInterfaceShape();
@@ -127,7 +124,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidBeamImmersed::IntegrateInterfaceShape(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidBeamImmersed::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }
@@ -135,7 +132,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidBeamImmersed::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidBeamImmersed::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix)
+void ADAPTER::FBIFluidMB::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix)
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)
       ->SetCouplingContributions(matrix);
@@ -143,8 +140,23 @@ void ADAPTER::FluidBeamImmersed::SetCouplingContributions(Teuchos::RCP<LINALG::S
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidBeamImmersed::ApplyInterfaceValues(
+void ADAPTER::FBIFluidMB::ApplyInterfaceValues(
     Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
 {
   FluidField()->AddContributionToExternalLoads(iforce);
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FBIFluidMB::Veln() { return FluidField()->Veln(); }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/// Get velocity at timestep n+1
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FBIFluidMB::Velnp() { return FluidField()->Velnp(); }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int ADAPTER::FBIFluidMB::Itemax() const { return fluidadapter_->Itemax(); }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/// set the maximum number of iterations for the fluid field
+void ADAPTER::FBIFluidMB::SetItemax(int itemax) { FluidField()->SetItemax(itemax); }

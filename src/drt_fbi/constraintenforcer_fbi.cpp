@@ -18,7 +18,6 @@ interaction.
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
-#include "../drt_adapter/ad_fld_fluidbeam_immersed.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
@@ -29,6 +28,8 @@ interaction.
 #include "../drt_lib/drt_discret_faces.H"
 #include "immersed_geometry_coupler_fbi.H"
 #include <iostream>
+
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 #include "../drt_io/io_control.H"
 
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
@@ -89,7 +90,7 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   column_structure_velocity_ =
       DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
   column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
   // Before each search we delete all pair and segment information
   bridge_->ResetBridge();
@@ -120,7 +121,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
   if (DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") != INPAR::FBI::BeamToFluidCoupling::solid)
   {
     // Assemble the fluid stiffness matrix and hand it to the fluid solver
-    Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
         ->SetCouplingContributions(AssembleFluidStiffness());
 
     // Assemble the fluid force vector and hand it to the fluid solver
@@ -158,7 +159,7 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
     column_structure_velocity_ =
         DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
     column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
-        Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp());
+        Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
   }
 
 
@@ -251,13 +252,13 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
 void ADAPTER::FBIConstraintenforcer::PrintViolation()
 {
   Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()->Map());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
 
-  int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-                ->GetCff()
-                ->Multiply(false,
-                    *(Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()),
-                    *violation);
+  int err =
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+          ->GetCff()
+          ->Multiply(false,
+              *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()), *violation);
 
   if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
 
@@ -267,7 +268,7 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation()
   double norm, normf, norms;
   double norm_vel;
 
-  Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
+  Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
 
   violation->Norm2(&norm);
   if (norm_vel > 1e-15) normf = norm / norm_vel;
