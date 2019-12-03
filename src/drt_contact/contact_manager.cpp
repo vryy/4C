@@ -35,7 +35,7 @@
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_inpar/inpar_contact.H"

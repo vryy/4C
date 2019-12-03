@@ -22,7 +22,7 @@
 #include "../drt_constraint/constraintdofset.H"
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"

@@ -234,6 +234,24 @@ namespace LINALG
     return Multiply(*A, transA, *B, transB, *C, transC, complete);
   }
 
+  /// Returns a dim x dim identity matrix
+  template <unsigned int dim>
+  void IdentityMatrix(LINALG::Matrix<dim, dim>& identity_matrix)
+  {
+    for (unsigned int i = 0; i < dim; i++)
+    {
+      for (unsigned int j = 0; j < dim; j++)
+      {
+        if (i == j)
+          identity_matrix(i, j) = 1.0;
+        else
+          identity_matrix(i, j) = 0.0;
+      }
+    }
+
+    return;
+  }
+
 }  // namespace LINALG
 
 #endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MATH_H_ */

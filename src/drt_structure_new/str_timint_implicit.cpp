@@ -31,7 +31,7 @@
 #include "../solver_nonlin_nox/nox_nln_group.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils_densematrix_print.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 // factories
 #include "str_predict_factory.H"

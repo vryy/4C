@@ -21,7 +21,7 @@
 #include "drt_utils_materials.H"
 #include "drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *  Update material configuration of discretization with

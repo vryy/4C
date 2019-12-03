@@ -16,7 +16,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_mortar/mortar_element.H"
 #include "contact_interface.H"
 #include "contact_nitsche_utils.H"

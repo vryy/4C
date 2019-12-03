@@ -26,7 +26,7 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 04/15 |

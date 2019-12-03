@@ -34,7 +34,7 @@ References are
 
 
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 
 #include "Epetra_Vector.h"

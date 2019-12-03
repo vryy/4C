@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------*/
 
 #include "linalg_blocksparsematrix.H"
-#include "linalg_utils_densematrix_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "../drt_lib/drt_dserror.H"
 

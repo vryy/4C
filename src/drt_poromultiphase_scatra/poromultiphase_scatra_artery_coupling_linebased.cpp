@@ -22,7 +22,7 @@
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_densematrix_print.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 #include "../drt_mat/cnst_1d_art.H"

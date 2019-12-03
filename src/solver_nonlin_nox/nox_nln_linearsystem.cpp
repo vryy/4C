@@ -18,7 +18,7 @@
 #include "nox_nln_solver_ptc.H"
 #include "nox_nln_aux.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_serialdensevector.H"
 

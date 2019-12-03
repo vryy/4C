@@ -13,7 +13,7 @@
 #include "artery_ele_action.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_print.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"

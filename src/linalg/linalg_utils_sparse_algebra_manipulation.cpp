@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
- * \file linalg_utils_densematrix_manipulation.cpp
+ * \file linalg_utils_sparse_algebra_manipulation.cpp
 
 \brief A collection of dense matrix manipulation methods for namespace LINALG
 
@@ -12,7 +12,7 @@
 *-----------------------------------------------------------------------*/
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
-#include "linalg_utils_densematrix_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_lib/drt_dserror.H"
 #include <Epetra_IntVector.h>
 

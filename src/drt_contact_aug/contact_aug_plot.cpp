@@ -18,7 +18,7 @@ MATLAB, PGFPlot or other tools.
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/drt_element.H"

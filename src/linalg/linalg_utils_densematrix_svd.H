@@ -16,6 +16,7 @@
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Epetra_LAPACK.h"
 #include "../drt_lib/drt_exporter.H"
 
 namespace LINALG
@@ -73,13 +74,6 @@ namespace LINALG
     }
     return;
   }
-
-  /*!
-     \brief Determinant of a nonsymmetric matrix using SVD
-
-     \return the determinant of the matrix A if nonzero
-     */
-  double DeterminantSVD(const Epetra_SerialDenseMatrix& A);
 
 }  // namespace LINALG
 

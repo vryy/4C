@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-* \file linalg_utils_densematrix_print.H
+* \file linalg_utils_sparse_algebra_print.H
 
 \brief A collection of dense matrix printing methods for namespace LINALG
 
@@ -11,8 +11,8 @@
 
 *-----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_
+#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_
+#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_
 
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -94,4 +94,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_ */
+#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_ */

@@ -12,7 +12,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"

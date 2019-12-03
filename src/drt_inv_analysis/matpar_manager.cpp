@@ -23,7 +23,7 @@
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_mat/elasthyper.H"  //to fit elasthyper-materials
 #include "../drt_mat/growth_law.H"

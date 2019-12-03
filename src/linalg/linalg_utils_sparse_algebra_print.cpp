@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-* \file linalg_utils_densematrix_print.cpp
+* \file linalg_utils_sparse_algebra_print.cpp
 
 \brief A collection of dense matrix printing methods for namespace LINALG
 
@@ -12,7 +12,7 @@
 *-----------------------------------------------------------------------*/
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
-#include "linalg_utils_densematrix_print.H"
+#include "linalg_utils_sparse_algebra_print.H"
 #include "../drt_lib/drt_dserror.H"
 #include <Ifpack_AdditiveSchwarz.h>
 

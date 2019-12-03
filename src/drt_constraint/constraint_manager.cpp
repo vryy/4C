@@ -16,7 +16,7 @@ Kloeppel
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_io/io.H"
 
 #include "constraint_manager.H"

@@ -22,7 +22,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/optimization_density.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include <Teuchos_TimeMonitor.hpp>

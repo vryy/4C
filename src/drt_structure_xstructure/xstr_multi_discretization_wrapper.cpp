@@ -15,7 +15,7 @@
 #include "xstr_multi_io.H"
 
 #include "../drt_lib/drt_node.H"
-#include "../linalg/linalg_utils_densematrix_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
 #include "../drt_lib/drt_utils_discret.H"
