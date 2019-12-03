@@ -53,7 +53,9 @@
 
 #endif
 
-/* fortran routines from the lapack package, used in src/linalg/linalg_utils.cpp */
+/* fortran routines from the lapack package, used in
+ * src/linalg/linalg_utils_densematrix_determinant.cpp,
+ * src/linalg/linalg_utils_densematrix_eigen.cpp and src/linalg/linalg_utils_densematrix_svd.cpp */
 #ifdef __cplusplus
 extern "C"
 {

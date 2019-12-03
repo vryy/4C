@@ -343,12 +343,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
     case INPAR::PARTICLE::NormalRadiusDistribution:
     case INPAR::PARTICLE::LogNormalRadiusDistribution:
     {
-      // get variance of random particle radius distribution
-      double variance = params_dem_.get<double>("RADIUSDISTRIBUTION_VAR");
+      // get sigma of random particle radius distribution
+      double sigma = params_dem_.get<double>("RADIUSDISTRIBUTION_SIGMA");
 
       // safety check
-      if (not(variance > 0.0))
-        dserror("non-positive variance of random particle radius distribution!");
+      if (not(sigma > 0.0)) dserror("non-positive sigma of random particle radius distribution!");
 
       // iterate over particle types
       for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -370,13 +369,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
         // get pointer to particle state
         double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
 
-        // determine mean of normal random number generator
-        const double mean = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
-                                ? material->initRadius_
-                                : std::log(material->initRadius_);
+        // determine mu of random particle radius distribution
+        const double mu = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
+                              ? material->initRadius_
+                              : std::log(material->initRadius_);
 
         // initialize random number generator
-        DRT::Problem::Instance()->Random()->SetMeanVariance(mean, variance);
+        DRT::Problem::Instance()->Random()->SetMeanVariance(mu, sigma);
 
         // iterate over particles stored in container
         for (int i = 0; i < particlestored; ++i)

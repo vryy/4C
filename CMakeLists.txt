@@ -496,6 +496,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/consolidation.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/crosslinkermat.cpp
+  src/drt_mat/crystal_plasticity.cpp
   src/drt_mat/constraintmixture_history.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/elasthyper.cpp
