@@ -104,17 +104,17 @@ namespace LINALG
   }
 
   /*!
-   \brief Determinant of a nonsymmetric matrix using LU
+  \brief Determinant of a nonsymmetric matrix using LU factorization
 
-   \return the determinant of the matrix A
-   */
+  \return the determinant of the matrix A
+  */
   double DeterminantLU(const Epetra_SerialDenseMatrix& A);
 
   /*!
-     \brief Determinant of a nonsymmetric matrix using SVD
+  \brief Determinant of a nonsymmetric matrix using singular value decomposition (SVD)
 
-     \return the determinant of the matrix A if nonzero
-     */
+  \return the determinant of the matrix A if nonzero
+  */
   double DeterminantSVD(const Epetra_SerialDenseMatrix& A);
 
 }  // namespace LINALG

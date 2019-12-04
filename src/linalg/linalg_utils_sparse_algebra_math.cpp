@@ -132,7 +132,7 @@ namespace LINALG
 
 
 /*----------------------------------------------------------------------*
- |  Add a sparse matrix to another  (public)           kronbichler 11/15|
+ |  Add a sparse matrix to another                     kronbichler 11/15|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
@@ -177,7 +177,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double 
 
 
 /*----------------------------------------------------------------------*
- |  Add a sparse matrix to another  (public)                 mwgee 12/06|
+ |  Add a sparse matrix to another                           mwgee 12/06|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
@@ -288,7 +288,6 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool 
 }
 
 /*----------------------------------------------------------------------*
- |                                             (public)        gee 06/07|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
 {

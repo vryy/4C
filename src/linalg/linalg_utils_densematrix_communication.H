@@ -27,30 +27,30 @@ namespace LINALG
   // class Solver;
 
   /*!
-    \brief Gather information of type vector<T> on a subset of processors
+   \brief Gather information of type vector<T> on a subset of processors
 
-    This template gathers information provided in sdata on a subset of
-    processors tprocs, where the length of the array tprocs is ntargetprocs.
-    The redistributed data is returned in rdata which has appropiate size
-    on output (size of rdata on input is arbitrary). ntargetprocs can be
-    one to reduce data to one proc, it also can be equal to the total number
-    of processors to make sdata redundant on all procs.
+   This template gathers information provided in sdata on a subset of
+   processors tprocs, where the length of the array tprocs is ntargetprocs.
+   The redistributed data is returned in rdata which has appropiate size
+   on output (size of rdata on input is arbitrary). ntargetprocs can be
+   one to reduce data to one proc, it also can be equal to the total number
+   of processors to make sdata redundant on all procs.
 
-    \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
-    except for that the Epetra version demands the data to be of constant
-    size over all procs which this method does not require!
+   \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
+   except for that the Epetra version demands the data to be of constant
+   size over all procs which this method does not require!
 
-    \param sdata (in) : Information to be gathered on tprocs.
-    Length of sdata can be different on every proc.
-    \param rdata (out): Information from sdata gathered on a subset of procs.
-    size of rdata on input is arbitrary, it is exact on output.
-    \param ntargetprocs (in): length of tprocs
-    \param tprocs (in): vector of procs ids the information in sdata shall be
-    gathered on.
-    \param comm (in):   communicator to be used.
+   \param sdata (in) : Information to be gathered on tprocs.
+   Length of sdata can be different on every proc.
+   \param rdata (out): Information from sdata gathered on a subset of procs.
+   size of rdata on input is arbitrary, it is exact on output.
+   \param ntargetprocs (in): length of tprocs
+   \param tprocs (in): vector of procs ids the information in sdata shall be
+   gathered on.
+   \param comm (in):   communicator to be used.
 
 
-    */
+   */
   template <typename T>
   void Gather(std::vector<T>& sdata, std::vector<T>& rdata, const int ntargetprocs,
       const int* tprocs, const Epetra_Comm& comm)
@@ -512,8 +512,9 @@ namespace LINALG
     return;
   }
 
-  /// Create an allreduced vector of gids from the given Epetra_Map
   /*!
+   \brief Create an allreduced vector of gids from the given Epetra_Map
+
    We have nodes and elements arbitrary global ids. On rare occasions, however,
    we need to allreduce a particular map to one or more processors.
    This is a building block for such occasions. We allreduce the gids
@@ -551,9 +552,10 @@ namespace LINALG
    */
   void AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap);
 
-  /// Create an allreduced gid to index map from the given Epetra_Map
-  /// on a distinct processor, all other procs create empty maps instead.
   /*!
+   \brief Create an allreduced gid to index map from the given Epetra_Map
+          on a distinct processor, all other procs create empty maps instead.
+
    This method is currently used within the parallel post_drt_ensight
    filter in order to import all values stored in a distributed Epetra_Vector
    to processor 0 for writing them into file.
@@ -568,9 +570,10 @@ namespace LINALG
    */
   Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid);
 
-  /// Create an allreduced Epetra_Map from the given Epetra_Map
-  /// and give it to all processors.
   /*!
+   \brief Create an allreduced Epetra_Map from the given Epetra_Map
+          and give it to all processors.
+
    This method is currently used within the constraint management, since
    current values of constraint values and langrange multipliers are distributed
    uniquely for computation. At some places we need the full information of these
@@ -587,9 +590,10 @@ namespace LINALG
    */
   Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
 
-  /// Create an allreduced Epetra_Map from the given Epetra_Map
-  /// and give it to all processors.
   /*!
+   \brief Create an allreduced Epetra_Map from the given Epetra_Map
+          and give it to all processors.
+
    Here, we have a overlapping source map and still want to have a fully
    redundant map on all processors without duplicated entries.
 
@@ -598,19 +602,21 @@ namespace LINALG
    */
   Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
 
-  /// Create an allreduced Epetra_Map from the given Epetra_Map
-  /// on a distinct processor, all other procs create empty maps instead.
   /*!
+   \brief Create an allreduced Epetra_Map from the given Epetra_Map
+          on a distinct processor, all other procs create empty maps instead.
+
    \param emap (i) any distributed overlapping Epetra_Map
-   \param pid (i)  processor id where you want to have the allreduced and
-    sorted map exclusively
+   \param pid (i)  processor id where you want to have the allreduced and sorted map exclusively
+
    \author ghamm
    \date 10/14
    */
   Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap, const int pid);
 
-  /// find position of my map elements in a consecutive vector
   /*!
+   \brief Find position of my map elements in a consecutive vector
+
    The idea is to put the entries of a given map into a redundant
    vector, ordered by processor number. The map is assumed to be
    nonoverlapping. Here we figure out the index of our first entry in
@@ -634,17 +640,16 @@ namespace LINALG
   void AllreduceVector(
       const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm);
 
-  /// Communication between all pairs of processes, with distinct data for each.
   /*!
+   \brief Communication between all pairs of processes, with distinct data for each.
+
    Sends a different vector<int> to each processes. The size of each vector may
    be different, zero-length vectors are allowed.
    Communication is implemented with the MPI function MPI_Alltoallv.
 
    \param comm (i) communicator
-   \param send (i) vector of length comm.NumProc(), j-th element to be send to
-   j-th processor.
-   \param recv (o) vector of length comm.NumProc(), j-th element received from
-   j-th processor.
+   \param send (i) vector of length comm.NumProc(), j-th element to be send to j-th processor.
+   \param recv (o) vector of length comm.NumProc(), j-th element received from j-th processor.
 
    \author h.kue
    \date 09/07
@@ -652,8 +657,9 @@ namespace LINALG
   void AllToAllCommunication(const Epetra_Comm& comm, const std::vector<std::vector<int>>& send,
       std::vector<std::vector<int>>& recv);
 
-  /// return the first slot of a pair
   /*!
+   \brief Return the first slot of a pair
+
    To be used with stl algorithms.
 
    This should be part of stl but is not. So we define our own version.

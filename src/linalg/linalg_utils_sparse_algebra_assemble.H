@@ -28,26 +28,26 @@ namespace LINALG
   // class Solver;
 
   /*!
-     \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
+   \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
 
-     This is an individual call.
-     Will only assemble locally and will never do any commmunication.
-     All values that can not be assembled locally will be ignored.
-     Will use the communicator and rowmap from matrix A to determine ownerships.
-     Local matrix Aele may be \b square or \b rectangular.
+   This is an individual call.
+   Will only assemble locally and will never do any commmunication.
+   All values that can not be assembled locally will be ignored.
+   Will use the communicator and rowmap from matrix A to determine ownerships.
+   Local matrix Aele may be \b square or \b rectangular.
 
-     This version of 'Assemble' does not work for a matrix A that is already
-     Filled()! If matrix A is not Filled(), it will be enlarged as required.
+   This version of 'Assemble' does not work for a matrix A that is already
+   Filled()! If matrix A is not Filled(), it will be enlarged as required.
 
-     \note The user must provide an \b additional input vector 'lmcol'
-     containing the column gids for assembly seperately!
+   \note The user must provide an \b additional input vector 'lmcol'
+   containing the column gids for assembly seperately!
 
-     \param A (out)         : Sparse matrix to be assembled on
-     \param Aele (in)       : dense matrix to be assembled
-     \param lmrow (in)      : vector with row gids
-     \param lmrowowner (in) : vector with owner procs of row gids
-     \param lmcol (in)      : vector with column gids
-     */
+   \param A (out)         : Sparse matrix to be assembled on
+   \param Aele (in)       : dense matrix to be assembled
+   \param lmrow (in)      : vector with row gids
+   \param lmrowowner (in) : vector with owner procs of row gids
+   \param lmcol (in)      : vector with column gids
+   */
   void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
@@ -109,7 +109,6 @@ namespace LINALG
    */
   void Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner);
 
-  ///////////////////////////
   /*!
    \brief Assemble a Epetra_SerialDenseVector into a Epetra_MultiVector
 
@@ -148,44 +147,44 @@ namespace LINALG
       const Epetra_Vector& source);
 
   /*!
-     \brief Apply dirichlet boundary condition to a linear system of equations
+   \brief Apply dirichlet boundary condition to a linear system of equations
 
-     Modifies a system of equations such that dirichlet boundary conditions are enforced.
-     Prescribed dirichlet BC values are supplied in dbcval and dbctoggle, where
-     a prescribed value is dbcval[i] and dbctoggle[i] = 1.0. No BC is enforced in
-     all places where dbctoggle[i] != 1.0.<br>
-     Let us denote the \f$ A_{2 \times 2} \f$ blocks of \f$A\f$ by
-     \f$A_{ff}, A_{fD}, A_{Df}, A_{DD}\f$, where \f$f\f$ stands for 'free' and
-     \f$D\f$ stands for 'Dirichlet BC'. Then, after a call to this method<br>
+   Modifies a system of equations such that dirichlet boundary conditions are enforced.
+   Prescribed dirichlet BC values are supplied in dbcval and dbctoggle, where
+   a prescribed value is dbcval[i] and dbctoggle[i] = 1.0. No BC is enforced in
+   all places where dbctoggle[i] != 1.0.<br>
+   Let us denote the \f$ A_{2 \times 2} \f$ blocks of \f$A\f$ by
+   \f$A_{ff}, A_{fD}, A_{Df}, A_{DD}\f$, where \f$f\f$ stands for 'free' and
+   \f$D\f$ stands for 'Dirichlet BC'. Then, after a call to this method<br>
 
-     \f$ A_{ff} = A_{ff}, \f$<br>
-     \f$ A_{fD} = A_{fD}, \f$<br>
-     \f$ A_{Df} = 0_{Df}, \f$<br>
-     \f$ A_{DD} = I_{DD}, \f$<br>
-     \f$ x_{D} = dbcval_{D}, \f$<br>
-     \f$ b_{D} = dbcval_{D} \f$<br>
+   \f$ A_{ff} = A_{ff}, \f$<br>
+   \f$ A_{fD} = A_{fD}, \f$<br>
+   \f$ A_{Df} = 0_{Df}, \f$<br>
+   \f$ A_{DD} = I_{DD}, \f$<br>
+   \f$ x_{D} = dbcval_{D}, \f$<br>
+   \f$ b_{D} = dbcval_{D} \f$<br>
 
-     and
+   and
 
-     \f$ A_{ff} x_f + A_{fD} x_D = b_f \f$<br>
-     \f$ 0 x_f + I_{DD} x_D = x_D \f$.<br>
+   \f$ A_{ff} x_f + A_{fD} x_D = b_f \f$<br>
+   \f$ 0 x_f + I_{DD} x_D = x_D \f$.<br>
 
-     \note The matrix is then nonsymmetric. When using iterative methods on this
-     linear system of equations that depend on the symmetry of the matrix (such as e.g. CG),
-     the initial guess supplied to the solver has to be exact at the
-     Dirichlet BCs. This should be easy, as the values at the Dirichlet BCs
-     are known.
+   \note The matrix is then nonsymmetric. When using iterative methods on this
+   linear system of equations that depend on the symmetry of the matrix (such as e.g. CG),
+   the initial guess supplied to the solver has to be exact at the
+   Dirichlet BCs. This should be easy, as the values at the Dirichlet BCs
+   are known.
 
-     \note The mask of matrix \f$A\f$ is not modified. That is the
-     entries in \f$A_{Df}\f$ and \f$A_{DD}\f$ are set to zero, not
-     removed. This way the matrix can be reused in the next step.
+   \note The mask of matrix \f$A\f$ is not modified. That is the
+   entries in \f$A_{Df}\f$ and \f$A_{DD}\f$ are set to zero, not
+   removed. This way the matrix can be reused in the next step.
 
-     \param A         (in/out) : Matrix of Ax=b
-     \param x         (in/out) : initial guess vector x of Ax=b
-     \param b         (in/out) : rhs vector b of Ax=b
-     \param dbcval    (in)     : vector holding prescribed dirichlet values
-     \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
-     and 0.0 everywhere else
+   \param A         (in/out) : Matrix of Ax=b
+   \param x         (in/out) : initial guess vector x of Ax=b
+   \param b         (in/out) : rhs vector b of Ax=b
+   \param dbcval    (in)     : vector holding prescribed dirichlet values
+   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
+   and 0.0 everywhere else
      */
   void ApplyDirichlettoSystem(Teuchos::RCP<SparseOperator> A, Teuchos::RCP<Epetra_Vector>& x,
       Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,

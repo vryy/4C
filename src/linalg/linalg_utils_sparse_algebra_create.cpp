@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
- |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|
+ |  create a Epetra_CrsMatrix                                mwgee 12/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
@@ -21,7 +21,7 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, co
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
 /*----------------------------------------------------------------------*
- |  create a Epetra_Vector  (public)                         mwgee 12/06|
+ |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap, const bool init)
 {

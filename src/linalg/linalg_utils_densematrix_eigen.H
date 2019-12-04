@@ -24,14 +24,14 @@ namespace LINALG
   // class Solver;
 
   /*!
-    \brief Compute all eigenvalues of a real symmetric matrix A
+   \brief Compute all eigenvalues of a real symmetric matrix A
 
-    \param A (in):        Matrix to be analysed
-    \param L (out):       Vector of eigenvalues in ascending order
-    \param postproc (in): flag indicating whether we are using this
-    routine for postprocessing only (in that
-    case dserror is replaced with a warning)
-    */
+   \param A (in):        Matrix to be analysed
+   \param L (out):       Vector of eigenvalues in ascending order
+   \param postproc (in): flag indicating whether we are using this
+   routine for postprocessing only (in that
+   case dserror is replaced with a warning)
+   */
   void SymmetricEigenValues(
       Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc = false);
 

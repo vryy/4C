@@ -27,13 +27,13 @@ namespace LINALG
   // class Solver;
 
   /*!
-            \brief Print sparsity pattern of a matrix to postscript file
+   \brief Print sparsity pattern of a matrix to postscript file
 
-            creates a file Epetra::Matrix.ps in current directory where the exact
-            name of file depends on the exact type of class.
+   creates a file Epetra::Matrix.ps in current directory where the exact
+   name of file depends on the exact type of class.
 
-            \note works in parallel and serial!
-            */
+   \note works in parallel and serial!
+   */
   void PrintSparsityToPostscript(const Epetra_RowMatrix& A);
 
   /*!

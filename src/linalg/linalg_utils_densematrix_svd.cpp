@@ -14,7 +14,7 @@
 
 /*----------------------------------------------------------------------*
  |  singular value decomposition (SVD) of a real M-by-N matrix A.       |
- |  Wrapper for Lapack/Epetra_Lapack           (public)        maf 05/08|
+ |  Wrapper for Lapack/Epetra_Lapack                           maf 05/08|
  *----------------------------------------------------------------------*/
 void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q,
     LINALG::SerialDenseMatrix& S, LINALG::SerialDenseMatrix& VT)

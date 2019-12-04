@@ -14,7 +14,7 @@
 #include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*
- |  export a Epetra_Vector  (public)                         mwgee 12/06|
+ |  export a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
@@ -93,7 +93,7 @@ void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target
 }
 
 /*----------------------------------------------------------------------*
- |  export a Epetra_IntVector  (public)                      mwgee 01/13|
+ |  export a Epetra_IntVector                                mwgee 01/13|
  *----------------------------------------------------------------------*/
 void LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
 {

@@ -34,7 +34,7 @@ void LINALG::SymmetricEigenProblem(
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
- |  eigenvectors of a real symmetric matrix A  (public)        maf 06/07|
+ |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricEigen(
     Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const char jobz, const bool postproc)

@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
- |  invert a dense symmetric matrix  (public)                mwgee 12/06|
+ |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {

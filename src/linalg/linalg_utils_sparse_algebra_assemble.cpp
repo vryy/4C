@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
- |  assemble a matrix  (public)                               popp 01/08|
+ |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
@@ -68,7 +68,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 }
 
 /*----------------------------------------------------------------------*
- |  assemble a vector  (public)                              mwgee 12/06|
+ |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)

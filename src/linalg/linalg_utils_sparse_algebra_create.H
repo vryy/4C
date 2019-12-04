@@ -54,8 +54,9 @@ namespace LINALG
   Teuchos::RCP<Epetra_MultiVector> CreateMultiVector(
       const Epetra_BlockMap& rowmap, const int numrows, const bool init = true);
 
-  /// create an Epetra_Map from a set of gids
   /*!
+   \brief Create an Epetra_Map from a set of gids
+
    This is one of the basic operations that is needed every so often.
 
    \param gids The local gids of this map
@@ -63,8 +64,9 @@ namespace LINALG
    */
   Teuchos::RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
 
-  /// create an Epetra_Map from a vector of gids
   /*!
+   \brief Create an Epetra_Map from a vector of gids
+
    This is one of the basic operations that is needed every so often.
 
    \param gids The local gids of this map

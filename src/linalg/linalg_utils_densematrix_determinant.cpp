@@ -13,7 +13,6 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
- |  (public)                                                 mwgee 05/08|
  *----------------------------------------------------------------------*/
 double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
 {
@@ -42,7 +41,6 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
 }
 
 /*----------------------------------------------------------------------*
- |  (public)                                                 mwgee 05/08|
  *----------------------------------------------------------------------*/
 double LINALG::DeterminantSVD(const Epetra_SerialDenseMatrix& A)
 {
