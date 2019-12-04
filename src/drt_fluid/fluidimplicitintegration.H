@@ -1436,6 +1436,7 @@ namespace FLD
      *
      */
     Teuchos::RCP<LINALG::SparseMatrix> couplingcontributions_;
+    double meshtyingnorm_;
 
   };  // class FluidImplicitTimeInt
 

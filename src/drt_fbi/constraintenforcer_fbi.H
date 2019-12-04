@@ -2,7 +2,7 @@
 /*! \file
 \file constraintenforcer_fbi.H
 
-\brief Abstract class to be overloaded by different constraintenforcement techniques for fluid-beam
+\brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
 interaction.
 
 \level 2
@@ -30,6 +30,24 @@ namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
   class FBIConstraintBridge;
+
+  /**
+   * \brief Abstract class to be overloaded by different constraint enforcement techniques for
+   * fluid-beam interaction
+   *
+   * Depending on the constraint enforcement technique used to couple embedded meshes, e.g. through
+   * the penalty method, Lagrange multiplier method, Nitsche method, ect., very different
+   * information have to be passed to the participating fields.
+   * This class is designed to decouple the decision of which information to pass from the actual
+   * (partitioned) algorithm.
+   *
+   * The interface to the outside world is just a Setup and Evaluate routine, as well as the
+   * FluidToStruct() and StructToFluid() routines, which only return one vector, as customary for
+   * the FSI::DirichletNeumann algorithm. Everything else, like contributions to the stiffness
+   * matrix of the fluid, it provides by calling internal functions. To make this possible, the
+   * constraint enforcer need information on the two field.
+   *
+   */
   class FBIConstraintenforcer
   {
     friend ConstraintEnforcerFactory;
@@ -39,7 +57,7 @@ namespace ADAPTER
     virtual ~FBIConstraintenforcer(){};
 
     /**
-     * \brief Sets up the search tree.
+     * \brief Sets up the constraint enforcer
      *
      */
     virtual void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
@@ -49,27 +67,19 @@ namespace ADAPTER
      * \brief Computes the coupling matrices
      *
      * This is where the magic happens. The stiffness contributions are integrated using information
-     * of the beam elements, the fluid elements and their position relative to each other
+     * of the structure elements, the fluid elements and their position relative to each other
      */
 
     virtual void Evaluate();
 
     /**
-     * \brief Creates all possible interaction pairs
-     *
-     * \params[in] pairids a map containing a map relating all beam element ids to a set of fluid
-     * elements ids which they potentially cut
-     */
-    virtual void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
-
-    /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
-     * master field.
+     * structure field.
      *
      * Depending on the constraint enforcement strategy, either only an interface force is returned
-     * (Mortar-Lagrangemultiplier partitioned, linearized penalty force partitioned), or force
-     * vector with additional contributions as well as a stiffness matrix with additional
-     * information is returned (monolithic formulation, full penalty partitioned, weak Dirichlet).
+     * (Mortar-Lagrangemultiplier partitioned, linearized penalty force partitioned), or a force
+     * vector as well as a stiffness matrix with additional
+     * information is returned (monolithic formulation, full penalty partitioned).
      *
      *
      * \returns f residuum vector
@@ -95,24 +105,24 @@ namespace ADAPTER
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve(){};
 
-    /// Get function for the structure field
+    /// Get function for the structure field strcuture_
     virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
     {
       return structure_;
     };
-    /// Get function for the fluid field
+    /// Get function for the fluid field fluid_
     virtual Teuchos::RCP<const ADAPTER::FluidMovingBoundary> GetFluid() const final
     {
       return fluid_;
     };
 
-    /// Get function for the bridge object
+    /// Get function for the bridge object bridge_
     virtual const Teuchos::RCP<ADAPTER::FBIConstraintBridge> GetBridge() const final
     {
       return bridge_;
     };
 
-    /// Get function for the structure and the fluid discretization
+    /// Get function for the structure and the fluid discretization in the vector discretizations_
     virtual Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> GetDiscretizations()
         const final
     {
@@ -120,11 +130,21 @@ namespace ADAPTER
     }
 
    protected:
-    /// You will have to use the ADAPTER::ConstraintEnforcerFactory
+    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+     *
+     * \params[in] bridge an object managing the pair contributins
+     * \params[in] geometrycoupler an object managing the search, parallel communication, ect.
+     */
     FBIConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
         Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler);
 
-    // Do we need set-routines here?
+    /**
+     * \brief Creates all possible interaction pairs
+     *
+     * \params[in] pairids a map relating all beam element ids to a set of fluid
+     * elements ids which they potentially cut
+     */
+    virtual void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /**
      * \brief Extracts current element dofs that are needed for the computations on pair level
@@ -138,7 +158,7 @@ namespace ADAPTER
         Teuchos::RCP<std::vector<double>>& fluid_dofvec) const;
 
     /**
-     * \brief Computes the contributions to the stiffness matrix of the slave field.
+     * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
@@ -152,7 +172,7 @@ namespace ADAPTER
     };
 
     /**
-     * \brief Computes the contributions to the stiffness matrix of the master field.
+     * \brief Computes the contributions to the stiffness matrix of the structure field.
      *
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
@@ -166,7 +186,7 @@ namespace ADAPTER
     };
 
     /**
-     * \brief Computes the contributions to the residuum of the master field.
+     * \brief Computes the contributions to the rhs of the structure field.
      *
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
@@ -180,12 +200,12 @@ namespace ADAPTER
     };
 
     /**
-     * \brief Computes the contributions to the residuum of the slave field.
+     * \brief Computes the contributions to the residuum of the fluid field.
      *
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force matrix
+     * \returns f force vector
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const
     {
@@ -195,13 +215,14 @@ namespace ADAPTER
 
    private:
     FBIConstraintenforcer() = delete;
+
     /// underlying fluid of the FSI problem
     Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid_;
 
     /// underlying structure of the FSI problem
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
 
-    /// Vector containing both field discretizations
+    /// Vector containing both (fluid and structure) field discretizations
     Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations_;
 
     /**
@@ -212,12 +233,16 @@ namespace ADAPTER
      * The ConstraintBridge connects the constraint enforcement technique with the
      * discretization approach. It does all the work. The correct matrices are computed and stored
      * in here. Depending on the constraint enforcement strategy, different constraint bridges will
-     * be created in a separate factory This class serves as an interface to keep the constraint
-     * enforcement technique (penalty, lagrange, ...) separate from the discretization appraoch
-     * (GPTS, Mortar, ...)
+     * be created in the ConstraintEnforcerFactory. This class serves as an interface to keep the
+     * constraint enforcement technique (penalty, lagrange, ...) separate from the discretization
+     * approach (GPTS, Mortar, ...)
      */
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge_;
 
+    /**
+     * \brief Object handling geometric operations like the search of embedded pairs as well as the
+     * parallel communication
+     */
     Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler_;
 
     /// Displacement of the structural column nodes on the current proc

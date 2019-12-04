@@ -74,8 +74,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
     MBFluidField()->SetItemax(itemax);
 
-    // todo search only necessary if ALE
-
     constraint_manager_->Evaluate();
 
     return FluidToStruct(ivel);
@@ -87,8 +85,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
   FSI::Partitioned::StructOp(iforce, fillFlag);
-
-  // normal structure solve
 
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
   if (!(DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") == INPAR::FBI::BeamToFluidCoupling::fluid))

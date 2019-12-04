@@ -3,7 +3,7 @@
 \file constraintenforcer_fbi_penalty.H
 
 \brief Implements the constraintenforcement technique of a penalty approach (Mortar and GPTS) (for
-fluid-beam interaction). todo only for FBI?
+fluid-beam interaction).
 
 \level 3
 
@@ -36,7 +36,16 @@ namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
 
-  class FBIPenaltyConstraintenforcer : public FBIConstraintenforcer  // todo fix this
+  /**
+   * \brief Implements the constraint enforcement technique of a penalty approach (Mortar and GPTS)
+   * (for fluid-beam interaction)
+   *
+   * This class decides which information to pass to the actual (partitioned) algorithm.
+   * It assembles the stiffness and force contributions of a penalty constraintenforcement approach
+   * coupling the velocities of to non-matching meshes
+   *
+   */
+  class FBIPenaltyConstraintenforcer : public FBIConstraintenforcer
   {
     friend ConstraintEnforcerFactory;
 
@@ -45,48 +54,40 @@ namespace ADAPTER
     virtual ~FBIPenaltyConstraintenforcer(){};
 
    protected:
-    /// Standard constructor
+    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+     *
+     * \params[in] bridge an object managing the pair contributins
+     * \params[in] geometrycoupler an object managing the search, parallel communication, ect.
+     */
+
     FBIPenaltyConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
         Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler)
         : FBIConstraintenforcer(bridge, geometrycoupler){};
 
-    // Do we need set-routines here?
-
     /**
-     * \brief Computes the contributions to the stiffness matrix of the slave field.
+     * \brief Computes the contributions to the stiffness matrix of the structure field.
      *
-     * This has to be implemented differently depending on the concrete constraint enforcement
-     * strategy.
      *
      * \param[inout] k system/stiffness matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const override;
 
     /**
-     * \brief Computes the contributions to the stiffness matrix of the master field.
-     *
-     * This has to be implemented differently depending on the concrete constraint enforcement
-     * strategy.
+     * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
      * \returns k system/stiffness matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const override;
 
     /**
-     * \brief Computes the contributions to the residuum of the master field.
-     *
-     * This has to be implemented differently depending on the concrete constraint enforcement
-     * strategy.
+     * \brief Computes the contributions to the rhs of the structure field.
      *
      * \returns f force/rhs matrix
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const override;
 
     /**
-     * \brief Computes the contributions to the residuum of the slave field.
-     *
-     * This has to be implemented differently depending on the concrete constraint enforcement
-     * strategy.
+     * \brief Computes the contributions to the rhs of the slave field.
      *
      * \returns f force/rhs matrix
      */
@@ -94,6 +95,9 @@ namespace ADAPTER
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve() override;
+
+   private:
+    FBIPenaltyConstraintenforcer() = delete;
   };
 }  // namespace ADAPTER
 #endif

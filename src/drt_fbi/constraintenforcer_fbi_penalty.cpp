@@ -5,7 +5,7 @@
 \brief Implements the constraint enforcement technique of a penalty approach (Mortar and GPTS) (for
 fluid-beam interaction)
 
-\level 3
+\level 2
 
 \maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
@@ -18,9 +18,14 @@ fluid-beam interaction)
 #include "../drt_adapter/ad_fld_moving_boundary.H"
 #include <Epetra_Vector.h>
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidStiffness()
     const
 {
+  // Get coupling contributions to the fluid stiffness matrix and scale them with the penalty
+  // parameter
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
           ->GetCff()
           ->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
@@ -34,12 +39,16 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::Assemb
 Teuchos::RCP<LINALG::SparseMatrix>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureStiffness() const
 {
+  // For the classical partitioned algorithm we do not have any contributions to the stiffness
+  // matrix of the structure field
   return Teuchos::null;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidForce() const
 {
+  // Get the force acting on the fluid field, scale it with the penalty factor and -1 to get the
+  // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFf())
           ->Map()));
@@ -48,13 +57,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluid
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");
-  std::cout << "The final scaled fluid force looks like " << *f << std::endl;
   return f;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureForce() const
 {
+  // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
+  // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs())
           ->Map()));
@@ -63,6 +73,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleStruc
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");
+
   return f;
 }
 /*----------------------------------------------------------------------*/

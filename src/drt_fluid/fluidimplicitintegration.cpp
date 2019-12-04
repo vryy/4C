@@ -23,6 +23,9 @@
 
 #undef WRITEOUTSTATISTICS
 
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "fluidimplicitintegration.H"
 #include "fluid_utils.H"
 #include "fluidresulttest.H"
@@ -3522,7 +3525,6 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       output_->WriteVector("wss", stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
     }
-
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
     output_->WriteVector("accnp", accnp_);
     output_->WriteVector("accn", accn_);
