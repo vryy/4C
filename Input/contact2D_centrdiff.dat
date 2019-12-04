@@ -35,6 +35,7 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 FILESTEPS                       1000
+WRITE_INITIAL_STATE				No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      CentrDiff

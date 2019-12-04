@@ -132,6 +132,10 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   BoolParameter("WRITE_TO_SCREEN", "Yes", "Write screen output", &io);
   BoolParameter("WRITE_TO_FILE", "No", "Write the output into a file", &io);
+
+  setStringToIntegralParameter<int>("WRITE_INITIAL_STATE", "yes",
+      "Do you want to write output for initial state ?", yesnotuple, yesnovalue, &io);
+
   BoolParameter("PREFIX_GROUP_ID", "No", "Put a <GroupID>: in front of every line", &io);
   IntParameter("LIMIT_OUTP_TO_PROC", -1, "Only the specified procs will write output", &io);
   setStringToIntegralParameter<int>("VERBOSITY", "verbose", "",
