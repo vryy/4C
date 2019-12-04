@@ -20,9 +20,6 @@
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Compute all eigenvalues of a real symmetric matrix A
 
@@ -47,16 +44,7 @@ namespace LINALG
    */
   void SymmetricEigenProblem(
       Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc = false);
-#if 0
-void SymmetricEigenProblem(IO::DiscretizationWriter& output,
-   LINALG::Solver& solver,
-   Teuchos::RCP<LINALG::SparseMatrix> A,
-   Teuchos::RCP<LINALG::SparseMatrix> M,
-   Epetra_Vector& invtoggle,
-   int nev,
-   int step=0,
-   double time=0.0);
-#endif
+
   /*!
    \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A

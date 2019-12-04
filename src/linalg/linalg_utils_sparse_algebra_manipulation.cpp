@@ -299,17 +299,6 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
   Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
       A->Split<DefaultBlockMatrixStrategy>(domain, range);
 
-#if 0  // debugging
-  std::cout << "A00\n" << (*Ablock)(0,0);
-  std::cout << "A10\n" << (*Ablock)(1,0);
-  std::cout << "A01\n" << (*Ablock)(0,1);
-  std::cout << "A11\n" << (*Ablock)(1,1);
-  std::cout << "A->Range\n" << A->RangeMap();
-  std::cout << "A->Domain\n" << A->DomainMap();
-  std::cout << "A11domainmap\n" << *A11domainmap;
-  std::cout << "A22domainmap\n" << *A22domainmap;
-#endif
-
   Ablock->Complete();
   // extract internal data from Ablock in Teuchos::RCP form and let Ablock die
   // (this way, internal data from Ablock will live)

@@ -24,9 +24,6 @@
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
 

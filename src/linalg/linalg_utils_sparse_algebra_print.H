@@ -23,9 +23,6 @@
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Print sparsity pattern of a matrix to postscript file
 

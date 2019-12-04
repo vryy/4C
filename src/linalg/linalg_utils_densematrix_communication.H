@@ -23,9 +23,6 @@
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Gather information of type vector<T> on a subset of processors
 

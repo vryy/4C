@@ -18,9 +18,6 @@
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Compute singular value decomposition (SVD) of a real M-by-N matrix A
    A = U * SIGMA * transpose(V)

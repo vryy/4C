@@ -34,9 +34,6 @@ namespace IO
 
 namespace LINALG
 {
-  // forward declaration
-  // class Solver;
-
   /*!
    \brief Export a vector to a different map
 
