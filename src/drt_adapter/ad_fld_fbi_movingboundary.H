@@ -119,7 +119,7 @@ namespace ADAPTER
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
 
-    /** \brief Here additional contributions to the system matrix can be set
+    /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
      * contributions can be added here and will be assembled into the system matrix
