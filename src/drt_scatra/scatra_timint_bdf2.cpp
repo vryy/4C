@@ -19,6 +19,8 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+
 #include "scatra_timint_bdf2.H"
 
 /*----------------------------------------------------------------------*

@@ -18,6 +18,7 @@
 #include "../../drt_lib/drt_globalproblem.H"
 #include "../../drt_lib/voigt_notation.H"
 #include "../../drt_mat/plasticelasthyper.H"
+#include "../../linalg/linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../../drt_mat/material_service.H"
 #include "../../drt_inpar/inpar_structure.H"

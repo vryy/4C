@@ -20,7 +20,7 @@
 
 #include "../drt_io/io_pstream.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
 // list of all dof sets

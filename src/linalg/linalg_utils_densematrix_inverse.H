@@ -1,23 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file linalg_utils_densematrix_inverse.H
 
-\brief Inverte dense matrices up to 4x4.
+\brief Inverse dense matrices up to 4x4 and other inverse methods.
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define LINALG_UTILS_DENSEMATRIX_INVERSE_H
 
-
 #include "linalg_utils_densematrix_determinant.H"
-
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "../drt_lib/drt_exporter.H"
 
 namespace LINALG
 {
@@ -233,6 +229,186 @@ namespace LINALG
     A.Scale(1. / det);
     return true;
   }
+
+  /*!
+    \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape
+    functions) farah 07/14
+
+    \param me (in):  me (not transposed!)
+    \paramdeA (in):  de (not transposed!)
+    \param ae(out):  coef. matrix (not transposed!)
+    */
+  LINALG::SerialDenseMatrix InvertAndMultiplyByCholesky(
+      LINALG::SerialDenseMatrix& me, LINALG::SerialDenseMatrix& de, LINALG::SerialDenseMatrix& ae);
+
+  /*!
+   \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape
+   functions) farah 07/14
+
+   \param me (in):  me (not transposed!)
+   \paramdeA (in):  de (not transposed!)
+   \param ae(out):  coef. matrix (not transposed!)
+   */
+  template <const int n>
+  void InvertAndMultiplyByCholesky(
+      LINALG::Matrix<n, n>& me, LINALG::Matrix<n, n>& de, LINALG::SerialDenseMatrix& ae)
+  {
+    LINALG::Matrix<n, n> y;
+    LINALG::Matrix<n, n> maux = me;
+
+    // calc G with me=G*G^T
+    for (int z = 0; z < n; ++z)
+    {
+      for (int u = 0; u < z + 1; ++u)
+      {
+        double sum = me(z, u);
+        for (int k = 0; k < u; ++k) sum -= me(z, k) * me(u, k);
+
+        if (z > u)
+          me(z, u) = sum / me(u, u);
+        else if (sum > 0.0)
+          me(z, z) = sqrt(sum);
+        else
+          dserror("matrix is not positive definite!");
+      }
+
+      // get y for G*y=De
+      const double yfac = 1.0 / me(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        y(z, col) = yfac * de(col, z);
+        for (int u = 0; u < z; ++u) y(z, col) -= yfac * me(z, u) * y(u, col);
+      }
+    }
+
+    // get y for G^T*x=y
+    for (int z = n - 1; z > -1; --z)
+    {
+      const double xfac = 1.0 / me(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        ae(col, z) = xfac * y(z, col);
+        for (int u = n - 1; u > z; --u) ae(col, z) -= xfac * me(u, z) * ae(col, u);
+      }
+    }
+
+    me = maux;
+    return;
+  }
+
+  /*!
+   \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape
+   functions) farah 07/14
+
+   \param me (in):  me (not transposed!)
+   \paramdeA (in):  de (not transposed!)
+   \param ae(out):  coef. matrix (not transposed!)
+   */
+  template <const int n>
+  void InvertAndMultiplyByCholesky(
+      LINALG::Matrix<n, n>& me, LINALG::Matrix<n, n>& de, LINALG::Matrix<n, n>& ae)
+  {
+    LINALG::Matrix<n, n> y;
+
+    // calc G with me=G*G^T
+    for (int z = 0; z < n; ++z)
+    {
+      for (int u = 0; u < z + 1; ++u)
+      {
+        double sum = me(z, u);
+        for (int k = 0; k < u; ++k) sum -= me(z, k) * me(u, k);
+
+        if (z > u)
+          me(z, u) = sum / me(u, u);
+        else if (sum > 0.0)
+          me(z, z) = sqrt(sum);
+        else
+          dserror("matrix is not positive definite!");
+      }
+
+      // get y for G*y=de^T
+      const double yfac = 1.0 / me(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        y(z, col) = yfac * de(col, z);
+        for (int u = 0; u < z; ++u) y(z, col) -= yfac * me(z, u) * y(u, col);
+      }
+    }
+
+    // get x for G^T*x=y
+    for (int z = n - 1; z > -1; --z)
+    {
+      const double xfac = 1.0 / me(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        ae(col, z) = xfac * y(z, col);
+        for (int u = n - 1; u > z; --u) ae(col, z) -= xfac * me(u, z) * ae(col, u);
+      }
+    }
+
+    return;
+  }
+
+  /*!
+   \brief Invert a symmetric dim*dim square matrix (positive definite)
+   farah 07/14
+   \param A (in/out): Matrix to be inverted
+   */
+  template <const int n>
+  void SymmetricPositiveDefiniteInverse(LINALG::Matrix<n, n>& A)
+  {
+    LINALG::Matrix<n, n> y(true);
+    LINALG::Matrix<n, n> ae(true);
+
+    // calc G with me=G*G^T
+    for (int z = 0; z < n; ++z)
+    {
+      for (int u = 0; u < z + 1; ++u)
+      {
+        double sum = A(z, u);
+        for (int k = 0; k < u; ++k) sum -= A(z, k) * A(u, k);
+
+        if (z > u)
+          A(z, u) = sum / A(u, u);
+        else if (sum > 0.0)
+          A(z, z) = sqrt(sum);
+        else
+          dserror("matrix is not positive definite!");
+      }
+
+      // get y for G*y=de^T
+      const double yfac = 1.0 / A(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        if (col == z) y(z, col) = yfac;
+        for (int u = 0; u < z; ++u) y(z, col) -= yfac * A(z, u) * y(u, col);
+      }
+    }
+
+    // get x for G^T*x=y
+    for (int z = n - 1; z > -1; --z)
+    {
+      const double xfac = 1.0 / A(z, z);
+      for (int col = 0; col < n; ++col)
+      {
+        ae(z, col) = xfac * y(z, col);
+        for (int u = n - 1; u > z; --u) ae(z, col) -= xfac * A(u, z) * ae(u, col);
+      }
+    }
+
+    // get result
+    A = ae;
+
+    return;
+  }
+
+  /*!
+   \brief Invert a symmetric dim*dim square matrix
+
+   \param A (in/out): Matrix to be inverted
+   \param dim (in) :  Dimension of matrix
+   */
+  void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
 }  // namespace LINALG
 

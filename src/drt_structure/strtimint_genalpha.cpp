@@ -16,7 +16,8 @@
 #include "stru_aux.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_locsys.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/

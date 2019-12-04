@@ -12,7 +12,7 @@
 #include "Epetra_Vector.h"
 #include "Epetra_Map.h"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::DcsMatrix::DcsMatrix(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> sstore,

@@ -18,7 +18,7 @@
 #include "drt_dserror.H"
 #include "drt_utils_metis.H"
 #include "drt_dofset_pbc.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|

@@ -32,7 +32,10 @@ between the xfluid class and the cut-library
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"

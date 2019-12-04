@@ -11,7 +11,7 @@
 
 *----------------------------------------------------------------------*/
 #include "linalg_downwindmatrix.H"
-#include "linalg_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
 #include "Epetra_Time.h"
 
 #include "ml_utils.h"

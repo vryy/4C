@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so_sh18.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
 #include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_adapter/ad_fld_wrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"

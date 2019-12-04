@@ -19,7 +19,7 @@
 #include <Teuchos_Time.hpp>
 
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_condition_selector.H"

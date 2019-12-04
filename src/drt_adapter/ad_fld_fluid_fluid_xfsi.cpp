@@ -16,7 +16,7 @@ conjunction with XFluidFluid!
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_xfem/xfem_condition_manager.H"
 
 #include <Teuchos_RCP.hpp>

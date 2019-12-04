@@ -23,7 +23,7 @@
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #ifdef HAVE_FFTW
 

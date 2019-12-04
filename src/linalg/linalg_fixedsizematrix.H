@@ -2184,7 +2184,7 @@ namespace LINALG
     inline double determinant_large_matrix<double>(
         unsigned int i, unsigned int j, const double* mat)
     {
-      // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
+      // taken from src/linalg/linalg_utils_densematrix_eigen.cpp: LINALG::DeterminantLU,
       // only with minor changes.
       std::vector<double> tmp(i * j);
       std::copy(mat, mat + i * j, &tmp[0]);

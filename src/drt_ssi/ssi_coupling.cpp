@@ -27,7 +27,7 @@
 #include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

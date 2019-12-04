@@ -17,7 +17,7 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_discret_interface.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_structure.H"

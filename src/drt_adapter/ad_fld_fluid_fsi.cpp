@@ -16,7 +16,8 @@
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_inpar/inpar_fsi.H"

@@ -22,6 +22,7 @@
 
 #include "../drt_inpar/drt_validparameters.H"
 
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |

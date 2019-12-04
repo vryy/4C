@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_mapextractor.H"
-#include "linalg_utils.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 #include <Teuchos_getConst.hpp>
 

@@ -22,7 +22,7 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_discret.H"
 

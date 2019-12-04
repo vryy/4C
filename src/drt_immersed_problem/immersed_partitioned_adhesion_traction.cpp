@@ -22,7 +22,7 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_ssi/ssi_partitioned_2wc.H"
 
 

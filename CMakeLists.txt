@@ -1962,8 +1962,17 @@ set(OBJS_LINALG
   src/linalg/linalg_serialdensevector.cpp
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
-  src/linalg/linalg_utils.cpp
   src/linalg/linalg_gauss.cpp
+  src/linalg/linalg_utils_densematrix_communication.cpp
+  src/linalg/linalg_utils_densematrix_determinant.cpp
+  src/linalg/linalg_utils_densematrix_eigen.cpp
+  src/linalg/linalg_utils_densematrix_inverse.cpp
+  src/linalg/linalg_utils_densematrix_svd.cpp
+  src/linalg/linalg_utils_sparse_algebra_assemble.cpp
+  src/linalg/linalg_utils_sparse_algebra_create.cpp
+  src/linalg/linalg_utils_sparse_algebra_manipulation.cpp
+  src/linalg/linalg_utils_sparse_algebra_math.cpp
+  src/linalg/linalg_utils_sparse_algebra_print.cpp
 )
 set(OBJS_SOLVER
   src/linalg/linalg_multiply.cpp

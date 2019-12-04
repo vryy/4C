@@ -17,8 +17,6 @@
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../linalg/linalg_utils.H"
-
 #include "../drt_cut/cut_cutwizard.H"
 
 #include "../drt_xfem/xfem_condition_manager.H"
@@ -31,7 +29,7 @@
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "xfluid_state.H"
 

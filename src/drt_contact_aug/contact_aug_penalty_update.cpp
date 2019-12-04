@@ -20,7 +20,7 @@ parameter cn
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_multiply.H"
 #include "../drt_lib/epetra_utils.H"

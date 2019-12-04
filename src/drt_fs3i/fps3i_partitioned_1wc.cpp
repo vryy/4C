@@ -35,7 +35,7 @@
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/fluidresulttest.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_solver.H"
 
 #include "fps3i_partitioned_1wc.H"

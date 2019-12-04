@@ -18,7 +18,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../linalg/linalg_utils.H"  // for debugging: print matrices ToDo (mayr) remove?
+#include "../linalg/linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 
 #include "../solver/solver_ifpackpreconditioner.H"
 

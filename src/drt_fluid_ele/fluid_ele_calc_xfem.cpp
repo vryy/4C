@@ -19,7 +19,7 @@
 
 #include "../drt_geometry/position_array.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_xfem.H"

@@ -41,7 +41,8 @@
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
 

@@ -14,7 +14,8 @@
 
 #include "drt_discret_xfem.H"
 #include "../drt_xfem/xfem_dofset.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 
 /*----------------------------------------------------------------------*

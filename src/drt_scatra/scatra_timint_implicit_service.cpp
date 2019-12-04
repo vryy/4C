@@ -26,6 +26,8 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "turbulence_hit_scalar_forcing.H"
 

@@ -32,7 +32,7 @@
 #include "../drt_structure_new/str_timint_basedataio.H"
 #include "../drt_structure_new/str_timint_basedataio_runtime_vtp_output.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 

@@ -25,7 +25,7 @@
 // Todo check and get rid of outdated header inclusions
 #include "../drt_inpar/inpar_beamcontact.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "beam_contact_params.H"

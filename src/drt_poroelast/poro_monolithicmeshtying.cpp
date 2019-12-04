@@ -28,7 +28,7 @@
 
 #include "../drt_structure/stru_aux.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 

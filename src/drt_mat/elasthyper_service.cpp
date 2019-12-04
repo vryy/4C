@@ -13,6 +13,7 @@
 #include "elasthyper_service.H"
 #include "material_service.H"
 #include "../headers/definitions.h"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 
 #include "../drt_lib/voigt_notation.H"
 

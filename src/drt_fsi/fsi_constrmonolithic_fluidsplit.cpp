@@ -24,7 +24,7 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_structure/stru_aux.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"

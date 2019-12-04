@@ -27,7 +27,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::InitialGuess::InitialGuess(const Teuchos::ParameterList& invp)

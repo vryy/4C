@@ -20,7 +20,7 @@
 
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_utils_rebalancing.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
