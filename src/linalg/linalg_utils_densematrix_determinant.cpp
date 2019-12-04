@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file linalg_utils_densematrix_determinant.cpp
 
 \brief Determinant functions for dense matrices up to 4x4 and LU determinant
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils_densematrix_determinant.H"

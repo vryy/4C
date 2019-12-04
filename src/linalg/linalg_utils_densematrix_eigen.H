@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
- * \file linalg_utils_densematrix_eigen.H
 
 \brief A collection of eigenvalue methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_
 #define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_

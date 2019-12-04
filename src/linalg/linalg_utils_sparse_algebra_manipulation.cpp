@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
- * \file linalg_utils_sparse_algebra_manipulation.cpp
 
-\brief A collection of dense matrix manipulation methods for namespace LINALG
+\brief A collection of sparse matrix manipulation methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils_sparse_algebra_manipulation.H"

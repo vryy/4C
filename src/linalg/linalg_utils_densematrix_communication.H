@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file linalg_utils_densematrix_communication.H
 
 \brief A collection of communication methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H_
 #define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H_

@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file linalg_utils_densematrix_inverse.H
 
 \brief Inverse dense matrices up to 4x4 and other inverse methods.
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define LINALG_UTILS_DENSEMATRIX_INVERSE_H
 

@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
- * \file linalg_utils_sparse_algebra_manipulation.H
 
-\brief A collection of dense matrix manipulation methods for namespace LINALG
+\brief A collection of sparse matrix manipulation methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H_
 #define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H_

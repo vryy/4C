@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-* \file linalg_utils_sparse_algebra_assemble.H
 
 \brief A collection of algebraic assemble methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H_
 #define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H_

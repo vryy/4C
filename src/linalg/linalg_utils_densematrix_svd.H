@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-* \file linalg_utils_densematrix_svd.H
 
 \brief A collection of singular value decomposition (SVD) methods for namespace LINALG
 
 \level 0
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_SVD_H_
 #define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_SVD_H_
