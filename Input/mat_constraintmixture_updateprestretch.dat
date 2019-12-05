@@ -32,7 +32,7 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
-WRITE_INITIAL_STATE				No
+WRITE_INITIAL_STATE             No
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         Yes
 REMODEL                         No

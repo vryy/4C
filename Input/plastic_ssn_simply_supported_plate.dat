@@ -31,7 +31,7 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
-WRITE_INITIAL_STATE				No
+WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

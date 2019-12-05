@@ -31,7 +31,7 @@ STRUCT_STRESS                   No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-WRITE_INITIAL_STATE				No
+WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
