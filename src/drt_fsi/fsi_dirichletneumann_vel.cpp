@@ -100,7 +100,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
   FSI::Partitioned::StructOp(iforce, fillFlag);
 
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
-  if (!(DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") == INPAR::FBI::BeamToFluidCoupling::fluid))
+  if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
+          INPAR::FBI::BeamToFluidCoupling::fluid))
   {
     if (not use_old_structure_)
       StructureField()->ApplyInterfaceForces(iforce);
