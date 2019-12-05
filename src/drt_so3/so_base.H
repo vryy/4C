@@ -243,7 +243,7 @@ namespace DRT
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
 
       //! Flag of the status of the material post setup routine
-      bool material_post_setup;
+      bool material_post_setup_;
 
      private:
       /*!

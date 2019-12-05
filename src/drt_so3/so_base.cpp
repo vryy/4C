@@ -23,7 +23,7 @@ DRT::ELEMENTS::So_base::So_base(int id, int owner)
     : DRT::Element(id, owner),
       kintype_(INPAR::STR::kinem_vague),
       interface_ptr_(Teuchos::null),
-      material_post_setup(false)
+      material_post_setup_(false)
 {
   return;
 }
@@ -36,7 +36,7 @@ DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
     : DRT::Element(old),
       kintype_(old.kintype_),
       interface_ptr_(old.interface_ptr_),
-      material_post_setup(false)
+      material_post_setup_(false)
 {
   return;
 }
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, kintype_);
 
   // material post setup routine
-  AddtoPack(data, static_cast<const int>(material_post_setup));
+  AddtoPack(data, static_cast<const int>(material_post_setup_));
 }
 
 
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
   // material post setup routine
-  material_post_setup = (ExtractInt(position, data) != 0);
+  material_post_setup_ = (ExtractInt(position, data) != 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::Para
 // Check, whether the material post setup routine was
 void DRT::ELEMENTS::So_base::EnsureMaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (!material_post_setup)
+  if (!material_post_setup_)
   {
     MaterialPostSetup(params);
   }
@@ -164,5 +164,5 @@ void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
   SolidMaterial()->PostSetup(params);
-  material_post_setup = true;
+  material_post_setup_ = true;
 }

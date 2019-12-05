@@ -69,7 +69,7 @@ void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp)
 
   // As we now know the number of Gauss points, we can resize the fiber_ vector
   fibers_.resize(numgp);
-  for (long gp = 0; gp < numgp; ++gp)
+  for (std::vector<std::vector<LINALG::Matrix<3, 1>>>::size_type gp = 0; gp < numgp; ++gp)
   {
     fibers_[gp].resize(number_fibers_);
   }
@@ -102,7 +102,7 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* line
       ReadAnisotropyFiber(linedef, "CIR", dir_cir);
 
       // Build local coordinate system
-      for (int i = 0; i < 3; ++i)
+      for (unsigned i = 0; i < 3; ++i)
       {
         locsys(i, 0) = dir_rad(i);
         locsys(i, 1) = dir_axi(i);
@@ -159,14 +159,14 @@ void MAT::Anisotropy::ReadAnisotropyFiber(
   linedef->ExtractDoubleVector(std::move(specifier), fiber);
   double f1norm = 0.;
   // normalization
-  for (int i = 0; i < 3; ++i)
+  for (std::vector<double>::size_type i = 0; i < 3; ++i)
   {
     f1norm += fiber[i] * fiber[i];
   }
   f1norm = sqrt(f1norm);
 
   // fill final fiber vector
-  for (int i = 0; i < 3; ++i)
+  for (std::vector<double>::size_type i = 0; i < 3; ++i)
   {
     fiber_vector(i) = fiber[i] / f1norm;
   }
@@ -230,7 +230,7 @@ void MAT::Anisotropy::SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>&
   }
 
   // Store fibers
-  for (unsigned i = 0; i < number_fibers_; ++i)
+  for (std::vector<LINALG::Matrix<3, 1>>::size_type i = 0; i < number_fibers_; ++i)
   {
     fibers_[gp][i].Update(fibers[i]);
   }
@@ -249,10 +249,10 @@ void MAT::Anisotropy::ComputeStructuralTensors_stress()
   }
 
   structuralTensors_stress_.resize(fibers_.size());
-  for (unsigned long gp = 0; gp < fibers_.size(); ++gp)
+  for (std::vector<std::vector<LINALG::Matrix<3, 1>>>::size_type gp = 0; gp < fibers_.size(); ++gp)
   {
     structuralTensors_stress_[gp].resize(fibers_[gp].size());
-    for (unsigned long i = 0; i < fibers_[gp].size(); ++i)
+    for (std::vector<LINALG::Matrix<3, 1>>::size_type i = 0; i < fibers_[gp].size(); ++i)
     {
       LINALG::Matrix<6, 1> A_stress(false);
       structuralTensorStrategy_->SetupStructuralTensor(fibers_[gp][i], A_stress);
@@ -271,10 +271,10 @@ void MAT::Anisotropy::ComputeStructuralTensors()
   }
 
   structuralTensors_.resize(fibers_.size());
-  for (unsigned long gp = 0; gp < fibers_.size(); ++gp)
+  for (std::vector<std::vector<LINALG::Matrix<3, 1>>>::size_type gp = 0; gp < fibers_.size(); ++gp)
   {
     structuralTensors_[gp].resize(fibers_[gp].size());
-    for (unsigned long i = 0; i < fibers_[gp].size(); ++i)
+    for (std::vector<LINALG::Matrix<3, 1>>::size_type i = 0; i < fibers_[gp].size(); ++i)
     {
       LINALG::Matrix<6, 1> A_stress(false);
       LINALG::Matrix<3, 3> A(false);

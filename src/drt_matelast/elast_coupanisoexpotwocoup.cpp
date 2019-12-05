@@ -95,12 +95,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
   LINALG::Matrix<6, 1> A1A2 = A1A2_[gp];
   double a1a2 = a1a2_[gp];
 
-  double I4;
-  I4 = A1(0) * rcg(0) + A1(1) * rcg(1) + A1(2) * rcg(2) + A1(3) * rcg(3) + A1(4) * rcg(4) +
-       A1(5) * rcg(5);
-  double I6;
-  I6 = A2(0) * rcg(0) + A2(1) * rcg(1) + A2(2) * rcg(2) + A2(3) * rcg(3) + A2(4) * rcg(4) +
-       A2(5) * rcg(5);
+  double I4 = A1.Dot(rcg);
+  double I6 = A2.Dot(rcg);
   double I8;
   I8 = A1A2(0) * rcg(0) + A1A2(1) * rcg(1) + A1A2(2) * rcg(2) + A1A2(3) * rcg(3) +
        A1A2(4) * rcg(4) + A1A2(5) * rcg(5);
