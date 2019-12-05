@@ -15,7 +15,7 @@
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_io/io.H"
 

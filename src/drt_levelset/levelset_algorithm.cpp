@@ -21,7 +21,7 @@
 
 #include "../drt_scatra/scatra_resulttest.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"

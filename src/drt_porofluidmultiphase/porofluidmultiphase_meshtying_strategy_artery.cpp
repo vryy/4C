@@ -17,6 +17,7 @@
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 
 #include "../drt_io/io.H"

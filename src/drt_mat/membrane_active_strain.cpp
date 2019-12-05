@@ -18,7 +18,7 @@
 #include "membrane_active_strain.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "membrane_elasthyper.H"
 
 /*----------------------------------------------------------------------*

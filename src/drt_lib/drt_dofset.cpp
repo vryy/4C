@@ -19,7 +19,7 @@
 #include "drt_discret_hdg.H"
 #include "drt_utils.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_FECrsGraph.h>
 #include <Ifpack_Graph_Epetra_CrsGraph.h>

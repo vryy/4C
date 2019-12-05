@@ -15,7 +15,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 

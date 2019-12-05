@@ -15,7 +15,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_mat/thermoplastichyperelast.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

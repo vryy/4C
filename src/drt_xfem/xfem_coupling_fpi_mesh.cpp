@@ -26,7 +26,8 @@ xfluid class and the cut-library
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"

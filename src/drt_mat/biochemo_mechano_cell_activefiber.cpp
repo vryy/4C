@@ -15,7 +15,7 @@
 
 #include "../drt_io/io_control.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_svd.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 

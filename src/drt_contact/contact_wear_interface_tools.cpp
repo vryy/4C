@@ -20,7 +20,7 @@
 #include "../drt_mortar/mortar_dofset.H"
 #include "../drt_mortar/mortar_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_io/io_control.H"
 

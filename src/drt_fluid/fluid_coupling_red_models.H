@@ -23,7 +23,7 @@ problem
 
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
 #include "../drt_io/io.H"

@@ -14,10 +14,10 @@
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_base.H"
 #include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
 
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 

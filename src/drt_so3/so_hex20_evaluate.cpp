@@ -11,7 +11,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/so3_material.H"

@@ -14,7 +14,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
 DRT::ELEMENTS::DiscSh3Type DRT::ELEMENTS::DiscSh3Type::instance_;

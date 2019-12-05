@@ -21,7 +21,7 @@
 
 #include "../linalg/linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "solver_mlpreconditioner.H"
 

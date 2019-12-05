@@ -332,7 +332,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::LogNormalRadiusDistribution),
       &particledyndem);
 
-  DoubleParameter("RADIUSDISTRIBUTION_VAR", -1.0, "variance of random particle radius distribution",
+  DoubleParameter("RADIUSDISTRIBUTION_SIGMA", -1.0, "sigma of random particle radius distribution",
       &particledyndem);
 
   DoubleParameter("REL_PENETRATION", -1.0, "maximum allowed relative penetration", &particledyndem);

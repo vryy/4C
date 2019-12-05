@@ -17,7 +17,7 @@
 #include "acou_impl.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  |                                                       schoeder 01/14 |

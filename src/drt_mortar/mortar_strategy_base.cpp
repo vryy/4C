@@ -13,7 +13,7 @@
 #include "Epetra_SerialComm.h"
 #include "mortar_strategy_base.H"
 #include "mortar_defines.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_mortar.H"

@@ -12,7 +12,7 @@
 
 #include "xstr_xstructure_state.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 #include "../drt_xfem/xfield_state_utils.H"
 

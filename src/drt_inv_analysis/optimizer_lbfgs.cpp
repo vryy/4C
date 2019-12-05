@@ -15,7 +15,7 @@
 #include "DcsMatrix.H"
 #include "objective_funct.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "invana_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

@@ -33,7 +33,7 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_ale_fsi.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"

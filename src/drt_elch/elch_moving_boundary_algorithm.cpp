@@ -16,7 +16,7 @@
 #include "elch_moving_boundary_algorithm.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
 
 #include "../drt_scatra/scatra_timint_elch.H"

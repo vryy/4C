@@ -23,7 +23,7 @@
 #include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
 

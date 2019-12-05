@@ -21,7 +21,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|

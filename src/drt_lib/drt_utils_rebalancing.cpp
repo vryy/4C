@@ -12,7 +12,8 @@
 
 #include "drt_utils_rebalancing.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_Time.h>
 

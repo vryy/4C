@@ -13,7 +13,7 @@
 #include "turbulent_flow_algorithm.H"
 #include "../drt_fluid/fluid_discret_extractor.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_lib/drt_dserror.H"
 #include <Teuchos_TimeMonitor.hpp>
 

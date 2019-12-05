@@ -18,7 +18,7 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "elasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"

@@ -13,7 +13,7 @@
 #include "beam_contact_pair.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 

@@ -20,7 +20,7 @@
 #include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_io/io_gmsh.H"

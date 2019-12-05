@@ -18,7 +18,7 @@
 #include "../drt_fluid_turbulence/boxfilter.H"
 #include "../drt_fluid/fluid_utils.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"

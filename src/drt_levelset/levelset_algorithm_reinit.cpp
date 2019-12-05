@@ -25,7 +25,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_io/io_gmsh.H"

@@ -1,0 +1,53 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+RESTART                         0
+--------------------------------------------------------------------------IO
+STDOUTEVRY                      200
+VERBOSITY                       standard
+------------------------------------------------------------BINNING STRATEGY
+BIN_SIZE_LOWER_BOUND            0.025
+PERIODICONOFF                   0 0 0
+DOMAINBOUNDINGBOX               -0.05 -0.01 -0.01 0.05 0.01 0.01
+WRITEBINS                       none
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      VelocityVerlet
+INTERACTION                     DEM
+RESULTSEVRY                     0
+RESTARTEVRY                     0
+OUTPUT_DATA_FORMAT              Binary
+WRITE_GHOSTED_PARTICLES         no
+TIMESTEP                        0.001
+NUMSTEP                         1
+MAXTIME                         1
+TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0
+PHASE_TO_MATERIAL_ID            phase1 1
+--------------------------------------------------------PARTICLE DYNAMIC/DEM
+NORMALCONTACTLAW                NormalLinearSpring
+MIN_RADIUS                      0.008
+MAX_RADIUS                      0.012
+INITIAL_RADIUS                  NormalRadiusDistribution
+RADIUSDISTRIBUTION_SIGMA        8.0e-4
+MAX_VELOCITY                    3.0e-2
+NORMAL_STIFF                    3.5e-5
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 5.0e-3
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE ID 0 QUANTITY radius VALUE 1.18279435685529500e-02 TOLERANCE 1.0e-12
+PARTICLE ID 1 QUANTITY radius VALUE 9.46509829915532369e-03 TOLERANCE 1.0e-12
+PARTICLE ID 2 QUANTITY radius VALUE 1.00054454548421049e-02 TOLERANCE 1.0e-12
+PARTICLE ID 3 QUANTITY radius VALUE 1.02096876857640951e-02 TOLERANCE 1.0e-12
+-------------------------------------------------------------------PARTICLES
+TYPE phase1 POS -0.045 0.0 0.0
+TYPE phase1 POS -0.015 0.0 0.0
+TYPE phase1 POS 0.015 0.0 0.0
+TYPE phase1 POS 0.045 0.0 0.0
+-------------------------------------------------------------------------END

@@ -17,7 +17,7 @@
 #include "fluid_meshtying.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_io/io.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 
 /*----------------------------------------------------------------------*

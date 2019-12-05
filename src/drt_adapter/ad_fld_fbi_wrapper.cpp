@@ -11,7 +11,6 @@
 #include "ad_fld_fbi_wrapper.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils.H"
 #include <Teuchos_RCP.hpp>
 
 /*======================================================================*/

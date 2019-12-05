@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"

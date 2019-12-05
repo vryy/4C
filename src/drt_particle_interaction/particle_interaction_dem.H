@@ -42,6 +42,7 @@ namespace PARTICLEINTERACTION
    *
    * \author Sebastian Fuchs \date 05/2018
    */
+
   class ParticleInteractionDEM final : public ParticleInteractionBase
   {
    public:

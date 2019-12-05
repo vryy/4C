@@ -13,7 +13,7 @@
 
 #include "drt_inputreader.H"
 #include "drt_linedefinition.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "standardtypes_cpp.H"
 #include "drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"

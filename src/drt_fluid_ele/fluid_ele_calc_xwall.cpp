@@ -31,7 +31,7 @@
 
 #include "../drt_lib/drt_discret.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 
 
 /*-----------------------------------------------------------------------------*

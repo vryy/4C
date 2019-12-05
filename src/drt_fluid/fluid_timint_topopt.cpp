@@ -17,7 +17,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/optimization_density.H"
 #include "../drt_io/io.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

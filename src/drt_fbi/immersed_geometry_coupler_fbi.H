@@ -10,10 +10,17 @@
 #ifndef GEOMETRYCOUPLER_FBI_H
 #define GEOMETRYCOUPLER_FBI_H
 
+#include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>
 #include <map>
 #include <vector>
 #include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+
+namespace ADAPTER
+{
+  class ConstraintEnforcerFactory;
+}
 
 namespace DRT
 {
@@ -25,10 +32,6 @@ namespace GEO
   class SearchTree;
 }
 
-namespace ADAPTER
-{
-  class ConstraintEnforcerFactory;
-}
 namespace FBI
 {
   /**

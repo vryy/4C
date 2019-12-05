@@ -17,7 +17,7 @@
 
 #include "drt_globalproblem.H"
 #include "drt_condition_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include <numeric>
 #include <algorithm>

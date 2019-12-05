@@ -48,6 +48,8 @@
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

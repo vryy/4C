@@ -15,7 +15,7 @@ fluid-beam interaction)
 #include "constraintenforcer_fbi.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_adapter/ad_fld_moving_boundary.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*/

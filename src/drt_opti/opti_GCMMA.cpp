@@ -21,7 +21,7 @@
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../headers/definitions.h"
 #include <Epetra_SerialDenseSolver.h>
 #include <stdio.h>

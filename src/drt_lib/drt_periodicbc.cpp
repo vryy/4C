@@ -22,7 +22,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_dofset_pbc.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 

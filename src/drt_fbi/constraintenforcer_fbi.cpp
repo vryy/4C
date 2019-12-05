@@ -29,7 +29,8 @@ interaction.
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret_faces.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <iostream>
 
@@ -240,7 +241,7 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   BEAMINTERACTION::UTILS::GetCurrentElementDis(
       *(fluid_->Discretization()), elements[1], column_fluid_velocity_, vel_tmp);
 
-  // todo This is a very crude way to seperate the pressure from the velocity dofs.. maybe just
+  // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just
   // use a extractor?
   for (unsigned int i = 0; i < vel_tmp.size(); i++)
   {

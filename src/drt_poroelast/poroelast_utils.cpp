@@ -57,7 +57,7 @@
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 
 /*----------------------------------------------------------------------*

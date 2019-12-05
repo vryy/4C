@@ -31,7 +31,7 @@ with condensed structure interface displacements
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"

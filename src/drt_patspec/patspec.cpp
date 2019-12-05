@@ -14,7 +14,9 @@
 #include "patspec.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/elasthyper.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
 #include "../drt_io/io_pstream.H"  // has to go before io.H

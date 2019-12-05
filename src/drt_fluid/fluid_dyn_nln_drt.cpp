@@ -26,7 +26,7 @@
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_fluid_turbulence/turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:

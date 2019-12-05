@@ -22,7 +22,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 
 

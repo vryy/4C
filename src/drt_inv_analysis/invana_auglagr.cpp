@@ -37,7 +37,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_parobject.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_inpar/drt_validparameters.H"
 

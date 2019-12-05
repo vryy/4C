@@ -21,7 +21,7 @@
 
 #include <NOX_StatusTest_NormF.H>
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../solver/solver_aztecoo_conditionnumber.H"
 #include <az_aztec_defs.h>
 

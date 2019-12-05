@@ -72,6 +72,7 @@ namespace INPAR
       m_consolidation,            ///< material providing a general interface for consolidation
       m_constraintmixture,        ///< growth and remodeling of arteries
       m_crosslinkermat,           ///< material for crosslinker in biopolymer networks
+      m_crystplast,               ///< crystal plasticity
       m_elasthyper,               ///< collection of hyperelastic materials
       m_elchmat,                  ///< material for porous separators
       m_elchphase,                ///< material for porous phase inside porous separator

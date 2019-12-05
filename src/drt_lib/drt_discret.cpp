@@ -15,7 +15,7 @@
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "drt_dofset_proxy.H"
 #include "drt_dofset_pbc.H"
 

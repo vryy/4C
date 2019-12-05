@@ -12,7 +12,7 @@
 #include "contact_aug_lagrange_strategy.H"
 #include "contact_aug_lagrange_interface.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_lib/epetra_utils.H"
 
 /*----------------------------------------------------------------------------*

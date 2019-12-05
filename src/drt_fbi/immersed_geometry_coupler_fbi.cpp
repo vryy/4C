@@ -18,7 +18,8 @@ The current implementation does not scale at all!
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 /*----------------------------------------------------------------------*/
 

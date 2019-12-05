@@ -21,6 +21,10 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 namespace ADAPTER
 {
   /**

@@ -20,7 +20,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "../drt_adapter/adapter_coupling.H"
 
 // LINALG includes
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 // FLUID includes
 #include "../drt_fluid/fluid_utils_mapextractor.H"

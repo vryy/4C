@@ -18,7 +18,8 @@ xfluid class and the cut-library
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 namespace GEO
 {

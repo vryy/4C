@@ -17,7 +17,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_element_integration_select.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
