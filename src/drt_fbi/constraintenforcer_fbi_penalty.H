@@ -59,8 +59,8 @@ namespace ADAPTER
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
-     * \params[in] bridge an object managing the pair contributins
-     * \params[in] geometrycoupler an object managing the search, parallel communication, ect.
+     * \param[in] bridge an object managing the pair contributins
+     * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
      */
 
     FBIPenaltyConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,

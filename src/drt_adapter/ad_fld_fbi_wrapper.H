@@ -41,13 +41,14 @@ namespace ADAPTER
         Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
-    /** \brief Here additional contributions to the system matrix can be set
+    /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
-     * contributions can be added here and will be assembled into the system matrix
+     * contributions can be handed to the fluid, which will store the pointer on the coupling
+     * contributions to assemble them into the system matrix in each Newton iteration.
      *
-     * \params[in] matrix fluid_dof x fluid_dof matrix containing weak dirichlet entries that need
-     * to be assembled into the overall fluid system matrix
+     * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
+     * need to be assembled into the overall fluid system matrix
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
   };

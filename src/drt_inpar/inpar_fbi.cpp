@@ -42,7 +42,7 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &fbi);
 
   setStringToIntegralParameter<BeamToFluidDiscretization>("MESHTYING_DISCRETIZATION", "none",
-      "Type of employed contact discretization",
+      "Type of employed meshtying discretization",
       tuple<std::string>("none", "gauss_point_to_segment"),
       tuple<FBI::BeamToFluidDiscretization>(
           BeamToFluidDiscretization::none, BeamToFluidDiscretization::gauss_point_to_segment),
@@ -86,7 +86,7 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &beam_to_fluid_meshtying_vtk);
 
   setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
-      "Enable / disable output of used integration points. If the contact method has 'forces' at "
+      "Enable / disable output of used integration points. If the meshtying method has 'forces' at "
       "the integration point, they will also be output.",
       yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
 

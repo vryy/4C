@@ -53,7 +53,7 @@ namespace FSI
      * once at the start simulation, but need information which are not available during setup in
      * the case of a restart.
      *
-     *  \params[in] interface Our interface to NOX
+     *  \param[in] interface Our interface to NOX
      */
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface) override;
 
@@ -99,7 +99,7 @@ namespace FSI
     /**
      * \brief In here all coupling related quantities are given to the fluid solver
      *
-     * \params[in] iv In our case, the input parameter is not used!
+     * \param[in] iv In our case, the input parameter is not used!
      * \returns ivel The fluid velocity on the (whole) fluid domain
      */
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
@@ -107,7 +107,7 @@ namespace FSI
     /**
      * \brief In here all coupling related quantities are aassembled for the structure solver
      *
-     * \params[in] iv In our case, the input parameter is not used!
+     * \param[in] iv In our case, the input parameter is not used!
      * \returns iforce The fsi force acting on the structure
      */
 

@@ -35,7 +35,7 @@ namespace GEO
 namespace FBI
 {
   /**
-   * \brief Class to encapsule all generic geometric and parallelism related functionality in order
+   * \brief Class to wrap all generic geometric and parallelism related functionality in order
    * to simulate a beam immersed in fluid
    */
   class FBIGeometryCoupler
@@ -46,22 +46,38 @@ namespace FBI
     /// empty destructor
     virtual ~FBIGeometryCoupler(){};
 
-    /// Setup the Geoemtry object
+    /** \brief Setup the Geoemtry object
+     *
+     * \param[in] discretizations vector containing the structure and fluid discretization
+     */
     virtual void Setup(Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>>);
 
+    /**
+     * \brief Performs the search to find possible beam-fluid element pairs
+     *
+     * Each fluid processor checks for every beam element if it is embedded in one of its fluid
+     * elements. The search is implemented via a searchtree.
+     *
+     * \param[in] discretizations vector containing the structure and fluid discretization
+     * respectively
+     * \param[in] column_structure_displacement vector containing the structure displacements for
+     * all column nodes
+     *
+     * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
+     */
     virtual Teuchos::RCP<std::map<int, std::vector<int>>> Search(
         Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations,
-        Teuchos::RCP<const Epetra_Vector>& column_structure_displacement,
-        Teuchos::RCP<const Epetra_Vector>& column_structure_velocity,
-        Teuchos::RCP<const Epetra_Vector>& column_fluid_velocity);
+        Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
 
     /**
      * \brief Ghosts ALL beams to all processors in order to do the search
      *
+     *\param[in, out] discretization structure discretization
+     *
      * \note For now we assume that we only have beam elements in the structure discretization
      */
 
-    virtual void ExtendBeamGhosting(Teuchos::RCP<DRT::Discretization> discretizations);
+    virtual void ExtendBeamGhosting(Teuchos::RCP<DRT::Discretization> discretization);
 
     /**
      * \brief Handles the parallel communication necessary to create the beam-fluid pairs
@@ -72,8 +88,10 @@ namespace FBI
      * element ( who ensures uniqueness of the beam segments). This becomes obsolete as soon as the
      * geoemtry pair is adapted to handle the communication of the tracking data instead.
      *
-     * \params[in] pairids  a map containing a map relating all beam element ids to a set of fluid
-     * elements ids which they potentially cut
+     * \param[in] discretizations vector containing the structure and fluid discretizations
+     * respectively
+     * \param[in] pairids  a map containing a map relating all beam element ids to a set
+     * of fluid elements ids which they potentially cut
      */
     virtual void PreparePairCreation(
         Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations,
@@ -84,12 +102,19 @@ namespace FBI
     /**
      * \brief Computes the reference nodal positions needed for the search
      *
+     * \param[in] dis field dicretization from which to extract the positions
+     * \param[in, out] positions map relating the node IDs to reference positions
+     *
      */
     virtual void ComputeFixedPositions(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions) const;
 
     /**
      * \brief Computes the reference current positions needed for the search
+     *
+     * \param[in] dis field dicretization from which to extract the positions
+     * \param[in, out] positions map relating the node IDs to reference positions
+     * \param[in] disp current displacements
      */
     virtual void ComputeCurrentPositions(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,

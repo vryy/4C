@@ -35,8 +35,8 @@ namespace ADAPTER
   class FBIConstraintBridgePenalty : public FBIConstraintBridge
   {
     friend class ConstraintEnforcerFactory;
-    friend class FBIPenaltyConstraintenforcer;                          // todo why?
-    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;  // todo why?
+    friend class FBIPenaltyConstraintenforcer;
+    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
     friend class FBIConstraintenforcer;
 
    public:
@@ -53,7 +53,7 @@ namespace ADAPTER
      *
      * This is where the magic happens. The global meshtying contributions are integrated using
      * information of the beam elements, the fluid elements and their position relative to each
-     * other. Depending on
+     * other.
      *
      */
 

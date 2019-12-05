@@ -33,8 +33,8 @@ namespace BEAMINTERACTION
   /**
    * \brief Class representing a pair of elements for beam to fluid meshtying
    *
-   * \params[in] beam Type from GEOMETRYPAIR::ElementDiscretization representing the beam.
-   * \params[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
+   * \param[in] beam Type from GEOMETRYPAIR::ElementDiscretization representing the beam.
+   * \param[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
    */
   template <typename beam, typename fluid>
   class BeamToFluidMeshtyingPairBase

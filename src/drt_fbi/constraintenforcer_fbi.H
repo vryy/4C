@@ -70,6 +70,8 @@ namespace ADAPTER
     /**
      * \brief Sets up the constraint enforcer
      *
+     *\param[in] structure wrapper for the structure solver
+     *\param[in] fluid moving boundary wrapper for the fluid solver
      */
     virtual void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
         Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid);
@@ -145,8 +147,8 @@ namespace ADAPTER
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
-     * \params[in] bridge an object managing the pair contributins
-     * \params[in] geometrycoupler an object managing the search, parallel communication, ect.
+     * \param[in] bridge an object managing the pair contributins
+     * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
      */
     FBIConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
         Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler);
@@ -154,7 +156,7 @@ namespace ADAPTER
     /**
      * \brief Creates all possible interaction pairs
      *
-     * \params[in] pairids a map relating all beam element ids to a set of fluid
+     * \param[in] pairids a map relating all beam element ids to a set of fluid
      * elements ids which they potentially cut
      */
     virtual void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
@@ -204,7 +206,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force vector
+     * \returns f force vector acting on structure
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const
     {
@@ -218,7 +220,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force vector
+     * \returns f force vector acting on fluid
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const
     {
@@ -242,13 +244,6 @@ namespace ADAPTER
      * \brief Object bridging the gap between the specific implementation of the constraint
      * enforcement technique and the specific implementation of the meshtying discretization
      * approach
-     *
-     * The ConstraintBridge connects the constraint enforcement technique with the
-     * discretization approach. It does all the work. The correct matrices are computed and stored
-     * in here. Depending on the constraint enforcement strategy, different constraint bridges will
-     * be created in the ConstraintEnforcerFactory. This class serves as an interface to keep the
-     * constraint enforcement technique (penalty, lagrange, ...) separate from the discretization
-     * approach (GPTS, Mortar, ...)
      */
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge_;
 

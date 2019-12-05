@@ -970,7 +970,7 @@ namespace FLD
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
      * contributions can be added here and will be assembled into the system matrix
      *
-     * \params[in] matrix fluid_dof x fluid_dof linear matrix containing entries that need
+     * \param[in] matrix (size fluid_dof x fluid_dof) linear matrix containing entries that need
      * to be assembled into the overall fluid system matrix
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);

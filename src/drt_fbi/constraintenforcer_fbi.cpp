@@ -99,9 +99,8 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
   // Do the search in the geometrycoupler_ and return the possible pair ids
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids = geometrycoupler_->Search(discretizations_,
-      column_structure_displacement_, column_structure_velocity_,
-      column_fluid_velocity_);  // todo make this a vector? At some point we probably need the ale
-                                // displacements as well
+      column_structure_displacement_);  // todo make this a vector? At some point we probably need
+                                        // the ale displacements as well
 
   // For now we need to separate the pair creation from the search, since the search takes place
   // on the fluid elements owner, while (for now) the pair has to be created on the beam element

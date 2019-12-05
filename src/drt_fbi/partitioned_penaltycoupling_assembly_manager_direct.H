@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
      public:
       /**
        * \brief Constructor.
-       * \params[in] assembly_contact_elepairs Vector with element pairs to be evaluated by this
+       * \param[in] assembly_contact_elepairs Vector with element pairs to be evaluated by this
        * class.
        */
       PartitionedBeamInteractionAssemblyManagerDirect(
@@ -47,8 +47,8 @@ namespace BEAMINTERACTION
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
-       * \params[in] fluid_dis (in) Pointer to the fluid disretization
-       * \params[in] solid_dis (in) Pointer to the solid disretization
+       * \param[in] fluid_dis (in) Pointer to the fluid disretization
+       * \param[in] solid_dis (in) Pointer to the solid disretization
        * \params[inout] ff Global force vector acting on the fluid
        * \params[inout] fb Global force vector acting on the beam
        * \params[inout] cff  Global stiffness matrix coupling fluid to fluid DOFs

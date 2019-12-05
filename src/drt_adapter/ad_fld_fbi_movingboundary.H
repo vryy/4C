@@ -113,7 +113,7 @@ namespace ADAPTER
     /// create the testing of fields
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    /// Get velocity ate tiemstep n
+    /// Get velocity at timestep n
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
 
     /// Get velocity at timestep n+1
@@ -122,13 +122,22 @@ namespace ADAPTER
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
-     * contributions can be added here and will be assembled into the system matrix
+     * contributions can be handed to the fluid, which will store the pointer on the coupling
+     * contributions to assemble them into the system matrix in each Newton iteration.
      *
-     * \params[in] matrix fluid_dof x fluid_dof matrix containing weak dirichlet entries that need
-     * to be assembled into the overall fluid system matrix
+     * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
+     * need to be assembled into the overall fluid system matrix
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
 
+    /**
+     * \brief Pass additional contributions to the fluid residual to the fluid class
+     *
+     * \param[in] iforce contribution to the fluid residual
+     *
+     * \param[in] ivel unused in this implementation     *
+     *
+     */
     void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) override;
 

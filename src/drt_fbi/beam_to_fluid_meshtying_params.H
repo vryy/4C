@@ -25,6 +25,9 @@ namespace INPAR
 }  // namespace INPAR
 namespace FBI
 {
+  /**
+   * \brief class containing all relevant parameters for beam to fluid meshtying
+   */
   class BeamToFluidMeshtyingVtkOutputParams;
 
   /**

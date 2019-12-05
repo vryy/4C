@@ -35,11 +35,11 @@ namespace INPAR
   namespace FBI
   {
     /// Coupling of the Fluid and the beam problems
-    enum BeamToFluidCoupling
+    enum class BeamToFluidCoupling
     {
-      fluid,
-      solid,
-      twoway
+      fluid,  //< Coupling on the fluid partition, while the beam is not influenced
+      solid,  //< Coupling on the structure partition, while the fluid is not influenced
+      twoway  //< Full two-way FBI coupling
     };
     /// Constraint enforcement for beam to fluid meshtying.
     enum class BeamToFluidConstraintEnforcement
@@ -55,10 +55,6 @@ namespace INPAR
     {
       none,                    //< Default value
       gauss_point_to_segment,  //< Gauss point to segment approach
-      //! Gauss point on cross section method.
-      //      gauss_point_cross_section,
-      //! Mortar type coupling.
-      //      mortar
     };
 
     //! Map number of gauss points to 1D gauss rule
