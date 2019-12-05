@@ -622,9 +622,9 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
         std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector>& ff, Teuchos::RCP<Epetra_FEVector>& fb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cff, Teuchos::RCP<LINALG::SparseMatrix>& cbb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cfb, Teuchos::RCP<LINALG::SparseMatrix>& cbf)
+        Teuchos::RCP<Epetra_FEVector>& f2, Teuchos::RCP<Epetra_FEVector>& f1,
+        Teuchos::RCP<LINALG::SparseMatrix>& c22, Teuchos::RCP<LINALG::SparseMatrix>& c11,
+        Teuchos::RCP<LINALG::SparseMatrix>& c21, Teuchos::RCP<LINALG::SparseMatrix>& c12)
     {
       if (discretizations->size() < 2)
       {
@@ -649,31 +649,31 @@ namespace BEAMINTERACTION
       ele2->LocationVector(*(*discretizations)[1], lmrow2, lmrowowner2, lmstride);
 
       // assemble both element vectors into global system vector
-      if (fb != Teuchos::null)
+      if (f1 != Teuchos::null)
       {
-        fb->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
+        f1->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
       }
-      if (ff != Teuchos::null)
+      if (f2 != Teuchos::null)
       {
-        ff->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+        f2->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
       }
 
       // and finally also assemble stiffness contributions
-      if (cbb != Teuchos::null)
+      if (c11 != Teuchos::null)
       {
-        cbb->FEAssemble(elemat[0][0], lmrow1, lmrow1);
+        c11->FEAssemble(elemat[0][0], lmrow1, lmrow1);
       }
-      if (cbf != Teuchos::null)
+      if (c12 != Teuchos::null)
       {
-        cbf->FEAssemble(elemat[0][1], lmrow1, lmrow2);
+        c12->FEAssemble(elemat[0][1], lmrow1, lmrow2);
       }
-      if (cfb != Teuchos::null)
+      if (c21 != Teuchos::null)
       {
-        cfb->FEAssemble(elemat[1][0], lmrow2, lmrow1);
+        c21->FEAssemble(elemat[1][0], lmrow2, lmrow1);
       }
-      if (cff != Teuchos::null)
+      if (c22 != Teuchos::null)
       {
-        cff->FEAssemble(elemat[1][1], lmrow2, lmrow2);
+        c22->FEAssemble(elemat[1][1], lmrow2, lmrow2);
       }
     }
     /*----------------------------------------------------------------------------*

@@ -229,9 +229,9 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
         std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector>& ff, Teuchos::RCP<Epetra_FEVector>& fb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cff, Teuchos::RCP<LINALG::SparseMatrix>& cbb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cfb, Teuchos::RCP<LINALG::SparseMatrix>& cbf);
+        Teuchos::RCP<Epetra_FEVector>& f2, Teuchos::RCP<Epetra_FEVector>& f1,
+        Teuchos::RCP<LINALG::SparseMatrix>& c22, Teuchos::RCP<LINALG::SparseMatrix>& c11,
+        Teuchos::RCP<LINALG::SparseMatrix>& c21, Teuchos::RCP<LINALG::SparseMatrix>& c12);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
