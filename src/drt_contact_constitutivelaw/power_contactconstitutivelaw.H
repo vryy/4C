@@ -29,7 +29,7 @@ namespace CONTACT
     {
      public:
       /** \brief standard constructor
-       * \params[in] container containing the law parameter from the input file
+       * \param[in] container containing the law parameter from the input file
        */
       PowerConstitutiveLawParams(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);

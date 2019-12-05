@@ -56,7 +56,7 @@ namespace CONTACT
       static Teuchos::RCP<ConstitutiveLaw> Factory(const int id);
 
       /* \brief create Contact Constitutivelaw object given input information for the constitutive
-       * law \params[in] Container holding the Coefficients for the Contact ConstitutiveLaw
+       * law \param[in] Container holding the Coefficients for the Contact ConstitutiveLaw
        */
       static Teuchos::RCP<ConstitutiveLaw> Factory(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);

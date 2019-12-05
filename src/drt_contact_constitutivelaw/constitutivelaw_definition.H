@@ -60,9 +60,9 @@ namespace CONTACT
       /**
        * \brief default constructor
        *
-       * \params[in] name name of contact constitutive law
-       * \params[in] description of contact constitutive law type
-       * \params[in] type of contact constitutive law to be built
+       * \param[in] name name of contact constitutive law
+       * \param[in] description of contact constitutive law type
+       * \param[in] type of contact constitutive law to be built
        */
       LawDefinition(std::string name, std::string description,
           INPAR::CONTACT::ConstitutiveLawType contactconstitutivelawlawtype);
@@ -72,14 +72,14 @@ namespace CONTACT
 
       /** add a concrete component to the contact constitutive law line definition
        *
-       * \params[in] c new component needed as parameter for the contact constitutive law
+       * \param[in] c new component needed as parameter for the contact constitutive law
        */
       void AddComponent(Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent> c);
 
       /** \brief read all materials from my input file section
        *
-       * \params[in] problem global problem instance that manages the input
-       * \params[in] reader the actual dat file reader that has access to the dat file
+       * \param[in] problem global problem instance that manages the input
+       * \param[in] reader the actual dat file reader that has access to the dat file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
       void Read(const DRT::Problem& problem, DRT::INPUT::DatFileReader& reader,
@@ -126,8 +126,8 @@ namespace CONTACT
      public:
       /**
        * \brief Constructor
-       * \params[in] name  name of the parameter
-       * \params[in] optional true if the parameter is optional
+       * \param[in] name  name of the parameter
+       * \param[in] optional true if the parameter is optional
        */
       explicit ContactConstitutiveLawComponent(std::string name, bool optional = false);
 
@@ -156,8 +156,8 @@ namespace CONTACT
        * \brief read my part of the the contact constitutive law
        * definition
        *
-       *\params[in] def Contact Constitutive Law definition
-       *\params[in] condline read input line
+       *\param[in] def Contact Constitutive Law definition
+       *\param[in] condline read input line
        *\params[inout] container container to add the read parameter to
        */
       virtual Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
@@ -186,9 +186,9 @@ namespace CONTACT
       /**
        * \brief default constructor
        *
-       * \params[in] name name of contact constitutive law
-       * \params[in] description of contact constitutive law type
-       * \params[in] type of contact constitutive law to be built
+       * \param[in] name name of contact constitutive law
+       * \param[in] description of contact constitutive law type
+       * \param[in] type of contact constitutive law to be built
        */
       StringContactConstitutiveLawComponent(
           std::string name, std::string defaultvalue, bool optional = false);
@@ -215,8 +215,8 @@ namespace CONTACT
        * \brief read my part of the the contact constitutive law
        * definition
        *
-       *\params[in] def Contact Constitutive Law definition
-       *\params[in] condline read input line
+       *\param[in] def Contact Constitutive Law definition
+       *\param[in] condline read input line
        *\params[inout] container container to add the read parameter to
        */
       Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
@@ -239,9 +239,9 @@ namespace CONTACT
       /**
        * \brief default constructor
        *
-       * \params[in] name name of contact constitutive law
-       * \params[in] description of contact constitutive law type
-       * \params[in] type of contact constitutive law to be built
+       * \param[in] name name of contact constitutive law
+       * \param[in] description of contact constitutive law type
+       * \param[in] type of contact constitutive law to be built
        */
       SeparatorContactConstitutiveLawComponent(
           std::string separator, std::string description, bool optional = false);
@@ -268,8 +268,8 @@ namespace CONTACT
        * \brief read my part of the the contact constitutive law
        * definition
        *
-       *\params[in] def Contact Constitutive Law definition
-       *\params[in] condline read input line
+       *\param[in] def Contact Constitutive Law definition
+       *\param[in] condline read input line
        *\params[inout] container container to add the read parameter to
        */
       Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
@@ -294,9 +294,9 @@ namespace CONTACT
       /**
        * \brief default constructor
        *
-       * \params[in] name name of contact constitutive law
-       * \params[in] description of contact constitutive law type
-       * \params[in] type of contact constitutive law to be built
+       * \param[in] name name of contact constitutive law
+       * \param[in] description of contact constitutive law type
+       * \param[in] type of contact constitutive law to be built
        */
       RealContactConstitutiveLawComponent(std::string name,  ///< variable name in DRT::Material
           const double defaultvalue = 0,                     ///< a default value
@@ -324,8 +324,8 @@ namespace CONTACT
        * \brief read my part of the the contact constitutive law
        * definition
        *
-       *\params[in] def Contact Constitutive Law definition
-       *\params[in] condline read input line
+       *\param[in] def Contact Constitutive Law definition
+       *\param[in] condline read input line
        *\params[inout] container container to add the read parameter to
        */
       Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
@@ -343,10 +343,10 @@ namespace CONTACT
      * constitutive law container container
      *
      * \params[inout] def contact constitutive law definition to which the double should be added
-     * \params[in] name name of the double parameter
-     * \params[in] description of the parameter
-     * \params[in] defaultvalue default value to be used when parameter is optional and not given
-     * \params[in] optional true if parameter is optional
+     * \param[in] name name of the double parameter
+     * \param[in] description of the parameter
+     * \param[in] defaultvalue default value to be used when parameter is optional and not given
+     * \param[in] optional true if parameter is optional
      *
      */
     inline void AddNamedReal(Teuchos::RCP<LawDefinition> def, const std::string name,
@@ -364,10 +364,10 @@ namespace CONTACT
      * constitutive law container container
      *
      * \params[inout] def contact constitutive law definition to which the double should be added
-     * \params[in] name name of the double parameter
-     * \params[in] description of the parameter
-     * \params[in] defaultvalue default value to be used when parameter is optional and not given
-     * \params[in] optional true if parameter is optional
+     * \param[in] name name of the double parameter
+     * \param[in] description of the parameter
+     * \param[in] defaultvalue default value to be used when parameter is optional and not given
+     * \param[in] optional true if parameter is optional
      *
      */
     inline void AddNamedString(Teuchos::RCP<LawDefinition> def, const std::string name,
@@ -385,9 +385,9 @@ namespace CONTACT
      * constitutive law container container
      *
      * \params[inout] def contact constitutive law definition to which the double should be added
-     * \params[in] name name of the double parameter
-     * \params[in] description of the parameter
-     * \params[in] optional true if parameter is optional
+     * \param[in] name name of the double parameter
+     * \param[in] description of the parameter
+     * \param[in] optional true if parameter is optional
      *
      */
     inline void AddNamedSeparator(Teuchos::RCP<LawDefinition> def, const std::string name,
@@ -400,7 +400,7 @@ namespace CONTACT
     /** Add contact constitutive law definition to list of defined definitions
      *
      * \params[inout] list list of defined contact constitutive law definitions
-     * \params[in] def contact constitutive law definition to add to the list
+     * \param[in] def contact constitutive law definition to add to the list
      *
      */
     void AppendCoConstLawComponentDefinition(
