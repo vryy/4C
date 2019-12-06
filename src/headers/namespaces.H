@@ -403,7 +403,13 @@ namespace FADUTILS
  */
 namespace FBI
 {
-}
+  /**
+   * \brief Utility functions for fbi related computations
+   */
+  namespace UTILS
+  {
+  }
+}  // namespace FBI
 
 /*! \brief Fluid field, algorithms, and time integration
  *

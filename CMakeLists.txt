@@ -1240,6 +1240,7 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FBI
+  src/drt_fbi/fbi_calc_utils.cpp
   src/drt_fbi/constraintenforcer_fbi.cpp
   src/drt_fbi/ad_fbi_constraintbridge.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_base.cpp

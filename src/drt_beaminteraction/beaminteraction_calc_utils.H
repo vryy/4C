@@ -225,9 +225,9 @@ namespace BEAMINTERACTION
      * The function expects a vector object of length 2 containing discretizations
      *
      */
-    void FEAssembleEleForceStiffIntoSystemVectorMatrices(
-        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
-        std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
+    void FEAssembleEleForceStiffIntoSystemVectorMatrices(const DRT::Discretization& discretization1,
+        const DRT::Discretization& discretization2, std::vector<int> const& elegid,
+        std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector>& f2, Teuchos::RCP<Epetra_FEVector>& f1,
         Teuchos::RCP<LINALG::SparseMatrix>& c22, Teuchos::RCP<LINALG::SparseMatrix>& c11,
@@ -249,54 +249,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-
-    /**
-     * \brief Get the local indices of the centerline DOFs of an element.
-     * @param discret (in) Pointer to the fluid or structure discretization.
-     * @param ele (in) Pointer to the fluid or beam element.
-     * @param ele_centerline_dof_indices (out) Vector with local indices of centerline DOFs in the
-     * element.
-     * @param num_dof (out) Number total DOFs on the element.
-     *
-     */
-    void GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-        const DRT::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
-        unsigned int& num_dof);
-
-
-    /*----------------------------------------------------------------------------*
-     *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
-        std::vector<int> const& elegid,
-        std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
-
-    /*----------------------------------------------------------------------------*
-     *----------------------------------------------------------------------------*/
-
-    /**
-     * \brief Assembles centerline DOF coupling contributions into element coupling matrices and
-     * force vectors
-     *
-     * The function expects a vector object of length 2 containing discretizations
-     *
-     * \param[in] discretizations vector to the structure and then fluid discretization
-     * \param[in] elegid global id for the beam and fluid element
-     * \param[in] eleforce_centerlineDOFs force vectors containing contributions from the centerline
-     * dofs in the case of beams, otherwise just the classical element DOFs
-     * \param[in]
-     * elestiffcenterlineDOFs stiffness matrices containing contributions from the centerline dofs
-     * in the case of beams, otherwise just the classical element DOFs
-     * \param[inout] eleforce
-     * element force vector
-     * \param[inout] elestiff element stiffness matrix
-     *
-     */
-
-    void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
         std::vector<int> const& elegid,
         std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,

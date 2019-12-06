@@ -16,6 +16,7 @@ be directly assembled into the global matrices.
 
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "../drt_fbi/fbi_calc_utils.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -84,13 +85,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-          discretizations, elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce,
-          &elestiff);
+      FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(*(*discretizations)[0],
+          *(*discretizations)[1], elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs,
+          &eleforce, &elestiff);
 
       // assemble the contributions into force and stiffness matrices
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrices(
-          discretizations, elegids, eleforce, elestiff, ff, fb, cff, cbb, cfb, cbf);
+          *(*discretizations)[0], *(*discretizations)[1], elegids, eleforce, elestiff, ff, fb, cff,
+          cbb, cfb, cbf);
     }
   }
   int err = fb->GlobalAssemble();

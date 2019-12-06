@@ -618,25 +618,19 @@ namespace BEAMINTERACTION
     }
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void FEAssembleEleForceStiffIntoSystemVectorMatrices(
-        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
-        std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
+    void FEAssembleEleForceStiffIntoSystemVectorMatrices(const DRT::Discretization& discretization1,
+        const DRT::Discretization& discretization2, std::vector<int> const& elegid,
+        std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector>& f2, Teuchos::RCP<Epetra_FEVector>& f1,
         Teuchos::RCP<LINALG::SparseMatrix>& c22, Teuchos::RCP<LINALG::SparseMatrix>& c11,
         Teuchos::RCP<LINALG::SparseMatrix>& c21, Teuchos::RCP<LINALG::SparseMatrix>& c12)
     {
-      if (discretizations->size() < 2)
-      {
-        dserror(
-            "This function expects at least 2 discretizations. Please check that you are calling "
-            "the correct function!\n");
-      }
       // the entries of elevecX  belong to the Dofs of the element with GID elegidX
       // the rows    of elematXY belong to the Dofs of the element with GID elegidX
       // the columns of elematXY belong to the Dofs of the element with GID elegidY
-      const DRT::Element* ele1 = (*discretizations)[0]->gElement(elegid[0]);
-      const DRT::Element* ele2 = (*discretizations)[1]->gElement(elegid[1]);
+      const DRT::Element* ele1 = discretization1.gElement(elegid[0]);
+      const DRT::Element* ele2 = discretization2.gElement(elegid[1]);
 
       // get element location vector and ownerships
       std::vector<int> lmrow1;
@@ -645,8 +639,8 @@ namespace BEAMINTERACTION
       std::vector<int> lmrowowner2;
       std::vector<int> lmstride;
 
-      ele1->LocationVector(*(*discretizations)[0], lmrow1, lmrowowner1, lmstride);
-      ele2->LocationVector(*(*discretizations)[1], lmrow2, lmrowowner2, lmstride);
+      ele1->LocationVector(discretization1, lmrow1, lmrowowner1, lmstride);
+      ele2->LocationVector(discretization2, lmrow2, lmrowowner2, lmstride);
 
       // assemble both element vectors into global system vector
       if (f1 != Teuchos::null)
@@ -705,128 +699,7 @@ namespace BEAMINTERACTION
         for (unsigned int i = 0; i < num_dof; ++i) ele_centerline_dof_indices[i] = i;
       }
     }
-    /*----------------------------------------------------------------------------*
-     *----------------------------------------------------------------------------*/
 
-    /**
-     *
-     */
-    void GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-        const DRT::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
-        unsigned int& num_dof)
-    {
-      // Todo implement method in DRT::Element or find alternative way of doing this
-      // find out the elements' number of Dofs (=dimension of element vector/matrices)
-      std::vector<int> lmrow;
-      std::vector<int> dummy1, dummy2;
-
-      ele->LocationVector(discret, lmrow, dummy1, dummy2);
-      num_dof = lmrow.size();
-
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-      if (beamele != NULL)
-      {
-        beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
-      }
-      else
-      {
-        ele_centerline_dof_indices.resize(num_dof * 3 / 4);
-        int j = 0;
-        for (unsigned int i = 0; i < num_dof; ++i)
-        {
-          if (!((i + 1) % 4)) ++i;
-          ele_centerline_dof_indices[j] = i;
-          j++;
-        }
-      }
-    }
-
-    /*----------------------------------------------------------------------------*
-     *----------------------------------------------------------------------------*/
-    void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
-        std::vector<int> const& elegid,
-        std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff)
-    {
-      if (discretizations->size() < 2)
-      {
-        dserror(
-            "This function expects at least 2 discretizations. Please check that you are calling "
-            "the correct function!\n");
-      }
-      std::vector<unsigned int> numdof_ele(2);
-      std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);
-
-      for (unsigned int iele = 0; iele < 2; ++iele)
-      {
-        DRT::Element* ele = (*discretizations)[iele]->gElement(elegid[iele]);
-        GetFBIElementCenterlineDOFIndices(
-            *(*discretizations)[iele], ele, ele_centerlinedofindices[iele], numdof_ele[iele]);
-      }
-
-
-      // assemble centerline DOF values correctly into element DOFvec vectors/matrices
-      if (eleforce != NULL)
-      {
-        for (unsigned int iele = 0; iele < 2; ++iele)
-        {
-          // resize and clear variable
-          ((*eleforce)[iele]).Size(numdof_ele[iele]);
-
-          // safety check: dimensions
-          if ((unsigned int)eleforce_centerlineDOFs[iele].RowDim() !=
-              ele_centerlinedofindices[iele].size())
-            dserror(
-                "size mismatch! need to assemble %d values of centerline-Dof based "
-                "force vector into element vector but only got %d element-local Dof indices",
-                eleforce_centerlineDOFs[iele].RowDim(), ele_centerlinedofindices[iele].size());
-
-          // Todo maybe use a more general 'SerialDenseAssemble' method here
-          for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
-            ((*eleforce)[iele])(ele_centerlinedofindices[iele][idof]) =
-                eleforce_centerlineDOFs[iele](idof);
-        }
-      }
-
-      if (elestiff != NULL)
-      {
-        for (unsigned int iele = 0; iele < 2; ++iele)
-        {
-          for (unsigned int jele = 0; jele < 2; ++jele)
-          {
-            // resize and clear variable
-            ((*elestiff)[iele][jele]).Shape(numdof_ele[iele], numdof_ele[jele]);
-
-            // safety check: dimensions
-            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].RowDim() !=
-                ele_centerlinedofindices[iele].size())
-              dserror(
-                  "size mismatch! need to assemble %d row values of centerline-Dof based "
-                  "stiffness matrix into element matrix but only got %d element-local Dof indices",
-                  elestiff_centerlineDOFs[iele][jele].RowDim(),
-                  ele_centerlinedofindices[iele].size());
-
-            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].ColDim() !=
-                ele_centerlinedofindices[jele].size())
-              dserror(
-                  "size mismatch! need to assemble %d column values of centerline-Dof based "
-                  "stiffness matrix into element matrix but only got %d element-local Dof indices",
-                  elestiff_centerlineDOFs[iele][jele].ColDim(),
-                  ele_centerlinedofindices[jele].size());
-
-            for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
-              for (unsigned int jdof = 0; jdof < ele_centerlinedofindices[jele].size(); ++jdof)
-                ((*elestiff)[iele][jele])(
-                    ele_centerlinedofindices[iele][idof], ele_centerlinedofindices[jele][jdof]) =
-                    elestiff_centerlineDOFs[iele][jele](idof, jdof);
-          }
-        }
-      }
-    }
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
