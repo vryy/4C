@@ -168,7 +168,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
     LINALG::Export(*Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(
                        couplingenforcer->GetBridge(), true)
-                        ->GetFs(),
+                        ->GetStructureCouplingResidual(),
         *force_beam);
 
     if (force_beam->Scale((-1) * couplingenforcer->GetBridge()->GetParams()->GetPenaltyParameter()))

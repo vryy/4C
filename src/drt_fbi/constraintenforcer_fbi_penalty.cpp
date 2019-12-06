@@ -51,10 +51,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluid
   // Get the force acting on the fluid field, scale it with the penalty factor and -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFf())
+      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+              ->GetFluidCouplingResidual())
           ->Map()));
   f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFf()),
+      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+              ->GetFluidCouplingResidual()),
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");
@@ -68,10 +70,12 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs())
+      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+              ->GetStructureCouplingResidual())
           ->Map()));
   f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs()),
+      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+              ->GetStructureCouplingResidual()),
       0.0);
   if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
     dserror("Scaling of the penalty force was unsuccessful!\n");

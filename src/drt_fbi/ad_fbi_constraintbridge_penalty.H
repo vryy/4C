@@ -103,10 +103,10 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> const GetCsf() { return Csf_; };
 
     /// Force vector acting on the fluid side \f$f_f\f$
-    Teuchos::RCP<Epetra_FEVector> const GetFf() { return ff_; };
+    Teuchos::RCP<Epetra_FEVector> const GetFluidCouplingResidual() { return ff_; };
 
     /// Force vector acting on the structure side \f$f_s\f$
-    Teuchos::RCP<Epetra_FEVector> const GetFs() { return fs_; };
+    Teuchos::RCP<Epetra_FEVector> const GetStructureCouplingResidual() { return fs_; };
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$
