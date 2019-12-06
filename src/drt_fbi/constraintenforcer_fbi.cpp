@@ -124,10 +124,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
   {
     // Assemble the fluid stiffness matrix and hand it to the fluid solver
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
-        ->SetCouplingContributions(AssembleFluidStiffness());
+        ->SetCouplingContributions(AssembleFluidCouplingMatrix());
 
     // Assemble the fluid force vector and hand it to the fluid solver
-    fluid_->ApplyInterfaceValues(AssembleFluidForce());
+    fluid_->ApplyInterfaceValues(AssembleFluidCouplingResidual());
   }
 
   // return the current struture velocity
@@ -140,7 +140,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
 // return the structure force
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 {
-  return AssembleStructureForce();
+  return AssembleStructureCouplingResidual();
 };
 
 /*----------------------------------------------------------------------*/
@@ -264,7 +264,7 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation()
 
   if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
 
-  err = violation->Update(1.0, *AssembleFluidForce(), 0.0);
+  err = violation->Update(1.0, *AssembleFluidCouplingResidual(), 0.0);
   if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
 
   double norm, normf, norms;

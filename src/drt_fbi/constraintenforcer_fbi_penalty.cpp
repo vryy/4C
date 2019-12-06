@@ -21,8 +21,8 @@ fluid-beam interaction)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidStiffness()
-    const
+Teuchos::RCP<LINALG::SparseMatrix>
+ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix and scale them with the penalty
   // parameter
@@ -37,7 +37,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::Assemb
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix>
-ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureStiffness() const
+ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 {
   // For the classical partitioned algorithm we do not have any contributions to the stiffness
   // matrix of the structure field
@@ -45,7 +45,8 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureStiffness() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidForce() const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingResidual()
+    const
 {
   // Get the force acting on the fluid field, scale it with the penalty factor and -1 to get the
   // correct direction
@@ -61,7 +62,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluid
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureForce() const
+Teuchos::RCP<Epetra_Vector>
+ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
 {
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction

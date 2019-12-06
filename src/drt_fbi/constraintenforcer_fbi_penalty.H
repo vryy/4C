@@ -73,28 +73,28 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const override;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
      * \returns couplting contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const override;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the structure field.
      *
      * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const override;
+    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the slave field.
      *
      * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const override;
+    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const override;
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve() override;

@@ -178,9 +178,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns contributions to the fluid system matrix
+     * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -192,9 +192,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns contributions to the structure system matrix
+     * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -206,9 +206,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns vector contributions to the structure residual
+     * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const
+    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -220,9 +220,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns vector contributions to the fluid residual
+     * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const
+    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
