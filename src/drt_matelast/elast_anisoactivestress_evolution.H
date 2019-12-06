@@ -14,6 +14,7 @@
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/anisotropy.H"
 
 namespace MAT
 {
@@ -32,10 +33,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        AnisoActiveStress_Evolution(Teuchos::RCP<MAT::PAR::Material> matdata);
+        explicit AnisoActiveStress_Evolution(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~AnisoActiveStress_Evolution() { ; }
+        ~AnisoActiveStress_Evolution() override = default;
 
         /// @name material parameters
         //@{
@@ -77,7 +78,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -123,27 +124,26 @@ namespace MAT
     /// muscle (1998), Progress in Biophysics and Molecular Biology
     /// </ul>
     ///
-    class AnisoActiveStress_Evolution : public Summand
+    class AnisoActiveStress_Evolution : public Summand, public Anisotropy
     {
      public:
       /// constructor with given material parameters
-      AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
+      explicit AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
 
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
-
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
       //@}
 
       /// @name Access material constants
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_anisoactivestress_evolution;
       }
@@ -151,17 +151,25 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      /*!
+       * \brief PostSetup routine of the element
+       *
+       * Here potential nodal fibers were passed to the Anisotropy framework
+       *
+       * @param params Container that potentially contains nodal fibers
+       */
+      void PostSetup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
-      virtual void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
+          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
-              params,       ///< additional parameters for computation of material properties
-          const int eleGID  ///< element GID
-      );
+              params,  ///< additional parameters for computation of material properties
+          int eleGID   ///< element GID
+          ) override;
 
       /// @name Access methods
       //@{
@@ -170,43 +178,55 @@ namespace MAT
       //@}
 
       /// Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
-      );
+      void SetFiberVecs(double newgamma,       ///< new angle
+          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          ) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /// Setup of patient-specific materials
-      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID) { return; }
+      void SetupAAA(Teuchos::ParameterList& params, const int eleGID) override {}
 
       // update internal stress variables
-      virtual void Update();
+      void Update() override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         anisoprinc = true;
-        return;
       };
+
+      /// @name Derived methods for anisotropy
+      //@{
+
+      /*!
+       * This method will be called if no fiber directions are defined in the input file. Fibers
+       * are then computed such that fibers are aligned in XY-plane with gamma params_->gamma around
+       * the Z-axis
+       */
+      void DoFiberInitialization() override;
+
+      /*!
+       * Compute fiber direction given the coordinate system RAD-AXI-CIR
+       * @param locsys Local coordinate system
+       */
+      void SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys) override;
+      //@}
 
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params_;
 
-      /// fiber direction
-      LINALG::Matrix<3, 1> a_;
-      /// structural tensors in voigt notation for anisotropy
-      LINALG::Matrix<6, 1> A_;
       /// Active stress at current time step
       double tauc_np_;
       /// Active stress at last time step

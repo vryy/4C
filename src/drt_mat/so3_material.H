@@ -126,6 +126,19 @@ namespace MAT
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef){
         /* do nothing for simple material models */};
 
+    /*!
+     * Post setup routine which will be called after all elements were read and set up
+     *
+     * \brief This method will be called after the input phase to setup the material with
+     * input data that has not yet been read during the Setup(int,DRT::INPUT::LineDefinition*) call.
+     *
+     * @param params Container for additional information passed from the element
+     */
+    virtual void PostSetup(Teuchos::ParameterList& params)
+    {
+      // Do nothing for simple material models
+    }
+
     /// Update of GP data (e.g., history variables)
     virtual void Update(){/* do nothing for simple material models */};
 

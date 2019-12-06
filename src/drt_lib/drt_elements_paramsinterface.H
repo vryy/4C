@@ -92,6 +92,73 @@ namespace DRT
       struct_recover_from_backup  //!< recover from previously stored backup state
     };                            // enum ActionType
 
+    static inline enum ActionType String2ActionType(const std::string& action)
+    {
+      if (action == "none")
+        return none;
+      else if (action == "calc_struct_linstiff")
+        return struct_calc_linstiff;
+      else if (action == "calc_struct_nlnstiff")
+        return struct_calc_nlnstiff;
+      else if (action == "calc_struct_internalforce")
+        return struct_calc_internalforce;
+      else if (action == "calc_struct_linstiffmass")
+        return struct_calc_linstiffmass;
+      else if (action == "calc_struct_nlnstiffmass")
+        return struct_calc_nlnstiffmass;
+      else if (action == "calc_struct_nlnstifflmass")
+        return struct_calc_nlnstifflmass;
+      else if (action == "calc_struct_nlnstiff_gemm")
+        return struct_calc_nlnstiff_gemm;
+      else if (action == "calc_struct_stress")
+        return struct_calc_stress;
+      else if (action == "calc_struct_eleload")
+        return struct_calc_eleload;
+      else if (action == "calc_struct_fsiload")
+        return struct_calc_fsiload;
+      else if (action == "calc_struct_update_istep")
+        return struct_calc_update_istep;
+      else if (action == "calc_struct_reset_istep")
+        return struct_calc_reset_istep;
+      else if (action == "calc_struct_store_istep")
+        return struct_calc_store_istep;
+      else if (action == "calc_struct_recover_istep")
+        return struct_calc_recover_istep;
+      else if (action == "calc_struct_reset_all")
+        return struct_calc_reset_all;
+      else if (action == "calc_struct_energy")
+        return struct_calc_energy;
+      else if (action == "calc_struct_errornorms")
+        return struct_calc_errornorms;
+      else if (action == "multi_eas_init")
+        return multi_init_eas;
+      else if (action == "multi_eas_set")
+        return multi_set_eas;
+      else if (action == "multi_readrestart")
+        return multi_readrestart;
+      else if (action == "multi_calc_dens")
+        return multi_calc_dens;
+      else if (action == "postprocess_stress")
+        return struct_postprocess_stress;
+      else if (action == "calc_struct_prestress_update")
+        return struct_update_prestress;
+      else if (action == "calc_struct_inversedesign_update")
+        return inversedesign_update;
+      else if (action == "calc_struct_inversedesign_switch")
+        return inversedesign_switch;
+      else if (action == "calc_global_gpstresses_map")
+        return struct_calc_global_gpstresses_map;
+      else if (action == "interpolate_velocity_to_given_point")
+        return struct_interpolate_velocity_to_point;
+      else if (action == "calc_struct_mass_volume")
+        return struct_calc_mass_volume;
+      else if (action == "calc_struct_predict")
+        return struct_calc_predict;
+
+
+      return none;
+    }
+
     //! Map action type enum to std::string
     static inline const std::string ActionType2String(const enum ActionType& type)
     {

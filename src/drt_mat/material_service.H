@@ -446,6 +446,19 @@ namespace MAT
    */
   void StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr);
 
+  /*!
+   * \brief Generates a nxn Identity matrix in tensor notation
+   *
+   * @param mat Matrix to store the identity tensor
+   */
+  inline void IdentityMatrix(LINALG::Matrix<3, 3>& mat)
+  {
+    mat.Clear();
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+      mat(i, i) = 1.0;
+    }
+  }
 
   inline void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 3>& tens)
   {
@@ -459,6 +472,7 @@ namespace MAT
     // 3rd invariant, determinant tens
     prinv(2) = tens.Determinant();
   }
+
 }  // namespace MAT
 
 #endif

@@ -35,6 +35,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  EnsureMaterialPostSetup(params);
+
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, 1> elevec1(elevec1_epetra.A(), true);
@@ -832,8 +834,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-
-
     default:
       dserror("Unknown type of action for SolidTet10");
       break;
@@ -1056,15 +1056,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     }
   }
 
-  // interpolate fibers to gp if fiber nodes are defined
-  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber1(
-      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber2(
-      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-  DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[0]);
-  if (fnode)
-    DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(nodes, shapefcts_4gp, gpfiber1, gpfiber2);
-
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -1233,12 +1224,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
       point.MultiplyTN(funct, xrefe);
       params.set("gprefecoord", point);
-    }
-
-    if (fnode)
-    {
-      params.set("gpfiber1", gpfiber1[gp]);
-      params.set("gpfiber2", gpfiber2[gp]);
     }
 
     params.set<int>("gp", gp);

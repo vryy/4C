@@ -59,7 +59,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   double HU = 0.0;
   if (linedef->HaveNamed("HU"))

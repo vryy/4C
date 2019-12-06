@@ -485,6 +485,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaaneohooke.cpp
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
+  src/drt_mat/anisotropy.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
@@ -1828,8 +1829,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_nln_linearsystem_scaling.cpp
 #  src/drt_structure_new/loca_str_constraint_arclength.cpp
   src/drt_structure_xstructure/str_timint_base_xfem.cpp
-  src/drt_structure_xstructure/str_timint_implicitbase_xfem.cpp
-)
+  src/drt_structure_xstructure/str_timint_implicitbase_xfem.cpp)
 set(OBJS_DRT_STRUCTURE_XSTRUCTURE
   src/drt_structure_xstructure/xstr_xstructure_state.cpp
   src/drt_structure_xstructure/xstr_xstructure_structure_state.cpp
@@ -2624,7 +2624,7 @@ src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
 
 set(OBJS_DRT_FIBER_LIB
 src/drt_fiber/drt_fiber_node.cpp
-)
+  src/drt_fiber/nodal_fiber_holder.cpp)
 
 set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp

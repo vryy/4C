@@ -133,20 +133,20 @@ namespace MIXTURE
     void Init(Teuchos::ParameterList& params);
 
     /*!
-     * Returns whether the constituent is already initialized
-     * @return true if the constituent is already initialized, otherwise false
+     * Returns whether the constituent is already set up
+     * @return true if the constituent is already set up, otherwise false
      */
-    bool IsInit() { return is_init_; }
+    bool IsSetup() { return is_setup_; }
 
     /*!
      * \brief Setup the constituent
      *
      * This method is called once for each element. The constituent should setup all his internal
      * variables and materials.
-     * @param gp (in) : Gauß point
+     *
      * @param params (in/out) : Container for additional information
      */
-    virtual void Setup(int gp, Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params);
 
     /*!
      * \brief Update of the material law
@@ -221,11 +221,11 @@ namespace MIXTURE
     ///! Number of Gauß points
     int numgp_;
 
-    ///! Indicator, whether the constituent is already initialized
-    bool is_init_;
+    ///! Indicator, whether the constituent has already read the element definition
+    bool has_read_element_;
 
     ///! Indicator, whether the constituent is already set up
-    std::vector<char> is_setup_;
+    bool is_setup_;
   };
 }  // namespace MIXTURE
 

@@ -101,12 +101,25 @@ namespace MAT
       static Teuchos::RCP<Summand> Factory(int matnum  ///< material ID
       );
 
-      /// Dummy routine for setup of summand (needed, e.g., for HU-dependent material
-      /// parameters)
-      virtual void Setup(DRT::INPUT::LineDefinition* linedef) { return; };
+      /*!
+       * \brief Dummy routine for setup of summand.
+       *
+       * This method is called during Element input with the LineDefinition of the element.
+       *
+       * @param numgp Number of Gauss points
+       * @param linedef Input line of the element
+       */
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) { return; };
 
       /// Dummy routine for setup of patient-specific materials
       virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID) { return; };
+
+      /*!
+       * Post setup routine for summands. It will be called once after everything is set up.
+       *
+       * @param params Container for additional information
+       */
+      virtual void PostSetup(Teuchos::ParameterList& params){};
 
       /// Dummy routine for setup update of summand
       virtual void Update() { return; };

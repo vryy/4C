@@ -142,9 +142,11 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+      {
         dserror(
             "element and material kinematics are not compatible. Use Nonlinear total lagrangian"
             "kinematics (KINEM nonlinear) in your element definition.");
+      }
     }
 
     /// Return material type
@@ -184,6 +186,13 @@ namespace MAT
      * @param linedef Line definition of the element
      */
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+    /*!
+     * \brief Post setup routine that will be called before the first Evaluate call
+     *
+     * @param params Container for additional information
+     */
+    void PostSetup(Teuchos::ParameterList& params) override;
 
     /*!
      * \brief Update of the material
@@ -245,10 +254,7 @@ namespace MAT
     Teuchos::RCP<MIXTURE::MixtureRule> mixture_rule_;
 
     /// Flag whether constituents are already set up.
-    std::vector<char> setup_;
-
-    /// Flag whether the material law is already initialized
-    bool constituent_init_;
+    bool setup_;
   };
 
 }  // namespace MAT

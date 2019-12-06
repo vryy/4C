@@ -543,7 +543,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
     const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // elastic materials
-  for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->Setup(linedef);
+  for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->Setup(numgp, linedef);
 
   return;
 }

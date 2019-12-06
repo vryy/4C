@@ -13,6 +13,7 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/anisotropy.H"
 
 namespace MAT
 {
@@ -30,10 +31,10 @@ namespace MAT
       {
        public:
         /// constructor with given material parameters
-        CoupAnisoExpoTwoCoup(Teuchos::RCP<MAT::PAR::Material> matdata);
+        explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~CoupAnisoExpoTwoCoup() { ; }
+        ~CoupAnisoExpoTwoCoup() override = default;
 
         /// @name material parameters
         //@{
@@ -64,7 +65,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -104,19 +105,19 @@ namespace MAT
     ///
     /// \author nagler
     /// \date 11/11
-    class CoupAnisoExpoTwoCoup : public Summand
+    class CoupAnisoExpoTwoCoup : public Summand, public Anisotropy
     {
      public:
       /// constructor with given material parameters
-      CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
+      explicit CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
 
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
@@ -124,25 +125,34 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_coupanisoexpotwocoup;
       }
-
       //@}
 
-      /// Setup of summand
-      virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+      /*!
+       * Default setup routine
+       * @param numgp number of Gauss points
+       * @param linedef Element line definition
+       */
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      /*!
+       * Post setup routine. Is needed to initialize nodal fibers
+       *
+       * @param params Container for additional information. Should contain nodal fibers if needed.
+       */
+      void PostSetup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
-      virtual void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
+          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
-              params,       ///< additional parameters for computation of material properties
-          const int eleGID  ///< element GID
-      );
+              params,  ///< additional parameters for computation of material properties
+          int eleGID   ///< element GID
+          ) override;
       /// @name Access methods
       //@{
       double A4() const { return params_->A4_; }
@@ -154,43 +164,54 @@ namespace MAT
       //@}
 
       /// Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
-      );
+      void SetFiberVecs(double newgamma,       ///< new angle
+          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          ) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         anisoprinc = true;
-        return;
       };
+
+      ///@name Methods derived from Anisotropy
+      //@{
+
+      void SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys) override;
+
+      /*!
+       * This method should be used to setup the fibers if no fibers are given in the input file
+       */
+      void DoFiberInitialization() override;
+
+      /*!
+       * This method will be called when the fibers are initialized or changed.
+       */
+      void OnFibersInitialized() override;
+      //@}
 
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params_;
 
-      /// fiber directions
-      LINALG::Matrix<3, 1> a1_;
-      LINALG::Matrix<3, 1> a2_;
       /// dot product fiber direction
-      double a1a2_;
-      /// structural tensors in voigt notation for anisotropy
-      LINALG::Matrix<6, 1> A1_;
-      LINALG::Matrix<6, 1> A2_;
-      /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
-      LINALG::Matrix<3, 3> A1A2_;
+      std::vector<double> a1a2_;
+
+      /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
+      /// stress like Voigt notation
+      std::vector<LINALG::Matrix<6, 1>> A1A2_;
     };
 
   }  // namespace ELASTIC
