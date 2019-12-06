@@ -71,11 +71,11 @@ namespace BEAMINTERACTION
        * \params[inout] cfb  Global stiffness matrix coupling beam to fluid DOFs
        * \params[inout] cbf  Global stiffness matrix coupling fluid to beam DOFs
        */
-      virtual void EvaluateForceStiff(
-          const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
-          Teuchos::RCP<Epetra_FEVector>& ff, Teuchos::RCP<Epetra_FEVector>& fb,
-          Teuchos::RCP<LINALG::SparseMatrix>& cff, Teuchos::RCP<LINALG::SparseMatrix>& cbb,
-          Teuchos::RCP<LINALG::SparseMatrix>& cfb, Teuchos::RCP<LINALG::SparseMatrix>& cbf)
+      virtual void EvaluateForceStiff(const DRT::Discretization& discretization1,
+          const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseMatrix>& cff,
+          Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
+          Teuchos::RCP<LINALG::SparseMatrix>& cbf)
       {
         dserror("Not implemented!");
       }

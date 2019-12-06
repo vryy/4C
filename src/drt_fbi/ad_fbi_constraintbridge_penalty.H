@@ -57,9 +57,8 @@ namespace ADAPTER
      *
      */
 
-    virtual void Evaluate(
-        Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations)
-        override;
+    virtual void Evaluate(const DRT::Discretization& discretization1,
+        const DRT::Discretization& discretization2) override;
 
     /// resets the matrices and vectors to zero
     virtual void ResetBridge() override;

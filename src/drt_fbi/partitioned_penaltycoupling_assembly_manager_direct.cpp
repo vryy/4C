@@ -37,11 +37,11 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDir
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
-    EvaluateForceStiff(
-        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
-        Teuchos::RCP<Epetra_FEVector>& ff, Teuchos::RCP<Epetra_FEVector>& fb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cff, Teuchos::RCP<LINALG::SparseMatrix>& cbb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cfb, Teuchos::RCP<LINALG::SparseMatrix>& cbf)
+    EvaluateForceStiff(const DRT::Discretization& discretization1,
+        const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseMatrix>& cff,
+        Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
+        Teuchos::RCP<LINALG::SparseMatrix>& cbf)
 {
   // resulting discrete element force vectors of the two interacting elements
   std::vector<LINALG::SerialDenseVector> eleforce(2);
@@ -85,14 +85,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(*(*discretizations)[0],
-          *(*discretizations)[1], elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs,
-          &eleforce, &elestiff);
+      FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(discretization1,
+          discretization2, elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce,
+          &elestiff);
 
       // assemble the contributions into force and stiffness matrices
-      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrices(
-          *(*discretizations)[0], *(*discretizations)[1], elegids, eleforce, elestiff, ff, fb, cff,
-          cbb, cfb, cbf);
+      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrices(discretization1,
+          discretization2, elegids, eleforce, elestiff, ff, fb, cff, cbb, cfb, cbf);
     }
   }
   int err = fb->GlobalAssemble();

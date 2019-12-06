@@ -39,7 +39,7 @@ ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler)
     : fluid_(Teuchos::null),
       structure_(Teuchos::null),
-      discretizations_(new std::vector<Teuchos::RCP<DRT::Discretization>>),
+      discretizations_(),
       bridge_(bridge),
       geometrycoupler_(geometrycoupler),
       column_structure_displacement_(Teuchos::null),
@@ -55,22 +55,22 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 {
   fluid_ = fluid;
   structure_ = structure;
-  discretizations_->push_back(structure_->Discretization());
-  discretizations_->push_back(fluid_->Discretization());
+  discretizations_.push_back(structure_->Discretization());
+  discretizations_.push_back(fluid_->Discretization());
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap());
   geometrycoupler_->Setup(discretizations_);
 
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {
-    geometrycoupler_->ExtendBeamGhosting(structure->Discretization());
+    geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
 
     // After ghosting we need to explicitly set up the MultiMapExtractor again
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
         ->SetupMultiMapExtractor();
   }
   std::ofstream log;
-  if ((*discretizations_)[1]->Comm().MyPID() == 0)
+  if (discretizations_[1]->Comm().MyPID() == 0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
@@ -99,8 +99,8 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
   // Do the search in the geometrycoupler_ and return the possible pair ids
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids = geometrycoupler_->Search(discretizations_,
-      column_structure_displacement_);  // todo make this a vector? At some point we probably need
-                                        // the ale displacements as well
+      column_structure_displacement_);  // todo make this a vector? At some point we probably
+                                        // need the ale displacements as well
 
   // For now we need to separate the pair creation from the search, since the search takes place
   // on the fluid elements owner, while (for now) the pair has to be created on the beam element
@@ -108,7 +108,7 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   CreatePairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
-  bridge_->Evaluate(discretizations_);
+  bridge_->Evaluate(*discretizations_[0], *discretizations_[1]);
 }
 
 /*----------------------------------------------------------------------*/
@@ -281,7 +281,7 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation()
   if (norm_vel > 1e-15) norms = norm / norm_vel;
 
   std::ofstream log;
-  if ((*discretizations_)[1]->Comm().MyPID() == 0)
+  if (discretizations_[1]->Comm().MyPID() == 0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");

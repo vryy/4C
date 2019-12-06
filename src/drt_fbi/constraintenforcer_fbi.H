@@ -136,8 +136,7 @@ namespace ADAPTER
     };
 
     /// Get function for the structure and the fluid discretization in the vector discretizations_
-    virtual Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> GetDiscretizations()
-        const final
+    virtual const std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const final
     {
       return discretizations_;
     }
@@ -238,7 +237,7 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
 
     /// Vector containing both (fluid and structure) field discretizations
-    Teuchos::RCP<std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations_;
+    std::vector<Teuchos::RCP<DRT::Discretization>> discretizations_;
 
     /**
      * \brief Object bridging the gap between the specific implementation of the constraint

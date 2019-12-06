@@ -74,7 +74,7 @@ namespace ADAPTER
      *
      */
     virtual void Evaluate(
-        Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations) = 0;
+        const DRT::Discretization& discretization1, const DRT::Discretization& discretization2) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair

@@ -27,7 +27,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
-    Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> discretizations)
+    const DRT::Discretization& discretization1, const DRT::Discretization& discretization2)
 {
   // Create assembly manager.. todo this will have to change as soon as we add mortar pairs.. hand
   // in by dependency injection?
@@ -36,7 +36,8 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
           BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect(
               *(GetPairs()));
   // compute and assembly the coupling matrices and vectors
-  assembly_manager.EvaluateForceStiff(discretizations, ff_, fs_, Cff_, Css_, Csf_, Cfs_);
+  assembly_manager.EvaluateForceStiff(
+      discretization1, discretization2, ff_, fs_, Cff_, Css_, Csf_, Cfs_);
   Cff_->Complete();
 
   // Unset the dirichlet flag in case we were doing a fluid solve
