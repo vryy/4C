@@ -35,6 +35,14 @@ namespace DRT
     };
 
     /*!
+     * @brief We need this custom hash class to be able to use an enum class as a key in a std::map
+     */
+    struct FiberTypeHash
+    {
+      std::size_t operator()(FiberType t) const { return static_cast<std::size_t>(t); }
+    };
+
+    /*!
      * \brief This class holds the different fibers on the Gauss point level.
      *
      * It is internally a std::unordered_map<> that adds the << operator so that it can be stored
@@ -94,7 +102,7 @@ namespace DRT
 
      private:
       /// Map holding GP fibers of different names
-      std::unordered_map<FiberType, const std::vector<LINALG::Matrix<3, 1>>> map_;
+      std::unordered_map<FiberType, const std::vector<LINALG::Matrix<3, 1>>, FiberTypeHash> map_;
     };
   }  // namespace FIBER
 }  // namespace DRT

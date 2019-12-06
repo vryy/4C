@@ -69,7 +69,7 @@ void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp)
 
   // As we now know the number of Gauss points, we can resize the fiber_ vector
   fibers_.resize(numgp);
-  for (std::vector<std::vector<LINALG::Matrix<3, 1>>>::size_type gp = 0; gp < numgp; ++gp)
+  for (int gp = 0; gp < numgp; ++gp)
   {
     fibers_[gp].resize(number_fibers_);
   }
