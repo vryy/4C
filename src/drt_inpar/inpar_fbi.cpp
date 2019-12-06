@@ -35,8 +35,8 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& beam_to_fluid_meshtying =
       fbi.sublist("BEAM TO FLUID MESHTYING", false, "");
 
-  setStringToIntegralParameter<BeamToFluidCoupling>("COUPLING", "two-way",
-      "Type of coupling for FBI", tuple<std::string>("two-way", "fluid", "solid"),
+  setStringToIntegralParameter<BeamToFluidCoupling>("COUPLING", "two-way", "Type of FBI coupling",
+      tuple<std::string>("two-way", "fluid", "solid"),
       tuple<BeamToFluidCoupling>(
           BeamToFluidCoupling::twoway, BeamToFluidCoupling::fluid, BeamToFluidCoupling::solid),
       &fbi);
@@ -57,10 +57,13 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-Fluid volume meshtying",
       &beam_to_fluid_meshtying);
 
-  IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
+  IntParameter("GAUSS_POINTS", 6,
+      "Number of Gauss Points for the integral evaluation along the beam segments",
       &beam_to_fluid_meshtying);
 
-  DoubleParameter("SEARCH_RADIUS", 1000, "Search radius for beam-to-fluid volume meshtying",
+  DoubleParameter("SEARCH_RADIUS", 1000,
+      "Absolute Search radius for beam-to-fluid volume meshtying. Choose carefully to not blow up "
+      "memory demand but to still find all interaction pairs!",
       &beam_to_fluid_meshtying);
 
   // Add the geometry pair input parameters.

@@ -968,7 +968,7 @@ namespace FLD
     /** \brief Here additional contributions to the system matrix can be set
      *
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
-     * contributions can be added here and will be assembled into the system matrix
+     * contributions can be set here and will be assembled into the system matrix
      *
      * \param[in] matrix (size fluid_dof x fluid_dof) linear matrix containing entries that need
      * to be assembled into the overall fluid system matrix

@@ -48,7 +48,7 @@ namespace ADAPTER
    *   \brief Abstract class to be overloaded by different adapter implementations connecting a
    * constraint enforcement technique with a discretization approach for Fluid-beam interaction.
    *
-   * The idea is, that this method schould act a bit like a mini
+   * The idea is, that this method should act a bit like a mini
    * BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact and manage the fluid-beam interaction pairs and
    * their assembly into global contribution matrices
    */

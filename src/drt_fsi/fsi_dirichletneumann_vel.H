@@ -50,8 +50,8 @@ namespace FSI
     /*! \brief Outer level FSI time loop
      *
      * We overload this interface here in order to carry out operations that only have to be done
-     * once at the start simulation, but need information which are not available during setup in
-     * the case of a restart.
+     * once at the start of the simulation, but need information which are not available during
+     * setup in the case of a restart.
      *
      *  \param[in] interface Our interface to NOX
      */
@@ -105,7 +105,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
 
     /**
-     * \brief In here all coupling related quantities are aassembled for the structure solver
+     * \brief In here all coupling related quantities are assembled for the structure solver
      *
      * \param[in] iv In our case, the input parameter is not used!
      * \returns iforce The fsi force acting on the structure

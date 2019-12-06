@@ -71,28 +71,28 @@ namespace ADAPTER
      * \brief Computes the contributions to the stiffness matrix of the structure field.
      *
      *
-     * \param[inout] k system/stiffness matrix
+     * \returns coupling contributions to the structure system matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
-     * \returns k system/stiffness matrix
+     * \returns couplting contributions to the fluid system matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the structure field.
      *
-     * \returns f force/rhs matrix
+     * \returns coupling contributions to the structure residual
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the slave field.
      *
-     * \returns f force/rhs matrix
+     * \returns coupling contributions to the fluid residual
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const override;
 

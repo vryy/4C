@@ -95,7 +95,7 @@ namespace ADAPTER
      * information is returned (monolithic formulation, full penalty partitioned).
      *
      *
-     * \returns f residuum vector
+     * \returns structure force vector
      */
 
     virtual Teuchos::RCP<Epetra_Vector> FluidToStructure();
@@ -110,7 +110,7 @@ namespace ADAPTER
      * information is returned (monolithic formulation, full penalty partitioned, weak Dirichlet).
      *
      *
-     * \returns v velocity
+     * \returns fluid velocity on the whole domain
      */
 
     virtual Teuchos::RCP<Epetra_Vector> StructureToFluid();
@@ -178,7 +178,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \param[inout] k system/stiffness matrix
+     * \returns contributions to the fluid system matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const
     {
@@ -192,7 +192,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns k system/stiffness matrix
+     * \returns contributions to the structure system matrix
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const
     {
@@ -206,7 +206,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force vector acting on structure
+     * \returns vector contributions to the structure residual
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const
     {
@@ -220,7 +220,7 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force vector acting on fluid
+     * \returns vector contributions to the fluid residual
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const
     {
