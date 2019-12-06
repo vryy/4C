@@ -211,12 +211,12 @@ MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
 
 # test for git executable
-FIND_PROGRAM(Git_EXECUTABLE git
+FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
   DOC "git command line client")
 MARK_AS_ADVANCED(Git_EXECUTABLE)
 
 IF(Git_EXECUTABLE)
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
+  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
   #MESSAGE(${Trilinos_GIT_VERSION})
   string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
   ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
