@@ -430,9 +430,11 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
 void STR::TIMINT::Base::PrepareOutput()
 {
   CheckInitSetup();
+
   // --- stress, strain and optional quantity calculation ---------------------
-  if (dataio_->GetWriteResultsEveryNStep() and
-      dataglobalstate_->GetStepNp() % dataio_->GetWriteResultsEveryNStep() == 0)
+  if ((dataio_->GetWriteResultsEveryNStep() and
+          dataglobalstate_->GetStepNp() % dataio_->GetWriteResultsEveryNStep() == 0) or
+      (dataglobalstate_->GetStepNp() == 1 and dataio_->IsWriteInitialState()))
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();

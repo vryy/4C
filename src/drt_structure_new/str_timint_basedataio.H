@@ -164,6 +164,13 @@ namespace STR
         return outputeveryiter_;
       };
 
+      /// Shall we write initial state?
+      const bool& IsWriteInitialState() const
+      {
+        CheckInitSetup();
+        return writeinitialstate_;
+      };
+
       /// Shall we write surfactant output?
       const bool& IsSurfactantOutput() const
       {
@@ -350,6 +357,9 @@ namespace STR
 
       /// write output every iteration (Newton, line search, load step, etc.)
       bool outputeveryiter_;
+
+      /// write initial state
+      bool writeinitialstate_;
 
       /// write surfactant output
       bool writesurfactant_;
