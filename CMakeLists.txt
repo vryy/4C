@@ -1254,7 +1254,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_lungmonolithic.cpp
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_matrixtransform.cpp
   src/drt_fsi/fsi_monolithic.cpp
   src/drt_fsi/fsi_monolithic_redistribution.cpp
   src/drt_fsi/fsi_monolithic_timintada.cpp
@@ -1954,6 +1953,7 @@ set(OBJS_LINALG
   src/linalg/linalg_fixedsparsematrix.cpp
   src/linalg/linalg_krylov_projector.cpp
   src/linalg/linalg_mapextractor.cpp
+  src/linalg/linalg_matrixtransform.cpp
   src/linalg/linalg_mlapi_operator.cpp
   src/linalg/linalg_precond.cpp
   src/linalg/linalg_projected_operator.cpp

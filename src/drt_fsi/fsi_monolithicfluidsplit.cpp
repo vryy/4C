@@ -16,7 +16,6 @@ with condensed fluid interface velocities
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_monolithicfluidsplit.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
@@ -44,6 +43,7 @@ with condensed fluid interface velocities
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -152,13 +152,13 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
   }
   // ---------------------------------------------------------------------------
 
-  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));

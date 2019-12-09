@@ -20,15 +20,13 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace FSI
+
+namespace LINALG
 {
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 namespace CONTACT
 {
@@ -249,27 +247,27 @@ namespace CONTACT
 
     /// @name matrix transformation
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> linncoupveltransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> linncoupveltransform_;
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> linncoupdisptransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> linncoupdisptransform_;
     //! transform object for tangential times Dinv matrix \f$T*D^-1\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> tanginvtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> tanginvtransform_;
     //! transform object for linearized tangentlambda matrix \f$lintanglambda\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> lintangentlambdatransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> lintangentlambdatransform_;
     //! transform object for linearized Dlambda matrix \f$linDlambda\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> porolindmatrixtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> porolindmatrixtransform_;
     //! transform object for linearized Mlambda matrix \f$linMlambda\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
+    Teuchos::RCP<LINALG::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
     //! transform object for mhataam = invda * mmatrixa
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> mhataamtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> mhataamtransform_;
     //! transform object for dhat
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> dhattransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> dhattransform_;
     //! transform object for mold
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> doldtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> doldtransform_;
     //! transform object for dold
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> moldtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> moldtransform_;
     //! transform object for active part of inverse D matrix \f$invDa\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> invDatransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> invDatransform_;
 
 
     Teuchos::RCP<Epetra_Vector>

@@ -22,7 +22,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_fluid/fluid_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
 
@@ -321,7 +320,7 @@ void STR::TimInt::Setup()
     {
       pressure_ = Teuchos::rcp(new LINALG::MapExtractor());
       const int ndim = 3;
-      FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
+      LINALG::CreateMapExtractorFromDiscretization(*discret_, ndim, *pressure_);
     }
   }
 

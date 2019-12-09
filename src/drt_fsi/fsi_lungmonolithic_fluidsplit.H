@@ -15,16 +15,16 @@
 
 #include "fsi_lungmonolithic.H"
 
+// forward declarations
+namespace LINALG
+{
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
+
 namespace FSI
 {
-  // forward declarations
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a specific class of bio problems (FSI airway
   /// model with attached balloon built of lung parenchyma)
@@ -107,36 +107,36 @@ namespace FSI
     void SetupRHSFirstiter(Epetra_Vector& f);
 
     /// transformation of fluid matrix
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> fgGtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fGgtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fgGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fGgtransform_;
 
     /// transformation of shape derivative matrix
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmGitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmGgtransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmggtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiGtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmGGtransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmGitransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmGgtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmGGtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fmgGtransform_;
 
     /// transformation of additional shape derivative matrix (volume constraint)
-    Teuchos::RCP<UTILS::MatrixColTransform> addfmGGtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> addfmGgtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> addfmGGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> addfmGgtransform_;
 
     /// transformation of fluid constraint matrix
-    Teuchos::RCP<UTILS::MatrixRowTransform> fcgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fcgitransform_;
 
     /// transformation of ale matrix
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> aiGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aiGtransform_;
 
     /// transformation of constraint "ale" matrix
-    Teuchos::RCP<UTILS::MatrixColTransform> caiGtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> caiGtransform_;
   };
 }  // namespace FSI
 

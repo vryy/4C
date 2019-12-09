@@ -24,7 +24,7 @@
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_exporter.H"
 
-#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -388,10 +388,9 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   interface_matrix_row_col_transformers_.resize(NumSlDis(), Teuchos::null);
   for (unsigned i = 0; i < NumSlDis(); ++i)
   {
-    interface_matrix_row_transformers_[i] = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
-    interface_matrix_col_transformers_[i] = Teuchos::rcp(new FSI::UTILS::MatrixColTransform());
-    interface_matrix_row_col_transformers_[i] =
-        Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform());
+    interface_matrix_row_transformers_[i] = Teuchos::rcp(new LINALG::MatrixRowTransform());
+    interface_matrix_col_transformers_[i] = Teuchos::rcp(new LINALG::MatrixColTransform());
+    interface_matrix_row_col_transformers_[i] = Teuchos::rcp(new LINALG::MatrixRowColTransform());
   }
   isinit_ = true;
 }

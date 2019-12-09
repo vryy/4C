@@ -67,7 +67,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(Teuchos::RCP<DRT::Discretizati
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
-  FLD::UTILS::SetupFluidSplit(*discret_, numdim_, *velpressplitter_);
+  LINALG::CreateMapExtractorFromDiscretization(*discret_, numdim_, *velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in

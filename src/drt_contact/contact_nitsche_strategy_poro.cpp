@@ -26,8 +26,6 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 #include "../drt_cut/cut_output.H"
 void CONTACT::CoNitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,

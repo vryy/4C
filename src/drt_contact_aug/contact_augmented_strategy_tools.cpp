@@ -17,7 +17,7 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 //#define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
 // w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
@@ -406,7 +406,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(const LINALG::Spa
 
   if (target_range_map.NumGlobalElements())
   {
-    FSI::UTILS::MatrixLogicalSplitAndTransform extractor;
+    LINALG::MatrixLogicalSplitAndTransform extractor;
     extractor(source, target_range_map, target_domain_map, 1.0, NULL, NULL, target);
   }
 

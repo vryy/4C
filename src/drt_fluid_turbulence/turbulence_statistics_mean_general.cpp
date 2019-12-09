@@ -13,7 +13,6 @@ means are computed as time averages
 
 
 #include "turbulence_statistics_mean_general.H"
-#include "../drt_fluid/fluid_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -1281,7 +1280,7 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
   const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
 
   // split based on complete fluid field
-  FLD::UTILS::SetupFluidSplit(*discret, *standarddofset_, 3, velpressplitter_);
+  LINALG::CreateMapExtractorFromDiscretization(*discret, *standarddofset_, 3, velpressplitter_);
 
   Teuchos::RCP<Epetra_Vector> old;
 

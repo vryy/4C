@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Utilities for matrix transformations in FSI
+\brief Utilities for matrix transformations
 
 \level 1
 
@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <iterator>
-#include "fsi_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
@@ -21,7 +21,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::UTILS::MatrixLogicalSplitAndTransform::operator()(const LINALG::SparseMatrix& src,
+bool LINALG::MatrixLogicalSplitAndTransform::operator()(const LINALG::SparseMatrix& src,
     const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map, double scale,
     const ADAPTER::CouplingConverter* row_converter,
     const ADAPTER::CouplingConverter* col_converter, LINALG::SparseMatrix& dst, bool exactmatch,
@@ -56,7 +56,7 @@ bool FSI::UTILS::MatrixLogicalSplitAndTransform::operator()(const LINALG::Sparse
       }
 
       Teuchos::RCP<Epetra_CrsMatrix> permsrc =
-          Teuchos::rcp(new Epetra_CrsMatrix(Copy, permsrcmap, 0));
+          Teuchos::rcp(new Epetra_CrsMatrix(::Copy, permsrcmap, 0));
       int err = permsrc->Import(*src.EpetraMatrix(), *exporter_, Insert);
       if (err) dserror("Import failed with err=%d", err);
 
@@ -83,7 +83,7 @@ bool FSI::UTILS::MatrixLogicalSplitAndTransform::operator()(const LINALG::Sparse
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map& rowmap,
+void LINALG::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map& rowmap,
     const Epetra_Map& colmap, const ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm)
 {
   if (not havegidmap_)
@@ -104,7 +104,7 @@ void FSI::UTILS::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map& r
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+void LINALG::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epetra_CrsMatrix> esrc,
     const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
     double scale)
@@ -135,7 +135,7 @@ void FSI::UTILS::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+void LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_CrsMatrix> esrc,
     const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
     const Epetra_Vector& selector, const Epetra_Map& matching_dst_rows,
     Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale)
@@ -222,11 +222,10 @@ void FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
-    Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
-    const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-    double scale)
+void LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
+    const Epetra_Vector& selector, const Epetra_Map& matching_dst_rows,
+    Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale)
 {
   const Epetra_Map& srccolmap = esrc->ColMap();
 
@@ -296,7 +295,7 @@ void FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
 
 
 
-bool FSI::UTILS::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src, double scale,
+bool LINALG::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src, double scale,
     const ::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst, bool addmatrix)
 {
   return transformer(
@@ -305,7 +304,7 @@ bool FSI::UTILS::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src,
 
 
 
-bool FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_Map&,
+bool LINALG::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_Map&,
     const LINALG::SparseMatrix& src, double scale, const ::ADAPTER::CouplingConverter& converter,
     LINALG::SparseMatrix& dst, bool exactmatch, bool addmatrix)
 {
@@ -315,7 +314,7 @@ bool FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_
 
 
 
-bool FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src, double scale,
+bool LINALG::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src, double scale,
     const ::ADAPTER::CouplingConverter& rowconverter,
     const ::ADAPTER::CouplingConverter& colconverter, LINALG::SparseMatrix& dst, bool exactmatch,
     bool addmatrix)

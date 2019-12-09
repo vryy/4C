@@ -51,7 +51,6 @@ interface
 
 #include "../drt_fluid/fluid_utils_infnormscaling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
@@ -301,7 +300,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
   // Create velpresssplitter for uncut discretization.
   velpressplitter_std_ = Teuchos::rcp(new LINALG::MapExtractor());
-  FLD::UTILS::SetupFluidSplit(
+  LINALG::CreateMapExtractorFromDiscretization(
       *discret_, xdiscret_->InitialDofSet(), numdim_, *velpressplitter_std_);
 
   // -------------------------------------------------------------------

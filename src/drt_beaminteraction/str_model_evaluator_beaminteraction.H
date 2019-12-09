@@ -30,18 +30,11 @@ namespace DRT
   class Discretization;
 }
 
-namespace FSI
-{
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-  }
-}  // namespace FSI
-
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class MatrixRowTransform;
+}  // namespace LINALG
 
 namespace BINSTRATEGY
 {
@@ -270,7 +263,7 @@ namespace STR
       Teuchos::RCP<ADAPTER::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
-      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> siatransform_;
+      Teuchos::RCP<LINALG::MatrixRowTransform> siatransform_;
       //! @}
 
 

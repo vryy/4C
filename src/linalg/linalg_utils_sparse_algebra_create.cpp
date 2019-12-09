@@ -63,3 +63,158 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int>& gids, const E
 
   return map;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::CreateMapExtractorFromDiscretization(
+    const DRT::DiscretizationInterface& dis, int ndim, LINALG::MultiMapExtractor& extractor)
+{
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i = 0; i < numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dis.Dof(0, node);
+    for (unsigned j = 0; j < dof.size(); ++j)
+    {
+      // test for dof position
+      if (j != static_cast<unsigned>(ndim))
+      {
+        otherdofset.insert(dof[j]);
+      }
+      else
+      {
+        conddofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+  otherdofmapvec.clear();
+
+  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
+  maps[0] = otherdofmap;
+  maps[1] = conddofmap;
+  extractor.Setup(*dis.DofRowMap(), maps);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
+    const DRT::DofSetInterface& dofset, int ndim, LINALG::MapExtractor& extractor)
+{
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i = 0; i < numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dofset.Dof(node);
+    for (unsigned j = 0; j < dof.size(); ++j)
+    {
+      // test for dof position
+      if (j < static_cast<unsigned>(ndim))
+      {
+        otherdofset.insert(dof[j]);
+      }
+      else
+      {
+        conddofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+  otherdofmapvec.clear();
+
+  extractor.Setup(*dofset.DofRowMap(), conddofmap, otherdofmap);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis, int ndim_field1,
+    int ndim_field2, LINALG::MultiMapExtractor& extractor)
+{
+  unsigned fp_dim = static_cast<unsigned>(ndim_field1 + ndim_field2);
+
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i = 0; i < numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dis.Dof(0, node);
+
+    if ((dof.size() % fp_dim) != 0)
+      dserror(
+          "Vector-Scalar-Split is not unique! Mismatch between number of dofs and vector/scalar "
+          "dim");
+
+    for (unsigned j = 0; j < dof.size(); ++j)
+    {
+      // test for dof position
+      if (j % fp_dim < static_cast<unsigned>(ndim_field1))
+      {
+        otherdofset.insert(dof[j]);
+      }
+      else
+      {
+        conddofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+  otherdofmapvec.clear();
+
+  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
+  maps[0] = otherdofmap;
+  maps[1] = conddofmap;
+  extractor.Setup(*dis.DofRowMap(), maps);
+}

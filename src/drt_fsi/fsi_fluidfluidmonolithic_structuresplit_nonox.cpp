@@ -13,7 +13,6 @@ using XFEM
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#include "fsi_matrixtransform.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
@@ -38,6 +37,9 @@ using XFEM
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_inpar/inpar_ale.H"
+
+#include "../linalg/linalg_matrixtransform.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -111,14 +113,14 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
     dserror("Could not remove structural interface Dirichlet conditions from structure DBC map.");
 #endif
 
-  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));

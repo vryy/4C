@@ -11,12 +11,12 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_utils_mapextractor.H"
-#include "fluid_utils.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::ConditionedElementMap(
 void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
-  FLD::UTILS::SetupFluidSplit(dis, ndim, *this);
+  LINALG::CreateMapExtractorFromDiscretization(dis, ndim, *this);
 }
 
 /*----------------------------------------------------------------------*/

@@ -27,7 +27,8 @@ namespace ADAPTER
 namespace LINALG
 {
   class BlockSparseMatrixBase;
-}
+  class MatrixColTransform;
+}  // namespace LINALG
 
 namespace FSI
 {
@@ -35,7 +36,6 @@ namespace FSI
 
   namespace UTILS
   {
-    class MatrixColTransform;
     class SlideAleUtils;
   }  // namespace UTILS
 }  // namespace FSI
@@ -336,8 +336,8 @@ namespace FSI
     /// coupling of structure and fluid at the interface
     Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
 
     ///@}
 

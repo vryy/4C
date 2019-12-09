@@ -71,6 +71,68 @@ namespace LINALG
    */
   Teuchos::RCP<Epetra_Map> CreateMap(const std::vector<int>& gids, const Epetra_Comm& comm);
 
+  /*!
+      \brief Creates MultiMapExtractor to split dofs at certain position
+
+      We assume that each node possesses ndim dofs of one field and (optionally) remaining dofs of
+      another field. The dof row map is thus split into two.
+
+      The ndim dofs are assigned to map 0 (the other map) and the remaining dofs to map 1 (the
+      condition map).
+
+      \param dis : (in) Discretization
+      \param ndim : (in) dimensions of map 0
+      \param extractor : (out) ready made map splitter
+
+      \author u.kue
+      \date 02/08
+     */
+  void CreateMapExtractorFromDiscretization(
+      const DRT::DiscretizationInterface& dis, int ndim, LINALG::MultiMapExtractor& extractor);
+
+  /*!
+    \brief Creates MapExtractor to split dofs at certain position
+
+    We assume that each node possesses ndim dofs of one field and (optionally) remaining dofs of
+    another field. The dof row map is thus split into two.
+
+    The ndim dofs are assigned to map 0 (the other map) and the remaining dofs to map 1 (the
+    condition map).
+
+    Nodal dofs and total map come from dofset.
+
+    \param dis : (in) Discretization
+    \param dofset : (in) Degree of freedom set
+    \param ndim : (in) dimensions of map 0
+    \param extractor : (out) ready made map splitter
+
+    \author u.kue
+    \date 02/08
+   */
+  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
+      const DRT::DofSetInterface& dofset, int ndim, LINALG::MapExtractor& extractor);
+
+
+  /*!
+    \brief Creates MultiMapExtractor to split dofs at certain position
+
+    We assume that each node possesses ndim_field1 + ndim_field2 dofs. The dof row map is thus
+    split into two.
+
+    The ndim_field1 dofs are assigned to map 0 (the other map) and the ndim_field2 to map 1 (the
+    condition map).
+
+    \param dis : (in) Discretization
+    \param ndim_field1 : (in) dimensions of map 0
+    \param ndim_field2 : (in) dimensions of map 1
+    \param extractor : (out) ready made map splitter
+
+    \author schott
+    \date 12/11
+   */
+  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis, int ndim_field1,
+      int ndim_field2, LINALG::MultiMapExtractor& extractor);
+
 }  // namespace LINALG
 
 #endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_ */

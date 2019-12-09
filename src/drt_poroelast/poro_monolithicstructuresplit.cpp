@@ -23,14 +23,13 @@
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_structure/stru_aux.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,13 +43,13 @@ POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicSplit(comm, timeparams)
 {
-  sggtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  csggtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  cfggtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  csgitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  cfigtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  csggtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  cfggtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  csgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  cfigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));

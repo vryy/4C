@@ -31,13 +31,6 @@ namespace ADAPTER
 namespace FSI
 {
   class Monolithic;
-
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
 }  // namespace FSI
 
 namespace LINALG
@@ -46,6 +39,9 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
 }  // namespace LINALG
 
 namespace FS3I
@@ -206,10 +202,10 @@ namespace FS3I
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> sibtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fbitransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fbitransform_;
     ///@}
 
    private:

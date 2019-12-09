@@ -38,8 +38,6 @@
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
-#include "../drt_fluid/fluid_utils.H"
-
 FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager)
     : discret_(discret), cond_manager_(cond_manager), firstoutputofrun_(true), restart_count_(0)
@@ -57,7 +55,8 @@ void FLD::XFluidOutputService::PrepareOutput()
   dofset_out_->AssignDegreesOfFreedom(*discret_, 0, 0);
   const int ndim = DRT::Problem::Instance()->NDim();
   // split based on complete fluid field (standard splitter that handles one dofset)
-  FLD::UTILS::SetupFluidSplit(*discret_, *dofset_out_, ndim, *velpressplitter_out_);
+  LINALG::CreateMapExtractorFromDiscretization(
+      *discret_, *dofset_out_, ndim, *velpressplitter_out_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(), true);

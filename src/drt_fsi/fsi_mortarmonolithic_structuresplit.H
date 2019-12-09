@@ -26,7 +26,8 @@ namespace ADAPTER
 namespace LINALG
 {
   class BlockSparseMatrixBase;
-}
+  class MatrixColTransform;
+}  // namespace LINALG
 
 namespace FSI
 {
@@ -34,7 +35,6 @@ namespace FSI
 
   namespace UTILS
   {
-    class MatrixColTransform;
     class SlideAleUtils;
   }  // namespace UTILS
 }  // namespace FSI
@@ -306,13 +306,13 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fsmgitransform_;
 
     ///@}
 
