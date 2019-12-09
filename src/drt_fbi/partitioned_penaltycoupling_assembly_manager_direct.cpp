@@ -91,7 +91,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
       // assemble the contributions into force and stiffness matrices
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrices(discretization1,
-          discretization2, elegids, eleforce, elestiff, ff, fb, cff, cbb, cfb, cbf);
+          discretization2, elegids, eleforce, elestiff, fb, ff, cbb, cff, cbf, cfb);
     }
   }
   int err = fb->GlobalAssemble();

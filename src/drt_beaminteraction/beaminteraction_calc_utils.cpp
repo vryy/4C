@@ -622,9 +622,9 @@ namespace BEAMINTERACTION
         const DRT::Discretization& discretization2, std::vector<int> const& elegid,
         std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector>& f2, Teuchos::RCP<Epetra_FEVector>& f1,
-        Teuchos::RCP<LINALG::SparseMatrix>& c22, Teuchos::RCP<LINALG::SparseMatrix>& c11,
-        Teuchos::RCP<LINALG::SparseMatrix>& c21, Teuchos::RCP<LINALG::SparseMatrix>& c12)
+        Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
+        Teuchos::RCP<LINALG::SparseMatrix>& c11, Teuchos::RCP<LINALG::SparseMatrix>& c22,
+        Teuchos::RCP<LINALG::SparseMatrix>& c12, Teuchos::RCP<LINALG::SparseMatrix>& c21)
     {
       // the entries of elevecX  belong to the Dofs of the element with GID elegidX
       // the rows    of elematXY belong to the Dofs of the element with GID elegidX
