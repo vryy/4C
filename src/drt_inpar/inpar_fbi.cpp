@@ -93,7 +93,9 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "the integration point, they will also be output.",
       yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
 
-  // ...
+  setStringToIntegralParameter<int>("CONSTRAINT_VIOLATION", "No",
+      "Enable / disable output of the constraint violation into a output_name.penalty csv file.",
+      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
 }
 
 void INPAR::FBI::SetValidConditions(

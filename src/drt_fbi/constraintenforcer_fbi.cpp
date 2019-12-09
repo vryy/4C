@@ -13,6 +13,8 @@ interaction.
 
 #include "ad_fbi_constraintbridge.H"
 #include "ad_fbi_constraintbridge_penalty.H"
+#include "beam_to_fluid_meshtying_params.H"
+#include "beam_to_fluid_meshtying_vtk_output_params.H"
 #include "immersed_geometry_coupler_fbi.H"
 
 #include "../drt_adapter/ad_fld_fbi_movingboundary.H"
@@ -70,12 +72,14 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
         ->SetupMultiMapExtractor();
   }
   std::ofstream log;
-  if (discretizations_[1]->Comm().MyPID() == 0)
+  if ((discretizations_[1]->Comm().MyPID() == 0) &&
+      (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
     log.open(s.c_str(), std::ofstream::out);
-    log << "Time Step ViolationNorm FluidViolationNorm StructureViolationNorm" << std::endl;
+    log << "Time \t Step \t ViolationNorm \t FluidViolationNorm \t StructureViolationNorm"
+        << std::endl;
     log.close();
   }
 }
@@ -251,41 +255,44 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
 
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FBIConstraintenforcer::PrintViolation()
+void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
 {
-  Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
-      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
-
-  int err =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-          ->GetCff()
-          ->Multiply(false,
-              *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()), *violation);
-
-  if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
-
-  err = violation->Update(1.0, *AssembleFluidCouplingResidual(), 0.0);
-  if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
-
-  double norm, normf, norms;
-  double norm_vel;
-
-  Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
-
-  violation->Norm2(&norm);
-  if (norm_vel > 1e-15) normf = norm / norm_vel;
-
-  Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
-      ->Velnp()
-      ->MaxValue(&norm_vel);
-  if (norm_vel > 1e-15) norms = norm / norm_vel;
-
-  std::ofstream log;
-  if (discretizations_[1]->Comm().MyPID() == 0)
+  if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
   {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    s.append(".penalty");
-    log.open(s.c_str(), std::ofstream::app);
-    log << " " << norm << " " << normf << " " << norms << std::endl;
+    Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
+        Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
+
+    int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+                  ->GetCff()
+                  ->Multiply(false,
+                      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()),
+                      *violation);
+
+    if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
+
+    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), 0.0);
+    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+
+    double norm, normf, norms;
+    double norm_vel;
+
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
+
+    violation->Norm2(&norm);
+    if (norm_vel > 1e-15) normf = norm / norm_vel;
+
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
+        ->Velnp()
+        ->MaxValue(&norm_vel);
+    if (norm_vel > 1e-15) norms = norm / norm_vel;
+
+    std::ofstream log;
+    if (discretizations_[1]->Comm().MyPID() == 0)
+    {
+      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      s.append(".penalty");
+      log.open(s.c_str(), std::ofstream::app);
+      log << time << "\t" << step << "\t" << norm << "\t" << normf << "\t" << norms << std::endl;
+    }
   }
 }

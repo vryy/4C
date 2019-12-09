@@ -74,17 +74,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
     MBFluidField()->NonlinearSolve(Teuchos::null, Teuchos::null);
 
-    std::ofstream log;
-    if (MBFluidField()->Discretization()->Comm().MyPID() == 0)
-    {
-      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      s.append(".penalty");
-      log.open(s.c_str(), std::ofstream::app);
-      log << Time() << " " << Step();
-      log.close();
-    }
-    constraint_manager_->PrintViolation();
-
     MBFluidField()->SetItemax(itemax);
 
     constraint_manager_->Evaluate();
@@ -173,6 +162,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP
 void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
+  constraint_manager_->PrintViolation(Time(), Step());
   vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
   StructureField()->Discretization()->Writer()->ClearMapCache();
   MBFluidField()->Discretization()->Writer()->ClearMapCache();

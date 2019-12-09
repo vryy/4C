@@ -15,7 +15,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
-    : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams()
+    : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams(), constraint_violation_(false)
 {
   // empty constructor
 }
@@ -52,6 +52,9 @@ void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
 
   integration_points_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_vtk_paramslist, "INTEGRATION_POINTS");
+
+  constraint_violation_ = (bool)DRT::INPUT::IntegralValue<int>(
+      beam_to_fluid_meshtying_vtk_paramslist, "CONSTRAINT_VIOLATION");
 
   // Set the setup flag.
   issetup_ = true;

@@ -104,9 +104,10 @@ TOL_PRES_INC      1e-04
 CHARELELENGTH_PC                      root_of_volume
 ------------------------------------------------------------------------SOLVER 1
 SOLVER                                UMFPACK
-------------------------------------------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
+------------------------------------------------------------------FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT
 NODAL_FORCES                         Yes
 INTEGRATION_POINTS                   Yes
+CONSTRAINT_VIOLATION                 Yes
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 1e+08 POISSONRATIO 0.0 DENS 1e-01 CROSSAREA 0.12566370614359174 SHEARCORR 0.75 MOMINPOL 0.002513274122871835 MOMIN2 0.0012566370614359175 MOMIN3 0.0012566370614359175

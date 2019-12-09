@@ -141,7 +141,7 @@ namespace ADAPTER
       return discretizations_;
     }
 
-    virtual void PrintViolation();
+    virtual void PrintViolation(double time, double step);
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory

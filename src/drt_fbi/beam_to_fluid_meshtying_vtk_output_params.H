@@ -36,6 +36,13 @@ namespace FBI
      * \brief Setup member variables.
      */
     void Setup();
+
+    // returns flag enabling/disabling output of the constraint violation
+    bool GetConstraintViolationOutputFlag() const { return constraint_violation_; };
+
+   private:
+    // bool enabling/disabling output of the constraint_enforcer violation
+    bool constraint_violation_;
   };
 }  // namespace FBI
 
