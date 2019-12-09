@@ -311,6 +311,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 std::vector<std::shared_ptr<DRT::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
+  // build global id to local index map
+  particleengine_->BuildGlobalIDToLocalIndexMap();
+
+  // particle field specific result test objects
   std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests(0);
 
   // particle result test
