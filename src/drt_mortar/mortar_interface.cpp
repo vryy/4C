@@ -2314,7 +2314,7 @@ void MORTAR::MortarInterface::Evaluate(
   TEUCHOS_FUNC_TIME_MONITOR("MORTAR::MortarInterface::Evaluate");
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
+  if (!Filled()) dserror("FillComplete() not called on interface %", id_);
 
   // get out of here if not participating in interface
   if (!lComm()) return;
