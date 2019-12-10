@@ -35,6 +35,7 @@ namespace PARTICLEINTERACTION
   class SPHMomentum;
   class SPHSurfaceTensionBase;
   class SPHBoundaryParticleBase;
+  class SPHOpenBoundaryBase;
   class SPHPhaseChangeBase;
 }  // namespace PARTICLEINTERACTION
 
@@ -131,6 +132,12 @@ namespace PARTICLEINTERACTION
     //! init boundary particle handler
     void InitBoundaryParticleHandler();
 
+    //! init dirichlet open boundary handler
+    void InitDirichletOpenBoundaryHandler();
+
+    //! init neumann open boundary handler
+    void InitNeumannOpenBoundaryHandler();
+
     //! init phase change handler
     void InitPhaseChangeHandler();
 
@@ -163,6 +170,12 @@ namespace PARTICLEINTERACTION
 
     //! boundary particle handler
     std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;
+
+    //! dirichlet open boundary handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase> dirichletopenboundary_;
+
+    //! neumann open boundary handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase> neumannopenboundary_;
 
     //! phase change handler
     std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;

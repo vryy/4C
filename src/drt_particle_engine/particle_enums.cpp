@@ -216,6 +216,12 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleTy
     case PARTICLEENGINE::RigidPhase:
       name = "rigidphase";
       break;
+    case PARTICLEENGINE::DirichletPhase:
+      name = "dirichletphase";
+      break;
+    case PARTICLEENGINE::NeumannPhase:
+      name = "neumannphase";
+      break;
     default:
       dserror("particle type enum unknown!");
   }
@@ -235,6 +241,10 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
     type = PARTICLEENGINE::BoundaryPhase;
   else if (typeName == "rigidphase")
     type = PARTICLEENGINE::RigidPhase;
+  else if (typeName == "dirichletphase")
+    type = PARTICLEENGINE::DirichletPhase;
+  else if (typeName == "neumannphase")
+    type = PARTICLEENGINE::NeumannPhase;
   else
     dserror("particle type '%s' unknown!", typeName.c_str());
 

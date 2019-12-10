@@ -505,6 +505,9 @@ void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTyp
     // no states for boundary or rigid particles
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
+    // no states for open boundary particles
+    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensitySum);
   }
@@ -546,6 +549,9 @@ void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleT
 
     // no states for boundary or rigid particles
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+
+    // no states for open boundary particles
+    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
 
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensityDot);
@@ -638,6 +644,9 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfPartic
 
     // no states for boundary or rigid particles
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+
+    // no states for open boundary particles
+    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
 
     // states for density evaluation scheme
     particlestates.insert(

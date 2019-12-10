@@ -147,6 +147,9 @@ void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
     // no temperature integration for boundary particles
     if (type == PARTICLEENGINE::BoundaryPhase) continue;
 
+    // no temperature integration for open boundary particles
+    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+
     // state for temperature evaluation scheme
     particlestates.insert(PARTICLEENGINE::TemperatureDot);
 

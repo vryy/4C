@@ -886,6 +886,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
       continue;
 
+    // gravity is not set for open boundary particles
+    if (typeEnum == PARTICLEENGINE::DirichletPhase or typeEnum == PARTICLEENGINE::NeumannPhase)
+      continue;
+
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(
         scaled_gravity, PARTICLEENGINE::Acceleration, typeEnum);

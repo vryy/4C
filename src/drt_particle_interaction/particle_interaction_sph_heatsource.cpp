@@ -77,6 +77,10 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   // safety check
   if (absorbingtypes_.count(PARTICLEENGINE::BoundaryPhase))
     dserror("no heat source evaluation for boundary particles!");
+
+  if (absorbingtypes_.count(PARTICLEENGINE::DirichletPhase) or
+      absorbingtypes_.count(PARTICLEENGINE::NeumannPhase))
+    dserror("no heat source evaluation for open boundary particles!");
 }
 
 void PARTICLEINTERACTION::SPHHeatSourceBase::WriteRestart(const int step, const double time) const
