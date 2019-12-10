@@ -655,6 +655,21 @@ namespace LINALG
       std::vector<std::vector<int>>& recv);
 
   /*!
+   \brief Communication between all pairs of processes, with distinct data for each.
+
+   Sends a different vector<int> to each processes. The size of each vector may
+   be different, zero-length vectors are allowed.
+   Communication is implemented with the MPI function MPI_Alltoallv.
+
+   \param[in] comm communicator
+   \param[in] send vector of length comm.NumProc(), j-th element to be send to j-th processor.
+   \param[out] recv vector of received elements without knowledge of the sending processor
+   */
+  void AllToAllCommunication(
+      const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
+
+
+  /*!
    \brief Return the first slot of a pair
 
    To be used with stl algorithms.

@@ -34,6 +34,7 @@ typedef enum _PROBLEM_TYP
   prb_elemag,     // electromagnetic problem
   prb_fluid,      // fluid problem
   prb_fluid_ale,  // fluid on an ale mesh (no structure)
+  prb_fbi,        // 3D fluid interacting with a 1D beam
   prb_fluid_redmodels,  // fluid_redairways problem
   prb_fluid_topopt,     // fluid topology optimization
   prb_fluid_xfem,       // fluid problem including XFEM interfaces

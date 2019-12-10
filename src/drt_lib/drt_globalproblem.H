@@ -439,6 +439,10 @@ namespace DRT
     {
       return getParameterList()->sublist("XFLUID DYNAMIC");
     }
+    const Teuchos::ParameterList& FBIParams() const
+    {
+      return getParameterList()->sublist("FLUID BEAM INTERACTION");
+    }
     const Teuchos::ParameterList& LOMAControlParams() const
     {
       return getParameterList()->sublist("LOMA CONTROL");

@@ -314,6 +314,10 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC/MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
+  reader.ReadGidSection("--FLUID BEAM INTERACTION", *list);
+  reader.ReadGidSection("--FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", *list);
+  reader.ReadGidSection(
+      "--FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--CELL DYNAMIC", *list);
@@ -2031,6 +2035,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+      break;
+    }
+    case prb_fbi:
+    {
+      // create empty discretizations
+      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+
+      AddDis("structure", structdis);
+      AddDis("fluid", fluiddis);
+
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
       break;
     }

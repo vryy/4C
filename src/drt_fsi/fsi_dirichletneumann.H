@@ -57,6 +57,9 @@ namespace FSI
      */
     explicit DirichletNeumann(const Epetra_Comm &comm);
 
+    /// Creates the appropriate DirichletNeumann algortihm
+    //    Teuchos::RCP<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type); \FIXME
+
     /// setup this object
     virtual void Setup();
 

@@ -30,5 +30,6 @@ void fsi_ale_drt();
 void xfsi_drt();
 void xfpsi_drt();
 
+void fsi_immersed_drt();
 
 #endif

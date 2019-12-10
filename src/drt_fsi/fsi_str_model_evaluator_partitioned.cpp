@@ -13,6 +13,7 @@
 
 #include "fsi_str_model_evaluator_partitioned.H"
 
+#include "../drt_structure_new/str_model_evaluator.H"
 #include "../drt_structure_new/str_dbc.H"
 #include "../drt_structure_new/str_impl_generic.H"
 #include "../drt_structure_new/str_timint_implicit.H"
@@ -46,7 +47,12 @@ void STR::MODELEVALUATOR::PartitionedFSI::Setup()
 
   return;
 }
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::PartitionedFSI::SetupMultiMapExtractor()
+{
+  Int().ModelEval().SetupMultiMapExtractor();
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::GetBlockDofRowMapPtr() const
@@ -172,4 +178,11 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
 
   // return the increment
   return Teuchos::rcpFromRef(increment.getEpetraVector());
+}
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
+{
+  CheckInit();
+  return GInOutput();
 }

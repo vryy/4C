@@ -18,6 +18,7 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_factory.H"
+#include "../drt_io/io.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -176,7 +177,7 @@ void FSI::Algorithm::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupsf_->MasterToSlave(iv);
 }
@@ -184,7 +185,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupsf_->SlaveToMaster(iv);
 }

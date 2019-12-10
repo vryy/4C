@@ -21,6 +21,8 @@
 #include "fsi_dirichletneumann_factory.H"
 #include "fsi_dirichletneumann_disp.H"
 #include "fsi_dirichletneumannslideale.H"
+#include "fsi_dirichletneumann_disp.H"
+#include "fsi_dirichletneumann_vel.H"
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
@@ -326,6 +328,62 @@ void fluid_freesurf_drt()
       break;
     }
   }
+}
+/*----------------------------------------------------------------------*/
+// entry point for FSI using multidimensional immersed method
+/*----------------------------------------------------------------------*/
+void fsi_immersed_drt()
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  const Epetra_Comm& comm = structdis->Comm();
+
+  // make sure the discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       structure dof < fluid dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  structdis->FillComplete();
+
+  problem->GetDis("fluid")->FillComplete();
+
+  // get discretizations
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+
+  // Any partitioned algorithm.
+  Teuchos::RCP<FSI::Partitioned> fsi;
+
+  INPAR::FSI::PartitionedCouplingMethod method =
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+          fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
+  if (method == INPAR::FSI::DirichletNeumann)
+  {
+    fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
+    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+  }
+  else
+    dserror("unsupported partitioned FSI scheme");
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    // read the restart information, set vectors and variables
+    fsi->ReadRestart(restart);
+  }
+
+  fsi->Timeloop(fsi);
+
+  // create result tests for single fields
+  DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+  // do the actual testing
+  DRT::Problem::Instance()->TestAll(comm);
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 /*----------------------------------------------------------------------*/
 // entry point for FSI using ALE in DRT

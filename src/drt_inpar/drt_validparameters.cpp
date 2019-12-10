@@ -50,6 +50,7 @@
 #include "inpar_porofluidmultiphase.H"
 #include "inpar_immersed.H"
 #include "inpar_cell.H"
+#include "inpar_fbi.H"
 #include "inpar_fpsi.H"
 #include "inpar_ehl.H"
 #include "inpar_ssi.H"
@@ -489,6 +490,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::IMMERSED::SetValidParameters(list);
   INPAR::CELL::SetValidParameters(list);
   INPAR::FPSI::SetValidParameters(list);
+  INPAR::FBI::SetValidParameters(list);
 
   INPAR::PARTICLE::SetValidParameters(list);
 
