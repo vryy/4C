@@ -1124,7 +1124,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
   Comm().MaxAll(&locmax[0], &globmax[0], 3);
 
   // compute cutoff radius:
-  double totalsme = -1.0;
+  double global_slave_max_edge_size = -1.0;
   for (int lid = 0; lid < SlaveColElements()->NumMyElements(); ++lid)
   {
     int gid = SlaveColElements()->GID(lid);
@@ -1135,12 +1135,12 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     MORTAR::MortarElement* mtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     // to be thought about, whether this is enough (safety = 2??)
-    double sme = mtrele->MaxEdgeSize();
-    totalsme = std::max(sme, totalsme);
+    double slave_max_edge_size = mtrele->MaxEdgeSize();
+    global_slave_max_edge_size = std::max(slave_max_edge_size, global_slave_max_edge_size);
   }
 
   double cutoff = -1.0;
-  Comm().MaxAll(&totalsme, &cutoff, 1);
+  Comm().MaxAll(&global_slave_max_edge_size, &cutoff, 1);
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
