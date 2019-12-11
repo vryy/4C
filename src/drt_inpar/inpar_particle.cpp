@@ -185,7 +185,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::NormalizedCorrection, INPAR::PARTICLE::RandlesCorrection),
       &particledynsph);
 
-
   // type of boundary particle formulation
   setStringToIntegralParameter<int>("BOUNDARYPARTICLEFORMULATION", "NoBoundaryFormulation",
       "type of boundary particle formulation",
@@ -255,6 +254,37 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "factor of dependence of surface tension coefficient on temperature", &particledynsph);
   DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
       "reference temperature for surface tension coefficient", &particledynsph);
+
+  // type of dirichlet open boundary
+  setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",
+      "type of dirichlet open boundary",
+      tuple<std::string>("NoDirichletOpenBoundary", "DirichletNormalToPlane"),
+      tuple<int>(INPAR::PARTICLE::NoDirichletOpenBoundary, INPAR::PARTICLE::DirichletNormalToPlane),
+      &particledynsph);
+
+  IntParameter("DIRICHLET_FUNCT", -1,
+      "number of function governing velocity condition on dirichlet open boundary",
+      &particledynsph);
+
+  setNumericStringParameter("DIRICHLET_OUTWARD_NORMAL", "0.0 0.0 0.0",
+      "direction of outward normal on dirichlet open boundary", &particledynsph);
+  setNumericStringParameter("DIRICHLET_PLANE_POINT", "0.0 0.0 0.0",
+      "point on dirichlet open boundary plane", &particledynsph);
+
+  // type of neumann open boundary
+  setStringToIntegralParameter<int>("NEUMANNBOUNDARYTYPE", "NoNeumannOpenBoundary",
+      "type of neumann open boundary",
+      tuple<std::string>("NoNeumannOpenBoundary", "NeumannNormalToPlane"),
+      tuple<int>(INPAR::PARTICLE::NoNeumannOpenBoundary, INPAR::PARTICLE::NeumannNormalToPlane),
+      &particledynsph);
+
+  IntParameter("NEUMANN_FUNCT", -1,
+      "number of function governing pressure condition on neumann open boundary", &particledynsph);
+
+  setNumericStringParameter("NEUMANN_OUTWARD_NORMAL", "0.0 0.0 0.0",
+      "direction of outward normal on neumann open boundary", &particledynsph);
+  setNumericStringParameter("NEUMANN_PLANE_POINT", "0.0 0.0 0.0",
+      "point on neumann open boundary plane", &particledynsph);
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",

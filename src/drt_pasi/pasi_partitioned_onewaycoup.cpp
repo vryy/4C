@@ -60,7 +60,7 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
   // time loop
   while (NotFinished())
   {
-    // counter and print header
+    // prepare time step
     PrepareTimeStep();
 
     // structural time step
@@ -74,6 +74,9 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
 
     // particle time step
     ParticleStep();
+
+    // post evaluate time step
+    PostEvaluateTimeStep();
 
     // output of fields
     Output();

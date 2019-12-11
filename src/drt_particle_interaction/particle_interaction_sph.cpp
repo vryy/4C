@@ -25,12 +25,15 @@
 #include "particle_interaction_sph_momentum.H"
 #include "particle_interaction_sph_surface_tension.H"
 #include "particle_interaction_sph_boundary_particle.H"
+#include "particle_interaction_sph_open_boundary.H"
 #include "particle_interaction_sph_phase_change.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_particle_wall/particle_wall_interface.H"
+
+#include "../drt_io/io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -82,6 +85,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init boundary particle handler
   InitBoundaryParticleHandler();
 
+  // init dirichlet open boundary handler
+  InitDirichletOpenBoundaryHandler();
+
+  // init neumann open boundary handler
+  InitNeumannOpenBoundaryHandler();
+
   // init phase change handler
   InitPhaseChangeHandler();
 }
@@ -123,9 +132,27 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
 
+  // setup dirichlet open boundary handler
+  if (dirichletopenboundary_)
+    dirichletopenboundary_->Setup(particleengineinterface, kernel_, particlematerial_,
+        equationofstatebundle_, neighborpairs_);
+
+  // setup neumann open boundary handler
+  if (neumannopenboundary_)
+    neumannopenboundary_->Setup(particleengineinterface, kernel_, particlematerial_,
+        equationofstatebundle_, neighborpairs_);
+
   // setup phase change handler
   if (phasechange_)
     phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+
+  // short screen output
+  if ((dirichletopenboundary_ or neumannopenboundary_) and
+      particleengineinterface_->HavePeriodicBoundaryConditions())
+  {
+    if (myrank_ == 0)
+      IO::cout << "Warning: periodic boundary and open boundary conditions applied!" << IO::endl;
+  }
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
@@ -160,6 +187,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
 
   // write restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->WriteRestart(step, time);
+
+  // write restart of dirichlet open boundary handler
+  if (dirichletopenboundary_) dirichletopenboundary_->WriteRestart(step, time);
+
+  // write restart of neumann open boundary handler
+  if (neumannopenboundary_) neumannopenboundary_->WriteRestart(step, time);
 
   // write restart of phase change handler
   if (phasechange_) phasechange_->WriteRestart(step, time);
@@ -198,6 +231,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
   // read restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->ReadRestart(reader);
 
+  // read restart of dirichlet open boundary handler
+  if (dirichletopenboundary_) dirichletopenboundary_->ReadRestart(reader);
+
+  // read restart of neumann open boundary handler
+  if (neumannopenboundary_) neumannopenboundary_->ReadRestart(reader);
+
   // read restart of phase change handler
   if (phasechange_) phasechange_->ReadRestart(reader);
 }
@@ -219,6 +258,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticle
       // insert states of boundary and rigid particles
       particlestates.insert({PARTICLEENGINE::Mass, PARTICLEENGINE::Radius,
           PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity});
+    }
+    else if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase)
+    {
+      // insert states of open boundary particles
+      particlestates.insert({PARTICLEENGINE::Mass, PARTICLEENGINE::Radius, PARTICLEENGINE::Density,
+          PARTICLEENGINE::Pressure});
     }
     else
     {
@@ -314,6 +359,17 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
+void PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep");
+
+  // prescribe open boundary states
+  if (dirichletopenboundary_) dirichletopenboundary_->PrescribeOpenBoundaryStates(time_);
+
+  // prescribe open boundary states
+  if (neumannopenboundary_) neumannopenboundary_->PrescribeOpenBoundaryStates(time_);
+}
+
 void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions");
@@ -333,11 +389,30 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // init boundary particle states
   if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
 
+  // interpolate open boundary states
+  if (dirichletopenboundary_) dirichletopenboundary_->InterpolateOpenBoundaryStates();
+
+  // interpolate open boundary states
+  if (neumannopenboundary_) neumannopenboundary_->InterpolateOpenBoundaryStates();
+
   // add momentum contribution to acceleration field
   momentum_->AddAccelerationContribution();
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep");
+
+  // check open boundary phase change
+  if (dirichletopenboundary_)
+    dirichletopenboundary_->CheckOpenBoundaryPhaseChange(MaxInteractionDistance());
+
+  // check open boundary phase change
+  if (neumannopenboundary_)
+    neumannopenboundary_->CheckOpenBoundaryPhaseChange(MaxInteractionDistance());
 
   // evaluate phase change
   if (phasechange_) phasechange_->EvaluatePhaseChange();
@@ -595,9 +670,73 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
   if (boundaryparticle_) boundaryparticle_->Init();
 }
 
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitDirichletOpenBoundaryHandler()
+{
+  // get type of dirichlet open boundary
+  INPAR::PARTICLE::DirichletOpenBoundaryType dirichletopenboundarytype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DirichletOpenBoundaryType>(
+          params_sph_, "DIRICHLETBOUNDARYTYPE");
+
+  // create open boundary handler
+  switch (dirichletopenboundarytype)
+  {
+    case INPAR::PARTICLE::NoDirichletOpenBoundary:
+    {
+      dirichletopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::DirichletNormalToPlane:
+    {
+      dirichletopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryDirichlet>(
+          new PARTICLEINTERACTION::SPHOpenBoundaryDirichlet(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown dirichlet open boundary type!");
+      break;
+    }
+  }
+
+  // init open boundary handler
+  if (dirichletopenboundary_) dirichletopenboundary_->Init();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeumannOpenBoundaryHandler()
+{
+  // get type of neumann open boundary
+  INPAR::PARTICLE::NeumannOpenBoundaryType neumannopenboundarytype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::NeumannOpenBoundaryType>(
+          params_sph_, "NEUMANNBOUNDARYTYPE");
+
+  // create open boundary handler
+  switch (neumannopenboundarytype)
+  {
+    case INPAR::PARTICLE::NoNeumannOpenBoundary:
+    {
+      neumannopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::NeumannNormalToPlane:
+    {
+      neumannopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryNeumann>(
+          new PARTICLEINTERACTION::SPHOpenBoundaryNeumann(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown neumann open boundary type!");
+      break;
+    }
+  }
+
+  // init open boundary handler
+  if (neumannopenboundary_) neumannopenboundary_->Init();
+}
+
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 {
-  // get type phase change
+  // get type of phase change
   INPAR::PARTICLE::PhaseChangeType phasechangetype =
       DRT::INPUT::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
 

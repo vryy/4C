@@ -166,6 +166,20 @@ namespace INPAR
       ContinuumSurfaceForce
     };
 
+    //! type of dirichlet open boundary
+    enum DirichletOpenBoundaryType
+    {
+      NoDirichletOpenBoundary,
+      DirichletNormalToPlane
+    };
+
+    //! type of neumann open boundary
+    enum NeumannOpenBoundaryType
+    {
+      NoNeumannOpenBoundary,
+      NeumannNormalToPlane
+    };
+
     //! type of phase change
     enum PhaseChangeType
     {

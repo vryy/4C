@@ -168,7 +168,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
 #ifdef DEBUG
       // safety check
-      if (not particlestates.count(PARTICLEENGINE::Position))
+      if (not container->HaveStoredState(PARTICLEENGINE::Position))
         dserror("particle state '%s' not found!",
             PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
 #endif

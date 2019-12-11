@@ -114,11 +114,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup wall handler
   if (particlewall_) particlewall_->Setup(particleengine_);
 
-  // check particle types for modified states
-  const bool havemodifiedstates = HaveModifiedStates();
-
   // setup particle time integration
-  particletimint_->Setup(particleengine_, havemodifiedstates);
+  particletimint_->Setup(particleengine_);
 
   // setup particle interaction handler
   if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
@@ -200,8 +197,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     // counter and print header
     PrepareTimeStep();
 
-    // integrate particle time step
-    Integrate();
+    // integrate time step
+    IntegrateTimeStep();
+
+    // post evaluate time step
+    PostEvaluateTimeStep();
 
     // output particle time step
     Output();
@@ -228,9 +228,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
 
   // set current write result flag
   SetCurrentWriteResultFlag();
+
+  // prepare time step
+  if (particleinteraction_) particleinteraction_->PrepareTimeStep();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
+void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
 {
   // time integration scheme specific pre-interaction routine
   particletimint_->PreInteractionRoutine();
@@ -249,6 +252,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
 
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
+{
+  // post evaluate time step
+  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
@@ -302,6 +311,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 std::vector<std::shared_ptr<DRT::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
+  // build global id to local index map
+  particleengine_->BuildGlobalIDToLocalIndexMap();
+
+  // particle field specific result test objects
   std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests(0);
 
   // particle result test
@@ -584,54 +597,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 
   // evaluate particle interactions
   if (particleinteraction_) particleinteraction_->EvaluateInteractions();
-}
-
-bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
-{
-  bool havemodifiedstates = false;
-
-  int numtypes = 0;
-  int numtypeswithmodifiedstates = 0;
-
-  // iterate over particle types
-  for (auto& typeIt : particlestatestotypes_)
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
-    // no modified velocity and acceleration for boundary or rigid particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // get reference to set of particle states of current type
-    std::set<PARTICLEENGINE::StateEnum>& stateEnumSet = typeIt.second;
-
-    // check for modified velocity and acceleration of current type
-    bool modifiedvelocity = stateEnumSet.count(PARTICLEENGINE::ModifiedVelocity);
-    bool modifiedacceleration = stateEnumSet.count(PARTICLEENGINE::ModifiedAcceleration);
-
-    // safety check
-    if (modifiedvelocity != modifiedacceleration)
-      dserror("modified states of both velocity and acceleration need to be set!");
-
-    // increase counter of type
-    ++numtypes;
-
-    // modified states for current type
-    if (modifiedvelocity) ++numtypeswithmodifiedstates;
-  }
-
-  if (numtypeswithmodifiedstates > 0)
-  {
-    // safety check
-    if (numtypes != numtypeswithmodifiedstates)
-      dserror(
-          "modified states need to be set for all particle types except boundary phase particles!");
-
-    havemodifiedstates = true;
-  }
-
-  return havemodifiedstates;
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
@@ -919,6 +884,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
   {
     // gravity is not set for boundary or rigid particles
     if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
+
+    // gravity is not set for open boundary particles
+    if (typeEnum == PARTICLEENGINE::DirichletPhase or typeEnum == PARTICLEENGINE::NeumannPhase)
       continue;
 
     // set gravity acceleration for all particles of current type

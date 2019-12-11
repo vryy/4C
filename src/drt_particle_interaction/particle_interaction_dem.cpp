@@ -151,6 +151,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
   SetInitialMass();
 }
 
+void PARTICLEINTERACTION::ParticleInteractionDEM::PrepareTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PrepareTimeStep");
+}
+
 void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions");
@@ -178,6 +183,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 
   // update history pairs
   historypairs_->UpdateHistoryPairs();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep");
 }
 
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const

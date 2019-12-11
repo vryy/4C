@@ -287,6 +287,21 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
       temp_dens = equationofstate_j->PressureToDensity(press_i[0], material_j->initDensity_);
       dens_i = &temp_dens;
     }
+    else if (type_i == PARTICLEENGINE::DirichletPhase)
+    {
+      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    }
+    else if (type_i == PARTICLEENGINE::NeumannPhase)
+    {
+      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+    }
     else
     {
       mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
@@ -315,6 +330,21 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
 
       temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
       dens_j = &temp_dens;
+    }
+    else if (type_j == PARTICLEENGINE::DirichletPhase)
+    {
+      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    }
+    else if (type_j == PARTICLEENGINE::NeumannPhase)
+    {
+      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+      acc_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_j);
     }
     else
     {

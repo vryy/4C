@@ -77,6 +77,10 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   // safety check
   if (absorbingtypes_.count(PARTICLEENGINE::BoundaryPhase))
     dserror("no heat source evaluation for boundary particles!");
+
+  if (absorbingtypes_.count(PARTICLEENGINE::DirichletPhase) or
+      absorbingtypes_.count(PARTICLEENGINE::NeumannPhase))
+    dserror("no heat source evaluation for open boundary particles!");
 }
 
 void PARTICLEINTERACTION::SPHHeatSourceBase::WriteRestart(const int step, const double time) const
@@ -227,8 +231,8 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     bool isabsorbing_i = absorbingtypes_.count(type_i);
     bool isabsorbing_j = absorbingtypes_.count(type_j);
 
-    // no evaluation for both absorbing particles
-    if (isabsorbing_i and isabsorbing_j) continue;
+    // no evaluation for both absorbing or non-absorbing particles
+    if (not(isabsorbing_i != isabsorbing_j)) continue;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -251,15 +255,15 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (type_i == PARTICLEENGINE::RigidPhase)
-                 ? &(material_i->initDensity_)
-                 : container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
+                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+                 : &(material_i->initDensity_);
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (type_j == PARTICLEENGINE::RigidPhase)
-                 ? &(material_j->initDensity_)
-                 : container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
+                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+                 : &(material_j->initDensity_);
 
     const double fac =
         (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) /

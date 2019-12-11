@@ -1902,6 +1902,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
   src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_open_boundary.cpp
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp

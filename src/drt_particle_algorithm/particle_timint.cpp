@@ -31,7 +31,7 @@
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
-    : params_(params), time_(0.0), dt_(params.get<double>("TIMESTEP")), modifiedstates_(false)
+    : params_(params), time_(0.0), dt_(params.get<double>("TIMESTEP"))
 {
   // empty constructor
 }
@@ -52,14 +52,10 @@ void PARTICLEALGORITHM::TimInt::Init()
 }
 
 void PARTICLEALGORITHM::TimInt::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const bool modifiedstates)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
-
-  // modified velocity and acceleration states
-  modifiedstates_ = modifiedstates;
 
   // setup dirichlet boundary condition handler
   if (dirichletboundarycondition_) dirichletboundarycondition_->Setup(particleengineinterface_);
@@ -263,16 +259,28 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
 }
 
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const bool modifiedstates)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
-  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface, modifiedstates);
+  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface);
 
-  // safety check
-  if (modifiedstates_)
-    dserror(
-        "modified velocity and acceleration states not implemented yet for semi-implicit Euler "
-        "time integration scheme!");
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // iterate over particle types
+  for (auto& particleType : typestointegrate_)
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+
+    // safety check
+    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) or
+        container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
+      dserror(
+          "modified velocity and acceleration states not implemented yet for semi-implicit Euler "
+          "time integration scheme!");
+  }
 }
 
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
@@ -290,9 +298,6 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
-    // get particle states stored in container
-    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
-
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dt_, PARTICLEENGINE::Acceleration);
 
@@ -300,8 +305,8 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
     container->ClearState(PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
-        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
+        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
       container->UpdateState(
@@ -351,8 +356,8 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
-    // modified velocity and acceleration states
-    if (modifiedstates_)
+    // modified velocity states
+    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
     {
       // update modified velocity of all particles
       container->UpdateState(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
@@ -375,9 +380,6 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
-    // get particle states stored in container
-    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
-
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
 
@@ -385,8 +387,8 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     container->ClearState(PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
-        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
+        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
       container->UpdateState(
@@ -397,7 +399,8 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     }
 
     // modified velocity and acceleration states
-    if (modifiedstates_)
+    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) and
+        container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
     {
       // update modified velocity of all particles
       container->UpdateState(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
@@ -445,15 +448,12 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
-    // get particle states stored in container
-    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
-
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
-        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
+        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
       container->UpdateState(

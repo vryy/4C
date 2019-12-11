@@ -58,6 +58,25 @@ namespace PARTICLEENGINE
     virtual ~ParticleEngineInterface(){};
 
     /*!
+     * \brief free unique global ids
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] freeuniquegids free unique global ids
+     */
+    virtual void FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids) = 0;
+
+    /*!
+     * \brief get unique global ids for all particles
+     *
+     * \author Sebastian Fuchs \date 11/2019
+     *
+     * \param[in] particlestogetuniquegids particles to get unique global ids
+     */
+    virtual void GetUniqueGlobalIdsForAllParticles(
+        std::vector<ParticleObjShrdPtr>& particlestogetuniquegids) = 0;
+
+    /*!
      * \brief refresh specific states of particles of specific types
      *
      * \author Sebastian Fuchs \date 05/2018
@@ -69,14 +88,22 @@ namespace PARTICLEENGINE
         const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
     /*!
-     * \brief remove or insert owned particles
+     * \brief hand over particles to be removed
      *
      * \author Sebastian Fuchs \date 11/2018
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
+     */
+    virtual void HandOverParticlesToBeRemoved(std::vector<std::set<int>>& particlestoremove) = 0;
+
+    /*!
+     * \brief hand over particles to be inserted
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    virtual void RemoveOrInsertOwnedParticles(std::vector<std::set<int>>& particlestoremove,
+    virtual void HandOverParticlesToBeInserted(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
 
     /*!

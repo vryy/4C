@@ -74,8 +74,14 @@ namespace PARTICLEINTERACTION
     //! set initial states
     void SetInitialStates() override;
 
+    //! prepare time step
+    void PrepareTimeStep() override;
+
     //! evaluate particle interactions
     void EvaluateInteractions() override;
+
+    //! post evaluate time step
+    void PostEvaluateTimeStep() override;
 
     //! maximum interaction distance (on this processor)
     double MaxInteractionDistance() const override;

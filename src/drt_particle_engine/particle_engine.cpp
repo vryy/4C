@@ -165,6 +165,13 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
+void PARTICLEENGINE::ParticleEngine::FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids)
+{
+  // insert freed global id
+  for (const int currfreegid : freeuniquegids)
+    particleuniqueglobalidhandler_->InsertFreedGlobalId(currfreegid);
+}
+
 void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
     std::vector<ParticleObjShrdPtr>& particlestogetuniquegids)
 {
@@ -463,11 +470,10 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
       PARTICLEENGINE::Owned);
 }
 
-void PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles(
-    std::vector<std::set<int>>& particlestoremove,
-    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+void PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeRemoved(
+    std::vector<std::set<int>>& particlestoremove)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeRemoved");
 
   // number of particles to remove
   int numparticlestoremove = 0;
@@ -482,6 +488,12 @@ void PARTICLEENGINE::ParticleEngine::RemoveOrInsertOwnedParticles(
     particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
         PARTICLEENGINE::Owned);
   }
+}
+
+void PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeInserted(
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeInserted");
 
   // number of particles to insert
   int numparticlestoinsert = 0;
