@@ -220,55 +220,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     results_kff(22, 22) = 0.0234375000000000;
     results_kff(23, 23) = 0.0234375000000000;
 
-    results_kff(0, 3) = 0.0078125000000000;
-    results_kff(3, 0) = 0.0078125000000000;
-    results_kff(1, 4) = 0.0078125000000000;
-    results_kff(4, 1) = 0.0078125000000000;
-    results_kff(2, 5) = 0.0078125000000000;
-    results_kff(5, 2) = 0.0078125000000000;
-
-    results_kff(0, 6) = 0.0039062500000000;
-    results_kff(6, 0) = 0.0039062500000000;
-    results_kff(1, 7) = 0.0039062500000000;
-    results_kff(7, 1) = 0.0039062500000000;
-    results_kff(2, 8) = 0.0039062500000000;
-    results_kff(8, 2) = 0.0039062500000000;
-
-    results_kff(0, 9) = 0.0013020833333333;
-    results_kff(9, 0) = 0.0013020833333333;
-    results_kff(1, 10) = 0.0013020833333333;
-    results_kff(10, 1) = 0.0013020833333333;
-    results_kff(2, 11) = 0.0013020833333333;
-    results_kff(11, 2) = 0.0013020833333333;
-
-    results_kff(0, 12) = 0.0078125000000000;
-    results_kff(12, 0) = 0.0078125000000000;
-    results_kff(1, 13) = 0.0078125000000000;
-    results_kff(13, 1) = 0.0078125000000000;
-    results_kff(2, 14) = 0.0078125000000000;
-    results_kff(14, 2) = 0.0078125000000000;
-
-    results_kff(0, 15) = 0.0234375000000000;
-    results_kff(15, 0) = 0.0234375000000000;
-    results_kff(1, 16) = 0.0234375000000000;
-    results_kff(16, 1) = 0.0234375000000000;
-    results_kff(2, 17) = 0.0234375000000000;
-    results_kff(17, 2) = 0.0234375000000000;
-
-    results_kff(0, 18) = 0.0117187500000000;
-    results_kff(18, 0) = 0.0117187500000000;
-    results_kff(1, 19) = 0.0117187500000000;
-    results_kff(19, 1) = 0.0117187500000000;
-    results_kff(2, 20) = 0.0117187500000000;
-    results_kff(20, 2) = 0.0117187500000000;
-
-    results_kff(0, 21) = 0.0039062500000000;
-    results_kff(21, 0) = 0.0039062500000000;
-    results_kff(1, 22) = 0.0039062500000000;
-    results_kff(22, 1) = 0.0039062500000000;
-    results_kff(2, 23) = 0.0039062500000000;
-    results_kff(23, 2) = 0.0039062500000000;
-
     results_kfs(0, 0) = 0.0039062500000000;
     results_kfs(0, 1) = 0.0039062500000000;
     results_kfs(0, 2) = 0.0039062500000000;
@@ -354,7 +305,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     bool projects =
         pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
-    std::cout << "n_dof= " << fluid_type::n_dof_ << std::endl;
     // Check the results for D.
     TS_ASSERT(projects);
     TS_ASSERT_EQUALS(local_kff.M(), fluid_type::n_dof_);
@@ -364,7 +314,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     TS_ASSERT_EQUALS(local_fs.Length(), beam_type::n_dof_);
     for (int i_row = 0; i_row < local_kff.M(); i_row++)
     {
-      //  for (int i_col = 0; i_col < local_kff.M(); i_col++)
       TS_ASSERT_DELTA((local_kff)(i_row, i_row), results_kff(i_row, i_row), 1e-11);
       for (int i_col = 0; i_col < local_kfs.N(); i_col++)
         TS_ASSERT_DELTA((local_kfs)(i_row, i_col), local_ksf(i_col, i_row), 1e-11);
