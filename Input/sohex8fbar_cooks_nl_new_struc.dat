@@ -33,6 +33,14 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
+-------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              ascii
+INTERVAL_STEPS                  20
+EVERY_ITERATION                 no
+---------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+OUTPUT_STRUCTURE                yes
+DISPLACEMENT                    yes
+ELEMENT_OWNER                   yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0

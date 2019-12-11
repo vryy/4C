@@ -213,6 +213,25 @@ macro(result_file arg nproc filetag resultfilename referencefilename tolerance)
 
 endmacro(result_file)
 
+# compare XML formatted .vtk result data set referenced by .pvd files to corresponding reference files
+macro(vtk_test name nproc pvd_resultfilename pvd_referencefilename tolerance)
+# this test takes a list of times as extra arguments to check results at those timesteps
+# if no extra arguments are given test checks every timestep
+
+  set (extra_macro_args ${ARGN})
+    # Did we get any optional args?
+    list(LENGTH extra_macro_args num_extra_args)
+    if (${num_extra_args} GREATER 0)
+        list(GET extra_macro_args 0 optional_arg)
+    endif ()
+  # add test to testing framework
+  add_test(NAME ${name}-p${nproc} COMMAND python2 ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${PROJECT_BINARY_DIR}/${pvd_resultfilename} ${PROJECT_SOURCE_DIR}/Input/${pvd_referencefilename} ${tolerance} ${num_extra_args} ${extra_macro_args})
+
+  # set maximum test runtime
+  set_tests_properties(${name}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
+
+endmacro(vtk_test)
+
 ###------------------------------------------------------------------ List of tests
 baci_test(aaa_mat_input 2 "")
 baci_test(acou_pat_1d_impleuler 2 "" minimal)
@@ -260,6 +279,7 @@ baci_test(beam3eb_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 150
 baci_test(beam3eb_static_contact_penalty_linposquadpen_beamslidingoverarc 2 "")
 baci_test(beam3eb_static_endmoment_quartercircle 2 "")
 baci_test(beam3r_herm2line2_static_test1 2 "")
+vtk_test(beam3r_herm2line2_static_test1_vtk 1 xxx-structure-beams.pvd ref/beam3r_herm2line2_static_test1-structure-beams.pvd 1e-08)
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_regularization_constextpol_twocrossedbeams 2 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_regularization_linextpol_twocrossedbeams 2 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_twocrossedbeams 2 "")
@@ -284,6 +304,7 @@ baci_test(beam3r_herm2line3_static_crosslinking_beam3rline2_linkedcantilevers_en
 baci_test(beam3r_herm2line3_static_crosslinking_truss_linkedcantilevers_endload 2 5)
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_regularization_linextpol_twocrossedbeams_pulloff 2 "")
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff 2 "")
+vtk_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff_vtp 1 xxx-structure-beams.pvd ref/beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-structure-beams.pvd 1e-08 3.00000070000000e-01 5.00000000000000e-01)
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff_FAD 2 "")
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_twocrossedbeams_pulloff 2 "")
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_twocrossedbeams_pulloff_FAD 2 "")
@@ -1021,6 +1042,8 @@ baci_test(particle_nointer_3d_pbc_x_initvel_velocityverlet 4 800)
 baci_test(particle_nointer_3d_pbc_xyz_initvel_velocityverlet 4 800 minimal)
 baci_test(particle_nointer_3d_pbc_x_wallboundingbox 4 300)
 baci_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving 4 300)
+vtk_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving_vtu 1 xxx-particlewalls.pvd ref/particle_nointer_3d_nopbc_walldiscretcond_nonmoving-particlewalls.pvd 1e-08 0.4)
+vtk_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving_vtp 1 xxx-particle-phase1-owned.pvd ref/particle_nointer_3d_nopbc_walldiscretcond_nonmoving-particle-phase1-owned.pvd 1e-08 0.4)
 baci_test(particle_dem_1d_radius_from_input 2 "")
 # particle test cases using Gaussian random numbers from Boost Random libraries
 if (${Boost_MINOR_VERSION} GREATER 56)
@@ -1367,6 +1390,7 @@ endif()
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_remodel 2 " ")
 baci_test(sohex8fbar_cooks_nl_new_struc 2 "")
+vtk_test(sohex8fbar_cooks_nl_new_struc_vtk 1 xxx-structure.pvd ref/sohex8fbar_cooks_nl_new_struc-structure.pvd 1e-08)
 baci_test(sohex8fbar_cooks_nl_ptc_new_struc 2 "")
 baci_test(sohex8fbar_cooks_nl_line_search_new_struc 2 "")
 baci_test(sohex8_easfull_cooks_nl_line_search_new_struc 2 "")

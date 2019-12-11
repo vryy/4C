@@ -1,0 +1,96 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="12" NumberOfCells="2" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAHwEAAA==eNpjYMAOnqu2TuEU53TYf7Q25d7qFfacc45qZp89ZN8m1iez64eEg0LzQeuIDcft5+/nsYla98h+jm/nBLepSg5TXqSG5nTftN99zaz/4LMv9iclGBq/Nmo4vPrr8cp751N73q+n+8KqmRw4Sw+XPDDWcwj7ZFrvZPLB/vbW32Izd/E4bMidaqZUau2w0ajYaN9ELodkT3fXBQc1HRYZ3n8l0Gzr4HeYIZuVg98hTy6rPSNBz2FB5lMOhmJ7h60H7d5/fyDo0Gxlv/DLNEOH5j721lcLHRxsumN03seIOKS6XzRZLWziMHPlw81WVY4OP/oPXpL4KuawMuzX949LzBz2dm7xfezo5LBgYajH0mWSDgqdnk+SPC0dALBqd7o=
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAADAAAAAwAAAAIQAAAA==eNoNw4cNACAAA6C61///CglJUqw2u8Ppcnu8Pj8EqABD
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAgAAAAIAAAADgAAAA==eNpjY2Bg4AFiAABoABM=
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAIAAAACAAAACgAAAA==eNpjYQEAAA4ACQ==
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="base_vector_1" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAKwEAAA==eNoBIAHf/gAAAAAAAPA/AAAAAAAAbDwAAAAAAAA4PODcODuR2e8/HCOayCWHnj+snaZ+OpC3P+1S25CrZu8/PkJjmzvZrD/HSMPUBpLHP8nssNqBqO4/RWnJQVlOtD9QbO14IJ/RPye41vQPoe0/B0Vlg0Y3uT/JotuHz1bXP4yea3EVU+w/YZ3JwEgavT+iQSOYy+DcPwQSofl7guU/qzEZByYExj9y8hLNVAvnP82qK7NMV+Q/kPnuuzRqxz9GIJrL4P/nP6Cj8aS4H+M/Haj2Psi0yD8BNLZ0/+boP0nE5QSB3OE/PihlkhPjyT8EP/d2IcDpP6jbnkBujuA/ggkZQlv0yj9Q/0wtwIrqP4gDHQKfbN4/hRjY1/Xnyz8yQIXyXUbrP1DViHY=
+        </DataArray>
+        <DataArray type="Float64" Name="base_vector_2" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAKwEAAA==eNoBIAHf/gAAAAAAAGy8AAAAAAAA8D8AAAAAAAByvPa/R0i5yKC/GXak/6337z8sNy3h66efP42EE/HidLG/kDISN87e7z+ledqWKwWuPzs4BpRdGbu/5jtyFKO17z9Y3Yry3Da1P0bRwwsGnMK/mKksipp87z8gwxqvPna6Pw5Q1NTz2se/PkRH6Uw07z80miJLt7K+PzR7WNzAg9a/Pgr8lNDC7T9wF5Qm5TG7P8JONt1I/te/YyLmFGyE7T/VmXtUHr+3P4ZDRd/1a9m/EVeUGKJC7T9AtKtEEAi0P9/ayiDly9q/a7DLa5v97D+ypra3CA+wPzMpa2U8Hdy/Lq4w3IK17D8AYtGu/KynP1D8fH0qX92/Emm8HoVq7D/4INK+PISdP2DZjNU=
+        </DataArray>
+        <DataArray type="Float64" Name="base_vector_3" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAKwEAAA==eNoBIAHf/gAAAAAAADi8AAAAAAAAcjwAAAAAAADwP6ABUNCzTbe/gIgV1nBMob/XJzTBStnvP2UDok1SDce/F5L43JTxsb/jhQBlkmXvP0r4rnp7CtG/4o0x4ULJu78gD+D3C6buP0ESOnIpUNa/qJ15onwJw79f3Dv5tpztP8ZwwYWeSdu/8jtYJZ9ZyL92VmIFWEzsP8TzISDh2OS/Qu/ZLpTI1L9tlT+Y4/DlP0z89NYymOW/i6jQHq7E1b9lyP0ZF/XkP3Uv7V14Sea/+cA5k6TG1r9emP55pPDjP0pHz8dD7Oa/coZsldfN17/HeGg5LeTiP9BIjCEwgOe/biR476PZ2L/aHDnSV9DhP0Lh2rDhBOi/wMFYkWPp2b/U6QlQz7XgP72Mmjw=
+        </DataArray>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAIQEAAA==eNpjYMABEk4ov9tTvD9hnUi7JUfIfs45RzWzzx6yZ8h/uFWlcdH+hIoJMVnpnfvn7+exiVr3yL6hVWqpT8e+/QXbVKrYPy3bv/uaWf/BZ1/sE76//Wf/+OL+CbF+x5nE9+zn/Xq6L6yayYHhmsVl0ciH+xXmVVcf+XJ6/+2tv8Vm7uJxeFCmXTunl/vALoaD1w9r/9yf7OnuuuCgpoPD4ishFUWCB5btXPNtuzPDgTy5rPaMBD2HCfte8j0tFj3wr660TTaH5UCzlf3CL9MMHQo4vRX7z0geeFD4JMRZiPNAqvtFk9XCJg4H6vMcPtbKHThgvFg6ypLvwMqwX98/LjFzOMGXKnD4iOIBvs26Xp6fBA8odHo+SfK0dAAAnKqA9A==
+        </DataArray>
+  </PointData>
+  <CellData>
+        <DataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAAMQAAAA==eNpjYICBA0Wc797YMTR8vZmZ/MeOgUE4yH05mz1Dw8UbUc85gHSH/qfzXPYATFgQMg==
+        </DataArray>
+        <DataArray type="Float64" Name="cross_section_radius" format="binary">
+AQAAABAAAAAQAAAAEwAAAA==eNpTVVq8N9/5kb0qlAYAOCIG9Q==
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHgAAAA==eNozWvNOoeDx3P1GUHr107Rtayq79q+D0gA1+RNu
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHQAAAA==eNpj6LNP+tX6dR8DlLZ48urcXr+o/TAaACN/ErM=
+        </DataArray>
+        <DataArray type="Float64" Name="element_owner" format="binary">
+AQAAABAAAAAQAAAACwAAAA==eNpjYEAFAAAQAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAANQAAAA==eNpjYICAB1/X94TbJTpcSVPx3v66wCFcICjBnbHaIWSb53PmDbUOdb+NJcq+1TsAAH6PEfc=
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHgAAAA==eNpLP/yN++KB6wfSoXSVVHFBJtfRAzVQGgA4ixGH
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_3_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHAAAAA==eNqbGMz94r2U4YGJUFpBzWm514spcBoA8TgPDQ==
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/6/wqioW0su9nsR+jmNcRUD9GAZmt/xRQFx2NYl43k9A2eIymQUvRUCSNNCXe0sxQFO2FnM=
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/8gDAAAAwIJAhS2LweQygkCAnyeTu5SAQIg9arZKtnlA+G7EfNPBdkBjz8vxDpVzQAI0Ft4=
+        </DataArray>
+        <DataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHgAAAA==eNqrund60drgPQ5VUJpnHm/JsbvzHASgNAAnGxDf
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAAOQAAAA==eNq7v0dsbzBjzh4GjmSxlQ1P7Rgm1Cc6SX+yY3DY+c2L64MdwwI1iX9BQPEN9gtuZly0AwDjQRRW
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="binary">
+AQAAADAAAAAwAAAAOAAAAA==eNrjXX9myrX7SvYMf7buPh0IpCf0ez3eoGDPYBC08fNDSXuGBye/lr8QA/In+/lvE7YHADAXFZA=
+        </DataArray>
+        <DataArray type="Float64" Name="twist_GPs" NumberOfComponents="2" format="binary">
+AQAAACAAAAAgAAAAHgAAAA==eNo79NY/zUSh1f4QlL4wbc5ZTtZ0+8tQGgD0bg4C
+        </DataArray>
+      </CellData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>
