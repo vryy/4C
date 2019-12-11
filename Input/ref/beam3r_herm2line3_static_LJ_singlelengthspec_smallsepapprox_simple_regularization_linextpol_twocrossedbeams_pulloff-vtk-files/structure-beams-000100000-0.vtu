@@ -1,0 +1,78 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+0.5
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="24" NumberOfCells="4" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAEACAABAAgAAIQIAAA==eNoL49PdNPf9/f0MYPBhf8QK07PWfhf3L7jj51x95M7+m2eSbvCffrNfc4u1sovpxf1HPm6qX7bi5v4ivgd8EpNf7j/GMOfDgrcX9pds63r2eda1/RafN9gdini2P/ADSwJLzYX9aZPZv5vPurx/+ko+5h0yj/c/OOlp4Xjq/H6/j1EG7ksv7P+8P+Wd6/77+3sbQ+b7R5/DKf7GcV3zjNLT+/PuTfjM7nJz/6nTD9fN3XJmv6njd1nDTUf3v5Odfevf8Uv7hZY++tBy/9T+gJJvU1793L/f7/3ZUxemndhvsYyzOPDpif3veTw9WJZu2W8zOT6c02r7fs4MTmf/88f2p/4vFb+8d9H+69pXXDeda7UPbZ6Sd2rZEZziOnMsX93mrrMvLLiiOnXtHvs0u9n1M8oO7a9rOFW60maVfYgnF+fWgNP2xb+yYphcDuzn0cjcszFqh/2DpzJywapX7P0/NlsxKezZv8/JvTv09EH72V2/PvgsumWf/mXPFunt2/dnuEX1dWcet78u9+71ov4H9j0Nf8Od/TfjFI/7NPkoI8dZ+2uODifkzj22P5+XPkXv4tr9Kzfb3rAOvmjv8n7R4lk8z+1r9Q+fuMy8dP/OnRlby5Su2M+1yq0T835l77Wvte9dzoz9FUXaHRs/XrOPNv8WManzrb3XuRsBFzyq9/9zSYt7c+CmfU3NKUn2lA/2TkL/LnJPbLUHAJqEOu8=
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAAGAAAABgAAAAMgAAAA==eNoNwwcOgCAQALBDHLgHjv//1DZpRESyMdva2TtYHJ2cXVzd3D08vazePr5+/iRQARU=
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAABAAAAAQAAAAEwAAAA==eNpjY2Bg4AFiISCWAGIAAfAAPQ==
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAQAAAAEAAAADAAAAA==eNpjYWFhAQAALAAR
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="base_vector_1" NumberOfComponents="3" format="binary">
+AQAAAEACAABAAgAArwEAAA==eNq79Xb/UdX5d+xvg+k39iopv7oF3vjseeU4Uala6I79/FOduQv3vbF/ov3A8kfqbPs7xt8VJfpu29/3+MDFfe2N/RXlTbKHxVbZs7B+4+gVvm0vbutf9PTZG/sTVxf2KE7dZL+iL3eX2ZJb9jXe4tq9n97YZ/EYT91Vtt3+gFhLnaPjLfvKymNh5r/e2NtFPBRp37DbfhtUvBYq7gQVl1u2wGfv65v2U41qVT/8e2N/LUOKN9Fpvz1f58z2uiU37T0XpWybw/jWvqBPsbdS7KA92895uvo5N+1VbuU9/MH01l4uJTu20uKQ/aKkV82BzjftP+b0fp/G/Nb+59e2tkb2w/YS9RtnO2rdtO9OO77mPlD8z+tnVpeaD9vLQMXboeI/oeJytt1Vc1Ru2gcLbDr9FyhuJXb/Nd+8w/Ybnkex3lG4af8+nd1GkOWtvaMB06bS9Yftp3C+F2KUB5ofMuerFFC8J2qRCfuOw/b7Arh5eYDi10z6iqSB4klmPccObz9sf6Bvwoc/QHPKBJzWCwHF26R9U1evQ4hXQMXbcYh34BDvJFG8i4D5AMhEF7g=
+        </DataArray>
+        <DataArray type="Float64" Name="base_vector_2" NumberOfComponents="3" format="binary">
+AQAAAEACAABAAgAAtQEAAA==eNq7/Xb/UdX5b/bfAtN37O0yqtd9u+9os/Fl6W+Hg2/2N0UWr5MSvWPf4P3pdWKlwv75PGGv+++/2f9jsR3b3Om37R22fuaweG27P3v3+kKrX2/2f+rr0nykdtv+wEZhlvA0v/06+mwz0gTf7s9YYt0pcPiWfYKc/XZG14j9yS8bjpqrvt2vpzp1t1MOUHzKS5n7bxL2p0PFVaDiBVDx4HK71adM3+6XOHwtcqbSLfsPD8+FacxO3X++fEeStTNQ/a4PL+Sf3bRX2Pzj5417mfvNbk4+tND37X6RDaZ5d7bdtH9wWs+yojx3f7rJknMCoW/3H1q87/7FKTftAzJjd+ZLFuz/qR+XMy3y7f55LHuLGRtu2htMWT950reC/V+h4oug4gxQcc5AnYdzot7uf2G5vsKtGmj++9eBczQL97/9rSXpHf12f9gSSTalipv2C2aq9a30LtzPbnjUeiFQ/Eq1ufyUspv2Aqu2l/XEFO6fJFwTMx8o/mbxjKNzgOIPApLy9YDi35bfr3IFiivoOP+0BpozQfoV/wSvwv0/0MQLSBQPwCHugEPcAIe4AlQcADlGLw0=
+        </DataArray>
+        <DataArray type="Float64" Name="base_vector_3" NumberOfComponents="3" format="binary">
+AQAAAEACAABAAgAAtAEAAA==eNpTSfnVLfDGx8Yuo3rdt/uONgxg8ME++eGe6Bq3jv1OvUtkbSbM2J+rmKAn+Pe9PcdK3gvLX03bv2fN8tjsguX7/U1ia6K/vrcPuj05yMZowf40c/9S4V0b9vuXXbyU9Oq9/ZvSJW8V/Zfs59qmqP1Jfev+hh8cwU1339tvYJb+EXJp+X6uy+pPFzHs3K+9Yy7Lm/MIcT408fcSP+p+Hli1/475zeBNTnv2FwowLll96L39Z41rFuIKa/f/0GxsnPt23/7kK2YvFm57b187U1Dt9ed1+/9VlAtNaDiwv/BkpE7bmvf2VuLz81/Jb9gfk5ES1WN3cP+15plHni15b8+i93uiSvOG/V2+Gfv2bDi4/6uRkZXmgvf2/3Qh4u1o4jMP+DPwzNiw/6Xg7RU3Txzc/5ODX0B1/nv7rKZWxedLN+yfcKUn7MaNg/tFDjHuLZ/33j7A9YXkzjUb9pe8Y9y+48HB/dFvDmspAcXr9SaUNQPFNy5yO1QFFN/zP/OMClDc79BZHTegOVJRLhVyQHMeTMuaVw8yB4d4IFRcBod6XOKyaOL+UHE5NHFfHOoBj/Qz9Q==
+        </DataArray>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
+AQAAAEACAABAAgAADQIAAA==eNpjYEAF/8Hg/H6GP0yrOhQd9jMY/J/vdl7bfqE4zxqBc0DxK55vjPPj9zMs0HmmxeZlf3vDGbdTdkDxvAu1n60L9zPEPMvy94i2/9g/T3Vi9Ln9DeVXMo/crN3PMLdTxaA6zV6/8t7ck7pn9zPE7zmqv7VtvwPzhbQWvQL7OwYvWW7sO41TvGHXimiLM/37G07pNWWmlNpLVpeJqEmc2r+jy99Y5N+U/QyBrGpiZ6vsE0PKw3idT+yvaF10KqN91v4DS3a96dFpsG8PnXfjpsex/VN5J6Q2Gi/Y/8LogmDTnyb7CPF5K64bHdm/tYe37anD4v3Xta+4bjrXar/ESPNKENchnOI5n192GUQv279g27XEO/M77LNux59y3LJ/v4ADg86cypX7F/zm+r6tsNu+Jfh/s6j/7v0SXJMOVc9as/9AqFnsX+c++7f+a1mFn2/bf+fFg+VKe9bvFxDgLzPtnmDPGvysXqdu0/4XltOlivI27n9w63Bt7JeJ9iH7fN1W6KzBKX5i3YeKoH+b9jtcWbiwKHayPbfOLq2A+MX710x8l2/ct2X/AemJy9uPTbEvuqm975Xy1P0WbvwnROS27W9QKJk1R3+avcCxyJu9njn7OQwuen5bu33/g0Dd1o0zptu/XOxRJ6jcY39g06a912137meQn190jHGm/cq+yD1Oa+bbAwCJeR3z
+        </DataArray>
+  </PointData>
+  <CellData>
+        <DataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAASwAAAA==eNpjYJjC6FFzdh8DwxX++iUHgXSHUFzXRiBdAaUXqJ6smQ6kGTSy3k0C0gpQmqE7aUs7iH7G3ldoB6SfQ2kgOLAHQm+wAQB27x7+
+        </DataArray>
+        <DataArray type="Float64" Name="cross_section_radius" format="binary">
+AQAAACAAAAAgAAAAEwAAAA==eNqrFlnn/rBqin01DhoA8lAOyQ==
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/2rZdy6ic86/qkPbBCbSyL9ekazVqTDDv1AlqDBvzL+/u3UsqyB8tL/Hl/s0pFeiv4l5gnOzGH2/QJFtWnFsY7+d1DsyhFhjP1vz2A/HgLW8HvAHDUELmbyW9qkSTfahPLMdMa4=
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAYAAAAA==eNq7UfjQtD1lq32WNkNIXNlG+5TnYirZAqvtF6jNZQ2sWGb/+lu1u4HqXPt/R/U46jZ32bPlmU9Lv5pm73au2vjZSj975pe6Hy8y+u1P++QfElOeuicZSqdAaQD1witk
+        </DataArray>
+        <DataArray type="Float64" Name="element_owner" format="binary">
+AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAWgAAAA==eNpjYPgV+f3sK7sVcd8X3uZ8bdfAven/M6XXdhc6V4NpBid2LjOt13YOaT8CZj17acfw9ReEnsKrpCa2y44hQnYfa+fSfQx7ZCA0CERM3gOmCybuAQD2Mynp
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAUAAAAA==eNp77CF7bacxsz1Di7dhWByQnrHAXbYASBdAaYff/91LgfSDnDw9PSZ7BoFcCN2w1Ct79QU7BoaIDXp3d+9jYIiC0iCwwAZCN+wBANJxHZM=
+        </DataArray>
+        <DataArray type="Float64" Name="twist_GPs" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAZgAAAA==eNpjyGDXjOZdbPdy+50LT88t38dgcO4wC/9iO4ZfnevuAMWVlqYxV18Eits7JvTyAcVf2BV7vOa3c+ZiWsD7WXjfBL6aGBD/b/LNYpWNM2xWfJk+u/zxQpsgc+e/MXnLbQD3BCrS
+        </DataArray>
+      </CellData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

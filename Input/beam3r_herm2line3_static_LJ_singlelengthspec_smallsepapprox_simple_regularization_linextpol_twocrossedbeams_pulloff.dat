@@ -29,7 +29,7 @@ WRITE_HEADER           no
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
-EVERY_ITERATION                 no
+EVERY_ITERATION                 yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
 OUTPUT_BEAMS                    Yes
 DISPLACEMENT                    Yes
