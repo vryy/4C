@@ -318,7 +318,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::PrescribeOpenBoundaryStates(
     vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
-    UTILS::vec_setscale(vel_i, function.Evaluate(0, pos_i, evaltime), &outwardnormal_[0]);
+    UTILS::vec_setscale(vel_i, -function.Evaluate(0, pos_i, evaltime), &outwardnormal_[0]);
   }
 }
 

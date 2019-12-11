@@ -45,14 +45,11 @@ DIRICHLET_FUNCT                 1
 DIRICHLET_OUTWARD_NORMAL        -1.0 0.0 0.0
 DIRICHLET_PLANE_POINT           -0.1 0.0 0.0
 NEUMANNBOUNDARYTYPE             NeumannNormalToPlane
-NEUMANN_FUNCT                   2
 NEUMANN_OUTWARD_NORMAL          1.0 0.0 0.0
 NEUMANN_PLANE_POINT             0.1 0.0 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -a*0.1*(-400.0*y*y+1.0)
+COMPONENT 0 FUNCTION a*0.1*(-400.0*y*y+1.0)
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1.0 1000 DESCRIPTION 0.5*(1.0-cos((t*pi)/1.0)) 1.0
-----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleSPHFluid INITRADIUS 0.03 INITDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 1.0 BULK_MODULUS 1.0 DYNAMIC_VISCOSITY 0.001 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
 MAT 2 MAT_ParticleSPHBoundary INITRADIUS 0.03 INITDENSITY 1.0
