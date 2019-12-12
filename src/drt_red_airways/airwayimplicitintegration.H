@@ -205,7 +205,9 @@ namespace AIRWAY
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void ComputeNearestAcinus();
+    void ComputeNearestAcinus(Teuchos::RCP<DRT::Discretization const> search_discret,
+        std::set<int>* elecolset, std::set<int>* nodecolset,
+        Teuchos::RCP<Epetra_Vector> airway_acinus_dep);
 
     /*!
     \brief Assembling of the RHS Vector and the LHS Matrix
