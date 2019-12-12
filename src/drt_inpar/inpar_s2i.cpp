@@ -388,6 +388,25 @@ void INPAR::S2I::SetValidConditions(
                   INPAR::S2I::kinetics_butlervolmerreducedwithresistance)));
             }
 
+            {
+              // constant interface resistance
+              std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
+              constantinterfaceresistance.push_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+              constantinterfaceresistance.push_back(
+                  Teuchos::rcp(new RealConditionComponent("resistance")));
+
+              kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantInterfaceResistance",
+                  constantinterfaceresistance, INPAR::S2I::kinetics_constantinterfaceresistance)));
+            }
+
+            {
+              // no interface flux
+              std::vector<Teuchos::RCP<ConditionComponent>> nointerfaceflux;
+
+              kineticmodels.push_back(Teuchos::rcp(new CondCompBundle(
+                  "NoInterfaceFlux", nointerfaceflux, INPAR::S2I::kinetics_nointerfaceflux)));
+            }
           }  // kinetic models for scatra-scatra interface coupling
 
           // insert kinetic models into vector with slave-side condition components
@@ -397,12 +416,15 @@ void INPAR::S2I::SetValidConditions(
               Teuchos::rcp(new StringConditionComponent("kinetic model", "ConstantPermeability",
                   Teuchos::tuple<std::string>("ConstantPermeability", "Butler-Volmer",
                       "Butler-Volmer-Peltier", "Butler-Volmer-reduced", "Butler-Volmer-Resistance",
-                      "Butler-Volmer-ReducedwithResistance"),
+                      "Butler-Volmer-ReducedwithResistance", "ConstantInterfaceResistance",
+                      "NoInterfaceFlux"),
                   Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,
                       INPAR::S2I::kinetics_butlervolmer, INPAR::S2I::kinetics_butlervolmerpeltier,
                       INPAR::S2I::kinetics_butlervolmerreduced,
                       INPAR::S2I::kinetics_butlervolmerresistance,
-                      INPAR::S2I::kinetics_butlervolmerreducedwithresistance))),
+                      INPAR::S2I::kinetics_butlervolmerreducedwithresistance,
+                      INPAR::S2I::kinetics_constantinterfaceresistance,
+                      INPAR::S2I::kinetics_nointerfaceflux))),
               kineticmodels)));
 
           // insert slave-side condition components into vector of interface sides

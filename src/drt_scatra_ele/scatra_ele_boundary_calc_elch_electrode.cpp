@@ -180,19 +180,35 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
   // safety checks
-  // access input parameters associated with current condition
-  if (numelectrons != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
-  if (stoichiometries == NULL)
-    dserror(
-        "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-        "coupling!");
-  if (stoichiometries->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  switch (kineticmodel)
+  {
+    case INPAR::S2I::kinetics_butlervolmer:
+    case INPAR::S2I::kinetics_butlervolmerpeltier:
+    case INPAR::S2I::kinetics_butlervolmerreduced:
+    case INPAR::S2I::kinetics_butlervolmerresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+    {
+      if (numelectrons != 1)
+        dserror(
+            "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
+            "interface!");
+      if (stoichiometries == nullptr)
+        dserror(
+            "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
+            "coupling!");
+      if (stoichiometries->size() != 1)
+        dserror("Number of stoichiometric coefficients does not match number of scalars!");
+      if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+      if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+
+      break;
+    }
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
 
   // number of nodes of master-side mortar element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
@@ -324,6 +340,79 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       break;
     }  // case INPAR::S2I::kinetics_butlervolmerresistance:
 
+    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    {
+      // core residual
+      const double inv_massfluxresistance = 1.0 / (resistance * faraday);
+      const double jfacrhsfac =
+          timefacrhsfac * (eslavepotint - emasterpotint) * inv_massfluxresistance;
+
+      // calculate core linearizations
+      const double dj_dpot_slave = timefacfac * inv_massfluxresistance;
+      const double dj_dpot_master = -dj_dpot_slave;
+
+      // calculate RHS and linearizations of master and slave-side residuals
+      if (k_ss.M() and k_sm.M() and r_s.Length())
+      {
+        for (int vi = 0; vi < my::nen_; ++vi)
+        {
+          const int row_pot = vi * 2 + 1;
+
+          for (int ui = 0; ui < my::nen_; ++ui)
+          {
+            const int col_pot = ui * 2 + 1;
+
+            k_ss(row_pot, col_pot) += test_slave(vi) * dj_dpot_slave * funct_slave(ui);
+          }
+
+          for (int ui = 0; ui < nen_master; ++ui)
+          {
+            const int col_pot = ui * 2 + 1;
+
+            k_sm(row_pot, col_pot) += test_slave(vi) * dj_dpot_master * funct_master(ui);
+          }
+
+          r_s[row_pot] -= test_slave(vi) * jfacrhsfac;
+        }
+      }
+      else if (k_ss.M() or k_sm.M() or r_s.Length())
+        dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+
+      if (k_ms.M() and k_mm.M() and r_m.Length())
+      {
+        for (int vi = 0; vi < nen_master; ++vi)
+        {
+          const int row_pot = vi * 2 + 1;
+
+          for (int ui = 0; ui < my::nen_; ++ui)
+          {
+            const int col_pot = ui * 2 + 1;
+
+            k_ms(row_pot, col_pot) -= test_master(vi) * dj_dpot_slave * funct_slave(ui);
+          }
+
+          for (int ui = 0; ui < nen_master; ++ui)
+          {
+            const int col_pot = ui * 2 + 1;
+
+            k_mm(row_pot, col_pot) -= test_master(vi) * dj_dpot_master * funct_master(ui);
+          }
+
+          r_m[row_pot] += test_master(vi) * jfacrhsfac;
+        }
+      }
+      else if (k_ms.M() or k_mm.M() or r_m.Length())
+        dserror("Must provide both master-side matrices and master-side vector or none of them!");
+
+      break;
+    }  // case INPAR::S2I::kinetics_constantinterfaceresistance
+
+    case INPAR::S2I::kinetics_nointerfaceflux:
+    {
+      // do nothing
+      break;
+    }  // case INPAR::S2I::kinetics_nointerfaceflux
+
     default:
     {
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
@@ -402,7 +491,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
               "interface: %i",
               numelectrons);
         const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-        if (stoichiometries == NULL)
+        if (stoichiometries == nullptr)
           dserror(
               "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
               "coupling!");
@@ -479,7 +568,41 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
 
         break;
       }
+      case INPAR::S2I::kinetics_constantinterfaceresistance:
+      {
+        // calculate linearizations
+        const double inv_massfluxresistance =
+            1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
+        const double dj_dd_slave =
+            timefacwgt * (eslavepotint - emasterpotint) * inv_massfluxresistance;
 
+        // loop over matrix columns
+        for (int ui = 0; ui < my::nen_; ++ui)
+        {
+          const int fui = ui * 3;
+
+          // loop over matrix rows
+          for (int vi = 0; vi < my::nen_; ++vi)
+          {
+            const int row_pot = vi * 2 + 1;
+            const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave;
+
+            // loop over spatial dimensions
+            for (unsigned dim = 0; dim < 3; ++dim)
+            {
+              // finalize linearizations w.r.t. slave-side structural displacements
+              eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+            }
+          }
+        }
+
+        break;
+      }
+      case INPAR::S2I::kinetics_nointerfaceflux:
+      {
+        // nothing to do
+        break;
+      }
       default:
       {
         dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
@@ -655,7 +778,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateCoreLi
       dj_dpot_master = -dF_dpot_master * dF_di_inverse;
       break;
     }  // case INPAR::S2I::kinetics_butlervolmerreducedwithresistance
-  }    // switch(kineticmodel)
+    default:
+    {
+      dserror("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
+      break;
+    }
+  }  // switch(kineticmodel)
   return;
 }
 

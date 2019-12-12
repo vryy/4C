@@ -93,7 +93,6 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::ParameterList& parameters)
 {
   kineticmodel_ = parameters.get<int>("kinetic model", std::numeric_limits<int>::infinity());
-  numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
   conditiontype_ = parameters.get<DRT::Condition::ConditionType>(
       "condition type", DRT::Condition::ConditionType::none);
 
@@ -107,7 +106,21 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       {
         case INPAR::S2I::kinetics_constperm:
         {
+          numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
           permeabilities_ = parameters.get<std::vector<double>*>("permeabilities");
+          break;
+        }
+
+        case INPAR::S2I::kinetics_constantinterfaceresistance:
+        {
+          resistance_ =
+              parameters.get<double>("resistance", std::numeric_limits<double>::infinity());
+          break;
+        }
+
+        case INPAR::S2I::kinetics_nointerfaceflux:
+        {
+          // do nothing
           break;
         }
 
@@ -117,6 +130,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
+          numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
           stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
           numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
           kr_ = parameters.get<double>("k_r", -1.0);
@@ -155,6 +169,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
+          numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
           stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
           numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
           kr_ = parameters.get<double>("k_r", -1.0);

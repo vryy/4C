@@ -2901,7 +2901,6 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
   conditionparams.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
   conditionparams.set<int>("kinetic model", kineticmodel);
   conditionparams.set<DRT::Condition::ConditionType>("condition type", conditiontype);
-  conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
 
   // set the condition type specific parameters
   switch (conditiontype)
@@ -2913,8 +2912,21 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
       {
         case INPAR::S2I::kinetics_constperm:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<double>*>(
               "permeabilities", s2icondition.GetMutable<std::vector<double>>("permeabilities"));
+          break;
+        }
+
+        case INPAR::S2I::kinetics_constantinterfaceresistance:
+        {
+          conditionparams.set<double>("resistance", s2icondition.GetDouble("resistance"));
+          break;
+        }
+
+        case INPAR::S2I::kinetics_nointerfaceflux:
+        {
+          // do nothing
           break;
         }
 
@@ -2924,6 +2936,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<int>*>(
               "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
           conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));
@@ -2962,6 +2975,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<int>*>(
               "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
           conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));
