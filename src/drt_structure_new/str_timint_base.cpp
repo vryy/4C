@@ -446,8 +446,6 @@ void STR::TIMINT::Base::PrepareOutput()
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
-  std::cout << "Status of the write initial state " << dataio_->GetInitialStateIsToBeWritten()
-            << std::endl;
   // --- energy calculation ---------------------------------------------------
   if (dataio_->GetWriteEnergyEveryNStep() and
       (dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0))
