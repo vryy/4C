@@ -164,11 +164,19 @@ namespace STR
         return outputeveryiter_;
       };
 
-      /// Shall we write initial state?
-      const bool& IsWriteInitialState() const
+      /// Get whether initial state is yet to be written?
+      const bool& GetInitialStateIsToBeWritten() const
       {
         CheckInitSetup();
         return writeinitialstate_;
+      };
+
+      /// Set whether initial state is yet to be written
+      void SetInitialStateIsToBeWritten(bool initialstateistobewritten)
+      {
+        CheckInitSetup();
+        writeinitialstate_ = initialstateistobewritten;
+        return;
       };
 
       /// Shall we write surfactant output?

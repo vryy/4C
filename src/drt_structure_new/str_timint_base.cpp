@@ -430,11 +430,9 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
 void STR::TIMINT::Base::PrepareOutput()
 {
   CheckInitSetup();
-
   // --- stress, strain and optional quantity calculation ---------------------
-  if ((dataio_->GetWriteResultsEveryNStep() and
-          dataglobalstate_->GetStepNp() % dataio_->GetWriteResultsEveryNStep() == 0) or
-      (dataglobalstate_->GetStepNp() == 1 and dataio_->IsWriteInitialState()))
+  if ((dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp())) or
+      dataio_->GetInitialStateIsToBeWritten())
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();
@@ -448,7 +446,8 @@ void STR::TIMINT::Base::PrepareOutput()
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
-
+  std::cout << "Status of the write initial state " << dataio_->GetInitialStateIsToBeWritten()
+            << std::endl;
   // --- energy calculation ---------------------------------------------------
   if (dataio_->GetWriteEnergyEveryNStep() and
       (dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0))
@@ -483,6 +482,9 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
   // write Gmsh output
   writeGmshStrucOutputStep();
   int_ptr_->PostOutput();
+
+  // Set the InitialStateIsToBeWritten to false after writing the initial state
+  if (dataio_->GetInitialStateIsToBeWritten()) dataio_->SetInitialStateIsToBeWritten(false);
 }
 
 /*----------------------------------------------------------------------------*
