@@ -515,10 +515,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
           acini_ele->setParams("AcinusVolume", val);
 
           // adjust acini volumes in the vectors used in this function
-          (*acini_e_volumenp_)[i] = val;
-          (*acini_e_volumen_)[i] = val;
-          (*acini_e_volumenm_)[i] = val;
-          (*acini_e_volume0_)[i] = val;
+          if (not DRT::Problem::Instance()->Restart())
+          {
+            (*acini_e_volumenp_)[i] = val;
+            (*acini_e_volumen_)[i] = val;
+            (*acini_e_volumenm_)[i] = val;
+            (*acini_e_volume0_)[i] = val;
+          }
         }
       }
       else
