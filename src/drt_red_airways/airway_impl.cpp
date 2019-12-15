@@ -429,7 +429,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
   double xn = (*x_n)[ele->LID()];
   double opennp = (*open)[ele->LID()];
 
-  double tmp = (epn(0) + epn(1)) / 2;
+  // earlier, but problematic for convergence:
+  // double tmp = (epn(0) + epn(1)) / 2;
+
+  double tmp = epn(0);
 
   /*if (epn(0)-Pcrit_o > 0)
   {
