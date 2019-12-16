@@ -1,3 +1,14 @@
+# Determine timeout for the unit tests. Use default one, if it is not passed from the outside.
+if (DEFINED ENV{UNITTEST_TIMEOUT})
+  set(UNITTEST_TIMEOUT $ENV{UNITTEST_TIMEOUT})
+  message("The unit test timeout is $ENV{UNITTEST_TIMEOUT} s.")
+else ()
+  # default unit test timeout, if not passed as an environment variable
+  set(UNITTEST_TIMEOUT 10) # Default unit test timeout
+
+  message("The unit test timeout is not passed as an environment variable. It is set to the default value ${UNITTEST_TIMEOUT} s.")
+endif ()
+
 set_property(GLOBAL PROPERTY unit_files) # use this instead of lists, because it operates at a global scope
 add_subdirectory ( src )
 get_property(unit_list GLOBAL PROPERTY unit_files)
@@ -13,4 +24,4 @@ target_compile_options( unittest PRIVATE -g -O0 )
 target_include_directories( unittest PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
 
 add_dependencies(full unittest)
-set_tests_properties( unittest PROPERTIES TIMEOUT 10 LABELS minimal)
+set_tests_properties( unittest PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
