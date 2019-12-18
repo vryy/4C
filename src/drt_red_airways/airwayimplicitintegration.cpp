@@ -207,7 +207,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   elemArea0_ = LINALG::CreateVector(*elementcolmap, true);
 
   // Element radius at time n+1
-  elemRadius_np_ = LINALG::CreateVector(*elementcolmap, true);
+  elemRadiusnp_ = LINALG::CreateVector(*elementcolmap, true);
 
   // This vector will be used to test convergence
   residual_ = LINALG::CreateVector(*dofrowmap, true);
@@ -595,7 +595,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeNearestAcinus(
           double accum = 0;
 
           for (int m = 0; m < 3; m++) accum += diff_vec[m] * diff_vec[m];
-          diff_norm = sqrt(accum);
+          diff_norm = std::sqrt(accum);
 
           if (diff_norm < min_norm)
           {
@@ -757,8 +757,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(
         "----------------------------------------- STARTING NEW ITERATION "
         "-----------------------------------------\n");
     printf(
-        "TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = "
-        "%4d/%4d "
+        "TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d "
         "\n",
         time_, maxtime_, dta_, step_, stepmax_);
   }
@@ -1196,7 +1195,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("acinar_vnp", acini_e_volumenp_);
     eleparams.set("elemVolumen", elemVolumen_);
     eleparams.set("elemVolumenp", elemVolumenp_);
-    eleparams.set("elemRadius_np", elemRadius_np_);
+    eleparams.set("elemRadiusnp", elemRadiusnp_);
 
     // call standard loop over all elements
     discret_->Evaluate(
@@ -1933,7 +1932,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     LINALG::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
-    LINALG::Export(*elemRadius_np_, *qexp_);
+    LINALG::Export(*elemRadiusnp_, *qexp_);
     output_.WriteVector("elemRadius_current", qexp_);
 
     {

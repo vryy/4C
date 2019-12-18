@@ -429,9 +429,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
   double xn = (*x_n)[ele->LID()];
   double opennp = (*open)[ele->LID()];
 
-  // earlier, but problematic for convergence:
-  // double tmp = (epn(0) + epn(1)) / 2;
-
+  // as decisive quantity the pressure value at the first node of the airway element is chosen;
+  // using the mean pressure of the airway element caused convergence problems
   double tmp = epn(0);
 
   /*if (epn(0)-Pcrit_o > 0)
@@ -1437,7 +1436,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   Teuchos::RCP<Epetra_Vector> elemVolumenp =
       params.get<Teuchos::RCP<Epetra_Vector>>("elemVolumenp");
   Teuchos::RCP<Epetra_Vector> elemRadiusnp =
-      params.get<Teuchos::RCP<Epetra_Vector>>("elemRadius_np");
+      params.get<Teuchos::RCP<Epetra_Vector>>("elemRadiusnp");
 
   // extract all essential element variables from their corresponding variables
   double qinnp = (*qin_np)[ele->LID()];
@@ -1483,7 +1482,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   elemVolumenp->ReplaceGlobalValues(1, &eVolumenp, &gid);
 
   // calculate and update element radius
-  double eRadiusnp = sqrt(eVolumenp / L * M_1_PI);
+  double eRadiusnp = std::sqrt(eVolumenp / L * M_1_PI);
   elemRadiusnp->ReplaceGlobalValues(1, &eRadiusnp, &gid);
 }  // CalcElemVolume
 
