@@ -28,7 +28,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"

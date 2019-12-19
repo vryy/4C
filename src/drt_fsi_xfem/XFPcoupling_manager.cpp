@@ -22,6 +22,8 @@
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_io/io.H"
 
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
 // remove me
 #include "../drt_adapter/adapter_coupling.H"
 

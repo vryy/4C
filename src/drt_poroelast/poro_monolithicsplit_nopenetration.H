@@ -23,17 +23,12 @@
 
 #include "poro_monolithicsplit.H"
 
-namespace FSI
+namespace LINALG
 {
-  // class OverlappingBlockMatrix;
-
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 namespace ADAPTER
 {
@@ -139,12 +134,12 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_D_transform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> k_D_transform_;
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> k_invD_transform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> k_invD_transform_;
 
     //! transform object for linearization of k_D matrix \f$D\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_DLin_transform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> k_DLin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next

@@ -88,6 +88,7 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Electromagnetics"] = prb_elemag;
     string2prbtype["Fluid"] = prb_fluid;
     string2prbtype["Fluid_Ale"] = prb_fluid_ale;
+    string2prbtype["Fluid_Beam_Interaction"] = prb_fbi;
     string2prbtype["Fluid_Freesurface"] = prb_freesurf;
     string2prbtype["Fluid_Poro_Structure_Interaction_XFEM"] = prb_fpsi_xfem;
     string2prbtype["Fluid_Porous_Structure_Interaction"] = prb_fpsi;

@@ -18,10 +18,9 @@
 #include "../drt_fsi/fs_monolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fsi/fsi_utils.H"
 
@@ -45,7 +44,7 @@
 
 #include "fs3i.H"
 
-
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -71,10 +70,10 @@ void FS3I::FS3I_Base::Init()
 
   scatracoup_ = Teuchos::rcp(new ADAPTER::Coupling());
   scatraglobalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
-  sbbtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform());
-  fbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
+  sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform());
+  fbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
 
   SetIsInit(true);
   return;

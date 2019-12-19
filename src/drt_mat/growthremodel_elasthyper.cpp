@@ -405,15 +405,15 @@ void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition*
     potsumrf_[p]->Setup(numgp, params_->density_, linedef);
 
   // 2D elastin matrix
-  for (unsigned int p = 0; p < potsumelmem_.size(); ++p) potsumelmem_[p]->Setup(linedef);
+  for (unsigned int p = 0; p < potsumelmem_.size(); ++p) potsumelmem_[p]->Setup(numgp, linedef);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (unsigned int p = 0; p < potsumeliso_.size(); ++p) potsumeliso_[p]->Setup(linedef);
+    for (unsigned int p = 0; p < potsumeliso_.size(); ++p) potsumeliso_[p]->Setup(numgp, linedef);
 
     // volpenalty
-    potsumelpenalty_->Setup(linedef);
+    potsumelpenalty_->Setup(numgp, linedef);
   }
 
   // Setup circumferential, radial and axial structural tensor

@@ -123,27 +123,20 @@ namespace MIXTURE
     }
 
     /*!
-     * This method should be called after ReadElement to initialize all quantities. It is called
-     * once at the beginning of the simulation for each element
-     *
-     * @param params Parameter list containing different parameters
+     * Returns whether the constituent is already set up
+     * @return true if the constituent is already set up, otherwise false
      */
-    virtual void Init(Teuchos::ParameterList& params);
-
-    /*!
-     * Returns whether the constituent is already initialized
-     * @return true if the constituent is already initialized, otherwise false
-     */
-    bool IsInit() { return is_init_; }
+    bool IsSetup() { return is_setup_; }
 
     /*!
      * \brief Setup the constituent
      *
      * This method is called once for Gauß point at the beginning of the simulation.
      * The constituent should setup all internal variables and materials.
-     * @param gp Number of the Gauß points
+     *
+     * @param params Container for additional information
      */
-    virtual void Setup(int gp, Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params);
 
     /*!
      * \brief Update of the internal variables
@@ -154,9 +147,10 @@ namespace MIXTURE
      * @param defgrd Deformation gradient of the previous timestep
      * @param params Container for additional information
      * @param gp Gauß point
+     * @param eleGID Global element identifier
      */
-    virtual void Update(
-        LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp)
+    virtual void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+        const int gp, const int eleGID)
     {
     }
 
@@ -219,11 +213,11 @@ namespace MIXTURE
     ///! Number of Gauß points
     int numgp_;
 
-    ///! Indicator, whether the constituent is already initialized
-    bool is_init_;
+    ///! Indicator, whether the constituent has already read the element
+    bool has_read_element_;
 
     ///! Indicator, whether the constituent is already set up
-    std::vector<char> is_setup_;
+    bool is_setup_;
   };
 
 }  // namespace MIXTURE

@@ -9,7 +9,8 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/voigt_notation.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_patspec/patspec.H"
@@ -68,6 +69,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  EnsureMaterialPostSetup(params);
+
   LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET4, 1> elevec1(elevec1_epetra.A(), true);

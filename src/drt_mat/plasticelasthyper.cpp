@@ -20,7 +20,8 @@ rY_13 0.7
 #include "plasticelasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -336,7 +337,7 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->Setup(linedef);
+    potsum_[p]->Setup(numgp, linedef);
   }
 
   // find out which formulations are used

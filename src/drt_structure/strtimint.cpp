@@ -22,7 +22,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_fluid/fluid_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
 
@@ -59,7 +58,9 @@
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_plast/so3_ssn_plast_eletypes.H"
@@ -319,7 +320,7 @@ void STR::TimInt::Setup()
     {
       pressure_ = Teuchos::rcp(new LINALG::MapExtractor());
       const int ndim = 3;
-      FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
+      LINALG::CreateMapExtractorFromDiscretization(*discret_, ndim, *pressure_);
     }
   }
 

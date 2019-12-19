@@ -10,9 +10,9 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std_elch.H"
 
-#include "../drt_fluid/fluid_utils.H"
-
 #include "../drt_scatra/scatra_utils_splitstrategy.H"
+
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -46,7 +46,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
     // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal due to electroneutrality, A_11: EMPTY matrix !!!!!
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     LINALG::MapExtractor splitter;
-    FLD::UTILS::SetupFluidSplit(
+    LINALG::CreateMapExtractorFromDiscretization(
         *(scatratimint_->Discretization()), scatratimint_->NumScal(), splitter);
     systemmatrix = Teuchos::rcp(
         new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter, splitter, 27, false, true));

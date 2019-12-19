@@ -16,7 +16,7 @@
 
 #include "drt_dofset_base.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "drt_discret.H"

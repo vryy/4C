@@ -24,7 +24,7 @@
 
 #include "../drt_inpar/inpar_immersed.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 // search tree related
 #include "../drt_geometry/searchtree.H"

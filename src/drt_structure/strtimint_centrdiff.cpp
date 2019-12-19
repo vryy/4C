@@ -16,7 +16,7 @@
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/

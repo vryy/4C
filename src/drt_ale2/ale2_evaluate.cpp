@@ -18,7 +18,7 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/elasthyper.H"
 

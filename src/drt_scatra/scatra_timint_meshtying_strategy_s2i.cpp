@@ -16,8 +16,7 @@
 #include "../drt_adapter/adapter_coupling_mortar.H"
 
 #include "../drt_fluid/fluid_utils.H"
-
-#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 #include "../drt_geometry/position_array.H"
 
@@ -48,6 +47,8 @@
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -965,12 +966,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global
             // system matrix
-            FSI::UTILS::MatrixRowTransform()(
+            LINALG::MatrixRowTransform()(
                 *islavematrix_, -1., ADAPTER::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
 
             // derive linearizations of master fluxes w.r.t. master dofs and assemble into global
             // system matrix
-            FSI::UTILS::MatrixRowColTransform()(*imastermatrix_, -1.,
+            LINALG::MatrixRowColTransform()(*imastermatrix_, -1.,
                 ADAPTER::CouplingSlaveConverter(*icoup_), ADAPTER::CouplingSlaveConverter(*icoup_),
                 *systemmatrix, true, true);
 
@@ -993,7 +994,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // derive linearizations of master fluxes w.r.t. slave dofs
             Teuchos::RCP<LINALG::SparseMatrix> kms(
                 Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(), 81, false)));
-            FSI::UTILS::MatrixRowTransform()(
+            LINALG::MatrixRowTransform()(
                 *islavematrix_, -1., ADAPTER::CouplingSlaveConverter(*icoup_), *kms);
             kms->Complete(*icoup_->SlaveDofMap(), *icoup_->MasterDofMap());
             Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkms(
@@ -1004,7 +1005,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // derive linearizations of master fluxes w.r.t. master dofs
             Teuchos::RCP<LINALG::SparseMatrix> kmm(
                 Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(), 81, false)));
-            FSI::UTILS::MatrixRowColTransform()(*imastermatrix_, -1.,
+            LINALG::MatrixRowColTransform()(*imastermatrix_, -1.,
                 ADAPTER::CouplingSlaveConverter(*icoup_), ADAPTER::CouplingSlaveConverter(*icoup_),
                 *kmm);
             kmm->Complete();
@@ -1104,7 +1105,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // coupling w.r.t. scatra-scatra interface layer thicknesses and assemble into
                 // global matrix block
-                FSI::UTILS::MatrixRowTransform()(*islavematrix, -1.,
+                LINALG::MatrixRowTransform()(*islavematrix, -1.,
                     ADAPTER::CouplingSlaveConverter(*icoup_), *scatragrowthblock, false);
 
                 // zero out auxiliary matrix block for subsequent evaluation
@@ -1121,7 +1122,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses and assemble into
                 // global matrix block
-                FSI::UTILS::MatrixRowTransform()(*islavematrix, -1.,
+                LINALG::MatrixRowTransform()(*islavematrix, -1.,
                     ADAPTER::CouplingSlaveConverter(*icoup_), *scatragrowthblock, true);
 
                 // finalize global matrix block
@@ -1176,7 +1177,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // derive linearizations of scatra-scatra interface layer growth residuals w.r.t.
                 // master-side scalar transport degrees of freedom and assemble into global matrix
                 // block
-                FSI::UTILS::MatrixColTransform()(imastermatrix->RowMap(), imastermatrix->ColMap(),
+                LINALG::MatrixColTransform()(imastermatrix->RowMap(), imastermatrix->ColMap(),
                     *imastermatrix, 1., ADAPTER::CouplingSlaveConverter(*icoup_),
                     *growthscatrablock, true, true);
 
@@ -1231,7 +1232,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // coupling w.r.t. scatra-scatra interface layer thicknesses
                 for (int iblock = 0; iblock < blockmaps_slave_->NumMaps(); ++iblock)
-                  FSI::UTILS::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
+                  LINALG::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
                       ADAPTER::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
                 // zero out auxiliary matrices for subsequent evaluation
@@ -1246,7 +1247,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses
                 for (int iblock = 0; iblock < blockmaps_slave_->NumMaps(); ++iblock)
-                  FSI::UTILS::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
+                  LINALG::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
                       ADAPTER::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
                 // finalize auxiliary system matrix
@@ -1306,7 +1307,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // derive linearizations of scatra-scatra interface layer growth residuals w.r.t.
                 // master-side scalar transport degrees of freedom
-                FSI::UTILS::MatrixColTransform()(imastermatrix->RowMap(), imastermatrix->ColMap(),
+                LINALG::MatrixColTransform()(imastermatrix->RowMap(), imastermatrix->ColMap(),
                     *imastermatrix, 1., ADAPTER::CouplingSlaveConverter(*icoup_), kgm);
 
                 // finalize temporary matrix
@@ -2070,11 +2071,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // initialize auxiliary system matrices and associated transformation operators
       islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
       imastermatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
-      islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+      islavetomasterrowtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
       if (not slaveonly_)
       {
-        islavetomastercoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-        islavetomasterrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+        islavetomastercoltransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+        islavetomasterrowcoltransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
       }
 
       // initialize auxiliary residual vector
@@ -2900,7 +2901,6 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
   conditionparams.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
   conditionparams.set<int>("kinetic model", kineticmodel);
   conditionparams.set<DRT::Condition::ConditionType>("condition type", conditiontype);
-  conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
 
   // set the condition type specific parameters
   switch (conditiontype)
@@ -2912,8 +2912,21 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
       {
         case INPAR::S2I::kinetics_constperm:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<double>*>(
               "permeabilities", s2icondition.GetMutable<std::vector<double>>("permeabilities"));
+          break;
+        }
+
+        case INPAR::S2I::kinetics_constantinterfaceresistance:
+        {
+          conditionparams.set<double>("resistance", s2icondition.GetDouble("resistance"));
+          break;
+        }
+
+        case INPAR::S2I::kinetics_nointerfaceflux:
+        {
+          // do nothing
           break;
         }
 
@@ -2923,6 +2936,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<int>*>(
               "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
           conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));
@@ -2961,6 +2975,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
+          conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<int>*>(
               "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
           conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));

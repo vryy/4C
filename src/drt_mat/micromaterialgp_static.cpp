@@ -22,7 +22,7 @@ Former file of Lena Yoshihara
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 
 std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> MAT::MicroMaterialGP::microstaticmap_;

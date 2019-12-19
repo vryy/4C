@@ -22,10 +22,11 @@
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_structure_new/str_utils.H"
-#include "../drt_fluid/fluid_utils.H"
 #include "../drt_contact/meshtying_abstract_strategy.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 
@@ -573,7 +574,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(LINALG::MultiMapExtra
   CheckInit();
 
   // identify pressure DOFs
-  FLD::UTILS::SetupFluidSplit(*discret_, 3, multimapext);
+  LINALG::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
 }
 
 /*----------------------------------------------------------------------------*

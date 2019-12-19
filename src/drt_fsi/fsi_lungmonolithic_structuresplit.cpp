@@ -10,7 +10,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_lungmonolithic_structuresplit.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"

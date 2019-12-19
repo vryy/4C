@@ -16,7 +16,7 @@
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_lib/drt_utils.H"

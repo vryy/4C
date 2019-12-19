@@ -12,7 +12,7 @@
 #include "beam3contact_octtree.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"

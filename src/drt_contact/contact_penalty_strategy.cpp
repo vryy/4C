@@ -19,7 +19,8 @@
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>

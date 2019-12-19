@@ -21,7 +21,8 @@
 #include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Import.h>

@@ -25,7 +25,6 @@
 #include "../drt_poroelast/poroelast_monolithic.H"
 
 // FSI includes
-#include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_fsi/fsi_debugwriter.H"
 #include "../drt_fsi/fsi_statustest.H"
 #include "../drt_fsi/fsi_overlapprec_fsiamg.H"
@@ -43,8 +42,10 @@
 #include "../drt_ale/ale_utils_mapextractor.H"
 
 // LINALG includes
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 // IO includes
 #include "../drt_io/io.H"
@@ -64,25 +65,25 @@ FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
   // create transformation object for the condensation
 
 
-  fggtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
-  fggtransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
-  fmgitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fggtransform2_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
 
-  fgitransform1_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  fgitransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  Cfgtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  Cfptransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  Cfptransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  fgitransform1_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  fgitransform2_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  Cfgtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  Cfptransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  Cfptransform2_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
-  figtransform1_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  figtransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  figtransform3_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  figtransform4_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  aigtransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  figtransform1_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  figtransform2_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  figtransform3_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  figtransform4_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aigtransform2_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  couplingcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  couplingcoltransformfs_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  couplingcoltransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  couplingcoltransformfs_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));

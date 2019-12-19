@@ -104,7 +104,7 @@ HPCOEFF			- vector containing NUMSUBSETS entries for the Hall-Petch coefficients
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  | class definitions                                           			|

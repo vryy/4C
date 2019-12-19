@@ -40,14 +40,15 @@ namespace LINALG
 namespace FSI
 {
   class OverlappingBlockMatrix;
-
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
 }  // namespace FSI
+
+namespace LINALG
+{
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
+
 
 namespace FSI
 {
@@ -261,16 +262,16 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> sigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fsmgitransform_;
 
     ///@}
 

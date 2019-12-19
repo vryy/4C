@@ -27,7 +27,7 @@
 #include "../drt_mat/elasthyper.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "contact_nitsche_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 

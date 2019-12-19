@@ -9,7 +9,8 @@
 *----------------------------------------------------------------------*/
 
 #include "so_surface.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "../linalg/linalg_utils_densematrix_determinant.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"

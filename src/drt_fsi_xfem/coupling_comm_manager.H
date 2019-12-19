@@ -28,6 +28,10 @@ namespace LINALG
 {
   class MultiMapExtractor;
   class SparseMatrix;
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+  class MatrixLogicalSplitAndTransform;
 }  // namespace LINALG
 
 namespace ADAPTER
@@ -39,16 +43,6 @@ namespace ADAPTER
 #ifndef COUPLING_COMM_MANAGER_H
 #define COUPLING_COMM_MANAGER_H
 
-namespace FSI
-{
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-    class MatrixLogicalSplitAndTransform;
-  }  // namespace UTILS
-}  // namespace FSI
 
 namespace XFEM
 {
@@ -123,7 +117,7 @@ namespace XFEM
 
     Teuchos::RCP<LINALG::MultiMapExtractor> GetFullMapExtractor() { return fullextractor_; }
 
-    Teuchos::RCP<FSI::UTILS::MatrixLogicalSplitAndTransform> GetTransform(int transform_id);
+    Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> GetTransform(int transform_id);
 
     void DebugOut(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
@@ -152,7 +146,7 @@ namespace XFEM
     std::map<std::pair<int, int>, Teuchos::RCP<ADAPTER::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
-    std::map<int, Teuchos::RCP<FSI::UTILS::MatrixLogicalSplitAndTransform>> transform_;
+    std::map<int, Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform>> transform_;
 
     Teuchos::RCP<LINALG::MultiMapExtractor> fullextractor_;
   };

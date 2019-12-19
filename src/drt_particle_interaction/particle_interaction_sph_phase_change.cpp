@@ -222,6 +222,9 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() cons
     }
   }
 
-  // remove or insert owned particles
-  particleengineinterface_->RemoveOrInsertOwnedParticles(particlestoremove, particlestoinsert);
+  // hand over particles to be removed
+  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+
+  // hand over particles to be inserted
+  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
 }

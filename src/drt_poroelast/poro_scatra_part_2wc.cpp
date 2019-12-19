@@ -23,7 +23,7 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

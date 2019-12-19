@@ -13,7 +13,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_porofluidmultiphase_ele/porofluid_variablemanager.H"
 #include "../drt_porofluidmultiphase_ele/porofluid_phasemanager.H"
 #include "../drt_inpar/inpar_bio.H"

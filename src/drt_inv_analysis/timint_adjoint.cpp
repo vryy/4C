@@ -23,7 +23,8 @@
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "Epetra_CrsMatrix.h"
 
 

@@ -99,13 +99,13 @@ namespace MAT
       /// this is the core functionality of this object.
       /// each derived class has to implement this method (pure virtual).
       virtual void SetupStructuralTensor(
-          LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor) = 0;
+          const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor) = 0;
 
       /// \brief calculate MxM
       ///
       /// \param M (in) : vector (e.g. fiber direction)
       /// \param result (out) : result of dyadic product
-      void DyadicProduct(LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result);
+      void DyadicProduct(const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result);
 
      protected:
       /// return residual tolerance of structural problem
@@ -148,8 +148,8 @@ namespace MAT
       /// \param fiber_vector (in) : direction of fiber 'M'
       /// \param structural_tensor (out) : structural tensor is 'H' filled inside
       ///
-      virtual void SetupStructuralTensor(
-          LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor);
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<6, 1>& structural_tensor) override;
 
     };  // class StructuralTensorStrategyStandard
 
@@ -255,8 +255,8 @@ namespace MAT
 
         \author rauch
         \date 10/17    */
-      virtual void SetupStructuralTensor(
-          LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor);
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<6, 1>& structural_tensor) override;
     };  // class StructuralTensorStrategyByDistributionFunction
 
 
@@ -307,8 +307,8 @@ namespace MAT
 
         \author rauch
         \date 10/17    */
-      virtual void SetupStructuralTensor(
-          LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor);
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<6, 1>& structural_tensor) override;
     };  // class StructuralTensorStrategyDispersedTransverselyIsotropic
 
   }  // namespace ELASTIC

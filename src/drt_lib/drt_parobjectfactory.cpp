@@ -18,7 +18,7 @@
 #include "drt_parobject.H"
 #include "drt_parobjectfactory.H"
 #include "drt_elementtype.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

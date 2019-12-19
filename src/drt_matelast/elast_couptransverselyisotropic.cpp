@@ -61,7 +61,7 @@ MAT::ELASTIC::CoupTransverselyIsotropic::CoupTransverselyIsotropic(my_params* pa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   switch (params_->init_)
   {

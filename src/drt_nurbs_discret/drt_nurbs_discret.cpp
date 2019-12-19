@@ -19,7 +19,8 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"

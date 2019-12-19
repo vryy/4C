@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_flow_cell_interaction.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include "../drt_poroelast/poro_scatra_base.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"

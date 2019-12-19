@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "drt_utils_metis.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #ifdef PARALLEL
 #ifdef LINUX_MUENCH

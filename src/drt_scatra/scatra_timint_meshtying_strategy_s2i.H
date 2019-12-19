@@ -44,15 +44,12 @@ namespace DRT
 
 }  // namespace DRT
 
-namespace FSI
+namespace LINALG
 {
-  namespace UTILS
-  {
-    class MatrixColTransform;
-    class MatrixRowTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixColTransform;
+  class MatrixRowTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 namespace LINALG
 {
@@ -355,9 +352,9 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> islavetomasterrowcoltransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> islavetomastercoltransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
     //! auxiliary residual vector for slave residuals
     Teuchos::RCP<Epetra_Vector> islaveresidual_;

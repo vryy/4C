@@ -16,7 +16,7 @@ sparse matrices and parallel distributed vectors
 #include "../drt_contact/contact_node.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 #include <Epetra_Export.h>
 

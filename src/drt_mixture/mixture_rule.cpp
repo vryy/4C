@@ -61,13 +61,13 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 
 // Empty constructor
 MIXTURE::MixtureRule::MixtureRule()
-    : constituents_(Teuchos::null), numgp_(0), is_init_(false), is_setup_(0)
+    : constituents_(Teuchos::null), numgp_(0), has_read_element_(false), is_setup_(false)
 {
 }
 
 // Constructor with parameters
 MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
-    : constituents_(Teuchos::null), numgp_(0), is_init_(false), is_setup_(0)
+    : constituents_(Teuchos::null), numgp_(0), has_read_element_(false), is_setup_(false)
 {
 }
 
@@ -76,11 +76,12 @@ void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
 {
   // Add number of Gaußpoints
   DRT::ParObject::AddtoPack(data, numgp_);
-  // Add flag whether it is initialized
-  DRT::ParObject::AddtoPack(data, is_init_);
+
+  // Add flag whether it has already read the element
+  DRT::ParObject::AddtoPack(data, static_cast<const int>(has_read_element_));
 
   // Add flags whether it is setup
-  DRT::ParObject::AddtoPack(data, is_setup_);
+  DRT::ParObject::AddtoPack(data, static_cast<const int>(is_setup_));
 }
 
 // Unpack the mixture rule
@@ -90,41 +91,32 @@ void MIXTURE::MixtureRule::UnpackMixtureLaw(
   // Read initialized flag
   numgp_ = DRT::ParObject::ExtractInt(position, data);
 
-  // Read initialized flag
-  is_init_ = (bool)DRT::ParObject::ExtractInt(position, data);
+  // Read element read flag
+  has_read_element_ = (bool)DRT::ParObject::ExtractInt(position, data);
 
   // Read is setup flag
-  DRT::ParObject::ExtractfromPack(position, data, is_setup_);
+  is_setup_ = (bool)DRT::ParObject::ExtractInt(position, data);
 }
 
 // reads the element definition and set up all quantities
 void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
-  if (!is_setup_.empty()) dserror("ReadElement() is called multiple times. Just once allowed.");
+  if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");
   numgp_ = numgp;
 
-  is_setup_.resize(numgp, 0);
-}
-
-// Initialize the material rule with the constituents - Called once per element
-void MIXTURE::MixtureRule::Init(Teuchos::ParameterList& params)
-{
-  if (is_setup_.empty()) dserror("ReadElement() must be called before Init()");
-  if (is_init_) dserror("Init() is called more than once. Just once allowed.");
-
-  is_init_ = true;
+  has_read_element_ = true;
 }
 
 // Setup the mixture rule - Called once per gp
-void MIXTURE::MixtureRule::Setup(int gp, Teuchos::ParameterList& params)
+void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params)
 {
-  // Setup must be called after Init()
-  if (!is_init_) dserror("Init() must be called before Setup()!");
+  // Setup must be called after ReadElement()
+  if (!has_read_element_) dserror("ReadElement() must be called before Setup()!");
 
   // Setup must only be called once
-  if (is_setup_[gp]) dserror("Setup() is called multiple times. Just once per GP allowed.");
-  is_setup_[gp] = 1;
+  if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
+  is_setup_ = true;
 }
 
 // Evaluates the stresses of the mixture

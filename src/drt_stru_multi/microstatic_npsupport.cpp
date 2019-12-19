@@ -18,7 +18,7 @@ analysis for supporting processors
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_inv_analysis/gen_inv_analysis.H"
 
 #include <hdf5.h>

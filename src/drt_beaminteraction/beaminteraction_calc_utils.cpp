@@ -14,7 +14,9 @@
 #include "../drt_beaminteraction/crosslinking_params.H"
 #include "../drt_beaminteraction/spherebeamlinking_params.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
@@ -614,6 +616,62 @@ namespace BEAMINTERACTION
         fe_sysmat->FEAssemble(elemat[1][1], lmrow2, lmrow2);
       }
     }
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+    void FEAssembleEleForceStiffIntoSystemVectorMatrices(const DRT::Discretization& discretization1,
+        const DRT::Discretization& discretization2, std::vector<int> const& elegid,
+        std::vector<LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
+        Teuchos::RCP<LINALG::SparseMatrix>& c11, Teuchos::RCP<LINALG::SparseMatrix>& c22,
+        Teuchos::RCP<LINALG::SparseMatrix>& c12, Teuchos::RCP<LINALG::SparseMatrix>& c21)
+    {
+      // the entries of elevecX  belong to the Dofs of the element with GID elegidX
+      // the rows    of elematXY belong to the Dofs of the element with GID elegidX
+      // the columns of elematXY belong to the Dofs of the element with GID elegidY
+      const DRT::Element* ele1 = discretization1.gElement(elegid[0]);
+      const DRT::Element* ele2 = discretization2.gElement(elegid[1]);
+
+      // get element location vector and ownerships
+      std::vector<int> lmrow1;
+      std::vector<int> lmrow2;
+      std::vector<int> lmrowowner1;
+      std::vector<int> lmrowowner2;
+      std::vector<int> lmstride;
+
+      ele1->LocationVector(discretization1, lmrow1, lmrowowner1, lmstride);
+      ele2->LocationVector(discretization2, lmrow2, lmrowowner2, lmstride);
+
+      // assemble both element vectors into global system vector
+      if (f1 != Teuchos::null)
+      {
+        f1->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
+      }
+      if (f2 != Teuchos::null)
+      {
+        f2->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+      }
+
+      // and finally also assemble stiffness contributions
+      if (c11 != Teuchos::null)
+      {
+        c11->FEAssemble(elemat[0][0], lmrow1, lmrow1);
+      }
+      if (c12 != Teuchos::null)
+      {
+        c12->FEAssemble(elemat[0][1], lmrow1, lmrow2);
+      }
+      if (c21 != Teuchos::null)
+      {
+        c21->FEAssemble(elemat[1][0], lmrow2, lmrow1);
+      }
+      if (c22 != Teuchos::null)
+      {
+        c22->FEAssemble(elemat[1][1], lmrow2, lmrow2);
+      }
+    }
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
 
     /**
      *
@@ -754,7 +812,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ExtractPosDofVecAbsoluteValues(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues)
     {
       std::vector<double> eledispvec;
@@ -771,6 +829,36 @@ namespace BEAMINTERACTION
         // initial values are added by element itself
         beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
             eledispvec, element_posdofvec_absolutevalues, true);
+      }
+      else
+      {
+        element_posdofvec_absolutevalues = eledispvec;
+        for (unsigned int dim = 0; dim < 3; ++dim)
+          for (int node = 0; node < ele->NumNode(); ++node)
+            element_posdofvec_absolutevalues[3 * node + dim] += ele->Nodes()[node]->X()[dim];
+      }
+    }
+
+    /*-----------------------------------------------------------------------------*
+     *-----------------------------------------------------------------------------*/
+    void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
+        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+        std::vector<double>& element_posdofvec_absolutevalues)
+    {
+      std::vector<double> eledispvec;
+
+      // extract the Dof values of this element from displacement vector
+      GetCurrentElementDis(discret, ele, ia_discolnp, eledispvec);
+
+      DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
+          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+      if (beam_element_ptr != NULL)
+      {
+        // get the current absolute values for those Dofs relevant for centerline interpolation
+        // initial values are added by element itself
+        beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
+            eledispvec, element_posdofvec_absolutevalues, false);
       }
       else
       {

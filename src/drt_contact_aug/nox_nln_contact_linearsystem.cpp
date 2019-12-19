@@ -12,7 +12,8 @@
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"
 #include "../solver_nonlin_nox/nox_nln_interface_required.H"

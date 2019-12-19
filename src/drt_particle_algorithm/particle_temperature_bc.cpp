@@ -99,9 +99,6 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::SetParticleReferenc
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperatureBoundaryCondition(
     const double& evaltime) const
 {
-  // init vector containing evaluated function
-  std::vector<double> funct(1);
-
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
       particleengineinterface_->GetParticleContainerBundle();
@@ -147,8 +144,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     for (int i = 0; i < particlestored; ++i)
     {
       // evaluate function
-      funct = function.EvaluateTimeDerivative(0, &(refpos[statedim * i]), evaltime, 0);
-      temp[i] = funct[0];
+      temp[i] = function.Evaluate(0, &(refpos[statedim * i]), evaltime);
     }
   }
 }

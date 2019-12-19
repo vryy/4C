@@ -18,7 +18,7 @@
 #include "xfem_mesh_projector.H"
 #include "xfem_discretization_utils.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_lib/drt_discret_xfem.H"

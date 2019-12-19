@@ -31,11 +31,6 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
   void setUp() override
   {
     tens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
-    itens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
-    tens_strain = Teuchos::rcp(new LINALG::Matrix<6, 1>);
-    itens_strain = Teuchos::rcp(new LINALG::Matrix<6, 1>);
-    tens_stress = Teuchos::rcp(new LINALG::Matrix<6, 1>);
-    itens_stress = Teuchos::rcp(new LINALG::Matrix<6, 1>);
 
     (*tens)(0, 0) = 1.1;
     (*tens)(1, 1) = 1.2;
@@ -43,39 +38,6 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
     (*tens)(0, 1) = (*tens)(1, 0) = 0.01;
     (*tens)(1, 2) = (*tens)(2, 1) = 0.02;
     (*tens)(0, 2) = (*tens)(2, 0) = 0.03;
-
-    (*itens)(0, 0) = 0.90972618;
-    (*itens)(1, 1) = 0.83360457;
-    (*itens)(2, 2) = 0.76990741;
-    (*itens)(0, 1) = (*itens)(1, 0) = -0.00723301;
-    (*itens)(1, 2) = (*itens)(2, 1) = -0.01265777;
-    (*itens)(0, 2) = (*itens)(2, 0) = -0.0208824;
-
-    (*tens_strain)(0) = (*tens_stress)(0) = 1.1;
-    (*tens_strain)(1) = (*tens_stress)(1) = 1.2;
-    (*tens_strain)(2) = (*tens_stress)(2) = 1.3;
-
-    (*tens_stress)(3) = 0.01;
-    (*tens_stress)(4) = 0.02;
-    (*tens_stress)(5) = 0.03;
-
-    (*itens_stress)(0) = 0.90972618;
-    (*itens_stress)(1) = 0.83360457;
-    (*itens_stress)(2) = 0.76990741;
-    (*itens_stress)(3) = -0.00723301;
-    (*itens_stress)(4) = -0.01265777;
-    (*itens_stress)(5) = -0.0208824;
-
-    (*tens_strain)(3) = 2 * 0.01;
-    (*tens_strain)(4) = 2 * 0.02;
-    (*tens_strain)(5) = 2 * 0.03;
-
-    (*itens_strain)(0) = 0.90972618;
-    (*itens_strain)(1) = 0.83360457;
-    (*itens_strain)(2) = 0.76990741;
-    (*itens_strain)(3) = 2 * -0.00723301;
-    (*itens_strain)(4) = 2 * -0.01265777;
-    (*itens_strain)(5) = 2 * -0.0208824;
   }
 
   /// Tear down test suite
@@ -92,11 +54,6 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
 
  private:
   Teuchos::RCP<LINALG::Matrix<3, 3>> tens;
-  Teuchos::RCP<LINALG::Matrix<3, 3>> itens;
-  Teuchos::RCP<LINALG::Matrix<6, 1>> tens_strain;
-  Teuchos::RCP<LINALG::Matrix<6, 1>> itens_strain;
-  Teuchos::RCP<LINALG::Matrix<6, 1>> tens_stress;
-  Teuchos::RCP<LINALG::Matrix<6, 1>> itens_stress;
 };
 
 #endif  // BACI_UNIT_MATERIAL_SERVICE_H

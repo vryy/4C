@@ -34,7 +34,9 @@
 #include "../drt_inpar/inpar_contact.H"
 
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <unordered_map>
 #include <Teuchos_TimeMonitor.hpp>

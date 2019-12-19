@@ -151,8 +151,13 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> SolveRelaxationLinear(
           Teuchos::RCP<ADAPTER::Structure> structure);
 
+      virtual void SetupMultiMapExtractor();
+
       //! set flag true if in order to request a relaxation solve
       void SetIsRelaxationSolve(bool trueorfalse) { is_relaxationsolve = trueorfalse; };
+
+      //! Returns the global input/output data container
+      const STR::TIMINT::BaseDataIO& GetInOutput() const;
 
      private:
       //! fsi interface force at \f$t_{n+1}\f$

@@ -13,7 +13,8 @@
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_contact/contact_paramsinterface.H"
 #include "../drt_contact_xcontact/xcontact_interface.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/

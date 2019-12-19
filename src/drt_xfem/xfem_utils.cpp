@@ -18,7 +18,7 @@
 #include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_lib/drt_element.H"
 

@@ -4,8 +4,6 @@
 \level 2
 \maintainer Anh-Tu Vuong
  *------------------------------------------------------------------------------------------------*/
-#include "../drt_fluid/fluid_utils.H"  // for splitter
-
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -18,6 +16,7 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "scatra_timint_loma.H"
 
@@ -77,7 +76,7 @@ void SCATRA::ScaTraTimIntLoma::SetupSplitter()
   if (NumScal() > 1)
   {
     splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_, NumScal() - 1, *splitter_);
+    LINALG::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
   }
 
   return;

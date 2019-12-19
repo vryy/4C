@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_timestepping/timintmstep.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"

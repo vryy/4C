@@ -88,17 +88,29 @@ namespace PARTICLEINTERACTION
     virtual void ComputeDensity() const = 0;
 
    protected:
-    //! evaluate sum of weighted mass and colorfield
-    virtual void SumWeightedMassAndColorfield() const final;
+    //! evaluate sum of weighted mass
+    virtual void SumWeightedMass() const final;
 
-    //! clear density sum and colorfield states
-    virtual void ClearDensitySumAndColorfieldStates() const final;
+    //! clear density sum state
+    virtual void ClearDensitySumState() const final;
 
-    //! sum weighted mass/colorfield (self contribution)
-    virtual void SumWeightedMassAndColorfieldSelfContribution() const final;
+    //! sum weighted mass (self contribution)
+    virtual void SumWeightedMassSelfContribution() const final;
 
-    //! sum weighted mass/colorfield (particle contribution)
-    virtual void SumWeightedMassAndColorfieldParticleContribution() const final;
+    //! sum weighted mass (particle contribution)
+    virtual void SumWeightedMassParticleContribution() const final;
+
+    //! evaluate sum of colorfield
+    virtual void SumColorfield() const final;
+
+    //! clear colorfield state
+    virtual void ClearColorfieldState() const final;
+
+    //! sum colorfield (self contribution)
+    virtual void SumColorfieldSelfContribution() const final;
+
+    //! sum colorfield (particle contribution)
+    virtual void SumColorfieldParticleContribution() const final;
 
     //! evaluate continuity equation
     virtual void ContinuityEquation() const final;
@@ -141,12 +153,6 @@ namespace PARTICLEINTERACTION
 
     //! time step size
     double dt_;
-
-    //! compute colorfield
-    bool computecolorfield_;
-
-    //! apply transport velocity formulation
-    bool applytransportvelocity_;
   };
 
   class SPHDensitySummation final : public SPHDensityBase

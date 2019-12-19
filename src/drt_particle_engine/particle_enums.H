@@ -145,8 +145,10 @@ namespace PARTICLEENGINE
     Phase2,  //!< particle type for particles of second phase
     /*---------------------------------------------------------------------------*/
     // particle types for SPH interaction
-    BoundaryPhase,  //!< particle type for boundary phase particles
-    RigidPhase      //!< particle type for rigid phase particles
+    BoundaryPhase,   //!< particle type for boundary phase particles
+    RigidPhase,      //!< particle type for rigid phase particles
+    DirichletPhase,  //!< particle type for dirichlet phase particles (open boundary)
+    NeumannPhase     //!< particle type for neumann phase particles (open boundary)
     /*---------------------------------------------------------------------------*/
   };
 

@@ -33,7 +33,8 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>

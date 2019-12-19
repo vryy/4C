@@ -14,7 +14,7 @@
 //#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"

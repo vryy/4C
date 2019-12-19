@@ -13,7 +13,7 @@
 #include "str_model_evaluator_partitioned_ssi_adhesiondynamics.H"
 
 #include "../drt_structure_new/str_timint_implicit.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "Epetra_Comm.h"
 

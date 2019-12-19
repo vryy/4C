@@ -376,7 +376,27 @@
         "id": 17998,
         "name": "Daniel Paukner",
         "state": "active",
-        "username": "ga38teh",
-        "web_url": "https://gitlab.lrz.de/ga38teh"
+        "username": "DanielPaukner",
+        "web_url": "https://gitlab.lrz.de/DanielPaukner"
+    },
+    {
+        "access_level": 30,
+        "avatar_url": "https://gitlab.lrz.de/uploads/-/system/user/avatar/20567/avatar.png",
+        "expires_at": null,
+        "id": 20567,
+        "name": "Ingo Scheider",
+        "state": "active",
+        "username": "scheider",
+        "web_url": "https://gitlab.lrz.de/scheider"
+    },
+    {
+        "access_level": 30,
+        "avatar_url": null,
+        "expires_at": null,
+        "id": 20833,
+        "name": "Farshad Roohbakhshan",
+        "state": "active",
+        "username": "farshad",
+        "web_url": "https://gitlab.lrz.de/farshad"
     }
 ]

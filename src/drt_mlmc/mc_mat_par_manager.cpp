@@ -23,7 +23,7 @@
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"

@@ -122,7 +122,7 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
       // add strain energy
       virtual void AddStrainEnergy(double& psi,  ///< strain energy function

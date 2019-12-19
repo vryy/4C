@@ -14,8 +14,6 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_ale_fluid.H"
 
-#include "fsi_matrixtransform.H"
-
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
@@ -39,6 +37,7 @@
 #include "../drt_lib/drt_colors.H"
 
 #include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -462,9 +461,9 @@ void FSI::BlockMonolithicFS::PrepareTimeStep()
 FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithicFS(comm, timeparams)
 {
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");

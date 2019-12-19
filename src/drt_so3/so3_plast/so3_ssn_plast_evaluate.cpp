@@ -18,6 +18,7 @@
 #include "../../drt_lib/drt_globalproblem.H"
 #include "../../drt_lib/voigt_notation.H"
 #include "../../drt_mat/plasticelasthyper.H"
+#include "../../linalg/linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../../drt_mat/material_service.H"
 #include "../../drt_inpar/inpar_structure.H"
@@ -39,6 +40,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  EnsureMaterialPostSetup(params);
+
   InvalidEleData();
   if (distype == DRT::Element::nurbs27) GetNurbsEleInfo(&discretization);
 

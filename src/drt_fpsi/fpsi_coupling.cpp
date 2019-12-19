@@ -20,9 +20,6 @@ Fluid-Poro-Coupling Matrixes!
 #include "../drt_poroelast/poroelast_monolithic.H"
 //
 //// FSI includes
-#include "../drt_fsi/fsi_matrixtransform.H"
-//
-// LINALG includes
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 //
@@ -53,6 +50,9 @@ Fluid-Poro-Coupling Matrixes!
 
 // Header Include
 #include "fpsi_coupling.H"
+
+// LINALG include
+#include "../linalg/linalg_matrixtransform.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -220,15 +220,15 @@ void FPSI::FPSICoupling::SetupInterfaceCoupling()
 void FPSI::FPSICoupling::ReInitCouplingMatrixTransform()
 {
   // create transformation objects for coupling terms
-  couplingrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  couplingrowtransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  couplingrowtransform3_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  couplingrowtransform4_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  couplingrowtransform5_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  couplingcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  couplingcoltransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  couplingrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
-  couplingrowcoltransform2_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+  couplingrowtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  couplingrowtransform2_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  couplingrowtransform3_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  couplingrowtransform4_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  couplingrowtransform5_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  couplingcoltransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  couplingcoltransform2_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  couplingrowcoltransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  couplingrowcoltransform2_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
 }
 
 /*-------------------------------------------------------------------------------/

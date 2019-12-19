@@ -43,6 +43,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 05/2018
    */
+
   class ParticleContainerBundle final
   {
    public:

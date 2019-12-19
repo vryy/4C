@@ -27,7 +27,8 @@
 
 #include "../drt_structure/stru_aux.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
@@ -154,8 +155,16 @@ void PASI::PartitionedAlgo::ParticleStep()
 
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
 
-  // integrate particle time step
-  particlealgorithm_->Integrate();
+  // integrate time step
+  particlealgorithm_->IntegrateTimeStep();
+}
+
+void PASI::PartitionedAlgo::PostEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::PostEvaluateTimeStep");
+
+  // post evaluate time step
+  particlealgorithm_->PostEvaluateTimeStep();
 }
 
 void PASI::PartitionedAlgo::ExtractInterfaceStates()

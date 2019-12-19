@@ -17,7 +17,7 @@ COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/voigt_notation.H"
 #include "../drt_mat/material_service.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 
 
@@ -178,7 +178,7 @@ void MAT::ELASTIC::RemodelFiber::Setup(
     potsumfiber_[k]->G = params_->G_;
     cauchystress_[k].resize(numgp, 1.0);
 
-    potsumfiber_[k]->fiber->Setup(linedef);
+    potsumfiber_[k]->fiber->Setup(numgp, linedef);
   }
 
 

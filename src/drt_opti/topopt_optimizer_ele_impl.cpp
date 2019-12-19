@@ -16,7 +16,7 @@
 
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../headers/definitions.h"
 

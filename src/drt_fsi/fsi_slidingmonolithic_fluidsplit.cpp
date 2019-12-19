@@ -23,7 +23,6 @@ with condensed fluid interface velocities
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -32,7 +31,9 @@ with condensed fluid interface velocities
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
@@ -43,8 +44,10 @@ with condensed fluid interface velocities
 #include "../drt_io/io_control.H"
 
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 #include <math.h>
+
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -158,14 +161,14 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   SetLambda();

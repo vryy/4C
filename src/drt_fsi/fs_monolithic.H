@@ -36,6 +36,7 @@ namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
+  class MatrixColTransform;
 }  // namespace LINALG
 
 namespace ADAPTER
@@ -59,7 +60,6 @@ namespace FSI
   namespace UTILS
   {
     class DebugWriter;
-    class MatrixColTransform;
   }  // namespace UTILS
 
   /// Base class for Freesurface block preconditioning matrices
@@ -519,10 +519,10 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
 
     ///@}
 

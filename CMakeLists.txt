@@ -211,12 +211,12 @@ MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
 
 # test for git executable
-FIND_PROGRAM(Git_EXECUTABLE git
+FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
   DOC "git command line client")
 MARK_AS_ADVANCED(Git_EXECUTABLE)
 
 IF(Git_EXECUTABLE)
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
+  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
   #MESSAGE(${Trilinos_GIT_VERSION})
   string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
   ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
@@ -485,6 +485,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaaneohooke.cpp
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
+  src/drt_mat/anisotropy.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
@@ -675,6 +676,8 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_lung.cpp
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
+  src/drt_adapter/ad_fld_fbi_movingboundary.cpp
+  src/drt_adapter/ad_fld_fbi_wrapper.cpp
   src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
@@ -705,6 +708,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_ssiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
+  src/drt_adapter/ad_str_fbiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
   src/drt_adapter/ad_str_pasiwrapper.cpp
   src/drt_adapter/ad_str_structalewrapper.cpp
@@ -780,6 +784,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elemag.cpp
   src/drt_inpar/inpar_elch.cpp
+  src/drt_inpar/inpar_fbi.cpp
   src/drt_inpar/inpar_fluid.cpp
   src/drt_inpar/inpar_fpsi.cpp
   src/drt_inpar/inpar_fs3i.cpp
@@ -1235,6 +1240,23 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_scatra.cpp
   src/drt_membrane/membrane_scatra_evaluate.cpp
 )
+set(OBJS_DRT_FBI
+  src/drt_fbi/fbi_calc_utils.cpp
+  src/drt_fbi/constraintenforcer_fbi.cpp
+  src/drt_fbi/ad_fbi_constraintbridge.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_base.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_factory.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_params.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_params.cpp
+  src/drt_fbi/constraintenforcer_fbi_factory.cpp
+  src/drt_fbi/constraintenforcer_fbi_penalty.cpp
+  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
+  src/drt_fbi/immersed_geometry_coupler_fbi.cpp
+)
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
   src/drt_fsi/fs_monolithic.cpp
@@ -1245,15 +1267,15 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_debugwriter.cpp
   src/drt_fsi/fsi_dirichletneumann_factory.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
-  src/drt_fsi/fsi_dirichletneumann_disp.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
+  src/drt_fsi/fsi_dirichletneumann_disp.cpp
+  src/drt_fsi/fsi_dirichletneumann_vel.cpp
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
   src/drt_fsi/fsi_lungmonolithic.cpp
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_matrixtransform.cpp
   src/drt_fsi/fsi_monolithic.cpp
   src/drt_fsi/fsi_monolithic_redistribution.cpp
   src/drt_fsi/fsi_monolithic_timintada.cpp
@@ -1828,8 +1850,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_nln_linearsystem_scaling.cpp
 #  src/drt_structure_new/loca_str_constraint_arclength.cpp
   src/drt_structure_xstructure/str_timint_base_xfem.cpp
-  src/drt_structure_xstructure/str_timint_implicitbase_xfem.cpp
-)
+  src/drt_structure_xstructure/str_timint_implicitbase_xfem.cpp)
 set(OBJS_DRT_STRUCTURE_XSTRUCTURE
   src/drt_structure_xstructure/xstr_xstructure_state.cpp
   src/drt_structure_xstructure/xstr_xstructure_structure_state.cpp
@@ -1881,6 +1902,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
   src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_open_boundary.cpp
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
@@ -1954,6 +1976,7 @@ set(OBJS_LINALG
   src/linalg/linalg_fixedsparsematrix.cpp
   src/linalg/linalg_krylov_projector.cpp
   src/linalg/linalg_mapextractor.cpp
+  src/linalg/linalg_matrixtransform.cpp
   src/linalg/linalg_mlapi_operator.cpp
   src/linalg/linalg_precond.cpp
   src/linalg/linalg_projected_operator.cpp
@@ -1962,8 +1985,17 @@ set(OBJS_LINALG
   src/linalg/linalg_serialdensevector.cpp
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
-  src/linalg/linalg_utils.cpp
   src/linalg/linalg_gauss.cpp
+  src/linalg/linalg_utils_densematrix_communication.cpp
+  src/linalg/linalg_utils_densematrix_determinant.cpp
+  src/linalg/linalg_utils_densematrix_eigen.cpp
+  src/linalg/linalg_utils_densematrix_inverse.cpp
+  src/linalg/linalg_utils_densematrix_svd.cpp
+  src/linalg/linalg_utils_sparse_algebra_assemble.cpp
+  src/linalg/linalg_utils_sparse_algebra_create.cpp
+  src/linalg/linalg_utils_sparse_algebra_manipulation.cpp
+  src/linalg/linalg_utils_sparse_algebra_math.cpp
+  src/linalg/linalg_utils_sparse_algebra_print.cpp
 )
 set(OBJS_SOLVER
   src/linalg/linalg_multiply.cpp
@@ -2615,7 +2647,7 @@ src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
 
 set(OBJS_DRT_FIBER_LIB
 src/drt_fiber/drt_fiber_node.cpp
-)
+  src/drt_fiber/nodal_fiber_holder.cpp)
 
 set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp
@@ -2724,6 +2756,7 @@ set(ELEMENT_LIBRARIES
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_var ${OBJS_DRT_VAR})
+add_library(alg_fbi ${OBJS_DRT_FBI})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
@@ -2746,6 +2779,7 @@ set(MULTIFIELD_LIBRARIES
   alg_elch
   alg_var
   alg_fsi
+  alg_fbi
   alg_fsi_xfem
   alg_loma
   alg_two_phase

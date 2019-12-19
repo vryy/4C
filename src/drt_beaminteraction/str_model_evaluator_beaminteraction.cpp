@@ -23,14 +23,14 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_beam_to_solid.H"
-
-#include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -138,7 +138,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
   coupsia_ = Teuchos::rcp(new ADAPTER::Coupling());
-  siatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
@@ -991,7 +991,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
-  siatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
   coupsia_->SetupCoupling(*ia_discret_, *discret_ptr_);
 }
 

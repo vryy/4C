@@ -20,7 +20,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "../drt_adapter/adapter_coupling.H"
 
 // LINALG includes
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 // FLUID includes
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -42,15 +42,12 @@ namespace ADAPTER
   class AleFpsiWrapper;
 }  // namespace ADAPTER
 
-namespace FSI
+namespace LINALG
 {
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
 
 /*----------------------------------------------------------------------*/
 
@@ -235,23 +232,23 @@ namespace FPSI
     Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap_;
     Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap_;
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+    Teuchos::RCP<LINALG::MatrixRowTransform>
         couplingrowtransform_;  /// g_fpsi || F->PF transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+    Teuchos::RCP<LINALG::MatrixRowTransform>
         couplingrowtransform2_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+    Teuchos::RCP<LINALG::MatrixRowTransform>
         couplingrowtransform3_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+    Teuchos::RCP<LINALG::MatrixRowTransform>
         couplingrowtransform4_;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> couplingrowtransform5_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> couplingrowtransform5_;
     ;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+    Teuchos::RCP<LINALG::MatrixColTransform>
         couplingcoltransform_;  /// for Row/Col-Map for Full - FluidField & F->PS transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+    Teuchos::RCP<LINALG::MatrixColTransform>
         couplingcoltransform2_;  /// for Row/Col-Map for Full - AleField & A->PS transform (FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>
+    Teuchos::RCP<LINALG::MatrixRowColTransform>
         couplingrowcoltransform_;  /// g_fpsi/g_fpsi || F->PS/F->PS transform (FPSI/FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>
+    Teuchos::RCP<LINALG::MatrixRowColTransform>
         couplingrowcoltransform2_;  /// g_fpsi/g_fpsi || F->PF/F->PS transform (FPSI/FPSI)
 
     // hydraulic conductivity (needed for coupling in case of probtype fps3i)

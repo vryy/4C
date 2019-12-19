@@ -13,7 +13,7 @@
 #ifndef FADMATRIX_UTILS_H_
 #define FADMATRIX_UTILS_H_
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 

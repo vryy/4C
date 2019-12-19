@@ -54,7 +54,7 @@
 #include <Epetra_SerialDenseVector.h>
 #include "robinson.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"

@@ -433,6 +433,13 @@ namespace DRT
       //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
       const std::vector<double>& so_tet10_11gp_weights();
 
+      /*!
+       * Executes the post setup call for all materials. This method will be called once per element
+       * at the first Evaluate call.
+       *
+       * @param params ParameterList to be passed to the materials
+       */
+      void MaterialPostSetup(Teuchos::ParameterList& params) override;
     };  // class So_tet10
 
 

@@ -12,7 +12,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "Epetra_SerialDenseVector.h"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "DcsMatrix.H"
 #include "chol_factory.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"

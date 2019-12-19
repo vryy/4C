@@ -11,7 +11,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/so3_material.H"
@@ -35,6 +35,9 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  EnsureMaterialPostSetup(params);
+
   LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOH27, 1> elevec1(elevec1_epetra.A(), true);

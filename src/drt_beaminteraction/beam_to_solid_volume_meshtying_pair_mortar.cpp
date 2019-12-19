@@ -17,7 +17,7 @@ functions for the traction.
 #include "beam_to_solid_mortar_manager.H"
 
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 

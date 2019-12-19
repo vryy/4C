@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mat/so3_material.H"
@@ -30,6 +30,9 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  EnsureMaterialPostSetup(params);
+
   // get parameter interface
   SetParamsInterfacePtr(params);
 

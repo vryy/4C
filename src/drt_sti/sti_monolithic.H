@@ -25,15 +25,6 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace FSI
-{
-  namespace UTILS
-  {
-    class MatrixColTransform;
-    class MatrixRowTransform;
-  }  // namespace UTILS
-}  // namespace FSI
-
 namespace LINALG
 {
   class BlockSparseMatrixBase;
@@ -42,6 +33,8 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class SparseOperator;
+  class MatrixColTransform;
+  class MatrixRowTransform;
 }  // namespace LINALG
 
 namespace STI
@@ -190,14 +183,14 @@ namespace STI
     Teuchos::RCP<const ADAPTER::Coupling> icoupthermo_;
 
     //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformscatraod_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformscatraod_;
 
     //! slave-to-master column transformation operator for thermo-scatra block of global system
     //! matrix
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransformthermood_;
+    Teuchos::RCP<LINALG::MatrixColTransform> islavetomastercoltransformthermood_;
 
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformthermood_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 #endif

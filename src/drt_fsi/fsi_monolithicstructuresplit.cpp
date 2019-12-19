@@ -17,7 +17,6 @@ with condensed structure interface displacements
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_monolithicstructuresplit.H"
-#include "fsi_matrixtransform.H"
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_amgnxn.H"
@@ -31,7 +30,7 @@ with condensed structure interface displacements
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
@@ -44,6 +43,7 @@ with condensed structure interface displacements
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -152,16 +152,16 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   }
   // ---------------------------------------------------------------------------
 
-  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 

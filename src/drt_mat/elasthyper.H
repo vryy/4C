@@ -54,7 +54,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// destructor
       ~ElastHyper() override = default;
@@ -211,7 +211,7 @@ namespace MAT
     virtual int NumMat() const { return params_->nummat_; }
 
     /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(const unsigned index  ///< index i
+    virtual int MatID(unsigned index  ///< index i
         ) const;
 
     /// provide access to material by its ID
@@ -230,7 +230,7 @@ namespace MAT
     /// evaluate strain energy function
     void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                         ///< Strain energy function
-        const int eleGID                                     ///< Element GID
+        int eleGID                                           ///< Element GID
         ) override;
 
     /// hyperelastic stress response plus elasticity tensor
@@ -239,7 +239,7 @@ namespace MAT
         Teuchos::ParameterList& params,                ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
-        const int eleGID                               ///< Element GID
+        int eleGID                                     ///< Element GID
         ) override;
 
     /// evaluate for GEMM
@@ -251,7 +251,7 @@ namespace MAT
         LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
         LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
         LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
-        const int eleGID) override;                  ///< Element GID
+        int eleGID) override;                        ///< Element GID
 
     /**
      * \brief Evaluate the Cauchy stress and linearizations with given deformation gradient.
@@ -293,7 +293,7 @@ namespace MAT
     void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int eleGID,
         const double* temp = nullptr, double* DsntDT = nullptr,
         LINALG::Matrix<9, 1>* D2sntDFDT = nullptr) override;
 
@@ -309,9 +309,9 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, int eleGID,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
-        const double* temp = nullptr);
+        const double* temp);
 
     /**
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
@@ -352,11 +352,19 @@ namespace MAT
     /// setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
+    /*!
+     * Post setup routine that is executed after the input. This class will forward the call to all
+     * summands
+     *
+     * @param params Container for additional information
+     */
+    void PostSetup(Teuchos::ParameterList& params) override;
+
     /// update
     void Update() override;
 
     /// setup patient-specific AAA stuff
-    virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID);
+    virtual void SetupAAA(Teuchos::ParameterList& params, int eleGID);
 
     /// return if anisotropic not splitted formulation
     virtual bool AnisotropicPrincipal() const { return summandProperties_.anisoprinc; }
@@ -368,9 +376,9 @@ namespace MAT
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs);
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
-    virtual void EvaluateFiberVecs(const double newgamma,  ///< new angle
-        const LINALG::Matrix<3, 3>& locsys,                ///< local coordinate system
-        const LINALG::Matrix<3, 3>& defgrd                 ///< deformation gradient
+    virtual void EvaluateFiberVecs(double newgamma,  ///< new angle
+        const LINALG::Matrix<3, 3>& locsys,          ///< local coordinate system
+        const LINALG::Matrix<3, 3>& defgrd           ///< deformation gradient
     );
 
     /// Return potential summand pointer for the given material type

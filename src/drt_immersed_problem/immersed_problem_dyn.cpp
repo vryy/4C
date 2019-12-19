@@ -28,7 +28,7 @@
 #include "immersed_partitioned_fsi_dirichletneumann_membrane.H"
 #include "str_model_evaluator_multiphysics_cellmigration.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"

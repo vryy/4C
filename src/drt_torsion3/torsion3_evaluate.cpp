@@ -16,7 +16,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_mat/spring.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 

@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_confine_cell.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"

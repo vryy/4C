@@ -16,8 +16,6 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_ssi/ssi_partitioned.H"
@@ -30,9 +28,10 @@
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "Epetra_Comm.h"
+#include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/18 |
@@ -61,22 +60,22 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
 
     // assemble interior and master-side rows and columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
         *ssi_part_->MapStructureCondensed(), 1., NULL, NULL, jac_new);
 
     // transform and assemble slave-side rows of original Jacobian into new Jacobian
     ADAPTER::CouplingSlaveConverter converter(*ssi_part_->CouplingAdapterStructure());
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse,
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
         *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), *ssi_part_->MapStructureCondensed(),
         1., &converter, NULL, jac_new, true, true);
 
     // transform and assemble slave-side columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
         *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., NULL, &converter, jac_new, true,
         true);
 
     // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse,
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
         *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
         *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., &converter, &converter, jac_new,
         true, true);

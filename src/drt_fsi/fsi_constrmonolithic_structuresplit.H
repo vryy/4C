@@ -15,15 +15,17 @@
 
 #include "fsi_constrmonolithic.H"
 
+namespace LINALG
+{
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace LINALG
+
 namespace FSI
 {
   // forward declarations
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
+
 
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a algebraically constrained structure field
@@ -108,20 +110,20 @@ namespace FSI
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sconT_;
 
     /// transformation of fluid matrix
-    Teuchos::RCP<UTILS::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> sigtransform_;
 
     /// transformation of shape derivative matrix
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
 
     /// transformation of ale matrix
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
 
     /// transformation of constraints matrices
-    Teuchos::RCP<UTILS::MatrixRowTransform> scgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> csigtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> scgitransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> csigtransform_;
   };
 }  // namespace FSI
 

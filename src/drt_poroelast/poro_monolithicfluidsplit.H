@@ -24,17 +24,13 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-namespace FSI
+namespace LINALG
 {
-  // class OverlappingBlockMatrix;
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
 
-  namespace UTILS
-  {
-    class MatrixRowTransform;
-    class MatrixColTransform;
-    class MatrixRowColTransform;
-  }  // namespace UTILS
-}  // namespace FSI
+}  // namespace LINALG
 
 namespace POROELAST
 {
@@ -92,19 +88,19 @@ namespace POROELAST
 
     /// @name matrix transformation
     //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowColTransform> fggtransform_;
     //! transform object for fluid interface matrix \f$F_{\Gamma I}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform_;
     //! transform object for fluid interface matrix \f$F_{I \Gamma}\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> figtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> figtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^F\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> cfggtransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> csggtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma I}^F\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> cfgitransform_;
+    Teuchos::RCP<LINALG::MatrixRowTransform> cfgitransform_;
     //! transform object for structure coupling matrix \f$C_{I \Gamma}^S\f$
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> csigtransform_;
+    Teuchos::RCP<LINALG::MatrixColTransform> csigtransform_;
     //@}
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$

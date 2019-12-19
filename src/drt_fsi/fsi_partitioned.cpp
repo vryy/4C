@@ -22,7 +22,6 @@
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/ad_fld_fluid_immersed.H"
-
 #include "../drt_fluid_xfluid/xfluid.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -47,6 +46,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -90,7 +90,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
-      and (DRT::Problem::Instance()->GetProblemType() != prb_fsi_xfem))
+      and (DRT::Problem::Instance()->GetProblemType() != prb_fsi_xfem) and
+      (DRT::Problem::Instance()->GetProblemType() != prb_fbi))
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -103,7 +104,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   }
   else if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
-           and (DRT::Problem::Instance()->GetProblemType() == prb_fsi_xfem))
+           and (DRT::Problem::Instance()->GetProblemType() == prb_fsi_xfem) and
+           (DRT::Problem::Instance()->GetProblemType() != prb_fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
                             // boundary dis and fluid is handled bei XFluid itself
@@ -118,6 +120,10 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+  }
+  else if ((DRT::Problem::Instance()->GetProblemType() == prb_fbi))
+  {
+    matchingnodes_ = true;
   }
   else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
@@ -963,7 +969,8 @@ void FSI::Partitioned::ReadRestart(int step)
     {
       double omega = -1234.0;
 
-      if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField()) != Teuchos::null)
+      if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField()) != Teuchos::null ||
+          Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField()) != Teuchos::null)
       {
         IO::DiscretizationReader reader(MBFluidField()->FluidField()->Discretization(), step);
         omega = reader.ReadDouble("omega");

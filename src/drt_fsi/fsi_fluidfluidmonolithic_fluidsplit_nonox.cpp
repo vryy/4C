@@ -12,13 +12,11 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#include "fsi_matrixtransform.H"
-
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -37,6 +35,8 @@
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_io/io_pstream.H"
+
+#include "../linalg/linalg_matrixtransform.H"
 
 FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
@@ -108,14 +108,14 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
   // Initialization of row/column transformation objects
   // These are needed for the system matrix setup,
   // as matrices from 3 different fields (S,F,A) are set together.
-  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  fmggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
 
-  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
+  aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Lagrange multiplier
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));

@@ -11,7 +11,7 @@
 
 #include "ssi_str_model_evaluator_partitioned.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"

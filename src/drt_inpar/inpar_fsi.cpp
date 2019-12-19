@@ -409,8 +409,11 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(0, 0, 0, 1, 2), &fsipart);
 
   setStringToIntegralParameter<int>("COUPVARIABLE", "Displacement",
-      "Coupling variable at the interface", tuple<std::string>("Displacement", "Force"),
-      tuple<int>(INPAR::FSI::CoupVarPart::disp, INPAR::FSI::CoupVarPart::force), &fsipart);
+
+      "Coupling variable at the interface", tuple<std::string>("Displacement", "Force", "Velocity"),
+      tuple<int>(INPAR::FSI::CoupVarPart::disp, INPAR::FSI::CoupVarPart::force,
+          INPAR::FSI::CoupVarPart::vel),
+      &fsipart);
 
   BoolParameter("DIVPROJECTION", "no",
       "Project velocity into divergence-free subspace for partitioned fsi", &fsipart);

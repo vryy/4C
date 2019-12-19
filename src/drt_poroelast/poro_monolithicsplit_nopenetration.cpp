@@ -29,7 +29,6 @@
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
 
 #include "../drt_io/io.H"
 
@@ -41,8 +40,10 @@
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_matrixtransform.H"
 
 
 /*----------------------------------------------------------------------*
@@ -53,10 +54,10 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(
     : MonolithicSplit(comm, timeparams), normrhs_nopenetration_(-1.0)
 {
   // Initialize Transformation Objects
-  k_D_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  k_invD_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  k_D_transform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
+  k_invD_transform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
-  k_DLin_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  k_DLin_transform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));

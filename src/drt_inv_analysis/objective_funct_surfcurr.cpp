@@ -18,7 +18,7 @@
 #include "../drt_lib/drt_inputreader.H"
 #include "../drt_lib/drt_nodereader.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_comm/comm_utils.H"

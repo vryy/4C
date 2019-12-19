@@ -398,6 +398,18 @@ namespace EXODUS
 namespace FADUTILS
 {
 }  // namespace FADUTILS
+/**
+ * \brief Classes related to Fluid beam interaction
+ */
+namespace FBI
+{
+  /**
+   * \brief Utility functions for fbi related computations
+   */
+  namespace UTILS
+  {
+  }
+}  // namespace FBI
 
 /*! \brief Fluid field, algorithms, and time integration
  *
@@ -764,6 +776,13 @@ namespace INPAR
   namespace EP
   {
   }  // namespace EP
+
+  /**
+   * \brief Input related to fluid-beam interaction
+   */
+  namespace FBI
+  {
+  }
 
   /*! \brief Input parameters for fluid algorithms
    *

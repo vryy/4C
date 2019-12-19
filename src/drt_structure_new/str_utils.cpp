@@ -36,7 +36,7 @@
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_Vector.h>
 

@@ -17,7 +17,7 @@
 #include "contact_interface.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_mortar/mortar_element.H"
 #include "contact_nitsche_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -26,8 +26,6 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_fsi/fsi_matrixtransform.H"
-
 
 
 void CONTACT::CoNitscheStrategyTsi::SetState(
