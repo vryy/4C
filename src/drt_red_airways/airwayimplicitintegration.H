@@ -205,7 +205,9 @@ namespace AIRWAY
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void ComputeNearestAcinus();
+    void ComputeNearestAcinus(Teuchos::RCP<DRT::Discretization const> search_discret,
+        std::set<int>* elecolset, std::set<int>* nodecolset,
+        Teuchos::RCP<Epetra_Vector> airway_acinus_dep);
 
     /*!
     \brief Assembling of the RHS Vector and the LHS Matrix
@@ -239,10 +241,12 @@ namespace AIRWAY
 
 
     //! @name access methods for composite algorithms
-
+    /// Return nodal values
     Teuchos::RCP<Epetra_Vector> Pnp() { return pnp_; }
     Teuchos::RCP<Epetra_Vector> Pn() { return pn_; }
     Teuchos::RCP<Epetra_Vector> Pnm() { return pnm_; }
+    Teuchos::RCP<Epetra_Vector> Qin_np() { return qin_np_; }
+    Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
     const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -274,8 +278,19 @@ namespace AIRWAY
     int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
     void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+    Teuchos::RCP<Epetra_Vector> Pext_np() { return p_extnp_; }
+
     /// Return elemental acini volume
     Teuchos::RCP<Epetra_Vector> AciniVolume() { return acini_e_volumenp_; }
+
+    /// Return elemental airway volume
+    Teuchos::RCP<Epetra_Vector> AirwayVolume() { return elemVolumenp_; }
+
+    /// Return elemental airway status regarding opening
+    Teuchos::RCP<Epetra_Vector> Open() { return open_; }
+
+    /// Return elemental airway trajectory describing opening tendency
+    Teuchos::RCP<Epetra_Vector> OpeningTrajectory() { return x_np_; }
 
     //@}
 
@@ -401,6 +416,10 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> elemVolumenm_;
     Teuchos::RCP<Epetra_Vector> elemVolume0_;
     Teuchos::RCP<Epetra_Vector> elemArea0_;
+
+    //! @name element radius at time n+1
+    Teuchos::RCP<Epetra_Vector> elemRadiusnp_;
+    //@}
 
     //@}
     //! @name node Id vector
