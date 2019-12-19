@@ -207,7 +207,8 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return (GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0);
+  return ((GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0) or
+          GetInitialStateIsToBeWritten());
 }
 
 /*----------------------------------------------------------------------------*

@@ -431,8 +431,7 @@ void STR::TIMINT::Base::PrepareOutput()
 {
   CheckInitSetup();
   // --- stress, strain and optional quantity calculation ---------------------
-  if ((dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp())) or
-      dataio_->GetInitialStateIsToBeWritten())
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp()))
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();
