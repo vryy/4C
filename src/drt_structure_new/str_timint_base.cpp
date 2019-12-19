@@ -21,6 +21,7 @@
 #include "str_resulttest.H"
 #include "str_timint_basedataio_runtime_vtk_output.H"
 #include "str_timint_basedataio_runtime_vtp_output.H"
+#include "str_timint_basedataio_monitor_dbc.H"
 #include "str_enum_lists.H"
 
 #include "../drt_io/io_gmsh.H"
@@ -36,6 +37,7 @@
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
+#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
@@ -543,6 +545,13 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     RuntimeOutputState();
   }
 
+  // write reaction forces
+  if (dataio_->GetMonitorDBCParams() != Teuchos::null and
+      dataglobalstate_->GetStepN() % dataio_->GetMonitorDBCParams()->OutputIntervalInSteps() == 0)
+  {
+    OutputReactionForces();
+  }
+
   // output stress, strain and optional quantity
   if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
@@ -649,6 +658,15 @@ void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
   int_ptr_->RuntimeOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputReactionForces()
+{
+  CheckInitSetup();
+  IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+  int_ptr_->MonitorDbc(iowriter);
 }
 
 /*----------------------------------------------------------------------------*

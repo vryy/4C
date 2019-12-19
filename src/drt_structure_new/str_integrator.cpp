@@ -89,7 +89,7 @@ void STR::Integrator::Setup()
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
-  monitor_dbc_ptr_->Init(*gstate_ptr_->GetMutableDiscret(), *gstate_ptr_, *dbc_ptr_);
+  monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->GetMutableDiscret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->Setup();
 
   mt_energy_.Setup();
@@ -395,7 +395,6 @@ bool STR::Integrator::DetermineElementVolumes(
 void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();
-  MonitorDbc(iowriter);
   ModelEval().OutputStepState(iowriter);
 }
 
@@ -411,9 +410,6 @@ void STR::Integrator::MonitorDbc(IO::DiscretizationWriter& writer) const
 void STR::Integrator::RuntimeOutputStepState() const
 {
   CheckInitSetup();
-
-  IO::DiscretizationWriter& iowriter = *(io_ptr_->GetMutableOutputPtr());
-  MonitorDbc(iowriter);
   ModelEval().RuntimeOutputStepState();
 }
 
