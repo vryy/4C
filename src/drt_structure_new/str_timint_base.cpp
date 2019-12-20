@@ -546,7 +546,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // write reaction forces
-  if (dataio_->GetMonitorDBCParams() != Teuchos::null and
+  if (dataio_->GetMonitorDBCParams()->OutputIntervalInSteps() > 0 and
       dataglobalstate_->GetStepN() % dataio_->GetMonitorDBCParams()->OutputIntervalInSteps() == 0)
   {
     OutputReactionForces();
