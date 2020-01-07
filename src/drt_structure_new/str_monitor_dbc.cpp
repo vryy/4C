@@ -14,6 +14,8 @@
 
 #include "str_dbc.H"
 #include "str_timint_basedataglobalstate.H"
+#include "str_timint_basedataio.H"
+#include "str_timint_basedataio_monitor_dbc.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -29,17 +31,15 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Init(
+void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
     DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc)
 {
   issetup_ = false;
   isinit_ = false;
 
-  const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
-      DRT::Problem::Instance()->IOParams().sublist("MONITOR STRUCTURE DBC");
 
-  of_precision_ = sublist_IO_monitor_structure_dbc.get<int>("PRECISION_FILE");
-  os_precision_ = sublist_IO_monitor_structure_dbc.get<int>("PRECISION_SCREEN");
+  of_precision_ = io_ptr->GetMonitorDBCParams()->FilePrecision();
+  os_precision_ = io_ptr->GetMonitorDBCParams()->ScreenPrecision();
 
   std::vector<const DRT::Condition*> tagged_conds;
   GetTaggedCondition(tagged_conds, "Dirichlet", "monitor_reaction", discret);

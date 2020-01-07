@@ -231,6 +231,8 @@ namespace STR
 
     //! things that should be done after output
     virtual void PostOutput();
+
+    void MonitorDbc(IO::DiscretizationWriter& writer) const;
     //!@}
 
     //! @name Accessors
@@ -319,8 +321,6 @@ namespace STR
 
     double GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
         const enum NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
-
-    void MonitorDbc(IO::DiscretizationWriter& writer) const;
 
    protected:
     //! indicates if the Init() function has been called

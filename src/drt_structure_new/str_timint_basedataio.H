@@ -45,6 +45,7 @@ namespace STR
   {
     class ParamsRuntimeVtkOutput;
     class ParamsRuntimeVtpOutput;
+    class ParamsMonitorDBC;
 
     /** \brief Input/output data container for the structural (time) integration
      *
@@ -105,6 +106,13 @@ namespace STR
       {
         CheckInitSetup();
         return params_runtime_vtp_output_;
+      };
+
+      /// get the data container for parameters regarding VTK output at runtime
+      Teuchos::RCP<const ParamsMonitorDBC> GetMonitorDBCParams() const
+      {
+        CheckInitSetup();
+        return params_monitor_dbc_;
       };
 
       /// \brief return TRUE if the results shall be written for this load/time \c step
@@ -330,6 +338,8 @@ namespace STR
       /// data container for input parameters related to VTP output at runtime
       Teuchos::RCP<ParamsRuntimeVtpOutput> params_runtime_vtp_output_;
 
+      /// data container for input parameters related to monitoring of reaction forces
+      Teuchos::RCP<ParamsMonitorDBC> params_monitor_dbc_;
       /// outputfile for energy
       Teuchos::RCP<std::ofstream> energyfile_;
 

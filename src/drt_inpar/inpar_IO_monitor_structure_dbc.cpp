@@ -37,6 +37,9 @@ namespace INPAR
       Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
           sublist_IO.sublist("MONITOR STRUCTURE DBC", false, "");
 
+      // output interval regarding steps: write output every INTERVAL_STEPS steps
+      IntParameter("INTERVAL_STEPS", -1, "write reaction force output every INTERVAL_STEPS steps",
+          &sublist_IO_monitor_structure_dbc);
 
       // precision for file
       IntParameter(
