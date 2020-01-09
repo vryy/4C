@@ -169,6 +169,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+RHO_INF                         -1.0
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 ----------------------------------------------------------------FLUID DYNAMIC

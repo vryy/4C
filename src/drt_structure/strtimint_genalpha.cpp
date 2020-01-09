@@ -23,16 +23,43 @@
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
 {
-  // rho_inf specified --> calculate optimal parameters
-  if (rho_inf_ != -1.)
+  if ((rho_inf_ + 1.0 < 1.0e-16) and (rho_inf_ + 1.0 > -1.0e-16))
   {
-    if ((rho_inf_ < 0.0) or (rho_inf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
-    if ((beta_ != 0.25) or (gamma_ != 0.5) or (alpham_ != 0.5) or (alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other four parameters");
+    std::cout << "user chooses to specify the four parameters\n";
+    if ((alpham_ < 0.0) or (alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
+    if ((alphaf_ < 0.0) or (alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
+    if ((beta_ <= 0.0) or (beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
+    if ((gamma_ <= 0.0) or (gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
+    std::cout << "4 user-defined parameters applied";
+  }
+
+  // ------ rho_inf set to something different than -1.0 and out of [0,1]--> report error
+  // -----------------
+  else if ((rho_inf_ < -1.0) or ((rho_inf_ < 0.0) and (rho_inf_ > -1.0)) or (rho_inf_ > 1.0))
+    dserror("rho_inf out of range [0.0,1.0]");
+
+  // ------ rho_inf must be within [0.0,1.0]--> check if the other parameters are mistakingly set
+  // -----------------
+  else if (((beta_ != -1.0) or (gamma_ != -1.0) or (alpham_ != -1.0) or (alphaf_ != -1.0)) and
+           (rho_inf_ != -1.0))
+    dserror("you may only specify RHO_INF or the other four parameters");
+
+  // ------ rho_inf specified --> calculate optimal parameters -----------------
+  else if ((rho_inf_ <= 1.0) and (rho_inf_ >= 0.0))
+  {
     alpham_ = (2.0 * rho_inf_ - 1.0) / (rho_inf_ + 1.0);
     alphaf_ = rho_inf_ / (rho_inf_ + 1.0);
     beta_ = 0.25 * (1.0 - alpham_ + alphaf_) * (1.0 - alpham_ + alphaf_);
     gamma_ = 0.5 - alpham_ + alphaf_;
+    std::cout << "using rho to calculate the optimal parameters\n";
+    std::cout << "alpha_m=" << alpham_ << std::endl;
+    std::cout << "alpha_f=" << alphaf_ << std::endl;
+    std::cout << "beta=" << beta_ << std::endl;
+    std::cout << "gamma=" << gamma_ << std::endl;
+  }
+  else
+  {
+    dserror("This can't happen.");
   }
 }
 

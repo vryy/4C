@@ -1286,7 +1286,7 @@ namespace STR
     bool IsSetup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool IsInit() const { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
@@ -1295,7 +1295,7 @@ namespace STR
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void CheckIsInit() const
     {
       if (not IsInit()) dserror("Init(...) was not called.");
     };

@@ -187,7 +187,11 @@ namespace STR
     }
 
     //! return time integration factor
-    virtual double TimIntParam() const { return alphaf_; }
+    virtual double TimIntParam() const
+    {
+      CheckIsInit();
+      return alphaf_;
+    }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements

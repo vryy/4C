@@ -227,20 +227,54 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  // ------ rho_inf specified --> calculate optimal parameters -----------------
-  if (coeffs.rhoinf_ != -1.)
+  // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
+  if (coeffs.rhoinf_ == -1.0)
   {
-    if ((coeffs.rhoinf_ < 0.0) or (coeffs.rhoinf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
-    if ((coeffs.beta_ != 0.25) or (coeffs.gamma_ != 0.5) or (coeffs.alpham_ != 0.5) or
-        (coeffs.alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other four parameters");
+    if (GlobalState().GetMyRank() == 0)
+      std::cout << "user chooses to specify the four parameters" << std::endl;
+    if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
+    if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
+    if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
+    if ((coeffs.gamma_ <= 0.0) or (coeffs.gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
+  }
+
+  // ------ rho_inf set to something different than -1.0 and out of [0,1]--> report error
+  // -----------------
+  else if ((coeffs.rhoinf_ < -1.0) or ((coeffs.rhoinf_ < 0.0) and (coeffs.rhoinf_ > -1.0)) or
+           (coeffs.rhoinf_ > 1.0))
+    dserror("rho_inf out of range [0.0,1.0]");
+
+  // ------ rho_inf must be within [0.0,1.0]--> check if the other parameters are mistakingly set
+  // -----------------
+  else if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or
+               (coeffs.alphaf_ != -1.0)) and
+           (coeffs.rhoinf_ != -1.0))
+    dserror("you may only specify RHO_INF or the other four parameters");
+
+  // ------ rho_inf specified --> calculate optimal parameters -----------------
+  else if ((coeffs.rhoinf_ <= 1.0) and (coeffs.rhoinf_ >= 0.0))
+  {
     coeffs.alpham_ = (2.0 * coeffs.rhoinf_ - 1.0) / (coeffs.rhoinf_ + 1.0);
     coeffs.alphaf_ = coeffs.rhoinf_ / (coeffs.rhoinf_ + 1.0);
     coeffs.beta_ =
         0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
     coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
+    if (GlobalState().GetMyRank() == 0)
+    {
+      std::cout << "using rho=" << rhoinf_
+                << " to calculate optimal time integration parameters:" << std::endl;
+      std::cout << "alpha_m=" << coeffs.alpham_ << std::endl;
+      std::cout << "alpha_f=" << coeffs.alphaf_ << std::endl;
+      std::cout << "beta=" << coeffs.beta_ << std::endl;
+      std::cout << "gamma=" << coeffs.gamma_ << std::endl;
+    }
   }
+  else
+    // safety check - we should never land here
+    dserror("can't understand your time integration settings. refer to code");
 }
+
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

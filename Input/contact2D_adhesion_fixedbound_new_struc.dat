@@ -55,6 +55,7 @@ BETA                  0.309
 GAMMA                 0.611
 ALPHA_M               0.333
 ALPHA_F               0.444
+RHO_INF               -1.0
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               sp

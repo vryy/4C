@@ -60,6 +60,7 @@ ALPHA_F                         0.459
 ALPHA_M                         0.378
 BETA                            0.291
 GAMMA                           0.581
+RHO_INF                         -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR

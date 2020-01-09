@@ -16,6 +16,7 @@
 #include "Teuchos_TimeMonitor.hpp"
 
 #include "strtimint.H"
+#include "strtimint_genalpha.H"
 
 #include "stru_resulttest.H"
 
@@ -558,7 +559,10 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
         INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+    {
+      auto timIntGenAlpha = dynamic_cast<STR::TimIntGenAlpha*>(this);
+      alphaf = timIntGenAlpha->TimIntParam();
+    }
     if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
         INPAR::STR::dyna_gemm)
       alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
@@ -1442,6 +1446,7 @@ void STR::TimInt::UpdateStepContactVUM()
       if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_genalpha)
       {
+        // fixme don't use potentially inconsistent values directly from input
         alpham = sdynparams.sublist("GENALPHA").get<double>("ALPHA_M");
         beta = sdynparams.sublist("GENALPHA").get<double>("BETA");
         gamma = sdynparams.sublist("GENALPHA").get<double>("GAMMA");

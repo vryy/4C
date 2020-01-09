@@ -316,11 +316,11 @@ namespace INPAR
       setStringToIntegralParameter<int>("GENAVG", "TrLike", "mid-average type of internal forces",
           tuple<std::string>("Vague", "ImrLike", "TrLike"),
           tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &genalpha);
-      DoubleParameter("BETA", 0.25, "Generalised-alpha factor in (0,1/2]", &genalpha);
-      DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &genalpha);
-      DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0,1)", &genalpha);
-      DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0,1)", &genalpha);
-      DoubleParameter("RHO_INF", -1.0, "Generalised-alpha factor in [0,1]", &genalpha);
+      DoubleParameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
+      DoubleParameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
+      DoubleParameter("ALPHA_M", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
+      DoubleParameter("ALPHA_F", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
+      DoubleParameter("RHO_INF", 1.0, "Generalised-alpha factor in [0,1]", &genalpha);
 
       /*----------------------------------------------------------------------*/
       /* parameters for one-step-theta structural integrator */

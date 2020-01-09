@@ -60,6 +60,7 @@ ALPHA_F                         0.4737
 ALPHA_M                         0.4211
 GAMMA                           0.5526
 BETA                            0.2770
+RHO_INF                         -1.0
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            AdamsBashforth2
 OUTENEPERIOD                    0.001

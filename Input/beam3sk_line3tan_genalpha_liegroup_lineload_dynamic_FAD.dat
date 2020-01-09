@@ -46,10 +46,11 @@ MASSLIN                         rotations
 LOADLIN                         Yes
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F         0.487179487179
-ALPHA_M         0.461538461538
-BETA            0.262984878369
-GAMMA           0.525641025641
+ALPHA_F                         0.487179487179
+ALPHA_M                         0.461538461538
+BETA                            0.262984878369
+GAMMA                           0.525641025641
+RHO_INF                         -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
