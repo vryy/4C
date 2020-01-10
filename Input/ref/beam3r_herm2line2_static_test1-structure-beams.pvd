@@ -4,6 +4,7 @@
 -->
 <VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
   <Collection>
+    <DataSet timestep="0.00000000000000e+00" group="" part="0" file="beam3r_herm2line2_static_test1-vtk-files/structure-beams-000000.pvtu"/>
     <DataSet timestep="1.00000000000000e+00" group="" part="0" file="beam3r_herm2line2_static_test1-vtk-files/structure-beams-000010.pvtu"/>
   </Collection>
 </VTKFile>
