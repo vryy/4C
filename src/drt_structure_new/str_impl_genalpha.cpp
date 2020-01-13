@@ -227,11 +227,14 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
+  STR::IMPLICIT::GenAlpha::Compute4Parameters(coeffs);
+}
+
+
+void STR::IMPLICIT::GenAlpha::Compute4Parameters(Coefficients& coeffs)
+{  // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
   if (coeffs.rhoinf_ == -1.0)
   {
-    if (GlobalState().GetMyRank() == 0)
-      std::cout << "user chooses to specify the four parameters" << std::endl;
     if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
     if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
     if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
@@ -259,21 +262,13 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
     coeffs.beta_ =
         0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
     coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
-    if (GlobalState().GetMyRank() == 0)
-    {
-      std::cout << "using rho=" << rhoinf_
-                << " to calculate optimal time integration parameters:" << std::endl;
-      std::cout << "alpha_m=" << coeffs.alpham_ << std::endl;
-      std::cout << "alpha_f=" << coeffs.alphaf_ << std::endl;
-      std::cout << "beta=" << coeffs.beta_ << std::endl;
-      std::cout << "gamma=" << coeffs.gamma_ << std::endl;
-    }
   }
   else
-    // safety check - we should never land here
-    dserror("can't understand your time integration settings. refer to code");
+    dsassert(false,
+        "This error is just for the debugging. Normally the program cannot come here because the "
+        "ifs should already include all the possible conditions.");
+  ;
 }
-
 
 
 /*----------------------------------------------------------------------------*

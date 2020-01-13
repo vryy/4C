@@ -19,48 +19,26 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_structure_new/str_impl_genalpha.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
 {
-  if ((rho_inf_ + 1.0 < 1.0e-16) and (rho_inf_ + 1.0 > -1.0e-16))
-  {
-    std::cout << "user chooses to specify the four parameters\n";
-    if ((alpham_ < 0.0) or (alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
-    if ((alphaf_ < 0.0) or (alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
-    if ((beta_ <= 0.0) or (beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
-    if ((gamma_ <= 0.0) or (gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
-    std::cout << "4 user-defined parameters applied";
-  }
+  STR::IMPLICIT::GenAlpha::Coefficients coeffs;
+  // get a copy of the input parameters
+  coeffs.beta_ = beta_;
+  coeffs.gamma_ = gamma_;
+  coeffs.alphaf_ = alphaf_;
+  coeffs.alpham_ = alpham_;
+  coeffs.rhoinf_ = rho_inf_;
 
-  // ------ rho_inf set to something different than -1.0 and out of [0,1]--> report error
-  // -----------------
-  else if ((rho_inf_ < -1.0) or ((rho_inf_ < 0.0) and (rho_inf_ > -1.0)) or (rho_inf_ > 1.0))
-    dserror("rho_inf out of range [0.0,1.0]");
+  STR::IMPLICIT::GenAlpha::Compute4Parameters(coeffs);
 
-  // ------ rho_inf must be within [0.0,1.0]--> check if the other parameters are mistakingly set
-  // -----------------
-  else if (((beta_ != -1.0) or (gamma_ != -1.0) or (alpham_ != -1.0) or (alphaf_ != -1.0)) and
-           (rho_inf_ != -1.0))
-    dserror("you may only specify RHO_INF or the other four parameters");
-
-  // ------ rho_inf specified --> calculate optimal parameters -----------------
-  else if ((rho_inf_ <= 1.0) and (rho_inf_ >= 0.0))
-  {
-    alpham_ = (2.0 * rho_inf_ - 1.0) / (rho_inf_ + 1.0);
-    alphaf_ = rho_inf_ / (rho_inf_ + 1.0);
-    beta_ = 0.25 * (1.0 - alpham_ + alphaf_) * (1.0 - alpham_ + alphaf_);
-    gamma_ = 0.5 - alpham_ + alphaf_;
-    std::cout << "using rho to calculate the optimal parameters\n";
-    std::cout << "alpha_m=" << alpham_ << std::endl;
-    std::cout << "alpha_f=" << alphaf_ << std::endl;
-    std::cout << "beta=" << beta_ << std::endl;
-    std::cout << "gamma=" << gamma_ << std::endl;
-  }
-  else
-  {
-    dserror("This can't happen.");
-  }
+  beta_ = coeffs.beta_;
+  gamma_ = coeffs.gamma_;
+  alphaf_ = coeffs.alphaf_;
+  alpham_ = coeffs.alpham_;
+  rho_inf_ = coeffs.rhoinf_;
 }
 
 /*----------------------------------------------------------------------*/
@@ -378,7 +356,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   fextm_->Update(1. - alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // ************************** (2) INTERNAL FORCES ***************************
-
   fintn_->PutScalar(0.0);
   // build new internal forces and stiffness
   if (HaveNonlinearMass() == INPAR::STR::ml_none)

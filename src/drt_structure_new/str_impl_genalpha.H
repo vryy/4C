@@ -31,10 +31,10 @@ namespace STR
      */
     class GenAlpha : public Generic
     {
+     public:
       // forwards declaration
       struct Coefficients;
 
-     public:
       //! constructor
       GenAlpha();
 
@@ -115,6 +115,38 @@ namespace STR
       //! Set initial displacement field
       virtual void SetInitialDisplacement(
           const INPAR::STR::InitialDisp init, const int startfuncno);
+
+      /// just an internal function to reduce redundancy in structure and structure_new
+      static void Compute4Parameters(Coefficients& coeffs);
+
+      /*! \brief Time integration coefficients container
+       *
+       * \note For bounds on the individual parameters, please consult the
+       * original publication by Chung and Hulbert (1993). In practive however,
+       * it is advised to choose the spectral radius as \f$\rho_\infty \in [0.5,1]\f$.
+       */
+      struct Coefficients
+      {
+        /// copy operator (currently default is enough)
+        Coefficients& operator=(const Coefficients& source) = default;
+
+        //! Parameter \f$\beta \in (0,1/2]\f$
+        double beta_ = -1.0;
+
+        //! Parameter \f$\gamma \in (0,1]\f$
+        double gamma_ = -1.0;
+
+        //! Parameter \f$\alpha_f \in [0,1)\f$
+        double alphaf_ = -1.0;
+
+        //! Parameter \f$\alpha_m \in [-1,1)\f$
+        double alpham_ = -1.0;
+
+        //! Spectral radius \f$\rho_\infty \in [0,1]\f$
+        double rhoinf_ = -1.0;
+      };
+
+
 
       //!@}
 
@@ -206,36 +238,13 @@ namespace STR
       /// set the time integration coefficients
       void SetTimeIntegrationCoefficients(Coefficients& coeffs) const;
 
+
       /// Return a reliable model value which can be used for line search
       double GetModelValue(const Epetra_Vector& x) override;
 
+
+
      private:
-      /*! \brief Time integration coefficients container
-       *
-       * \note For bounds on the individual parameters, please consult the
-       * original publication by Chung and Hulbert (1993). In practive however,
-       * it is advised to choose the spectral radius as \f$\rho_\infty \in [0.5,1]\f$.
-       */
-      struct Coefficients
-      {
-        /// copy operator (currently default is enough)
-        Coefficients& operator=(const Coefficients& source) = default;
-
-        //! Parameter \f$\beta \in (0,1/2]\f$
-        double beta_ = -1.0;
-
-        //! Parameter \f$\gamma \in (0,1]\f$
-        double gamma_ = -1.0;
-
-        //! Parameter \f$\alpha_f \in [0,1)\f$
-        double alphaf_ = -1.0;
-
-        //! Parameter \f$\alpha_m \in [-1,1)\f$
-        double alpham_ = -1.0;
-
-        //! Spectral radius \f$\rho_\infty \in [0,1]\f$
-        double rhoinf_ = -1.0;
-      };
       Coefficients coeffs_;
 
      protected:
