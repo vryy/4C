@@ -227,48 +227,9 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  STR::IMPLICIT::GenAlpha::Compute4Parameters(coeffs);
+  STR::Compute4Parameters(coeffs);
 }
 
-
-void STR::IMPLICIT::GenAlpha::Compute4Parameters(Coefficients& coeffs)
-{  // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
-  if (coeffs.rhoinf_ == -1.0)
-  {
-    if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
-    if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
-    if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
-    if ((coeffs.gamma_ <= 0.0) or (coeffs.gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
-  }
-
-  // ------ rho_inf set to something different than -1.0 and out of [0,1]--> report error
-  // -----------------
-  else if ((coeffs.rhoinf_ < -1.0) or ((coeffs.rhoinf_ < 0.0) and (coeffs.rhoinf_ > -1.0)) or
-           (coeffs.rhoinf_ > 1.0))
-    dserror("rho_inf out of range [0.0,1.0]");
-
-  // ------ rho_inf must be within [0.0,1.0]--> check if the other parameters are mistakingly set
-  // -----------------
-  else if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or
-               (coeffs.alphaf_ != -1.0)) and
-           (coeffs.rhoinf_ != -1.0))
-    dserror("you may only specify RHO_INF or the other four parameters");
-
-  // ------ rho_inf specified --> calculate optimal parameters -----------------
-  else if ((coeffs.rhoinf_ <= 1.0) and (coeffs.rhoinf_ >= 0.0))
-  {
-    coeffs.alpham_ = (2.0 * coeffs.rhoinf_ - 1.0) / (coeffs.rhoinf_ + 1.0);
-    coeffs.alphaf_ = coeffs.rhoinf_ / (coeffs.rhoinf_ + 1.0);
-    coeffs.beta_ =
-        0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
-    coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
-  }
-  else
-    dsassert(false,
-        "This error is just for the debugging. Normally the program cannot come here because the "
-        "ifs should already include all the possible conditions.");
-  ;
-}
 
 
 /*----------------------------------------------------------------------------*

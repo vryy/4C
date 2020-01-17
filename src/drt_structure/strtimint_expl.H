@@ -182,11 +182,7 @@ namespace STR
     virtual double MethodLinErrCoeffVel() const = 0;
 
     //! return time integration factor
-    virtual double TimIntParam() const
-    {
-      dserror("TimeFac not yet implemented");
-      return -1.0;
-    }
+    virtual double TimIntParam() const { return 0.0; }
 
     //@}
 

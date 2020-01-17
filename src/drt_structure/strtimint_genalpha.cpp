@@ -19,7 +19,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_structure_new/str_impl_genalpha.H"
+#include "../drt_structure_new/str_utils.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
@@ -32,7 +32,7 @@ void STR::TimIntGenAlpha::CalcCoeff()
   coeffs.alpham_ = alpham_;
   coeffs.rhoinf_ = rho_inf_;
 
-  STR::IMPLICIT::GenAlpha::Compute4Parameters(coeffs);
+  Compute4Parameters(coeffs);
 
   beta_ = coeffs.beta_;
   gamma_ = coeffs.gamma_;

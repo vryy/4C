@@ -116,9 +116,6 @@ namespace STR
       virtual void SetInitialDisplacement(
           const INPAR::STR::InitialDisp init, const int startfuncno);
 
-      /// just an internal function to reduce redundancy in structure and structure_new
-      static void Compute4Parameters(Coefficients& coeffs);
-
       /*! \brief Time integration coefficients container
        *
        * \note For bounds on the individual parameters, please consult the
