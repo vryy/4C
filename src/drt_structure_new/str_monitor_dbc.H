@@ -29,7 +29,8 @@ namespace STR
   namespace TIMINT
   {
     class BaseDataGlobalState;
-  }
+    class BaseDataIO;
+  }  // namespace TIMINT
 
   /** \brief Monitor Dirichlet boundary conditions
    *
@@ -64,7 +65,8 @@ namespace STR
     ~MonitorDbc() = default;
 
     /// initialize class members
-    void Init(DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate,
+    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
+        DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate,
         STR::Dbc& dbc);
 
     /// setup new class members

@@ -1793,7 +1793,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
   src/drt_structure_new/str_monitor_dbc.cpp
-#  src/drt_beaminteraction/str_dbc_biopolynet.cpp
+  src/drt_structure_new/str_timint_basedataio_monitor_dbc.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
   src/drt_structure_new/str_impl_generic.cpp

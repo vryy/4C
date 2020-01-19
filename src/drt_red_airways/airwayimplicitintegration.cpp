@@ -17,6 +17,8 @@
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -78,6 +80,61 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
 
+  airway_acinus_dep_ = LINALG::CreateVector(*discret_->ElementColMap(), true);
+
+  // extend ghosting of discretization to ensure correct neighbor search
+  if (compAwAcInter_)
+  {
+    // to be filled with additional elements to be ghosted (needs to be done before
+    // making discret fully overlapping)
+    std::set<int> elecolset;
+    const Epetra_Map* elecolmap = discret_->ElementColMap();
+    for (int lid = 0; lid < elecolmap->NumMyElements(); ++lid)
+    {
+      int gid = elecolmap->GID(lid);
+      elecolset.insert(gid);
+    }
+
+    // to be filled with additional nodes to be ghosted
+    std::set<int> nodecolset;
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    for (int lid = 0; lid < nodecolmap->NumMyElements(); ++lid)
+    {
+      int gid = nodecolmap->GID(lid);
+      nodecolset.insert(gid);
+    }
+
+    // make search discret fully overlapping on all procs
+    DRT::UTILS::GhostDiscretizationOnAllProcs(discret_);
+    discret_->FillComplete(false, false, false);
+
+    // Get elements and nodes that need to be ghosted to have correct neighbor search
+    // independent of number of procs
+    ComputeNearestAcinus(discret_, &elecolset, &nodecolset, Teuchos::null);
+
+    // extended ghosting for elements (also revert fully overlapping here)
+    std::vector<int> coleles(elecolset.begin(), elecolset.end());
+    Teuchos::RCP<const Epetra_Map> extendedelecolmap =
+        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), &coleles[0], 0, discret_->Comm()));
+
+    discret_->ExportColumnElements(*extendedelecolmap);
+
+    // extended ghosting for nodes
+    std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
+    Teuchos::RCP<const Epetra_Map> extendednodecolmap =
+        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, discret_->Comm()));
+
+    discret_->ExportColumnNodes(*extendednodecolmap);
+
+    // fill and inform user (not fully overlapping anymore at this point
+    discret_->FillComplete();
+    DRT::UTILS::PrintParallelDistribution(*discret_);
+
+    // Neighbouring acinus
+    airway_acinus_dep_ = LINALG::CreateVector(*discret_->ElementColMap(), true);
+    ComputeNearestAcinus(discret_, nullptr, nullptr, airway_acinus_dep_);
+  }
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -125,9 +182,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // State of airway
   open_ = LINALG::CreateVector(*elementcolmap, true);
 
-  // Neighbouring acinus
-  airway_acinus_dep_ = LINALG::CreateVector(*elementcolmap, true);
-
   // External pressure
   p_extnp_ = LINALG::CreateVector(*elementcolmap, true);
   p_extn_ = LINALG::CreateVector(*elementcolmap, true);
@@ -151,6 +205,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   elemVolumenm_ = LINALG::CreateVector(*elementcolmap, true);
   elemVolume0_ = LINALG::CreateVector(*elementcolmap, true);
   elemArea0_ = LINALG::CreateVector(*elementcolmap, true);
+
+  // Element radius at time n+1
+  elemRadiusnp_ = LINALG::CreateVector(*elementcolmap, true);
 
   // This vector will be used to test convergence
   residual_ = LINALG::CreateVector(*dofrowmap, true);
@@ -346,12 +403,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
       }
     }
   }
-  if (compAwAcInter_)
-  // Routine compute nearest acinus for each airway
-  {
-    ComputeNearestAcinus();
-    // ele->Nodes()[0])->X();
-  }
 
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("RedAirwayScatraExchangeCond", conds);
@@ -464,10 +515,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
           acini_ele->setParams("AcinusVolume", val);
 
           // adjust acini volumes in the vectors used in this function
-          (*acini_e_volumenp_)[i] = val;
-          (*acini_e_volumen_)[i] = val;
-          (*acini_e_volumenm_)[i] = val;
-          (*acini_e_volume0_)[i] = val;
+          if (not DRT::Problem::Instance()->Restart())
+          {
+            (*acini_e_volumenp_)[i] = val;
+            (*acini_e_volumen_)[i] = val;
+            (*acini_e_volumenm_)[i] = val;
+            (*acini_e_volume0_)[i] = val;
+          }
         }
       }
       else
@@ -482,96 +536,93 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
 /*-----------------------------------------------------------------------------*
  |                                                                roth 02/2016 |
  *-----------------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::ComputeNearestAcinus()
+void AIRWAY::RedAirwayImplicitTimeInt::ComputeNearestAcinus(
+    Teuchos::RCP<DRT::Discretization const> search_discret, std::set<int>* elecolset,
+    std::set<int>* nodecolset, Teuchos::RCP<Epetra_Vector> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
-  for (int j = 0; j < (discret_->NumMyColElements()); j++)
+  for (int j = 0; j < (search_discret->NumMyColElements()); j++)
   {
+    // global element ID airway
+    int GID1 = search_discret->ElementColMap()->GID(j);
+
+    // check if element is airway element
+    DRT::ELEMENTS::RedAirway* ele_aw =
+        dynamic_cast<DRT::ELEMENTS::RedAirway*>(search_discret->gElement(GID1));
+
     // check if element j is an airway
-    if (((*generations_)[j] != -1) and ((*generations_)[j] != -2))
+    if (ele_aw != nullptr)
     {
-      int GID1 = discret_->ElementColMap()->GID(j);  // global element ID airway
+      double diff_norm = 1e3;
+      double min_norm = 1e3;
+      int min_index = 0;
 
-      const DRT::ElementType& ele_type = discret_->gElement(GID1)->ElementType();
-      if (ele_type == DRT::ELEMENTS::RedAirwayType::Instance())
+      // Get coordinates for airway center point
+      double node_coords1[3];
+      node_coords1[0] = ele_aw->Nodes()[0]->X()[0];
+      node_coords1[1] = ele_aw->Nodes()[0]->X()[1];
+      node_coords1[2] = ele_aw->Nodes()[0]->X()[2];
+
+      double node_coords2[3];
+      node_coords2[0] = ele_aw->Nodes()[1]->X()[0];
+      node_coords2[1] = ele_aw->Nodes()[1]->X()[1];
+      node_coords2[2] = ele_aw->Nodes()[1]->X()[2];
+
+
+      double node_coords_center[3];
+      for (int p = 0; p < 3; p++) node_coords_center[p] = (node_coords1[p] + node_coords2[p]) / 2;
+
+      // Loop over all acinus elements (on processor)
+      for (int i = 0; i < (search_discret->NumMyColElements()); i++)
       {
-        double diff_norm = 1e3;
-        double min_norm = 1e3;
-        int min_index = 0;
+        // global acinus element ID
+        int GID2 = search_discret->ElementColMap()->GID(i);
 
-        // dynamic cast to airway element, since Elements base class does not have the functions
-        // getParams and setParams
-        DRT::ELEMENTS::RedAirway* ele_aw =
-            dynamic_cast<DRT::ELEMENTS::RedAirway*>(discret_->gElement(GID1));
+        DRT::ELEMENTS::RedAcinus* ele_ac =
+            dynamic_cast<DRT::ELEMENTS::RedAcinus*>(search_discret->gElement(GID2));
 
-        // Get coordinates for airway center point
-        double node_coords1[3];
-        node_coords1[0] = ele_aw->Nodes()[0]->X()[0];
-        node_coords1[1] = ele_aw->Nodes()[0]->X()[1];
-        node_coords1[2] = ele_aw->Nodes()[0]->X()[2];
-
-        double node_coords2[3];
-        node_coords2[0] = ele_aw->Nodes()[1]->X()[0];
-        node_coords2[1] = ele_aw->Nodes()[1]->X()[1];
-        node_coords2[2] = ele_aw->Nodes()[1]->X()[2];
-
-
-        double node_coords_center[3];
-        for (int p = 0; p < 3; p++) node_coords_center[p] = (node_coords1[p] + node_coords2[p]) / 2;
-
-        // Loop over all acinus elements (on processor)
-        for (int i = 0; i < (discret_->NumMyColElements()); i++)
+        // Check if element is an acinus
+        if (ele_ac != nullptr)
         {
-          // Check if element is an acinus
-          if ((*generations_)[i] == -1)
+          // Get coordinates of acini
+          double ac_coords[3];
+          ac_coords[0] = ele_ac->Nodes()[1]->X()[0];
+          ac_coords[1] = ele_ac->Nodes()[1]->X()[1];
+          ac_coords[2] = ele_ac->Nodes()[1]->X()[2];
+
+          double diff_vec[3];  // = ac_coords - airway_node_coords_center;
+          for (int k = 0; k < 3; k++) diff_vec[k] = ac_coords[k] - node_coords_center[k];
+          double accum = 0;
+
+          for (int m = 0; m < 3; m++) accum += diff_vec[m] * diff_vec[m];
+          diff_norm = std::sqrt(accum);
+
+          if (diff_norm < min_norm)
           {
-            int GID2 = discret_->ElementColMap()->GID(i);  // global element ID
-
-
-            // check if element is an acinus
-            const DRT::ElementType& ele_type2 = discret_->gElement(GID2)->ElementType();
-            if (ele_type2 == DRT::ELEMENTS::RedAcinusType::Instance())
-            {
-              // dynamic cast to acinus element, since Elements base class does not have the
-              // functions getParams and setParams
-              DRT::ELEMENTS::RedAcinus* ele_ac =
-                  dynamic_cast<DRT::ELEMENTS::RedAcinus*>(discret_->gElement(GID2));
-
-              // Get coordinates of acini
-              double ac_coords[3];
-              ac_coords[0] = ele_ac->Nodes()[1]->X()[0];
-              ac_coords[1] = ele_ac->Nodes()[1]->X()[1];
-              ac_coords[2] = ele_ac->Nodes()[1]->X()[2];
-
-              double diff_vec[3];  // = ac_coords - airway_node_coords_center;
-              for (int k = 0; k < 3; k++) diff_vec[k] = ac_coords[k] - node_coords_center[k];
-              double accum = 0;
-
-              for (int m = 0; m < 3; m++) accum += diff_vec[m] * diff_vec[m];
-              diff_norm = sqrt(accum);
-
-              if (diff_norm < min_norm)
-              {
-                min_norm = diff_norm;
-                min_index = i;
-              }
-            }
+            min_norm = diff_norm;
+            min_index = i;
           }
         }
-
-        int GID3 = discret_->ElementColMap()->GID(min_index);  // global element ID
-        // dynamic cast to acinus element, since Elements base class does not have the functions
-        // getParams and setParams
-
-        DRT::ELEMENTS::RedAcinus* ele_acinus =
-            dynamic_cast<DRT::ELEMENTS::RedAcinus*>(discret_->gElement(GID3));
-        // int acinus_node = 1; // ele_acinus->NodeIds()[1];
-
-        int local_id = (ele_acinus->Nodes()[1])->LID();
-
-
-        (*airway_acinus_dep_)[j] = local_id;
       }
+
+      // global element ID
+      int GID3 = search_discret->ElementColMap()->GID(min_index);
+
+      // why cast
+      DRT::ELEMENTS::RedAcinus* ele_acinus =
+          dynamic_cast<DRT::ELEMENTS::RedAcinus*>(search_discret->gElement(GID3));
+
+      // extend ele and node col map
+      if (elecolset != nullptr and nodecolset != nullptr)
+      {
+        elecolset->insert(GID3);
+        const int* nodeids = ele_acinus->NodeIds();
+        for (int inode = 0; inode < ele_acinus->NumNode(); ++inode)
+          nodecolset->insert(nodeids[inode]);
+      }
+
+      if (airway_acinus_dep != Teuchos::null)
+        (*airway_acinus_dep)[j] = (ele_acinus->Nodes()[1])->LID();
     }
   }
 }
@@ -752,18 +803,31 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
 
-  // Evaluate Lung volume
-  double lung_volume_np = 0.0;
-  bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
-  if (err)
+  // Evaluate total acinar volume
+  double acinar_volume_np = 0.0;
+  bool err1 = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, acinar_volume_np);
+  if (err1)
   {
-    dserror("Error by summing all acinar volumes");
+    dserror("Error in summing acinar volumes");
   }
 
-  // Print out the total lung volume
+  // Evaluate total airway volume
+  double airway_volume_np = 0.0;
+  bool err2 = this->SumAllColElemVal(elemVolumenp_, open_, airway_volume_np);
+  if (err2)
+  {
+    dserror("Error in summing airway volumes");
+  }
+
+  // Evaluate total lung volume (in acini and airways)
+  double lung_volume_np = acinar_volume_np + airway_volume_np;
+
+  // Print out the different volumes
   if (!myrank_)
   {
-    std::cout << "time: " << time_ - dta_ << " LungVolume: " << lung_volume_np << std::endl;
+    std::cout << "time: " << time_ - dta_ << "\t\tTotalLungVolume: " << lung_volume_np
+              << "\tAirwayVolume: " << airway_volume_np << "\tAcinarVolume: " << acinar_volume_np
+              << std::endl;
   }
 
   // Loop over nonlinear iterations
@@ -1131,6 +1195,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("acinar_vnp", acini_e_volumenp_);
     eleparams.set("elemVolumen", elemVolumen_);
     eleparams.set("elemVolumenp", elemVolumenp_);
+    eleparams.set("elemRadiusnp", elemRadiusnp_);
 
     // call standard loop over all elements
     discret_->Evaluate(
@@ -1867,6 +1932,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     LINALG::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
+    LINALG::Export(*elemRadiusnp_, *qexp_);
+    output_.WriteVector("elemRadius_current", qexp_);
+
     {
       Epetra_Export exporter(acini_e_volumenm_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenm_, exporter, Zero);
@@ -2140,8 +2208,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterL
     }
   }
 
-  // Use UQ utility ComputePeakAndQuantile to compute min/max and quantile with corresponding ele Id
-  // and kappa/max strain
+  // Use UQ utility ComputePeakAndQuantile to compute min/max and quantile with corresponding ele
+  // Id and kappa/max strain
   UQ::ComputePeakAndQuantile(vol_strain, kappa, ele_Id, vol_strain_max, vol_strain_quantile99,
       tot_num_elements, "max",
       discret_->Comm());  // maximum search mode
@@ -2197,8 +2265,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterL
     // reopen in append mode
     myfile.open(filename.c_str(), std::ios::app);
 
-    // to be consistent with other output from red_airways simulation, all volumetric strain values
-    // are reduced by 1, all Element Ids are increased by 1. (vol_strain -= 1, eleId += 1)
+    // to be consistent with other output from red_airways simulation, all volumetric strain
+    // values are reduced by 1, all Element Ids are increased by 1. (vol_strain -= 1, eleId += 1)
 
     myfile << step_ << "," << time_ << "," << lung_volume_np << ","
            << vol_strain_max->second.first + 1 << "," << vol_strain_max->first << ","

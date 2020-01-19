@@ -22,8 +22,15 @@ AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airwa
     : DRT::ResultTest("RED_AIRWAY")
 {
   dis_ = airways.Discretization();
-  mysol_ = airways.Pnp();
-  myelemsol_ = airways.AciniVolume();
+  mynodesol_pressure_ = airways.Pnp();
+  mynodesol_flow_in_ = airways.Qin_np();
+  mynodesol_flow_out_ = airways.Qout_np();
+
+  myelemsol_pressure_external_ = airways.Pext_np();
+  myelemsol_acinivol_ = airways.AciniVolume();
+  myelemsol_airwayvol_ = airways.AirwayVolume();
+  myelemsol_open_ = airways.Open();
+  myelemsol_openingTrajectory_ = airways.OpeningTrajectory();
 }
 
 /*----------------------------------------------------------------------*/
@@ -58,12 +65,23 @@ void AIRWAY::RedAirwayResultTest::TestNode(
       if (actnode->Owner() != dis_->Comm().MyPID()) return;
 
       double result = 0.;
-      const Epetra_BlockMap& pnpmap = mysol_->Map();
+      const Epetra_BlockMap& nodemap = mynodesol_pressure_->Map();
       std::string position;
       res.ExtractString("QUANTITY", position);
 
       // test result value of single scalar field
-      if (position == "pressure") result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode, 0))];
+      if (position == "pressure")
+      {
+        result = (*mynodesol_pressure_)[nodemap.LID(dis_->Dof(actnode, 0))];
+      }
+      else if (position == "flow_in")
+      {
+        result = (*mynodesol_flow_in_)[nodemap.LID(dis_->Dof(actnode, 0))];
+      }
+      else if (position == "flow_out")
+      {
+        result = (*mynodesol_flow_out_)[nodemap.LID(dis_->Dof(actnode, 0))];
+      }
       // test result values for a system of scalars
       else
       {
@@ -113,12 +131,28 @@ void AIRWAY::RedAirwayResultTest::TestElement(
       if (actelement->Owner() != dis_->Comm().MyPID()) return;
 
       double result = 0.;
-      const Epetra_BlockMap& acvolnp_map = myelemsol_->Map();
+      const Epetra_BlockMap& elementmap = myelemsol_acinivol_->Map();
       std::string position;
       res.ExtractString("QUANTITY", position);
-      if (position == "acini_volume")
+      if (position == "pressure_external")
       {
-        result = (*myelemsol_)[acvolnp_map.LID(actelement->Id())];
+        result = (*myelemsol_pressure_external_)[elementmap.LID(actelement->Id())];
+      }
+      else if (position == "acini_volume")
+      {
+        result = (*myelemsol_acinivol_)[elementmap.LID(actelement->Id())];
+      }
+      else if (position == "airway_volume")
+      {
+        result = (*myelemsol_airwayvol_)[elementmap.LID(actelement->Id())];
+      }
+      else if (position == "opening_status")
+      {
+        result = (*myelemsol_open_)[elementmap.LID(actelement->Id())];
+      }
+      else if (position == "opening_trajectory")
+      {
+        result = (*myelemsol_openingTrajectory_)[elementmap.LID(actelement->Id())];
       }
       else
       {

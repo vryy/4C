@@ -72,8 +72,11 @@ If there's anyone you think should be looped in on this merge request, feel free
 
 Possible reviewers:
 
-Maintainers of modified files:
-
 Other interested parties:
 
-
+<!-- 
+DO NOT TOUCH SECTION BELOW. LIST WILL BE GENERATED AUTOMATICALLY!
+-->
+## Maintainers of modified files:
+<!-- begin maintainer list -->
+<!-- end maintainer list -->

@@ -852,6 +852,9 @@ namespace STR
       /// output during runtime
       void RuntimeOutputState();
 
+      /// output reaction forces
+      void OutputReactionForces();
+
       /// output element volumes
       void OutputElementVolume(IO::DiscretizationWriter& iowriter) const;
 

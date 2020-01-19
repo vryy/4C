@@ -14,6 +14,7 @@
 #include "str_timint_basedataio.H"
 #include "str_timint_basedataio_runtime_vtk_output.H"
 #include "str_timint_basedataio_runtime_vtp_output.H"
+#include "str_timint_basedataio_monitor_dbc.H"
 
 #include "../drt_io/every_iteration_writer.H"
 #include "../drt_io/io_control.H"
@@ -34,6 +35,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writer_every_iter_(Teuchos::null),
       params_runtime_vtk_output_(Teuchos::null),
       params_runtime_vtp_output_(Teuchos::null),
+      params_monitor_dbc_(Teuchos::null),
       energyfile_(Teuchos::null),
       errfile_(NULL),
       gmsh_out_(false),
@@ -109,6 +111,11 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writesurfactant_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
     writeoptquantity_ = DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(
         ioparams, "STRUCT_OPTIONAL_QUANTITY");
+
+    // build params container for monitoring reaction forces
+    params_monitor_dbc_ = Teuchos::rcp(new ParamsMonitorDBC());
+    params_monitor_dbc_->Init(ioparams.sublist("MONITOR STRUCTURE DBC"));
+    params_monitor_dbc_->Setup();
 
     // check whether VTK output at runtime is desired
     if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)

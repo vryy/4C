@@ -52,10 +52,23 @@ namespace AIRWAY
    private:
     /// Teuchos::RCP to scalar transport discretization
     Teuchos::RCP<DRT::Discretization> dis_;
-    /// Teuchos::RCP to nodal solution vector
-    Teuchos::RCP<Epetra_Vector> mysol_;
-    /// Teuchos::RCP to element solution vector
-    Teuchos::RCP<Epetra_Vector> myelemsol_;
+    /// Teuchos::RCP to nodal solution vector containing pressure
+    Teuchos::RCP<Epetra_Vector> mynodesol_pressure_;
+    /// Teuchos::RCP to nodal solution vector containing flow in
+    Teuchos::RCP<Epetra_Vector> mynodesol_flow_in_;
+    /// Teuchos::RCP to nodal solution vector containing flow out
+    Teuchos::RCP<Epetra_Vector> mynodesol_flow_out_;
+
+    /// Teuchos::RCP to element solution vector containing external pressure of element
+    Teuchos::RCP<Epetra_Vector> myelemsol_pressure_external_;
+    /// Teuchos::RCP to element solution vector containing acinus volume
+    Teuchos::RCP<Epetra_Vector> myelemsol_acinivol_;
+    /// Teuchos::RCP to element solution vector containing airway volume
+    Teuchos::RCP<Epetra_Vector> myelemsol_airwayvol_;
+    /// Teuchos::RCP to element solution vector containing open status of airway
+    Teuchos::RCP<Epetra_Vector> myelemsol_open_;
+    /// Teuchos::RCP to element solution vector containing opening trajectory of airway
+    Teuchos::RCP<Epetra_Vector> myelemsol_openingTrajectory_;
   };
 
 }  // namespace AIRWAY

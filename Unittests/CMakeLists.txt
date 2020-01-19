@@ -17,11 +17,11 @@ add_subdirectory ( stubs )
 
 # add a template to cxxtest, which includes a call to MPI_Init and MPI_Finalize
 set( CXXTEST_TESTGEN_ARGS --error-printer --template ${CMAKE_CURRENT_SOURCE_DIR}/runner.tpl )
-cxxtest_add_test ( unittest unittest_all.cpp ${unit_list} )
+cxxtest_add_test ( unittests unittest_all.cpp ${unit_list} )
 
-target_link_libraries( unittest unittest_stubs -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group dserror_stub ${LIBRARIES})
-target_compile_options( unittest PRIVATE -g -O0 )
-target_include_directories( unittest PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
+target_link_libraries( unittests unittest_stubs -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group dserror_stub ${LIBRARIES})
+target_compile_options( unittests PRIVATE -g -O0 )
+target_include_directories( unittests PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
 
-add_dependencies(full unittest)
-set_tests_properties( unittest PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
+add_dependencies(full unittests)
+set_tests_properties( unittests PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
