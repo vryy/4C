@@ -23,7 +23,7 @@ ctest_start("${HOSTNAME}")
 #ctest_update()
 ctest_configure()
 ctest_build(RETURN_VALUE testBuild NUMBER_WARNINGS numWarnings)
-if (NOT $ENV{TEST_TAG} STREQUAL "") # Only execute if tests are selected as otherwise scripte returns err
+if (NOT $ENV{TEST_TAG} STREQUAL "") # Only execute if tests are selected as otherwise script returns err
   ctest_test(RETURN_VALUE testRes)
 endif (NOT $ENV{TEST_TAG} STREQUAL "")
 

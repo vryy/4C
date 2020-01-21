@@ -8,6 +8,7 @@ variables:
     # If not called by a scheduler this variable has to be 0.
     # 1: daily full
     # 2: daily debug
+    # 3: weekly coverage
     GITLAB_SCHEDULER_TYPE: "0"
 
     # Build type for pipelines started via the GitLab GUI
@@ -15,13 +16,13 @@ variables:
     # - "release" (default)
     # - "debug"
     CTEST_BUILD_TYPE_GITLAB: "release"
-    
+
     # Prefix for do-configure.
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
     CTEST_CONFIGURE_POSTFIX: "--useDEAL"
-    
+
     # Select specific test by regular expressen (".": all)
     TEST_TAG: "."
 
@@ -72,6 +73,7 @@ variables:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
+            - $GITLAB_SCHEDULER_TYPE == "3"
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 # Full tests are performed.
@@ -112,7 +114,57 @@ variables:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
+            - $GITLAB_SCHEDULER_TYPE == "3"
 
+# This kind of job is started by a weekly scheduler, with the variable
+# $GITLAB_SCHEDULER_TYPE = "3"
+# Full tests with coverage are performed
+# A coverage report is created
+.buildtest_coverage_weekly: &buildtest_coverage_weekly
+    stage: buildtest
+    script:
+        # Specify which configuration is tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # Delete old build files.
+        - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
+        # Output to log because it is too much for the gitlab console.
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        # make sure old coverage data is deleted
+        - rm -rf coverage_report/
+        - rm -rf baci_coverage.info
+        # generate the baci_coverage.info based on tests run above
+        - lcov --capture --directory ../baci-build/ --output-file baci_coverage.info
+        # generate the html version of the coverage report
+        - genhtml baci_coverage.info --output-directory coverage_report/
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        # Output 200 lines for any failing test
+        - grep -B 200 '*Failed\|*Timeout' ../buildtest_weekly_coverage.log || true
+        - sed -n '/tests passed,/,//p' ../buildtest_weekly_coverage.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_weekly_coverage.log buildtest_weekly_coverage.log
+    # store the coverage report in an artifact so that the subsequent (obligatory) pages job can find it
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_weekly_coverage.log
+            - coverage_report/
+        # upload .log on_failure and coverage_report/ on_success:
+        # currently there is no option to have multiple artifacts with different when: options
+        # -> always upload artifacts of this job
+        when: always
+        expire_in: 4 weeks
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "3"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -133,7 +185,7 @@ variables:
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test 
+        # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
         # Specify which configuration was tested by this pipeline
@@ -220,6 +272,9 @@ variables:
     only:
         refs:
             - web
+    except:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "3"
 
 
 # This kind of job is started by a daily scheduler, with the variable
@@ -267,6 +322,7 @@ stages:
     - checkcode
     - buildtest
     - doxygen
+    - pages
 
 
 #-------------------------------------------------------------------------------
@@ -294,6 +350,7 @@ checkcode:
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
+            - $GITLAB_SCHEDULER_TYPE == "3"
     tags:
         - all
 
@@ -301,7 +358,7 @@ checkcode:
 # IMCS--------------------------------------------------------------------------
 
 imcs-buildtest_minimal:
-    << : *buildtest_minimal
+    <<: *buildtest_minimal
     variables:
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -314,7 +371,7 @@ imcs-buildtest_minimal:
         - imcs-minimal
 
 imcs-buildtest_full:
-    << : *buildtest_full
+    <<: *buildtest_full
     variables:
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -327,7 +384,7 @@ imcs-buildtest_full:
         - imcs-full
 
 imcs-buildtest_daily:
-    << : *buildtest_daily
+    <<: *buildtest_daily
     variables:
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -340,7 +397,7 @@ imcs-buildtest_daily:
         - imcs-nightly-full
 
 imcs-buildtest_daily_debug:
-    << : *buildtest_daily_debug
+    <<: *buildtest_daily_debug
     variables:
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -353,7 +410,7 @@ imcs-buildtest_daily_debug:
         - imcs-nightly-debug
 
 .imcs-doxygen:
-    << : *doxygen
+    <<: *doxygen
     variables:
         CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
@@ -372,7 +429,7 @@ imcs-buildtest_daily_debug:
 # LNM---------------------------------------------------------------------------
 
 lnm-buildtest_minimal:
-    << : *buildtest_minimal
+    <<: *buildtest_minimal
     variables:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB"
@@ -384,7 +441,7 @@ lnm-buildtest_minimal:
         - lnm-release-mastermod-minimal
 
 lnm-buildtest_full:
-    << : *buildtest_full
+    <<: *buildtest_full
     variables:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-$TEST_TAG-GITLAB"
@@ -395,8 +452,50 @@ lnm-buildtest_full:
     tags:
         - lnm-release-user-full
 
+lnm-buildtest_coverage_weekly:
+    <<: *buildtest_coverage_weekly
+    variables:
+        # increase the global test timeout
+        GLOBAL_TEST_TIMEOUT: "4000"
+        # increase the unit test timeout
+        UNITTEST_TIMEOUT: "50"
+        # enable coverage option of ctest
+        CTEST_CONFIGURE_POSTFIX: "--coverage"
+        CTEST_MAKE: "make full -j4"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-coverage-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-release-weekly-coverage
+
+pages: # job name needs to be pages
+    stage: pages
+    variables:
+        # stage operates exclusively on artifacts. No need for source code.
+        GIT_STRATEGY: none
+    # require the artifact of the coverage job
+    dependencies:
+        - lnm-buildtest_coverage_weekly
+    # move coverage_report to public (which is the path for GitLab Pages content)
+    script:
+        - mv coverage_report/ public/
+    artifacts:
+        # store the public path in artifact
+        # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
+        # the content of the below artifact is published on GitLab Pages
+        paths:
+            - public
+        expire_in: 4 weeks
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "3"
+    tags:
+        - lnm-release-weekly-coverage
+
 lnm-buildtest_daily:
-    << : *buildtest_daily
+    <<: *buildtest_daily
     variables:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB"
@@ -408,7 +507,7 @@ lnm-buildtest_daily:
         - lnm-release-nightly-full
 
 lnm-buildtest_daily_bruteforce:
-    << : *buildtest_daily
+    <<: *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
@@ -426,7 +525,7 @@ lnm-buildtest_daily_bruteforce:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
 
 lnm-buildtest_daily_deep:
-    << : *buildtest_daily
+    <<: *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
@@ -443,7 +542,7 @@ lnm-buildtest_daily_deep:
             - $GITLAB_SCHEDULER_LNM_DEEP == "1"
 
 lnm-buildtest_daily_schmarrn:
-    << : *buildtest_daily
+    <<: *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
@@ -454,14 +553,14 @@ lnm-buildtest_daily_schmarrn:
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-      - lnm-release-nightly-build-schmarrn
+        - lnm-release-nightly-build-schmarrn
     only:
         variables:
-          - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
+            - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
 
 
 lnm-buildtest_daily_debug:
-    << : *buildtest_daily_debug
+    <<: *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB"
@@ -473,7 +572,7 @@ lnm-buildtest_daily_debug:
         - lnm-debug-nightly-full
 
 lnm-doxygen-web:
-    << : *doxygen_web
+    <<: *doxygen_web
     variables:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
@@ -485,7 +584,7 @@ lnm-doxygen-web:
         - lnm-release-user-full
 
 lnm-doxygen:
-    << : *doxygen
+    <<: *doxygen
     variables:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
