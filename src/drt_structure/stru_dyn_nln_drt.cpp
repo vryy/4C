@@ -122,6 +122,10 @@ void dyn_nlnstructural_drt()
       break;
     }
   }
+
+  bool write_initial_state =
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
+
   // do restart
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
@@ -131,12 +135,13 @@ void dyn_nlnstructural_drt()
   // write output at beginnning of calc
   else
   {
-    // Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
-    // Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-    // output->NewStep(0, 0.0);
-    // Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap())));
-    // output->WriteVector("displacement",zeros);
-    // output->WriteElementData();
+    if (write_initial_state)
+    {
+      structadapter->PrepareOutput();
+      structadapter->PreOutput();
+      structadapter->Output();
+      structadapter->PostOutput();
+    }
   }
 
   // run time integration

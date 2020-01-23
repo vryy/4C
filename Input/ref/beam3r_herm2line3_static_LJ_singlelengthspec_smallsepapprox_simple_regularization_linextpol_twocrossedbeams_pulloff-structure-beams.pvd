@@ -4,6 +4,7 @@
 -->
 <VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
   <Collection>
+    <DataSet timestep="0.00000000000000e+00" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_regularization_linextpol_twocrossedbeams_pulloff-vtk-files/structure-beams-000000.pvtu"/>
     <DataSet timestep="1.00000000000000e-08" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-vtk-files/structure-beams-000000001.pvtu"/>
     <DataSet timestep="2.00000000000000e-08" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-vtk-files/structure-beams-000000002.pvtu"/>
     <DataSet timestep="3.00000000000000e-08" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-vtk-files/structure-beams-000000003.pvtu"/>

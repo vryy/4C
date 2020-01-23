@@ -35,6 +35,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
+WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Statics
 PRESTRESS                       None

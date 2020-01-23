@@ -8,6 +8,7 @@ OUTPUT_BIN                      Yes
 STRUCT_VEL_ACC                  Yes
 STRUCT_STRAIN                   gl
 STRUCT_STRESS                   Cauchy
+WRITE_INITIAL_STATE             No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 --------------------------------------------------------------------SOLVER 1

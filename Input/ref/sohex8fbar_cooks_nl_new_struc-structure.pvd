@@ -4,6 +4,7 @@
 -->
 <VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
   <Collection>
+    <DataSet timestep="0.00000000000000e+00" group="" part="0" file="sohex8fbar_cooks_nl_new_struc-vtk-files/structure-000000.pvtu"/>
     <DataSet timestep="1.00000000000000e+02" group="" part="0" file="sohex8fbar_cooks_nl_new_struc-vtk-files/structure-000020.pvtu"/>
   </Collection>
 </VTKFile>
