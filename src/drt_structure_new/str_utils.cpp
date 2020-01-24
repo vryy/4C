@@ -431,10 +431,10 @@ void STR::Compute4Parameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs)
           (coeffs.alphaf_ != -1.0)) and
       (coeffs.rhoinf_ != -1.0))
     dserror(
-        "There are two ways to provide GenAlpha parameters"
-        "You can choose to only provide RHO_INF as the spectral radius."
-        "In this way, no other parameters are allowed."
-        "You may also specify all the four parameters"
+        "There are two ways to provide GenAlpha parameters:\n"
+        "- You can choose to only provide RHO_INF as the spectral radius."
+        "In this way, no other parameters are allowed.\n"
+        "- You may also specify all the four parameters"
         "In this way, you MUST set RHO_INF as -1.0");
 
   // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
