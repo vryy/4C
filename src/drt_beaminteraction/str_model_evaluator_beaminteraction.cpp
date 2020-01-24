@@ -707,6 +707,19 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
   // post sub model loop
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->PostReadRestart();
+
+  // Check if we need to store the restart displacement in the data state container.
+  const Teuchos::ParameterList& beam_interaction_params =
+      DRT::Problem::Instance()->BeamInteractionParams();
+  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_beamcontact) &&
+      (bool)DRT::INPUT::IntegralValue<int>(
+          beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
+          "COUPLE_RESTART_STATE"))
+  {
+    ia_state_ptr_->SetRestartCouplingFlag(true);
+    ia_state_ptr_->GetMutableDisRestart() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+  }
 }
 
 /*----------------------------------------------------------------------------*

@@ -278,7 +278,19 @@ namespace STR
         CheckInitSetup();
         return stiff_;
       }
-      ///@}
+
+      /// Return the restart coupling flag.
+      bool GetRestartCouplingFlag() const
+      {
+        CheckInitSetup();
+        return is_restart_coupling_;
+      }
+
+      /// Set the restart coupling flag.
+      void SetRestartCouplingFlag(const bool is_restart_coupling)
+      {
+        is_restart_coupling_ = is_restart_coupling;
+      }
 
      protected:
       /// @name variables for internal use only
@@ -327,6 +339,11 @@ namespace STR
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$. This
       /// vector will be used to export disrestart_ to the current partitioning.
       Teuchos::RCP<Epetra_Vector> dis_restart_col_;
+
+      /// flag if coupling, i.e. mesh tying terms should be evaluated at the restart configuration.
+      /// This is stored here, since it is directly related to the vectors dis_restart_ and
+      /// dis_restart_col_.
+      bool is_restart_coupling_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;
