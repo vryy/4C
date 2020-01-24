@@ -143,6 +143,20 @@ namespace STR
       /// @name Get state variables (read only access)
       ///@{
 
+      /// Return displacements at the restart step \f$D_{restart}\f$
+      Teuchos::RCP<const Epetra_Vector> GetDisRestart() const
+      {
+        CheckInitSetup();
+        return dis_restart_;
+      }
+
+      /// Return displacements at the restart step \f$D_{restart}\f$
+      Teuchos::RCP<const Epetra_Vector> GetDisRestartCol() const
+      {
+        CheckInitSetup();
+        return dis_restart_col_;
+      }
+
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisNp() const
       {
@@ -190,6 +204,20 @@ namespace STR
 
       /// @name Get mutable state variables (read and write access)
       ///@{
+
+      /// Return displacements at the restart step \f$D_{restart}\f$
+      Teuchos::RCP<Epetra_Vector>& GetMutableDisRestart()
+      {
+        CheckInitSetup();
+        return dis_restart_;
+      }
+
+      /// Return displacements at the restart step \f$D_{restart}\f$
+      Teuchos::RCP<Epetra_Vector>& GetMutableDisRestartCol()
+      {
+        CheckInitSetup();
+        return dis_restart_col_;
+      }
 
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetMutableDisNp()
@@ -292,6 +320,13 @@ namespace STR
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
       Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+
+      /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
+      Teuchos::RCP<Epetra_Vector> dis_restart_;
+
+      /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$. This
+      /// vector will be used to export disrestart_ to the current partitioning.
+      Teuchos::RCP<Epetra_Vector> dis_restart_col_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;

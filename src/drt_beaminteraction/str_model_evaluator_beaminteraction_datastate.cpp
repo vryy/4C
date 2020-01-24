@@ -32,6 +32,8 @@ STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
       issetup_(false),
       myrank_(0),
       dis_(Teuchos::null),
+      dis_restart_(Teuchos::null),
+      dis_restart_col_(Teuchos::null),
       disnp_(Teuchos::null),
       discolnp_(Teuchos::null),
       forcen_(Teuchos::null),
