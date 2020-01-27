@@ -509,6 +509,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
+  // update restart displacement vector
+  if (ia_state_ptr_->GetRestartCouplingFlag())
+  {
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+  }
+
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -1055,6 +1063,14 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+
+  // update restart displacement vector
+  if (ia_state_ptr_->GetRestartCouplingFlag())
+  {
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+  }
 
   // force
   ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(), true));
