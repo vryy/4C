@@ -14,6 +14,7 @@
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -470,8 +471,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyContributions(
-    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<Epetra_FEVector> force) const
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const
 {
   CheckSetup();
   CheckGlobalMaps();
@@ -515,14 +516,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   if (force != Teuchos::null)
   {
-    if (disp == Teuchos::null)
-      dserror("Force contributions can only be calculated with a given displacement pointer!");
-
     // Get the displacements of the beam and the solid.
     Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
     Teuchos::RCP<Epetra_Vector> solid_disp = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
-    LINALG::Export(*disp, *beam_disp);
-    LINALG::Export(*disp, *solid_disp);
+    LINALG::Export(*data_state->GetDisColNp(), *beam_disp);
+    LINALG::Export(*data_state->GetDisColNp(), *solid_disp);
 
     // Temporary vectors for matrix-vector multiplication and vector-vector additions.
     Teuchos::RCP<Epetra_Vector> beam_force = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));

@@ -210,9 +210,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   // Loop over the assembly manager and assemble contributions into the global force vector.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
-        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
 
   return true;
@@ -229,9 +228,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetMutableStiff());
   }
 
   return true;
@@ -248,10 +246,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   // Loop over the assembly manager and assemble contributions into the global force vector and
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
         BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+        BeamInteractionDataStatePtr()->GetMutableStiff());
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
