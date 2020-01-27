@@ -63,9 +63,9 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
   }
 
   /**
-   * \brief Test a non straight beam in a hex8 element, with line2 mortar shape functions.
+   * \brief Test a moving straight beam in a hex8 element with hermite line2  shape functions.
    */
-  void test_beam_to_fluid_meshtying_hex8_hermite()
+  void test_beam_to_fluid_meshtying_hex8_moving_beam()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -89,7 +89,9 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
     LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
     LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
+    LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
     results_fs.Zero();
+    results_ff.Zero();
 
 
     // Define the geometry of the two elements.
@@ -106,13 +108,13 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     q_beam(10) = 1.0;
     q_beam(11) = 0.0;
 
-    v_beam(0) = 0.0;
+    v_beam(0) = 1.0;
     v_beam(1) = 0.0;
     v_beam(2) = 0.0;
     v_beam(3) = 0.0;
     v_beam(4) = 0.0;
     v_beam(5) = 0.0;
-    v_beam(6) = 0.0;
+    v_beam(6) = 1.0;
     v_beam(7) = 0.0;
     v_beam(8) = 0.0;
     v_beam(9) = 0.0;
@@ -233,14 +235,9 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     results_kfs(0, 10) = 0.0039062500000000;
     results_kfs(0, 11) = 0.0039062500000000;
 
-    results_fs(0) = -1.0;
-    results_fs(3) = -0.33333333333333333;
-    results_fs(6) = -1.0;
-    results_fs(9) = 0.33333333333333333;
-
     // Perform the unit tests.
     PerformGPTSPairUnitTest<beam_type, fluid_type>(pair, q_beam, beam_centerline_dofvec, q_beam_rot,
-        q_fluid, fluid_dofvec, results_fs, results_ksf, results_kfs, results_kff);
+        q_fluid, fluid_dofvec, results_fs, results_ff, results_ksf, results_kfs, results_kff);
   }
 
  private:
@@ -254,6 +251,7 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
       const std::vector<double>& beam_dofvec, const LINALG::Matrix<9, 1, double>& q_beam_rot,
       const LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
       const std::vector<double>& fluid_dofvec, LINALG::SerialDenseVector results_fs,
+      LINALG::SerialDenseVector results_ff,
       const LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
       const LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
       const LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
@@ -305,7 +303,6 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     bool projects =
         pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
-    // Check the results for D.
     TS_ASSERT(projects);
     TS_ASSERT_EQUALS(local_kff.M(), fluid_type::n_dof_);
     TS_ASSERT_EQUALS(local_kff.N(), fluid_type::n_dof_);
@@ -315,6 +312,7 @@ class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : public CxxTest::
     for (int i_row = 0; i_row < local_kff.M(); i_row++)
     {
       TS_ASSERT_DELTA((local_kff)(i_row, i_row), results_kff(i_row, i_row), 1e-11);
+      TS_ASSERT_DELTA(local_ff(i_row), results_ff(i_row), 1e-11);
       for (int i_col = 0; i_col < local_kfs.N(); i_col++)
         TS_ASSERT_DELTA((local_kfs)(i_row, i_col), local_ksf(i_col, i_row), 1e-11);
     }
