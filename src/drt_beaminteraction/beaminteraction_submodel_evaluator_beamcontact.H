@@ -229,6 +229,10 @@ namespace BEAMINTERACTION
       //  to get force and stiffness contributions from beam interactions
       void CreateBeamContactElementPairs();
 
+      /// Add the restart displacement to the pairs, if the coupling should be evaluated with
+      /// respect to the restart state.
+      void SetRestartDisplacementInPairs();
+
       //! @}
 
      private:

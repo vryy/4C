@@ -563,6 +563,52 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     // Add force contributions to global vector.
     linalg_error = force->Update(-1.0 * rhs_factor * penalty_parameter, *global_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update");
+
+    // If the restart configuration is coupled we need to add the contributions from the offset of
+    // the reference configuration here.
+    if (data_state->GetRestartCouplingFlag())
+    {
+      linalg_error = beam_disp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = solid_disp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      LINALG::Export(*data_state->GetDisRestartCol(), *beam_disp);
+      LINALG::Export(*data_state->GetDisRestartCol(), *solid_disp);
+
+      // Set the values in the global force vector to 0.
+      linalg_error = global_temp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = beam_force->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = solid_force->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+
+      // Get the force acting on the solid.
+      linalg_error = Mt_kappa_M->Multiply(false, *solid_disp, *solid_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = solid_force->Update(1.0, *solid_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      linalg_error = Dt_kappa_M->Multiply(true, *beam_disp, *solid_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      LINALG::Export(*solid_force, *global_temp);
+
+      // Get the force acting on the beam.
+      linalg_error = Dt_kappa_D->Multiply(false, *beam_disp, *beam_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = beam_force->Update(1.0, *beam_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      linalg_error = Dt_kappa_M->Multiply(false, *solid_disp, *beam_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = beam_force->Update(-1.0, *beam_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      LINALG::Export(*beam_force, *global_temp);
+
+      // Add force contributions to global vector.
+      linalg_error = force->Update(1.0 * rhs_factor * penalty_parameter, *global_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update");
+    }
   }
 }
 

@@ -727,6 +727,8 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
     ia_state_ptr_->SetRestartCouplingFlag(true);
     ia_state_ptr_->GetMutableDisRestart() =
         Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
   }
 }
 
