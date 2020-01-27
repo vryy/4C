@@ -292,7 +292,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
         Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
-        std::vector<double>& element_posdofvec_absolutevalues);
+        std::vector<double>& element_posdofvec_values);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

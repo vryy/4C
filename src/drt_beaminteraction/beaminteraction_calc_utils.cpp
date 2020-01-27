@@ -843,7 +843,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
         Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
-        std::vector<double>& element_posdofvec_absolutevalues)
+        std::vector<double>& element_posdofvec_values)
     {
       std::vector<double> eledispvec;
 
@@ -855,17 +855,14 @@ namespace BEAMINTERACTION
 
       if (beam_element_ptr != NULL)
       {
-        // get the current absolute values for those Dofs relevant for centerline interpolation
-        // initial values are added by element itself
+        // get the current  values for those Dofs relevant for centerline interpolation
         beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
-            eledispvec, element_posdofvec_absolutevalues, false);
+            eledispvec, element_posdofvec_values, false);
       }
       else
       {
-        element_posdofvec_absolutevalues = eledispvec;
-        for (unsigned int dim = 0; dim < 3; ++dim)
-          for (int node = 0; node < ele->NumNode(); ++node)
-            element_posdofvec_absolutevalues[3 * node + dim] += ele->Nodes()[node]->X()[dim];
+        // for non beam elements, just return the element Dof vector
+        element_posdofvec_values = eledispvec;
       }
     }
 
