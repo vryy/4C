@@ -135,6 +135,11 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
+
+    // Whether or not to use the restart configuration for the evaluation of the coupling terms.
+    setStringToIntegralParameter<int>("COUPLE_RESTART_STATE", "No",
+        "Enable / disable the coupling of the restart configuration.", yesnotuple, yesnovalue,
+        &beam_to_solid_volume_mestying);
   }
 
   // Beam to solid volume mesh tying output parameters.
