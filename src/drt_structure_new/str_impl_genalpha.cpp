@@ -227,7 +227,7 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  STR::Compute4Parameters(coeffs);
+  STR::ComputeGeneralizedAlphaParameters(coeffs);
 }
 
 

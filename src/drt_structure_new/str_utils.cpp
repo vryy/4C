@@ -31,6 +31,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure_new/str_timint_basedatasdyn.H"
+#include "../drt_structure_new/str_impl_genalpha.H"
 
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
@@ -424,7 +425,7 @@ double STR::TIMINT::GetTimIntFactor()
 }
 
 
-void STR::Compute4Parameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs)
+void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs)
 {
   // ------ check if the user provide RHO_INF and any other parameters at the same time
   if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or

@@ -17,7 +17,6 @@
 #include <NOX_Abstract_Vector.H>
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "str_impl_genalpha.H"
 
 // forward declaration
 class Epetra_Vector;
@@ -50,8 +49,6 @@ namespace NOX
 namespace STR
 {
   class Integrator;
-  /// just an internal function to reduce redundancy in structure and structure_new
-  void Compute4Parameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs);
 
   namespace TIMINT
   {
