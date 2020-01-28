@@ -145,7 +145,12 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
-  std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisNp());
+
+  // We have to pass the displacement column vector to the initialization of the binning strategy.
+  ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+
+  std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
   binstrategy_->Init(discret_vec, disp_vec);
   binstrategy_->SetDeformingBinningDomainHandler(
