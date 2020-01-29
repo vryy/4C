@@ -170,8 +170,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvalua
   // Call PreEvaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, TYPEBTS> solid_coupling_ref;
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, line_to_volume_segments_);
@@ -222,22 +222,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestar
     for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
       ele2posref_offset_(i_dof) = centerline_restart_vec_[1][i_dof];
   }
-}
-
-
-/**
- *
- */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
-    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS>& beam_coupling_ref,
-    LINALG::Matrix<solid::n_dof_, 1, TYPEBTS>& solid_coupling_ref) const
-{
-  // Add the offset to the reference position.
-  beam_coupling_ref = ele1posref_;
-  beam_coupling_ref += ele1posref_offset_;
-  solid_coupling_ref = ele2posref_;
-  solid_coupling_ref += ele2posref_offset_;
 }
 
 
@@ -408,6 +392,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateP
   force = r_solid;
   force -= r_beam;
   force.Scale(this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter());
+}
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
+    LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
+    LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const
+{
+  // Add the offset to the reference position.
+  beam_coupling_ref = ele1posref_;
+  beam_coupling_ref += ele1posref_offset_;
+  solid_coupling_ref = ele2posref_;
+  solid_coupling_ref += ele2posref_offset_;
 }
 
 
