@@ -37,7 +37,10 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PartitionedAlgo(comm, params),
       itmax_(params.get<int>("ITEMAX")),
-      ittol_(params.get<double>("CONVTOL")),
+      convtolrelativedisp_(params.get<double>("CONVTOLRELATIVEDISP")),
+      convtolscaleddisp_(params.get<double>("CONVTOLSCALEDDISP")),
+      convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
+      convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
       ignoreconvcheck_(DRT::INPUT::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
       writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
@@ -55,6 +58,11 @@ void PASI::PASI_PartTwoWayCoup::Init()
   // construct interface increment states
   intfdispincnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
   intfforceincnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+
+  // safety check
+  if (convtolrelativedisp_ < 0.0 and convtolscaleddisp_ < 0.0 and convtolrelativeforce_ < 0.0 and
+      convtolscaledforce_ < 0.0)
+    dserror("no convergence tolerance for partitioned iterations set!");
 }
 
 void PASI::PASI_PartTwoWayCoup::Setup()
@@ -123,9 +131,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                         |\n");
-    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                       |\n");
+    printf("+------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
@@ -202,20 +210,17 @@ void PASI::PASI_PartTwoWayCoup::SetInterfaceForces(Teuchos::RCP<const Epetra_Vec
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SetInterfaceForces");
 
-  double normintfforce(0.0);
-  intfforcenp->Norm2(&normintfforce);
-
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
-  {
-    // clang-format off
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of interface forces: " << std::setprecision(7) << normintfforce << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    // clang-format on
-  }
-
   // apply interface force on structure discretization
   structurefield_->ApplyInterfaceForce(intfforcenp);
+
+  // print norm of interface force to the screen
+  if (PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+  {
+    double normintfforce(0.0);
+    intfforcenp->Norm2(&normintfforce);
+
+    if (Comm().MyPID() == 0) printf("--> Norm of interface force: %10.5E\n", normintfforce);
+  }
 }
 
 void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
@@ -307,48 +312,58 @@ void PASI::PASI_PartTwoWayCoup::GetInterfaceForces()
 
 bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
 {
-  // convergence check based on the scalar increment
   bool stopnonliniter = false;
 
   // variables to save different L2-Norms
-  double dispincnorm_L2(0.0);
-  double dispnorm_L2(0.0);
-  double forceincnorm_L2(0.0);
-  double forcenorm_L2(0.0);
+  double intfdispincnorm_L2(0.0);
+  double intfdispnorm_L2(0.0);
+  double intfforceincnorm_L2(0.0);
+  double intfforcenorm_L2(0.0);
 
   // build L2-norm of interface displacement increment and interface displacement
-  intfdispincnp_->Norm2(&dispincnorm_L2);
-  intfdispnp_->Norm2(&dispnorm_L2);
+  intfdispincnp_->Norm2(&intfdispincnorm_L2);
+  intfdispnp_->Norm2(&intfdispnorm_L2);
 
   // build L2-norm of interface force increment and interface force
-  intfforceincnp_->Norm2(&forceincnorm_L2);
-  intfforcenp_->Norm2(&forcenorm_L2);
+  intfforceincnp_->Norm2(&intfforceincnorm_L2);
+  intfforcenp_->Norm2(&intfforcenorm_L2);
 
   // care for the case that there is (almost) zero scalar
-  if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
-  if (forcenorm_L2 < 1e-6) forcenorm_L2 = 1.0;
+  if (intfdispnorm_L2 < 1e-6) intfdispnorm_L2 = 1.0;
+  if (intfforcenorm_L2 < 1e-6) intfforcenorm_L2 = 1.0;
 
-  // scaled and relative displacement increment
-  double disp_inc = dispincnorm_L2 / (Dt() * sqrt(intfdispincnp_->GlobalLength()));
-  double rel_disp_inc = dispincnorm_L2 / dispnorm_L2;
+  // scaled and relative interface displacement increment
+  double scaled_disp_inc = intfdispincnorm_L2 / (Dt() * sqrt(intfdispincnp_->GlobalLength()));
+  double relative_disp_inc = intfdispincnorm_L2 / intfdispnorm_L2;
 
-  // scaled and relative force increment
-  double force_inc = forceincnorm_L2 / (Dt() * sqrt(intfforceincnp_->GlobalLength()));
-  double rel_force_inc = forceincnorm_L2 / forcenorm_L2;
+  // scaled and relative interface force increment
+  double scaled_force_inc = intfforceincnorm_L2 / (Dt() * sqrt(intfforceincnp_->GlobalLength()));
+  double relative_force_inc = intfforceincnorm_L2 / intfforcenorm_L2;
 
   // print the incremental based convergence check to the screen
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
-    printf("|  step/max  |  tol       [norm]  |   disp-inc  |  disp-rel-inc  |  force-inc  |  force-rel-inc  |\n");
-    printf("|   %3d/%3d  | %10.3E [L_2 ]  | %10.3E  |    %10.3E  | %10.3E  |     %10.3E  |\n", itnum, itmax_, ittol_, disp_inc, rel_disp_inc, force_inc, rel_force_inc);
-    printf("+------------+--------------------+-------------+----------------+-------------+-----------------+\n");
+    printf("+----------+-----------------+--------------+------------------+---------------+\n");
+    printf("| step/max | scaled-disp-inc | rel-disp-inc | scaled-force-inc | rel-force-inc |\n");
+    printf("|  %3d/%3d |      %10.3E |   %10.3E |       %10.3E |   %10.3E  |\n", itnum, itmax_, scaled_disp_inc, relative_disp_inc, scaled_force_inc, relative_force_inc);
+    printf("+----------+-----------------+--------------+------------------+---------------+\n");
     // clang-format on
   }
 
-  const bool isconverged = disp_inc <= ittol_ and rel_disp_inc <= ittol_ and force_inc <= ittol_ and
-                           rel_force_inc <= ittol_;
+  bool isconverged = true;
+
+  // check convergence of scaled interface displacement increment
+  if (convtolscaleddisp_ > 0.0) isconverged &= scaled_disp_inc <= convtolscaleddisp_;
+
+  // check convergence of relative interface displacement increment
+  if (convtolrelativedisp_ > 0.0) isconverged &= relative_disp_inc <= convtolrelativedisp_;
+
+  // check convergence of scaled interface force increment
+  if (convtolscaledforce_ > 0.0) isconverged &= scaled_force_inc <= convtolscaledforce_;
+
+  // check convergence of relative interface force increment
+  if (convtolrelativeforce_ > 0.0) isconverged &= relative_force_inc <= convtolrelativeforce_;
 
   // converged
   if (isconverged)
@@ -358,8 +373,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
     if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
     {
       // clang-format off
-      printf("|  Outer iteration loop converged after iteration %3d/%3d !                                      |\n", itnum, itmax_);
-      printf("+------------------------------------------------------------------------------------------------+\n");
+      printf("|  Outer iteration loop converged after iteration %3d/%3d !                    |\n", itnum, itmax_);
+      printf("+------------------------------------------------------------------------------+\n");
       // clang-format on
     }
   }
@@ -375,8 +390,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!                          |\n", itmax_);
-        printf("+------------------------------------------------------------------------------------------------+\n");
+        printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!        |\n", itmax_);
+        printf("+------------------------------------------------------------------------------+\n");
         // clang-format on
       }
     }
@@ -386,8 +401,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
       if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
       {
         // clang-format off
-        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps                                |\n", itmax_);
-        printf("+------------------------------------------------------------------------------------------------+\n");
+        printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps              |\n", itmax_);
+        printf("+------------------------------------------------------------------------------+\n");
         // clang-format on
       }
       dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
@@ -454,9 +469,9 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     // clang-format off
-    printf("+------------------------------------------------------------------------------------------------+\n");
-    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED DISPLACEMENTS                              |\n");
-    printf("+------------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED DISPLACEMENTS            |\n");
+    printf("+------------------------------------------------------------------------------+\n");
     // clang-format on
   }
 
