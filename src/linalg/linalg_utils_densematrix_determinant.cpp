@@ -44,6 +44,10 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
  *----------------------------------------------------------------------*/
 double LINALG::DeterminantSVD(const Epetra_SerialDenseMatrix& A)
 {
+  // todo: the sign of the determinant is wrong
+  // once this method is fixed activate unit tests!
+  dserror("the sign of the determinant is wrong due to a bug in this method!");
+
 #ifdef DEBUG
   if (A.M() != A.N()) dserror("Matrix is not square");
 #endif

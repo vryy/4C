@@ -1,3 +1,4 @@
 set_property(GLOBAL APPEND PROPERTY unit_files
+${CMAKE_CURRENT_SOURCE_DIR}/unit_linalg_utils_densematrix_determinant.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_linalg_utils_densematrix_inverse.H
 )
