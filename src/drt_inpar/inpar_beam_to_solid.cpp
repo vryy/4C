@@ -136,7 +136,12 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
 
-    // Whether or not to use the restart configuration for the evaluation of the coupling terms.
+    // This option only has an effect during a restart simulation.
+    // - No:  (default) The coupling is treated the same way as during a non restart simulation,
+    //        i.e. the initial configurations (zero displacement) of the beams and solids are
+    //        coupled.
+    // - Yes: The beam and solid states at the restart configuration are coupled. This allows to
+    //        pre-deform the structures and then couple them.
     setStringToIntegralParameter<int>("COUPLE_RESTART_STATE", "No",
         "Enable / disable the coupling of the restart configuration.", yesnotuple, yesnovalue,
         &beam_to_solid_volume_mestying);
