@@ -125,11 +125,21 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
     for (int d = 0; d < 3; ++d) ele2posref_(3 * n + d) = node->X()[d];
   }
 
-  // Initialize current nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_(i) = 0.0;
+  // Initialize current nodal positions (and tangents) for beam element, as well as initial offsets
+  // of the reference configuration.
+  for (unsigned int i = 0; i < beam::n_dof_; i++)
+  {
+    ele1pos_(i) = 0.0;
+    ele1posref_offset_ = 0.0;
+  }
 
-  // Initialize current nodal positions for solid surface element
-  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2pos_(i) = 0.0;
+  // Initialize current nodal positions for solid surface element, as well as initial offsets of the
+  // reference configuration.
+  for (unsigned int i = 0; i < solid::n_dof_; i++)
+  {
+    ele2pos_(i) = 0.0;
+    ele1posref_offset_ = 0.0;
+  }
 
   issetup_ = true;
 }
@@ -160,7 +170,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvalua
   // Call PreEvaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    CastGeometryPair()->PreEvaluate(ele1posref_, ele2posref_, line_to_volume_segments_);
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    CastGeometryPair()->PreEvaluate(
+        beam_coupling_ref, solid_coupling_ref, line_to_volume_segments_);
   }
 }
 
@@ -184,6 +198,29 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   {
     ele2pos_(i) =
         TYPE_BTS_VMT_AD(beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
+  }
+}
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestartDisplacement(
+    const std::vector<std::vector<double>>& centerline_restart_vec_)
+{
+  // Call the parent method.
+  BeamContactPair::SetRestartDisplacement(centerline_restart_vec_);
+
+  // We only set the restart displacement, if the current section has the restart coupling flag.
+  if (Params()->BeamToSolidVolumeMeshtyingParams()->GetCoupleRestartState())
+  {
+    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      ele1posref_offset_(i_dof) = centerline_restart_vec_[0][i_dof];
+
+    // Add the displacement at the restart step to the solid reference position.
+    for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      ele2posref_offset_(i_dof) = centerline_restart_vec_[1][i_dof];
   }
 }
 
@@ -355,6 +392,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateP
   force = r_solid;
   force -= r_beam;
   force.Scale(this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter());
+}
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
+    LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
+    LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const
+{
+  // Add the offset to the reference position.
+  beam_coupling_ref = ele1posref_;
+  beam_coupling_ref += ele1posref_offset_;
+  solid_coupling_ref = ele2posref_;
+  solid_coupling_ref += ele2posref_offset_;
 }
 
 

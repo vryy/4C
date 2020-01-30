@@ -33,6 +33,10 @@ namespace STR
   {
     class BaseDataGlobalState;
   }
+  namespace MODELEVALUATOR
+  {
+    class BeamInteractionDataState;
+  }  // namespace MODELEVALUATOR
 }  // namespace STR
 namespace BEAMINTERACTION
 {
@@ -148,11 +152,12 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
-     * @param disp (in) Global displacement vector.
+     * @param data_state (in) Beam interaction data state.
      * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
-    void AddGlobalForceStiffnessPenaltyContributions(Teuchos::RCP<const Epetra_Vector> disp,
+    void AddGlobalForceStiffnessPenaltyContributions(
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
         Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 
     /**

@@ -44,8 +44,11 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
-        this->ele1posref_, this->ele2posref_, this->line_to_volume_segments_);
+        beam_coupling_ref, solid_coupling_ref, this->line_to_volume_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 

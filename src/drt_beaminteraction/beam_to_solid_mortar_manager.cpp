@@ -14,6 +14,7 @@
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -470,8 +471,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyContributions(
-    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<Epetra_FEVector> force) const
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const
 {
   CheckSetup();
   CheckGlobalMaps();
@@ -515,14 +516,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   if (force != Teuchos::null)
   {
-    if (disp == Teuchos::null)
-      dserror("Force contributions can only be calculated with a given displacement pointer!");
-
     // Get the displacements of the beam and the solid.
     Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
     Teuchos::RCP<Epetra_Vector> solid_disp = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
-    LINALG::Export(*disp, *beam_disp);
-    LINALG::Export(*disp, *solid_disp);
+    LINALG::Export(*data_state->GetDisColNp(), *beam_disp);
+    LINALG::Export(*data_state->GetDisColNp(), *solid_disp);
 
     // Temporary vectors for matrix-vector multiplication and vector-vector additions.
     Teuchos::RCP<Epetra_Vector> beam_force = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
@@ -565,6 +563,52 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     // Add force contributions to global vector.
     linalg_error = force->Update(-1.0 * rhs_factor * penalty_parameter, *global_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update");
+
+    // If the restart configuration is coupled we need to add the contributions from the offset of
+    // the reference configuration here.
+    if (data_state->GetRestartCouplingFlag())
+    {
+      linalg_error = beam_disp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = solid_disp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      LINALG::Export(*data_state->GetDisRestartCol(), *beam_disp);
+      LINALG::Export(*data_state->GetDisRestartCol(), *solid_disp);
+
+      // Set the values in the global force vector to 0.
+      linalg_error = global_temp->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = beam_force->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+      linalg_error = solid_force->PutScalar(0.);
+      if (linalg_error != 0) dserror("Error in PutScalar!");
+
+      // Get the force acting on the solid.
+      linalg_error = Mt_kappa_M->Multiply(false, *solid_disp, *solid_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = solid_force->Update(1.0, *solid_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      linalg_error = Dt_kappa_M->Multiply(true, *beam_disp, *solid_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      LINALG::Export(*solid_force, *global_temp);
+
+      // Get the force acting on the beam.
+      linalg_error = Dt_kappa_D->Multiply(false, *beam_disp, *beam_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = beam_force->Update(1.0, *beam_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      linalg_error = Dt_kappa_M->Multiply(false, *solid_disp, *beam_temp);
+      if (linalg_error != 0) dserror("Error in Multiply!");
+      linalg_error = beam_force->Update(-1.0, *beam_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update!");
+      LINALG::Export(*beam_force, *global_temp);
+
+      // Add force contributions to global vector.
+      linalg_error = force->Update(1.0 * rhs_factor * penalty_parameter, *global_temp, 1.0);
+      if (linalg_error != 0) dserror("Error in Update");
+    }
   }
 }
 

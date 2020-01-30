@@ -135,6 +135,11 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> GetVtkOuputParamsPtr();
 
+    /**
+     * \brief Returns if the restart configuration should be coupled.
+     */
+    inline bool GetCoupleRestartState() const { return couple_restart_state_; }
+
    private:
     //! Flag if Init was called.
     bool isinit_;
@@ -163,6 +168,9 @@ namespace BEAMINTERACTION
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;
+
+    //! If the coupling terms should be evaluated with the restart configuration.
+    bool couple_restart_state_;
   };
 
 }  // namespace BEAMINTERACTION

@@ -25,7 +25,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
       contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none),
       mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
+      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
+      couple_restart_state_(false)
 {
   // Empty Constructor.
 }
@@ -69,6 +70,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     // Number of integrations points along the circumfence of the cross section.
     integration_points_circumfence_ =
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
+
+    // If the restart configuration should be coupled.
+    couple_restart_state_ = (bool)DRT::INPUT::IntegralValue<int>(
+        beam_to_solid_contact_params_list, "COUPLE_RESTART_STATE");
   }
 
   // Setup the output parameter object.

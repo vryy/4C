@@ -105,6 +105,20 @@ namespace BEAMINTERACTION
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const { return params_; }
 
     /*!
+    \brief Get an element pointer by the elements index.
+    */
+    inline const DRT::Element* GetElement(const unsigned int index) const
+    {
+      if (index == 0)
+        return element1_;
+      else if (index == 1)
+        return element2_;
+      else
+        dserror("Index has to be 0 or 1, got %d", index);
+      return NULL;
+    };
+
+    /*!
     \brief Get first element
     */
     inline const DRT::Element* Element1() const { return element1_; };
@@ -285,6 +299,21 @@ namespace BEAMINTERACTION
     {
       if (isinit_)
         dserror("If a geometry pair is created, it has has to be done before Init is called.");
+    };
+
+    /**
+     * \brief Set the restart displacement in this pair.
+     *
+     * If coupling interactions should be evaluated w.r.t the restart state. Has to be implemented
+     * in derived class.
+     *
+     * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
+     * step, for all contained elements (Vector of vector).
+     */
+    virtual void SetRestartDisplacement(
+        const std::vector<std::vector<double>>& centerline_restart_vec_)
+    {
+      CheckInitSetup();
     };
 
    protected:

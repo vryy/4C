@@ -15,10 +15,12 @@ be directly assembled into the global matrices.
 
 #include "beam_contact_pair.H"
 #include "beaminteraction_calc_utils.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+
 
 /**
  *
@@ -35,8 +37,9 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::EvaluateForceStiff(
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-    Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat, Teuchos::RCP<const Epetra_Vector> disp)
+    Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
 {
   // resulting discrete element force vectors of the two interacting elements
   std::vector<LINALG::SerialDenseVector> eleforce(2);

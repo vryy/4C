@@ -17,6 +17,7 @@ coupling matrices M and D first.
 #include "beam_contact_pair.H"
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_mortar_manager.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
@@ -49,12 +50,13 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::EvaluateForceStiff(
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-    Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat, Teuchos::RCP<const Epetra_Vector> disp)
+    Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
 {
   // Evaluate the global mortar matrices.
   mortar_manager_->EvaluateGlobalDM(assembly_contact_elepairs_);
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
-  mortar_manager_->AddGlobalForceStiffnessPenaltyContributions(disp, fe_sysmat, fe_sysvec);
+  mortar_manager_->AddGlobalForceStiffnessPenaltyContributions(data_state, fe_sysmat, fe_sysvec);
 }

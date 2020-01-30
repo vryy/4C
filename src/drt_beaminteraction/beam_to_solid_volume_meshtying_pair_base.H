@@ -103,6 +103,18 @@ namespace BEAMINTERACTION
         const std::vector<double>& solid_nodal_dofvec) override;
 
     /**
+     * \brief Set the restart displacement in this pair.
+     *
+     * If coupling interactions should be evaluated w.r.t the restart state, this method will set
+     * them in the pair accordingly.
+     *
+     * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
+     * step, for all contained elements (Vector of vector).
+     */
+    virtual void SetRestartDisplacement(
+        const std::vector<std::vector<double>>& centerline_restart_vec_) override;
+
+    /**
      * \brief Print information about this beam contact element pair to screen.
      */
     void Print(std::ostream& out) const override;
@@ -241,6 +253,15 @@ namespace BEAMINTERACTION
         const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
         LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const;
 
+    /**
+     * \brief Get the reference position to be used for the evaluation of the coupling terms.
+     *
+     * @param beam_coupling_ref (out) shifted reference position of the beam.
+     * @param solid_coupling_ref (out) shifted reference position of the solid.
+     */
+    void GetCouplingReferencePosition(LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
+        LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const;
+
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
@@ -250,8 +271,14 @@ namespace BEAMINTERACTION
     LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1posref_;
-    LINALG::Matrix<solid::n_dof_, 1, TYPEBTS> ele2posref_;
+    LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
+    LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;
+
+    //! Offset of nodal positions for coupling. This will be used when the state that should be
+    //! coupled is not the undeformed reference position, i.e. in restart simulations where the
+    //! restart state is coupled.
+    LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
+    LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
 
     //! Vector with the segments of the line to volume pair.
     std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;

@@ -197,6 +197,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
     elepairptr->ResetState(
         element_posdofvec_absolutevalues[0], element_posdofvec_absolutevalues[1]);
   }
+
+  // Set restart displacements in the pairs.
+  SetRestartDisplacementInPairs();
 }
 
 /*----------------------------------------------------------------------*
@@ -210,9 +213,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   // Loop over the assembly manager and assemble contributions into the global force vector.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
-        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
 
   return true;
@@ -229,9 +231,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetMutableStiff());
   }
 
   return true;
@@ -248,10 +249,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   // Loop over the assembly manager and assemble contributions into the global force vector and
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
         BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+        BeamInteractionDataStatePtr()->GetMutableStiff());
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
@@ -882,6 +882,33 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
                          << " currently monitors " << std::setw(5) << std::right
                          << contact_elepairs_.size() << " beam contact pairs" << IO::endl;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SetRestartDisplacementInPairs()
+{
+  CheckInitSetup();
+
+  if (BeamInteractionDataStatePtr()->GetRestartCouplingFlag())
+  {
+    for (auto& pair : contact_elepairs_)
+    {
+      // Element Dof values at the restart state.
+      std::vector<std::vector<double>> element_restart_dispalcement_(2);
+
+      for (unsigned int i_element = 0; i_element < 2; ++i_element)
+      {
+        // Extract the Dof values of this element from the restart vector
+        BEAMINTERACTION::UTILS::ExtractPosDofVecValues(Discret(), pair->GetElement(i_element),
+            BeamInteractionDataStatePtr()->GetDisRestartCol(),
+            element_restart_dispalcement_[i_element]);
+      }
+
+      // Set the displacement state in the pair.
+      pair->SetRestartDisplacement(element_restart_dispalcement_);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*
