@@ -141,6 +141,11 @@ namespace ADAPTER
     void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) override;
 
+    /**
+     * \brief Resets the external forces acting on the fluid to zero
+     */
+    virtual void ResetExternalForces();
+
    private:
     /// fluid base algorithm object
     Teuchos::RCP<ADAPTER::Fluid> fluidadapter_;

@@ -24,6 +24,7 @@
 #include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.H"
 #include "../drt_fbi/ad_fbi_constraintbridge.H"
 #include "../drt_fbi/beam_to_fluid_meshtying_params.H"
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>

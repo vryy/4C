@@ -160,3 +160,9 @@ int ADAPTER::FBIFluidMB::Itemax() const { return fluidadapter_->Itemax(); }
 /*----------------------------------------------------------------------*/
 /// set the maximum number of iterations for the fluid field
 void ADAPTER::FBIFluidMB::SetItemax(int itemax) { FluidField()->SetItemax(itemax); }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIFluidMB::ResetExternalForces()
+{
+  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->ResetExternalForces();
+}

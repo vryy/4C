@@ -270,15 +270,18 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
 
     if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
 
-    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), 0.0);
+    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
     if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
 
     double norm, normf, norms;
     double norm_vel;
 
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
+        ->Velnp()
+        ->MaxValue(&norm_vel);  // todo this uses the pressure. Fix such that only the maximum
+                                // velocity quantity is used
 
-    violation->Norm2(&norm);
+    violation->MaxValue(&norm);
     if (norm_vel > 1e-15) normf = norm / norm_vel;
 
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)

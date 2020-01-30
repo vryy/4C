@@ -34,3 +34,11 @@ void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatr
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
       ->SetCouplingContributions(matrix);
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FluidFBI::ResetExternalForces()
+{
+  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->ResetExternalForces();
+}
