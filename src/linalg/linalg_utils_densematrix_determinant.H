@@ -110,13 +110,6 @@ namespace LINALG
   */
   double DeterminantLU(const Epetra_SerialDenseMatrix& A);
 
-  /*!
-  \brief Determinant of a nonsymmetric matrix using singular value decomposition (SVD)
-
-  \return the determinant of the matrix A if nonzero
-  */
-  double DeterminantSVD(const Epetra_SerialDenseMatrix& A);
-
 }  // namespace LINALG
 
 #endif
