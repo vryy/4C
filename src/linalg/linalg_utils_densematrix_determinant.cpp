@@ -39,26 +39,3 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
     if (ipiv[i] != i + 1) d *= -1.0;
   return d;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double LINALG::DeterminantSVD(const Epetra_SerialDenseMatrix& A)
-{
-#ifdef DEBUG
-  if (A.M() != A.N()) dserror("Matrix is not square");
-#endif
-  Epetra_SerialDenseMatrix tmp(A);
-  Epetra_LAPACK lapack;
-  const int n = tmp.N();
-  const int m = tmp.M();
-  std::vector<double> s(std::min(n, m));
-  int info;
-  int lwork = std::max(3 * std::min(m, n) + std::max(m, n), 5 * std::min(m, n));
-  std::vector<double> work(lwork);
-  lapack.GESVD('N', 'N', m, n, tmp.A(), tmp.LDA(), &s[0], NULL, tmp.LDA(), NULL, tmp.LDA(),
-      &work[0], &lwork, &info);
-  if (info) dserror("Lapack's dgesvd returned %d", info);
-  double d = s[0];
-  for (int i = 1; i < n; ++i) d *= s[i];
-  return d;
-}
