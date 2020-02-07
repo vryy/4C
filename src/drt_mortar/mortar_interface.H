@@ -997,9 +997,9 @@ namespace MORTAR
     The methods completes construction phase of a mortar interface. It creates all row/column maps
     of the mortar interface discretization.
 
-    If we have arrived at the final parallel distribution, we have to call ask the underlying
+    If we have arrived at the final parallel distribution, we have to ask the underlying
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested.
+    only if requested by the user/algorithm.
 
     \sa ExtendInterfaceGhosting()
 
