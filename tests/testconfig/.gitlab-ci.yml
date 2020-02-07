@@ -68,7 +68,7 @@ variables:
         - master
     except:
         refs:
-            - scheduler
+            - schedules
             - web
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
