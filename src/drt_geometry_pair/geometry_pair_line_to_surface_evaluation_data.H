@@ -19,12 +19,25 @@
 #include <unordered_map>
 
 
+// Forward declarations.
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class BeamInteractionDataState;
+  }
+}  // namespace STR
+namespace GEOMETRYPAIR
+{
+  class FaceElement;
+}
+
+
 namespace GEOMETRYPAIR
 {
   /**
    * \brief Class to manage input parameters and evaluation data for line to surface interactions.
    */
-  template <typename scalar_type>
   class LineToSurfaceEvaluationData : public LineTo3DEvaluationData
   {
    public:
@@ -32,7 +45,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     LineToSurfaceEvaluationData(const Teuchos::ParameterList& input_parameter_list)
-        : LineTo3DEvaluationData(input_parameter_list), node_normal_map_(){};
+        : LineTo3DEvaluationData(input_parameter_list), face_elements_(){};
 
     /**
      * \brief Destructor.
@@ -42,21 +55,24 @@ namespace GEOMETRYPAIR
     /**
      * \brief Reset the evaluation data (derived).
      */
-    void Reset() override;
+    void Clear() override;
 
     /**
-     * \brief Return a mutable reference to the node map.
+     * \brief Setup the needed surface data.
      */
-    inline std::unordered_map<int, std::vector<Teuchos::RCP<NodalNormal<scalar_type>>>>&
-    GetNodeNormalMapMutable()
-    {
-      return node_normal_map_;
-    }
+    void Setup(
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
+
+    /**
+     * \brief Calculate the averaged nodal normals.
+     */
+    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+            beaminteraction_data_state);
 
    private:
-    //! The keys to this map are the global node IDs and the values are the (averaged) normals of
-    //! all connected elements at that node.
-    std::unordered_map<int, std::vector<Teuchos::RCP<NodalNormal<scalar_type>>>> node_normal_map_;
+    //! A map of all face elements needed for this surface.
+    std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_;
   };
 }  // namespace GEOMETRYPAIR
 

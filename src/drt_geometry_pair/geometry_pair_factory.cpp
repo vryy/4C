@@ -87,8 +87,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
 {
   // Cast the geometry evaluation data to the correct format.
   auto line_to_surface_evaluation_data =
-      Teuchos::rcp_dynamic_cast<LineToSurfaceEvaluationData<scalar_type>>(
-          geometry_evaluation_data, true);
+      Teuchos::rcp_dynamic_cast<LineToSurfaceEvaluationData>(geometry_evaluation_data, true);
 
   // Get the strategy for line to volume interaction.
   INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_surface_evaluation_data->GetStrategy();

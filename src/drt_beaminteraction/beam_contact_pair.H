@@ -31,6 +31,7 @@ namespace GEOMETRYPAIR
 {
   class GeometryPair;
   class GeometryEvaluationDataBase;
+  class FaceElement;
 }  // namespace GEOMETRYPAIR
 
 
@@ -315,6 +316,17 @@ namespace BEAMINTERACTION
     {
       CheckInitSetup();
     };
+
+    /**
+     * \brief Link the contact pair with the face element storing information on the averaged nodal
+     * normals.
+     *
+     * @param face_element (in) RCP to the face element.
+     */
+    virtual void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+    {
+      dserror("This method has to be implemented in the derived class.");
+    }
 
    protected:
     //! returns init state

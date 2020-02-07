@@ -58,6 +58,11 @@ namespace BEAMINTERACTION
     bool IdsInCondition(const int id_line, const int id_other) const override;
 
     /**
+     * \brief Clear not reusable data (derived).
+     */
+    void Clear() override;
+
+    /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
@@ -87,6 +92,9 @@ namespace BEAMINTERACTION
    protected:
     //! Pointer to the solid condition.
     Teuchos::RCP<const DRT::Condition> condition_other_;
+
+    //! Vector containing all beam contact pairs created by this condition.
+    std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
   };
 
   /**
@@ -159,6 +167,19 @@ namespace BEAMINTERACTION
      */
     void BuildIdSets() override;
 
+    /**
+     * \brief Here we get all face elements that are needed for the created pairs. This includes
+     * elements which are not part of any pair, but share a node with a surface of a pair.
+     */
+    void Setup() override;
+
+    /**
+     * \brief Set the displacement state (derived).
+     */
+    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+            beaminteraction_data_state) override;
+
    protected:
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
@@ -177,7 +198,8 @@ namespace BEAMINTERACTION
     }
 
    private:
-    //! Map containing the global volume element IDs and the corresponding face element.
+    //! Map containing the global volume element IDs for each face element of the surface in this
+    //! condition.
     std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;
   };  // namespace BEAMINTERACTION
 }  // namespace BEAMINTERACTION

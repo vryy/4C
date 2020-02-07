@@ -31,6 +31,11 @@ namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename surface>
   class GeometryPairLineToSurface;
+
+  class FaceElement;
+
+  template <typename surface>
+  class FaceElementTempalte;
 }  // namespace GEOMETRYPAIR
 
 
@@ -71,6 +76,12 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
+    /**
+     * \brief Link the contact pair with the face element storing information on the averaged nodal
+     * normals (derived).
+     */
+    void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
+
    protected:
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
@@ -83,11 +94,9 @@ namespace BEAMINTERACTION
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
-    //! Reference normals at the nodes of the surface elements.
-    LINALG::Matrix<surface::n_nodes_ * 3, 1, double> surface_normals_ref_;
-
-    //! Current normals at the nodes of the surface elements.
-    LINALG::Matrix<surface::n_nodes_ * 3, 1, scalar_type_fad> surface_normals_;
+    //! Pointer to the face element object which manages the positions on the surface, including the
+    //! averaged nodal normals.
+    Teuchos::RCP<GEOMETRYPAIR::FaceElementTempalte<surface>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

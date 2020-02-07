@@ -213,6 +213,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
 
   // Set restart displacements in the pairs.
   SetRestartDisplacementInPairs();
+
+  // Update the geometry pair evaluation data.
+  beam_interaction_conditions_ptr_->SetState(DiscretPtr(), BeamInteractionDataStatePtr());
 }
 
 /*----------------------------------------------------------------------*
@@ -821,8 +824,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   contact_elepairs_.clear();
   assembly_managers_.clear();
 
-  // reset the geometry evaluation data
-  beam_interaction_conditions_ptr_->Reset();
+  // clear the geometry evaluation data
+  beam_interaction_conditions_ptr_->Clear();
 
   std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
@@ -860,6 +863,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       contact_elepairs_.push_back(newbeaminteractionpair);
     }
   }
+
+  // Setup the geometry evaluation data.
+  beam_interaction_conditions_ptr_->Setup();
 
   // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;

@@ -27,7 +27,6 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPoint1DTo3D;
 
-  template <typename scalar_type>
   class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
 namespace LINALG
@@ -62,8 +61,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface(
-        const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData<scalar_type>>&
+    GeometryPairLineToSurface(const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data)
         : GeometryPair(), line_to_surface_evaluation_data_(line_to_surface_evaluation_data){};
 
@@ -92,7 +90,9 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
+     * @param q_line_ref (in) Reference values of the degrees of freedom for the line.
      * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface_ref (in) Reference values of the degrees of freedom for the surface.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
@@ -171,8 +171,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData<scalar_type>>
-        line_to_surface_evaluation_data_;
+    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
   };
 }  // namespace GEOMETRYPAIR
 

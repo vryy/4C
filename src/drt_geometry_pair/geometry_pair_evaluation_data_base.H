@@ -37,9 +37,9 @@ namespace GEOMETRYPAIR
     virtual ~GeometryEvaluationDataBase(){};
 
     /**
-     * \brief Reset data in this evaluation container.
+     * \brief Clear data in this evaluation container.
      */
-    virtual void Reset(){};
+    virtual void Clear(){};
   };
 }  // namespace GEOMETRYPAIR
 

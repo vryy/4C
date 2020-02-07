@@ -39,9 +39,9 @@ namespace GEOMETRYPAIR
     ~LineTo3DEvaluationData(){};
 
     /**
-     * \brief Reset the evaluation data.
+     * \brief Clear the evaluation data.
      */
-    void Reset() override;
+    void Clear() override;
 
     /**
      * \brief Get the segmentation strategy.

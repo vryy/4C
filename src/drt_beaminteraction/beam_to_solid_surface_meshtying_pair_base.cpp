@@ -13,6 +13,7 @@
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
+#include "../drt_geometry_pair/geometry_pair_element_faces.H"
 
 
 /**
@@ -39,6 +40,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<beam, surface>::Create
   // Set up the geometry pair, it will be initialized in the Init call of the base class.
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, beam, surface>(
       geometry_evaluation_data_ptr);
+}
+
+/**
+ *
+ */
+template <typename beam, typename surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<beam, surface>::SetFaceElement(
+    Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+{
+  face_element_ =
+      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTempalte<surface>>(face_element, true);
 }
 
 /**

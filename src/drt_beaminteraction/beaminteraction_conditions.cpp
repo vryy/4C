@@ -45,11 +45,12 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets()
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Reset()
-{
-  // Reset the geometry evaluation tracker.
-  geometry_evaluation_data_->Reset();
-}
+void BEAMINTERACTION::BeamInteractionConditionBase::Setup() {}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamInteractionConditionBase::Clear() { geometry_evaluation_data_->Clear(); }
 
 /**
  *
@@ -150,10 +151,32 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets()
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::Reset()
+void BEAMINTERACTION::BeamInteractionConditions::SetState(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+        beaminteraction_data_state)
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->Reset();
+    for (auto const& condition : map_pair.second)
+      condition->SetState(discret, beaminteraction_data_state);
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamInteractionConditions::Setup()
+{
+  for (auto const& map_pair : condition_map_)
+    for (auto const& condition : map_pair.second) condition->Setup();
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamInteractionConditions::Clear()
+{
+  for (auto const& map_pair : condition_map_)
+    for (auto const& condition : map_pair.second) condition->Clear();
 }
 
 /**
