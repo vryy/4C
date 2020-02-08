@@ -139,7 +139,7 @@ variables:
         # generate the baci_coverage.info based on tests run above
         - lcov --capture --directory ../baci-build/ --output-file baci_coverage.info
         # generate the html version of the coverage report
-        - genhtml baci_coverage.info --output-directory coverage_report/
+        - genhtml baci_coverage.info --output-directory coverage_report/ | tee genhtml_weekly_coverage.log
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -156,6 +156,7 @@ variables:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
             - buildtest_weekly_coverage.log
+            - genhtml_weekly_coverage.log
             - coverage_report/
         # upload .log on_failure and coverage_report/ on_success:
         # currently there is no option to have multiple artifacts with different when: options
@@ -478,8 +479,11 @@ pages: # job name needs to be pages
     # require the artifact of the coverage job
     dependencies:
         - lnm-buildtest_coverage_weekly
-    # move coverage_report to public (which is the path for GitLab Pages content)
     script:
+        # print the weekly measured coverage rate
+        - "echo 'Weekly measured'"
+        - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
+        # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
         - mv coverage_report/ public/
     artifacts:
         # store the public path in artifact
