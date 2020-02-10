@@ -83,24 +83,25 @@ namespace GEOMETRYPAIR
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const {};
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
-     * @param q_line_ref (in) Reference values of the degrees of freedom for the line.
      * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface_ref (in) Reference values of the degrees of freedom for the surface.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     virtual void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const {};
 
-   protected:
     /**
      * \brief Project a point in space to the surface element.
      * @param point (in) Point in space.
@@ -111,11 +112,36 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void ProjectPointToSurface(const LINALG::Matrix<3, 1, scalar_type>& point,
+    void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const;
 
+    /**
+     * \brief Intersect a line with all edges of a surface.
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param intersection_points (out) vector with the found surface intersections.
+     * @param eta_start (in) start value for parameter coordinate on line.
+     * @param xi_start (in) start values for parameter coordinates in volume.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
+     */
+    void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const;
+
+    /**
+     * \brief Return the pointer to the evaluation data of this pair.
+     * @return Pointer to the evaluation data.
+     */
+    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& GetEvaluationData() const
+    {
+      return line_to_surface_evaluation_data_;
+    }
+
+   protected:
     /**
      * \brief Evaluate a position on the surface and its derivative w.r.t. xi.
      * @param q_surface (in) Degrees of freedom for the surface.
@@ -152,21 +178,6 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
-
-    /**
-     * \brief Intersect a line with all edges of a surface.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface (in) Degrees of freedom for the volume.
-     * @param intersection_points (out) vector with the found surface intersections.
-     * @param eta_start (in) start value for parameter coordinate on line.
-     * @param xi_start (in) start values for parameter coordinates in volume.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
-     */
-    void IntersectLineWithSurface(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
    protected:

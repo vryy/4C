@@ -15,34 +15,39 @@
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "geometry_pair_line_to_surface_gauss_point_projection.H"
+#include "geometry_pair_line_to_surface_evaluation_data.H"
 
 
 /**
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointOnLineToOther(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other, const scalar_type& eta,
-    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
+    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    optional_type... optional_args)
 {
   // Get the point on the line.
   LINALG::Matrix<3, 1, scalar_type> r_line;
   GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, pair->Element1());
 
   // Project the point to the solid.
-  pair->ProjectPointToOther(r_line, q_other, xi, projection_result);
+  pair->ProjectPointToOther(r_line, q_other, xi, projection_result, optional_args...);
 }
 
 /**
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-    unsigned int& n_projections_valid, unsigned int& n_projections)
+    unsigned int& n_projections_valid, unsigned int& n_projections, optional_type... optional_args)
 {
   // Initialize counters.
   n_projections_valid = 0;
@@ -53,7 +58,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   {
     // Project the point.
     ProjectPointOnLineToOther(pair, q_line, q_other, point.GetEta(), point.GetXiMutable(),
-        point.GetProjectionResultMutable());
+        point.GetProjectionResultMutable(), optional_args...);
 
     // Update the counters.
     if (point.GetProjectionResult() == ProjectionResult::projection_found_valid)
@@ -70,28 +75,31 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-    unsigned int& n_projections_valid)
+    unsigned int& n_projections_valid, optional_type... optional_args)
 {
   // Initialize dummy variable.
   unsigned int n_projections_dummy;
 
   // Project the points.
-  ProjectPointsOnLineToOther(
-      pair, q_line, q_other, projection_points, n_projections_valid, n_projections_dummy);
+  ProjectPointsOnLineToOther(pair, q_line, q_other, projection_points, n_projections_valid,
+      n_projections_dummy, optional_args...);
 }
 
 /**
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     const pair_type* pair, const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    const DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment)
+    const DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment,
+    optional_type... optional_args)
 {
   // Set up the vector with the projection points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
@@ -110,7 +118,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
 
   // Project the Gauss points to the other geometry.
   unsigned int n_valid_projections;
-  ProjectPointsOnLineToOther(pair, q_line, q_other, projection_points, n_valid_projections);
+  ProjectPointsOnLineToOther(
+      pair, q_line, q_other, projection_points, n_valid_projections, optional_args...);
 
   // Check if all points could be projected.
   if (n_valid_projections != (unsigned int)gauss_points.nquad)
@@ -125,10 +134,12 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::IntersectLineWithOther(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points)
+    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+    optional_type... optional_args)
 {
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
@@ -137,18 +148,19 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::IntersectLineWithOther(const pair_ty
   StartValues<other::geometry_type_>::Set(xi_start);
 
   // Call the intersect function.
-  pair->IntersectLineWithOther(q_line, q_other, intersection_points, eta_start, xi_start);
-};
-
+  pair->IntersectLineWithOther(
+      q_line, q_other, intersection_points, eta_start, xi_start, optional_args...);
+}
 
 /**
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    std::vector<LineSegment<scalar_type>>& segments)
+    std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args)
 {
   // Get the Gauss point projection tracker for this line element.
   std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable(pair);
@@ -171,7 +183,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
     {
       eta = gauss_points.qxg[index_gp][0];
       LineTo3DBase<pair_type>::ProjectPointOnLineToOther(
-          pair, q_line, q_other, eta, xi, projection_result);
+          pair, q_line, q_other, eta, xi, projection_result, optional_args...);
       if (projection_result == ProjectionResult::projection_found_valid)
       {
         // Valid Gauss point was found, add to this segment and set tracking point to true.
@@ -196,10 +208,11 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    std::vector<LineSegment<scalar_type>>& segments)
+    std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args)
 {
   // Only zero one segments are expected.
   if (segments.size() > 1)
@@ -223,7 +236,8 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
     {
       // Segmentation is needed. First get the intersection points with the other geometry.
       std::vector<ProjectionPoint1DTo3D<scalar_type>> intersection_points;
-      LineTo3DBase<pair_type>::IntersectLineWithOther(pair, q_line, q_other, intersection_points);
+      LineTo3DBase<pair_type>::IntersectLineWithOther(
+          pair, q_line, q_other, intersection_points, optional_args...);
 
       // This algorithm only works if one intersection point was found.
       if (intersection_points.size() != 1)
@@ -247,8 +261,8 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
-          pair, q_line, q_other, pair->GetEvaluationData()->GetGaussPoints(), segments[0]);
+      LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(pair, q_line, q_other,
+          pair->GetEvaluationData()->GetGaussPoints(), segments[0], optional_args...);
     }
   }
 }
@@ -276,10 +290,11 @@ GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::GetLineProjectionVectorMu
  *
  */
 template <typename pair_type>
+template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pair,
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    std::vector<LineSegment<scalar_type>>& segments)
+    std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args)
 {
   // Only zero segments are expected.
   if (segments.size() > 0)
@@ -305,7 +320,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   unsigned int dummy;
   unsigned int n_projections;
   LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(
-      pair, q_line, q_other, search_points, dummy, n_projections);
+      pair, q_line, q_other, search_points, dummy, n_projections, optional_args...);
 
   // If no point could be projected return, as we assume that we wont find a surface projection.
   // This usually happens for higher order elements, more search points can be a solution to
@@ -335,8 +350,8 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
       if (point.GetProjectionResult() != ProjectionResult::projection_not_found)
       {
         // Get the intersections with the other geometry.
-        pair->IntersectLineWithOther(
-            q_line, q_other, search_intersection_points, point.GetEta(), point.GetXi());
+        pair->IntersectLineWithOther(q_line, q_other, search_intersection_points, point.GetEta(),
+            point.GetXi(), optional_args...);
 
         // Add the found intersection points to the set.
         for (auto& found_point : search_intersection_points)
@@ -387,7 +402,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
 
           // Project and check result.
           LineTo3DBase<pair_type>::ProjectPointOnLineToOther(
-              pair, q_line, q_other, eta, xi_start, projection_result);
+              pair, q_line, q_other, eta, xi_start, projection_result, optional_args...);
         }
         else
         {
@@ -424,7 +439,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
 
               // Project the Gauss points on the segment. All points have to project valid.
               LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(pair, q_line, q_other,
-                  pair->GetEvaluationData()->GetGaussPoints(), segments.back());
+                  pair->GetEvaluationData()->GetGaussPoints(), segments.back(), optional_args...);
             }
 
             // Deactivate the current segment.
@@ -442,41 +457,65 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
 
 /**
  * Explicit template initialization of template class.
+ *
+ * With the optional arguments the template initiations become quite long and unreadable, therefore
+ * they are initialized with preprocessor macros in the following section.
  */
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex8>>;
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex20>>;
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex27>>;
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_tet4>>;
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_tet10>>;
-template class GEOMETRYPAIR::LineTo3DGaussPointProjection<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_nurbs27>>;
+namespace GEOMETRYPAIR
+{
+  // Define line-to-volume Gauss point projection pairs.
+#define initialize_template_volume_gauss_point(a, b, c)                                          \
+  template class LineTo3DGaussPointProjection<                                                   \
+      GeometryPairLineToVolumeGaussPointProjection<a, b, c>>;                                    \
+  template void LineTo3DGaussPointProjection<GeometryPairLineToVolumeGaussPointProjection<a, b,  \
+      c>>::PreEvaluate(const GeometryPairLineToVolumeGaussPointProjection<a, b, c>*,             \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,            \
+      std::vector<LineSegment<a>>&);                                                             \
+  template void                                                                                  \
+  LineTo3DGaussPointProjection<GeometryPairLineToVolumeGaussPointProjection<a, b, c>>::Evaluate( \
+      const GeometryPairLineToVolumeGaussPointProjection<a, b, c>*,                              \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,            \
+      std::vector<LineSegment<a>>&);
 
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex8>>;
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex20>>;
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_hex27>>;
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_tet4>>;
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_tet10>>;
-template class GEOMETRYPAIR::LineTo3DSegmentation<
-    GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
-        GEOMETRYPAIR::t_nurbs27>>;
+  initialize_template_volume_gauss_point(double, t_hermite, t_hex8);
+  initialize_template_volume_gauss_point(double, t_hermite, t_hex20);
+  initialize_template_volume_gauss_point(double, t_hermite, t_hex27);
+  initialize_template_volume_gauss_point(double, t_hermite, t_tet4);
+  initialize_template_volume_gauss_point(double, t_hermite, t_tet10);
+  initialize_template_volume_gauss_point(double, t_hermite, t_nurbs27);
+
+  // Define line-to-volume segmentation pairs.
+#define initialize_template_volume_segmentation(a, b, c)                                       \
+  template class LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<a, b, c>>;          \
+  template void LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<a, b, c>>::Evaluate( \
+      const GeometryPairLineToVolumeSegmentation<a, b, c>*,                                    \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,          \
+      std::vector<LineSegment<a>>&);
+
+  initialize_template_volume_segmentation(double, t_hermite, t_hex8);
+  initialize_template_volume_segmentation(double, t_hermite, t_hex20);
+  initialize_template_volume_segmentation(double, t_hermite, t_hex27);
+  initialize_template_volume_segmentation(double, t_hermite, t_tet4);
+  initialize_template_volume_segmentation(double, t_hermite, t_tet10);
+  initialize_template_volume_segmentation(double, t_hermite, t_nurbs27);
+
+  // Define line-to-surface Gauss point projection pairs.
+#define initialize_template_surface_gauss_point(a, b, c)                                          \
+  template class LineTo3DGaussPointProjection<                                                    \
+      GeometryPairLineToSurfaceGaussPointProjection<a, b, c>>;                                    \
+  template void LineTo3DGaussPointProjection<GeometryPairLineToSurfaceGaussPointProjection<a, b,  \
+      c>>::PreEvaluate(const GeometryPairLineToSurfaceGaussPointProjection<a, b, c>*,             \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,             \
+      std::vector<LineSegment<a>>&, const LINALG::Matrix<3 * c::n_nodes_, 1, a>*);                \
+  template void                                                                                   \
+  LineTo3DGaussPointProjection<GeometryPairLineToSurfaceGaussPointProjection<a, b, c>>::Evaluate( \
+      const GeometryPairLineToSurfaceGaussPointProjection<a, b, c>*,                              \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,             \
+      std::vector<LineSegment<a>>&, const LINALG::Matrix<3 * c::n_nodes_, 1, a>*);
+
+  initialize_template_surface_gauss_point(double, t_hermite, t_quad4);
+  initialize_template_surface_gauss_point(double, t_hermite, t_quad8);
+  initialize_template_surface_gauss_point(double, t_hermite, t_quad9);
+  initialize_template_surface_gauss_point(double, t_hermite, t_tri3);
+  initialize_template_surface_gauss_point(double, t_hermite, t_tri6);
+}  // namespace GEOMETRYPAIR

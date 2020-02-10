@@ -43,18 +43,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Init(
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::PreEvaluate(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const {
-
-};
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToSurface(
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
     const LINALG::Matrix<3, 1, scalar_type>& point,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
@@ -111,6 +100,68 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       }
       else
         break;
+    }
+  }
+}
+
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithOther(
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+{
+  // Get number of faces for this volume and create a vector with the indices of the faces, so all
+  // surfaces of the volume can be checked for an intersection with the line.
+  unsigned int n_faces;
+  std::vector<unsigned int> face_fixed_parameters;
+  std::vector<double> face_fixed_values;
+  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
+  {
+    n_faces = 4;
+    face_fixed_parameters = {0, 0, 1, 1};
+    face_fixed_values = {-1., 1., -1., 1.};
+  }
+  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
+  {
+    n_faces = 3;
+    face_fixed_parameters = {0, 1, 2};
+    face_fixed_values = {0., 0., 1.};
+  }
+  else
+  {
+    dserror("Wrong DiscretizationTypeGeometry given!");
+  }
+
+  // Clear the input vector.
+  intersection_points.clear();
+  intersection_points.reserve(n_faces);
+
+  // Create variables.
+  scalar_type eta;
+  LINALG::Matrix<3, 1, scalar_type> xi;
+  ProjectionResult intersection_found;
+
+  // Try to intersect the beam with each face.
+  for (unsigned int i = 0; i < n_faces; i++)
+  {
+    // Set starting values.
+    xi = xi_start;
+    eta = eta_start;
+
+    // Intersect the line with the surface.
+    IntersectLineWithSurfaceEdge(q_line, q_surface, face_fixed_parameters[i], face_fixed_values[i],
+        eta, xi, intersection_found, nodal_normals);
+
+    // If a valid intersection is found, add it to the output vector.
+    if (intersection_found == ProjectionResult::projection_found_valid)
+    {
+      intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
     }
   }
 }
@@ -261,67 +312,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
       else
         break;
-    }
-  }
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithSurface(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
-{
-  // Get number of faces for this volume and create a vector with the indices of the faces, so all
-  // surfaces of the volume can be checked for an intersection with the line.
-  unsigned int n_faces;
-  std::vector<unsigned int> face_fixed_parameters;
-  std::vector<double> face_fixed_values;
-  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
-  {
-    n_faces = 4;
-    face_fixed_parameters = {0, 0, 1, 1};
-    face_fixed_values = {-1., 1., -1., 1.};
-  }
-  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
-  {
-    n_faces = 3;
-    face_fixed_parameters = {0, 1, 2};
-    face_fixed_values = {0., 0., 1.};
-  }
-  else
-  {
-    dserror("Wrong DiscretizationTypeGeometry given!");
-  }
-
-  // Clear the input vector.
-  intersection_points.clear();
-  intersection_points.reserve(n_faces);
-
-  // Create variables.
-  scalar_type eta;
-  LINALG::Matrix<3, 1, scalar_type> xi;
-  ProjectionResult intersection_found;
-
-  // Try to intersect the beam with each face.
-  for (unsigned int i = 0; i < n_faces; i++)
-  {
-    // Set starting values.
-    xi = xi_start;
-    eta = eta_start;
-
-    // Intersect the line with the surface.
-    IntersectLineWithSurfaceEdge(q_line, q_surface, face_fixed_parameters[i], face_fixed_values[i],
-        eta, xi, intersection_found, nodal_normals);
-
-    // If a valid intersection is found, add it to the output vector.
-    if (intersection_found == ProjectionResult::projection_found_valid)
-    {
-      intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
     }
   }
 }

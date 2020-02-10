@@ -11,9 +11,8 @@
 #include "geometry_pair_factory.H"
 
 #include "geometry_pair_element.H"
-#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_line_to_surface_gauss_point_projection.H"
 #include "geometry_pair_line_to_surface_evaluation_data.H"
-#include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
@@ -96,14 +95,14 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
   switch (strategy)
   {
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
-      return Teuchos::rcp(new GeometryPairLineToSurface<scalar_type, line, surface>(
-          line_to_surface_evaluation_data));
+      return Teuchos::rcp(
+          new GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>(
+              line_to_surface_evaluation_data));
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
+      return Teuchos::null;
     default:
     {
-      dserror(
-          "The given geometry pair strategy is not universally valid. You might want to create "
-          "your pair directly if you need certain features (for example cross section "
-          "projection)!");
+      dserror("The given geometry pair strategy is not valid.");
       return Teuchos::null;
     }
   }
