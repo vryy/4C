@@ -62,10 +62,6 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-Fluid volume meshtying",
       &beam_to_fluid_meshtying);
 
-  IntParameter("GAUSS_POINTS", 6,
-      "Number of Gauss Points for the integral evaluation along the beam segments",
-      &beam_to_fluid_meshtying);
-
   DoubleParameter("SEARCH_RADIUS", 1000,
       "Absolute Search radius for beam-to-fluid volume meshtying. Choose carefully to not blow up "
       "memory demand but to still find all interaction pairs!",
