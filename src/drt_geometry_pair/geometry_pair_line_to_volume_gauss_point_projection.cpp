@@ -17,6 +17,8 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
+#include "geometry_pair_line_projection.H"
+
 /**
  *
  */
@@ -54,46 +56,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
   // Check if the element is initialized.
   this->CheckInitSetup();
 
-  // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
-
-  // Gauss rule.
-  DRT::UTILS::IntegrationPoints1D gauss_points =
-      this->line_to_3d_evaluation_data_->GetGaussPoints();
-
-  // Initilaize variables for the projection.
-  scalar_type eta;
-  LINALG::Matrix<3, 1, scalar_type> xi;
-  ProjectionResult projection_result;
-  LineSegment<scalar_type> line_segment;
-  bool one_projects = false;
-
-  // Loop over Gauss points and check if they project to this volume.
-  for (unsigned int index_gp = 0; index_gp < line_projection_tracker.size(); index_gp++)
-  {
-    // Only check points that do not already have a valid projection.
-    if (line_projection_tracker[index_gp] == false)
-    {
-      eta = gauss_points.qxg[index_gp][0];
-      this->ProjectPointOnLineToVolume(q_line, q_volume, eta, xi, projection_result);
-      if (projection_result == ProjectionResult::projection_found_valid)
-      {
-        // Valid Gauss point was found, add to this segment and set tracking point to true.
-        line_segment.AddProjectionPoint(
-            ProjectionPoint1DTo3D<scalar_type>(eta, xi, gauss_points.qwgt[index_gp]));
-        line_projection_tracker[index_gp] = true;
-
-        one_projects = true;
-      }
-    }
-  }
-
-  if (one_projects)
-  {
-    // Clear the segment vector and add the found segment for the current line to volume pair.
-    segments.clear();
-    segments.push_back(line_segment);
-  }
+  // Call the PreEvaluate method of the general Gauss point projection class.
+  LineTo3DGaussPointProjection<
+      GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::PreEvaluate(this,
+      q_line, q_volume, segments);
 }
 
 
@@ -109,71 +75,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
   // Check if the element is initialized.
   this->CheckInitSetup();
 
-  // Only zero one segments are expected.
-  if (segments.size() > 1)
-    dserror(
-        "There should be zero or one segments for the Gauss point projection method. The actual "
-        "value is %d!",
-        segments.size());
-
-  // Check if one point projected in PreEvaluate.
-  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
-  {
-    // Flag if segmentation is needed.
-    bool need_segmentation = false;
-
-    // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
-    for (auto const& projects : line_projection_tracker)
-      if (!projects) need_segmentation = true;
-
-    if (need_segmentation)
-    {
-      // Segmentation is needed. First get the intersection points with the volume.
-      std::vector<ProjectionPoint1DTo3D<scalar_type>> intersection_points;
-      this->IntersectLineWithVolume(q_line, q_volume, intersection_points);
-
-      // This algorithm only works if one intersection point was found.
-      if (intersection_points.size() != 1)
-        dserror("In the segmentation case we expect exactly one found intersection point. Got: %d!",
-            intersection_points.size());
-
-      // Get the limits of the segmented line.
-      scalar_type eta_a, eta_b, eta_intersection_point, eta_first_gauss_point;
-      eta_intersection_point = intersection_points[0].GetEta();
-      eta_first_gauss_point = segments[0].GetProjectionPoints()[0].GetEta();
-      if (eta_intersection_point < eta_first_gauss_point)
-      {
-        eta_a = eta_intersection_point;
-        eta_b = 1.;
-      }
-      else
-      {
-        eta_a = -1.;
-        eta_b = eta_intersection_point;
-      }
-
-      // Reproject the Gauss points on the segmented line.
-      segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      this->ProjectGaussPointsOnSegmentToVolume(
-          q_line, q_volume, this->line_to_3d_evaluation_data_->GetGaussPoints(), segments[0]);
-    }
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
-    volume>::GetLineProjectionVectorMutable() const
-{
-  // Get the Gauss point projection tracker for this line element.
-  int line_element_id = this->Element1()->Id();
-  std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
-  return projection_tracker[line_element_id];
+  // Call the PreEvaluate method of the general Gauss point projection class.
+  LineTo3DGaussPointProjection<
+      GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::Evaluate(this,
+      q_line, q_volume, segments);
 }
 
 

@@ -102,7 +102,15 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
-   protected:
+    /**
+     * \brief Return the pointer to the evaluation data of this pair.
+     * @return Pointer to the evaluation data.
+     */
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& GetEvaluationData() const
+    {
+      return line_to_3d_evaluation_data_;
+    }
+
     /**
      * \brief Project a point in space to the volume element.
      * @param point (in) Point in space.
@@ -112,66 +120,9 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointToVolume(const LINALG::Matrix<3, 1, scalar_type>& point,
+    void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
-
-    /**
-     * \brief Project a point on the line to the volume element.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
-     * @param eta (in) Parameter coordinate on the line.
-     * @param xi (in/out) Parameter coordinates in the volume. The given values are the start values
-     * for the Newton iteration.
-     * @param projection_result (out) Flag for the result of the projection.
-     * @return
-     */
-    void ProjectPointOnLineToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume, const scalar_type& eta,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
-
-    /**
-     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
-     * projection points is the start value for the iteration.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
-     * @param projection_points (in/out) Vector with projection points. The given values for eta and
-     * xi are the start values for the iteration.
-     * @param n_projections_valid (out) Number of valid projections.
-     * @param n_projections (out) Number of points, where the nonlinear system could be solved.
-     */
-    void ProjectPointsOnLineToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-        unsigned int& n_projections_valid, unsigned int& n_projections) const;
-
-    /**
-     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
-     * projection points is the start value for the iteration.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
-     * @param projection_points (in/out) Vector with projection points. The given values for eta and
-     * xi are the start values for the iteration.
-     * @param n_projections_valid (out) Number of valid projections.
-     */
-    void ProjectPointsOnLineToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-        unsigned int& n_projections_valid) const;
-
-    /**
-     * \brief Project Gauss points on the line segment to the volume. If not all points can be
-     * projected, an error is thrown. Only projections inside the two elements are considered valid.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
-     * @param gauss_points (in) Gauss points to project.
-     * @param segment (in/out) Vector with found projection points.
-     */
-    void ProjectGaussPointsOnSegmentToVolume(
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        const DRT::UTILS::IntegrationPoints1D& gauss_points,
-        LineSegment<scalar_type>& segment) const;
 
     /**
      * \brief Get the intersection between the line and a surface in the volume.
@@ -199,21 +150,10 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
-
-    /**
-     * \brief Intersect a line with all surfaces of a volume. Use default starting values for eta
-     * and xi.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
-     * @param intersection_points (out) vector with the found surface intersections.
-     */
-    void IntersectLineWithVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points) const;
 
    protected:
     //! Link to the geometry evaluation container.

@@ -2657,6 +2657,7 @@ src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
 src/drt_geometry_pair/geometry_pair_element_faces.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_projection.cpp
 src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_surface.cpp
 src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.cpp

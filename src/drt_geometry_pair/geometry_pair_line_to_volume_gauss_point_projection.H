@@ -31,6 +31,16 @@ namespace GEOMETRYPAIR
       : public GeometryPairLineToVolume<scalar_type, line, volume>
   {
    public:
+    //! Public alias for scalar type so that other classes can use this type.
+    using t_scalar_type = scalar_type;
+
+    //! Public alias for line type so that other classes can use this type.
+    using t_line = line;
+
+    //! Public alias for volume type so that other classes can use this type.
+    using t_other = volume;
+
+   public:
     /**
      * \brief Constructor.
      */
@@ -49,10 +59,13 @@ namespace GEOMETRYPAIR
     void Setup() override;
 
     /**
-     * \brief Try to project all Gauss points to the volume. Only points are checked that do not
+     * \brief Try to project all Gauss points to the volume.
+     *
+     * Only points are checked that do not
      * already have a valid projection in the projection tracker of the evaluation data container.
      * Eventually needed segmentation at lines poking out of the volume is done in the Evaluate
      * method.
+     *
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
@@ -62,9 +75,12 @@ namespace GEOMETRYPAIR
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
-     * \brief Check if a Gauss point projected valid for this pair in PreEvaluate. If so, all Gauss
-     * points have to project valid (in the tracker, since some can be valid on other pairs). If not
-     * all project, the beam pokes out of the volumes and in this method segmentation is performed.
+     * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
+     *
+     * If so, all Gauss points have to project valid (in the tracker, since some can be valid on
+     * other pairs). If not all project, the beam pokes out of the volumes and in this method
+     * segmentation is performed.
+     *
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
@@ -72,13 +88,6 @@ namespace GEOMETRYPAIR
     void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
-
-   private:
-    /**
-     * \brief Get the line projection vector for the line element in this pair.
-     * @return Reference to line projection vector.
-     */
-    std::vector<bool>& GetLineProjectionVectorMutable() const;
   };
 }  // namespace GEOMETRYPAIR
 

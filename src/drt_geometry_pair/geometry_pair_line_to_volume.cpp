@@ -44,7 +44,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToVolume(
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToOther(
     const LINALG::Matrix<3, 1, scalar_type>& point,
     const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
@@ -109,114 +109,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
         break;
     }
   }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume, const scalar_type& eta,
-    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
-{
-  // Get the point on the line.
-  LINALG::Matrix<3, 1, scalar_type> r_line;
-  GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, Element1());
-
-  // Project the point to the solid.
-  ProjectPointToVolume(r_line, q_volume, xi, projection_result);
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointsOnLineToVolume(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-    unsigned int& n_projections_valid, unsigned int& n_projections) const
-{
-  // Initialize counters.
-  n_projections_valid = 0;
-  n_projections = 0;
-
-  // Loop over points and check if they project to this volume.
-  for (auto& point : projection_points)
-  {
-    // Project the point.
-    ProjectPointOnLineToVolume(
-        q_line, q_volume, point.GetEta(), point.GetXiMutable(), point.GetProjectionResultMutable());
-
-    // Update the counters.
-    if (point.GetProjectionResult() == ProjectionResult::projection_found_valid)
-    {
-      n_projections_valid++;
-      n_projections++;
-    }
-    if (point.GetProjectionResult() == ProjectionResult::projection_found_not_valid)
-      n_projections++;
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointsOnLineToVolume(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-    unsigned int& n_projections_valid) const
-{
-  // Initialize dummy variable.
-  unsigned int n_projections_dummy;
-
-  // Project the points.
-  ProjectPointsOnLineToVolume(
-      q_line, q_volume, projection_points, n_projections_valid, n_projections_dummy);
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
-    volume>::ProjectGaussPointsOnSegmentToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>&
-                                                     q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-    const DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment) const
-{
-  // Set up the vector with the projection points.
-  std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
-      segment.GetProjectionPointsMutable();
-  projection_points.clear();
-  projection_points.reserve(gauss_points.nquad);
-  LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement3D<volume>(xi_start);
-  for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
-  {
-    scalar_type eta = segment.GetEtaA() +
-                      (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
-    projection_points.push_back(
-        ProjectionPoint1DTo3D<scalar_type>(eta, xi_start, gauss_points.qwgt[i]));
-  }
-
-  // Project the Gauss points to the volume.
-  unsigned int n_valid_projections;
-  ProjectPointsOnLineToVolume(q_line, q_volume, projection_points, n_valid_projections);
-
-  // Check if all points could be projected.
-  if (n_valid_projections != (unsigned int)gauss_points.nquad)
-    dserror(
-        "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
-        "the number of valid projections is %d!",
-        gauss_points.nquad, n_valid_projections);
 }
 
 
@@ -345,7 +237,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithVolume(
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithOther(
     const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
@@ -400,26 +292,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     }
   }
 }
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithVolume(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points) const
-{
-  // Set default values for the parameter coordinates.
-  scalar_type eta_start;
-  LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement1D(eta_start);
-  SetStartValuesElement3D<volume>(xi_start);
-
-  // Call the intersect function.
-  IntersectLineWithVolume(q_line, q_volume, intersection_points, eta_start, xi_start);
-};
 
 
 /**
