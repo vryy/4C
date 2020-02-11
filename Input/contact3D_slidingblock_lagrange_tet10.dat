@@ -39,9 +39,6 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         3
 MAXTIME                         0.3
-DAMPING                         No
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 TOLRES                          9.0E-8
 TOLDISP                         1.0E-08
 NORM_RESF                       Abs
@@ -76,10 +73,10 @@ LM_DUAL_CONSISTENT              none
 PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
