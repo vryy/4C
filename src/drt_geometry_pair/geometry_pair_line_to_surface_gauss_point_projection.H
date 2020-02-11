@@ -30,9 +30,6 @@ namespace GEOMETRYPAIR
   class GeometryPairLineToSurfaceGaussPointProjection
       : public GeometryPairLineToSurface<scalar_type, line, surface>
   {
-    //! Declare the unit test class as a fried class, so private and protected methods can be used.
-    friend GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite;
-
    public:
     //! Public alias for scalar type so that other classes can use this type.
     using t_scalar_type = scalar_type;

@@ -63,7 +63,9 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToSurface(const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data)
-        : GeometryPair(), line_to_surface_evaluation_data_(line_to_surface_evaluation_data){};
+        : GeometryPair(),
+          line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
+          is_unit_test_(false){};
 
     /**
      * \brief Destructor.
@@ -136,7 +138,7 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the evaluation data of this pair.
      * @return Pointer to the evaluation data.
      */
-    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& GetEvaluationData() const
+    inline const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& GetEvaluationData() const
     {
       return line_to_surface_evaluation_data_;
     }
@@ -180,9 +182,44 @@ namespace GEOMETRYPAIR
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
+    /**
+     * \brief Check if a projection to a surface lies in a variable range.
+     *
+     * The ValidParameter2D function just checks, if the parameter coordinates are within the
+     * surface. We need to additionally check that the normal distance is not to large in order to
+     * avoid unwanted results. This is done by using a rule of thumb, that the normal distance has
+     * be smaller than the approximated surface size or 3 times the beam radius.
+     *
+     * @param xi
+     * @param surface_size
+     * @param beam_radius
+     * @return True if normal distance is in a reasonable range, false otherwise.
+     */
+    bool ValidParameterSurface(LINALG::Matrix<3, 1, scalar_type>& xi,
+        const scalar_type& surface_size, const double beam_radius) const;
+
+    /**
+     * \brief Get an approximate size of the line radius.
+     * @return Radius of the line.
+     */
+    double GetLineRadius() const;
+
+    /**
+     * \brief Get an approximate size of the surface.
+     * @param (in) q_surface
+     * @return Maximum distance between the first 3 nodes.
+     */
+    scalar_type GetSurfaceSize(
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const;
+
    protected:
     //! Link to the geometry evaluation container.
     Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
+
+   private:
+    //! Flag if the class is executed by unit tests. If this is the case, the line radius for
+    //! ValidParameterSurface will be explicitly given.
+    bool is_unit_test_;
   };
 }  // namespace GEOMETRYPAIR
 

@@ -15,6 +15,7 @@
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 /**
@@ -51,6 +52,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
 {
   // Initialize data structures
 
+  // Approximated size of surface and beam diameter for valid projection check.
+  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const double beam_radius = GetLineRadius();
+
   // Vectors in 3D.
   LINALG::Matrix<3, 1, scalar_type> r_surface;
   LINALG::Matrix<3, 1, scalar_type> delta_xi;
@@ -77,7 +82,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       // Check if tolerance is fulfilled.
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
-        if (ValidParameter2D<surface>(xi))
+        if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -220,6 +225,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       dserror("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
   }
 
+  // Approximated size of surface and beam diameter for valid projection check.
+  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const double beam_radius = GetLineRadius();
+
   // Initialize data structures.
   // Point on line.
   LINALG::Matrix<3, 1, scalar_type> r_line;
@@ -276,7 +285,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // Check if the parameter coordinates are valid.
-        if (ValidParameter1D(eta) && ValidParameter2D<surface>(xi))
+        if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -314,6 +323,76 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         break;
     }
   }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+bool GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ValidParameterSurface(
+    LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
+    const double beam_radius) const
+{
+  // We only need to theck the normal distance if the coordinates are within the surface.
+  if (!ValidParameter2D<surface>(xi)) return false;
+
+  if ((-surface_size < xi(2) and xi(2) < surface_size) or
+      (-3.0 * beam_radius < xi(2) and xi(2) < 3 * beam_radius))
+    return true;
+  else
+    return false;
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetLineRadius() const
+{
+  if (is_unit_test_)
+    return 1e10;
+  else
+    return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
+        ->GetCircularCrossSectionRadiusForInteractions();
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const
+{
+  // Get the position of the first 3 nodes of the surface.
+  LINALG::Matrix<2, 1, double> xi_corner_node;
+  LINALG::Matrix<3, 1, LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
+  LINALG::SerialDenseMatrix nodal_coordinates =
+      DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+  for (unsigned int i_node = 0; i_node < 3; i_node++)
+  {
+    for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+      xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
+    EvaluatePosition<surface>(xi_corner_node, q_surface, corner_nodes(i_node), Element2());
+  }
+
+  // Calculate the maximum distance between the three points.
+  scalar_type max_distance = 0.0;
+  scalar_type distance = 0.0;
+  LINALG::Matrix<3, 1, scalar_type> diff;
+  for (unsigned int i_node = 0; i_node < 3; i_node++)
+  {
+    for (unsigned int j_node = 0; j_node < 3; j_node++)
+    {
+      if (i_node == j_node) continue;
+
+      diff = corner_nodes(j_node);
+      diff -= corner_nodes(i_node);
+      distance = diff.Norm2();
+      if (distance > max_distance) max_distance = distance;
+    }
+  }
+
+  return max_distance;
 }
 
 

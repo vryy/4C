@@ -66,15 +66,6 @@ namespace GEOMETRYPAIR
     void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
-
-    /**
-     * \brief Get the segment tracking vector for the line element in this pair. The type is double
-     * for the segments there, as this is only needed for comparison purposes. The segment values of
-     * the tracker should NOT be used for further calculation as AD will not work correctly in this
-     * case.
-     * @return Reference to segment tracking vector.
-     */
-    std::set<LineSegment<double>>& GetSegmentTrackingSetMutable() const;
   };
 }  // namespace GEOMETRYPAIR
 

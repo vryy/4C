@@ -59,21 +59,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
 
 
 /**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-std::set<GEOMETRYPAIR::LineSegment<double>>& GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<
-    scalar_type, line, volume>::GetSegmentTrackingSetMutable() const
-{
-  // Get the segment tracker for this line element.
-  int line_element_id = this->Element1()->Id();
-  std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
-      this->line_to_3d_evaluation_data_->GetSegmentTrackerMutable();
-  return segment_tracker_map[line_element_id];
-}
-
-
-/**
  * Explicit template initialization of template class.
  */
 template class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,

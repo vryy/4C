@@ -16,6 +16,7 @@
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_line_to_surface_gauss_point_projection.H"
+#include "geometry_pair_line_to_surface_segmentation.H"
 #include "geometry_pair_line_to_surface_evaluation_data.H"
 
 
@@ -375,7 +376,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
 
       // Loop over the middle points and check if they are projected valid or not.
       std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker =
-          pair->GetSegmentTrackingSetMutable();
+          GetSegmentTrackingSetMutable(pair);
       ProjectionResult projection_result;
       bool last_segment_active = false;
       scalar_type eta_start;
@@ -454,6 +455,24 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   }
 }
 
+/**
+ *
+ */
+template <typename pair_type>
+std::set<GEOMETRYPAIR::LineSegment<double>>&
+GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::GetSegmentTrackingSetMutable(const pair_type* pair)
+{
+  // Get the segment tracker for this line element.
+  int line_element_id = pair->Element1()->Id();
+  std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
+      pair->GetEvaluationData()->GetSegmentTrackerMutable();
+  auto find = segment_tracker_map.find(line_element_id);
+  if (find == segment_tracker_map.end())
+    dserror("Could not find the segment tracker for line id %d.", line_element_id);
+  return find->second;
+}
+
+
 
 /**
  * Explicit template initialization of template class.
@@ -518,4 +537,18 @@ namespace GEOMETRYPAIR
   initialize_template_surface_gauss_point(double, t_hermite, t_quad9);
   initialize_template_surface_gauss_point(double, t_hermite, t_tri3);
   initialize_template_surface_gauss_point(double, t_hermite, t_tri6);
+
+  // Define line-to-surface segmentation pairs.
+#define initialize_template_surface_segmentation(a, b, c)                                       \
+  template class LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<a, b, c>>;          \
+  template void LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<a, b, c>>::Evaluate( \
+      const GeometryPairLineToSurfaceSegmentation<a, b, c>*,                                    \
+      const LINALG::Matrix<b::n_dof_, 1, a>&, const LINALG::Matrix<c::n_dof_, 1, a>&,           \
+      std::vector<LineSegment<a>>&, const LINALG::Matrix<3 * c::n_nodes_, 1, a>*);
+
+  initialize_template_surface_segmentation(double, t_hermite, t_quad4);
+  initialize_template_surface_segmentation(double, t_hermite, t_quad8);
+  initialize_template_surface_segmentation(double, t_hermite, t_quad9);
+  initialize_template_surface_segmentation(double, t_hermite, t_tri3);
+  initialize_template_surface_segmentation(double, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR

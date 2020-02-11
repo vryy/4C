@@ -12,6 +12,7 @@
 
 #include "geometry_pair_element.H"
 #include "geometry_pair_line_to_surface_gauss_point_projection.H"
+#include "geometry_pair_line_to_surface_segmentation.H"
 #include "geometry_pair_line_to_surface_evaluation_data.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
@@ -99,7 +100,8 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
           new GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>(
               line_to_surface_evaluation_data));
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
-      return Teuchos::null;
+      return Teuchos::rcp(new GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>(
+          line_to_surface_evaluation_data));
     default:
     {
       dserror("The given geometry pair strategy is not valid.");

@@ -67,6 +67,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -103,6 +104,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -140,6 +142,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -176,6 +179,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -213,6 +217,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -250,6 +255,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -287,6 +293,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -323,6 +330,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -360,6 +368,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -396,6 +405,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -438,6 +448,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -489,6 +500,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -541,6 +553,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -592,6 +605,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -644,6 +658,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -695,6 +710,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -747,6 +763,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -798,6 +815,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -850,6 +868,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -901,6 +920,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 

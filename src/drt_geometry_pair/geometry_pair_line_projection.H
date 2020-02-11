@@ -14,6 +14,7 @@
 
 
 #include <vector>
+#include <set>
 
 
 // Forward declarations.
@@ -219,6 +220,7 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
 
+   private:
     /**
      * \brief Get the line projection vector for the line element in the pair.
      * @param pair (in) Pointer to the pair object that is being evaluated.
@@ -283,6 +285,16 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
+
+   private:
+    /**
+     * \brief Get the segment tracking vector for the line element the pair. The type is double
+     * for the segments there, as this is only needed for comparison purposes. The segment values of
+     * the tracker should NOT be used for further calculation as AD will not work correctly in this
+     * case.
+     * @return Reference to segment tracking vector.
+     */
+    static std::set<LineSegment<double>>& GetSegmentTrackingSetMutable(const pair_type* pair);
   };
 
 }  // namespace GEOMETRYPAIR
