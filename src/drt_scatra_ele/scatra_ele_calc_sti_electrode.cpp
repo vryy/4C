@@ -615,7 +615,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret(
 {
   // extract material parameters from Soret material
   const Teuchos::RCP<const MAT::Soret> matsoret =
-      Teuchos::rcp_static_cast<const MAT::Soret>(material);
+      Teuchos::rcp_dynamic_cast<const MAT::Soret>(material);
   densn = densnp = densam = matsoret->Capacity();
   DiffManager()->SetIsotropicDiff(matsoret->Conductivity(), 0);
   DiffManager()->SetSoret(matsoret->SoretCoefficient());

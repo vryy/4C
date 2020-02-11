@@ -752,7 +752,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
       double shc = 0.0;
       if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       {
-        const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+        const MAT::FourierIso* actmat = dynamic_cast<const MAT::FourierIso*>(material.get());
 
         shc = actmat->Capacity();
       }

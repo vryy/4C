@@ -13,7 +13,6 @@
 #include "fouriervar.H"
 #include "consolidation.H"
 #include "matpar_bundle.H"
-#include "../drt_tsi/tsi_defines.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function_library.H"
@@ -60,21 +59,34 @@ DRT::ParObject* MAT::FourierVarType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public) proell 04/18 |
  *----------------------------------------------------------------------*/
-MAT::FourierVar::FourierVar() : params_(NULL), consol_(Teuchos::null) {}
+MAT::FourierVar::FourierVar() : params_(nullptr), consolidation_(Teuchos::null) {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                  (public)  proell 04/18 |
  *----------------------------------------------------------------------*/
-MAT::FourierVar::FourierVar(MAT::PAR::FourierVar* params) : params_(params)
+MAT::FourierVar::FourierVar(MAT::PAR::FourierVar* params)
+    : params_(params), consolidation_(Teuchos::null)
 {
   // create the consolidation material referenced in definition
   // TODO make sure to use the same one as structural mat, does it work in parallel?
   const int consolmatid = params_->consolmat_;
-  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(consolmatid);
-  if (mat == Teuchos::null)
-    dserror("Failed to allocate consolidation material, id=%d", consolmatid);
-  consol_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
+
+  // create the consolidation if set in input, otherwise it needs to be injected
+  if (consolmatid != -1)
+  {
+    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(consolmatid);
+    if (mat == Teuchos::null)
+      dserror("Failed to allocate consolidation material, id=%d", consolmatid);
+    consolidation_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
+  }
+}
+
+void MAT::FourierVar::InjectConsolidation(Teuchos::RCP<MAT::Consolidation> consolidation)
+{
+  if (consolidation_ != Teuchos::null)
+    dserror("Injecting Consolidation object not possible. Already set.");
+  consolidation_ = consolidation;
 }
 
 
@@ -96,7 +108,7 @@ void MAT::FourierVar::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
 
   // pack consolidation manager
-  if (consol_ != Teuchos::null) consol_->Pack(data);
+  if (consolidation_ != Teuchos::null) consolidation_->Pack(data);
 }
 
 
@@ -136,8 +148,8 @@ void MAT::FourierVar::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, consoldata);
     // construct it and unpack data
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(params_->consolmat_);
-    consol_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
-    consol_->Unpack(consoldata);
+    consolidation_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
+    consolidation_->Unpack(consoldata);
 
     if (position != data.size())
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -148,53 +160,28 @@ void MAT::FourierVar::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  setup history-variables                       (public) proell 04/18 |
  *----------------------------------------------------------------------*/
-void MAT::FourierVar::Setup(const int numgp) { consol_->Setup(numgp); }
+void MAT::FourierVar::Setup(const int numgp) { consolidation_->Setup(numgp); }
 
 
-/*----------------------------------------------------------------------*
- |  calculate the temperature-dependent conductivity                    |
- *----------------------------------------------------------------------*/
-double MAT::FourierVar::Conductivity(const double temperature, const int gp)
+double MAT::FourierVar::Capacity() const
 {
-  return consol_->EvaluateFunction(temperature, gp, params_->conductfunct_);
+  return consolidation_->EvaluateFunction(currentTemperature, currentGp, params_->capafunct_) +
+         consolidation_->ApparentCapacityPeak(currentTemperature);
 }
 
-
-/*----------------------------------------------------------------------*
- |  thermal derivative of temperature-dependent conductivity            |
- *----------------------------------------------------------------------*/
-double MAT::FourierVar::Conductivity_T(const double temperature, const int gp)
+double MAT::FourierVar::CapacityDerivT() const
 {
-  return consol_->EvaluateDerivative(temperature, gp, params_->conductfunct_);
-}
-
-
-/*----------------------------------------------------------------------*
- |  calculate the temperature-dependent capacity                        |
- *----------------------------------------------------------------------*/
-double MAT::FourierVar::Capacity(const double temperature, const int gp)
-{
-  return consol_->EvaluateFunction(temperature, gp, params_->capafunct_) +
-         consol_->ApparentCapacityPeak(temperature);
-}
-
-
-/*----------------------------------------------------------------------*
- |  thermal derivative of temperature-dependent capacity                |
- *----------------------------------------------------------------------*/
-double MAT::FourierVar::Capacity_T(const double temperature, const int gp)
-{
-  return consol_->EvaluateDerivative(temperature, gp, params_->capafunct_) +
-         consol_->ApparentCapacityDerivative(temperature);
+  return consolidation_->EvaluateDerivative(currentTemperature, currentGp, params_->capafunct_) +
+         consolidation_->ApparentCapacityDerivative(currentTemperature);
 }
 
 
 /*----------------------------------------------------------------------*
  |  capacity at metling temperature without changing history            |
  *----------------------------------------------------------------------*/
-double MAT::FourierVar::HeatIntegrationCapacity()
+double MAT::FourierVar::HeatIntegrationCapacity() const
 {
-  const double Tm = consol_->MeltingTemperature();
+  const double Tm = consolidation_->MeltingTemperature();
   std::vector<int> functions = params_->capafunct_;
   double returnval = 0;
   // evaluate solid and melt function and add together weigthed
@@ -208,6 +195,40 @@ double MAT::FourierVar::HeatIntegrationCapacity()
 }
 
 /*----------------------------------------------------------------------*
- |  update history variables                     (public) proell 04/18  |
+ | internal evaluation of material law                                  |
  *----------------------------------------------------------------------*/
-void MAT::FourierVar::Update(double temperature, int gp) { consol_->Update(temperature, gp); }
+template <unsigned int nsd>
+void MAT::FourierVar::EvaluateInternal(const LINALG::Matrix<nsd, 1>& gradtemp,
+    LINALG::Matrix<nsd, nsd>& cmat, LINALG::Matrix<nsd, 1>& heatflux) const
+{
+  // conductivity tensor
+  cmat.Clear();
+  double cond =
+      consolidation_->EvaluateFunction(currentTemperature, currentGp, params_->conductfunct_);
+  for (unsigned i = 0; i < nsd; ++i) cmat(i, i) = cond;
+
+  // heatflux
+  heatflux.MultiplyNN(cmat, gradtemp);
+}
+
+template <unsigned int nsd>
+void MAT::FourierVar::GetConductivityDerivTInternal(LINALG::Matrix<nsd, nsd>& dCondDT) const
+{
+  dCondDT.Clear();
+  const double dCondDT_scalar =
+      consolidation_->EvaluateDerivative(currentTemperature, currentGp, params_->conductfunct_);
+  for (unsigned i = 0; i < nsd; ++i) dCondDT(i, i) = dCondDT_scalar;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template void MAT::FourierVar::EvaluateInternal(const LINALG::Matrix<3, 1>& gradtemp,
+    LINALG::Matrix<3, 3>& cmat, LINALG::Matrix<3, 1>& heatflux) const;
+template void MAT::FourierVar::EvaluateInternal(const LINALG::Matrix<2, 1>& gradtemp,
+    LINALG::Matrix<2, 2>& cmat, LINALG::Matrix<2, 1>& heatflux) const;
+template void MAT::FourierVar::EvaluateInternal(const LINALG::Matrix<1, 1>& gradtemp,
+    LINALG::Matrix<1, 1>& cmat, LINALG::Matrix<1, 1>& heatflux) const;
+
+template void MAT::FourierVar::GetConductivityDerivTInternal(LINALG::Matrix<3, 3>& dCondDT) const;
+template void MAT::FourierVar::GetConductivityDerivTInternal(LINALG::Matrix<2, 2>& dCondDT) const;
+template void MAT::FourierVar::GetConductivityDerivTInternal(LINALG::Matrix<1, 1>& dCondDT) const;

@@ -17,6 +17,7 @@
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
+#include "material_thermo.H"
 #include "consolidation.H"
 
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -32,15 +33,15 @@ namespace MAT
     /// material parameters for FourierVar material
     ///
     /// <h3>Input line</h3>
-    /// MAT 2 THERM_FourierVar CAPA 1737210 CONDUCTNUM 2 CONDUCTFUNC 3 4
+    /// MAT 2 THERM_FourierVar CAPAFUNCT 1 2 3 CONDUCTFUNCT 4 5 6 CONSOLMAT 3
     class FourierVar : public Parameter
     {
      public:
       /// standard constructor
-      FourierVar(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FourierVar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FourierVar() { ; }
+      ~FourierVar() override = default;
 
       /// @name material parameters
       //@{
@@ -49,13 +50,12 @@ namespace MAT
       const std::vector<int> capafunct_;
       /// functions for heat conductivity evaluation
       const std::vector<int> conductfunct_;
-      // material specifying the consolidation implementation
+      /// material specifying the consolidation implementation
       const int consolmat_;
 
       //@}
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class FourierVar
 
@@ -64,11 +64,11 @@ namespace MAT
   class FourierVarType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FourierVarType"; }
+    std::string Name() const override { return "FourierVarType"; }
 
     static FourierVarType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FourierVarType instance_;
@@ -85,104 +85,101 @@ namespace MAT
   ///
   /// \author proell
   /// \date 04/18
-  class FourierVar : public Material
+  class FourierVar : public ThermoMaterial
   {
    public:
     /// empty constructor
     FourierVar();
 
     /// constructor with given material parameters
-    FourierVar(MAT::PAR::FourierVar* params);
+    explicit FourierVar(MAT::PAR::FourierVar* params);
 
     /// @name Packing and Unpacking
     //@{
 
-    /// Return unique ParObject id
-    ///
-    ///  every class implementing ParObject needs a unique id defined at the
-    ///  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return FourierVarType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override
+    {
+      return FourierVarType::Instance().UniqueParObjectId();
+    }
 
-    /// Pack this class so it can be communicated
-    ///
-    /// Resizes the vector data and stores all information of a class in it.
-    /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
-    /// identify the exact class on the receiving processor.
-    virtual void Pack(DRT::PackBuffer& data  ///< (in/out): char vector to store class information
-        ) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
-    /// \brief Unpack data from a char vector into this class
-    ///
-    /// The vector data contains all information to rebuild the
-    /// exact copy of an instance of a class on a different processor.
-    /// The first entry in data has to be an integer which is the unique
-    /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
-    ///
-    virtual void Unpack(
-        const std::vector<char>& data  ///< vector storing all data to be unpacked into this
-    );
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
-    /// @name Access material constants
-    //@{
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_th_fourier_var; }
 
-    /// temperature-dependent volumetric heat capacity
-    double Capacity(const double temperature,  ///< temperature at GP
-        const int gp                           ///< phase at GP
-    );
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FourierVar(*this)); }
 
-    /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_th_fourier_var; }
 
-    /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FourierVar(*this)); }
-
-    //@}
-
-    // setup rotine to create history variables based on number of Gauss points
+    /// setup rotine to create history variables based on number of Gauss points
     void Setup(const int numgp);
 
-    // update history variables
-    void Update(double temperature, int gp);
+    /*!
+     * @brief set Consolidation object to be used by this material.
+     *
+     * This method is intended for classes that want to reuse this implementation with a shared
+     * consolidation history.
+     *
+     * @param consolidation the Consolidation object to be used
+     */
+    void InjectConsolidation(Teuchos::RCP<MAT::Consolidation> consolidation);
 
-    /// Main material call to determine heat flux and constitutive tensor
-    template <unsigned nsd>
-    void Evaluate(const LINALG::Matrix<nsd, 1>& gradtemp, LINALG::Matrix<nsd, nsd>& cmat,
-        LINALG::Matrix<nsd, 1>& heatflux, const double temp, const int gp)
+    /// @name Material evaluation and parameters
+    //! @{
+
+    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
+        LINALG::Matrix<3, 1>& heatflux) const override
     {
-      // conductivity tensor
-      cmat.Clear();
-      double cond = Conductivity(temp, gp);
-      for (unsigned i = 0; i < nsd; ++i) cmat(i, i) = cond;
-
-      // heatflux
-      heatflux.MultiplyNN(cmat, gradtemp);
-
-      return;
-    }
-    /// Evaluate time derivative of cmat
-    template <unsigned nsd>
-    void GetCmat_T(const LINALG::Matrix<nsd, 1>& gradtemp, LINALG::Matrix<nsd, nsd>& cmat,
-        const double temp, const int gp)
-    {
-      // conductivity tensor
-      cmat.Clear();
-      double cond_deriv = Conductivity_T(temp, gp);
-      for (unsigned int i = 0; i < gradtemp.Rows(); ++i) cmat(i, i) = cond_deriv;
-
-      return;
+      EvaluateInternal(gradtemp, cmat, heatflux);
     }
 
-    /// Evaluate thermal derivative of conductivity
-    double Capacity_T(const double temperature,  ///< temperature at GP
-        const int gp                             ///< current GP
-    );
+    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
+        LINALG::Matrix<2, 1>& heatflux) const override
+    {
+      EvaluateInternal(gradtemp, cmat, heatflux);
+    }
+
+    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
+        LINALG::Matrix<1, 1>& heatflux) const override
+    {
+      EvaluateInternal(gradtemp, cmat, heatflux);
+    }
+
+    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override
+    {
+      GetConductivityDerivTInternal(dCondDT);
+    }
+
+    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override
+    {
+      GetConductivityDerivTInternal(dCondDT);
+    }
+
+    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override
+    {
+      GetConductivityDerivTInternal(dCondDT);
+    }
+
+    double Capacity() const override;
+
+    double CapacityDerivT() const override;
+
+    //! @}
+
+    void Reinit(double temperature, unsigned gp) override
+    {
+      currentTemperature = temperature;
+      currentGp = gp;
+    };
+
+    void ResetCurrentState() override { consolidation_->ResetLatentHeatLastStep(); }
+
+    void CommitCurrentState() override { consolidation_->Update(currentTemperature, currentGp); }
 
     /// Get a capacity value useable for heat integration method
-    double HeatIntegrationCapacity();
+    double HeatIntegrationCapacity() const;
 
     /// get a pointer to the (converged!) consolidation fraction, for postproc
     template <unsigned int nen>
@@ -190,7 +187,7 @@ namespace MAT
         LINALG::Matrix<nen, 1>& nodalphase              ///< (return) fraction of solid material
     )
     {
-      consol_->NodalPhase(nodaltemp, nodalphase);
+      consolidation_->NodalPhase(nodaltemp, nodalphase);
     }
 
 
@@ -204,32 +201,38 @@ namespace MAT
         LINALG::Matrix<nen, 1>& nodalcapa   ///< (return) capacity at nodes
     )
     {
-      consol_->EvaluateTempDependentFunctionAtNodes(nodaltemp, nodalcond, params_->conductfunct_);
-      consol_->EvaluateTempDependentFunctionAtNodes(nodaltemp, nodalcapa, params_->capafunct_);
+      consolidation_->EvaluateTempDependentFunctionAtNodes(
+          nodaltemp, nodalcond, params_->conductfunct_);
+      consolidation_->EvaluateTempDependentFunctionAtNodes(
+          nodaltemp, nodalcapa, params_->capafunct_);
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Get direct access to the Consolidation object
-    virtual Teuchos::RCP<MAT::Consolidation> Consolidation() { return consol_; }
+    virtual Teuchos::RCP<MAT::Consolidation> Consolidation() { return consolidation_; }
 
    private:
-    /// temperature-dependent conductivity
-    double Conductivity(const double temperature,  ///< temperature at GP
-        const int gp                               ///< current GP
-    );
+    //! templated internal evaluate implementation
+    template <unsigned nsd>
+    void EvaluateInternal(const LINALG::Matrix<nsd, 1>& gradtemp, LINALG::Matrix<nsd, nsd>& cmat,
+        LINALG::Matrix<nsd, 1>& heatflux) const;
 
-    /// Evaluate thermal derivative of conductivity
-    double Conductivity_T(const double temperature,  ///< temperature at GP
-        const int gp                                 ///< current GP
-    );
+    template <unsigned nsd>
+    void GetConductivityDerivTInternal(LINALG::Matrix<nsd, nsd>& dCondDT) const;
 
     /// my material parameters
     MAT::PAR::FourierVar* params_;
 
     /// pointer to the consolidation material managing the actual evaluation of function
-    Teuchos::RCP<MAT::Consolidation> consol_;
+    Teuchos::RCP<MAT::Consolidation> consolidation_;
+
+    /// temperature used for evaluation
+    double currentTemperature{};
+
+    /// current evaluation Gauss point
+    unsigned currentGp{};
 
   };  // FourierVar
 

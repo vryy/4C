@@ -41,11 +41,6 @@ namespace MAT
       /// this term arises for coupled thermo-mechanical materials
       virtual void GetdSdT(LINALG::Matrix<6, 1>* dS_dT) = 0;
 
-      /// @brief  get derivative of heatflux wrt to Green-Lagrange strains
-      ///
-      /// this term arises for coupled thermo-mechanical materials
-      virtual void GetdQdE(LINALG::Matrix<3, 6>& dQ_dE) = 0;
-
       //! @}
 
       /*!

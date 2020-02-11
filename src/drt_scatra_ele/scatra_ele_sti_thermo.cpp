@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::MatSoret(
 {
   // extract material parameters from Soret material
   const Teuchos::RCP<const MAT::Soret> matsoret =
-      Teuchos::rcp_static_cast<const MAT::Soret>(material);
+      Teuchos::rcp_dynamic_cast<const MAT::Soret>(material);
   diffmanagerstithermo_->SetIsotropicDiff(matsoret->Conductivity(), 0);
   diffmanagerstithermo_->SetSoret(matsoret->SoretCoefficient());
 
