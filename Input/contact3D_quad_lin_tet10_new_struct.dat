@@ -75,7 +75,7 @@ NDVOL                           2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1 1 2
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive
@@ -2936,9 +2936,6 @@ NODE 864 COORD 1.999999911791122e+00 -1.999999911791124e+00 1.000000000000000e+0
 126 SOLIDH20 HEX20 76 127 95 44 86 138 108 54 106 114 67 61 81 134 100 50 115 123 79 71 MAT 1 KINEM nonlinear
 127 SOLIDH20 HEX20 47 76 44 15 56 86 54 23 64 61 27 29 52 81 50 20 73 71 38 39 MAT 1 KINEM nonlinear
 128 SOLIDH20 HEX20 32 47 15 7 46 56 23 16 41 29 13 22 40 52 20 12 53 39 21 28 MAT 1 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
@@ -2946,10 +2943,7 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.8 VALUES 0 0 0.6
-----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.8 VALUES 0 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 0.5 VALUES 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 370 QUANTITY dispx VALUE 6.56752736874561508e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 370 QUANTITY dispy VALUE -3.75950900277706066e-04 TOLERANCE 1e-8
