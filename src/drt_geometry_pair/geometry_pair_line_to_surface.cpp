@@ -159,12 +159,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 {
   // Check the input parameters.
   {
-    if (surface::surface_type_ == DiscretizationTypeSurface::quad && fixed_parameter > 1)
+    if (surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
       dserror(
           "Fixed_parameter in IntersectLineWithSurfaceEdge has to be smaller than 2 with a "
           "quad element.");
-    else if (surface::surface_type_ == DiscretizationTypeSurface::none)
-      dserror("Wrong DiscretizationTypeVolume type given.");
+    else if (surface::geometry_type_ == DiscretizationTypeGeometry::none)
+      dserror("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 2)
       dserror("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
   }
@@ -281,13 +281,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  if (surface::surface_type_ == DiscretizationTypeSurface::quad)
+  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
   {
     n_faces = 4;
     face_fixed_parameters = {0, 0, 1, 1};
     face_fixed_values = {-1., 1., -1., 1.};
   }
-  else if (surface::surface_type_ == DiscretizationTypeSurface::triangle)
+  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
   {
     n_faces = 3;
     face_fixed_parameters = {0, 1, 2};
@@ -295,7 +295,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
   }
   else
   {
-    dserror("Wrong surface type given!");
+    dserror("Wrong DiscretizationTypeGeometry given!");
   }
 
   // Clear the input vector.

@@ -263,11 +263,11 @@ namespace GEOMETRYPAIR
   bool ValidParameter2D(const T& xi)
   {
     const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
+    if (element_type::geometry_type_ == DiscretizationTypeGeometry::quad)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit) return true;
     }
-    else if (element_type::surface_type_ == DiscretizationTypeSurface::triangle)
+    else if (element_type::geometry_type_ == DiscretizationTypeGeometry::triangle)
     {
       if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
           xi(0) + xi(1) < 1.0 + CONSTANTS::projection_xi_eta_tol)
@@ -275,7 +275,7 @@ namespace GEOMETRYPAIR
     }
     else
     {
-      dserror("Wrong surface type given!");
+      dserror("Wrong DiscretizationTypeGeometry given!");
     }
 
     // Default value.
@@ -291,11 +291,11 @@ namespace GEOMETRYPAIR
   bool ValidParameter3D(const T& xi)
   {
     const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
+    if (element_type::geometry_type_ == DiscretizationTypeGeometry::hexahedron)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
     }
-    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
+    else if (element_type::geometry_type_ == DiscretizationTypeGeometry::tetraeder)
     {
       if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
           xi(2) > -CONSTANTS::projection_xi_eta_tol &&
@@ -304,7 +304,7 @@ namespace GEOMETRYPAIR
     }
     else
     {
-      dserror("Wrong volume type given!");
+      dserror("Wrong DiscretizationTypeGeometry given!");
     }
 
     // Default value.
@@ -312,42 +312,88 @@ namespace GEOMETRYPAIR
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of an 1D element.
-   * @param xi(in/out) Parameter coordinate.
+   * \brief This struct sets parameter coordinates start values for local Newton iterations on an
+   * element.
+   *
+   * \template geometry_type The geometry type of the element, this type is typically known at
+   * compile time.
    */
+  template <DiscretizationTypeGeometry geometry_type>
+  struct StartValues
+  {
+   public:
+    /**
+     * \brief Set the start values for a local Newton iterations on the element.
+     *
+     * This method will be specialized for each geometry type. By doing so the values can be set at
+     * compile time.
+     *
+     * @param xi (out) Parameter coordinate on element.
+     */
+    template <typename T>
+    static void Set(T& xi)
+    {
+      dserror(
+          "This is the default implementation of StartValues::Set and should never be called, "
+          "since we only want to call the templated versions. You are calling it with the "
+          "DiscretizationTypeGeometry %d",
+          geometry_type);
+    }
+  };
+
+  /**
+   * \brief Template specialization for line elements.
+   */
+  template <>
   template <typename T>
-  void SetStartValuesElement1D(T& xi)
+  void StartValues<DiscretizationTypeGeometry::line>::Set(T& xi)
   {
-    xi = 0.;
+    xi = 0.0;
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of a 2D element.
-   * @param xi(in/out) Parameter coordinates.
+   * \brief Template specialization for triangle surface elements.
    */
-  template <typename element_type, typename T>
-  void SetStartValuesElement2D(T& xi)
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::triangle>::Set(T& xi)
   {
-    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
-      xi.PutScalar(0.0);
-    else
-      dserror("Wrong volume type given!");
+    // We do not use xi.PutScalar(0.25) here, since this might be a surface element which has a
+    // normal direction and we do not want to set an initial value in the normal direction.
+    xi.PutScalar(0.0);
+    for (int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = 0.25;
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of a 2D element.
-   * @param xi(in/out) Parameter coordinates.
+   * \brief Template specialization for quad surface elements.
    */
-  template <typename element_type, typename T>
-  void SetStartValuesElement3D(T& xi)
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::quad>::Set(T& xi)
   {
-    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
-      xi.PutScalar(0.0);
-    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
-      xi.PutScalar(0.25);
-    else
-      dserror("Wrong element type given!");
+    xi.PutScalar(0.0);
   }
+
+  /**
+   * \brief Template specialization for tetraeder volume elements.
+   */
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::tetraeder>::Set(T& xi)
+  {
+    xi.PutScalar(0.25);
+  }
+
+  /**
+   * \brief Template specialization for hexahedron volume elements.
+   */
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::hexahedron>::Set(T& xi)
+  {
+    xi.PutScalar(0.0);
+  }
+
 }  // namespace GEOMETRYPAIR
 
 

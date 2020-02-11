@@ -124,12 +124,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 {
   // Check the input parameters.
   {
-    if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder && fixed_parameter > 2)
+    if (volume::geometry_type_ == DiscretizationTypeGeometry::hexahedron && fixed_parameter > 2)
       dserror(
-          "Fixed_parameter in IntersectLineWithVolume has to be smaller than 3 with a hexaeder "
+          "Fixed_parameter in IntersectLineWithVolume has to be smaller than 3 with a hexahedron "
           "element.");
-    else if (volume::volume_type_ == DiscretizationTypeVolume::none)
-      dserror("Wrong DiscretizationTypeVolume type given.");
+    else if (volume::dim_ != 3)
+      dserror("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 3)
       dserror("fixed_parameter in IntersectLineWithVolume can be 3 at maximum.");
   }
@@ -248,13 +248,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
+  if (volume::geometry_type_ == DiscretizationTypeGeometry::hexahedron)
   {
     n_faces = 6;
     face_fixed_parameters = {0, 0, 1, 1, 2, 2};
     face_fixed_values = {-1., 1., -1., 1., -1., 1.};
   }
-  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
+  else if (volume::geometry_type_ == DiscretizationTypeGeometry::tetraeder)
   {
     n_faces = 4;
     face_fixed_parameters = {0, 1, 2, 3};
@@ -262,7 +262,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   }
   else
   {
-    dserror("Wrong volume type given!");
+    dserror("Wrong DiscretizationTypeGeometry given!");
   }
 
   // Clear the input vector.

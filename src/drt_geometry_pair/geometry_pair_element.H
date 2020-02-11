@@ -61,13 +61,9 @@ namespace GEOMETRYPAIR
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
 
-    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        ElementDiscretizationToSurfaceType<discretization_>::surface_type_;
-
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<discretization_>::volume_type_;
+    //! Geometry type of the element.
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        ElementDiscretizationToGeometryType<discretization_>::geometry_type_;
   };
 
 

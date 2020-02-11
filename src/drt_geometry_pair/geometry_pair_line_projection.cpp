@@ -99,7 +99,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement3D<other>(xi_start);
+  StartValues<other::geometry_type_>::Set(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
     scalar_type eta = segment.GetEtaA() +
@@ -133,8 +133,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::IntersectLineWithOther(const pair_ty
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement1D(eta_start);
-  SetStartValuesElement3D<other>(xi_start);
+  StartValues<line::geometry_type_>::Set(eta_start);
+  StartValues<other::geometry_type_>::Set(xi_start);
 
   // Call the intersect function.
   pair->IntersectLineWithOther(q_line, q_other, intersection_points, eta_start, xi_start);
@@ -293,7 +293,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
   search_points.reserve(n_search_points);
   LINALG::Matrix<3, 1, scalar_type> xi_start;
-  SetStartValuesElement3D<other>(xi_start);
+  StartValues<other::geometry_type_>::Set(xi_start);
   scalar_type eta;
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)
   {
