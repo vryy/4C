@@ -285,7 +285,15 @@ namespace DRT
 
     //! @name Construction
 
-    /// Assign dof numbers using all elements and nodes of the discretization.
+    /*!
+    \brief Assign dof numbers using all elements and nodes of the discretization.
+
+    @param[in] dis Discretization of a mortar interface
+    @param[in] dspos Position of DOfSet inside its discretization
+    @param[in] start User-defined offset for DOF numbering [currently not supported]
+
+    @return Maximum dof number of this dofset
+    */
     virtual int AssignDegreesOfFreedom(
         const Discretization& dis, const unsigned dspos, const int start);
 
@@ -379,30 +387,32 @@ namespace DRT
     /// column map gid of first dof for each element
     Teuchos::RCP<Epetra_IntVector> idxcolelements_;
 
-    //***************************************************************************
-    // Remark:                                                       popp 02/2016
-    // --------------------------------------------------------------------------
-    // In the logic outlined above and implemented in AssignDegreesOfFreedom() we
-    // assume that each nodal dof only appears once and therefore that we can
-    // define a unique access to all dofs of one node by knowing (1) its number of
-    // nodal dofs and (2) its first dof gid. The second, third,... dof gid are
-    // then simply defined by incrementation +1 starting from the first dof gid.
-    // However, in the case where we have point coupling conditions, e.g. due to
-    // joints in structural mechanics (where certain dofs of two nodes at the same
-    // geometrical position are to be coupled and certain others not), this basic
-    // assumption does not hold anymore. Instead, we want to assign the same(!)
-    // dof to both nodes in this case, i.e. the same dof is then shared by more
-    // than one node and the numbering logic mentioned above is not sufficient
-    // anymore. For such cases in particular (but maybe also in general?), we
-    // should store not only the first dof for each node, but all(!) dofs for
-    // each node. The idxcolnodes_ vector defined above is then replaced by the
-    // two following data containers:
-    //    dofscolnodes_ (Epetra_Map) and shiftcolnodes_ (Epetra_IntVector)
-    // Nevertheless, for the time being, the old version with idxcolnodes_ stays
-    // around, since the new version is only implemented for the standard DofSet
-    // class declared here (but not for special TransparentDofSets, Proxy, etc.).
-    //***************************************************************************
-    /// special dof handling due to point coupling conditions
+    /*!
+    \brief Activate special dof handling due to point coupling conditions?
+
+    \note In the logic outlined above and implemented in AssignDegreesOfFreedom() we
+    assume that each nodal dof only appears once and therefore that we can
+    define a unique access to all dofs of one node by knowing (1) its number of
+    nodal dofs and (2) its first dof gid. The second, third,... dof gid are
+    then simply defined by incrementation +1 starting from the first dof gid.
+    However, in the case where we have point coupling conditions, e.g. due to
+    joints in structural mechanics (where certain dofs of two nodes at the same
+    geometric position are to be coupled and certain others not), this basic
+    assumption does not hold anymore. Instead, we want to assign the same(!)
+    dof to both nodes in this case, i.e. the same dof is then shared by more
+    than one node and the numbering logic mentioned above is not sufficient
+    anymore. For such cases in particular (but maybe also in general?), we
+    should store not only the first dof for each node, but all(!) dofs for
+    each node. The #idxcolnodes_ vector is then replaced by the
+    two following data containers:
+       #dofscolnodes_ (Epetra_Map) and #shiftcolnodes_ (Epetra_IntVector)
+
+    Nevertheless, for the time being, the old version with #idxcolnodes_ stays
+    around, since the new version is only implemented for the standard DofSet
+    class declared here (but not for special TransparentDofSets, Proxy, etc.).
+
+    \author popp \date 02/2016
+    */
     bool pccdofhandling_;
 
     /// column map of all dofs for each node (possibly non-unique)
