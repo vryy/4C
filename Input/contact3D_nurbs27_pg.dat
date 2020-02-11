@@ -22,8 +22,6 @@ PROBLEMTYP                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       continue
 DYNAMICTYP                      Statics
 ITERNORM                        L2
@@ -32,25 +30,16 @@ MAXITER                         20
 MAXTIME                         8.0
 MINITER                         0
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         10
 PREDICT                         TangDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
 TIMESTEP                        0.8
-TOLCONSTR                       1e-08
 TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
 TOLRES                          1e-08
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
@@ -94,7 +83,6 @@ E 2 - 1 Master Inactive FrCoeffOrBound 0.2
 E 7 - 1 Slave Inactive FrCoeffOrBound 0.2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 2 1 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
