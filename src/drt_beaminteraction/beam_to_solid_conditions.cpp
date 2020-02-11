@@ -15,6 +15,7 @@
 #include "beam_to_solid_volume_meshtying_pair_gauss_point.H"
 #include "beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
+#include "beam_to_solid_surface_meshtying_pair_gauss_point.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 
 #include "../drt_inpar/inpar_beam_to_solid.H"
@@ -477,6 +478,34 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
     const std::vector<DRT::Element const*>& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
 {
-  dserror("Not yet implemented");
+  const Teuchos::RCP<const DRT::FaceElement>& face_element = surface_ids_[ele_ptrs[1]->Id()];
+  const DRT::Element::DiscretizationType shape = face_element->Shape();
+
+  switch (shape)
+  {
+    case DRT::Element::tri3:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_tri3>());
+    case DRT::Element::tri6:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_tri6>());
+    case DRT::Element::quad4:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_quad4>());
+    case DRT::Element::quad8:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_quad8>());
+    case DRT::Element::quad9:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_quad9>());
+    default:
+      dserror("Wrong element type for surface element.");
+  }
+
   return Teuchos::null;
 }

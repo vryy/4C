@@ -43,19 +43,16 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Class for beam to surface surface mesh tying.
-   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @param surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
+   * @template scalar_type Type for scalar DOF values.
+   * @template beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @template surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename beam, typename surface>
-  class BeamToSolidSurfaceMeshtyingPairBase
-      : public BeamToSolidPairBase<Sacado::ELRFad::DFad<double>, beam, surface>
+  template <typename scalar_type, typename beam, typename surface>
+  class BeamToSolidSurfaceMeshtyingPairBase : public BeamToSolidPairBase<scalar_type, beam, surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<Sacado::ELRFad::DFad<double>, beam, surface>;
-
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    using scalar_type_fad = Sacado::ELRFad::DFad<double>;
+    using base_class = BeamToSolidPairBase<scalar_type, beam, surface>;
 
    public:
     /**
@@ -67,6 +64,12 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
+
+    /**
+     * \brief Things that need to be done in a separate loop before the actual evaluation loop over
+     * the contact pairs.
+     */
+    void PreEvaluate() override;
 
     /**
      * \brief Create the geometry pair for this contact pair.
