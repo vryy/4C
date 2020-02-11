@@ -986,7 +986,8 @@ void MORTAR::MortarInterface::InitializeDataContainer()
 {
   // initialize node data container
   // (include slave side boundary nodes / crosspoints)
-  for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
+  const int numMySlaveColumnNodes = SlaveColNodesBound()->NumMyElements();
+  for (int i = 0; i < numMySlaveColumnNodes; ++i)
   {
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
@@ -1025,7 +1026,8 @@ void MORTAR::MortarInterface::InitializeDataContainer()
   }
 
   // initialize element data container
-  for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+  const int numMySlaveColumnElements = SlaveColElements()->NumMyElements();
+  for (int i = 0; i < numMySlaveColumnElements; ++i)
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
@@ -1052,11 +1054,16 @@ void MORTAR::MortarInterface::InitializeDataContainer()
   }
 
   if (InterfaceParams().isParameter("ALGORITHM"))
+  {
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(InterfaceParams(), "ALGORITHM") ==
         INPAR::MORTAR::algorithm_gpts)
-      for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
+    {
+      const int numMyMasterColumnElements = MasterColElements()->NumMyElements();
+      for (int i = 0; i < numMyMasterColumnElements; ++i)
         dynamic_cast<MortarElement*>(Discret().gElement(MasterColElements()->GID(i)))
             ->InitializeDataContainer();
+    }
+  }
 
   return;
 }
