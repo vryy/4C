@@ -260,6 +260,8 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
 {
   if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
   {
+    double penalty_parameter = GetBridge()->GetParams()->GetPenaltyParameter();
+
     Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
         Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
 
@@ -296,7 +298,8 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".penalty");
       log.open(s.c_str(), std::ofstream::app);
-      log << time << "\t" << step << "\t" << norm << "\t" << normf << "\t" << norms << std::endl;
+      log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"
+          << normf / penalty_parameter << "\t" << norms / penalty_parameter << std::endl;
     }
   }
 }
