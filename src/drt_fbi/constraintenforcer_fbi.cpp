@@ -117,14 +117,15 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int step)
 {
   // todo only access the parameter list once
 
   // Check if we want to couple the fluid
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
   if (Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") !=
-      INPAR::FBI::BeamToFluidCoupling::solid)
+          INPAR::FBI::BeamToFluidCoupling::solid &&
+      fbi.get<int>("STARTSTEP") < step)
   {
     // Assemble the fluid stiffness matrix and hand it to the fluid solver
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)

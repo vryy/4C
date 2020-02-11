@@ -113,7 +113,7 @@ namespace ADAPTER
      * \returns fluid velocity on the whole domain
      */
 
-    virtual Teuchos::RCP<Epetra_Vector> StructureToFluid();
+    virtual Teuchos::RCP<Epetra_Vector> StructureToFluid(int step);
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve(){};
