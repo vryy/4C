@@ -1614,8 +1614,23 @@ namespace MORTAR
     void CreateInterfaceLocalCommunicator();
 
     /*!
-    \brief check and initialize possible cross point modification
+    \brief Check and initialize possible cross point modification
 
+    A typical application are so-called crosspoints within mortar meshtying, where this approach is
+    necessary to avoid over-constraint. Otherwise these crosspoints would be active with respect to
+    more than one interface and thus the Lagrange multiplier cannot sufficiently represent all
+    geometric constraints. Another typical application is mortar contact, when we want to make use
+    of symmetry boundary conditions. In this case, we deliberately modify so-called edge nodes of
+    the contact boundary and thus free them from any contact constraint.
+
+    Basically, the status of the crosspoints / edge nodes is simply changed to MASTER and
+    consequently they will NOT carry Lagrange multipliers later on. In order to sustain the
+    partition of unity property of the Lagrange multiplier shape functions on the adjacent slave
+    elements, the Lagrange multiplier shape functions of the adjacent nodes will be modified! This
+    way, the mortar operator entries of the crosspoints / edge nodes are transferred to the
+    neighboring slave nodes!
+
+    \warning Only implemented for 2D problems. Will throw for 3D.
     */
     void InitializeCrossPoints();
 
@@ -1626,7 +1641,7 @@ namespace MORTAR
     void InitializeLagMultLin();
 
     /*!
-    \brief check and initialize for constant Lagrange muliplier interpolation for 2nd order FE
+    \brief check and initialize for constant Lagrange multiplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultConst();

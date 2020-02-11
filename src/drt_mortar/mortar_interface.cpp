@@ -741,28 +741,9 @@ void MORTAR::MortarInterface::InitializeCrossPoints()
     if (Dim() == 3)
       dserror("Crosspoint / edge node modification not yet implemented for 3D problems.");
 
-    // ---------------------------------------------------------------------
     // Detect relevant nodes on slave side
-    // ---------------------------------------------------------------------
-    // A typical application are so-called crosspoints within mortar mesh
-    // tying, where this approach is necessary to avoid over-constraint.
-    // Otherwise these crosspoints would be active with respect to more
-    // than one interface and thus the LM cannot sufficiently represent
-    // all geometrical constraints. Another typical application is mortar
-    // contact, when we want to make use of symmetry boundary conditions.
-    // In this case, we deliberately modify so-called edge nodes of the
-    // contact boundary and thus free them from any contact constraint.
-    // ---------------------------------------------------------------------
-    // Basically, the status of the crosspoints / edge nodes is simply
-    // changed to MASTER and consequently they will NOT carry Lagrange
-    // multipliers later on. In order to sustain the partition of unity
-    // property of the LM shape functions on the adjacent slave elements,
-    // the LM shape functions of the adjacent nodes will be modified! This
-    // way, the mortar operator entries of the crosspoints / edge nodes are
-    // transferred to the neighboring slave nodes!
-    // ---------------------------------------------------------------------
-
-    for (int i = 0; i < (Discret().NodeRowMap())->NumMyElements(); ++i)
+    const int numRowNodes = Discret().NodeRowMap()->NumMyElements();
+    for (int i = 0; i < numRowNodes; ++i)
     {
       // static_cast to the corresponding mortar/contact/friction/... node
       // or element would be enough in all places
