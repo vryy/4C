@@ -102,7 +102,7 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundary(DRT::Element* boundaryele,
+    bool GetKnotVectorAndWeightsForNurbsBoundary(const DRT::Element* boundaryele,
         const int localsurfaceid, const int parenteleid,
         const DRT::DiscretizationInterface& discretization,
         std::vector<Epetra_SerialDenseVector>& mypknots,
@@ -124,11 +124,12 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      DRT::Node** nodes = boundaryele->Nodes();
+      const DRT::Node* const* nodes = boundaryele->Nodes();
       const int boundarynen = boundaryele->NumNode();
       for (int inode = 0; inode < boundarynen; inode++)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+        const DRT::NURBS::ControlPoint* cp =
+            dynamic_cast<const DRT::NURBS::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 

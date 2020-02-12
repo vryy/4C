@@ -215,6 +215,9 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     case DRT::Element::quad9:
       return Teuchos::rcp<FaceElementTemplate<t_quad9>>(
           new FaceElementTemplate<t_quad9>(face_element));
+    case DRT::Element::nurbs9:
+      return Teuchos::rcp<FaceElementTemplate<t_nurbs9>>(
+          new FaceElementTemplate<t_nurbs9>(face_element));
     default:
       dserror("Wrong discretization type given.");
   }

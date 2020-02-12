@@ -22,6 +22,57 @@
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief For some face elements the normals face inside the volume, this factor corrects this.
+   *
+   * @tparam element_type Type of the surface element.
+   */
+  template <typename element_type>
+  struct SurfaceNormalFactor
+  {
+   public:
+    /**
+     * \brief Return the factor to scale the normals with.
+     *
+     * A factor of 1 means that the normals already face outside of the volume, -1 means that the
+     * direction has to be changed.
+     *
+     * The function has to be inline to avoid a compiler error.
+     *
+     * @param element (in) Face element for which the normal is evaluated.
+     * @return Normal factor.
+     */
+    static inline double GetFactor(const DRT::Element* element) { return 1.0; };
+  };
+
+  /**
+   * \brief Template specialization for nurbs9 elements.
+   */
+  template <>
+  inline double SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor(const DRT::Element* element)
+  {
+    auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
+    if (face_element == nullptr)
+      dserror(
+          "SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor needs a face element pointer.");
+
+    switch (face_element->FaceMasterNumber())
+    {
+      case 0:
+      case 3:
+      case 5:
+        return -1.0;
+      case 1:
+      case 2:
+      case 4:
+        return 1.0;
+      default:
+        dserror("Invalid face number in SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor");
+    }
+    return 0.0;
+  }
+
+
+  /**
    * \brief Get the position in the element.
    * @param xi (in) Parameter coordinate on the element.
    * @param q (in) Degrees of freedom for the element.
@@ -75,33 +126,6 @@ namespace GEOMETRYPAIR
           for (unsigned int val = 0; val < element_type::n_val_; val++)
             dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
                                   dN(direction, element_type::n_val_ * node + val);
-  }
-
-  /**
-   * \brief Get a normal on an element. This only makes sense for a 2D element.
-   * @param xi (in) Parameter coordinate on the element.
-   * @param q (in) Degrees of freedom for the element.
-   * @param n (out) Normal of the element.
-   * @param element (in) Pointer to the element.
-   */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluateNormal(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& n,
-      const DRT::Element* element = nullptr)
-  {
-    // Calculate derivative of the position on the element.
-    LINALG::Matrix<3, element_type::dim_, scalar_type>& dr;
-    EvaluatePositionDerivative1<element_type>(xi, q, dr, element);
-
-    // Calculate the cross product between the two direction vectors.
-    LINALG::Matrix<3, 1, scalar_type>& dr_0;
-    LINALG::Matrix<3, 1, scalar_type>& dr_1;
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-    {
-      dr_0[i_dim] = dr[i_dim, 0];
-      dr_1[i_dim] = dr[i_dim, 1];
-    }
-    n.CrossProduct(dr_0, dr_1);
-    n.Scale(1. / FADUTILS::VectorNorm(n));
   }
 
   /**
@@ -189,7 +213,7 @@ namespace GEOMETRYPAIR
         dr_1(i_dir) = dr(i_dir, 1);
       }
       normal.CrossProduct(dr_0, dr_1);
-      normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
+      normal.Scale(SurfaceNormalFactor<surface>::GetFactor(element) / FADUTILS::VectorNorm(normal));
     }
     else
     {

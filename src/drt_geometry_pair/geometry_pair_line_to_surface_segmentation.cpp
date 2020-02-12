@@ -69,3 +69,5 @@ template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOME
     GEOMETRYPAIR::t_quad8>;
 template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>;
+template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs9>;
