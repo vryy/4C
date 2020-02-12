@@ -165,10 +165,6 @@ namespace MORTAR
 
     inline const Epetra_Comm& Comm() const { return *comm_; }
 
-    inline Teuchos::RCP<Epetra_Comm>& lComm() { return lcomm_; }
-
-    inline Teuchos::RCP<const Epetra_Comm> lComm() const { return lcomm_; }
-
     inline std::map<int, int>& ProcMap() { return procmap_; }
 
     inline const std::map<int, int>& ProcMap() const { return procmap_; }
@@ -376,9 +372,6 @@ namespace MORTAR
 
     //! communicator
     Teuchos::RCP<const Epetra_Comm> comm_;
-
-    //! interface local communicator
-    Teuchos::RCP<Epetra_Comm> lcomm_;
 
     //! mapping global -> local communicator PIDs
     std::map<int, int> procmap_;
@@ -607,12 +600,6 @@ namespace MORTAR
     \brief Get communicator
     */
     const Epetra_Comm& Comm() const { return *comm_; }
-
-    /*!
-    \brief Get local interface communicator (Filled()==true is prerequisite)
-           This Epetra_Comm only contains the participating processors of the interface
-    */
-    const Epetra_Comm* lComm() const { return lcomm_.get(); }
 
     /*!
     \brief Get global -> local processor map
@@ -1602,18 +1589,6 @@ namespace MORTAR
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     /*!
-    \brief Create interface local communicator
-
-    Find all procs that have business on this interface (own or ghost nodes/elements). Then, build a
-    Epetra_Comm that contains only those procs. This intra-communicator will be used to handle most
-    stuff on this interface so the interface will not block all other procs
-
-    ToDo (mayr.mt) Move this to MORTAR::UTILS::INTERFACE. This does not have to be a function in
-    this class.
-    */
-    void CreateInterfaceLocalCommunicator();
-
-    /*!
     \brief check and initialize possible cross point modification
 
     */
@@ -1665,7 +1640,6 @@ namespace MORTAR
 
     int& id_;                                ///< ref. to unique interface id
     Teuchos::RCP<const Epetra_Comm>& comm_;  ///< ref. to communicator
-    Teuchos::RCP<Epetra_Comm>& lcomm_;       ///< ref. to interface local communicator
     std::map<int, int>& procmap_;            ///< ref. to mapping global -> local communicator PIDs
     bool& redistributed_;                    ///< ref. to redistribution for this time step?
 

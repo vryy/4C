@@ -62,9 +62,6 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
 void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     bool& localisincontact, bool& localactivesetchange)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {

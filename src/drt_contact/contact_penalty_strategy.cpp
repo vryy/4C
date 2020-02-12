@@ -83,9 +83,6 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
       dserror("ERROR: FillComplete() not called on interface %", i);
 
-    // get out of here if not participating in interface
-    if (!interface_[i]->lComm()) continue;
-
     // do the computation of nodal shape function integral
     // (for convenience, the results will be stored in nodal gap)
 
