@@ -598,15 +598,6 @@ namespace STR
     //! return time integration factor
     virtual double TimIntParam() const = 0;
 
-    //! return time integration factor-alpham
-    virtual double TimIntParamAlpham() const = 0;
-
-    //! return time integration factor-beta
-    virtual double TimIntParamBeta() const = 0;
-
-    //! return time integration factor-gamma
-    virtual double TimIntParamGamma() const = 0;
-
     //! Give order of accuracy
     int MethodOrderOfAccuracy() const
     {

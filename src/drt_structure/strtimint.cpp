@@ -16,6 +16,7 @@
 #include "Teuchos_TimeMonitor.hpp"
 
 #include "strtimint.H"
+#include "strtimint_genalpha.H"
 
 #include "stru_resulttest.H"
 
@@ -1434,9 +1435,10 @@ void STR::TimInt::UpdateStepContactVUM()
       if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_genalpha)
       {
-        alpham = TimIntParamAlpham();
-        beta = TimIntParamBeta();
-        gamma = TimIntParamGamma();
+        auto genAlpha = dynamic_cast<STR::TimIntGenAlpha*>(this);
+        alpham = genAlpha->TimIntParamAlpham();
+        beta = genAlpha->TimIntParamBeta();
+        gamma = genAlpha->TimIntParamGamma();
       }
       else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
                INPAR::STR::dyna_gemm)

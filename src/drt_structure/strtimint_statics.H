@@ -142,15 +142,6 @@ namespace STR
     //! return time integration factor
     virtual double TimIntParam() const { return 0.0; }
 
-    //! return time integration factor-alpham
-    virtual double TimIntParamAlpham() const { return 0.0; }
-
-    //! return time integration factor-beta
-    virtual double TimIntParamBeta() const { return 0.0; }
-
-    //! return time integration factor-gamma
-    virtual double TimIntParamGamma() const { return 0.0; }
-
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
     void PredictConstDisConsistVelAcc();
