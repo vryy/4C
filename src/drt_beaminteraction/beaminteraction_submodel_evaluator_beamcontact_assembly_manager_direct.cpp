@@ -89,5 +89,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
           *discret, elegids, eleforce, elestiff, fe_sysvec, fe_sysmat);
     }
+
+    // Each pair can also directly assembles terms into the global force vector and system matrix.
+    elepairptr->EvaluateAndAssemble(discret, fe_sysvec, fe_sysmat);
   }
 }
