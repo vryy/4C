@@ -487,16 +487,7 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
     // (note that we want to hand in theta in the OST case, which
     // is defined just the other way round as alphaf in GenAlpha schemes.
     // Thus, we have to hand in 1.0-theta for OST!!!)
-    double alphaf = 0.0;
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_gemm)
-      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_onesteptheta)
-      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    double alphaf = TimIntParam();
 
     // create beam contact manager
     beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_, alphaf));
