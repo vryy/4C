@@ -421,10 +421,9 @@ void CONTACT::SelfDualEdge::CalculateCosts()
 /*----------------------------------------------------------------------*
  |  ctor SelfBinaryTree (public)                              popp 11/09|
  *----------------------------------------------------------------------*/
-CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret, const Epetra_Comm* lcomm,
+CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : MORTAR::BaseBinaryTree(discret, dim, eps),
-      lcomm_(lcomm),
       elements_(elements),
       iparams_(iparams),
       nvectors_(-1)
@@ -438,9 +437,6 @@ CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret, const Epet
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::Init()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // call initialization method of the base class
   MORTAR::BaseBinaryTree::Init();
 
@@ -921,9 +917,6 @@ const Epetra_Comm& CONTACT::SelfBinaryTree::Comm() const { return Discret().Comm
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SetEnlarge()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // minimal length of finite elements
   double lmin = 1.0e12;
 
@@ -1504,9 +1497,6 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID, bool isslave)
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SearchContact()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // check is root node available
   if ((int)roots_.size() == 0) dserror("ERROR: No root node for search!");
   if (roots_[0] == Teuchos::null) dserror("ERROR: No root node for search!");
@@ -1530,19 +1520,19 @@ void CONTACT::SelfBinaryTree::SearchContact()
   //**********************************************************************
   // introduce some parallelization for multibody contact
   std::vector<int> myroots(0);
-  int nproc = lComm()->NumProc();
+  int nproc = Comm().NumProc();
   int nroot = (int)roots_.size();
   int ratio = nroot / nproc;
   int rest = nroot % nproc;
 
   // give 'ratio+1' roots to the first 'rest' procs
-  if (lComm()->MyPID() < rest)
-    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(lComm()->MyPID() * (ratio + 1) + k);
+  if (Comm().MyPID() < rest)
+    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(Comm().MyPID() * (ratio + 1) + k);
 
   // give 'ratio' roots to the remaining procs
   else
     for (int k = 0; k < ratio; ++k)
-      myroots.push_back(rest * (ratio + 1) + (lComm()->MyPID() - rest) * ratio + k);
+      myroots.push_back(rest * (ratio + 1) + (Comm().MyPID() - rest) * ratio + k);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
@@ -1619,9 +1609,9 @@ void CONTACT::SelfBinaryTree::SearchContact()
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
   Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), &locdata[0], 0, *lComm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), &locdata[0], 0, Comm()));
   Teuchos::RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
-  DRT::Exporter ex(*mymap, *redmap, *lComm());
+  DRT::Exporter ex(*mymap, *redmap, Comm());
   ex.Export(contactpairs_);
 
   // now do new slave and master sorting

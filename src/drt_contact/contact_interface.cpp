@@ -847,14 +847,14 @@ void CONTACT::CoInterface::CreateSearchTree()
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
         binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
-            Discret(), &Comm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
         binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
-            Discret(), &Comm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       // initialize the self binary tree
       binarytreeself_->Init();
