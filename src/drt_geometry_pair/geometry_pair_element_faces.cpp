@@ -188,8 +188,8 @@ bool GEOMETRYPAIR::FaceElementTempalte<surface>::EvaluateNodalNormal(const int n
 
     // Calculate the normal on the surface.
     EvaluateSurfaceNormal<surface>(
-        face_reference_position_, xi, reference_normal, drt_face_element_.get());
-    EvaluateSurfaceNormal<surface>(face_position_, xi, current_normal, drt_face_element_.get());
+        xi, face_reference_position_, reference_normal, drt_face_element_.get());
+    EvaluateSurfaceNormal<surface>(xi, face_position_, current_normal, drt_face_element_.get());
 
     return true;
   }

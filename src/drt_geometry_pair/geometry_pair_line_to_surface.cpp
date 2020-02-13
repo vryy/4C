@@ -191,7 +191,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   LINALG::Matrix<3, 1, FAD_outer> r_AD;
 
   // Evaluate the position.
-  EvaluateSurfacePosition<surface>(q_surface, xi_AD, r_AD, Element2(), nodal_normals);
+  EvaluateSurfacePosition<surface>(xi_AD, q_surface, r_AD, Element2(), nodal_normals);
 
   // Extract the return values from the AD types.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
