@@ -35,9 +35,6 @@ void WEAR::WearInterface::FDCheckGapDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refG(nrow);
@@ -324,9 +321,6 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refG(nrow);
@@ -438,9 +432,6 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -757,9 +748,6 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> reft(nrow);
@@ -1075,9 +1063,6 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -1268,9 +1253,6 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // nothing to do if no slip nodes
   if (slipmasternodes_->NumMyElements() == 0) return;
@@ -1465,9 +1447,6 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
@@ -2526,9 +2505,6 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
   std::map<int, std::map<int, double>> newT;
@@ -2698,9 +2674,6 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
@@ -2986,9 +2959,6 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
   std::map<int, std::map<int, double>> newE;
@@ -3158,9 +3128,6 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
@@ -3449,9 +3416,6 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refW(nrow);
@@ -3602,9 +3566,6 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();

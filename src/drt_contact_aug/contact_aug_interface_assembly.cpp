@@ -80,9 +80,6 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleBMatrix(
     LINALG::SparseMatrix& BMatrix) const
 {
-  // get out of here if not participating in interface
-  if (not Inter().lComm()) return;
-
   const int nummyndof = IData().SNDofRowMap()->NumMyElements();
   const int* myndofs = IData().SNDofRowMap()->MyGlobalElements();
 
@@ -157,7 +154,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
   // did any processor add contributions?
   int lfilled = (isfilled ? 1 : 0);
   int gfilled = 0;
-  Inter().lComm()->MaxAll(&lfilled, &gfilled, 1);
+  Inter().Comm().MaxAll(&lfilled, &gfilled, 1);
 
   // collect data
   if (gfilled > 0)
@@ -207,7 +204,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
   // did any processor add contributions?
   int lfilled = (isfilled ? 1 : 0);
   int gfilled = 0;
-  Inter().lComm()->MaxAll(&lfilled, &gfilled, 1);
+  Inter().Comm().MaxAll(&lfilled, &gfilled, 1);
 
   // collect data
   if (gfilled > 0)
@@ -230,7 +227,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
   //    check += vals[j];
   //
   //  double  gcheck = 0.0;
-  //  Inter().lComm()->SumAll( &check, &gcheck, 1 );
+  //  Inter().Comm().SumAll( &check, &gcheck, 1 );
   //  std::cout << "check result = " << check << std::endl;
 }
 
@@ -241,9 +238,6 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     LINALG::SparseMatrix& inactive_dd_matrix, const Epetra_Vector& cnVec,
     const double inactive_scale) const
 {
-  // get out of here if not participating in interface
-  if (not Inter().lComm()) return;
-
   // loop over all active augmented slave nodes of the interface
   const int nummyinodes = IData().InActiveNodes()->NumMyElements();
   const int* myinodegids = IData().InActiveNodes()->MyGlobalElements();
@@ -279,9 +273,6 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGLmLinMatrix(
     LINALG::SparseMatrix& dGLmLinMatrix) const
 {
-  // get out of here if not participating in interface
-  if (not Inter().lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummyanodes = IData().ActiveNodes()->NumMyElements();
@@ -332,9 +323,6 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     assemble_policy>::AssembleDGGLinMatrix(LINALG::SparseMatrix& dGGLinMatrix,
     const Epetra_Vector& cnVec) const
 {
-  // get out of here if not participating in interface
-  if (not this->Inter().lComm()) return;
-
   // loop over all active augmented slave nodes of the interface
   const int nummyanodes = this->IData().ActiveNodes()->NumMyElements();
   const int* myanodegids = this->IData().ActiveNodes()->MyGlobalElements();
@@ -411,9 +399,6 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGGLinMatrix(
     LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
-  // get out of here if not participating in interface
-  if (not Inter().lComm()) return;
-
   // loop over all active augmented slave nodes of the interface
   const int nummyanodes = IData().ActiveNodes()->NumMyElements();
   const int* myanodegids = IData().ActiveNodes()->MyGlobalElements();
@@ -539,9 +524,6 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDLmNWGapLinMatrix(
     LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
 {
-  // get out of here if not participating in interface
-  if (not Inter().lComm()) return;
-
   // loop over all active augmented slave nodes of the interface
   const Epetra_Map& snode_rowmap = this->SlNodeRowMap(map_type);
   const int nummynodes = snode_rowmap.NumMyElements();

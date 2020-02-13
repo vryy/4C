@@ -819,10 +819,6 @@ void CONTACT::CoInterface::CollectDistributionData(int& numColElements, int& num
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::CreateSearchTree()
 {
-  // ***WARNING:*** This is commented out here, as idiscret_->SetState()
-  // needs all the procs around, not only the interface local ones!
-  // if (!lComm()) return;
-
   // warning
 #ifdef MORTARGMSHCTN
   if (Dim() == 3 && Comm().MyPID() == 0)
@@ -851,14 +847,14 @@ void CONTACT::CoInterface::CreateSearchTree()
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
         binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
-            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
         binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
-            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       // initialize the self binary tree
       binarytreeself_->Init();
@@ -866,9 +862,6 @@ void CONTACT::CoInterface::CreateSearchTree()
     //*****TWO BODY CONTACT*****
     else
     {
-      // get out of here if not participating in interface
-      if (!lComm()) return;
-
       // create fully overlapping map of all master elements
       // for non-redundant storage (RRloop) we handle the master elements
       // like the slave elements --> melecolmap_
@@ -947,9 +940,6 @@ void CONTACT::CoInterface::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::Initialize()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
 
@@ -7695,9 +7685,6 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
     const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   if (friction_ == false)
     dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
 
@@ -8066,9 +8053,6 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
   if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create an interpolator instance
   Teuchos::RCP<NTS::CoInterpolator> interpolator =
       Teuchos::rcp(new NTS::CoInterpolator(imortar_, Dim()));
@@ -8428,9 +8412,6 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 void CONTACT::CoInterface::AssembleRegNormalForces(
     bool& localisincontact, bool& localactivesetchange)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter
   double pp = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -8565,9 +8546,6 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
   double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
@@ -8924,9 +8902,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
   double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
@@ -9291,9 +9266,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all slave nodes (row map)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
@@ -9350,9 +9322,6 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 void CONTACT::CoInterface::AssembleTN(
     Teuchos::RCP<LINALG::SparseMatrix> tglobal, Teuchos::RCP<LINALG::SparseMatrix> nglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9498,9 +9467,6 @@ void CONTACT::CoInterface::AssembleTN(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9546,9 +9512,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal,
     Teuchos::RCP<LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9695,9 +9658,6 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
   /**********************************************************************/
@@ -9786,9 +9746,6 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
   /**********************************************************************/
@@ -9891,9 +9848,6 @@ void CONTACT::CoInterface::AssembleLinDM(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -9984,9 +9938,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // FIXME It's possible to improve the performance, if only recently active nodes of the inactive
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
@@ -10042,9 +9993,6 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   static std::vector<int> lm_gid(Dim() - 1);
   static std::vector<int> lm_owner(Dim() - 1);
   static Epetra_SerialDenseVector lm_t(Dim() - 1);
@@ -10145,9 +10093,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   // rivatives of the Lagrange multipliers. This is according to Hüeber.
   // Because of worse convergence, this is not implemented, but the
   // code is commented after the algorithm.
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
@@ -10974,9 +10919,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -12737,9 +12679,6 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
     LINALG::SparseMatrix& linslipLMglobal, LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -14099,9 +14038,6 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
 {
   static int step = 0;
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   double lresMoSl[3] = {0.0, 0.0, 0.0};  // local slave moment
   double gresMoSl[3] = {0.0, 0.0, 0.0};  // global slave moment
   double lresMoMa[3] = {0.0, 0.0, 0.0};  // local master momemnt
@@ -14210,9 +14146,6 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
  *--------------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -14253,9 +14186,6 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
 void CONTACT::CoInterface::AssembleNCoupLin(
     LINALG::SparseMatrix& sglobal, ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -14334,9 +14264,6 @@ const CONTACT::CoInterface& CONTACT::CoInterface::GetMaSharingRefInterface() con
 void CONTACT::CoInterface::AssembleCoupLinD(
     LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
   //                 with c = Displacement slave or master dof
@@ -14415,8 +14342,6 @@ void CONTACT::CoInterface::AssembleCoupLinD(
 void CONTACT::CoInterface::AssembleCoupLinM(
     LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
-  if (!lComm()) return;
-
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof
   //                 with c = Displacement slave or master dof

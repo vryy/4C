@@ -243,9 +243,6 @@ void CONTACT::AUG::Interface::Initialize()
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // call initialization routine of the contact_interface
   CoInterface::Initialize();
 
@@ -324,9 +321,6 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -683,9 +677,6 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
 {
   IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
 
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
@@ -739,9 +730,6 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapAllSlNodesVec) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = snoderowmap_->NumMyElements();
@@ -775,9 +763,6 @@ void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapA
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // get cn
   //  const double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
@@ -822,9 +807,6 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 void CONTACT::AUG::Interface::AssembleAugAVector(
     Epetra_Vector& augAVec, Epetra_Vector& kappaVec) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = snoderowmap_->NumMyElements();
@@ -886,9 +868,6 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
 void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
     Epetra_Vector& augInactiveRhs, Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
@@ -938,9 +917,6 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
@@ -1011,9 +987,6 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLmTMatrix) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
@@ -1062,9 +1035,6 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLm
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLmTLmTLinMatrix) const
 {
-  // get out of here if not participating in interface
-  if (not lComm()) return;
-
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
@@ -1110,9 +1080,6 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLm
 void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augInactiveDiagMatrix,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
@@ -1178,9 +1145,6 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
     LINALG::SparseMatrix& augInactiveLinMatrix, const Epetra_Vector& cnVec,
     const double inactive_scale) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
@@ -1230,9 +1194,6 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
 void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
     const Epetra_Vector& cnVec, double& zn_gn, double& gn_gn, double& zn_zn, double& zt_zt) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   double ct_inv = 1.0 / interfaceData_.Ct();
 
   // *** Active part *************************************************
@@ -1619,9 +1580,6 @@ void CONTACT::AUG::Interface::BuildActiveSlaveElementColMap(const Epetra_Map& sa
 Teuchos::RCP<Epetra_Map> CONTACT::AUG::Interface::BuildActiveForceMap(
     const Epetra_Vector& force, const double threshold) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return Teuchos::null;
-
   const int num_my_entries = force.Map().NumMyElements();
   const int* my_entry_gids = force.Map().MyGlobalElements();
   const double* fvalues = force.Values();
@@ -1643,9 +1601,6 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Interface::BuildActiveForceMap(
 void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   if (dincr.Map().NumMyElements() != str_grad.Map().NumMyElements())
     dserror("The number of local elements does not coincide!");
 
@@ -1679,7 +1634,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
       dserror(
           "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier increment vector on proc %d!",
-          ndof, lComm()->MyPID());
+          ndof, Comm().MyPID());
     }
 
     double& lmincr_j = lmincr_vals[nlid_j];
@@ -1718,7 +1673,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContributionOfSide(
     {
       //      printf( "Couldn't find the variation dof GID %d in the "
       //          "structural gradient vector on proc %d!\n",
-      //          var_gid, lComm()->MyPID() );
+      //          var_gid, Comm()->MyPID() );
       continue;
     }
 
@@ -1734,7 +1689,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContributionOfSide(
       {
         //        printf( "Couldn't find the linearization dof GID %d in the "
         //            "displacement increment vector on proc %d!",
-        //            lin_gid, lComm()->MyPID() );
+        //            lin_gid, Comm()->MyPID() );
         continue;
       }
 
@@ -1750,9 +1705,6 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContributionOfSide(
 void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   if (lmincr.Map().NumMyElements() != lm.Map().NumMyElements())
     dserror("The number of local elements does not coincide!");
 
@@ -1788,7 +1740,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
       dserror(
           "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier vector on proc %d!",
-          ndof_k, lComm()->MyPID());
+          ndof_k, Comm().MyPID());
     }
 
     // 1-st summand
@@ -1853,7 +1805,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
         dserror(
             "Couldn't find the normal-dof GID %d in the "
             "Lagrange multiplier increment vector on proc %d!",
-            ndof_j, lComm()->MyPID());
+            ndof_j, Comm().MyPID());
       }
 
       // 1-st summand
@@ -1947,9 +1899,6 @@ void CONTACT::AUG::AssembleMapIntoMatrix(
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return 0.0;
-
   const int num_my_anodes = activenodes_->NumMyElements();
   const int* my_anode_gids = activenodes_->MyGlobalElements();
 
@@ -2025,9 +1974,6 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 double CONTACT::AUG::Interface::MyCharacteristicElementLength(
     const enum CONTACT::AUG::SideType stype) const
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return -1.0;
-
   Teuchos::RCP<const Epetra_Map> ele_map_ptr = interfaceData_.ElementRowMapPtr(stype);
   const int num_my_entries = ele_map_ptr->NumMyElements();
   const int* my_gids = ele_map_ptr->MyGlobalElements();

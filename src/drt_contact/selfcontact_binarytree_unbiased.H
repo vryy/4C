@@ -28,15 +28,13 @@ namespace CONTACT
     \brief Standard constructor
 
     \param discret (in):    The contact interface discretization
-    \param lcomm (in):      Local interface communicator
     \param iparams (in):    interface specific parameter list
     \param elements (in):   All elements on self contact interface (fully overlapping map)
     \param dim (in):        The problem dimension
 
     */
-    UnbiasedSelfBinaryTree(DRT::Discretization& discret, const Epetra_Comm* lcomm,
-        const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim,
-        double eps);
+    UnbiasedSelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
+        Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
     /*!
     \brief Destructor
