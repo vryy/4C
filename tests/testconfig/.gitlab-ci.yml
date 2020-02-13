@@ -133,9 +133,6 @@ variables:
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
-        # make sure old coverage data is deleted
-        - rm -rf coverage_report/
-        - rm -rf baci_coverage.info
         # generate the baci_coverage.info based on tests run above
         - lcov --capture --directory ../baci-build/ --output-file baci_coverage.info
         # generate the html version of the coverage report
@@ -485,7 +482,7 @@ pages: # job name needs to be pages
     stage: pages
     variables:
         # stage operates exclusively on artifacts. No need for source code.
-        GIT_STRATEGY: none
+        GIT_STRATEGY: fetch
     # skip the download of artifacts from previous stages. Rely solely on cache
     dependencies: []
     script:
