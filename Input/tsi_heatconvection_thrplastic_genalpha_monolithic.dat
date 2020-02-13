@@ -83,11 +83,7 @@ TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5                           // 0.41176 //
-ALPHA_M                         0.5                           // 0.2353 //
-BETA                            0.25                          // 0.1695 //
-GAMMA                           0.5                           // 0.67640 //
-RHO_INF                         -1.0
+RHO_INF                         1.0//0.7
 GENAVG                          TrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5                           // 1.0

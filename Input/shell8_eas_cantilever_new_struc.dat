@@ -57,11 +57,7 @@ UZAWAMAXITER                    20
 UZAWAALGO                       direct
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.459
-ALPHA_M                         0.378
-BETA                            0.291
-GAMMA                           0.581
-RHO_INF                         -1.0
+RHO_INF                         0.85
 ------------------------------------------------------------------STRUCT NOX
 Nonlinear Solver                = Line Search Based
 --------------------------------------------------------STRUCT NOX/Direction
@@ -133,7 +129,7 @@ ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.45 DENS 0.001
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.77394351246161630e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.77395619363675605e+00 TOLERANCE 1e-6
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 2 0 0

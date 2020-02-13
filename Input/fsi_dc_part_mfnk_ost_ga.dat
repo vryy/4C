@@ -26,11 +26,7 @@ TOLDISP                         1.0E-10
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-RHO_INF                         -1.0
+RHO_INF                         1.0
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes

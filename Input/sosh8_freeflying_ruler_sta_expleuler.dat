@@ -56,11 +56,7 @@ RESTARTEVRY                     100
 TIMESTEP                        5e-5                          // starting time step (will be adapted)
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.4737
-ALPHA_M                         0.4211
-GAMMA                           0.5526
-BETA                            0.2770
-RHO_INF                         -1.0
+RHO_INF                         0.9
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            ExplicitEuler
 OUTENEPERIOD                    0.001
@@ -85,12 +81,12 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2e-3 4e-3 100000 VALUES 0 20 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.56044986561456886e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.53675926280461361e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.44640301016217554e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 2.64952907010266614e+00 TOLERANCE 1e-07
-STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE 2.75369527821549998e+00 TOLERANCE 1.13e-07
-STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 1.29795519481803030e+01 TOLERANCE 1e-07
+STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.54600910952438644e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.51776003422111000e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.44838971299222741e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 2.76043440945315632e+00 TOLERANCE 1e-07
+STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE 2.88291868777596072e+00 TOLERANCE 1.13e-07
+STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 1.31044890024759475e+01 TOLERANCE 1e-07
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          6

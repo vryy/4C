@@ -49,11 +49,7 @@ DIVERCONT                       continue
 PREDICT                         ConstVel
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
-RHO_INF                         -1.0
+RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 STRATEGY                        Ehl // Lagrange
