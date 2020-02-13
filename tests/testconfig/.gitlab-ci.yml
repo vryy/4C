@@ -503,7 +503,6 @@ pages: # job name needs to be pages
         # the content of the below artifact is published on GitLab Pages
         paths:
             - public
-        expire_in: 1 weeks
     only:
         refs:
             - master
