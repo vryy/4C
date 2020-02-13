@@ -62,11 +62,7 @@ Test Details                    = No
 Debug                           = No
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG              TrLike
-RHO_INF             -1.0
-ALPHA_M             0.333333333333
-ALPHA_F             0.444444444444
-BETA                0.308641975309
-GAMMA               0.611111111111
+RHO_INF             0.8
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               sp
