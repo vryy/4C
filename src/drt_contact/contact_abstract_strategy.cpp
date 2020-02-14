@@ -3331,10 +3331,12 @@ void CONTACT::CoAbstractStrategy::PostprocessQuantitiesPerInterface(
 
   // Evaluate slave and master forces
   {
-    RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(DMatrix()->RowMap()));
-    RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(MMatrix()->DomainMap()));
-    DMatrix()->Multiply(true, *zold_, *fcslave);
-    MMatrix()->Multiply(true, *zold_, *fcmaster);
+    RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
+    RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true), true));
+
+    // Mortar matrices might not be initialized, e.g. in the initial state. If so, keep zero vector.
+    if (!DMatrix().is_null()) DMatrix()->Multiply(true, *zold_, *fcslave);
+    if (!MMatrix().is_null()) MMatrix()->Multiply(true, *zold_, *fcmaster);
 
     // Append data to parameter list
     outputParams->set<RCP<const Epetra_Vector>>("interface traction", zold_);
@@ -3351,8 +3353,5 @@ void CONTACT::CoAbstractStrategy::PostprocessQuantitiesPerInterface(
     outputParams->set<RCP<const Epetra_Vector>>("tancontactstress", stresstangential_);
   }
 
-
-  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::iterator it = Interfaces().begin();
-       it < Interfaces().end(); ++it)
-    (*it)->PostprocessQuantities(*outputParams);
+  for (auto& interface : Interfaces()) interface->PostprocessQuantities(*outputParams);
 }
