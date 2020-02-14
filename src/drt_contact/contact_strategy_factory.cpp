@@ -1618,18 +1618,18 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   INPAR::MORTAR::AlgorithmType algo =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
-  // Get weight for contribution from last time step
-  double alphaf = 0.0;
-  bool do_endtime = DRT::INPUT::IntegralValue<int>(params, "CONTACTFORCE_ENDTIME");
-  if (!do_endtime) alphaf = STR::TIMINT::GetTimIntFactor();
+  // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
+  // need to pass an argument as long as we want to support the same strategy contructor as the old
+  // time integration.
+  double dummy = -1.0;
 
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
       (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
   {
     data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-        params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
@@ -1651,13 +1651,13 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+          params, interfaces, dim, comm_ptr, dummy, dof_offset));
     }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+          params, interfaces, dim, comm_ptr, dummy, dof_offset));
     }
   }
   else if (((stype == INPAR::CONTACT::solution_penalty or
@@ -1666,7 +1666,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
            stype != INPAR::CONTACT::solution_uzawa)
   {
     strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_uzawa)
   {

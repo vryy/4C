@@ -381,50 +381,6 @@ void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
     iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double STR::TIMINT::GetTimIntFactor()
-{
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-  const INPAR::STR::DynamicType dyntype =
-      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
-
-  double timintfactor = 0.0;
-
-  switch (dyntype)
-  {
-    case INPAR::STR::dyna_statics:
-    {
-      timintfactor = 0.0;
-      break;
-    }
-    case INPAR::STR::dyna_genalpha:
-    {
-      timintfactor = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-      break;
-    }
-    case INPAR::STR::dyna_gemm:
-    {
-      timintfactor = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      break;
-    }
-    case INPAR::STR::dyna_onesteptheta:
-    {
-      timintfactor = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-      break;
-    }
-    default:
-    {
-      dserror("Time integration factor has not been set for time integration scheme '%s'",
-          INPAR::STR::DynamicTypeString(dyntype).c_str());
-      break;
-    }
-  }
-
-  return timintfactor;
-}
-
-
 void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs)
 {
   // ------ check if the user provide RHO_INF and any other parameters at the same time
