@@ -16,6 +16,5 @@
     <Piece Source="particle-phase1-owned-000400-0.vtp"/>
     <Piece Source="particle-phase1-owned-000400-1.vtp"/>
     <Piece Source="particle-phase1-owned-000400-2.vtp"/>
-    <Piece Source="particle-phase1-owned-000400-3.vtp"/>
   </PPolyData>
 </VTKFile>
