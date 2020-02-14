@@ -307,6 +307,8 @@ baci_test_restartonly(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_mo
 # The following two test cases have to be run back-to-back.
 baci_test(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_gp_restart_first 2 "")
 baci_test_restartonly(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_gp_restart_second 3 1)
+baci_test(beam3r_herm2line3_static_beam_to_surface_coupling_gauss_point_reference_forced 3 "")
+baci_test(beam3r_herm2line3_static_beam_to_surface_coupling_gauss_point_displacement 3 "")
 baci_test(beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting 2 "")
 baci_test(beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 "")
 baci_test(beam3r_herm2line3_static_crosslinking_beam3rline2_linkedcantilevers_endload 2 5)
