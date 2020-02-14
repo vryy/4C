@@ -284,24 +284,21 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     icparams.set<bool>("Two_half_pass", Two_half_pass);
     icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
     icparams.set<bool>("Searchele_AllProc", Searchele_AllProc);
-    // create an empty interface and store it in this Manager
-    // create an empty contact interface and store it in this Manager
-    // (for structural contact we currently choose redundant master storage)
-    // (the only exception is self contact where a redundant slave is needed, too)
+
+    // Safety check for interface storage redundancy in case of self contact
     INPAR::MORTAR::RedundantStorage redundant =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
             icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
     if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
       dserror("CoManager: Self contact requires redundant slave and master storage");
 
-    // decide between contactinterface, augmented interface and wearinterface
+    // Use factory to create an empty interface and store it in this Manager.
     Teuchos::RCP<CONTACT::CoInterface> newinterface =
         STRATEGY::Factory::CreateInterface(groupid1, Comm(), dim, icparams, isself[0], redundant,
             Teuchos::null, Teuchos::null, contactconstitutivelawid);
-
     interfaces.push_back(newinterface);
 
-    // get it again
+    // Get the RCP to the last created interface
     Teuchos::RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size() - 1];
 
     // note that the nodal ids are unique because they come from
@@ -539,8 +536,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
-  // create the solver strategy object
-  // and pass all necessary data to it
+  // create the solver strategy object and pass all necessary data to it
   if (Comm().MyPID() == 0)
   {
     std::cout << "Building contact strategy object............";
@@ -550,6 +546,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // build the correct data container
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wearLaw != INPAR::WEAR::wear_none &&
       (wearType == INPAR::WEAR::wear_intstate || wearType == INPAR::WEAR::wear_primvar))
