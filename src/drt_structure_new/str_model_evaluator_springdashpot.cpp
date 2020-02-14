@@ -102,6 +102,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
 
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
+  springdashpotparams.set("total time", GState().GetTimeNp());
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   for (int i = 0; i < n_conds_; ++i)
   {
@@ -131,6 +132,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
   const double fac_disp = EvalData().GetTimIntFactorDisp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
+  springdashpotparams.set("total time", GState().GetTimeNp());
   if (fac_vel > 0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them
@@ -166,6 +168,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
   const double fac_disp = EvalData().GetTimIntFactorDisp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
+  springdashpotparams.set("total time", GState().GetTimeNp());
   if (fac_vel > 0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them

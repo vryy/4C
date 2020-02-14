@@ -71,7 +71,7 @@ E 8 - coupling_id 0
 E 9 - coupling_id 1
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
-E 4 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 VISCO 0.005 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION refsurfnormal COUPLING none
+E 4 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 FUNCTSTIFF 0 0 0 VISCO 0.005 0.0 0.0 FUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 FUNCTDISPLOFFSET 0 0 0 DIRECTION refsurfnormal COUPLING none
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          11
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

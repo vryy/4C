@@ -106,12 +106,16 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseOperator> st
   // get values and switches from the condition
   const std::vector<int>* onoff = spring_->Get<std::vector<int>>("onoff");
   const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
+  const std::vector<int>* numfuncspring = spring_->Get<std::vector<int>>("funct_stiff");
   const std::vector<double>* dashpotvisc = spring_->Get<std::vector<double>>("visco");
+  const std::vector<int>* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
   const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
+  const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
   const std::string* direction = spring_->Get<std::string>("direction");
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
   const double time_fac = p.get("time_fac", 0.0);
+  const double total_time = p.get("total time", 0.0);
 
   Teuchos::ParameterList params;
   params.set("action", "calc_struct_robinforcestiff");
@@ -121,6 +125,10 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseOperator> st
   params.set("disploffset", disploffset);
   params.set("time_fac", time_fac);
   params.set("direction", direction);
+  params.set("funct_stiff", numfuncspring);
+  params.set("funct_visco", numfuncvisco);
+  params.set("funct_disploffset", numfuncdisploffset);
+  params.set("total time", total_time);
 
   std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
 

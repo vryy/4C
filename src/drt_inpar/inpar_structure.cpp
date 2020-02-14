@@ -368,14 +368,29 @@ namespace INPAR
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new RealVectorConditionComponent("stiff", 3)));
 
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCTSTIFF")));
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new IntVectorConditionComponent("funct_stiff", 3)));
+
       robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VISCO")));
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new RealVectorConditionComponent("visco", 3)));
 
       robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCTVISCO")));
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new IntVectorConditionComponent("funct_visco", 3)));
+
+      robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new SeparatorConditionComponent("DISPLOFFSET")));
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new RealVectorConditionComponent("disploffset", 3)));
+
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCTDISPLOFFSET")));
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new IntVectorConditionComponent("funct_disploffset", 3)));
 
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
