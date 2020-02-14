@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
+  <Collection>
+    <DataSet timestep="1.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000001.pvtu"/>
+    <DataSet timestep="2.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000002.pvtu"/>
+    <DataSet timestep="3.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000003.pvtu"/>
+    <DataSet timestep="4.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000004.pvtu"/>
+    <DataSet timestep="5.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000005.pvtu"/>
+    <DataSet timestep="6.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000006.pvtu"/>
+    <DataSet timestep="7.00000000000000e-08" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000000007.pvtu"/>
+    <DataSet timestep="5.00000000000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010000.pvtu"/>
+    <DataSet timestep="5.00000010000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010001.pvtu"/>
+    <DataSet timestep="5.00000020000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010002.pvtu"/>
+    <DataSet timestep="5.00000030000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010003.pvtu"/>
+    <DataSet timestep="5.00000040000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010004.pvtu"/>
+    <DataSet timestep="5.00000050000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010005.pvtu"/>
+    <DataSet timestep="5.00000060000000e-01" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000010006.pvtu"/>
+    <DataSet timestep="1.00000000000000e+00" group="" part="0" file="vtk-files/beam-to-solid-volume-integration-points-0000020000.pvtu"/>
+  </Collection>
+</VTKFile>
