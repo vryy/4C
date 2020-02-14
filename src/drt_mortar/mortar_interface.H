@@ -984,9 +984,9 @@ namespace MORTAR
     The methods completes construction phase of a mortar interface. It creates all row/column maps
     of the mortar interface discretization.
 
-    If we have arrived at the final parallel distribution, we have to call ask the underlying
+    If we have arrived at the final parallel distribution, we have to ask the underlying
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested.
+    only if requested by the user/algorithm.
 
     \sa ExtendInterfaceGhosting()
 
@@ -1583,7 +1583,7 @@ namespace MORTAR
     configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
     coupling in the reference configuration, it suffices to set the velocity to 0.0.
 
-    @param[in] meanVelocity Current mean velocity of this interface
+    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
     @return Binning strategy object ready to be used
     */
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
@@ -1591,6 +1591,21 @@ namespace MORTAR
     /*!
     \brief check and initialize possible cross point modification
 
+    A typical application are so-called crosspoints within mortar meshtying, where this approach is
+    necessary to avoid over-constraint. Otherwise these crosspoints would be active with respect to
+    more than one interface and thus the Lagrange multiplier cannot sufficiently represent all
+    geometric constraints. Another typical application is mortar contact, when we want to make use
+    of symmetry boundary conditions. In this case, we deliberately modify so-called edge nodes of
+    the contact boundary and thus free them from any contact constraint.
+
+    Basically, the status of the crosspoints / edge nodes is simply changed to MASTER and
+    consequently they will NOT carry Lagrange multipliers later on. In order to sustain the
+    partition of unity property of the Lagrange multiplier shape functions on the adjacent slave
+    elements, the Lagrange multiplier shape functions of the adjacent nodes will be modified! This
+    way, the mortar operator entries of the crosspoints / edge nodes are transferred to the
+    neighboring slave nodes!
+
+    \warning Only implemented for 2D problems. Will throw for 3D.
     */
     void InitializeCrossPoints();
 
@@ -1601,7 +1616,7 @@ namespace MORTAR
     void InitializeLagMultLin();
 
     /*!
-    \brief check and initialize for constant Lagrange muliplier interpolation for 2nd order FE
+    \brief check and initialize for constant Lagrange multiplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultConst();

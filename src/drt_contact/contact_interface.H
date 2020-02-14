@@ -1359,7 +1359,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void PreEvaluate(const int& step, const int& iter);
+    void PreEvaluate(const int& step, const int& iter) final;
 
     /*!
     \brief Routine to control contact term evaluation. Here, we decide if mortar, nts

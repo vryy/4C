@@ -63,7 +63,7 @@ namespace CONTACT
     /*!
      \brief Pack this class so that it can be communicated
 
-     This function packs the datacontainer. This is only called
+     This function packs the data container. This is only called
      when the class has been initialized and the pointer to this
      class exists.
 
@@ -73,7 +73,7 @@ namespace CONTACT
     /*!
      \brief Unpack data from a vector into this class
 
-     This function unpacks the datacontainer. This is only called
+     This function unpacks the data container. This is only called
      when the class has been initialized and the pointer to this
      class exists.
 
@@ -303,13 +303,10 @@ namespace CONTACT
      \brief Return old normal vector (length 3)
      */
     virtual inline double* Normal_old() { return n_old_; }
-    //@}
+
+    //! @}
 
    protected:
-    // don't want = operator and cctor
-    CoNodeDataContainer operator=(const CoNodeDataContainer& old) = delete;
-    CoNodeDataContainer(const CoNodeDataContainer& old) = delete;
-
     //! nodal tangent t_xi for contact methods at newton step n
     double txi_[3];
 
@@ -319,22 +316,22 @@ namespace CONTACT
     //! nodal entry of g vector
     double grow_;
 
-    //! nodal entry of g vector for nts
+    //! nodal entry of g vector for node-to-segment
     double gnts_;
 
-    //! nodal entry of g vector for lts
+    //! nodal entry of g vector for line-to-segment
     double glts_;
 
-    //! nodal entry of g vector for lts
+    //! nodal entry of g vector for line-to-segment
     double gltl_[3];
 
-    //! nodal entry of jump vector for lts
+    //! nodal entry of jump vector for line-to-segment
     double jumpltl_[3];
 
-    //! scaling factor for nts-mortar hybrid formulation
+    //! scaling factor for node-to-segment-mortar hybrid formulation
     double nalpha_;
 
-    //! true if cnode was in contact (last converged state n)
+    //! true if contact node was in contact (last converged state n)
     bool activeold_;
 
     //! directional derivative of nodal normal
@@ -352,37 +349,37 @@ namespace CONTACT
     //! directional derivative of nodal D-matrix value
     std::map<int, std::map<int, double>> derivd_;
 
-    //! directional derivative of nodal D-matrix value lts
+    //! directional derivative of nodal D-matrix value line-to-segment
     std::map<int, std::map<int, double>> derivdlts_;
 
-    //! directional derivative of nodal D-matrix value ltl
+    //! directional derivative of nodal D-matrix value line-to-line
     std::map<int, std::map<int, double>> derivdltl_;
 
     //! directional derivative of nodal M-matrix values
     std::map<int, std::map<int, double>> derivm_;
 
-    //! directional derivative of nodal M-matrix values nts
+    //! directional derivative of nodal M-matrix values node-to-segment
     std::map<int, std::map<int, double>> derivmnts_;
 
-    //! directional derivative of nodal M-matrix values lts
+    //! directional derivative of nodal M-matrix values line-to-segment
     std::map<int, std::map<int, double>> derivmlts_;
 
-    //! directional derivative of nodal M-matrix values ltl
+    //! directional derivative of nodal M-matrix values line-to-line
     std::map<int, std::map<int, double>> derivmltl_;
 
     //! directional derivative of nodal weighted gap value
     std::map<int, double> derivg_;
 
-    //! directional derivative of nts gap value
+    //! directional derivative of node-to-segment gap value
     std::map<int, double> derivgnts_;
 
-    //! directional derivative of lts gap value
+    //! directional derivative of line-to-segment gap value
     std::map<int, double> derivglts_;
 
-    //! directional derivative of ltl gap value
+    //! directional derivative of line-to-line gap value
     std::vector<std::map<int, double>> derivgltl_;
 
-    //! directional derivative of ltl gap value
+    //! directional derivative of line-to-line gap value
     std::vector<std::map<int, double>> derivjumpltl_;
 
     //! directional derivative of nodal weighted gap value
@@ -397,9 +394,13 @@ namespace CONTACT
     //! lin. of scaling factor for hybrid formulation
     GEN::pairedvector<int, double> alpha_;
 
-    // *** Penalty-related quantities **************************
+    //! @name Penalty-related quantities
+    //! @{
+
     //! gap-scaling factor kappa
     double kappa_;
+
+    //! @}
 
     //! direction derivative of nodal z-matrix value
     std::vector<std::map<int, double>> derivz_;
@@ -429,6 +430,13 @@ namespace CONTACT
     //! @}
 
     double n_old_[3];  // normal of previous time step
+
+   private:
+    //! Operator= (disabled)
+    CoNodeDataContainer operator=(const CoNodeDataContainer& old) = delete;
+
+    //! Copy constructor (disabled)
+    CoNodeDataContainer(const CoNodeDataContainer& old) = delete;
   };
 
   namespace AUG
@@ -1083,7 +1091,7 @@ namespace CONTACT
     //! @name Access methods
 
     /*!
-     \brief Print this cnode
+     \brief Print this contact node
      */
     virtual void Print(std::ostream& os) const;
 
@@ -1101,7 +1109,7 @@ namespace CONTACT
 
      This belated modification is necessary to be able to use
      the binary search tree for contact initialization in the
-     load-controlled quasistatic case (instead of input file
+     load-controlled quasi-static case (instead of input file
      information Active/Inactive)
 
      */
@@ -1199,7 +1207,7 @@ namespace CONTACT
     /*!
     \brief Add a value to the weighted gap of this node (augmented Lagrange)
 
-    This value is later assembled to the averaged weighted gap vec.
+    This value is later assembled to the averaged weighted gap vector.
     Note that grow_ here is a scalar.
 
     \param val : value to be added
@@ -1240,7 +1248,7 @@ namespace CONTACT
 
     Note: This is only calculated when performing a penalty strategy
 
-     \param row : local dof row id to add to (rowwise)
+    \param row : local dof row id to add to (row-wise)
     \param val : value to be added
     \param col : global dof column id of the value added
 
@@ -1321,15 +1329,19 @@ namespace CONTACT
      */
     virtual int& GetLinsize() { return linsize_; };
     int GetLinsize() const { return linsize_; };
-    //@}
 
-    //! @name Empty functions (friction only)
+    //! @}
 
-    // All these functions only have functionality for friction nodes, thus they are
-    // defined as empty here in the general mortar node. They can be called whenever you like.
+    /*! @name Empty functions (friction only)
+     *
+     * All these functions only have functionality for friction nodes, thus they are
+     * defined as empty here in the general mortar node. They can be called whenever you like.
+     */
 
     virtual void AddSNode(int node) {}
     virtual void AddMNode(int node) {}
+
+    //! @}
 
     virtual bool HasCoTSIData() { return (cTSIdata_ != Teuchos::null); }
 
@@ -1337,7 +1349,6 @@ namespace CONTACT
      \brief Write nodal normals to old ones
      */
     void StoreOldNormal();
-    //@}
 
    private:
     /*!
@@ -1359,7 +1370,7 @@ namespace CONTACT
     void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length, double ltxi);
 
    protected:
-    //! true if cnode is in contact (active set strategy)
+    //! true if contact node is in contact (active set strategy)
     bool active_;
 
     //! true if node is initialized as active node
