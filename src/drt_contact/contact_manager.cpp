@@ -648,10 +648,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // print initial parallel redistribution
   if (Comm().MyPID() == 0)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
+  for (auto& interface : interfaces) interface->PrintParallelDistribution();
 
   // create binary search tree
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+  for (auto& interface : interfaces) interface->CreateSearchTree();
 
   return;
 }
