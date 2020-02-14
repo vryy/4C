@@ -1,0 +1,45 @@
+[
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4, 
+      "test_name": "solid_ele_vs_mat",
+      "test_category": "Nested_Par_CopyDat"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "mlmc_framework",
+      "test_category": "Nested_Par_CopyDat"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "mlmc_framework_paracont",
+      "test_category": "Nested_Par_CopyDat"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "invana_arch_stat_vb_precursor",
+      "test_category": "Nested_Par_CopyDat_prepost"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "invana_arch_stat_smc_estim",
+      "test_category": "Nested_Par_CopyDat_prepost"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "invana_arch_stat_smcprediction",
+      "test_category": "Nested_Par_CopyDat_prepost"
+   },
+   {
+      "justification": "Nested test needs at least 4 mpi ranks",
+      "mpi_rank": 4,
+      "test_name": "invana_arch_stat_mh_estim",
+      "test_category": "Nested_Par_CopyDat_prepost"
+   }
+
+]

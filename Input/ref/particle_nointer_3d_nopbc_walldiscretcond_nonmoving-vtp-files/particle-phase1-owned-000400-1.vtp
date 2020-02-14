@@ -10,25 +10,25 @@
       </DataArray>
     </FieldData>
 
-    <Piece NumberOfPoints="3" >
+    <Piece NumberOfPoints="12" >
       <Points>
         <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAAEgAAABIAAAAIwAAAA==eNrjXZDPw2N6eP+smSBwEk7zQsUZoABdHMq3h4kDAKEUId0=
+AQAAACABAAAgAQAASAAAAA==eNrjXZDPw2N6eP+smSBwcj8DFPCiiUNpe5g4AxpAF0dXD+PjMN8eRvs8W25iNmmlPbp70MXR1aO7B10ch/n2OMyH0wBCKGqj
         </DataArray>
       </Points>
 
   <PointData>
         <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
-AQAAAEgAAABIAAAAFgAAAA==eNqz4GuqXbWY24EBDViQKA4AfYEImA==
+AQAAACABAAAgAQAAFwAAAA==eNqz4GuqXbWY24EBDViMioMBAHXEIl0=
         </DataArray>
         <DataArray type="Float64" Name="globalid" format="binary">
-AQAAABgAAAAYAAAAEQAAAA==eNpjYEAGHA4QWsIBAAMYAKE=
+AQAAAGAAAABgAAAALAAAAA==eNpjYACBD/YMEOAAoQSgtAiUloHSClBaBUqrQWktKK0DpQ2gtKEDAAZoBVE=
         </DataArray>
         <DataArray type="Float64" Name="owner" format="binary">
-AQAAABgAAAAYAAAAEAAAAA==eNpjYACBD/YMaDQAIt0Djg==
+AQAAAGAAAABgAAAAEAAAAA==eNpjYACBD/YMNKIBiuIONQ==
         </DataArray>
         <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
-AQAAAEgAAABIAAAAFgAAAA==eNqbemp2RZDCfXsGNDCVRHEAHL0MBw==
+AQAAACABAAAgAQAAFwAAAA==eNqbemp2RZDCfXsGNDB1VBwMAL5AMBk=
         </DataArray>
       </PointData>
 
