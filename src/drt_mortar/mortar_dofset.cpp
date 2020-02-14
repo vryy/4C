@@ -41,22 +41,28 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
   {
     DRT::Node* node = dis.lColNode(i);
     if (!node) dserror("Cannot find local column node %d", i);
+
     // get dofs of node as created by base class DofSet
     std::vector<int> gdofs = Dof(node);
-    const int numDofsOfNode = (int)gdofs.size();
+    const std::size_t numDofsOfNode = gdofs.size();
+
     // get dofs of node as we want them
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
     const int* newdofs = mrtrnode->Dofs();
-    for (int j = 0; j < numDofsOfNode; ++j)
+    for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
+      // build dof column map
       if (!dofcolmap_->MyGID(gdofs[j])) dserror("Mismatch in degrees of freedom");
       int lid = dofcolmap_->LID(gdofs[j]);
       mycol[lid] = newdofs[j];
-      // build dofrowmap as well
-      if (!dofrowmap_->MyGID(gdofs[j])) continue;
-      lid = dofrowmap_->LID(gdofs[j]);
-      myrow[lid] = newdofs[j];
+
+      // build dof row map
+      if (dofrowmap_->MyGID(gdofs[j]))  // only if proc owns this DOF
+      {
+        lid = dofrowmap_->LID(gdofs[j]);
+        myrow[lid] = newdofs[j];
+      }
     }
     if (numDofsOfNode > 0)
     {
