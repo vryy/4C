@@ -79,9 +79,6 @@ void WEAR::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal, LINALG::Spar
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nodes for loop
   Teuchos::RCP<Epetra_Map> considerednodes;
 
@@ -191,9 +188,6 @@ void WEAR::WearInterface::AssembleTE_Master(
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   if (!(wearboth_ and wearpv_)) dserror("ERROR: AssembleTE_Master only for discr both-sided wear!");
 
   //*******************************************************
@@ -301,9 +295,6 @@ void WEAR::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // nodes for loop
   Teuchos::RCP<Epetra_Map> considerednodes;
@@ -458,9 +449,6 @@ void WEAR::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
@@ -603,9 +591,6 @@ void WEAR::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nodes for loop
   Teuchos::RCP<Epetra_Map> considerednodes;
 
@@ -704,9 +689,6 @@ void WEAR::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipmasternodes_->NumGlobalElements() == 0) return;
 
@@ -794,9 +776,6 @@ void WEAR::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nodes for loop
   Teuchos::RCP<Epetra_Map> considerednodes;
 
@@ -862,9 +841,6 @@ void WEAR::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgloba
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
@@ -1190,9 +1166,6 @@ void WEAR::WearInterface::AssembleS(LINALG::SparseMatrix& sglobal)
   // call contact function
   CONTACT::CoInterface::AssembleS(sglobal);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -1239,9 +1212,6 @@ void WEAR::WearInterface::AssembleS(LINALG::SparseMatrix& sglobal)
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::AssembleLinG_W(LINALG::SparseMatrix& sglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -1281,9 +1251,6 @@ void WEAR::WearInterface::AssembleLinG_W(LINALG::SparseMatrix& sglobal)
 void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
     LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
   Teuchos::RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_, *slipt_);
@@ -1802,9 +1769,6 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
 *----------------------------------------------------------------------*/
 void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -1997,9 +1961,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
 void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -2128,7 +2089,7 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // check of euclidean norm
       if (euclidean == 0.0)
       {
-        std::cout << "owner= " << cnode->Owner() << "  " << lComm()->MyPID() << std::endl;
+        std::cout << "owner= " << cnode->Owner() << "  " << Comm().MyPID() << std::endl;
         dserror("ERROR: AssemblelinSlip: Euclidean norm is zero");
       }
 
@@ -2792,9 +2753,6 @@ void WEAR::WearInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
    ************************************************/
   if (!wearimpl_) dserror("This matrix deriv. is only required for implicit wear algorithm!");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -2839,9 +2797,6 @@ void WEAR::WearInterface::AssembleLinWLmSt(LINALG::SparseMatrix& sglobal)
    *  This function is only for Implicit Wear !!! *
    ************************************************/
   if (!wearimpl_) dserror("This matrix deriv. is only required for implicit wear algorithm!");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
@@ -2937,9 +2892,6 @@ void WEAR::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
   /************************************************
    *  This function is only for Implicit Wear !!! *
    ************************************************/
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -3058,9 +3010,6 @@ void WEAR::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -3546,9 +3495,6 @@ void WEAR::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // FIXME It's possible to improve the performance, if only recently active nodes of the inactive
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
@@ -3612,9 +3558,6 @@ void WEAR::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& inacti
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   Teuchos::RCP<Epetra_Map> inactivenodes = LINALG::SplitMap(*mnoderowmap_, *slipmasternodes_);
   Teuchos::RCP<Epetra_Map> inactivedofs = LINALG::SplitMap(*(MNDofs()), *slipmn_);
@@ -3683,9 +3626,6 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // nodes for loop
   Teuchos::RCP<Epetra_Map> considerednodes;
@@ -3789,9 +3729,6 @@ void WEAR::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
@@ -3883,9 +3820,6 @@ void WEAR::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::Initialize()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
 

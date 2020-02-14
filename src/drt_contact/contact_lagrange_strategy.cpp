@@ -1502,9 +1502,6 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
       dserror("ERROR: FillComplete() not called on interface %", i);
 
-    // get out of here if not participating in interface
-    if (!interface_[i]->lComm()) continue;
-
     // reset kappa
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface_[i]->MasterRowNodes()->NumMyElements(); ++j)

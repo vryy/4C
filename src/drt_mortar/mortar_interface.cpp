@@ -55,7 +55,6 @@
 MORTAR::InterfaceDataContainer::InterfaceDataContainer()
     : id_(-1),
       comm_(NULL),
-      lcomm_(Teuchos::null),
       redistributed_(false),
       idiscret_(Teuchos::null),
       dim_(-1),
@@ -104,7 +103,6 @@ MORTAR::MortarInterface::MortarInterface(
     : interfaceData_(interfaceData),
       id_(interfaceData_->Id()),
       comm_(interfaceData_->CommPtr()),
-      lcomm_(interfaceData_->lComm()),
       procmap_(interfaceData_->ProcMap()),
       redistributed_(interfaceData_->IsRedistributed()),
       idiscret_(interfaceData_->IDiscret()),
@@ -173,7 +171,6 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<InterfaceDataContain
     : interfaceData_(interfaceData),
       id_(interfaceData_->Id()),
       comm_(interfaceData_->CommPtr()),
-      lcomm_(interfaceData_->lComm()),
       procmap_(interfaceData_->ProcMap()),
       redistributed_(interfaceData_->IsRedistributed()),
       idiscret_(interfaceData_->IDiscret()),
@@ -582,8 +579,6 @@ void MORTAR::MortarInterface::FillComplete(
   // get standard element column map (overlap=1)
   oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().ElementColMap())));
 
-  CreateInterfaceLocalCommunicator();
-
   ExtendInterfaceGhosting(isFinalParallelDistribution, meanVelocity);
 
   // make sure discretization is complete
@@ -615,81 +610,6 @@ void MORTAR::MortarInterface::FillComplete(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::CreateInterfaceLocalCommunicator()
-{
-  std::vector<int> lin(Comm().NumProc());
-  std::vector<int> gin(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) lin[i] = 0;
-
-  // check ownership or ghosting of any elements / nodes
-  // const Epetra_Map* nodemap = Discret().NodeColMap();
-  // const Epetra_Map* elemap  = Discret().ElementColMap();
-
-  //********************************************************************
-  // NOTE: currently we choose local=global communicator, but we have
-  // all structures present in the code to change this assignment any time.
-  //********************************************************************
-  // if (nodemap->NumMyElements() || elemap->NumMyElements())
-  lin[Comm().MyPID()] = 1;
-
-  Comm().MaxAll(&lin[0], &gin[0], Comm().NumProc());
-  lin.clear();
-
-  // build global -> local communicator PID map
-  // we need this when calling Broadcast() on lComm later
-  int counter = 0;
-  for (int i = 0; i < Comm().NumProc(); ++i)
-  {
-    if (gin[i])
-      procmap_[i] = counter++;
-    else
-      procmap_[i] = -1;
-  }
-
-  // typecast the Epetra_Comm to Epetra_MpiComm
-  Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
-  Epetra_MpiComm* epetrampicomm = dynamic_cast<Epetra_MpiComm*>(copycomm.get());
-  if (epetrampicomm != NULL)
-  {
-    // split the communicator into participating and none-participating procs
-    int color;
-    int key = Comm().MyPID();
-    // I am taking part in the new comm if I have any ownership
-    if (gin[Comm().MyPID()]) color = 0;
-    // I am not taking part in the new comm
-    else
-      color = MPI_UNDEFINED;
-
-    // tidy up
-    gin.clear();
-
-    // free lcomm_ first
-    if (lcomm_ != Teuchos::null)
-    {
-      MPI_Comm oldcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
-      lcomm_ = Teuchos::null;
-      MPI_Comm_free(&oldcomm);
-    }
-
-    // create new local communicator
-    MPI_Comm mpi_global_comm = epetrampicomm->GetMpiComm();
-    MPI_Comm mpi_local_comm;
-    MPI_Comm_split(mpi_global_comm, color, key, &mpi_local_comm);
-
-    // create the new Epetra_MpiComm only for participating procs
-    if (mpi_local_comm != MPI_COMM_NULL) lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-  }
-  else
-  {
-    // check for serial communicator
-    if (Comm().NumProc() != 1) dserror("Epetra_SerialComm can only handle 1 processor!");
-    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
-    if (!serialcomm) dserror("Casting Epetra_Comm to Epetra_SerialComm failed");
-    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
-  }
-}
 
 /*----------------------------------------------------------------------*
  |  Check and initialize corner/edge contact                 farah 07/16|
@@ -1602,10 +1522,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::CreateSearchTree()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
-    // warning
+  // warning
 #ifdef MORTARGMSHCTN
   if (Dim() == 3 && Comm().MyPID() == 0)
   {
@@ -2001,9 +1918,6 @@ Teuchos::RCP<Epetra_Map> MORTAR::MortarInterface::RedistributeLagMultSets() cons
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Initialize()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all nodes to reset stuff (fully overlapping column map)
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
@@ -2053,10 +1967,6 @@ void MORTAR::MortarInterface::Initialize()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Epetra_Vector& vec)
 {
-  // ***WARNING:*** This is commented out here, as idiscret_->SetState()
-  // needs all the procs around, not only the interface local ones!
-  // if (!lComm()) return;
-
   switch (statetype)
   {
     case state_new_displacement:
@@ -2207,9 +2117,6 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // clear vector
   intcells.clear();
 
@@ -2303,9 +2210,6 @@ void MORTAR::MortarInterface::Evaluate(
 
   // interface needs to be complete
   if (!Filled()) dserror("FillComplete() not called on interface %", id_);
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   //******************************************
   // Start basic evaluation part of interface
@@ -3159,9 +3063,6 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return true;
-
   binarytree_->EvaluateSearch();
 
   return true;
@@ -3527,9 +3428,6 @@ void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
   const bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                                InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -3605,9 +3503,6 @@ void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleM(LINALG::SparseMatrix& mglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -3715,9 +3610,6 @@ void MORTAR::MortarInterface::AssembleDM(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -3746,9 +3638,6 @@ void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
 void MORTAR::MortarInterface::AssembleTrafo(
     LINALG::SparseMatrix& trafo, LINALG::SparseMatrix& invtrafo, std::set<int>& donebefore)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // check for dual shape functions and quadratic slave elements
   if (shapefcn_ == INPAR::MORTAR::shape_standard || quadslave_ == false)
     dserror("AssembleTrafo -> you should not be here...");
@@ -4237,9 +4126,6 @@ void MORTAR::MortarInterface::AssembleTrafo(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   //**********************************************************************
   // STEP 1: Build tying info for slave node row map (locally+globally)
   //**********************************************************************
