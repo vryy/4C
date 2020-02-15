@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
       GEOMETRYPAIR::EvaluatePosition<beam>(
           projected_gauss_point.GetEta(), beam_dof_fad, coupling_vector_beam, this->Element1());
       GEOMETRYPAIR::EvaluatePosition<surface>(
-          projected_gauss_point.GetXi(), surface_dof_fad, coupling_vector_surface, NULL);
+          projected_gauss_point.GetXi(), surface_dof_fad, coupling_vector_surface, nullptr);
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.

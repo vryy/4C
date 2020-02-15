@@ -29,7 +29,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
-      const DRT::Element* element = NULL)
+      const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
     LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
@@ -56,7 +56,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
     LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
@@ -85,7 +85,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluateNormal(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& n,
-      const DRT::Element* element = NULL)
+      const DRT::Element* element = nullptr)
   {
     // Calculate derivative of the position on the element.
     LINALG::Matrix<3, element_type::dim_, scalar_type>& dr;
@@ -124,7 +124,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
@@ -170,12 +170,12 @@ namespace GEOMETRYPAIR
   void EvaluateSurfaceNormal(const T& xi,
       const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
       LINALG::Matrix<3, 1, scalar_type_result>& normal, const DRT::Element* element,
-      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = NULL)
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
     static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
 
-    if (nodal_normals == NULL)
+    if (nodal_normals == nullptr)
     {
       // Calculate the normal as the geometrical normal on the element.
       LINALG::Matrix<3, 2, scalar_type_result> dr;
@@ -213,7 +213,7 @@ namespace GEOMETRYPAIR
   void EvaluateSurfacePosition(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
       const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
       LINALG::Matrix<3, 1, scalar_type_result>& r, const DRT::Element* element,
-      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = NULL)
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
     static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");

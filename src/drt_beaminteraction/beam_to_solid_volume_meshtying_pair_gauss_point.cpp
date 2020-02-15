@@ -119,14 +119,14 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
-    if (forcevec2 != NULL) forcevec2->Size(solid::n_dof_);
-    if (stiffmat11 != NULL) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != NULL) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != NULL) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != NULL) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->Size(beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->Size(solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
 
-    if (forcevec1 != NULL && forcevec2 != NULL)
+    if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
@@ -136,7 +136,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
         (*forcevec2)(i_dof) = force_element_2(i_dof).val();
     }
 
-    if (stiffmat11 != NULL && stiffmat12 != NULL && stiffmat21 != NULL && stiffmat22 != NULL)
+    if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
+        stiffmat22 != nullptr)
     {
       // $k_{11}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)

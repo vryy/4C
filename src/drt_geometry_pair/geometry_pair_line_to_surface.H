@@ -90,7 +90,8 @@ namespace GEOMETRYPAIR
     virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const {};
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const {};
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
@@ -102,7 +103,8 @@ namespace GEOMETRYPAIR
     virtual void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const {};
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const {};
 
     /**
      * \brief Project a point in space to the surface element.
@@ -117,7 +119,7 @@ namespace GEOMETRYPAIR
     void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
 
     /**
      * \brief Intersect a line with all edges of a surface.
@@ -132,7 +134,7 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = NULL) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
 
     /**
      * \brief Return the pointer to the evaluation data of this pair.
