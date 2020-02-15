@@ -2668,6 +2668,7 @@ src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
+src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 )
 set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent.cpp

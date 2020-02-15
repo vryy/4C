@@ -16,6 +16,7 @@
 #include "../drt_beam3/beam3.H"
 #include "../headers/FAD_utils.H"
 #include "geometry_pair_element.H"
+#include "geometry_pair_utility_functions.H"
 
 
 namespace GEOMETRYPAIR
@@ -324,11 +325,12 @@ namespace GEOMETRYPAIR
     template <typename T>
     static void Set(T& xi)
     {
-      dserror(
+      std::string error_string =
           "This is the default implementation of StartValues::Set and should never be called, "
           "since we only want to call the templated versions. You are calling it with the "
-          "DiscretizationTypeGeometry %d",
-          geometry_type);
+          "DiscretizationTypeGeometry ";
+      error_string += DiscretizationTypeGeometryToString(geometry_type);
+      dserror(error_string.c_str());
     }
   };
 
