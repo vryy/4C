@@ -43,9 +43,9 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Class for beam to surface surface mesh tying.
-   * @template scalar_type Type for scalar DOF values.
-   * @template beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @template surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
+   * @tparam scalar_type Type for scalar DOF values.
+   * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
   template <typename scalar_type, typename beam, typename surface>
   class BeamToSolidSurfaceMeshtyingPairBase : public BeamToSolidPairBase<scalar_type, beam, surface>

@@ -22,9 +22,9 @@ namespace GEOMETRYPAIR
    * \brief Class that handles the geometrical interactions of a line and a surface by projecting
    * Gauss points from the line to the volume. In case a line pokes out of the volumes it is
    * segmented.
-   * @param scalar_type Type that will be used for scalar values.
-   * @param line Type of line element.
-   * @param volume Type of volume element.
+   * @tparam scalar_type Type that will be used for scalar values.
+   * @tparam line Type of line element.
+   * @tparam volume Type of volume element.
    */
   template <typename scalar_type, typename line, typename surface>
   class GeometryPairLineToSurfaceGaussPointProjection

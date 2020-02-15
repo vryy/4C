@@ -42,6 +42,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that represents a projection from a 1D structure (usually a line) to a 3D
    * structure (can be volume, as well as surface including normal direction).
+   * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
   template <typename scalar_type>
   class ProjectionPoint1DTo3D
@@ -206,6 +207,7 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief Class to manage a segment on a line.
+   * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
   template <typename scalar_type>
   class LineSegment

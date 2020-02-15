@@ -21,10 +21,10 @@
 namespace BEAMINTERACTION
 {
   /**
-   * \brief Class for beam to solid meshtying.
-   * @param scalar_type_fad Scalar FAD type to be used in this pair.
-   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
+   * \brief Base class for beam to solid interactions.
+   * @tparam scalar_type_fad Scalar FAD type to be used in this pair.
+   * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename scalar_type_fad, typename beam, typename solid>
   class BeamToSolidPairBase : public BeamContactPair

@@ -21,9 +21,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that handles the geometrical interactions of a line and a surface by calculating
    * the points where a line intersects the surface (including it's normal dimension).
-   * @param scalar_type Type that will be used for scalar values.
-   * @param line Type of line element.
-   * @param volume Type of volume element.
+   * @tparam scalar_type Type that will be used for scalar values.
+   * @tparam line Type of line element.
+   * @tparam volume Type of volume element.
    */
   template <typename scalar_type, typename line, typename surface>
   class GeometryPairLineToSurfaceSegmentation

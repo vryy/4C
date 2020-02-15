@@ -47,9 +47,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that handles the geometrical interactions of a line (element 1) and a surface
    * (element 2).
-   * @param scalar_type Type that will be used for scalar values.
-   * @param line Type of line element.
-   * @param surface Type of surface element.
+   * @tparam scalar_type Type that will be used for scalar values.
+   * @tparam line Type of line element.
+   * @tparam surface Type of surface element.
    */
   template <typename scalar_type, typename line, typename surface>
   class GeometryPairLineToSurface : public GeometryPair

@@ -34,7 +34,7 @@ namespace GEOMETRYPAIR
     line,
     //! triangle
     triangle,
-    //! quad
+    //! quadrilateral
     quad,
     //! hexahedron
     hexahedron,

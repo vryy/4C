@@ -121,7 +121,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         &beam_to_solid_volume_mestying);
 
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
-        "Shape function for the mortar Lagrange-multiplicators",
+        "Shape function for the mortar Lagrange-multipliers",
         tuple<std::string>("none", "line2", "line3", "line4"),
         tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
             BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
@@ -207,7 +207,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         &beam_to_solid_surface_mestying);
 
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
-        "Shape function for the mortar Lagrange-multiplicators",
+        "Shape function for the mortar Lagrange-multipliers",
         tuple<std::string>("none", "line2", "line3", "line4"),
         tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
             BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,

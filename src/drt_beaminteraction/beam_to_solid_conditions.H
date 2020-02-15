@@ -116,8 +116,9 @@ namespace BEAMINTERACTION
     ~BeamToSolidConditionVolumeMeshtying(){};
 
     /**
-     * \brief Build the volume ID sets for this condition. The BuildIdSets method from the base
-     * class is called to build the beam IDs.
+     * \brief Build the volume ID sets for this condition.
+     *
+     * The BuildIdSets method from the base class is called to build the beam IDs.
      */
     void BuildIdSets() override;
 

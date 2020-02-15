@@ -20,8 +20,8 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Class for Gauss-point-to-segment beam to surface surface mesh tying.
-   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @param surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
+   * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
   template <typename beam, typename surface>
   class BeamToSolidSurfaceMeshtyingPairGaussPoint

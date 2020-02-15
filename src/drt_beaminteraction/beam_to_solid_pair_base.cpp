@@ -66,7 +66,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Setup()
         else
           dserror(
               "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
-              "Hermite CL");
+              "Hermite centerline");
       }
       else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
       {

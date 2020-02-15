@@ -307,7 +307,7 @@ namespace GEOMETRYPAIR
    * \brief This struct sets parameter coordinates start values for local Newton iterations on an
    * element.
    *
-   * \template geometry_type The geometry type of the element, this type is typically known at
+   * @tparam geometry_type The geometry type of the element, this type is typically known at
    * compile time.
    */
   template <DiscretizationTypeGeometry geometry_type>

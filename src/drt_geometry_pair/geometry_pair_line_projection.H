@@ -54,6 +54,8 @@ namespace GEOMETRYPAIR
    * typename...) by doing so we can handle a variable amount of arguments for the methods, e.g.
    * surface elements can have the optional argument for the averaged nodal normals.
    *
+   * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
+   * will be performed on.
    */
   template <typename pair_type>
   class LineTo3DBase
@@ -79,6 +81,7 @@ namespace GEOMETRYPAIR
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void ProjectPointOnLineToOther(const pair_type* pair,
@@ -98,6 +101,7 @@ namespace GEOMETRYPAIR
      * @param n_projections_valid (out) Number of valid projections.
      * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
@@ -118,6 +122,7 @@ namespace GEOMETRYPAIR
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
@@ -137,6 +142,7 @@ namespace GEOMETRYPAIR
      * @param gauss_points (in) Gauss points to project.
      * @param segment (in/out) Vector with found projection points.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
@@ -154,6 +160,7 @@ namespace GEOMETRYPAIR
      * @param q_other (in) Degrees of freedom for the other geometry.
      * @param intersection_points (out) vector with the found surface intersections.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void IntersectLineWithOther(const pair_type* pair,
@@ -166,6 +173,8 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief This class contains static methods for Gauss point projection algorithms.
+   * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
+   * will be performed on.
    */
   template <typename pair_type>
   class LineTo3DGaussPointProjection : public LineTo3DBase<pair_type>
@@ -194,6 +203,7 @@ namespace GEOMETRYPAIR
      * @param q_other (in) Degrees of freedom for the geometry.
      * @param segments (out) Vector with the segments of this line to xxx pair.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void PreEvaluate(const pair_type* pair,
@@ -213,6 +223,7 @@ namespace GEOMETRYPAIR
      * @param q_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line-to-xxx pair.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void Evaluate(const pair_type* pair,
@@ -232,6 +243,8 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief This class contains static methods for segmentation algorithms.
+   * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
+   * will be performed on.
    */
   template <typename pair_type>
   class LineTo3DSegmentation : public LineTo3DBase<pair_type>
@@ -279,6 +292,7 @@ namespace GEOMETRYPAIR
      * @param q_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line to other geometry pair.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
+     * @tparam optional_type Parameter packs template type for optional_args.
      */
     template <typename... optional_type>
     static void Evaluate(const pair_type* pair,

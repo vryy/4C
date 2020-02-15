@@ -92,16 +92,12 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::SetState(
  *
  */
 template <typename surface>
-void GEOMETRYPAIR::FaceElementTempalte<surface>::CalculateAveragedNormals(
+void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get the connected face elements.
   std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>> connected_faces;
   GetConnectedFaces(face_elements, connected_faces);
-
-  // Get the local to global indices of this patch.
-  // std::vector<int> ltg;
-  // GetPatchLocalToGlobalIndices(connected_faces, ltg);
 
   // From here on we need this face element in the connected_faces vector.
   connected_faces.push_back(face_elements.at(drt_face_element_->ParentElementId()));
