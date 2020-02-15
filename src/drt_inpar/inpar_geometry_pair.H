@@ -45,10 +45,8 @@ namespace INPAR
      * the parameter list of the input section you want the line to 3D parameters to be added to.
      *
      * @param (out) Parameter list to add the line to 3D parameters to.
-     * @param (in) If the parameter INTEGRATION_POINTS_CIRCUMFENCE should be set or not.
      */
-    void SetValidParametersLineTo3D(
-        Teuchos::ParameterList& list, bool set_integration_points_circumfence = true);
+    void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
 
   }  // namespace GEOMETRYPAIR
 

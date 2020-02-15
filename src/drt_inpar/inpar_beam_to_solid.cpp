@@ -218,7 +218,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
 
     // Add the geometry pair input parameters.
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying, false);
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
   }
 
   // Beam to solid surface mesh tying output parameters.
