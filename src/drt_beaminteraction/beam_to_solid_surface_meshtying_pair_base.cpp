@@ -66,7 +66,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
     surface>::SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
 {
   face_element_ =
-      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTempalte<surface>>(face_element, true);
+      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<surface>>(face_element, true);
 }
 
 /**

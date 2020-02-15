@@ -61,7 +61,7 @@ void GEOMETRYPAIR::FaceElement::GetPatchLocalToGlobalIndices(
  *
  */
 template <typename surface>
-void GEOMETRYPAIR::FaceElementTempalte<surface>::Setup()
+void GEOMETRYPAIR::FaceElementTemplate<surface>::Setup()
 {
   // Set the reference position from the nodes.
   face_reference_position_.Clear();
@@ -75,7 +75,7 @@ void GEOMETRYPAIR::FaceElementTempalte<surface>::Setup()
  *
  */
 template <typename surface>
-void GEOMETRYPAIR::FaceElementTempalte<surface>::SetState(
+void GEOMETRYPAIR::FaceElementTemplate<surface>::SetState(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& displacement)
 {
@@ -157,7 +157,7 @@ void GEOMETRYPAIR::FaceElementTempalte<surface>::CalculateAveragedNormals(
  *
  */
 template <typename surface>
-bool GEOMETRYPAIR::FaceElementTempalte<surface>::EvaluateNodalNormal(const int node_gid,
+bool GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateNodalNormal(const int node_gid,
     LINALG::Matrix<3, 1, double>& reference_normal,
     LINALG::Matrix<3, 1, double>& current_normal) const
 {
@@ -205,20 +205,20 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   switch (face_element->Shape())
   {
     case DRT::Element::tri3:
-      return Teuchos::rcp<FaceElementTempalte<t_tri3>>(
-          new FaceElementTempalte<t_tri3>(face_element));
+      return Teuchos::rcp<FaceElementTemplate<t_tri3>>(
+          new FaceElementTemplate<t_tri3>(face_element));
     case DRT::Element::tri6:
-      return Teuchos::rcp<FaceElementTempalte<t_tri6>>(
-          new FaceElementTempalte<t_tri6>(face_element));
+      return Teuchos::rcp<FaceElementTemplate<t_tri6>>(
+          new FaceElementTemplate<t_tri6>(face_element));
     case DRT::Element::quad4:
-      return Teuchos::rcp<FaceElementTempalte<t_quad4>>(
-          new FaceElementTempalte<t_quad4>(face_element));
+      return Teuchos::rcp<FaceElementTemplate<t_quad4>>(
+          new FaceElementTemplate<t_quad4>(face_element));
     case DRT::Element::quad8:
-      return Teuchos::rcp<FaceElementTempalte<t_quad8>>(
-          new FaceElementTempalte<t_quad8>(face_element));
+      return Teuchos::rcp<FaceElementTemplate<t_quad8>>(
+          new FaceElementTemplate<t_quad8>(face_element));
     case DRT::Element::quad9:
-      return Teuchos::rcp<FaceElementTempalte<t_quad9>>(
-          new FaceElementTempalte<t_quad9>(face_element));
+      return Teuchos::rcp<FaceElementTemplate<t_quad9>>(
+          new FaceElementTemplate<t_quad9>(face_element));
     default:
       dserror("Wrong discretization type given.");
   }

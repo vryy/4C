@@ -35,7 +35,7 @@ namespace GEOMETRYPAIR
   class FaceElement;
 
   template <typename surface>
-  class FaceElementTempalte;
+  class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
 
 
@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
 
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
-    Teuchos::RCP<GEOMETRYPAIR::FaceElementTempalte<surface>> face_element_;
+    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

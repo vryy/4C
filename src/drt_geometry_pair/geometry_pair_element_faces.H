@@ -130,16 +130,16 @@ namespace GEOMETRYPAIR
    * \brief An object that represents a surface element and stores averaged normal information as
    * well as position information of the face.
    *
-   * @template surface Type of surface element.
+   * @tparam surface Type of surface element.
    */
   template <typename surface>
-  class FaceElementTempalte : public FaceElement
+  class FaceElementTemplate : public FaceElement
   {
    public:
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTempalte(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
         : FaceElement(face_element),
           face_reference_position_(true),
           face_position_(true),
@@ -152,7 +152,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~FaceElementTempalte(){};
+    ~FaceElementTemplate(){};
 
     /**
      * \brief Set the reference position of this element (derived).
