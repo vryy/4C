@@ -117,13 +117,13 @@ namespace BEAMINTERACTION
     inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
-     * \brief Returns the number of integration points along the circumfence of the beams cross
+     * \brief Returns the number of integration points along the circumference of the beams cross
      * section.
      * @return Number of points.
      */
-    inline unsigned int GetNumberOfIntegrationPointsCircumfence() const
+    inline unsigned int GetNumberOfIntegrationPointsCircumference() const
     {
-      return integration_points_circumfence_;
+      return integration_points_circumference_;
     }
 
     /**
@@ -159,9 +159,9 @@ namespace BEAMINTERACTION
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
 
-    //! Number of integration points along the circumfencial direction in the cross section
+    //! Number of integration points along the circumferencial direction in the cross section
     //! projection.
-    unsigned int integration_points_circumfence_;
+    unsigned int integration_points_circumference_;
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;

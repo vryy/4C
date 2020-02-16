@@ -71,7 +71,7 @@ CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10.0
 GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_cross_section
-INTEGRATION_POINTS_CIRCUMFENCE        24
+INTEGRATION_POINTS_CIRCUMFERENCE      24
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
 GEOMETRY_PAIR_SEARCH_POINTS           2
 COUPLE_RESTART_STATE                  Yes

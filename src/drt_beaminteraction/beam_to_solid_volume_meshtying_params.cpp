@@ -67,9 +67,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     gauss_rule_ = INPAR::BEAMTOSOLID::IntToGaussRule1D(
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
 
-    // Number of integrations points along the circumfence of the cross section.
-    integration_points_circumfence_ =
-        beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
+    // Number of integrations points along the circumference of the cross section.
+    integration_points_circumference_ =
+        beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
 
     // If the restart configuration should be coupled.
     couple_restart_state_ = (bool)DRT::INPUT::IntegralValue<int>(

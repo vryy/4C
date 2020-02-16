@@ -62,7 +62,7 @@ CONTACT_DISCRETIZATION                gauss_point_cross_section
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
 GAUSS_POINTS                          6
-INTEGRATION_POINTS_CIRCUMFENCE        10
+INTEGRATION_POINTS_CIRCUMFERENCE      10
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
