@@ -71,11 +71,9 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
 void MORTAR::StrategyBase::SetTimeIntegrationInfo(
     const double time_fac, const INPAR::STR::DynamicType dyntype)
 {
+  // Get weight for contribution from last time step
+
   Data().SetDynType(dyntype);
-  if (Data().AlphaF() != 0.0 and time_fac != Data().AlphaF())
-    dserror(
-        "The time integration factor has been changed already. This error is"
-        " supposed to prohibit unintended changes.");
   switch (dyntype)
   {
     case INPAR::STR::dyna_statics:
@@ -89,5 +87,13 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
       dserror(
           "Unsupported time integration detected! [\"%s\"]", DynamicTypeString(dyntype).c_str());
       exit(EXIT_FAILURE);
+  }
+
+  // Check if we only want to compute the contact force the time endpoints
+  if (DRT::INPUT::IntegralValue<int>(Data().SContact(), "CONTACTFORCE_ENDTIME"))
+    alphaf_ = 0.0;
+  else
+  {
+    alphaf_ = Data().GetDynParameterN();
   }
 }
