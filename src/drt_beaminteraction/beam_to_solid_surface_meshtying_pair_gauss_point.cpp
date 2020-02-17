@@ -197,3 +197,5 @@ template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMET
     GEOMETRYPAIR::t_quad8>;
 template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>;
+template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs9>;
