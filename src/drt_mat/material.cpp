@@ -105,6 +105,7 @@
 #include "maxwell_0d_acinus_Ogden.H"
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
+#include "viscoplastic_no_yield_surface.H"
 #include "electromagnetic.H"
 #include "activefiber.H"
 #include "growth.H"
@@ -214,6 +215,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
       auto* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_vp_no_yield_surface:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::ViscoPlasticNoYieldSurface(curmat));
+      auto* params = static_cast<MAT::PAR::ViscoPlasticNoYieldSurface*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_vp_robinson:
