@@ -14,6 +14,7 @@
 #include "beam_to_beam_contact_params.H"
 #include "beam_to_sphere_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_contact_runtime_vtk_output_params.H"
 
 /*----------------------------------------------------------------------------*
@@ -67,4 +68,14 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidVolumeMeshtyingParams()
       Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams());
   beam_to_solid_volume_meshtying_params_->Init();
   beam_to_solid_volume_meshtying_params_->Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceMeshtyingParams()
+{
+  beam_to_solid_surface_meshtying_params_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams());
+  beam_to_solid_surface_meshtying_params_->Init();
+  beam_to_solid_surface_meshtying_params_->Setup();
 }

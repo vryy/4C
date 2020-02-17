@@ -21,9 +21,9 @@
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : isinit_(false),
       issetup_(false),
-      constraint_enforcement_(INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement::none),
-      contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none),
-      mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions::none),
+      constraint_enforcement_(INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement::none),
+      contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none),
+      mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none),
       penalty_parameter_(-1.0),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
       couple_restart_state_(false)
@@ -45,17 +45,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
   {
     // Constraint enforcement.
     constraint_enforcement_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement>(
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement>(
             beam_to_solid_contact_params_list, "CONSTRAINT_STRATEGY");
 
     // Contact discretization to be used.
     contact_discretization_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
             beam_to_solid_contact_params_list, "CONTACT_DISCRETIZATION");
 
     // Contact discretization to be used.
     mortar_shape_function_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions>(
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions>(
             beam_to_solid_contact_params_list, "MORTAR_SHAPE_FUNCTION");
 
     // Penalty parameter.
@@ -67,9 +67,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     gauss_rule_ = INPAR::BEAMTOSOLID::IntToGaussRule1D(
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
 
-    // Number of integrations points along the circumfence of the cross section.
-    integration_points_circumfence_ =
-        beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
+    // Number of integrations points along the circumference of the cross section.
+    integration_points_circumference_ =
+        beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
 
     // If the restart configuration should be coupled.
     couple_restart_state_ = (bool)DRT::INPUT::IntegralValue<int>(

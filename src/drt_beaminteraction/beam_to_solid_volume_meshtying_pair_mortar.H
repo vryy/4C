@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
 
    public:
     /**
@@ -95,9 +95,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Return 0 by default.
      */
-    void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
-        const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const override;
+    void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
+        const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
+        LINALG::Matrix<3, 1, scalar_type_fad>& force) const override;
   };
 }  // namespace BEAMINTERACTION
 

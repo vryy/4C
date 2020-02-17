@@ -41,7 +41,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   {
     int n_gauss_points =
         this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints() *
-        this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumfence();
+        this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumference();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -69,7 +69,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       this->line_to_3d_evaluation_data_->GetGaussPoints();
   unsigned int n_gauss_points_axis = this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints();
   unsigned int n_integration_points_circ =
-      this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumfence();
+      this->line_to_3d_evaluation_data_->GetNumberOfIntegrationPointsCircumference();
 
   // Initilaize variables for the projection.
   scalar_type eta;
@@ -104,7 +104,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
             eta, eta_cross_section, q_line, r_line_cross_section, this->Element1());
 
         // Project point to the volume.
-        this->ProjectPointToVolume(r_line_cross_section, q_volume, xi_solid, projection_result);
+        this->ProjectPointToOther(r_line_cross_section, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.

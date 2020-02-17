@@ -114,11 +114,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
-              "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
+  // Check if beam-to-solid volume mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_volume_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -137,6 +138,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
           GState().GetTimeN());
     }
+  }
+
+  // Check if beam-to-solid surface mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_surface_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+
+    beam_contact_params_ptr_->BuildBeamToSolidSurfaceMeshtyingParams();
   }
 
   // set flag
@@ -200,6 +213,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
 
   // Set restart displacements in the pairs.
   SetRestartDisplacementInPairs();
+
+  // Update the geometry pair evaluation data.
+  beam_interaction_conditions_ptr_->SetState(DiscretPtr(), BeamInteractionDataStatePtr());
 }
 
 /*----------------------------------------------------------------------*
@@ -808,8 +824,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   contact_elepairs_.clear();
   assembly_managers_.clear();
 
-  // reset the geometry evaluation data
-  beam_interaction_conditions_ptr_->Reset();
+  // clear the geometry evaluation data
+  beam_interaction_conditions_ptr_->Clear();
 
   std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
@@ -847,6 +863,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       contact_elepairs_.push_back(newbeaminteractionpair);
     }
   }
+
+  // Setup the geometry evaluation data.
+  beam_interaction_conditions_ptr_->Setup();
 
   // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;

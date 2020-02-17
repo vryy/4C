@@ -74,5 +74,5 @@ void ADAPTER::FBIConstraintBridge::ResetBridge()
 {
   // Delete all pairs and segmentation information
   meshtying_pairs_->clear();
-  geometry_evaluation_data_->Reset();
+  geometry_evaluation_data_->Clear();
 }

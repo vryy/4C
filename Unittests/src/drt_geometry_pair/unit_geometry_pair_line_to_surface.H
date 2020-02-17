@@ -16,7 +16,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "src/drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
+#include "src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
 #include "src/drt_geometry_pair/geometry_pair_element_functions.H"
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "src/drt_so3/so_surface.H"
@@ -43,10 +43,10 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
   void setUp()
   {
     // Set up the evaluation data container for the geometry pairs.
-    Teuchos::ParameterList line_to_volume_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    Teuchos::ParameterList line_to_surface_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
     evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+        Teuchos::rcp(new GEOMETRYPAIR::LineToSurfaceEvaluationData(line_to_surface_params_list));
   }
 
   /**
@@ -67,6 +67,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -83,7 +84,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -103,6 +104,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -120,7 +122,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -140,6 +142,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -156,7 +159,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -176,6 +179,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -193,7 +197,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -213,6 +217,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -230,7 +235,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -250,6 +255,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -267,7 +273,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -287,6 +293,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -303,7 +310,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -323,6 +330,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -340,7 +348,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -360,6 +368,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -376,7 +385,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -396,6 +405,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -414,7 +424,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Project the point to the surface.
     LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToSurface(point, q_solid, xi, projection_result, &nodal_normals);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
     LINALG::Matrix<3, 1, double> xi_result(true);
@@ -438,6 +448,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -448,7 +459,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -489,6 +500,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -500,8 +512,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(
-        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -542,6 +553,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -552,7 +564,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -593,6 +605,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -604,8 +617,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(
-        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -646,6 +658,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -656,7 +669,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -697,6 +710,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -708,8 +722,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(
-        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -750,6 +763,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -760,7 +774,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -801,6 +815,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -812,8 +827,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(
-        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -854,6 +868,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -864,7 +879,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -905,6 +920,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
+    pair.is_unit_test_ = true;
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -916,8 +932,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithSurface(
-        q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     TS_ASSERT_EQUALS(intersection_points.size(), 2);
@@ -947,7 +962,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
 
  private:
   //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+  Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> evaluation_data_;
 };
 
 #endif

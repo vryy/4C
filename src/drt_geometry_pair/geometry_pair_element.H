@@ -61,13 +61,9 @@ namespace GEOMETRYPAIR
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
 
-    //! Surface type of the element. This member will be defined for tri3/6 and quad 4/8/9.
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        ElementDiscretizationToSurfaceType<discretization_>::surface_type_;
-
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        ElementDiscretizationToVolumeType<discretization_>::volume_type_;
+    //! Geometry type of the element.
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        ElementDiscretizationToGeometryType<discretization_>::geometry_type_;
   };
 
 
@@ -90,7 +86,7 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunction(
-        V& N, const T& xi, t_1D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_1D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
       static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
@@ -113,7 +109,7 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunction(
-        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
       static_assert(base::dim_ == 2, "EvaluateShapeFunction2D can only be called for 2D elements!");
@@ -136,7 +132,7 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunctionDeriv1(
-        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
       static_assert(
@@ -160,7 +156,7 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunction(
-        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
@@ -183,7 +179,7 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunctionDeriv1(
-        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
@@ -228,10 +224,10 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
-      if (element == NULL)
+      if (element == nullptr)
         dserror(
-            "The element pointer can not be NULL when evaluating the shape functions of a beam, as "
-            "we need to get RefLength()!");
+            "The element pointer can not be a nullptr when evaluating the shape functions of a "
+            "beam, as we need to get RefLength()!");
       const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
 
       // Evaluate the shape functions.
@@ -259,10 +255,10 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
-      if (element == NULL)
+      if (element == nullptr)
         dserror(
-            "The element pointer can not be NULL when evaluating the shape functions of a beam, as "
-            "we need to get RefLength()!");
+            "The element pointer can not be a nullptr when evaluating the shape functions of a "
+            "beam, as we need to get RefLength()!");
       const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
 
       // Evaluate the shape functions.
@@ -290,12 +286,12 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunction(
-        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "nurbs_get_3D_funct can only be called for 3D elements!");
 
-      if (element == NULL)
+      if (element == nullptr)
         dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.
@@ -322,12 +318,12 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     inline static void EvaluateShapeFunctionDeriv1(
-        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
-      if (element == NULL)
+      if (element == nullptr)
         dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.

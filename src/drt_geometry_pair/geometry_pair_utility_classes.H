@@ -17,6 +17,7 @@
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/FAD_utils.H"
 
 #include <vector>
 
@@ -41,6 +42,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that represents a projection from a 1D structure (usually a line) to a 3D
    * structure (can be volume, as well as surface including normal direction).
+   * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
   template <typename scalar_type>
   class ProjectionPoint1DTo3D
@@ -205,6 +207,7 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief Class to manage a segment on a line.
+   * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
   template <typename scalar_type>
   class LineSegment
@@ -345,7 +348,6 @@ namespace GEOMETRYPAIR
     //! Vector to store projection points for this segment.
     std::vector<ProjectionPoint1DTo3D<scalar_type>> segment_projection_points_;
   };
-
 }  // namespace GEOMETRYPAIR
 
 

@@ -913,6 +913,10 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
   src/drt_beaminteraction/beam_to_solid_conditions.cpp
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
+  src/drt_beaminteraction/beam_to_solid_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
@@ -2652,13 +2656,19 @@ src/drt_fiber/drt_fiber_node.cpp
 set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
+src/drt_geometry_pair/geometry_pair_element_faces.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_projection.cpp
 src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_surface.cpp
+src/drt_geometry_pair/geometry_pair_line_to_surface_gauss_point_projection.cpp
+src/drt_geometry_pair/geometry_pair_line_to_surface_segmentation.cpp
+src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
+src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 )
 set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent.cpp

@@ -44,7 +44,7 @@ namespace INPAR
      * This function adds all available input parameters to a given section. Call this function with
      * the parameter list of the input section you want the line to 3D parameters to be added to.
      *
-     * @param (in) Parameter list to add the line to 3D parameters to.
+     * @param (out) Parameter list to add the line to 3D parameters to.
      */
     void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
 

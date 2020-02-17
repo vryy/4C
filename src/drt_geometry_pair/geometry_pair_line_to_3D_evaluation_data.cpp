@@ -21,7 +21,7 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     : GeometryEvaluationDataBase(input_parameter_list),
       strategy_(INPAR::GEOMETRYPAIR::LineTo3DStrategy::none),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
-      integration_points_circumfence_(-1),
+      integration_points_circumference_(-1),
       gauss_point_projection_tracker_(),
       n_search_points_(0),
       segment_tracker_()
@@ -36,21 +36,21 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     gauss_rule_ =
         INPAR::BEAMTOSOLID::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
 
-    integration_points_circumfence_ =
-        input_parameter_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
+    integration_points_circumference_ =
+        input_parameter_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
   }
 
   // Initialize evaluation data structures.
-  Reset();
+  Clear();
 }
 
 /**
  *
  */
-void GEOMETRYPAIR::LineTo3DEvaluationData::Reset()
+void GEOMETRYPAIR::LineTo3DEvaluationData::Clear()
 {
   // Call reset on the base method.
-  GeometryEvaluationDataBase::Reset();
+  GeometryEvaluationDataBase::Clear();
 
   // Initialize evaluation data structures.
   {

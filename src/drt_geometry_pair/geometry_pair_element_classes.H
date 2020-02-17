@@ -24,124 +24,108 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Geometry discretization type of surface element.
+   * \brief Geometry discretization type of element.
    */
-  enum class DiscretizationTypeSurface
+  enum class DiscretizationTypeGeometry
   {
     //! none
     none,
+    //! 1D curve
+    line,
     //! triangle
     triangle,
-    //! quad
-    quad
-  };
-
-  /**
-   * \brief This structure "converts" the DRT discretization type to a surface type.
-   *
-   * For some geometry pairs we need to know if a surface is a triangle or a quad (linear,
-   * quadratic, ...) this structure "returns" the correct type depending on the DRT discretization
-   * type of the element.
-   */
-  template <DRT::Element::DiscretizationType discretization>
-  struct ElementDiscretizationToSurfaceType
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::none;
-  };
-  template <>
-  struct ElementDiscretizationToSurfaceType<DRT::Element::tri3>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::triangle;
-  };
-  template <>
-  struct ElementDiscretizationToSurfaceType<DRT::Element::tri6>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::triangle;
-  };
-  template <>
-  struct ElementDiscretizationToSurfaceType<DRT::Element::quad4>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
-  };
-  template <>
-  struct ElementDiscretizationToSurfaceType<DRT::Element::quad8>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
-  };
-  template <>
-  struct ElementDiscretizationToSurfaceType<DRT::Element::quad9>
-  {
-    static const GEOMETRYPAIR::DiscretizationTypeSurface surface_type_ =
-        GEOMETRYPAIR::DiscretizationTypeSurface::quad;
-  };
-
-
-  /**
-   * \brief Geometry discretization type of volume element.
-   */
-  enum class DiscretizationTypeVolume
-  {
-    //! none
-    none,
-    //! hexaeder
-    hexaeder,
+    //! quadrilateral
+    quad,
+    //! hexahedron
+    hexahedron,
     //! tetraeder
     tetraeder
   };
 
   /**
-   * \brief This structure "converts" the DRT discretization type to a volume type.
+   * \brief This structure "converts" the DRT discretization type to a geometry type.
    *
-   * For some geometry pairs we need to know if a volume is a hexaeder or a tetraeder (linear,
-   * quadratic, ...) this structure "returns" the correct type depending on the DRT discretization
-   * type of the element.
+   * For some geometry pairs we need to know if a geometry is a triangle / a quad / tetraeder or
+   * hexahedron (linear, quadratic, ...) this structure "returns" the correct type depending on the
+   * DRT discretization type of the element.
    */
   template <DRT::Element::DiscretizationType discretization>
-  struct ElementDiscretizationToVolumeType
+  struct ElementDiscretizationToGeometryType
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::none;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::none;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex8>
+  struct ElementDiscretizationToGeometryType<DRT::Element::line2>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::line;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex20>
+  struct ElementDiscretizationToGeometryType<DRT::Element::tri3>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::hex27>
+  struct ElementDiscretizationToGeometryType<DRT::Element::tri6>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::tet4>
+  struct ElementDiscretizationToGeometryType<DRT::Element::quad4>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::tet10>
+  struct ElementDiscretizationToGeometryType<DRT::Element::quad8>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToVolumeType<DRT::Element::nurbs27>
+  struct ElementDiscretizationToGeometryType<DRT::Element::quad9>
   {
-    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
-        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::hex8>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::hex20>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::hex27>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::tet4>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::tet10>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
+  };
+  template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::nurbs27>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
 
 }  // namespace GEOMETRYPAIR

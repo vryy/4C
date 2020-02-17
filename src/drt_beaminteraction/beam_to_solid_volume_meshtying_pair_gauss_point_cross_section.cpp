@@ -49,31 +49,31 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
-        beam_coupling_ref, solid_coupling_ref, this->line_to_volume_segments_);
+        beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
   // If there are no segments, this pair has no contribution. Also there can be no more than one
   // segment.
-  if (this->line_to_volume_segments_.size() == 0)
+  if (this->line_to_3D_segments_.size() == 0)
     return false;
-  else if (this->line_to_volume_segments_.size() > 1)
+  else if (this->line_to_3D_segments_.size() > 1)
     dserror("There can be a maximum of one segment!");
 
   // Get the vector with the projection points for this pair.
   const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =
-      this->line_to_volume_segments_[0].GetProjectionPoints();
+      this->line_to_3D_segments_[0].GetProjectionPoints();
 
   // If there are no projection points, return no contact status.
   if (projection_points.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_solid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
-  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
-  LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
+  LINALG::Matrix<3, 1, scalar_type_fad> r_beam;
+  LINALG::Matrix<3, 1, scalar_type_fad> r_solid;
+  LINALG::Matrix<3, 1, scalar_type_fad> force;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type_fad> force_element_1(true);
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -121,14 +121,14 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
-    if (forcevec2 != NULL) forcevec2->Size(solid::n_dof_);
-    if (stiffmat11 != NULL) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != NULL) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != NULL) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != NULL) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->Size(beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->Size(solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
 
-    if (forcevec1 != NULL && forcevec2 != NULL)
+    if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
@@ -138,7 +138,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
         (*forcevec2)(i_dof) = force_element_2(i_dof).val();
     }
 
-    if (stiffmat11 != NULL && stiffmat12 != NULL && stiffmat21 != NULL && stiffmat22 != NULL)
+    if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
+        stiffmat22 != nullptr)
     {
       // $k_{11}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
@@ -203,7 +204,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                      integration_point,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),

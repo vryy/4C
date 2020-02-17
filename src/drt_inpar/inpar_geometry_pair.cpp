@@ -37,10 +37,10 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
   DRT::INPUT::IntParameter(
       "GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations", &list);
 
-  // Number of integration along the circumfence in cross section coupling.
-  DRT::INPUT::IntParameter("INTEGRATION_POINTS_CIRCUMFENCE", 6,
-      "Number of Integration points along the circumfencial direction of the beam. This is "
+  // Number of integration along the circumference in cross section coupling.
+  DRT::INPUT::IntParameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
+      "Number of Integration points along the circumferencial direction of the beam. This is "
       "parameter is only used in beam to cylinder meshtying. No gauss integration is "
-      "used along the circumfencial direction, equally spaced integration points are used.",
+      "used along the circumferencial direction, equally spaced integration points are used.",
       &list);
 }

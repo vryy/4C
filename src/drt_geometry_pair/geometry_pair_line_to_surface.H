@@ -27,15 +27,18 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPoint1DTo3D;
 
-  class LineTo3DEvaluationData;
+  class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
 namespace LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }  // namespace LINALG
-template <typename scalar_type>
-class LineSegment;
+namespace GEOMETRYPAIR
+{
+  template <typename scalar_type>
+  class LineSegment;
+}
 
 
 
@@ -44,9 +47,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that handles the geometrical interactions of a line (element 1) and a surface
    * (element 2).
-   * @param scalar_type Type that will be used for scalar values.
-   * @param line Type of line element.
-   * @param surface Type of surface element.
+   * @tparam scalar_type Type that will be used for scalar values.
+   * @tparam line Type of line element.
+   * @tparam surface Type of surface element.
    */
   template <typename scalar_type, typename line, typename surface>
   class GeometryPairLineToSurface : public GeometryPair
@@ -58,9 +61,11 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
-        : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
+    GeometryPairLineToSurface(const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+            line_to_surface_evaluation_data)
+        : GeometryPair(),
+          line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
+          is_unit_test_(false){};
 
     /**
      * \brief Destructor.
@@ -80,22 +85,27 @@ namespace GEOMETRYPAIR
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const {};
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     virtual void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const {};
 
-   protected:
     /**
      * \brief Project a point in space to the surface element.
      * @param point (in) Point in space.
@@ -106,30 +116,36 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void ProjectPointToSurface(const LINALG::Matrix<3, 1, scalar_type>& point,
+    void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
 
     /**
-     * \brief Evaluate a position on the surface.
-     *
-     * @template scalar_type_evaluate Scalar type used for this function. This type is different
-     * from the scalar type in the class, since we calculate derivatives of the this method inside
-     * of other methods.
-     *
-     * @param q_surface (in) Degrees of freedom for the surface.
-     * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction).
-     * @param r (out) Position on the surface.
+     * \brief Intersect a line with all edges of a surface.
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param intersection_points (out) vector with the found surface intersections.
+     * @param eta_start (in) start value for parameter coordinate on line.
+     * @param xi_start (in) start values for parameter coordinates in volume.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    template <typename scalar_type_evaluate>
-    void EvaluateSurfacePosition(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-        LINALG::Matrix<3, 1, scalar_type_evaluate>& r,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+    void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
 
+    /**
+     * \brief Return the pointer to the evaluation data of this pair.
+     * @return Pointer to the evaluation data.
+     */
+    inline const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& GetEvaluationData() const
+    {
+      return line_to_surface_evaluation_data_;
+    }
+
+   protected:
     /**
      * \brief Evaluate a position on the surface and its derivative w.r.t. xi.
      * @param q_surface (in) Degrees of freedom for the surface.
@@ -143,25 +159,6 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const LINALG::Matrix<3, 1, scalar_type>& xi, LINALG::Matrix<3, 1, scalar_type>& r,
         LINALG::Matrix<3, 3, scalar_type>& dr,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
-
-    /**
-     * \brief Evaluate the normal at a position on the surface.
-     *
-     * @template scalar_type_evaluate Scalar type used for this function. This type is different
-     * from the scalar type in the class, since we calculate derivatives of the this method inside
-     * of other methods.
-     *
-     * @param q_surface (in) Degrees of freedom for the surface.
-     * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction).
-     * @param normal (out) Normal on the surface.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
-     */
-    template <typename scalar_type_evaluate>
-    void EvaluateSurfaceNormal(const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-        LINALG::Matrix<3, 1, scalar_type_evaluate>& normal,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
     /**
@@ -188,23 +185,43 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
     /**
-     * \brief Intersect a line with all edges of a surface.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface (in) Degrees of freedom for the volume.
-     * @param intersection_points (out) vector with the found surface intersections.
-     * @param eta_start (in) start value for parameter coordinate on line.
-     * @param xi_start (in) start values for parameter coordinates in volume.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
+     * \brief Check if a projection to a surface lies in a variable range.
+     *
+     * The ValidParameter2D function just checks, if the parameter coordinates are within the
+     * surface. We need to additionally check that the normal distance is not to large in order to
+     * avoid unwanted results. This is done by using a rule of thumb, that the normal distance has
+     * be smaller than the approximated surface size or 3 times the beam radius.
+     *
+     * @param xi
+     * @param surface_size
+     * @param beam_radius
+     * @return True if normal distance is in a reasonable range, false otherwise.
      */
-    void IntersectLineWithSurface(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+    bool ValidParameterSurface(LINALG::Matrix<3, 1, scalar_type>& xi,
+        const scalar_type& surface_size, const double beam_radius) const;
+
+    /**
+     * \brief Get an approximate size of the line radius.
+     * @return Radius of the line.
+     */
+    double GetLineRadius() const;
+
+    /**
+     * \brief Get an approximate size of the surface.
+     * @param (in) q_surface
+     * @return Maximum distance between the first 3 nodes.
+     */
+    scalar_type GetSurfaceSize(
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const;
 
    protected:
     //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
+    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
+
+   private:
+    //! Flag if the class is executed by unit tests. If this is the case, the line radius for
+    //! ValidParameterSurface will be explicitly given.
+    bool is_unit_test_;
   };
 }  // namespace GEOMETRYPAIR
 

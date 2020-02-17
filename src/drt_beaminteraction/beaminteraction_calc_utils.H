@@ -246,6 +246,17 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
 
     /**
+     * \brief Get the global indices of the centerline DOFs of a beam element.
+     * @param discret (in) Pointer to the discretization.
+     * @param ele (in) Pointer to the element.
+     * @param ele_centerline_dof_indices (out) Vector with global indices of centerline DOFs in the
+     * element.
+     */
+    template <unsigned int n_centerline_dof>
+    void GetElementCenterlineGIDIndices(DRT::Discretization const& discret, const DRT::Element* ele,
+        LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid);
+
+    /**
      * \brief Get the local indices of the centerline DOFs of an element.
      * @param discret (in) Pointer to the discretization.
      * @param ele (in) Pointer to the element.

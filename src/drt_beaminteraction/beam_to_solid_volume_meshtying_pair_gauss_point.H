@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
   };
 }  // namespace BEAMINTERACTION
 
