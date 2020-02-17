@@ -291,6 +291,19 @@ void DRT::Element::SetMaterial(int matnum)
   mat_[0] = mat;
 }
 
+void DRT::Element::SetMaterial(int index, Teuchos::RCP<MAT::Material> mat)
+{
+  if (NumMaterial() > index)
+    mat_[index] = mat;
+  else if (NumMaterial() == index)
+    AddMaterial(mat);
+  else
+    dserror(
+        "Setting material at index %d not possible (neither overwrite nor append) since currently  "
+        "only %d materials are stored",
+        index, NumMaterial());
+}
+
 /*----------------------------------------------------------------------*
  |  add material to element (public)                          vuong 02/14|
  *----------------------------------------------------------------------*/
