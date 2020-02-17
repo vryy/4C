@@ -522,6 +522,9 @@ void TSI::Algorithm::GetContactStrategy()
     contact_strategy_lagrange_->SaveReferenceState(zero_disp);
     contact_strategy_lagrange_->EvaluateReferenceState(zero_disp);
     contact_strategy_lagrange_->Inttime_init();
+    contact_strategy_lagrange_->SetTimeIntegrationInfo(StructureField()->TimIntParam(),
+        DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(
+            DRT::Problem::Instance()->StructuralDynamicParams(), "DYNAMICTYP"));
     contact_strategy_lagrange_->RedistributeContact(
         StructureField()->Dispn(), StructureField()->Veln());
 
