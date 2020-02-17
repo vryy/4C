@@ -199,7 +199,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     std::vector<double> lambda_pair;
     mortar_manager->LocationVector(this_rcp, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
-    for (unsigned int i_dof; i_dof < mortar::n_dof_; i_dof++) q_lambda(i_dof) = lambda_pair[i_dof];
+    for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
+      q_lambda(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
     if (visualization_discret != Teuchos::null)

@@ -163,6 +163,13 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         #        if name in 'element_owner' 'owner':
         #            return
 
+        # In some cases (e.g. vtp files) it is possible that we get empty
+        # arrays here. Therefore, if both arrays have no entries we consider
+        # them equal here.
+        if (VN.vtk_to_numpy(array1).size == 0
+                and VN.vtk_to_numpy(array2).size == 0):
+            return
+
         # actual tolerance based comparison
         diff = (VN.vtk_to_numpy(array1) - VN.vtk_to_numpy(array2))
         if not (np.max(np.abs(diff)) < tol_float):
