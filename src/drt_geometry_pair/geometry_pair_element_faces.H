@@ -173,13 +173,6 @@ namespace GEOMETRYPAIR
         override;
 
     /**
-     * \brief Calculate the nodal normal at the node with GID node_gid. If this node is not part of
-     * this face, false is returned. (derived)
-     */
-    bool EvaluateNodalNormal(const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
-        LINALG::Matrix<3, 1, double>& current_normal) const override;
-
-    /**
      * \brief Return the reference position of this face.
      */
     const LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
@@ -198,18 +191,32 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>& GetReferenceNormals() const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const
     {
-      return reference_normals_;
+      if (surface::discretization_ == DRT::Element::nurbs9)
+        return nullptr;
+      else
+        return &reference_normals_;
     }
 
     /**
      * \brief Return the current normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>& GetCurrentNormals() const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetCurrentNormals() const
     {
-      return current_normals_;
+      if (surface::discretization_ == DRT::Element::nurbs9)
+        return nullptr;
+      else
+        return &current_normals_;
     }
+
+   private:
+    /**
+     * \brief Calculate the nodal normal at the node with GID node_gid. If this node is not part of
+     * this face, false is returned. (derived)
+     */
+    bool EvaluateNodalNormal(const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
+        LINALG::Matrix<3, 1, double>& current_normal) const override;
 
    private:
     //! Reference position.
