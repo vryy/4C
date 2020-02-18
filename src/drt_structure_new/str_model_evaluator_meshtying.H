@@ -221,6 +221,9 @@ namespace STR
 
      protected:
      private:
+      /// Set the correct time integration parameters within the meshtying strategy
+      void SetTimeIntegrationInfo(CONTACT::MtAbstractStrategy& strategy) const;
+
       //! meshtying strategy
       Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr_;
 

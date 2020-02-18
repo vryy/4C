@@ -89,7 +89,7 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
       exit(EXIT_FAILURE);
   }
 
-  // Check if we only want to compute the contact force the time endpoints
+  // Check if we only want to compute the contact force at the time endpoint
   if (DRT::INPUT::IntegralValue<int>(Data().SContact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
