@@ -12,6 +12,8 @@
 #ifndef SRC_DRT_CONTACT_CONTACT_UTILS_H_
 #define SRC_DRT_CONTACT_CONTACT_UTILS_H_
 
+#include <set>
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

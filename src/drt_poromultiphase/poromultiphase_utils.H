@@ -10,6 +10,8 @@
 #ifndef SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
 #define SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
 
+#include <set>
+
 #include "../drt_inpar/inpar_poromultiphase.H"
 
 #include "Teuchos_RCP.hpp"

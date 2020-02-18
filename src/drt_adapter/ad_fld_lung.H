@@ -15,6 +15,8 @@ parenchyma balloon
 #ifndef ADAPTER_FLUID_LUNG_H
 #define ADAPTER_FLUID_LUNG_H
 
+#include <set>
+
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 

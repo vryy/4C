@@ -10,6 +10,8 @@
 #ifndef MORTAR_INTERFACE_H
 #define MORTAR_INTERFACE_H
 
+#include <set>
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>

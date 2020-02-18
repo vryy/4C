@@ -14,6 +14,8 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_
 
+#include <set>
+
 #include <NOX_Abstract_Vector.H>
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 #include "../drt_inpar/inpar_structure.H"

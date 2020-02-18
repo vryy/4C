@@ -9,6 +9,7 @@
             089 - 289-15235
 
 *----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"

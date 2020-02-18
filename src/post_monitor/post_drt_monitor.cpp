@@ -15,6 +15,7 @@
 *//*! @{ (documentation module open)*/
 
 #include "post_drt_monitor.H"
+#include <fstream>
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 

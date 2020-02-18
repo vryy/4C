@@ -14,6 +14,8 @@
 #ifndef STR_SOLVER_FACTORY_H_
 #define STR_SOLVER_FACTORY_H_
 
+#include <set>
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations...

@@ -27,6 +27,9 @@ namespace LINALG
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+// Standard library
+#include <list>
+
 // Ifpack
 #include <Ifpack.h>
 

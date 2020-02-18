@@ -11,6 +11,8 @@
 #ifndef SEARCHTREE_H
 #define SEARCHTREE_H
 
+#include <set>
+
 #include <Teuchos_RCP.hpp>
 #include "searchtree_nearestobject.H"
 #include "../linalg/linalg_fixedsizematrix.H"

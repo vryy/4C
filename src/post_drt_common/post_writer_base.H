@@ -16,6 +16,7 @@
 #include "post_filter_base.H"
 
 #include <string>
+#include <fstream>
 
 class PostField;
 class Epetra_MultiVector;

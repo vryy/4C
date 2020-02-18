@@ -13,6 +13,8 @@
 #ifndef FSI_LUNG_MONOLITHIC_H
 #define FSI_LUNG_MONOLITHIC_H
 
+#include <fstream>
+
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
 

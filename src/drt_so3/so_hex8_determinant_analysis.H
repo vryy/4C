@@ -14,6 +14,7 @@
 
 #include "so_hex8.H"
 #include <functional>
+#include <list>
 
 //#define DEBUG_SO_HEX8_DET_ANALYSIS
 namespace DRT

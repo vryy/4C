@@ -14,6 +14,8 @@
 #ifndef AD_STR_STRUCTURE_NEW_H_
 #define AD_STR_STRUCTURE_NEW_H_
 
+#include <set>
+
 #include "../drt_inpar/inpar_structure.H"
 #include "ad_str_structure.H"
 

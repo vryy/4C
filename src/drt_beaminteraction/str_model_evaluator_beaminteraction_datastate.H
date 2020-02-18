@@ -15,6 +15,8 @@
 #ifndef STR_MODELEVALUATOR_BEAMINTERACTION_DATASTATE
 #define STR_MODELEVALUATOR_BEAMINTERACTION_DATASTATE
 
+#include <set>
+
 #include "../drt_timestepping/timintmstep.H"
 
 // forward declaration

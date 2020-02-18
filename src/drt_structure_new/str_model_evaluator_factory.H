@@ -13,6 +13,7 @@
 #ifndef STR_MODEL_EVALUATOR_FACTORY_H_
 #define STR_MODEL_EVALUATOR_FACTORY_H_
 
+#include <set>
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_structure.H"

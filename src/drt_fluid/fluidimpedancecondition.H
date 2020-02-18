@@ -13,6 +13,7 @@
 #ifndef FLUIDIMPEDANCECONDITION_H
 #define FLUIDIMPEDANCECONDITION_H
 
+#include <set>
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

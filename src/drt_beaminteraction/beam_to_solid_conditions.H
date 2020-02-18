@@ -12,6 +12,7 @@
 #ifndef BEAM_TO_SOLID_CONDITIONS_H_
 #define BEAM_TO_SOLID_CONDITIONS_H_
 
+#include <set>
 
 #include "beaminteraction_conditions.H"
 

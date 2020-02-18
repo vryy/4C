@@ -12,6 +12,8 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_COMBO_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_COMBO_H_
 
+#include <set>
+
 #include <Teuchos_RCP.hpp>
 #include <NOX_StatusTest_Combo.H>
 #include "nox_nln_inner_statustest_generic.H"
