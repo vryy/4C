@@ -140,11 +140,11 @@ SOLVER                          UMFPACK                       // Amesos_KLU_sym,
 NAME                            STRUCTURAL SOLVER
 SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 3 YOUNG 1 1 1 YOUNGFUNCT 2 3 4 NUE 0.0 DENS 7850.0 THEXPANS 0 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0 CONSOLMAT 3
-MAT 2 THERM_FourierVar CAPAFUNCT 5 5 5 CONDUCTFUNCT 2 3 4 CONSOLMAT 3
+MAT 1 MAT_ThermoMech_ThreePhase YOUNGFUNCT 2 3 4 NUE 0.0 DENS 7850.0 THEXPANSFUNCT 7 7 7 THETAREF 300.0 THERMOMAT 2 CONSOLMAT 3
+MAT 2 THERM_FourierVar CAPAFUNCT 5 5 5 CONDUCTFUNCT 2 3 4 CONSOLMAT -1
 MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10
 ----------------------------------------------------------------------FUNCT2
@@ -156,18 +156,20 @@ FASTPOLYNOMIAL NUMCOEFF 1 COEFF 50
 ----------------------------------------------------------------------FUNCT5
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 100
 ----------------------------------------------------------------------FUNCT6
-//                                                             // left thermo dirichlet
+// left thermo dirichlet
 COMPONENT                       0 FUNCTION 20*sin(7*t)+70
+----------------------------------------------------------------------FUNCT7
+FASTPOLYNOMIAL NUMCOEFF 1 COEFF 0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 84 QUANTITY dispz VALUE 0 TOLERANCE 1e-12
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 6.14363466100772371e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 5 QUANTITY temp VALUE 6.64026681656366407e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 6.91878410760751450e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 30 QUANTITY temp VALUE 6.87630695511403900e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 60 QUANTITY temp VALUE 3.14483717959511857e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 70 QUANTITY temp VALUE 1.98154458389233099e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 5 QUANTITY temp VALUE  6.64026596191923772e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE  6.91878554586856609e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 30 QUANTITY temp VALUE  6.87631030894232822e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 60 QUANTITY temp VALUE  3.14483845274157723e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 70 QUANTITY temp VALUE  1.98154513191646089e+01 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
