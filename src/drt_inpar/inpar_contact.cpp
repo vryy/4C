@@ -301,11 +301,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   DoubleParameter("MIN_X", 1.0, "", &plot_contact);
   DoubleParameter("MAX_X", 1.0, "", &plot_contact);
 
-  setNumericStringParameter(
+  StringParameter(
       "FIRST_REF_POINT", "0.0 0.0 0.0", "coordinates of the first reference point", &plot_contact);
 
-  setNumericStringParameter("SECOND_REF_POINT", "0.0 0.0 0.0",
-      "coordinates of the second reference point", &plot_contact);
+  StringParameter("SECOND_REF_POINT", "0.0 0.0 0.0", "coordinates of the second reference point",
+      &plot_contact);
 
   setStringToIntegralParameter<PlotSupportType>("Y_TYPE", "vague",
       "Support type"
