@@ -16,6 +16,8 @@
 #ifndef NOX_NLN_STATUSTEST_NORMF_H_
 #define NOX_NLN_STATUSTEST_NORMF_H_
 
+#include <vector>
+
 #include <NOX_StatusTest_NormF.H>  // (derived) base class
 
 #include "nox_nln_enum_lists.H"

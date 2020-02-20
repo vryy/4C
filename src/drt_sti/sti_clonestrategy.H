@@ -14,6 +14,8 @@
 #ifndef STI_CLONESTRATEGY_H
 #define STI_CLONESTRATEGY_H
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 // forward declaration

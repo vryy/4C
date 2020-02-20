@@ -13,6 +13,8 @@
 #ifndef SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_
 #define SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_
 
+#include <vector>
+
 #include "drt_dserror.H"
 #include <Teuchos_RCP.hpp>
 

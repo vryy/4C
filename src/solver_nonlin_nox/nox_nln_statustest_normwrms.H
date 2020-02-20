@@ -16,6 +16,8 @@
 #ifndef NOX_NLN_STATUSTEST_NORMWRMS_H_
 #define NOX_NLN_STATUSTEST_NORMWRMS_H_
 
+#include <vector>
+
 #include <NOX_StatusTest_Generic.H>  // base class
 
 #include <Teuchos_RCP.hpp>

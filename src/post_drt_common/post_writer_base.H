@@ -13,6 +13,8 @@
 #ifndef POST_DRT_WRITER_BASE_H_
 #define POST_DRT_WRITER_BASE_H_
 
+#include <vector>
+
 #include "post_filter_base.H"
 
 #include <string>

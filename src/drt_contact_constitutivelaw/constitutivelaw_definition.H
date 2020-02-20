@@ -12,8 +12,10 @@
 #define CONTACT_COCONSTLAW_DEFINITION_H
 
 #include <Teuchos_RCP.hpp>
-#include <string>
 #include <iostream>
+#include <list>
+#include <string>
+#include <vector>
 
 namespace DRT
 {

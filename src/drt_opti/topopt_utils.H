@@ -14,6 +14,7 @@
 #ifndef TOPOPT_UTILS_H_
 #define TOPOPT_UTILS_H_
 
+#include <vector>
 
 #include <Teuchos_RCP.hpp>
 

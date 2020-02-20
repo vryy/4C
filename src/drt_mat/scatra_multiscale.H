@@ -11,6 +11,8 @@ problems
 #ifndef SCATRA_MULTISCALE_H
 #define SCATRA_MULTISCALE_H
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 namespace MAT

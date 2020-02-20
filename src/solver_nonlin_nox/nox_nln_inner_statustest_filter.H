@@ -21,6 +21,7 @@
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_FILTER_H_
 
 #include <set>
+#include <vector>
 
 #include "nox_nln_inner_statustest_generic.H"
 #include "nox_nln_meritfunction_infeasibility.H"

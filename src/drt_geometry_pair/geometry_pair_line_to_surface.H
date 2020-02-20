@@ -13,6 +13,8 @@
 #define GEOMETRY_PAIR_LINE_TO_SURFACE_H
 
 
+#include <vector>
+
 #include "geometry_pair.H"
 
 #include <Teuchos_RCP.hpp>

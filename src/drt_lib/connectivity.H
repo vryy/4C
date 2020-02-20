@@ -14,6 +14,8 @@
 
 #include <set>
 #include <unordered_map>
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 

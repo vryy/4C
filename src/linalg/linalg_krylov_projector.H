@@ -16,6 +16,8 @@
 #ifndef LINALG_KRYLOV_PROJECTOR_H_
 #define LINALG_KRYLOV_PROJECTOR_H_
 
+#include <vector>
+
 #include "Teuchos_RCP.hpp"
 
 // forward declarations

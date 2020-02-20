@@ -14,6 +14,7 @@
 #ifndef PARTITIONED_BEAMINTERACTION_ASSEMBLY_MANAGER_H_
 #define PARTITIONED_BEAMINTERACTION_ASSEMBLY_MANAGER_H_
 
+#include <vector>
 
 #include "../drt_lib/drt_dserror.H"
 #include "Teuchos_RCP.hpp"
