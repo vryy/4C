@@ -18,6 +18,7 @@ TOL_CARDVASC0D_RES              1e-06
 TOL_CARDVASC0D_DOFINCR          1e-06
 LINEAR_COUPLED_SOLVER           1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      GenAlpha
 ADAPTCONV                       Yes
 DAMPING                         Rayleigh
 K_DAMP                          0.0001
@@ -32,6 +33,8 @@ NUMSTEP                         9999999
 RESULTSEVRY                     10
 TIMESTEP                        0.009
 TOLDISP                         1e-08
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+RHO_INF                         0.8
 -------------------------------------------------------------------MATERIALS
 //HEART                         MYOCARD
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 14 DENS 1.0e-6
