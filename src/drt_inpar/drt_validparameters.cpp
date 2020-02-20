@@ -355,15 +355,7 @@ void DRT::INPUT::DoubleParameter(std::string const& paramName, double const& val
 void DRT::INPUT::StringParameter(std::string const& paramName, std::string const& value,
     std::string const& docString, Teuchos::ParameterList* paramList)
 {
-  // The method Teuchos::setNumericStringParameter() cannot be used for arbitrary
-  // std::string parameters, since the validate() method of the underlying
-  // AnyNumberParameterEntryValidator always tries to convert a given std::string to DOUBLE(s)!
-  // This may cause error messages in valgrind.
-  // Thus, for arbitrary std::strings, such as needed for specifying a file or solver name, for
-  // instance, this method which uses a StringValidator has to be used!
-
   Teuchos::RCP<Teuchos::StringValidator> validator = Teuchos::rcp(new Teuchos::StringValidator());
-
   paramList->set(paramName, value, docString, validator);
 }
 
