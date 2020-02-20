@@ -220,7 +220,7 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("STEPSIZE", 1.0, "stepsize for the gradient descent scheme", &statinvp);
 
   // linspace for the BruteForce optimizer
-  StringParameter("BFLINSPACE", "0.0 1.0 100.0",
+  setNumericStringParameter("BFLINSPACE", "0.0 1.0 100",
       "linear space (a,b,n) of n linearly spaced samples in the interval [a,b] ", &statinvp);
 
   // convergence criterion tolerance

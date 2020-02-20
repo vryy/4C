@@ -144,7 +144,7 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::FSI::timada_fld_adamsbashforth2),
       &fsiadapt);
 
-  StringParameter("AVERAGINGDT", "0.3 0.7",
+  setNumericStringParameter("AVERAGINGDT", "0.3 0.7",
       "Averaging of time step sizes in case of increasing time step size.\n"
       "Parameters are ordered from most recent weight to the most historic one.\n"
       "Number of parameters determines the number of previous time steps that are involved\n"
@@ -299,44 +299,44 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // monolithic preconditioner parameter
 
-  StringParameter("ALEPCOMEGA", "1.0 1.0 1.0 1.0",
+  setNumericStringParameter("ALEPCOMEGA", "1.0 1.0 1.0 1.0",
       "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("ALEPCITER", "1 1 1 1",
+  setNumericStringParameter("ALEPCITER", "1 1 1 1",
       "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("FLUIDPCOMEGA", "1.0 1.0 1.0 1.0",
+  setNumericStringParameter("FLUIDPCOMEGA", "1.0 1.0 1.0 1.0",
       "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("FLUIDPCITER", "1 1 1 1",
+  setNumericStringParameter("FLUIDPCITER", "1 1 1 1",
       "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("STRUCTPCOMEGA", "1.0 1.0 1.0 1.0",
+  setNumericStringParameter("STRUCTPCOMEGA", "1.0 1.0 1.0 1.0",
       "Relaxation factor for Richardson iteration on structural block in MFSI block "
       "preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("STRUCTPCITER", "1 1 1 1",
+  setNumericStringParameter("STRUCTPCITER", "1 1 1 1",
       "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
 
-  StringParameter("PCOMEGA", "1.0 1.0 1.0",
+  setNumericStringParameter("PCOMEGA", "1.0 1.0 1.0",
       "Relaxation factor for Richardson iteration on whole MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
       &fsimono);
-  StringParameter("PCITER", "1 1 1",
+  setNumericStringParameter("PCITER", "1 1 1",
       "Number of Richardson iterations on whole MFSI block preconditioner\n"
       "FSIAMG: each number belongs to a level\n"
       "PreconditiondKrylov: only first number is used for finest level",
@@ -345,7 +345,7 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   StringParameter(
       "BLOCKSMOOTHER", "BGS BGS BGS", "Type of block smoother, can be BGS or Schur", &fsimono);
 
-  StringParameter(
+  setNumericStringParameter(
       "SCHUROMEGA", "0.001 0.01 0.1", "Damping factor for Schur complement construction", &fsimono);
 
   // tolerances for convergence check of nonlinear solver in monolithic FSI

@@ -67,7 +67,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("MAXTIME", 1.0, "maximum time", &particledyn);
 
   // gravity acceleration control
-  StringParameter(
+  setNumericStringParameter(
       "GRAVITY_ACCELERATION", "0.0 0.0 0.0", "acceleration due to gravity", &particledyn);
   IntParameter("GRAVITY_RAMP_FUNCT", -1, "number of function governing gravity ramp", &particledyn);
 
@@ -88,7 +88,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "PHASE_TO_MATERIAL_ID", "none", "relate particle phase to material id", &particledyn);
 
   // amplitude of noise added to initial position for each spatial direction
-  StringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
+  setNumericStringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
       "amplitude of noise added to initial position for each spatial direction", &particledyn);
 
   // type of particle wall source
@@ -232,7 +232,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
 
-  StringParameter(
+  setNumericStringParameter(
       "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
 
   // type of surface tension formulation
@@ -266,10 +266,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "number of function governing velocity condition on dirichlet open boundary",
       &particledynsph);
 
-  StringParameter("DIRICHLET_OUTWARD_NORMAL", "0.0 0.0 0.0",
+  setNumericStringParameter("DIRICHLET_OUTWARD_NORMAL", "0.0 0.0 0.0",
       "direction of outward normal on dirichlet open boundary", &particledynsph);
-  StringParameter("DIRICHLET_PLANE_POINT", "0.0 0.0 0.0", "point on dirichlet open boundary plane",
-      &particledynsph);
+  setNumericStringParameter("DIRICHLET_PLANE_POINT", "0.0 0.0 0.0",
+      "point on dirichlet open boundary plane", &particledynsph);
 
   // type of neumann open boundary
   setStringToIntegralParameter<int>("NEUMANNBOUNDARYTYPE", "NoNeumannOpenBoundary",
@@ -281,10 +281,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   IntParameter("NEUMANN_FUNCT", -1,
       "number of function governing pressure condition on neumann open boundary", &particledynsph);
 
-  StringParameter("NEUMANN_OUTWARD_NORMAL", "0.0 0.0 0.0",
+  setNumericStringParameter("NEUMANN_OUTWARD_NORMAL", "0.0 0.0 0.0",
       "direction of outward normal on neumann open boundary", &particledynsph);
-  StringParameter("NEUMANN_PLANE_POINT", "0.0 0.0 0.0", "point on neumann open boundary plane",
-      &particledynsph);
+  setNumericStringParameter("NEUMANN_PLANE_POINT", "0.0 0.0 0.0",
+      "point on neumann open boundary plane", &particledynsph);
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",

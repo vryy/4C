@@ -31,15 +31,15 @@ void INPAR::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "direction",
       &binningstrategy);
 
-  StringParameter("BIN_PER_DIR", "-1 -1 -1",
+  setNumericStringParameter("BIN_PER_DIR", "-1 -1 -1",
       "Number of bins per direction (x, y, z) in particle simulations. Either Define this value or "
       "BIN_SIZE_LOWER_BOUND",
       &binningstrategy);
 
-  StringParameter("PERIODICONOFF", "0 0 0",
+  setNumericStringParameter("PERIODICONOFF", "0 0 0",
       "Turn on/off periodic boundary conditions in each spatial direction", &binningstrategy);
 
-  StringParameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  setNumericStringParameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Bounding box for computational domain using binning strategy. Specify diagonal corner "
       "points",
       &binningstrategy);
