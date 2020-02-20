@@ -60,10 +60,6 @@ MAXITER                         50
 MINITER                         2
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-RHO_INF                         1.0
-
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 //
 // One-step-theta factor in (0,1]

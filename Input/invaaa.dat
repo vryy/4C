@@ -69,9 +69,6 @@ ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0
 INT_STRATEGY                    Standard
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         1.0
 ------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = No

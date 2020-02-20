@@ -47,9 +47,6 @@ NORMCOMBI_RESFDISP    And
 MAXITER               50
 PREDICT               ConstVel
 INT_STRATEGY          Standard
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                TrLike
-RHO_INF               0.8
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               condensed

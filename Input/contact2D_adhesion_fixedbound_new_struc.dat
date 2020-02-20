@@ -49,9 +49,6 @@ NORM_DISP             Abs
 NORMCOMBI_RESFDISP    And
 MAXITER               50
 PREDICT               TangDis
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                TrLike
-RHO_INF               0.8
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               sp

@@ -61,9 +61,6 @@ MASSLIN                         No
 NEGLECTINERTIA                  No
 PREDICT                         TangDis
 LINEAR_SOLVER                   1
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         1.0
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                Binarytree

@@ -52,9 +52,6 @@ PREDICT      TangDis
 INT_STRATEGY Standard
 ---------------------------------------------STRUCT NOX/Status Test
 XML File                        = compressed_tape.xml
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG       TrLike
-RHO_INF      1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 STRATEGY             Lagrange

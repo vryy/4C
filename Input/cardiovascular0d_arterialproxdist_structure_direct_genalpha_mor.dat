@@ -32,8 +32,6 @@ NUMSTEP                         9999999
 RESULTSEVRY                     10
 TIMESTEP                        0.009
 TOLDISP                         1e-08
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-RHO_INF                         0.8
 -------------------------------------------------------------------MATERIALS
 //HEART                         MYOCARD
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 14 DENS 1.0e-6

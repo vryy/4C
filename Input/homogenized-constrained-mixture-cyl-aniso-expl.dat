@@ -27,9 +27,6 @@ LOADLIN                         yes
 PREDICT                         ConstVel
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         1.0
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

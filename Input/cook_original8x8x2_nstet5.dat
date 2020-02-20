@@ -101,13 +101,6 @@ ML_SMOTIMES                     6 6 1                         // no. smoothing s
 ML_DAMPFINE                     0.89                          // damping fine grid
 ML_DAMPMED                      0.89                          // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.0
-ALPHA_F                         0.0
-RHO_INF                         -1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1 NUE 0.3333

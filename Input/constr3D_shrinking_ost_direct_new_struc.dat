@@ -66,9 +66,6 @@ Test Details                    = No
 Debug                           = No
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = constraint_new_struc.xml
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         0.5//0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 --------------------------------------------------------------------SOLVER 1

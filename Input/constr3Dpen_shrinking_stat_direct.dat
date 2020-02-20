@@ -52,9 +52,6 @@ UZAWAMAXITER                    15
 TOLCONSTR                       1.0e-06
 UZAWAALGO                       direct
 NLNSOL                          fullnewton
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         0.5//0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 --------------------------------------------------------------------SOLVER 1

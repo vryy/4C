@@ -108,9 +108,6 @@ Test Details                    = No
 Debug                           = No
 ---------------------------------------------STRUCT NOX/Status Test
 XML File                        = cardiovascular0d_new_struc.xml
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-RHO_INF                         1.0
-GENAVG                          TrLike
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 ----------------------------------------------------------MATERIALS

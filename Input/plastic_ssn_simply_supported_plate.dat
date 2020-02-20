@@ -54,9 +54,6 @@ Outer Iteration = yes
 Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = plastic_ssn_eas_status_test.xml
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         1.0
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 7.5e4
 STABILIZATION_S                 1.0

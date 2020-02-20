@@ -48,9 +48,6 @@ MAXITER                         100
 MINITER                         2
 DIVERCONT                       continue
 PREDICT                         ConstVel
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 STRATEGY                        Ehl

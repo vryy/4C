@@ -56,9 +56,6 @@ TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
 NLNSOL                          fullnewton         // ptc,fullnewton
 PREDICT                         TangDis
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-RHO_INF                         1.0
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5                // 0.66
 -------------------------------------------------------------THERMAL DYNAMIC

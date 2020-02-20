@@ -296,9 +296,6 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 LINEAR_SOLVER                   2
------------STRUCTURAL DYNAMIC/GENALPHA
-RHO_INF                         1.0
-GENAVG                          ImrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.9
 ----------------------------------------------------------MATERIALS

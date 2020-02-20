@@ -46,9 +46,6 @@ NORM_DISP            Abs
 NORMCOMBI_RESFDISP   And
 MAXITER              50
 INT_STRATEGY         Standard
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG               TrLike
-RHO_INF              1.0
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               sp

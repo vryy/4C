@@ -114,9 +114,6 @@ ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 XI                              0
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-RHO_INF                         1.0
-GENAVG                          TrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------MULTI LEVEL MONTE CARLO
