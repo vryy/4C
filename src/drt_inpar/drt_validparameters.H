@@ -13,14 +13,17 @@
 #ifndef DRT_VALIDPARAMETERS_H
 #define DRT_VALIDPARAMETERS_H
 
-#include "../drt_io/io_pstream.H"
-
 #include <string>
 #include <iostream>
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+namespace IO
+{
+  class Pstream;
+}
 
 namespace DRT
 {

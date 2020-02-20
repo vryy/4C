@@ -13,6 +13,7 @@
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_thermo/thrtimint_statics.H"
 #include "../drt_thermo/thrtimint_genalpha.H"
