@@ -49,6 +49,7 @@ namespace NOX
 namespace STR
 {
   class Integrator;
+
   namespace TIMINT
   {
     class BaseDataSDyn;
@@ -158,21 +159,6 @@ namespace STR
     void CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
         STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState);
   }  // namespace NLN
-
-  namespace TIMINT
-  {
-    /*! \brief Get time integration weight for contribution from previous time step
-     *
-     * The weight of the previous time step in linear interpoliation between \f$t_n\f$
-     * and \f$t_{n+1}\f$ depends on the time integration scheme.
-     * We select the time integration factor based on the user's choice of time intergation
-     * scheme.
-     *
-     * @return Time integration factor
-     */
-    double GetTimIntFactor();
-
-  }  // namespace TIMINT
 }  // namespace STR
 
 

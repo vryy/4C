@@ -102,8 +102,8 @@ void STR::MODELEVALUATOR::Contact::Setup()
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->Inttime_init();
-  strategy_ptr_->RedistributeContact(GState().GetDisN(), GState().GetVelN());
   SetTimeIntegrationInfo(*strategy_ptr_);
+  strategy_ptr_->RedistributeContact(GState().GetDisN(), GState().GetVelN());
 
   CheckPseudo2D();
 

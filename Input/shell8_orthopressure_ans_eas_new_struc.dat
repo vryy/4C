@@ -58,10 +58,7 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.459
-ALPHA_M                         0.378
-BETA                            0.291
-GAMMA                           0.581
+RHO_INF                         0.85
 ------------------------------------------------------------------STRUCT NOX
 Nonlinear Solver                = Line Search Based
 --------------------------------------------------------STRUCT NOX/Direction
@@ -3710,7 +3707,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.044E6 NUE 0.45 DENS 0.001
 ----------------------------------------------------------------------FUNCT1
 FUNCTION 16132.0*t/1.6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.7048654191077441e-04 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.0041160140851386e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.70493269050379871e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.00423509634948846e-04 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

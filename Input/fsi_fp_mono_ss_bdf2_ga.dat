@@ -76,10 +76,7 @@ DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1
 PREDICT                         ConstVel
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.459459459459
-ALPHA_M                         0.378378378378
-BETA                            0.292184075968
-GAMMA                           0.581081081081
+RHO_INF                         0.85
 GENAVG                          TrLike
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

@@ -19,21 +19,27 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_structure_new/str_utils.H"
+#include "../drt_structure_new/str_impl_genalpha.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
 {
-  // rho_inf specified --> calculate optimal parameters
-  if (rho_inf_ != -1.)
-  {
-    if ((rho_inf_ < 0.0) or (rho_inf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
-    if ((beta_ != 0.25) or (gamma_ != 0.5) or (alpham_ != 0.5) or (alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other four parameters");
-    alpham_ = (2.0 * rho_inf_ - 1.0) / (rho_inf_ + 1.0);
-    alphaf_ = rho_inf_ / (rho_inf_ + 1.0);
-    beta_ = 0.25 * (1.0 - alpham_ + alphaf_) * (1.0 - alpham_ + alphaf_);
-    gamma_ = 0.5 - alpham_ + alphaf_;
-  }
+  STR::IMPLICIT::GenAlpha::Coefficients coeffs;
+  // get a copy of the input parameters
+  coeffs.beta_ = beta_;
+  coeffs.gamma_ = gamma_;
+  coeffs.alphaf_ = alphaf_;
+  coeffs.alpham_ = alpham_;
+  coeffs.rhoinf_ = rho_inf_;
+
+  ComputeGeneralizedAlphaParameters(coeffs);
+
+  beta_ = coeffs.beta_;
+  gamma_ = coeffs.gamma_;
+  alphaf_ = coeffs.alphaf_;
+  alpham_ = coeffs.alpham_;
+  rho_inf_ = coeffs.rhoinf_;
 }
 
 /*----------------------------------------------------------------------*/
@@ -351,7 +357,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   fextm_->Update(1. - alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // ************************** (2) INTERNAL FORCES ***************************
-
   fintn_->PutScalar(0.0);
   // build new internal forces and stiffness
   if (HaveNonlinearMass() == INPAR::STR::ml_none)

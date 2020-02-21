@@ -199,6 +199,7 @@ namespace STR
      private:
       void PostSetup(Teuchos::ParameterList& cparams);
 
+      /// Set the correct time integration parameters within the contact strategy
       void SetTimeIntegrationInfo(CONTACT::CoAbstractStrategy& strategy) const;
 
       void PostUpdateStepState();

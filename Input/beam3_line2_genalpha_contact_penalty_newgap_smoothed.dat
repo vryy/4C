@@ -57,6 +57,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.5
 ALPHA_F                         0.5
+RHO_INF                         -1.0
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           1e+5

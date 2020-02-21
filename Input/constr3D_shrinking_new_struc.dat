@@ -68,10 +68,7 @@ Debug                           = No
 XML File                        = constraint_new_struc.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA 0.44444444444 //0.308641975
-GAMMA 0.83333333333 //0.611111111
-ALPHA_M 0.0 //0.333333333
-ALPHA_F 0.3333333333333 //0.444444444
+RHO_INF                         0.5//0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 --------------------------------------------------------------------SOLVER 1

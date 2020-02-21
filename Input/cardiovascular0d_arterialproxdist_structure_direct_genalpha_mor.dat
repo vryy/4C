@@ -18,6 +18,7 @@ TOL_CARDVASC0D_RES              1e-06
 TOL_CARDVASC0D_DOFINCR          1e-06
 LINEAR_COUPLED_SOLVER           1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      GenAlpha
 ADAPTCONV                       Yes
 DAMPING                         Rayleigh
 K_DAMP                          0.0001

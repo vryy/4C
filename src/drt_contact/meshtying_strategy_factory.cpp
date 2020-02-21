@@ -626,16 +626,19 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
     fflush(stdout);
   }
 
-  const double alphaf = STR::TIMINT::GetTimIntFactor();
+  // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
+  // need to pass an argument as long as we want to support the same strategy contructor as the old
+  // time integration.
+  const double dummy = -1.0;
 
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
     strategy_ptr = Teuchos::rcp(new CONTACT::MtLagrangeStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ptr = Teuchos::rcp(new CONTACT::MtPenaltyStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   else
     dserror("ERROR: Unrecognized strategy");
 

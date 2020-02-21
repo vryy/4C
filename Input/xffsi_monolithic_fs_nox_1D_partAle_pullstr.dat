@@ -47,10 +47,7 @@ PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.309//0.25
-GAMMA                           0.611//0.5
-ALPHA_M                         0.333//0.5
-ALPHA_F                         0.444//0.5
+RHO_INF                         0.8//1.0
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        springs_spatial
 LINEAR_SOLVER                   1
@@ -273,8 +270,8 @@ XFLUID DIS fluid NODE 26 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1
 XFLUID DIS fluid NODE 26 QUANTITY pressure VALUE -7.39795229718940739e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 2.15998619160625183e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 2.15998619160625016e-01 TOLERANCE 1e-6
-FSI NODE 25 QUANTITY lambdax VALUE -6.65815706978402755e-01 TOLERANCE 1e-8
-FSI NODE 25 QUANTITY lambday VALUE 6.53806394324034645e-01 TOLERANCE 1e-8
-FSI NODE 25 QUANTITY lambdaz VALUE -6.53806394324034756e-01TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambdax VALUE -6.65815636240661424e-01 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambday VALUE 6.53806323015402868e-01 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambdaz VALUE -6.53806323015402868e-01TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

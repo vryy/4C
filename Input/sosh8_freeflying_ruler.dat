@@ -59,10 +59,7 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.4737
-ALPHA_M                         0.4211
-BETA                            0.2770
-GAMMA                           0.5526
+RHO_INF                         0.9
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -75,9 +72,9 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2e-3 4e-3 100000 
 STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE 2.776563264675620626e-05 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -8.097301778820718528e-05 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.755277759260675348e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 5.63515548781157033e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 5.63497286339281825e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -4.88754840048237660e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 9.31703672840560770e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 9.31703902148420582e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          6

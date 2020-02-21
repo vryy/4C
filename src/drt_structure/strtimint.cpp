@@ -16,6 +16,7 @@
 #include "Teuchos_TimeMonitor.hpp"
 
 #include "strtimint.H"
+#include "strtimint_genalpha.H"
 
 #include "stru_resulttest.H"
 
@@ -486,16 +487,7 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
     // (note that we want to hand in theta in the OST case, which
     // is defined just the other way round as alphaf in GenAlpha schemes.
     // Thus, we have to hand in 1.0-theta for OST!!!)
-    double alphaf = 0.0;
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_gemm)
-      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_onesteptheta)
-      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    double alphaf = TimIntParam();
 
     // create beam contact manager
     beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_, alphaf));
@@ -552,24 +544,16 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   // (note that we want to hand in theta in the OST case, which
   // is defined just the other way round as alphaf in GenAlpha schemes.
   // Thus, we have to hand in 1-theta for OST!!!)
-  double alphaf = 0.0;
+  double time_integration_factor = 0.0;
   bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
   if (!do_endtime)
   {
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_gemm)
-      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_onesteptheta)
-      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    time_integration_factor = TimIntParam();
   }
 
   // create instance for meshtying contact bridge
-  cmtbridge_ = Teuchos::rcp(
-      new CONTACT::MeshtyingContactBridge(*discret_, mortarconditions, contactconditions, alphaf));
+  cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
+      *discret_, mortarconditions, contactconditions, time_integration_factor));
 
   cmtbridge_->StoreDirichletStatus(dbcmaps_);
   cmtbridge_->SetState(zeros_);
@@ -1442,9 +1426,10 @@ void STR::TimInt::UpdateStepContactVUM()
       if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_genalpha)
       {
-        alpham = sdynparams.sublist("GENALPHA").get<double>("ALPHA_M");
-        beta = sdynparams.sublist("GENALPHA").get<double>("BETA");
-        gamma = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
+        auto genAlpha = dynamic_cast<STR::TimIntGenAlpha*>(this);
+        alpham = genAlpha->TimIntParamAlpham();
+        beta = genAlpha->TimIntParamBeta();
+        gamma = genAlpha->TimIntParamGamma();
       }
       else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
                INPAR::STR::dyna_gemm)

@@ -299,7 +299,8 @@ GEOMETRY                        full
 // mid-average type of internal forces
 //     Vague,ImrLike,TrLike
 GENAVG                          TrLike
-//
+//RHO must be set to -1 to activate the four parameters
+RHO_INF                         -1.0
 // Generalised-alpha factor in (0,1/2]
 BETA                            0.25
 //

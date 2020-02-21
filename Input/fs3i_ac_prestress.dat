@@ -162,12 +162,6 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1.000e+00
 UZAWATOL                        1.000e-08
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 ----------------------------------------------------------------FLUID DYNAMIC

@@ -102,10 +102,7 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.3460207
-GAMMA                           0.6764705
-ALPHA_M                         0.2352941
-ALPHA_F                         0.4117647
+RHO_INF                         0.7
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree

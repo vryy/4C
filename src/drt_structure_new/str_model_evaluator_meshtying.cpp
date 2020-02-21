@@ -113,6 +113,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->Inttime_init();
+  SetTimeIntegrationInfo(*strategy_ptr_);
   strategy_ptr_->RedistributeContact(
       Int().GetDbc().GetZerosPtr(), Int().GetDbc().GetZerosPtr());  // ToDo RedistributeMeshtying??
   strategy_ptr_->MortarCoupling(Int().GetDbc().GetZerosPtr());
@@ -510,4 +511,15 @@ void STR::MODELEVALUATOR::Meshtying::ReadRestart(IO::DiscretizationReader& iorea
 
   strategy_ptr_->SetState(MORTAR::state_new_displacement, *mesh_relocation_);
   strategy_ptr_->MortarCoupling(mesh_relocation_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Meshtying::SetTimeIntegrationInfo(
+    CONTACT::MtAbstractStrategy& strategy) const
+{
+  const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
+  const double time_fac = Int().GetIntParam();
+
+  strategy.SetTimeIntegrationInfo(time_fac, dyntype);
 }

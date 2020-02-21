@@ -31,6 +31,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure_new/str_timint_basedatasdyn.H"
+#include "../drt_structure_new/str_impl_genalpha.H"
 
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
@@ -380,45 +381,39 @@ void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
     iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double STR::TIMINT::GetTimIntFactor()
+void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs)
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-  const INPAR::STR::DynamicType dyntype =
-      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  // ------ check if the user provide RHO_INF and any other parameters at the same time
+  if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or
+          (coeffs.alphaf_ != -1.0)) and
+      (coeffs.rhoinf_ != -1.0))
+    dserror(
+        "There are two ways to provide GenAlpha parameters:\n"
+        "- You can choose to only provide RHO_INF as the spectral radius."
+        "In this way, no other parameters are allowed.\n"
+        "- You may also specify all the four parameters"
+        "In this way, you MUST set RHO_INF as -1.0");
 
-  double timintfactor = 0.0;
-
-  switch (dyntype)
+  // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
+  else if (coeffs.rhoinf_ == -1.0)
   {
-    case INPAR::STR::dyna_statics:
-    {
-      timintfactor = 0.0;
-      break;
-    }
-    case INPAR::STR::dyna_genalpha:
-    {
-      timintfactor = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-      break;
-    }
-    case INPAR::STR::dyna_gemm:
-    {
-      timintfactor = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      break;
-    }
-    case INPAR::STR::dyna_onesteptheta:
-    {
-      timintfactor = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-      break;
-    }
-    default:
-    {
-      dserror("Time integration factor has not been set for time integration scheme '%s'",
-          INPAR::STR::DynamicTypeString(dyntype).c_str());
-      break;
-    }
+    if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
+    if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
+    if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
+    if ((coeffs.gamma_ <= 0.0) or (coeffs.gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
   }
 
-  return timintfactor;
+  // ------ rho_inf out of [0,1]--> report error
+  else if ((coeffs.rhoinf_ < 0.0) or (coeffs.rhoinf_ > 1.0))
+    dserror("rho_inf out of range [0.0,1.0]");
+
+  // ------ rho_inf specified --> calculate optimal parameters -----------------
+  else
+  {
+    coeffs.alpham_ = (2.0 * coeffs.rhoinf_ - 1.0) / (coeffs.rhoinf_ + 1.0);
+    coeffs.alphaf_ = coeffs.rhoinf_ / (coeffs.rhoinf_ + 1.0);
+    coeffs.beta_ =
+        0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
+    coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
+  };
 }

@@ -52,12 +52,6 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         80
 LOADLIN                         Yes
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.5
-ALPHA_F                         0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
