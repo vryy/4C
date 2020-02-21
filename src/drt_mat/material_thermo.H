@@ -1,0 +1,22 @@
+/*! \file
+\brief Interface for all thermal material models
+
+\level 3
+
+\maintainer Sebastian Proell
+*/
+
+#ifndef MATERIAL_THERMO_H
+#define MATERIAL_THERMO_H
+
+#include "material.H"
+#include "trait_thermo.H"
+
+namespace MAT
+{
+  class ThermoMaterial : public virtual Material, public TRAIT::Thermo
+  {
+  };
+}  // namespace MAT
+
+#endif
