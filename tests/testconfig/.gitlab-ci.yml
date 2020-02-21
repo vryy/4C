@@ -132,11 +132,29 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
-        # generate the baci_coverage.info based on tests run above
-        - lcov --capture --directory ../baci-build/ --output-file baci_coverage.info
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+    after_script:
+        # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
+        - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory . --output-file baci_coverage_base.info > baci_coverage_base.log
+        # generate the baci_coverage_tests.info based on tests run above
+        - lcov --capture --no-external --directory ../baci-build/ --base-directory . --output-file baci_coverage_tests.info > baci_coverage_tests.log
+        # combine the baseline coverage with the coverage from the tests
+        - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info --output-file baci_coverage.info  > baci_coverage.log
         # generate the html version of the coverage report
-        - genhtml baci_coverage.info --output-directory coverage_report/ | tee genhtml_weekly_coverage.log
+        - genhtml baci_coverage.info --output-directory coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
+        # add repo link to the commit that the report is based on
+        - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g" {} \;
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        # Output 200 lines for any failing test
+        - grep -B 200 '*Failed\|*Timeout' buildtest_weekly_coverage.log || true
+        - sed -n '/tests passed,/,//p' buildtest_weekly_coverage.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+    # we allow this job to fail since we care more about execution of all tests then passing all tests
+    # passing tests are checked in daily pipelines while here we would like to measure the code covered by the tests
+    allow_failure: true
     # update (push) the cache of the weekly coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
@@ -147,21 +165,16 @@ variables:
             # the log is needed to print the weekly value of total line coverage in daily and minimal master pipelines
             - genhtml_weekly_coverage.log
         policy: push
-    after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
-        - grep -B 200 '*Failed\|*Timeout' ../buildtest_weekly_coverage.log || true
-        - sed -n '/tests passed,/,//p' ../buildtest_weekly_coverage.log
-        # Specify which configuration was tested by this pipeline
-        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
-        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
-        # Move the log file to the source folder, so it can be found by artifacts.
-        - mv ../buildtest_weekly_coverage.log buildtest_weekly_coverage.log
     # store the coverage report in an artifact so that the subsequent (obligatory) pages job can find it
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
+            - baci_coverage_base.info
+            - baci_coverage_base.log
+            - baci_coverage_tests.info
+            - baci_coverage_tests.log
+            - baci_coverage.info
+            - baci_coverage.log
             - buildtest_weekly_coverage.log
             - genhtml_weekly_coverage.log
             - coverage_report/
