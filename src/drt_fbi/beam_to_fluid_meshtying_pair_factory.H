@@ -13,6 +13,8 @@ approach
 #ifndef BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
 #define BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 namespace DRT

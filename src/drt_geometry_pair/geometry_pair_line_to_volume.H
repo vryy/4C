@@ -12,6 +12,7 @@
 #ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_H
 #define GEOMETRY_PAIR_LINE_TO_VOLUME_H
 
+#include <vector>
 
 #include "geometry_pair.H"
 

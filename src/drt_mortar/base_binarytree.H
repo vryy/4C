@@ -11,6 +11,8 @@
 #ifndef BASE_BINARYTREE_H
 #define BASE_BINARYTREE_H
 
+#include <vector>
+
 #include "abstract_binarytree.H"
 #include "Teuchos_RCP.hpp"
 

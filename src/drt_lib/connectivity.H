@@ -12,7 +12,10 @@
 #ifndef SRC_DRT_LIB_CONNECTIVITY_H_
 #define SRC_DRT_LIB_CONNECTIVITY_H_
 
+#include <set>
 #include <unordered_map>
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 

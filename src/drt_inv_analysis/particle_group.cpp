@@ -10,6 +10,8 @@
 
 #if __cplusplus >= 201103L
 
+#include <list>
+
 #include "particle_group.H"
 
 #include "particle_data.H"

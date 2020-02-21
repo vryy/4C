@@ -21,6 +21,8 @@ attached parenchyma balloon
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
+#include <set>
+
 #include "ad_str_fsiwrapper.H"
 
 

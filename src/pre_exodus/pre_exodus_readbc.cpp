@@ -10,6 +10,8 @@
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
+
 #include "pre_exodus_readbc.H"
 #include "pre_exodus_reader.H"
 

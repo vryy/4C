@@ -12,6 +12,7 @@
 
 #include "pre_exodus_centerline.H"
 #include <iostream>
+#include <list>
 #include "../drt_mat/matpar_bundle.H"  //
 #include "../drt_lib/drt_colors.H"
 #include "pre_exodus_soshextrusion.H"  // for Gmsh plot

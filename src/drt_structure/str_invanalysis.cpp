@@ -21,6 +21,7 @@
 #include "str_invanalysis.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"

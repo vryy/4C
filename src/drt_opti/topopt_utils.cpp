@@ -9,7 +9,7 @@
 
 */
 /*---------------------------------------------------------------------*/
-
+#include <fstream>
 
 #include "topopt_utils.H"
 #include "topopt_optimizer_ele.H"

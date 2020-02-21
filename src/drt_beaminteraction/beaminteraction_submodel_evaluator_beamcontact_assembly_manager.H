@@ -15,6 +15,8 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_H_
 
 
+#include <vector>
+
 #include "../drt_lib/drt_dserror.H"
 #include "Teuchos_RCP.hpp"
 

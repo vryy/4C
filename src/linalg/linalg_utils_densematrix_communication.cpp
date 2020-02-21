@@ -8,6 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include <numeric>
+
 #include "linalg_utils_densematrix_communication.H"
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */

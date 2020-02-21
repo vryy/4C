@@ -10,6 +10,7 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "turbulence_statistics_tgv.H"
 #include "../drt_lib/drt_globalproblem.H"

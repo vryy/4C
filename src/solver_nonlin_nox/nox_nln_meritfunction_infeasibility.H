@@ -15,6 +15,8 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_MERITFUNCTION_INFEASIBILITY_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_MERITFUNCTION_INFEASIBILITY_H_
 
+#include <map>
+
 #include <NOX_MeritFunction_Generic.H>
 
 namespace Teuchos

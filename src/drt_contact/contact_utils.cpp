@@ -9,6 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include <fstream>
+
 #include "contact_utils.H"
 
 #include "../drt_lib/drt_discret.H"

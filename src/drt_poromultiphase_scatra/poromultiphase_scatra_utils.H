@@ -10,6 +10,8 @@
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_
 
+#include <set>
+
 #include "../drt_inpar/inpar_poromultiphase_scatra.H"
 
 #include "Teuchos_RCP.hpp"

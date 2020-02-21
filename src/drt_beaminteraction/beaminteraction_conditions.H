@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include <map>
+#include <set>
 #include <vector>
 #include <Teuchos_RCP.hpp>
 

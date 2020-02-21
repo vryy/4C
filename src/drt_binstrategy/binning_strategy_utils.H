@@ -12,6 +12,9 @@
 #ifndef BINNING_STRATEGY_UTILS_H
 #define BINNING_STRATEGY_UTILS_H
 
+#include <set>
+#include <vector>
+
 #include "Teuchos_RCP.hpp"
 
 // forward declarations

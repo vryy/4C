@@ -13,6 +13,7 @@
 #define IMMERSED_FIELD_EXCHANGE_MANAGER_H
 
 #include <map>
+#include <set>
 #include <cstdlib>
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"

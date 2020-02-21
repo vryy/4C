@@ -13,6 +13,8 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_
 
+#include <set>
+
 #include "../drt_inpar/inpar_structure.H"
 #include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H"

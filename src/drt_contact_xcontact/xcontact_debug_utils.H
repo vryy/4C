@@ -8,6 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include <fstream>
+
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_contact/contact_node.H"

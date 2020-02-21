@@ -10,6 +10,7 @@
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_
 #define SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_
 
+#include <set>
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>

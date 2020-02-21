@@ -10,6 +10,7 @@ turbulent flow over a backward-facing step
 
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "turbulence_statistics_bfs.H"
 

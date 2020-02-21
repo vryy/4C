@@ -7,6 +7,7 @@
 
 \maintainer Martin Kronbichler
  */
+#include <fstream>
 
 #include "searchtree.H"
 #include "searchtree_geometry_service.H"

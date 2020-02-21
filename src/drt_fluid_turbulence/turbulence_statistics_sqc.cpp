@@ -10,6 +10,7 @@ turbulent flow past a square cylinder
 
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "turbulence_statistics_sqc.H"
 

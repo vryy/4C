@@ -11,6 +11,7 @@
 
 
 #include <algorithm>
+#include <numeric>
 
 #include "adapter_coupling.H"
 #include "../drt_lib/drt_matchingoctree.H"

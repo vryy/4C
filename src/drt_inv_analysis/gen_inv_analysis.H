@@ -10,6 +10,8 @@
 #ifndef GEN_INV_ANALYSIS_H
 #define GEN_INV_ANALYSIS_H
 
+#include <set>
+
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"

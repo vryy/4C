@@ -17,6 +17,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
+#include <list>
+
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_binstrategy/binning_strategy_utils.H"
 
