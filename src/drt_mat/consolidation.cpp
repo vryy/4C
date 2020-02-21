@@ -256,7 +256,7 @@ void MAT::Consolidation::Update(double temperature, int gp)
  *----------------------------------------------------------------------*/
 double MAT::Consolidation::EvaluateTempDependentFunction(
     const double temperature,  ///< temperature at GP
-    const int gp,              ///< current GP to select internal phase information
+    const unsigned int gp,     ///< current GP to select internal phase information
     const std::vector<int>
         functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
 )
@@ -290,7 +290,7 @@ double MAT::Consolidation::EvaluateTempDependentFunction(
  |  derivative evaluate routine                  (public) proell 05/18  |
  *----------------------------------------------------------------------*/
 double MAT::Consolidation::EvaluateTempDependentDerivative(
-    const double temperature, const int gp, const std::vector<int> functions)
+    const double temperature, const unsigned int gp, const std::vector<int> functions)
 {
   EvaluateCFracnpAtGp(temperature, gp);
 
@@ -316,8 +316,10 @@ double MAT::Consolidation::EvaluateTempDependentDerivative(
     const double powderVal = FunctionValue(temperature, functions[0]);
     const double meltVal = FunctionValue(temperature, functions[1]);
     const double solidVal = FunctionValue(temperature, functions[2]);
-    return powderDeriv * frac_->at(0) + meltDeriv * frac_->at(1) + solidDeriv * frac_->at(2) +
-           powderVal * frac_T_->at(0) + meltVal * frac_T_->at(1) + solidVal * frac_T_->at(2);
+    const double deriv = powderDeriv * frac_->at(0) + meltDeriv * frac_->at(1) +
+                         solidDeriv * frac_->at(2) + powderVal * frac_T_->at(0) +
+                         meltVal * frac_T_->at(1) + solidVal * frac_T_->at(2);
+    return deriv;
   }
 }
 
@@ -343,21 +345,18 @@ void MAT::Consolidation::EvaluateFractions(const double temperature, const doubl
 void MAT::Consolidation::EvaluateFractionDerivatives(
     const double temperature, const double cfracnp, const double cfracn)
 {
-  // fraction should be evaluated first!
-  std::fill(frac_T_->begin(), frac_T_->end(), 0);
   const double slope = 1 / (Tl_mod_ - Ts_mod_);
-  // powder fraction changes if
-  // a) we are above solidus (redundant)
-  // b) not fully consolidated, i.e. fraction is not 1 yet (equivalent to T < Tl)
-  // c) we are currently in regions where fraction potentially overtakes the history
-  if (temperature < Tl_mod_ && cfracnp > cfracn) frac_T_->at(0) = -slope;
-
-  // molten fraction changes whenever between Ts and Tl, rate is constant
-  if (temperature > Ts_mod_ && temperature < Tl_mod_) frac_T_->at(1) = slope;
-
-  // solid fraction changes if fractional temperature lower than consolidated fraction AND
-  // above Ts, rate is constant
-  if (Tfrac_ < cfracnp && temperature > Ts_mod_) frac_T_->at(2) = -slope;
+  if (temperature > Ts_mod_ && temperature < Tl_mod_)
+  {
+    // melt fraction always changes with calculated slope
+    (*frac_T_)[1] = slope;
+    // depending on an increase/decrease in temperature eitehr solid or powder changes
+    // here we always split the slope onto both fractions as a robust approximation
+    (*frac_T_)[0] = -0.5 * slope;
+    (*frac_T_)[2] = -0.5 * slope;
+  }
+  else
+    std::fill(frac_T_->begin(), frac_T_->end(), 0);
 }
 
 /*----------------------------------------------------------------------*
