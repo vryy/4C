@@ -106,7 +106,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseOperator> st
   // get values and switches from the condition
   const std::vector<int>* onoff = spring_->Get<std::vector<int>>("onoff");
   const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
-  const std::vector<int>* numfuncspring = spring_->Get<std::vector<int>>("funct_stiff");
+  const std::vector<int>* numfuncsstiff = spring_->Get<std::vector<int>>("funct_stiff");
   const std::vector<double>* dashpotvisc = spring_->Get<std::vector<double>>("visco");
   const std::vector<int>* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
   const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
@@ -125,7 +125,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseOperator> st
   params.set("disploffset", disploffset);
   params.set("time_fac", time_fac);
   params.set("direction", direction);
-  params.set("funct_stiff", numfuncspring);
+  params.set("funct_stiff", numfuncsstiff);
   params.set("funct_visco", numfuncvisco);
   params.set("funct_disploffset", numfuncdisploffset);
   params.set("total time", total_time);
@@ -250,6 +250,25 @@ void UTILS::SpringDashpot::Evaluate(Teuchos::RCP<LINALG::SparseOperator> stiff,
           break;
 
         case cursurfnormal:  // spring dashpot acts in curnormal direction
+
+          // safety checks
+          const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
+          const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
+          const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+          for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+            if ((*numfuncstiff)[i])
+              dserror(
+                  "temporal dependence of stiffness not implemented for current surface "
+                  "evaluation");
+          for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+            if ((*numfuncvisco)[i])
+              dserror(
+                  "temporal dependence of damping not implemented for current surface evaluation");
+          for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+            if ((*numfuncdisploffset)[i])
+              dserror(
+                  "temporal dependence of offset not implemented for current surface evaluation");
+
           // spring displacement
           gap = gapnp_[gid];
           gapdt = gapdt_[gid];

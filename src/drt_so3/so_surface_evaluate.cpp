@@ -2354,35 +2354,32 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
       const double time_fac = params.get("time_fac", 0.0);
 
-      const std::vector<int>* onoff = params.get<const std::vector<int>*>("onoff");
-      std::vector<double> springstiff = *(params.get<const std::vector<double>*>("springstiff"));
-      std::vector<double> dashpotvisc = *(params.get<const std::vector<double>*>("dashpotvisc"));
-      std::vector<double> disploffset = *(params.get<const std::vector<double>*>("disploffset"));
-      const std::vector<int>* numfuncstiff = params.get<const std::vector<int>*>("funct_stiff");
-      const std::vector<int>* numfuncvisco = params.get<const std::vector<int>*>("funct_visco");
-      const std::vector<int>* numfuncdisploffset =
-          params.get<const std::vector<int>*>("funct_disploffset");
+      const auto* onoff = params.get<const std::vector<int>*>("onoff");
+      auto springstiff = *(params.get<const std::vector<double>*>("springstiff"));
+      auto dashpotvisc = *(params.get<const std::vector<double>*>("dashpotvisc"));
+      auto disploffset = *(params.get<const std::vector<double>*>("disploffset"));
+      const auto* numfuncstiff = params.get<const std::vector<int>*>("funct_stiff");
+      const auto* numfuncvisco = params.get<const std::vector<int>*>("funct_visco");
+      const auto* numfuncdisploffset = params.get<const std::vector<int>*>("funct_disploffset");
 
-      double time;
-      if (ParentElement()->IsParamsInterface())
-        time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
-      else
-        time = params.get("total time", 0.0);
+      const double time = ParentElement()->IsParamsInterface()
+                              ? ParentElement()->ParamsInterfacePtr()->GetTotalTime()
+                              : params.get("total time", 0.0);
 
       // scale coefficients with time function if activated
-      for (int i = 0; i < (int)numfuncstiff->size(); ++i)
+      for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
         springstiff[i] =
             (*numfuncstiff)[i] != 0
                 ? springstiff[i] *
                       DRT::Problem::Instance()->Funct((*numfuncstiff)[i] - 1).EvaluateTime(time)
                 : springstiff[i];
-      for (int i = 0; i < (int)numfuncvisco->size(); ++i)
+      for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
         dashpotvisc[i] =
             (*numfuncvisco)[i] != 0
                 ? dashpotvisc[i] *
                       DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
                 : dashpotvisc[i];
-      for (int i = 0; i < (int)numfuncdisploffset->size(); ++i)
+      for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
                                                     ->Funct((*numfuncdisploffset)[i] - 1)
