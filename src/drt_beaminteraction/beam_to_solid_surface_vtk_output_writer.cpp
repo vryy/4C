@@ -106,6 +106,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation");
       visualization_writer->AddPointDataVector("displacement", 3);
+      visualization_writer->AddPointDataVector("projection_direction", 3);
     }
   }
 

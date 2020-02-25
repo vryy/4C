@@ -55,6 +55,51 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 {
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
+
+  // If a writer exists for segmentation point data, add the segmentation point data.
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_segmentation = visualization_writer->GetVisualizationWriter("segmentation");
+  if (visualization_segmentation != Teuchos::null)
+  {
+    // Setup variables.
+    LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
+
+    // Get the visualization vectors.
+    std::vector<double>& point_coordinates =
+        visualization_segmentation->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement =
+        visualization_segmentation->GetMutablePointDataVector("displacement");
+    std::vector<double>& projection_direction =
+        visualization_segmentation->GetMutablePointDataVector("projection_direction");
+
+    // Loop over the segments on the beam.
+    for (const auto& segment : this->line_to_3D_segments_)
+    {
+      // Add the left and right boundary point of the segment.
+      for (const auto& segmentation_point : {segment.GetStartPoint(), segment.GetEndPoint()})
+      {
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point.GetEta(), this->ele1posref_, X_beam, this->Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+        u_beam = r_beam;
+        u_beam -= X_beam;
+
+        GEOMETRYPAIR::EvaluatePosition<surface>(segmentation_point.GetXi(),
+            this->face_element_->GetFacePosition(), r_solid,
+            this->face_element_->GetDrtFaceElement());
+        projection_dir = r_solid;
+        projection_dir -= r_beam;
+
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(FADUTILS::CastToDouble(X_beam(dim)));
+          displacement.push_back(FADUTILS::CastToDouble(u_beam(dim)));
+          projection_direction.push_back(FADUTILS::CastToDouble(projection_dir(dim)));
+        }
+      }
+    }
+  }
 }
 
 /**
