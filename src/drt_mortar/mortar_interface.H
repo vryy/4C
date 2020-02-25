@@ -1483,6 +1483,9 @@ namespace MORTAR
     virtual void UpdateMasterSlaveSets();
 
    private:
+    //! @name Parallel distribution and ghosting
+    //! @{
+
     /*!
     \brief Extend interface ghosting
 
@@ -1516,6 +1519,20 @@ namespace MORTAR
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
     void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
+
+    /*!
+    \brief Setup the binning strategy for geometrically motivated extended ghosting
+
+    \note The average velocity is only important, if binning is performed in the deformed
+    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
+    coupling in the reference configuration, it suffices to set the velocity to 0.0.
+
+    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
+    @return Binning strategy object ready to be used
+    */
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
+
+    //! @}
 
     /*!
     \brief Update master and slave interface maps for DOFs
@@ -1575,18 +1592,6 @@ namespace MORTAR
     we sometimes pass a column map to the row map argument.
     */
     void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
-
-    /*!
-    \brief Setup the binning strategy for geometrically motivated extended ghosting
-
-    \note The average velocity is only important, if binning is performed in the deformed
-    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
-    coupling in the reference configuration, it suffices to set the velocity to 0.0.
-
-    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
-    @return Binning strategy object ready to be used
-    */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     /*!
     \brief check and initialize possible cross point modification
