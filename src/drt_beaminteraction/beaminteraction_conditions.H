@@ -113,6 +113,15 @@ namespace BEAMINTERACTION
      */
     virtual bool IdsInCondition(const int id_line, const int id_other) const = 0;
 
+    /**
+     * \brief Return a pointer to the geometry evaluation data in this condition.
+     */
+    const Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData()
+        const
+    {
+      return geometry_evaluation_data_;
+    }
+
    protected:
     //! Pointer to the beam condition.
     Teuchos::RCP<const DRT::Condition> condition_line_;

@@ -47,6 +47,9 @@
 #include <NOX_Solver_Generic.H>
 
 #include "beaminteraction_conditions.H"
+#include "beam_to_solid_surface_meshtying_params.H"
+#include "beam_to_solid_surface_vtk_output_params.H"
+#include "beam_to_solid_surface_vtk_output_writer.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
@@ -63,7 +66,9 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
       beam_interaction_conditions_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
-      assembly_managers_(Teuchos::null)
+      assembly_managers_(Teuchos::null),
+      beam_to_solid_volume_meshtying_vtk_writer_ptr_(Teuchos::null),
+      beam_to_solid_surface_vtk_writer_ptr_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -150,6 +155,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
     beam_contact_params_ptr_->BuildBeamToSolidSurfaceMeshtyingParams();
+
+    // Build the beam to solid surface output writer if desired.
+    if (beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
+            ->GetVtkOuputParamsPtr()
+            ->GetOutputFlag())
+    {
+      beam_to_solid_surface_vtk_writer_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter);
+      beam_to_solid_surface_vtk_writer_ptr_->Init();
+      beam_to_solid_surface_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
+          beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()->GetVtkOuputParamsPtr(),
+          GState().GetTimeN());
+    }
   }
 
   // set flag
@@ -316,6 +335,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(bool 
     WriteTimeStepOutputRuntimeVtpBeamContact();
   if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
     beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntime(this);
+  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -600,6 +621,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
     WriteIterationOutputRuntimeVtpBeamContact(solver.getNumIterations());
   if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
     beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntimeIteration(
+        this, solver.getNumIterations());
+  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntimeIteration(
         this, solver.getNumIterations());
 }
 
