@@ -379,7 +379,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           GetSegmentTrackingSetMutable(pair);
       ProjectionResult projection_result;
       bool last_segment_active = false;
-      scalar_type eta_start;
+      ProjectionPoint1DTo3D<scalar_type> segment_start;
       unsigned int counter = 0;
       for (typename std::set<ProjectionPoint1DTo3D<scalar_type>>::iterator set_iterator =
                intersection_points.begin();
@@ -419,7 +419,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           if (!last_segment_active)
           {
             last_segment_active = true;
-            eta_start = start_point.GetEta();
+            segment_start = start_point;
           }
         }
         else
@@ -429,13 +429,14 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           {
             // Create a segment with double as the scalar type.
             LineSegment<scalar_type> new_segment_double(
-                FADUTILS::CastToDouble(eta_start), FADUTILS::CastToDouble(start_point.GetEta()));
+                FADUTILS::CastToDouble(segment_start.GetEta()),
+                FADUTILS::CastToDouble(start_point.GetEta()));
 
             // Check if the segment already exists for this line.
             if (segment_tracker.find(new_segment_double) == segment_tracker.end())
             {
               // Add the new segment to this pair and to the evaluation tracker.
-              segments.push_back(LineSegment<scalar_type>(eta_start, start_point.GetEta()));
+              segments.push_back(LineSegment<scalar_type>(segment_start, start_point));
               segment_tracker.insert(new_segment_double);
 
               // Project the Gauss points on the segment. All points have to project valid.
