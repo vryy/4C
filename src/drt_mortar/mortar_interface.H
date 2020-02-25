@@ -1622,6 +1622,12 @@ namespace MORTAR
     void InitializeLagMultConst();
 
     /*!
+    \brief Communicate the quadslave status among all processes
+
+    */
+    void CommunicateQuadSlaveStatusAmongAllProcs();
+
+    /*!
     \brief Setup interface discretization
 
     Creates either a regular DRT::Discretization or a DRT::NurbsDiscretization.

@@ -600,16 +600,21 @@ void MORTAR::MortarInterface::FillComplete(
   // initialize node and element data container
   InitializeDataContainer();
 
-  // communicate quadslave status among ALL processors
-  // (not only those participating in interface)
-  int localstatus = (int)(quadslave_);
-  int globalstatus = 0;
-  Comm().SumAll(&localstatus, &globalstatus, 1);
-  quadslave_ = (bool)(globalstatus);
+  // Communicate quadslave status among ALL processors
+  CommunicateQuadSlaveStatusAmongAllProcs();
 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::CommunicateQuadSlaveStatusAmongAllProcs()
+{
+  int localstatus = static_cast<int>(quadslave_);
+  int globalstatus = 0;
+  Comm().SumAll(&localstatus, &globalstatus, 1);
+  quadslave_ = static_cast<bool>(globalstatus);
+}
 
 /*----------------------------------------------------------------------*
  |  Check and initialize corner/edge contact                 farah 07/16|
