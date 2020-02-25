@@ -72,6 +72,18 @@ namespace BEAMINTERACTION
     void PreEvaluate() override;
 
     /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     *
+     * Create segmentation and integration points output.
+     *
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        const Teuchos::ParameterList& visualization_params) const override;
+
+    /**
      * \brief Create the geometry pair for this contact pair.
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */

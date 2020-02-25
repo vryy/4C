@@ -107,9 +107,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.
      *
-     * This base class creates output of (if selected in the input file) the segmentation, the
-     * integration points - and if implemented in the derived classes - the forces at the
-     * integration points.
+     * Create segmentation and integration points output.
      *
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.

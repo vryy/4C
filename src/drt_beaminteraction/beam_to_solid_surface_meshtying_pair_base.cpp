@@ -10,6 +10,8 @@
 
 #include "beam_to_solid_surface_meshtying_pair_base.H"
 
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
@@ -40,6 +42,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
         this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
         this->face_element_->GetReferenceNormals());
   }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
+    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase>
+                                       visualization_writer,
+    const Teuchos::ParameterList& visualization_params) const
+{
+  // Get visualization of base class.
+  base_class::GetPairVisualization(visualization_writer, visualization_params);
 }
 
 /**

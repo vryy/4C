@@ -149,10 +149,48 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
+  // If a writer exists for segmentation point data, add the segmentation point data.
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_segmentation = visualization_writer->GetVisualizationWriter("segmentation");
+  if (visualization_segmentation != Teuchos::null)
+  {
+    // Setup variables.
+    LINALG::Matrix<3, 1, scalar_type_fad> X;
+    LINALG::Matrix<3, 1, scalar_type_fad> u;
+    LINALG::Matrix<3, 1, scalar_type_fad> r;
+
+    // Get the visualization vectors.
+    std::vector<double>& point_coordinates =
+        visualization_segmentation->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement =
+        visualization_segmentation->GetMutablePointDataVector("displacement");
+
+    // Loop over the segments on the beam.
+    for (const auto& segment : this->line_to_3D_segments_)
+    {
+      // Add the left and right boundary point of the segment.
+      for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
+      {
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point, this->ele1posref_, X, this->Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            segmentation_point, this->ele1pos_, r, this->Element1());
+        u = r;
+        u -= X;
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+        }
+      }
+    }
+  }
+
   // If a writer exists for integration point data, add the integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
-      visualization_writer->GetVisualizationWriter("integration-points");
-  if (visualization != Teuchos::null)
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_integration_points =
+          visualization_writer->GetVisualizationWriter("integration-points");
+  if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
     LINALG::Matrix<3, 1, scalar_type_fad> X;
@@ -162,9 +200,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     LINALG::Matrix<3, 1, scalar_type_fad> force_integration_point;
 
     // Get the visualization vectors.
-    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
-    std::vector<double>& force = visualization->GetMutablePointDataVector("force");
+    std::vector<double>& point_coordinates =
+        visualization_integration_points->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement =
+        visualization_integration_points->GetMutablePointDataVector("displacement");
+    std::vector<double>& force =
+        visualization_integration_points->GetMutablePointDataVector("force");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
