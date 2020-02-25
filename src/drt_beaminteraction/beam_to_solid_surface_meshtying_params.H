@@ -19,6 +19,12 @@
 #include "../drt_lib/drt_dserror.H"
 
 
+// Forward declaration.
+namespace BEAMINTERACTION
+{
+  class BeamToSolidSurfaceVtkOutputParams;
+}
+
 namespace BEAMINTERACTION
 {
   /**
@@ -117,6 +123,12 @@ namespace BEAMINTERACTION
      */
     inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
+    /**
+     * \brief Returns a pointer to the vtk output parameters.
+     * @return Pointer to vtk output parameters.
+     */
+    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> GetVtkOuputParamsPtr();
+
    private:
     //! Flag if Init was called.
     bool isinit_;
@@ -141,6 +153,9 @@ namespace BEAMINTERACTION
 
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
+
+    //! Pointer to the vtk output parameters for beam to solid volume meshtying.
+    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
   };
 
 }  // namespace BEAMINTERACTION
