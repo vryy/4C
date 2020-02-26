@@ -41,10 +41,9 @@ namespace CONTACT
     two contact boundary conditions. It extracts all contact boundary conditions
     and constructs one or multiple contact interfaces from them and stores them.
 
-    It calls CONTACT::CoInterface::FillComplete() on all contact interfaces which
-    makes the nodes and elements of a contact interfaces redundant on all
-    processors that either own a node or an element on the interfaces in the
-    input discretization.
+    All interfaces will be FillComplete in order to get their internal discretization ready for
+    further usage. This step also takes care of extending the interface ghosting depending on the
+    user's choice.
 
     In addition, it creates the necessary solver strategy object which handles
     the whole contact evaluation.

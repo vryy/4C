@@ -211,7 +211,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
           Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
     regularized_ = true;
 
-  // intialize storage fields for parallel redistribution
+  // initialize storage fields for parallel redistribution
   unbalanceEvaluationTime_.clear();
   unbalanceNumSlaveElements_.clear();
 
