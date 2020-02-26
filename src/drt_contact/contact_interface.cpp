@@ -206,7 +206,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContai
   // different ID that does not need to be a self contact interface
   if (!(selfcontact_ or nonSmoothContact_) && redundant == INPAR::MORTAR::redundant_all)
     if (Comm().MyPID() == 0)
-      std::cout << "WARNING: We do not want redundant interface storage for contact where not "
+      std::cout << "\n\nWARNING: We do not want redundant interface storage for contact where not "
                    "needed, as it is very expensive. But we need it e.g. for self contact."
                 << std::endl;
 
