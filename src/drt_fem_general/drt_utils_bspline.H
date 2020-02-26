@@ -87,10 +87,10 @@ namespace DRT
         //--------------------------------------------------
         /*! \brief compute a bspline value at position x
 
-         \param bspline_value double (o)
+         \param bspline_value scalar_type (o)
                               the bspline value computed
 
-         \param  x            double (i)
+         \param  x            scalar_type (i)
                               position to evaluate bspline
 
          \param  ldofid       int    (i)
@@ -452,13 +452,13 @@ namespace DRT
         /*! \brief Compute ldofid's Bspline value at point x
                    In addiditon, compute its first derivative
 
-         \param bsplineval   double   (o)
+         \param bsplineval   scalar_type   (o)
                              bspline value
 
-         \param bsplineder   double   (o)
+         \param bsplineder   scalar_type   (o)
                              first derivative of bspline
 
-         \param x            double   (i)
+         \param x            scalar_type   (i)
                              position to evaluate bspline
 
          \param ldofid       int      (i)
@@ -864,16 +864,16 @@ namespace DRT
                    In addiditon, compute its first and
                    second derivative
 
-        \param bsplineval  double  (o)
+        \param bsplineval  scalar_type  (o)
                            bspline value
 
-        \param bsplineder  double  (o)
+        \param bsplineder  scalar_type  (o)
                            first derivative of bspline
 
-        \param bsplineder2 double  (o)
+        \param bsplineder2 scalar_type  (o)
                            second derivative of bspline
 
-        \param x           double  (i)
+        \param x           scalar_type  (i)
                            position to evaluate bspline
 
         \param ldofid      int     (i)

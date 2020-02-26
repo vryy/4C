@@ -964,7 +964,7 @@ namespace DRT
         DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
         DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
-        // get temporary doubles
+        // get temporary variables
         scalar_type bspline_xi_value;
         scalar_type bspline_eta_value;
 
@@ -1012,7 +1012,7 @@ namespace DRT
         //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        // alloc temporary doubles, initialise to zero
+        // alloc temporary variable, initialise to zero
         scalar_type sum_funct_weight;
 
         sum_funct_weight = 0.0;
@@ -1291,7 +1291,7 @@ namespace DRT
         DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
         DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
-        // get temporary doubles
+        // get temporary variables
         scalar_type bspline_xi_value;
         scalar_type bspline_xi_derivative;
         scalar_type bspline_eta_value;
@@ -1353,7 +1353,7 @@ namespace DRT
         //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        // alloc temporary doubles, initialise to zero
+        // alloc temporary variable, initialise to zero
         scalar_type sum_funct_weight;
         scalar_type sum_deriv_weight[2];
 
