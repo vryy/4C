@@ -95,7 +95,7 @@ E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 
 
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 3 ONOFF 1 1 1 STIFF 1.0e-6 1.0e-6 1.0e-6 VISCO 0.0 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION xyz COUPLING none
+E 2 - NUMDOF 3 ONOFF 1 1 1 STIFF 1.0e-6 1.0e-6 1.0e-6 FUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 FUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 FUNCTDISPLOFFSET 0 0 0 DIRECTION xyz COUPLING none
 
 
 ----------------------------------------------------------------------FUNCT1
