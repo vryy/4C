@@ -1,9 +1,5 @@
 //
 // Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
-//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -24,10 +20,10 @@ PROBLEMTYP                      Structure_Scalar_Interaction
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 INT_STRATEGY                    Standard
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
 VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_function
@@ -40,8 +36,13 @@ COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Standard
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
-MATRIXTYPE                      sparse
+MATRIXTYPE                      block
 ----------------------------------------------------------SOLVER 1
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_2x2.xml
+----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 1.0
