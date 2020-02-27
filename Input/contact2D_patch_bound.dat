@@ -69,6 +69,7 @@ INTTYPE                         segments
 LM_DUAL_CONSISTENT              none
 ALGORITHM                       mortar
 LM_QUAD                         quad
+CROSSPOINTS                     Yes
 ---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
@@ -111,18 +112,6 @@ E 18 - 1 Master
 E 24 - 1 Master
 E 25 - 1 Master
 E 28 - 1 Slave Active
-//E 14 - 1 Slave Inactive
-//E 15 - 1 Slave Inactive
-//E 16 - 1 Slave Active
-//E 17 - 1 Slave Inactive
-//E 18 - 1 Slave Inactive
-//E 24 - 1 Slave Inactive
-//E 25 - 1 Slave Inactive
-//E 28 - 1 Master
------------------------DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D
-DPOINT 1
-// nonsmooth
-E 24 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1  DNODE 1
 NODE 10 DNODE 2
