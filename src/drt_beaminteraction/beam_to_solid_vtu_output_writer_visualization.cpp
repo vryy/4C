@@ -97,6 +97,30 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutablePointDataVec
 /**
  *
  */
+std::vector<double>&
+BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutableCellDataVector(
+    std::string data_name, int additional_reserve)
+{
+  // Check if the cell data vector already exists.
+  std::map<std::string, std::pair<std::vector<double>, unsigned int>>& cell_data_map =
+      GetMutableCellDataMap();
+  const auto& it = cell_data_map.find(data_name);
+  if (it != cell_data_map.end())
+  {
+    if (additional_reserve > 0)
+      it->second.first.reserve(it->second.first.size() + additional_reserve);
+    return it->second.first;
+  }
+  else
+  {
+    dserror("The cell data vector with the name '%s' does not exist.", data_name.c_str());
+    return it->second.first;
+  }
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddPointDataVector(
     std::string data_name, unsigned int n_dim, int reserve)
 {
@@ -105,13 +129,36 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddPointDataVecto
       GetMutablePointDataMap();
   const auto& it = point_data_map.find(data_name);
   if (it != point_data_map.end())
-    dserror(
-        "The data vector with the name '%s' you want to add already exists.", data_name.c_str());
+    dserror("The point data vector with the name '%s' you want to add already exists.",
+        data_name.c_str());
   else
   {
     std::pair<std::vector<double>, unsigned int> new_pair;
     point_data_map[data_name] = new_pair;
     std::pair<std::vector<double>, unsigned int>& added_pair = point_data_map[data_name];
+    added_pair.second = n_dim;
+    if (reserve > 0) added_pair.first.reserve(reserve);
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddCellDataVector(
+    std::string data_name, unsigned int n_dim, int reserve)
+{
+  // Check if the cell data vector already exists.
+  std::map<std::string, std::pair<std::vector<double>, unsigned int>>& cell_data_map =
+      GetMutableCellDataMap();
+  const auto& it = cell_data_map.find(data_name);
+  if (it != cell_data_map.end())
+    dserror("The cell data vector with the name '%s' you want to add already exists.",
+        data_name.c_str());
+  else
+  {
+    std::pair<std::vector<double>, unsigned int> new_pair;
+    cell_data_map[data_name] = new_pair;
+    std::pair<std::vector<double>, unsigned int>& added_pair = cell_data_map[data_name];
     added_pair.second = n_dim;
     if (reserve > 0) added_pair.first.reserve(reserve);
   }
