@@ -997,53 +997,60 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegu
     const double thickness, const double eta) const
 {
   // initialize regularization factor
-  double regfac(1.);
+  double regfac(1.0);
 
   // actually compute regularization factor if lithium stripping is relevant
-  if (my::scatraparamsboundary_->ConditionType() == DRT::Condition::S2ICouplingGrowth and eta > 0.)
+  if (my::scatraparamsboundary_->ConditionType() == DRT::Condition::S2ICouplingGrowth and eta > 0.0)
   {
-    // get the regularization type
-    const std::string regtype = my::scatraparamsboundary_->RegularizationType();
-
     // extract regularization parameter from scatra-scatra interface coupling condition
     const double regpar = my::scatraparamsboundary_->RegularizationParameter();
-    if (regpar < 0.)
+    if (regpar < 0.0)
       dserror("Regularization parameter for lithium stripping must not be negative!");
 
-    // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-    if (regtype == "polynomial")
+    // evaluate dependent on the regularization type
+    switch (my::scatraparamsboundary_->RegularizationType())
     {
-      // use regularization parameter if specified, otherwise take default value according to
-      // reference
-      const double thickness0 = regpar > 0. ? regpar : 4.8e-7;
+      // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
+      case INPAR::S2I::RegularizationType::polynomial_regularization:
+      {
+        // use regularization parameter if specified, otherwise take default value according to
+        // reference
+        const double thickness0 = regpar > 0.0 ? regpar : 4.8e-7;
 
-      // compute regularization factor
-      regfac = thickness <= 0. ? 0. : pow(thickness, 4) / (pow(thickness, 4) + pow(thickness0, 4));
+        // compute regularization factor
+        regfac =
+            thickness <= 0.0 ? 0.0 : pow(thickness, 4) / (pow(thickness, 4) + pow(thickness0, 4));
+
+        break;
+      }
+      // trigonometrical regularization involving (co)sine half-wave
+      case INPAR::S2I::RegularizationType::trigonometrical_regularization:
+      {
+        // use regularization parameter if specified, otherwise take lithium atom diameter as
+        // default value
+        const double thickness_regend = regpar > 0.0 ? regpar : 2.9e-7;
+
+        // compute regularization factor
+        if (thickness <= 0.0)
+          regfac = 0.0;
+        else if (thickness < thickness_regend)
+          regfac = 0.5 * cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
+
+        break;
+      }
+      // non-regularized Heaviside function
+      case INPAR::S2I::RegularizationType::no_regularization:
+      {
+        if (thickness <= 0.0) regfac = 0.0;
+
+        break;
+      }
+      // safety check
+      default:
+        dserror("Invalid type of regularization: %i for lithium stripping!",
+            static_cast<int>(my::scatraparamsboundary_->RegularizationType()));
+        break;
     }
-
-    // trigonometrical regularization involving (co)sine half-wave
-    else if (regtype == "trigonometrical")
-    {
-      // use regularization parameter if specified, otherwise take lithium atom diameter as default
-      // value
-      const double thickness_regend = regpar > 0. ? regpar : 2.9e-7;
-
-      // compute regularization factor
-      if (thickness <= 0.)
-        regfac = 0.;
-      else if (thickness < thickness_regend)
-        regfac = 0.5 * cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
-    }
-
-    // non-regularized Heaviside function
-    else if (regtype == "none")
-    {
-      if (thickness <= 0.) regfac = 0.;
-    }
-
-    // safety check
-    else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
   }
 
   return regfac;
@@ -1060,57 +1067,63 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizat
     const double thickness, const double eta) const
 {
   // initialize derivative of regularization factor
-  double regfacderiv(0.);
+  double regfacderiv(0.0);
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
   if (my::scatraparamsboundary_->ConditionType() == DRT::Condition::S2ICouplingGrowth and
-      thickness > 0. and eta > 0.)
+      thickness > 0.0 and eta > 0.0)
   {
-    // get the regularization type
-    const std::string regtype = my::scatraparamsboundary_->RegularizationType();
-
     // extract regularization parameter from scatra-scatra interface coupling condition
     const double regpar = my::scatraparamsboundary_->RegularizationParameter();
-    if (regpar < 0.)
+    if (regpar < 0.0)
       dserror("Regularization parameter for lithium stripping must not be negative!");
 
-    // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-    if (regtype == "polynomial")
+    // evaluate dependent on the regularization type
+    switch (my::scatraparamsboundary_->RegularizationType())
     {
-      // use regularization parameter if specified, otherwise take default value according to
-      // reference
-      const double thickness0 = regpar > 0. ? regpar : 4.8e-7;
+      // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
+      case INPAR::S2I::RegularizationType::polynomial_regularization:
+      {
+        // use regularization parameter if specified, otherwise take default value according to
+        // reference
+        const double thickness0 = regpar > 0.0 ? regpar : 4.8e-7;
 
-      // compute derivative of regularization factor
-      const double thickness0_pow4 = pow(thickness0, 4);
-      regfacderiv =
-          4. * pow(thickness, 3) * thickness0_pow4 / pow(thickness0_pow4 + pow(thickness, 4), 2);
+        // compute derivative of regularization factor
+        const double thickness0_pow4 = pow(thickness0, 4);
+        regfacderiv =
+            4. * pow(thickness, 3) * thickness0_pow4 / pow(thickness0_pow4 + pow(thickness, 4), 2);
+
+        break;
+      }
+      // trigonometrical regularization involving (co)sine half-wave
+      case INPAR::S2I::RegularizationType::trigonometrical_regularization:
+      {
+        // use regularization parameter if specified, otherwise take lithium atom diameter as
+        // default value
+        const double thickness_regend = regpar > 0.0 ? regpar : 2.9e-7;
+
+        // compute derivative of regularization factor
+        const double thickness_regend_inverse = 1.0 / thickness_regend;
+        if (thickness < thickness_regend)
+          regfacderiv = 0.5 * sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
+                        thickness_regend_inverse;
+
+        break;
+      }
+      case INPAR::S2I::RegularizationType::no_regularization:
+      {
+        // do nothing and retain derivative as initialized, since non-regularized Heaviside function
+        // cannot be properly differentiated
+        break;
+      }
+      // safety check
+      default:
+      {
+        dserror("Invalid type of regularization: %i for lithium stripping!",
+            static_cast<int>(my::scatraparamsboundary_->RegularizationType()));
+        break;
+      }
     }
-
-    // trigonometrical regularization involving (co)sine half-wave
-    else if (regtype == "trigonometrical")
-    {
-      // use regularization parameter if specified, otherwise take lithium atom diameter as default
-      // value
-      const double thickness_regend = regpar > 0. ? regpar : 2.9e-7;
-
-      // compute derivative of regularization factor
-      const double thickness_regend_inverse = 1. / thickness_regend;
-      if (thickness < thickness_regend)
-        regfacderiv = 0.5 * sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
-                      thickness_regend_inverse;
-    }
-
-    // non-regularized Heaviside function
-    else if (regtype == "none")
-    {
-      // do nothing and retain derivative as initialized, since non-regularized Heaviside function
-      // cannot be properly differentiated
-    }
-
-    // safety check
-    else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
   }
 
   return regfacderiv;
