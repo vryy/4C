@@ -12,6 +12,7 @@
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
+#include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 #include "../drt_inpar/inpar_s2i.H"
 
@@ -31,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
 {
   static std::map<std::string, ScaTraEleBoundaryCalcElchElectrode<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -47,7 +48,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
   }
 
@@ -73,10 +74,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCalcElchElectrode(
-    const int numdofpernode, const int numscal,
-    const std::string& disname)
-    :  // constructor of base class
-      myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
+    const int numdofpernode, const int numscal, const std::string& disname)
+    : myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
 {
   return;
 }
@@ -141,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_, emasterphinp,
         my::funct_, my::funct_, my::funct_, my::funct_, kineticmodel, numelectrons, stoichiometries,
@@ -199,7 +198,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       if (stoichiometries->size() != 1)
         dserror("Number of stoichiometric coefficients does not match number of scalars!");
       if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
-      if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+      if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
 
       break;
     }
@@ -225,7 +224,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
 
   // extract saturation value of intercalated lithium concentration from electrode material
   const double cmax = matelectrode->CMax();
-  if (cmax < 1.e-12)
+  if (cmax < 1.0e-12)
     dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // equilibrium electric potential difference at electrode surface
@@ -265,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double expterm = expterm1 - expterm2;
 
         // safety check
-        if (abs(expterm) > 1.e5)
+        if (abs(expterm) > 1.0e5)
           dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
               expterm);
 
@@ -279,9 +278,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         double dj_dpot_master(.0);
 
         // calculate core linearizations
-        CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0, frt, epdderiv,
-            alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint,
-            eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
+            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
+            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
+            dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
@@ -300,9 +300,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       if (not std::isinf(epd))
       {
         // compute Butler-Volmer mass flux density via Newton-Raphson method
-        const double j =
-            CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt, eslavepotint,
-                emasterpotint, epd, resistance, itemaxmimplicitBV, convtolimplicitBV, faraday);
+        const double j = myelectrodeutils::CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa,
+            alphac, frt, eslavepotint, emasterpotint, epd, resistance, itemaxmimplicitBV,
+            convtolimplicitBV, faraday);
 
         // electrode-electrolyte overpotential at integration point
         const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double expterm = expterm1 - expterm2;
 
         // safety check
-        if (abs(expterm) > 1.e5)
+        if (abs(expterm) > 1.0e5)
           dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
               expterm);
 
@@ -327,9 +327,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double jfacrhsfac = j * timefacrhsfac;
 
         // calculate core linearizations
-        CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0, frt, epdderiv,
-            alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint,
-            eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
+            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
+            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
+            dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
@@ -465,7 +466,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
 
     // evaluate overall integration factor
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
-    if (timefacwgt < 0.) dserror("Integration factor is negative!");
+    if (timefacwgt < 0.0) dserror("Integration factor is negative!");
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -502,11 +503,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         const double alphaa = my::scatraparamsboundary_->AlphaA();
         const double alphac = my::scatraparamsboundary_->AlphaC();
         const double kr = my::scatraparamsboundary_->Kr();
-        if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+        if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
         const double cmax = matelectrode->CMax();
-        if (cmax < 1.e-12)
+        if (cmax < 1.0e-12)
           dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
         // compute factor F/(RT)
@@ -534,7 +535,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
           const double expterm = expterm1 - expterm2;
 
           // safety check
-          if (abs(expterm) > 1.e5)
+          if (abs(expterm) > 1.0e5)
             dserror(
                 "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
                 expterm);
@@ -627,7 +628,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
   // valence cannot be computed for electrode material
   dserror("Valence cannot be computed for electrode material!");
 
-  return 0.;
+  return 0.0;
 }
 
 
@@ -640,152 +641,6 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT() cons
   // fetch factor F/RT from electrochemistry parameter list in isothermal case
   return myelch::elchparams_->FRT();
 };
-
-/*------------------------------------------------------------------------------------*
- | compute Butler-Volmer current density via Newton-Raphson iteration   civaner 08/19 |
- *------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-    distype>::CalculateModifiedButlerVolmerMassFluxDensity(const double j0, const double alphaa,
-    const double alphac, const double frt, const double pot_ed, const double pot_el,
-    const double epd, const double resistance, const double itemax, const double convtol,
-    const double faraday)
-{
-  // Iterations are conducted over current density i which is scaled down to mass flux
-  // density j by j = i / faraday at the end of the function in order to reduce the effect
-  // of numerical error introduced into global problem since i is roughly 10^5 times bigger than j
-
-  // initialize Butler-Volmer current density
-  double i(0.);
-
-  const double i0 = j0 * faraday;
-  // compute Butler-Volmer current density in case of physically reasonable half-cell open-circuit
-  // potential
-  if (not std::isinf(epd))
-  {
-    // initialize Newton-Raphson iteration counter
-    unsigned iternum(0);
-
-    // apply Newton-Raphson method to compute Butler-Volmer current density, involving overpotential
-    // due to scatra-scatra interface layer resistance
-    while (true)
-    {
-      // increment counter
-      ++iternum;
-
-      // compute current Newton-Raphson residual
-      const double eta = pot_ed - pot_el - epd - resistance * i;
-      const double expterm1 = exp(alphaa * frt * eta);
-      const double expterm2 = exp(-alphac * frt * eta);
-      const double residual = i0 * (expterm1 - expterm2) - i;
-
-      // convergence check
-      if (std::abs(residual) < convtol)
-        break;
-
-      else if (iternum == itemax)
-        dserror(
-            "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
-
-      // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
-      // density
-      const double linearization =
-          -i0 * resistance * frt * (alphaa * expterm1 + alphac * expterm2) - 1.;
-
-      // update Butler-Volmer current density
-      i -= residual / linearization;
-    }
-  }
-  // final scaling
-  return i / faraday;
-}
-
-/*------------------------------------------------------------------------------------*
- | calculate core linearizations associated with Butler-Volmer                        |
- | mass flux density                                                    civaner 09/19 |
- *------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateCoreLinearizations(
-    const int kineticmodel, const double timefacfac, const double timefacrhsfac, const double j0,
-    const double frt, const double epdderiv, const double alphaa, const double alphac,
-    const double resistance, const double expterm1, const double expterm2, const double kr,
-    const double faraday, const double emasterphiint, const double eslavephiint, const double cmax,
-    double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
-{
-  const double expterm = expterm1 - expterm2;
-  // core linearizations associated with Butler-Volmer mass flux density
-  switch (kineticmodel)
-  {
-    case INPAR::S2I::kinetics_butlervolmerreduced:
-    {
-      dj_dc_slave = timefacfac * j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
-      dj_dc_master = 0.0;
-      dj_dpot_slave = timefacfac * j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
-      dj_dpot_master = -dj_dpot_slave;
-      break;
-    }
-    case INPAR::S2I::kinetics_butlervolmer:
-    case INPAR::S2I::kinetics_butlervolmerpeltier:
-    {
-      dj_dc_slave =
-          timefacfac * (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                               pow(eslavephiint, alphac - 1.) *
-                               (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-                           j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
-      dj_dc_master = timefacfac * j0 * alphaa / emasterphiint * expterm;
-      dj_dpot_slave = timefacfac * j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
-      dj_dpot_master = -dj_dpot_slave;
-      break;
-    }
-    case INPAR::S2I::kinetics_butlervolmerresistance:
-    {
-      // core linearizations associated with Butler-Volmer current density according to MA Schmidt
-      // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
-      const double dF_di_inverse =
-          1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
-      const double dF_dc_slave =
-          timefacfac * (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                               pow(eslavephiint, alphac - 1.) *
-                               (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-                           j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2));
-      const double dF_dc_master = -timefacfac * j0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = -timefacfac * j0 * frt * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-
-      // rule of implicit differentiation
-      dj_dc_slave = -dF_dc_slave * dF_di_inverse;
-      dj_dc_master = -dF_dc_master * dF_di_inverse;
-      dj_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      dj_dpot_master = -dF_dpot_master * dF_di_inverse;
-      break;
-    }  // case INPAR::S2I::kinetics_butlervolmerresistance
-    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
-    {
-      // core linearizations associated with Butler-Volmer current density according to MA Schmidt
-      // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
-      const double dF_di_inverse =
-          1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
-      const double dF_dc_slave =
-          timefacfac * j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dc_master = 0.0;
-      const double dF_dpot_slave = -timefacfac * j0 * frt * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-
-      // rule of implicit differentiation
-      dj_dc_slave = -dF_dc_slave * dF_di_inverse;
-      dj_dc_master = -dF_dc_master * dF_di_inverse;
-      dj_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      dj_dpot_master = -dF_dpot_master * dF_di_inverse;
-      break;
-    }  // case INPAR::S2I::kinetics_butlervolmerreducedwithresistance
-    default:
-    {
-      dserror("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
-      break;
-    }
-  }  // switch(kineticmodel)
-  return;
-}
 
 /*------------------------------------------------------------------------------------*
  | calculate RHS and global system                                      civaner 09/19 |
@@ -880,8 +735,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
     dserror("Must provide both master-side matrices and master-side vector or none of them!");
   return;
 }
-
-
 
 // template classes
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::quad4>;
