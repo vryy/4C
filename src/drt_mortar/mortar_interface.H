@@ -995,6 +995,8 @@ namespace MORTAR
 
     \sa ExtendInterfaceGhosting()
 
+    \warning This is a legacy code path, where interface ghosting is not sufficienct in some cases.
+
     \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
@@ -1004,6 +1006,23 @@ namespace MORTAR
     */
     void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0,
         const double meanVelocity = 0.0);
+
+    /*!
+    \brief Update the parallel layout, distribution, and related data structures
+
+    1. If required by \c perform_rebalancing, let's rebalance the interface discretizations.
+    1. If required by \c enforce_ghosting_update, let's update the ghosting of the master-sided
+    interface.
+    1. FillComplete to update all relevant maps on all procs.
+    1. Re-create search tree, if ghosting has changed.
+
+    @param perform_rebalancing Flag to enforce rebalancing of interface discretizations
+    @param enforce_ghosting_update Flag to enforce an update of the interface ghosting
+    @param maxdof Largest GID of underlying solid discretization
+    @param meanVelocity Mean velocity of this interface
+    */
+    void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+        const bool enforce_ghosting_update, const int maxdof, const double meanVelocity);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1355,6 +1374,35 @@ namespace MORTAR
     void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
         const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
+
+    /*!
+    \brief FillComplete the mortar interface
+
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization. Extension of the interface ghosting is done
+    separately.herefore, we also have to extend the interface
+    ghosting.
+
+    If we have arrived at the final parallel distribution, we have to ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested by the user/algorithm.
+
+    \sa ExtendInterfaceGhostingSafely()
+
+    @param[in] isFinalParallelDistribution Is this the final parallel distribution?
+    @param[in] maxdof Largest GID of underlying solid discretization
+    */
+    void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0);
+
+    /*!
+    \brief Extend the interface ghosting while guaranteeing sufficient extension
+
+    \note The argument \c meanVelocity is just needed for contact problems that extend the
+    master-sided interface ghosting via binning.
+
+    @param meanVelocity Mean velocity of this interface
+    */
+    void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
 
     //! @}
 

@@ -29,6 +29,7 @@
 #include "friction_node.H"
 #include "contact_strategy_factory.H"
 #include "contact_utils.H"
+#include "contact_utils_parallel.H"
 
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
@@ -525,7 +526,17 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
      * setup. This is an initial one time cost, that does not matter compared to the repeated
      * FillComplete calls due to dynamic redistribution.
      */
-    interface->FillComplete(true, maxdof);
+    if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(contactParams))
+    {
+      /* Finalize parallel layout of maps. Note: Do not redistribute here.
+       *
+       * Since this is the initial setup, we don't need redistribution here, just a proper extension
+       * of the interface ghosting.
+       */
+      interface->UpdateParallelLayoutAndDataStructures(false, true, maxdof, 0.0);
+    }
+    else
+      interface->FillComplete(true, maxdof);
 
     if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
         algo != INPAR::MORTAR::algorithm_gpts)

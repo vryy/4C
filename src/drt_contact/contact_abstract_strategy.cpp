@@ -15,6 +15,7 @@
 #include "friction_node.H"
 #include "contact_paramsinterface.H"
 #include "contact_noxinterface.H"
+#include "contact_utils_parallel.H"
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
@@ -233,9 +234,247 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 }
 
 /*----------------------------------------------------------------------*
- | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
+{
+  if (Comm().NumProc() == 1) return false;
+
+  bool perform_rebalancing = false;
+  double time_average = 0.0;
+  double elements_average = 0.0;
+  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+
+  switch (WhichParRedist())
+  {
+    case INPAR::MORTAR::parredist_none:
+    {
+      break;
+    }
+    case INPAR::MORTAR::parredist_static:
+    {
+      // Static redistribution: ONLY at time t=0 or after restart
+      // (both cases can be identified via empty unbalance vectors)
+
+      // this is the first time step (t=0) or restart
+      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+      {
+        // The user demanded to perform rebalancing, so let's do it.
+        perform_rebalancing = true;
+      }
+      else  // this is a regular time step (neither t=0 nor restart)
+      {
+        ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
+
+        // no redistribution
+        perform_rebalancing = false;
+      }
+
+      break;
+    }
+    case INPAR::MORTAR::parredist_dynamic:
+    {
+      // Dynamic redistribution: whenever system is out of balance
+
+      // This is the first time step (t=0) or restart
+      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+      {
+        // Always perform rebalancing in the first time step
+        perform_rebalancing = true;
+      }
+
+      // This is a regular time step (neither t=0 nor restart)
+      else
+      {
+        ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
+
+        /* Decide on redistribution
+         *
+         * We allow a maximum value of the balance measure in the system as defined in the input
+         * parameter MAX_BALANCE, i.e. the maximum local processor workload and the minimum local
+         * processor workload for mortar evaluation of all interfaces may not differ by more than
+         * (MAX_BALANCE - 1.0)*100%)
+         *
+         * Moreover, we redistribute if in the majority of iteration steps of the last time step
+         * there has been an unbalance in element distribution, i.e. if eaverage >= 0.5)
+         */
+        if (time_average >= max_balance || elements_average >= 0.5) perform_rebalancing = true;
+
+        if (Comm().MyPID() == 0)
+        {
+          std::cout << "**********************************************************" << std::endl;
+          if (time_average > 0)
+          {
+            printf("Parallel balance (time): %e (limit %e) \n", time_average, max_balance);
+            printf("Parallel balance (eles): %e (limit %e) \n", elements_average, 0.5);
+          }
+          else
+            printf("Parallel balance: t=0/restart \n");
+          std::cout << "**********************************************************" << std::endl;
+        }
+      }
+
+      break;
+    }
+  }
+
+  return perform_rebalancing;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::ComputeAndResetParallelBalanceIndicators(
+    double& time_average, double& elements_average)
+{
+  // compute average balance factors of last time step
+  for (const auto& time : unbalanceEvaluationTime_) time_average += time;
+  time_average /= (double)unbalanceEvaluationTime_.size();
+  for (const auto& num_elements : unbalanceNumSlaveElements_) elements_average += num_elements;
+  elements_average /= (double)unbalanceNumSlaveElements_.size();
+
+  // Reset balance factors of last time step
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+INPAR::MORTAR::ExtendGhosting CONTACT::CoAbstractStrategy::GetGhostingStrategy() const
+{
+  using namespace INPAR::MORTAR;
+
+  ExtendGhosting update_ghosting_strategy = ExtendGhosting::redundant_all;
+
+  // Get input parameters
+  const Teuchos::ParameterList& mortar_parallel_redist_params =
+      Params().sublist("PARALLEL REDISTRIBUTION");
+  RedundantStorage redundant_storage = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+      mortar_parallel_redist_params, "REDUNDANT_STORAGE");
+  GhostingStrategy ghosting_strategy = DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+      mortar_parallel_redist_params, "GHOSTING_STRATEGY");
+
+  if (redundant_storage == redundant_all && ghosting_strategy == ghosting_redundant)
+    update_ghosting_strategy = ExtendGhosting::redundant_all;
+  else if (redundant_storage == redundant_master && ghosting_strategy == ghosting_redundant)
+    update_ghosting_strategy = ExtendGhosting::redundant_master;
+  else if (redundant_storage == redundant_none && ghosting_strategy == roundrobinghost)
+    update_ghosting_strategy = ExtendGhosting::roundrobin;
+  else if (redundant_storage == redundant_none && ghosting_strategy == binningstrategy)
+    update_ghosting_strategy = ExtendGhosting::binning;
+  else
+    dserror("Unknown strategy to update ghosting if necessary.");
+
+  return update_ghosting_strategy;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
+    const INPAR::MORTAR::ExtendGhosting& ghosting_strategy) const
+{
+  bool enforce_update_of_ghosting = false;
+  switch (ghosting_strategy)
+  {
+    case INPAR::MORTAR::ExtendGhosting::redundant_all:
+    case INPAR::MORTAR::ExtendGhosting::redundant_master:
+    {
+      // this is the first time step (t=0) or restart
+      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+        enforce_update_of_ghosting = true;
+      else
+        enforce_update_of_ghosting = false;
+
+      enforce_update_of_ghosting = false;
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    case INPAR::MORTAR::ExtendGhosting::binning:
+    {
+      enforce_update_of_ghosting = true;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown strategy to extend ghosting if necessary.");
+    }
+  }
+
+  return enforce_update_of_ghosting;
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool CONTACT::CoAbstractStrategy::RedistributeContact(
+    Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
+{
+  bool redistributed = false;
+
+  if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(Params()))
+    redistributed = RedistributeWithSafeGhosting(*dis, *vel);
+  else
+  {
+    if (Comm().MyPID() == 0)
+    {
+      std::cout << "+++++++++++++++++++++++++++++++ WARNING +++++++++++++++++++++++++++++++\n"
+                << "+++ You're using an outdated contact redistribution implementation, +++\n"
+                << "+++ that might deliver an insufficient master-side ghosting.        +++\n"
+                << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+                << std::endl;
+    }
+    redistributed = RedistributeContactOld(dis, vel);
+  }
+
+  return redistributed;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
+    const Epetra_Vector& displacement, const Epetra_Vector& velocity)
+{
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
+  const INPAR::MORTAR::ExtendGhosting ghosting_strategy = GetGhostingStrategy();
+
+  const bool perform_rebalancing = IsRebalancingNecessary();
+  const bool enforce_ghosting_update = IsUpdateOfGhostingNecessary(ghosting_strategy);
+
+  // Prepare for extending the ghosting
+  ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
+  if (ghosting_strategy == INPAR::MORTAR::ExtendGhosting::binning)
+    CalcMeanVelocityForBinning(velocity);
+
+  // Set old and current displacement state (needed for search within redistribution)
+  if (perform_rebalancing)
+  {
+    SetState(MORTAR::state_new_displacement, displacement);
+    SetState(MORTAR::state_old_displacement, displacement);
+  }
+
+  // Update parallel distribution and ghosting of all interfaces
+  for (std::size_t i = 0; i < Interfaces().size(); ++i)
+    Interfaces()[i]->UpdateParallelLayoutAndDataStructures(
+        perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
+
+  // Re-setup strategy to update internal map objects
+  if (perform_rebalancing) Setup(true, false);
+
+  // time measurement
+  Comm().Barrier();
+  double t_end = Teuchos::Time::wallTime() - t_start;
+  if (Comm().MyPID() == 0)
+    std::cout << "\nTime for parallel redistribution..............." << std::scientific
+              << std::setprecision(6) << t_end << " secs\n"
+              << std::endl;
+
+  return perform_rebalancing;
+}
+
+/*----------------------------------------------------------------------*
+ | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::RedistributeContactOld(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // get out of here if parallel redistribution is switched off
