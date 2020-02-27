@@ -623,6 +623,9 @@ namespace CONTACT
     */
     virtual void AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele);
 
+    //! @name Parallel distribution and ghosting
+    //! @{
+
     /*!
     \brief Redistribute contact interface among all procs
 
@@ -683,6 +686,8 @@ namespace CONTACT
     here.
     */
     void CollectDistributionData(int& numColElements, int& numRowElements);
+
+    //! @}
 
     /*!
     \brief Create binary search tree

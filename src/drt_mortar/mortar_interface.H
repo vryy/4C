@@ -980,11 +980,14 @@ namespace MORTAR
     */
     void RemoveSingleInterfaceSide(bool slaveside);
 
+    //! @name Parallel distribution and ghosting
+
     /*!
     \brief Finalize construction of mortar interface
 
     The methods completes construction phase of a mortar interface. It creates all row/column maps
-    of the mortar interface discretization.
+    of the mortar interface discretization. Therefore, we also have to extend the interface
+    ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
@@ -1024,6 +1027,8 @@ namespace MORTAR
 
     */
     virtual void Redistribute();
+
+    //! @}
 
     /*!
     \brief Create binary search tree
@@ -1334,6 +1339,9 @@ namespace MORTAR
 
     const MortarInterface* GetMaSharingRefInterfacePtr() const;
 
+    //! @name Parallel distribution and ghosting
+    //! @{
+
     /*!
     \brief Redistribute the master side of the interface
 
@@ -1347,6 +1355,8 @@ namespace MORTAR
     void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
         const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
+
+    //! @}
 
     /** \brief function called at the beginning of each MortarCoupling call
      *

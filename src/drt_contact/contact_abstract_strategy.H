@@ -1399,17 +1399,25 @@ namespace CONTACT
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const;
 
-    /*! \brief Perform a write restart
+    /*!
+    \brief Read restart data from disk
 
-     A write restart is initiated by the contact manager. However, the manager has no
-     direct access to the nodal quantities. Hence, all the restart action has to be
-     performed on the level of the contact algorithm, for short: here's the right place.
-     */
+    @param reader Discretization reader to be used for reading the restart data
+    @param dis Displacement vector of the solid field
+    */
     virtual void DoReadRestart(
         IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
     {
       DoReadRestart(reader, dis, Teuchos::null);
     };
+
+    /*!
+    \brief Read restart data from disk
+
+    @param reader Discretization reader to be used for reading the restart data
+    @param dis Displacement vector of the solid field
+    @param cparams_ptr ??
+    */
     virtual void DoReadRestart(IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
