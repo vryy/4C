@@ -578,7 +578,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       // thickness via implicit differentiation, where F = i0*expterm - i = 0
       const double dF_dgrowth =
           -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
+          regfacderiv * i0 * (expterm1 - expterm2);
       const double dF_di_inverse =
           -1.0 /
           (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
@@ -889,7 +889,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       // thickness via implicit differentiation, where F = i0*expterm - i = 0
       const double dF_dgrowth =
           -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
+          regfacderiv * i0 * (expterm1 - expterm2);
       const double dF_di_inverse =
           -1.0 /
           (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
