@@ -646,7 +646,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  if (Comm().MyPID() == 0)
+  if (Comm().MyPID() == 0 && Comm().NumProc() > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
   for (auto& interface : interfaces) interface->PrintParallelDistribution();
 
