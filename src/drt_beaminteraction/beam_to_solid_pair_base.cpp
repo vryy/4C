@@ -266,3 +266,6 @@ template class BEAMINTERACTION::BeamToSolidPairBase<
 template class BEAMINTERACTION::BeamToSolidPairBase<
     Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad9::n_dof_>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;

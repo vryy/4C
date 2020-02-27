@@ -845,7 +845,7 @@ namespace DRT
       \return TRUE, if successful
 
       */
-      template <class VF, class UV, class WG>
+      template <class VF, class UV, class WG, typename scalar_type = double>
       bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
           const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
           const DRT::Element::DiscretizationType& distype)
@@ -951,22 +951,22 @@ namespace DRT
 
         // get mapped coordinates
 
-        double xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
-        double eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
+        scalar_type xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
+        scalar_type eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
 
         // -----------------------------------------------
         //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        Epetra_SerialDenseVector bezier_shape_funct(size);
+        std::vector<scalar_type> bezier_shape_funct(size);
 
         // allocate bspline polynomials for both direction
         DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
         DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
-        // get temporary doubles
-        double bspline_xi_value;
-        double bspline_eta_value;
+        // get temporary variables
+        scalar_type bspline_xi_value;
+        scalar_type bspline_eta_value;
 
         // define temporary int variable to compute the
         // number of the basis function from i,j
@@ -1004,7 +1004,7 @@ namespace DRT
             id = rr + mm * (degree + 1);
 
             // add value to bezier_shape_funct
-            bezier_shape_funct(id) = bspline_xi_value * bspline_eta_value;
+            bezier_shape_funct[id] = bspline_xi_value * bspline_eta_value;
           }
         }
 
@@ -1012,8 +1012,8 @@ namespace DRT
         //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        // alloc temporary doubles, initialise to zero
-        double sum_funct_weight;
+        // alloc temporary variable, initialise to zero
+        scalar_type sum_funct_weight;
 
         sum_funct_weight = 0.0;
 
@@ -1028,7 +1028,7 @@ namespace DRT
 
         for (int rr = 0; rr < size; ++rr)
         {
-          sum_funct_weight += weights(rr) * bezier_shape_funct(rr);
+          sum_funct_weight += weights(rr) * bezier_shape_funct[rr];
         }
 
         if (sum_funct_weight == 0.0) return false;
@@ -1051,7 +1051,7 @@ namespace DRT
         for (int rr = 0; rr < size; ++rr)
         {
           // get shape function
-          nurbs_shape_funct(rr) = weights(rr) * bezier_shape_funct(rr) / sum_funct_weight;
+          nurbs_shape_funct(rr) = weights(rr) * bezier_shape_funct[rr] / sum_funct_weight;
         }
 
         return true;
@@ -1171,7 +1171,7 @@ namespace DRT
       \return TRUE, if successful
 
       */
-      template <class VF, class UV, class MD, class WG>
+      template <class VF, class MD, class UV, class WG, typename scalar_type = double>
       bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
           const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
           const DRT::Element::DiscretizationType& distype)
@@ -1277,25 +1277,25 @@ namespace DRT
 
         // get mapped coordinates
 
-        double xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
-        double eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
+        scalar_type xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
+        scalar_type eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
 
         // -----------------------------------------------
         //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        Epetra_SerialDenseVector bezier_shape_funct(size);
-        Epetra_SerialDenseMatrix bezier_shape_deriv(2, size);
+        std::vector<scalar_type> bezier_shape_funct(size);
+        std::vector<std::vector<scalar_type>> bezier_shape_deriv(2, std::vector<scalar_type>(size));
 
         // allocate bspline polynomials for both direction
         DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
         DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
-        // get temporary doubles
-        double bspline_xi_value;
-        double bspline_xi_derivative;
-        double bspline_eta_value;
-        double bspline_eta_derivative;
+        // get temporary variables
+        scalar_type bspline_xi_value;
+        scalar_type bspline_xi_derivative;
+        scalar_type bspline_eta_value;
+        scalar_type bspline_eta_derivative;
 
         // define temporary int variable to compute the
         // number of the basis function from i,j
@@ -1341,11 +1341,11 @@ namespace DRT
             id = rr + mm * (degree + 1);
 
             // add value to bezier_shape_funct
-            bezier_shape_funct(id) = bspline_xi_value * bspline_eta_value;
+            bezier_shape_funct[id] = bspline_xi_value * bspline_eta_value;
 
             // add values to bezier_shape_deriv
-            bezier_shape_deriv(0, id) = bspline_xi_derivative * bspline_eta_value;
-            bezier_shape_deriv(1, id) = bspline_xi_value * bspline_eta_derivative;
+            bezier_shape_deriv[0][id] = bspline_xi_derivative * bspline_eta_value;
+            bezier_shape_deriv[1][id] = bspline_xi_value * bspline_eta_derivative;
           }
         }
 
@@ -1353,9 +1353,9 @@ namespace DRT
         //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
         // -----------------------------------------------
 
-        // alloc temporary doubles, initialise to zero
-        double sum_funct_weight;
-        double sum_deriv_weight[2];
+        // alloc temporary variable, initialise to zero
+        scalar_type sum_funct_weight;
+        scalar_type sum_deriv_weight[2];
 
         sum_funct_weight = 0.0;
         sum_deriv_weight[0] = 0.0;
@@ -1379,11 +1379,11 @@ namespace DRT
 
         for (int rr = 0; rr < size; ++rr)
         {
-          sum_funct_weight += weights(rr) * bezier_shape_funct(rr);
+          sum_funct_weight += weights(rr) * bezier_shape_funct[rr];
 
           for (int mm = 0; mm < 2; ++mm)
           {
-            sum_deriv_weight[mm] += weights(rr) * bezier_shape_deriv(mm, rr);
+            sum_deriv_weight[mm] += weights(rr) * bezier_shape_deriv[mm][rr];
           }
         }
 
@@ -1425,13 +1425,13 @@ namespace DRT
         for (int rr = 0; rr < size; ++rr)
         {
           // get shape function
-          nurbs_shape_funct(rr) = weights(rr) * bezier_shape_funct(rr) / sum_funct_weight;
+          nurbs_shape_funct(rr) = weights(rr) * bezier_shape_funct[rr] / sum_funct_weight;
 
           // loop directions to compute derivatives
           for (int mm = 0; mm < 2; ++mm)
           {
-            nurbs_shape_deriv(mm, rr) = bezier_shape_deriv(mm, rr) * sum_funct_weight -
-                                        bezier_shape_funct(rr) * sum_deriv_weight[mm];
+            nurbs_shape_deriv(mm, rr) = bezier_shape_deriv[mm][rr] * sum_funct_weight -
+                                        bezier_shape_funct[rr] * sum_deriv_weight[mm];
 
             nurbs_shape_deriv(mm, rr) *= weights(rr) / (sum_funct_weight * sum_funct_weight);
           }

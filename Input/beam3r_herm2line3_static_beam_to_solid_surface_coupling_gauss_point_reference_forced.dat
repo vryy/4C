@@ -8,9 +8,8 @@ The coupling terms are evaluated with the "reference_forced" option.
 DIM                                   3
 ---------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                            Structure
-RESTART                               0
 ------------------------------------------------------------------------------IO
-OUTPUT_BIN                            No
+OUTPUT_BIN                            Yes
 STRUCT_DISP                           No
 FILESTEPS                             1000
 VERBOSITY                             Standard

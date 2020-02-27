@@ -38,7 +38,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   {
     CastGeometryPair()->PreEvaluate(this->ele1posref_,
         this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
-        &(this->face_element_->GetReferenceNormals()));
+        this->face_element_->GetReferenceNormals());
   }
 }
 
@@ -67,6 +67,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 {
   face_element_ =
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<surface>>(face_element, true);
+
+  // The second element in the pair has to be the face element.
+  CastGeometryPair()->SetElement2(face_element_->GetDrtFaceElement());
 }
 
 /**
@@ -100,3 +103,6 @@ template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
 template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
     Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad9::n_dof_>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>;
+template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
+    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;

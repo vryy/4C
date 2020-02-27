@@ -129,3 +129,6 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);

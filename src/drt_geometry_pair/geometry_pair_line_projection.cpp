@@ -535,6 +535,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_gauss_point(double, t_hermite, t_quad4);
   initialize_template_surface_gauss_point(double, t_hermite, t_quad8);
   initialize_template_surface_gauss_point(double, t_hermite, t_quad9);
+  initialize_template_surface_gauss_point(double, t_hermite, t_nurbs9);
   initialize_template_surface_gauss_point(double, t_hermite, t_tri3);
   initialize_template_surface_gauss_point(double, t_hermite, t_tri6);
 
@@ -549,6 +550,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(double, t_hermite, t_quad4);
   initialize_template_surface_segmentation(double, t_hermite, t_quad8);
   initialize_template_surface_segmentation(double, t_hermite, t_quad9);
+  initialize_template_surface_segmentation(double, t_hermite, t_nurbs9);
   initialize_template_surface_segmentation(double, t_hermite, t_tri3);
   initialize_template_surface_segmentation(double, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR

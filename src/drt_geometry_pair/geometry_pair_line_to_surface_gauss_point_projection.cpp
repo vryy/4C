@@ -106,3 +106,5 @@ template class GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<doubl
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>;
 template class GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>;
+template class GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;

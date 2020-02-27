@@ -1225,6 +1225,7 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
     case DRT::Element::quad4:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
+    case DRT::Element::nurbs9:
     {
       for (int inode = 0; inode < nNode; inode++)
       {

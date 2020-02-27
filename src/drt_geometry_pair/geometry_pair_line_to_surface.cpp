@@ -409,3 +409,5 @@ template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_h
     GEOMETRYPAIR::t_quad8>;
 template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>;
+template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs9>;

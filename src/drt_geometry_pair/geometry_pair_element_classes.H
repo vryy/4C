@@ -92,6 +92,12 @@ namespace GEOMETRYPAIR
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
+  struct ElementDiscretizationToGeometryType<DRT::Element::nurbs9>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+        GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
+  };
+  template <>
   struct ElementDiscretizationToGeometryType<DRT::Element::hex8>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =

@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
         this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
-        &(this->face_element_->GetReferenceNormals()));
+        this->face_element_->GetReferenceNormals());
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -125,8 +125,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
       // terms are exclusively formulated with 0 normal direction, i.e. directly on the surface.
       GEOMETRYPAIR::EvaluatePosition<beam>(
           projected_gauss_point.GetEta(), beam_dof_fad, coupling_vector_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(
-          projected_gauss_point.GetXi(), surface_dof_fad, coupling_vector_surface, nullptr);
+      GEOMETRYPAIR::EvaluatePosition<surface>(projected_gauss_point.GetXi(), surface_dof_fad,
+          coupling_vector_surface, this->face_element_->GetDrtFaceElement());
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
@@ -197,3 +197,5 @@ template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMET
     GEOMETRYPAIR::t_quad8>;
 template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>;
+template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs9>;

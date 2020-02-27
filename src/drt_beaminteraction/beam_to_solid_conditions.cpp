@@ -503,6 +503,10 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
       return Teuchos::rcp(
           new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
               GEOMETRYPAIR::t_quad9>());
+    case DRT::Element::nurbs9:
+      return Teuchos::rcp(
+          new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_nurbs9>());
     default:
       dserror("Wrong element type for surface element.");
   }

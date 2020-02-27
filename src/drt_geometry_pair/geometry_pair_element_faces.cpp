@@ -150,6 +150,25 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
 }
 
 /**
+ * A few method have to be specialiyed for nurbs9 faces, since they do not need averaged nodal
+ * normals due to their C1-continuous discretization.
+ *
+ * Due to a gcc bug we have to perform the template specialization inside the namespace.
+ * (https://stackoverflow.com/questions/25594644/warning-specialization-of-template-in-different-namespace)
+ */
+namespace GEOMETRYPAIR
+{
+  /**
+   * For nurbs we do not have to calculate averaged nodal normals, since the discretization is
+   * C1-continuous. Therefore, this function does nothing for nurbs9 elements.
+   */
+  template <>
+  void FaceElementTemplate<t_nurbs9>::CalculateAveragedNormals(
+      const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
+}  // namespace GEOMETRYPAIR
+
+
+/**
  *
  */
 template <typename surface>
@@ -215,6 +234,9 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     case DRT::Element::quad9:
       return Teuchos::rcp<FaceElementTemplate<t_quad9>>(
           new FaceElementTemplate<t_quad9>(face_element));
+    case DRT::Element::nurbs9:
+      return Teuchos::rcp<FaceElementTemplate<t_nurbs9>>(
+          new FaceElementTemplate<t_nurbs9>(face_element));
     default:
       dserror("Wrong discretization type given.");
   }
