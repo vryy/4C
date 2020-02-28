@@ -72,6 +72,18 @@ namespace GEOMETRYPAIR
         : ProjectionPoint1DTo3D(eta, xi, -1.){};
 
     /**
+     * \brief Constructor.
+     * @param eta Parameter coordinate on the line.
+     */
+    ProjectionPoint1DTo3D(scalar_type eta)
+        : ProjectionPoint1DTo3D(eta, LINALG::Matrix<3, 1, scalar_type>(true), -1.){};
+
+    /**
+     * \brief Empty constructor.
+     */
+    ProjectionPoint1DTo3D() : ProjectionPoint1DTo3D(0.0){};
+
+    /**
      * \brief Destructor.
      */
     virtual ~ProjectionPoint1DTo3D(){};
@@ -84,7 +96,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinate on the line.
      */
-    inline scalar_type GetEta() const { return eta_; };
+    inline const scalar_type& GetEta() const { return eta_; };
 
     /**
      * \brief Set the parameter coordinates in the volume.
@@ -94,7 +106,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the volume.
      */
-    inline LINALG::Matrix<3, 1, scalar_type> GetXi() const { return xi_; };
+    inline const LINALG::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
 
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
@@ -214,43 +226,53 @@ namespace GEOMETRYPAIR
   {
    public:
     /**
-     * \brief Default constructor.
+     * \brief Default constructor, the segment is from -1 to 1.
      */
-    LineSegment() : LineSegment(-1., 1.){};
+    LineSegment() : LineSegment(-1.0, 1.0){};
 
     /**
      * \brief Constructor. Set the range of the segment.
-     * @param eta_a
-     * @param eta_b
+     * @param start_point
+     * @param end_point
      */
-    LineSegment(scalar_type eta_a, scalar_type eta_b)
-        : eta_a_(eta_a), eta_b_(eta_b), segment_projection_points_()
+    LineSegment(ProjectionPoint1DTo3D<scalar_type> start_point,
+        ProjectionPoint1DTo3D<scalar_type> end_point)
+        : start_point_(start_point), end_point_(end_point), segment_projection_points_()
     {
       // Sanity check that eta_a is larger than eta_b.
-      if (!(eta_a_ < eta_b_))
+      if (!(GetEtaA() < GetEtaB()))
         dserror(
-            "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a has "
+            "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
+            "has "
             "to be smaller than eta_b!",
-            eta_a_, eta_b);
+            GetEtaA(), GetEtaB());
     }
 
     /**
      * \brief Get the length of the segment in parameter coordinates.
      * @return Segment length.
      */
-    inline scalar_type GetSegmentLength() const { return eta_b_ - eta_a_; }
+    inline scalar_type GetSegmentLength() const { return GetEtaB() - GetEtaA(); }
 
     /**
-     * \brief Return a const reference to eta_a_.
-     * @return eta_a_
+     * \brief Return a const reference to eta start.
      */
-    inline const scalar_type& GetEtaA() const { return eta_a_; };
+    inline const scalar_type& GetEtaA() const { return start_point_.GetEta(); };
 
     /**
-     * \brief Return a const reference to eta_b_.
-     * @return eta_a_
+     * \brief Return a const reference to eta end.
      */
-    inline const scalar_type& GetEtaB() const { return eta_b_; };
+    inline const scalar_type& GetEtaB() const { return end_point_.GetEta(); };
+
+    /**
+     * \brief Return a const reference to the start point.
+     */
+    inline const ProjectionPoint1DTo3D<scalar_type>& GetStartPoint() const { return start_point_; };
+
+    /**
+     * \brief Return a const reference to the end point.
+     */
+    inline const ProjectionPoint1DTo3D<scalar_type>& GetEndPoint() const { return end_point_; };
 
     /**
      * \brief Add a projection point to the projection point vector.
@@ -339,11 +361,11 @@ namespace GEOMETRYPAIR
     };
 
    private:
-    //! Lower limit of segment.
-    scalar_type eta_a_;
+    //! Start point of the segment.
+    ProjectionPoint1DTo3D<scalar_type> start_point_;
 
-    //! Upper limit of segment.
-    scalar_type eta_b_;
+    //! Endpoint of the segment.
+    ProjectionPoint1DTo3D<scalar_type> end_point_;
 
     //! Vector to store projection points for this segment.
     std::vector<ProjectionPoint1DTo3D<scalar_type>> segment_projection_points_;

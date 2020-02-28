@@ -70,6 +70,12 @@ namespace BEAMINTERACTION
         const std::vector<DRT::Element const*>& ele_ptrs,
         const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
 
+    /**
+     * \brief Return a pointer to the condition of the other geometry (volume or surface).
+     * @return
+     */
+    const Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
+
    protected:
     /**
      * \brief Check if a solid ID is in this condition.

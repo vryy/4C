@@ -70,6 +70,14 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state);
 
+    /**
+     * \brief Get a reference to the face element map.
+     */
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& GetFaceElements() const
+    {
+      return face_elements_;
+    }
+
    private:
     //! A map of all face elements needed for this surface.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_;

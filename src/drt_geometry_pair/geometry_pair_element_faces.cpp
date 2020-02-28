@@ -210,6 +210,74 @@ bool GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateNodalNormal(const int n
   }
 }
 
+/**
+ *
+ */
+template <typename surface>
+void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFacePositionDouble(
+    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& r, bool reference) const
+{
+  LINALG::Matrix<surface::n_dof_, 1, double> position_double;
+  if (reference)
+    position_double = FADUTILS::CastToDouble(face_reference_position_);
+  else
+    position_double = FADUTILS::CastToDouble(face_position_);
+
+  EvaluatePosition<surface>(xi, position_double, r, drt_face_element_.get());
+}
+
+/**
+ *
+ */
+template <typename surface>
+void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFaceNormalDouble(
+    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, bool reference) const
+{
+  LINALG::Matrix<surface::n_dof_, 1, double> position_double;
+  if (reference)
+    position_double = FADUTILS::CastToDouble(face_reference_position_);
+  else
+    position_double = FADUTILS::CastToDouble(face_position_);
+
+  EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get());
+}
+
+/**
+ *
+ */
+template <typename surface>
+void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFaceAveragedNormalDouble(
+    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, bool reference) const
+{
+  const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double;
+
+  if (reference)
+    normals_double = this->GetReferenceNormals();
+  else
+    normals_double = this->GetCurrentNormals();
+
+  if (normals_double == nullptr)
+  {
+    // There are no averaged normals, so the normal on the element has to be calculated.
+
+    LINALG::Matrix<surface::n_dof_, 1, double> position_double;
+    if (reference)
+      position_double = FADUTILS::CastToDouble(face_reference_position_);
+    else
+      position_double = FADUTILS::CastToDouble(face_position_);
+
+    EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get(), normals_double);
+  }
+  else
+  {
+    // Return the normal calculated with the averaged normal field.
+
+    LINALG::Matrix<surface::n_dof_, 1, double> position_double_dummy(true);
+    EvaluateSurfaceNormal<surface>(
+        xi, position_double_dummy, n, drt_face_element_.get(), normals_double);
+  }
+}
+
 
 /**
  *

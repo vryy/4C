@@ -170,51 +170,6 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam,
  *
  */
 template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
-{
-  // Get visualization of base class.
-  BeamContactPair::GetPairVisualization(visualization_writer, visualization_params);
-
-  // If a writer exists for segmentation point data, add the segmentation point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
-      visualization_writer->GetVisualizationWriter("segmentation");
-  if (visualization != Teuchos::null)
-  {
-    // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type_fad> X;
-    LINALG::Matrix<3, 1, scalar_type_fad> u;
-    LINALG::Matrix<3, 1, scalar_type_fad> r;
-
-    // Get the visualization vectors.
-    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
-
-    // Loop over the segments on the beam.
-    for (const auto& segment : line_to_3D_segments_)
-    {
-      // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
-      {
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1posref_, X, Element1());
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1pos_, r, Element1());
-        u = r;
-        u -= X;
-        for (unsigned int dim = 0; dim < 3; dim++)
-        {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-        }
-      }
-    }
-  }
-}
-
-/**
- *
- */
-template <typename scalar_type_fad, typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::EvaluateBeamPosition(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const

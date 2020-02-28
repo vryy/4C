@@ -10,6 +10,7 @@
 
 #include "beam_to_solid_surface_meshtying_params.H"
 
+#include "beam_to_solid_surface_vtk_output_params.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -24,7 +25,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingP
       coupling_type_(INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::none),
       mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
+      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
+      output_params_ptr_(Teuchos::null)
 {
   // Empty Constructor.
 }
@@ -70,6 +72,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
   }
 
+  // Setup the output parameter object.
+  {
+    output_params_ptr_ =
+        Teuchos::rcp<BeamToSolidSurfaceVtkOutputParams>(new BeamToSolidSurfaceVtkOutputParams());
+    output_params_ptr_->Init();
+    output_params_ptr_->Setup();
+  }
+
   isinit_ = true;
 }
 
@@ -85,3 +95,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Setup()
 
   issetup_ = true;
 }
+
+/**
+ *
+ */
+Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVtkOuputParamsPtr()
+{
+  return output_params_ptr_;
+};

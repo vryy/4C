@@ -161,20 +161,6 @@ namespace BEAMINTERACTION
       return 0.0;
     }
 
-    /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
-     *
-     * This base class creates output of (if selected in the input file) the segmentation, the
-     * integration points - and if implemented in the derived classes - the forces at the
-     * integration points.
-     *
-     * @param visualization_writer (out) Object that manages all visualization related data for beam
-     * to solid pairs.
-     * @param visualization_params (in) Parameter list (not used in this class).
-     */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const override;
-
    protected:
     /**
      * \brief This function evaluates the beam position at an integration point for the pairs.

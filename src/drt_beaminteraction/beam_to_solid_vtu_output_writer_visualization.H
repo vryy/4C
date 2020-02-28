@@ -81,7 +81,18 @@ namespace BEAMINTERACTION
         std::string data_name, int additional_reserve = -1);
 
     /**
-     * \brief Add an new (empty) data vector to the object.
+     * \brief Return a mutable reference to the a cell point data vector.
+     * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
+     * will be thrown.
+     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
+     * will be increased by additional_reserve.
+     * @return Point coordinate vector.
+     */
+    std::vector<double>& GetMutableCellDataVector(
+        std::string data_name, int additional_reserve = -1);
+
+    /**
+     * \brief Add an new (empty) point data vector to the object.
      * @param data_name (in) Name of the new data. If this name already exists, an error will be
      * thrown.
      * @param n_dim (in) Number of spatial dimensions of the data. When writing the object, the
@@ -90,6 +101,17 @@ namespace BEAMINTERACTION
      * entries.
      */
     void AddPointDataVector(std::string data_name, unsigned int n_dim, int reserve = -1);
+
+    /**
+     * \brief Add an new (empty) cell data vector to the object.
+     * @param data_name (in) Name of the new data. If this name already exists, an error will be
+     * thrown.
+     * @param n_dim (in) Number of spatial dimensions of the data. When writing the object, the
+     * dimension of this vector should be n_dim * n_nodes.
+     * @param reserve (in) If this is larger than 0, the created vector will allocate the number of
+     * entries.
+     */
+    void AddCellDataVector(std::string data_name, unsigned int n_dim, int reserve = -1);
 
     /**
      * \brief Add all nodes of a discretization to the output.

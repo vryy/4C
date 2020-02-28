@@ -85,6 +85,36 @@ namespace GEOMETRYPAIR
         LINALG::Matrix<3, 1, double>& current_normal) const = 0;
 
     /**
+     * \brief Return the position on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param r (out) Position on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    virtual void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
+
+    /**
+     * \brief Return a normal on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param n (out) Normal on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    virtual void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, bool reference = false) const = 0;
+
+    /**
+     * \brief Return a normal of the averaged normal field on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param n (out) Normal on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    virtual void EvaluateFaceAveragedNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, bool reference = false) const = 0;
+
+    /**
      * \brief Return if the face is part of a pair.
      * @return True if the face is part of a pair, false otherwise.
      */
@@ -209,6 +239,36 @@ namespace GEOMETRYPAIR
       else
         return &current_normals_;
     }
+
+    /**
+     * \brief Return the position on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param r (out) Position on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
+
+    /**
+     * \brief Return a normal on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param n (out) Normal on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, bool reference = false) const override;
+
+    /**
+     * \brief Return a normal of the averaged normal field on this face as a double.
+     *
+     * @param xi (in) Parameter coordinate on the face.
+     * @param n (out) Normal on the face.
+     * @param reference (in) If the reference position or the current position should be returned.
+     */
+    void EvaluateFaceAveragedNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, bool reference = false) const override;
 
    private:
     /**

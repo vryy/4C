@@ -917,6 +917,8 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
@@ -926,6 +928,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
   src/drt_beaminteraction/beam_to_solid_vtu_output_writer_base.cpp
   src/drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.cpp
+  src/drt_beaminteraction/beam_to_solid_vtu_output_writer_utils.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
   src/drt_beaminteraction/beam_potential_params.cpp
