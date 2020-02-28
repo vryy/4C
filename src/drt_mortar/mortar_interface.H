@@ -1016,7 +1016,7 @@ namespace MORTAR
     @param maxdof Largest GID of underlying solid discretization
     @param meanVelocity Mean velocity of this interface
     */
-    void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+    virtual void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
         const bool enforce_ghosting_update, const int maxdof, const double meanVelocity);
 
     /*!
@@ -1371,33 +1371,16 @@ namespace MORTAR
         const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
 
     /*!
-    \brief FillComplete the mortar interface
+    \brief Setup the binning strategy for geometrically motivated extended ghosting
 
-    The methods completes construction phase of a mortar interface. It creates all row/column maps
-    of the mortar interface discretization. Extension of the interface ghosting is done
-    separately.herefore, we also have to extend the interface
-    ghosting.
+    \note The average velocity is only important, if binning is performed in the deformed
+    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
+    coupling in the reference configuration, it suffices to set the velocity to 0.0.
 
-    If we have arrived at the final parallel distribution, we have to ask the underlying
-    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested by the user/algorithm.
-
-    \sa ExtendInterfaceGhostingSafely()
-
-    @param[in] isFinalParallelDistribution Is this the final parallel distribution?
-    @param[in] maxdof Largest GID of underlying solid discretization
+    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
+    @return Binning strategy object ready to be used
     */
-    void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0);
-
-    /*!
-    \brief Extend the interface ghosting while guaranteeing sufficient extension
-
-    \note The argument \c meanVelocity is just needed for contact problems that extend the
-    master-sided interface ghosting via binning.
-
-    @param meanVelocity Mean velocity of this interface
-    */
-    void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     //! @}
 
@@ -1542,6 +1525,35 @@ namespace MORTAR
     //! @{
 
     /*!
+    \brief FillComplete the mortar interface
+
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization. Extension of the interface ghosting is done
+    separately.herefore, we also have to extend the interface
+    ghosting.
+
+    If we have arrived at the final parallel distribution, we have to ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested by the user/algorithm.
+
+    \sa ExtendInterfaceGhostingSafely()
+
+    @param[in] isFinalParallelDistribution Is this the final parallel distribution?
+    @param[in] maxdof Largest GID of underlying solid discretization
+    */
+    virtual void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0);
+
+    /*!
+    \brief Extend the interface ghosting while guaranteeing sufficient extension
+
+    \note The argument \c meanVelocity is just needed for contact problems that extend the
+    master-sided interface ghosting via binning.
+
+    @param meanVelocity Mean velocity of this interface
+    */
+    virtual void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
+
+    /*!
     \brief Extend interface ghosting
 
     To guarantee that the search algorithms can find _every_ possible slave/master pair
@@ -1574,18 +1586,6 @@ namespace MORTAR
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
     void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
-
-    /*!
-    \brief Setup the binning strategy for geometrically motivated extended ghosting
-
-    \note The average velocity is only important, if binning is performed in the deformed
-    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
-    coupling in the reference configuration, it suffices to set the velocity to 0.0.
-
-    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
-    @return Binning strategy object ready to be used
-    */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
 
     //! @}
 
@@ -1648,6 +1648,7 @@ namespace MORTAR
     */
     void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
 
+   protected:
     /*!
     \brief check and initialize possible cross point modification
 
@@ -1687,6 +1688,7 @@ namespace MORTAR
     */
     void CommunicateQuadSlaveStatusAmongAllProcs();
 
+   private:
     /*!
     \brief Setup interface discretization
 
