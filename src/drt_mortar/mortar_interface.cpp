@@ -1294,8 +1294,6 @@ void MORTAR::MortarInterface::UpdateParallelLayoutAndDataStructures(const bool p
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::ExtendInterfaceGhostingSafely(const double meanVelocity)
 {
-  std::cout << "ExtendInterfaceGhostingSafely()" << std::endl;
-
   using Teuchos::RCP;
 
   if (Discret().NodeColMap() == nullptr) dserror("NodeColMap not set.");
