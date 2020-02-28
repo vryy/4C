@@ -519,25 +519,6 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
       // on all processors. To do so, we'll take the node row map and export it to
       // full overlap. Then we export the discretization to full overlap column map.
       // This way, also all mortar elements will be fully ghosted on all processors.
-      // Note that we'll do ghosting NOT ONLY on procs that do own or ghost any of the
-      // nodes in the natural distribution of idiscret_, but really on ALL procs.
-      // This makes dynamic redistribution easier!
-
-      //**********************************************************************
-      // IMPORTANT NOTE:
-      // In an older code version, we only did ghosting on procs that own or ghost
-      // any of the interface nodes or elements  in the natural distr. of idiscret_.
-      // The corresponding code lines for creating this proc list are:
-      //
-      // std::vector<int> stproc(0);
-      // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-      //   stproc.push_back(Comm().MyPID());
-      // std::vector<int> rtproc(0);
-      // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
-      //
-      // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
-      // the node gids and element gids are gathered among procs.
-      //**********************************************************************
 
       // we want to do full ghosting on all procs
       std::vector<int> allproc(Comm().NumProc());
@@ -587,25 +568,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
       // nodes on all processors. To do so, we'll take the master node row map and
       // export it to full overlap. Then we export the discretization to partially
       // full overlap column map. This way, also all master elements will be fully
-      // ghosted on all processors. Note that we'll do ghosting NOT ONLY on procs
-      // that do own or ghost any nodes in the natural distribution of idiscret_,
-      // but really on ALL procs. This makes dynamic redistribution easier!
-
-      //**********************************************************************
-      // IMPORTANT NOTE:
-      // In an older code version, we only did ghosting on procs that own or ghost
-      // any of the interface nodes or elements  in the natural distr. of idiscret_.
-      // The corresponding code lines for creating this proc list are:
-      //
-      // std::vector<int> stproc(0);
-      // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-      //   stproc.push_back(Comm().MyPID());
-      // std::vector<int> rtproc(0);
-      // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
-      //
-      // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
-      // the node gids and element gids are gathered among procs.
-      //**********************************************************************
+      // ghosted on all processors.
 
       // at least for master, we want to do full ghosting on all procs
       std::vector<int> allproc(Comm().NumProc());
