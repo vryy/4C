@@ -24,7 +24,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
 
   // check whether instance already exists for current discretization, and perform instantiation if
   // not
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterBoundary(disname);
@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
     dserror("Could not locate the desired instance. Internal error.");
   }
@@ -75,11 +75,11 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       numelectrons_(0),
       numscal_(-1),
       peltier_(0.0),
-      permeabilities_(NULL),
+      permeabilities_(nullptr),
       regularizationparameter_(-1.0),
-      regularizationtype_("undefined"),
+      regularizationtype_(INPAR::S2I::RegularizationType::undefined_regularization),
       resistivity_(0.0),
-      stoichiometries_(NULL),
+      stoichiometries_(nullptr),
       resistance_(0.0),
       convtolimplicitBV_(-1.0),
       itemaxmimplicitBV_(-1.0)
@@ -179,7 +179,8 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           molarmass_ =
               parameters.get<double>("molar mass", std::numeric_limits<double>::infinity());
           regularizationparameter_ = parameters.get<double>("regpar", -1.0);
-          regularizationtype_ = parameters.get<std::string>("regtype");
+          regularizationtype_ = static_cast<INPAR::S2I::RegularizationType>(
+              parameters.get<int>("regtype", std::numeric_limits<int>::infinity()));
           resistivity_ = 1.0 / (parameters.get<double>("conductivity", -1.0));
 
           break;

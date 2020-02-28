@@ -13,6 +13,7 @@
 
 #include "scatra_ele_parameter_base.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_inpar/inpar_s2i.H"
 #include "vector"
 
 namespace DRT
@@ -28,8 +29,9 @@ namespace DRT
 
       //! singleton access method
       static ScaTraEleParameterBoundary* Instance(
-          const std::string& disname,                         //!< name of discretization
-          const ScaTraEleParameterBoundary* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname,  //!< name of discretization
+          const ScaTraEleParameterBoundary* delete_me =
+              nullptr  //!< creation/destruction indication
       );
 
       //! singleton destruction
@@ -76,7 +78,7 @@ namespace DRT
       double RegularizationParameter() { return regularizationparameter_; };
 
       /// return the type of regularization associated to the S2ICouplingGrowth condition
-      std::string RegularizationType() { return regularizationtype_; };
+      INPAR::S2I::RegularizationType RegularizationType() const { return regularizationtype_; };
 
       /// return the resistivity associated to the material of the S2ICouplingGrowth condition
       double Resistivity() { return resistivity_; };
@@ -137,7 +139,7 @@ namespace DRT
       double regularizationparameter_;
 
       /// type of regularization for S2ICouplingGrowth condition
-      std::string regularizationtype_;
+      INPAR::S2I::RegularizationType regularizationtype_;
 
       /// resistivity of the interface layer material associated to S2ICouplingGrowth condition
       double resistivity_;
