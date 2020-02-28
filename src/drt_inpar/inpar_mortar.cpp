@@ -120,7 +120,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "Parameters to control parallel redistribution of mortar interfaces");
 
   setStringToIntegralParameter<ExtendGhosting>("GHOSTING_STRATEGY", "redundant_master",
-      "Type of parallel interface evaluation",
+      "Type of interface ghosting and ghosting extension algorithm",
       tuple<std::string>("redundant_all", "redundant_master", "round_robin", "binning"),
       tuple<ExtendGhosting>(ExtendGhosting::redundant_all, ExtendGhosting::redundant_master,
           ExtendGhosting::roundrobin, ExtendGhosting::binning),
