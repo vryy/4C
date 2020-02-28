@@ -47,11 +47,15 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        * ghosting. However, penalty with GPTS is implemented in the CoNitscheStrategy, which
        * always requires volume ghosting.
        *
-       * Furthermore, everything porous media related has to stick to the old code branch as well.
+       * Other cases require volume ghosting as well and, thus, have to stick to the old code
+       * branch. They are:
+       * - Everything porous media related has to stick to the old code branch as well.
+       * - "Large" wear, i.e. using Structure-ALE.
        */
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
               INPAR::MORTAR::algorithm_mortar &&
-          DRT::Problem::Instance()->GetProblemType() != prb_poroelast)
+          (DRT::Problem::Instance()->GetProblemType() != prb_poroelast &&
+              DRT::Problem::Instance()->GetProblemType() != prb_struct_ale))
         use_safe_ghosting_branch = true;
     }
     else
