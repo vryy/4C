@@ -378,21 +378,9 @@ MAX_BALANCE                     2
 // Minimum no. of elements per processor for parallel redistribution
 MIN_ELEPROC                     0
 //
-// Type of redundancy in interface storage
-//     All,all,Master,master,None,none
-REDUNDANT_STORAGE               Master
-//
-// Type of parallel interface evaluation
-//     rg
-//     redundant_ghosting
-//     ghosting
-//     rrg
-//     roundrobinghost
-//     RoundRobinGhost
-//     bs
-//     binningstrategy
-//     binning
-GHOSTING_STRATEGY               redundant_ghosting
+// Type of interface ghosting and ghosting extension algorithm
+//                              redundant_all, redundant_master, round_robin, bining
+GHOSTING_STRATEGY               redundant_master
 //
 // Type of redistribution algorithm
 //     None,none,No,no,Static,static,Dynamic,dynamic
