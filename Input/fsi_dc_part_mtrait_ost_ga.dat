@@ -92,7 +92,7 @@ RELAX                           0.825
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK

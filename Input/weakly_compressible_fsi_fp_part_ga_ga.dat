@@ -72,7 +72,7 @@ SEARCH_ALGORITHM      Binarytree
 SEARCH_PARAM          0.3
 ---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST       static
-REDUNDANT_STORAGE     all
+GHOSTING_STRATEGY     redundant_all
 ------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE          consint
 INTTYPE               segments

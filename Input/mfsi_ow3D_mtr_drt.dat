@@ -99,7 +99,7 @@ GENAVG                          TrLike
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

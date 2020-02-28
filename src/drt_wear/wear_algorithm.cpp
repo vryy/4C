@@ -308,15 +308,15 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
-    INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-            icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-    if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror("ERROR: Self contact requires redundant slave and master storage");
+    INPAR::MORTAR::ExtendGhosting redundant =
+        Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+            icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+    if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
+      dserror("Self contact requires fully redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(
-        groupid1, Comm(), dim, icparams, isself[0], redundant, Teuchos::null);
+        groupid1, Comm(), dim, icparams, isself[0], Teuchos::null);
     interfacesMat_.push_back(newinterface);
 
     // get it again

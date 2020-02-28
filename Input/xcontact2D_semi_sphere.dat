@@ -48,9 +48,8 @@ SEARCH_PARAM                    0.5
 INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               Master
-GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 None
+GHOSTING_STRATEGY               redundant_master
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 FRLESS_FIRST                    No

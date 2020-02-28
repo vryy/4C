@@ -88,12 +88,12 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-    const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    const bool selfcontact)
 {
   Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr =
       Teuchos::rcp(new CONTACT::InterfaceDataContainer());
   return Teuchos::rcp(
-      new CoInterface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact, redundant));
+      new CoInterface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact));
 }
 
 /*----------------------------------------------------------------------------*
@@ -141,9 +141,8 @@ CONTACT::CoInterface::CoInterface(
  *----------------------------------------------------------------------*/
 CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
-    const Teuchos::ParameterList& icontact, bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact, redundant),
+    const Teuchos::ParameterList& icontact, bool selfcontact)
+    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact),
       interfaceData_(
           Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
       selfcontact_(interfaceData_->IsSelfContact()),
@@ -204,7 +203,8 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContai
   // for self contact this is ensured in BuildInterfaces in contact_strategy_factory.cpp
   // so we only print a warning here, as it is possible to have another contact interface with a
   // different ID that does not need to be a self contact interface
-  if (!(selfcontact_ or nonSmoothContact_) && redundant == INPAR::MORTAR::redundant_all)
+  if (!(selfcontact_ or nonSmoothContact_) &&
+      interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
     if (Comm().MyPID() == 0)
       std::cout << "\n\nWARNING: We do not want redundant interface storage for contact where not "
                    "needed, as it is very expensive. But we need it e.g. for self contact."
@@ -862,35 +862,40 @@ void CONTACT::CoInterface::CreateSearchTree()
     //*****TWO BODY CONTACT*****
     else
     {
-      // create fully overlapping map of all master elements
-      // for non-redundant storage (RRloop) we handle the master elements
-      // like the slave elements --> melecolmap_
-      INPAR::MORTAR::GhostingStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-              InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-
-      // get update type of binary tree
-      INPAR::MORTAR::BinaryTreeUpdateType updatetype =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
-              InterfaceParams(), "BINARYTREE_UPDATETYPE");
-
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-      if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
+      switch (interfaceData_->GetExtendGhosting())
       {
-        melefullmap = melecolmap_;
+        case INPAR::MORTAR::ExtendGhosting::roundrobin:
+        case INPAR::MORTAR::ExtendGhosting::binning:
+        {
+          melefullmap = melecolmap_;
+          break;
+        }
+        case INPAR::MORTAR::ExtendGhosting::redundant_all:
+        case INPAR::MORTAR::ExtendGhosting::redundant_master:
+        {
+          melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+          break;
+        }
+        default:
+        {
+          dserror("Chosen parallel strategy not supported!");
+          break;
+        }
       }
-      else if (strat == INPAR::MORTAR::ghosting_redundant)
-      {
-        melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-      }
-      else
-        dserror("Chosen parallel strategy not supported!");
 
-      // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap, Dim(),
-          SearchParam(), updatetype, SearchUseAuxPos()));
-      // initialize the binary tree
-      binarytree_->Init();
+      {
+        // get update type of binary tree
+        INPAR::MORTAR::BinaryTreeUpdateType updatetype =
+            DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+                InterfaceParams(), "BINARYTREE_UPDATETYPE");
+
+        // create binary tree object for contact search and setup tree
+        binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap,
+            Dim(), SearchParam(), updatetype, SearchUseAuxPos()));
+        // initialize the binary tree
+        binarytree_->Init();
+      }
     }
   }
 

@@ -32,7 +32,7 @@ LM_SHAPEFCN                     std//dual
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 Dynamic
-REDUNDANT_STORAGE               Master
+GHOSTING_STRATEGY               redundant_master
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RANDSEED                        -1

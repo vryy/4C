@@ -1852,9 +1852,6 @@ namespace CONTACT
     */
     void ComputeAndResetParallelBalanceIndicators(double& time_average, double& elements_average);
 
-    //! Get the current strategy to extend the interface ghosting
-    INPAR::MORTAR::ExtendGhosting GetGhostingStrategy() const;
-
     /*!
     \brief Is an update of the interface ghosting necessary?
 

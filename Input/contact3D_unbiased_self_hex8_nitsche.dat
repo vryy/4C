@@ -47,7 +47,7 @@ NUMGP_PER_DIM                   7
 TRIANGULATION                   Center
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
-REDUNDANT_STORAGE               All
+GHOSTING_STRATEGY               redundant_all
 -----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Superlu

@@ -75,24 +75,6 @@ namespace INPAR
       relocation_none       ///< no mesh relocation
     };
 
-    /// Type of redundancy in interface storage
-    /// (this enum represents the input file parameter REDUNDANT_STORAGE)
-    enum RedundantStorage
-    {
-      redundant_all,     ///< redundant storage of master AND slave surfaces
-      redundant_master,  ///< redundant storage of master surface
-      redundant_none     ///< no redundant storage
-    };
-
-    /// Type of ghosting of interface values
-    /// (this enum represents the input file parameter GHOSTING_STRATEGY)
-    enum GhostingStrategy
-    {
-      ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
-      roundrobinghost,     ///< round robin loop to setup of ghosting
-      binningstrategy      ///< binning strategy to setup of ghosting
-    };
-
     /// Type of ghosting of interface values
     /// (this enum represents the input file parameter GHOSTING_STRATEGY)
     enum class ExtendGhosting

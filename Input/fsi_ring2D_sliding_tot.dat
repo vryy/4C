@@ -93,7 +93,7 @@ SHAPEFCT                        Polynomial
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2

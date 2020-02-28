@@ -86,12 +86,11 @@ RESTART_WITH_MESHTYING          No
 OUTPUT_INTERFACES               Yes
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 EXPLOIT_PROXIMITY               Yes
-GHOSTING_STRATEGY               binning
 IMBALANCE_TOL                   1.03
 MAX_BALANCE                     1.0
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 None
-REDUNDANT_STORAGE               None
+GHOSTING_STRATEGY               binning
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 STRATEGY                        Penalty

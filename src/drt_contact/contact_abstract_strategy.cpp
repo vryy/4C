@@ -338,36 +338,6 @@ void CONTACT::CoAbstractStrategy::ComputeAndResetParallelBalanceIndicators(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-INPAR::MORTAR::ExtendGhosting CONTACT::CoAbstractStrategy::GetGhostingStrategy() const
-{
-  using namespace INPAR::MORTAR;
-
-  ExtendGhosting update_ghosting_strategy = ExtendGhosting::redundant_all;
-
-  // Get input parameters
-  const Teuchos::ParameterList& mortar_parallel_redist_params =
-      Params().sublist("PARALLEL REDISTRIBUTION");
-  RedundantStorage redundant_storage = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-      mortar_parallel_redist_params, "REDUNDANT_STORAGE");
-  GhostingStrategy ghosting_strategy = DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-      mortar_parallel_redist_params, "GHOSTING_STRATEGY");
-
-  if (redundant_storage == redundant_all && ghosting_strategy == ghosting_redundant)
-    update_ghosting_strategy = ExtendGhosting::redundant_all;
-  else if (redundant_storage == redundant_master && ghosting_strategy == ghosting_redundant)
-    update_ghosting_strategy = ExtendGhosting::redundant_master;
-  else if (redundant_storage == redundant_none && ghosting_strategy == roundrobinghost)
-    update_ghosting_strategy = ExtendGhosting::roundrobin;
-  else if (redundant_storage == redundant_none && ghosting_strategy == binningstrategy)
-    update_ghosting_strategy = ExtendGhosting::binning;
-  else
-    dserror("Unknown strategy to update ghosting if necessary.");
-
-  return update_ghosting_strategy;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
     const INPAR::MORTAR::ExtendGhosting& ghosting_strategy) const
 {
@@ -435,7 +405,9 @@ bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
   Comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
 
-  const INPAR::MORTAR::ExtendGhosting ghosting_strategy = GetGhostingStrategy();
+  const INPAR::MORTAR::ExtendGhosting ghosting_strategy =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   const bool perform_rebalancing = IsRebalancingNecessary();
   const bool enforce_ghosting_update = IsUpdateOfGhostingNecessary(ghosting_strategy);
@@ -489,9 +461,9 @@ bool CONTACT::CoAbstractStrategy::RedistributeContactOld(
 
   // Prepare for extending the ghosting
   ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
-      INPAR::MORTAR::binningstrategy)
+      INPAR::MORTAR::ExtendGhosting::binning)
     CalcMeanVelocityForBinning(*vel);
 
   /* set old and current displacement state
@@ -1207,12 +1179,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
   // get type of parallel strategy
   const Teuchos::ParameterList& mortarParallelRedistParams =
       Params().sublist("PARALLEL REDISTRIBUTION");
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+  INPAR::MORTAR::ExtendGhosting extendghosting =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           mortarParallelRedistParams, "GHOSTING_STRATEGY");
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE");
 
   // Evaluation for all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -1223,40 +1192,30 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
     // store required integration time
     inttime_ += Interfaces()[i]->Inttime();
 
-    /************************************************************
-     *  Round Robin loop only for ghosting                      *
-     ************************************************************/
-    if (strat == INPAR::MORTAR::roundrobinghost)
+    switch (extendghosting)
     {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
+      case INPAR::MORTAR::ExtendGhosting::roundrobin:
+      {
+        // first perform rrloop to detect the required ghosting
+        Interfaces()[i]->RoundRobinDetectGhosting();
 
-      // first perform rrloop to detect the required ghosting
-      Interfaces()[i]->RoundRobinDetectGhosting();
-
-      // second step --> evaluate
-      Interfaces()[i]->Evaluate(0, step_, iter_);
-    }
-    /************************************************************
-     *  Creating bins and ghost all mele within adjacent bins   *
-     ************************************************************/
-    else if (strat == INPAR::MORTAR::binningstrategy)
-    {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Binning strategy only for none-redundant storage of interface!");
-
-      // required master elements are already ghosted (preparestepcontact) !!!
-      // call evaluation
-      Interfaces()[i]->Evaluate(0, step_, iter_);
-    }
-    /************************************************************
-     *  Fully redundant ghosting of master side                 *
-     ************************************************************/
-    else  // std. evaluation for redundant ghosting
-    {
-      Interfaces()[i]->Evaluate(0, step_, iter_);
+        // second step --> evaluate
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
+      case INPAR::MORTAR::ExtendGhosting::binning:
+      {
+        // required master elements are already ghosted (preparestepcontact) !!!
+        // call evaluation
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
+      case INPAR::MORTAR::ExtendGhosting::redundant_all:
+      case INPAR::MORTAR::ExtendGhosting::redundant_master:
+      {
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
     }
   }  // end interface loop
 

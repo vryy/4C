@@ -66,9 +66,8 @@ LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               none
-GHOSTING_STRATEGY               RoundRobinGhost
 PARALLEL_REDIST                 dynamic
+GHOSTING_STRATEGY               round_robin
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -70,10 +70,9 @@ LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               none
-GHOSTING_STRATEGY               binningstrategy
 PARALLEL_REDIST                 dynamic
 MAX_BALANCE                     1.0
+GHOSTING_STRATEGY               binning
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

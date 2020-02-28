@@ -38,8 +38,7 @@ ALGORITHM                       gpts
 SEARCH_ALGORITHM                Binarytree
 -------------------------------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 None
-GHOSTING_STRATEGY               redundant_ghosting
-REDUNDANT_STORAGE               All
+GHOSTING_STRATEGY               redundant_all
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   4
 STRATEGY                        Nitsche

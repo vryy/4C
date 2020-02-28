@@ -26,8 +26,8 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
 CONTACT::AUG::LAGRANGE::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : ::CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant)
+    const bool selfcontact)
+    : ::CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   /* left blank, nothing to do here */
 }

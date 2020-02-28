@@ -85,7 +85,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

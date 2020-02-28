@@ -61,7 +61,7 @@ MORTAR::InterfaceDataContainer::InterfaceDataContainer()
       imortar_(Teuchos::ParameterList()),
       shapefcn_(INPAR::MORTAR::shape_undefined),
       quadslave_(false),
-      redundant_(INPAR::MORTAR::redundant_none),
+      extendghosting_(INPAR::MORTAR::ExtendGhosting::redundant_master),
       oldnodecolmap_(Teuchos::null),
       oldelecolmap_(Teuchos::null),
       snoderowmap_(Teuchos::null),
@@ -110,7 +110,6 @@ MORTAR::MortarInterface::MortarInterface(
       imortar_(interfaceData_->IMortar()),
       shapefcn_(interfaceData_->ShapeFcn()),
       quadslave_(interfaceData_->IsQuadSlave()),
-      redundant_(interfaceData_->RedundantStorage()),
       oldnodecolmap_(interfaceData_->OldNodeColMap()),
       oldelecolmap_(interfaceData_->OldEleColMap()),
       snoderowmap_(interfaceData_->SNodeRowMap()),
@@ -152,14 +151,12 @@ MORTAR::MortarInterface::MortarInterface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(const int id,
-    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
-    INPAR::MORTAR::RedundantStorage redundant)
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar)
 {
   Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData =
       Teuchos::rcp(new MORTAR::InterfaceDataContainer());
 
-  return Teuchos::rcp(
-      new MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, imortar, redundant));
+  return Teuchos::rcp(new MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, imortar));
 }
 
 /*----------------------------------------------------------------------*
@@ -167,7 +164,7 @@ Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(const int 
  *----------------------------------------------------------------------*/
 MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
-    const Teuchos::ParameterList& imortar, INPAR::MORTAR::RedundantStorage redundant)
+    const Teuchos::ParameterList& imortar)
     : interfaceData_(interfaceData),
       id_(interfaceData_->Id()),
       comm_(interfaceData_->CommPtr()),
@@ -178,7 +175,6 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<InterfaceDataContain
       imortar_(interfaceData_->IMortar()),
       shapefcn_(interfaceData_->ShapeFcn()),
       quadslave_(interfaceData_->IsQuadSlave()),
-      redundant_(interfaceData_->RedundantStorage()),
       oldnodecolmap_(interfaceData_->OldNodeColMap()),
       oldelecolmap_(interfaceData_->OldEleColMap()),
       snoderowmap_(interfaceData_->SNodeRowMap()),
@@ -216,7 +212,8 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<InterfaceDataContain
   dim_ = spatialDim;
   imortar_.setParameters(imortar);
   quadslave_ = false;
-  redundant_ = redundant;
+  interfaceData_->SetExtendGhosting(Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+      imortar.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
   searchalgo_ =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
   searchparam_ = imortar.get<double>("SEARCH_PARAM");
@@ -390,12 +387,12 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
     my_m_ghostele[myrank] = melecolmap_->NumMyElements() - my_m_elements[myrank];
 
     // adapt output for redundant master or all redundant case
-    if (Redundant() == INPAR::MORTAR::redundant_master)
+    if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
     {
       my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
       my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
     }
-    else if (Redundant() == INPAR::MORTAR::redundant_all)
+    else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
     {
       my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
       my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
@@ -1314,9 +1311,9 @@ void MORTAR::MortarInterface::ExtendInterfaceGhostingSafely(const double meanVel
     oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().ElementColMap())));
   }
 
-  switch (Redundant())
+  switch (interfaceData_->GetExtendGhosting())
   {
-    case INPAR::MORTAR::redundant_all:
+    case INPAR::MORTAR::ExtendGhosting::redundant_all:
     {
       // to ease our search algorithms we'll afford the luxury to ghost all nodes
       // on all processors. To do so, we'll take the node row map and export it to
@@ -1384,7 +1381,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhostingSafely(const double meanVel
 
       break;
     }
-    case INPAR::MORTAR::redundant_master:
+    case INPAR::MORTAR::ExtendGhosting::redundant_master:
     {
       // to ease our search algorithms we'll afford the luxury to ghost all master
       // nodes on all processors. To do so, we'll take the master node row map and
@@ -1488,51 +1485,48 @@ void MORTAR::MortarInterface::ExtendInterfaceGhostingSafely(const double meanVel
 
       break;
     }
-    case INPAR::MORTAR::redundant_none:
+    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    {
+      // Nothing to do in case of Round-Robin
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::binning:
     {
       // Extend master column map via binning
+
+      // Create the binning strategy
+      RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(meanVelocity);
+
+      // fill master and slave elements into bins
+      std::map<int, std::set<int>> slavebinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+      std::map<int, std::set<int>> masterbinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+      // Extend ghosting of the master elements
+      std::map<int, std::set<int>> ext_bin_to_ele_map;
+      RCP<const Epetra_Map> extendedmastercolmap =
+          binningstrategy->ExtendElementColMap(slavebinelemap, masterbinelemap, ext_bin_to_ele_map,
+              Teuchos::null, Teuchos::null, Discret().ElementColMap());
+
+      Discret().ExportColumnElements(*extendedmastercolmap);
+
+      // get the node ids of the elements that are to be ghosted and create a proper node column
+      // map for their export
+      std::set<int> nodes;
+      const int numMasterColElements = extendedmastercolmap->NumMyElements();
+      for (int lid = 0; lid < numMasterColElements; ++lid)
       {
-        const INPAR::MORTAR::GhostingStrategy ghostingStrategy =
-            DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-                DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
-                "GHOSTING_STRATEGY");
-        if (ghostingStrategy == INPAR::MORTAR::binningstrategy)
-        {
-          // Create the binning strategy
-          RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(meanVelocity);
-
-          // fill master and slave elements into bins
-          std::map<int, std::set<int>> slavebinelemap;
-          binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
-          std::map<int, std::set<int>> masterbinelemap;
-          binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
-
-          // Extend ghosting of the master elements
-          std::map<int, std::set<int>> ext_bin_to_ele_map;
-          RCP<const Epetra_Map> extendedmastercolmap =
-              binningstrategy->ExtendElementColMap(slavebinelemap, masterbinelemap,
-                  ext_bin_to_ele_map, Teuchos::null, Teuchos::null, Discret().ElementColMap());
-
-          Discret().ExportColumnElements(*extendedmastercolmap);
-
-          // get the node ids of the elements that are to be ghosted and create a proper node column
-          // map for their export
-          std::set<int> nodes;
-          const int numMasterColElements = extendedmastercolmap->NumMyElements();
-          for (int lid = 0; lid < numMasterColElements; ++lid)
-          {
-            DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
-            const int* nodeids = ele->NodeIds();
-            for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
-          }
-
-          std::vector<int> colnodes(nodes.begin(), nodes.end());
-          Teuchos::RCP<Epetra_Map> nodecolmap =
-              Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
-
-          Discret().ExportColumnNodes(*nodecolmap);
-        }
+        DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        const int* nodeids = ele->NodeIds();
+        for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
       }
+
+      std::vector<int> colnodes(nodes.begin(), nodes.end());
+      Teuchos::RCP<Epetra_Map> nodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+
+      Discret().ExportColumnNodes(*nodecolmap);
       break;
     }
     default:
@@ -1549,7 +1543,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
     const bool isFinalParallelDistribution, const double meanVelocity)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
-  if (Redundant() == INPAR::MORTAR::redundant_all)
+  if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
   {
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
@@ -1617,7 +1611,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
   }
 
   //*****ONLY REDUNDANT MASTER STORAGE*****
-  else if (Redundant() == INPAR::MORTAR::redundant_master)
+  else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
   {
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
@@ -1721,7 +1715,8 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
   }
 
   //*****NON-REDUNDANT STORAGE*****
-  else if (Redundant() == INPAR::MORTAR::redundant_none)
+  else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::roundrobin ||
+           interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
   {
     // nothing to do here, we work with the given non-redundant distribution
     // of both slave and master nodes to the individual processors. However
@@ -1781,12 +1776,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
 
-    const INPAR::MORTAR::GhostingStrategy ghostingStrategy =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-            DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
-            "GHOSTING_STRATEGY");
-
-    if (ghostingStrategy == INPAR::MORTAR::binningstrategy)
+    if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
     {
       /* We have to update the row/column maps split into master/slave. We start from the new
        * node/element column maps. Since we don't have row maps at this point, we can/have to pass
@@ -1871,9 +1861,8 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // create fully overlapping map of all master elements
     // for non-redundant storage (RRloop) we handle the master elements
     // like the slave elements --> melecolmap_
-    INPAR::MORTAR::GhostingStrategy strat =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-            InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+    INPAR::MORTAR::ExtendGhosting strat = Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+        InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
     // get update type of binary tree
     INPAR::MORTAR::BinaryTreeUpdateType updatetype =
@@ -1881,12 +1870,26 @@ void MORTAR::MortarInterface::CreateSearchTree()
             InterfaceParams(), "BINARYTREE_UPDATETYPE");
 
     Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-    if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
-      melefullmap = melecolmap_;
-    else if (strat == INPAR::MORTAR::ghosting_redundant)
-      melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-    else
-      dserror("Chosen parallel strategy not supported!");
+    switch (strat)
+    {
+      case INPAR::MORTAR::ExtendGhosting::roundrobin:
+      case INPAR::MORTAR::ExtendGhosting::binning:
+      {
+        melefullmap = melecolmap_;
+        break;
+      }
+      case INPAR::MORTAR::ExtendGhosting::redundant_all:
+      case INPAR::MORTAR::ExtendGhosting::redundant_master:
+      {
+        melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+        break;
+      }
+      default:
+      {
+        dserror("Unknown strategy to deal with interface ghosting.");
+        break;
+      }
+    }
 
     // create binary tree object for search and setup tree
     binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
@@ -3124,19 +3127,34 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   // create fully overlapping map of all master elements
   // for non-redundant storage (RRloop) we handle the master elements
   // like the slave elements --> melecolmap_
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+  INPAR::MORTAR::ExtendGhosting strat = Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+      InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
 
-  if (strat == INPAR::MORTAR::ghosting_redundant)
-    melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-  else if (strat == INPAR::MORTAR::roundrobinghost)
-    melefullmap = melerowmap_;
-  else if (strat == INPAR::MORTAR::binningstrategy)
-    melefullmap = melecolmap_;
-  else
-    dserror("Choosen parallel strategy not supported!");
+  switch (strat)
+  {
+    case INPAR::MORTAR::ExtendGhosting::redundant_all:
+    case INPAR::MORTAR::ExtendGhosting::redundant_master:
+    {
+      melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    {
+      melefullmap = melerowmap_;
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::binning:
+    {
+      melefullmap = melecolmap_;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown strategy to deal with interface ghosting.");
+      break;
+    }
+  }
 
   // loop over all slave elements on this proc.
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)

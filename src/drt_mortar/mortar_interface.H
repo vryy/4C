@@ -195,9 +195,15 @@ namespace MORTAR
 
     inline bool IsQuadSlave() const { return quadslave_; }
 
-    inline enum INPAR::MORTAR::RedundantStorage& RedundantStorage() { return redundant_; }
+    inline const enum INPAR::MORTAR::ExtendGhosting& GetExtendGhosting() const
+    {
+      return extendghosting_;
+    }
 
-    inline enum INPAR::MORTAR::RedundantStorage RedundantStorage() const { return redundant_; }
+    inline void SetExtendGhosting(const enum INPAR::MORTAR::ExtendGhosting& extendghosting)
+    {
+      extendghosting_ = extendghosting;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& OldNodeColMap() { return oldnodecolmap_; }
 
@@ -402,7 +408,7 @@ namespace MORTAR
     bool quadslave_;
 
     //! employed type of redundancy in storage of interface
-    INPAR::MORTAR::RedundantStorage redundant_;
+    INPAR::MORTAR::ExtendGhosting extendghosting_;
 
     //! @name Maps
     //! @{
@@ -546,12 +552,10 @@ namespace MORTAR
      *  \param comm (in) : communicator object
      *  \param spatialDim (in) : spatial dimension of the problem
      *  \param imortar (in) : global contact/mesh-tying parameter-list
-     *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<MortarInterface> Create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& imortar,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
     \brief Standard constructor creating empty mortar interface
@@ -561,11 +565,9 @@ namespace MORTAR
     \param comm (in): A communicator object
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
-    \param redundant (in): type of redundancy in interface storage
     */
     MortarInterface(const Teuchos::RCP<InterfaceDataContainer>& interfaceData_ptr, const int id,
-        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
     \brief Destructor
@@ -641,13 +643,6 @@ namespace MORTAR
     \brief Get flag indicating nurbs shape functions
     */
     bool IsNurbs() { return nurbs_; };
-
-    /*!
-    \brief Get redundant storage flag
-
-    Returns status of redundancy in interface storage (nodes, elements).
-    */
-    INPAR::MORTAR::RedundantStorage Redundant() const { return redundant_; };
 
     /*!
     \brief Get type of search algorithm
@@ -1735,8 +1730,6 @@ namespace MORTAR
     Teuchos::ParameterList& imortar_;  ///< ref. to containing contact input parameters of interface
     INPAR::MORTAR::ShapeFcn& shapefcn_;  ///< ref. to employed type of shape function set
     bool& quadslave_;                    ///< ref. to flag indicating quadratic 2d/3d slave elements
-    INPAR::MORTAR::RedundantStorage&
-        redundant_;  ///< ref. to employed type of redundancy in storage of interface
 
     Teuchos::RCP<Epetra_Map>&
         oldnodecolmap_;  ///< ref. to column map of all interface nodes (overlap=1)

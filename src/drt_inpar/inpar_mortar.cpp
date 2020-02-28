@@ -119,12 +119,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& parallelRedist = mortar.sublist("PARALLEL REDISTRIBUTION", false,
       "Parameters to control parallel redistribution of mortar interfaces");
 
-  setStringToIntegralParameter<int>("GHOSTING_STRATEGY", "redundant_ghosting",
+  setStringToIntegralParameter<ExtendGhosting>("GHOSTING_STRATEGY", "redundant_master",
       "Type of parallel interface evaluation",
-      tuple<std::string>(
-          "redundant_ghosting", "roundrobinghost", "RoundRobinGhost", "binningstrategy", "binning"),
-      tuple<int>(
-          ghosting_redundant, roundrobinghost, roundrobinghost, binningstrategy, binningstrategy),
+      tuple<std::string>("redundant_all", "redundant_master", "round_robin", "binning"),
+      tuple<ExtendGhosting>(ExtendGhosting::redundant_all, ExtendGhosting::redundant_master,
+          ExtendGhosting::roundrobin, ExtendGhosting::binning),
       &parallelRedist);
 
   DoubleParameter("IMBALANCE_TOL", 1.1,
@@ -140,13 +139,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<std::string>("None", "none", "No", "no", "Static", "static", "Dynamic", "dynamic"),
       tuple<int>(parredist_none, parredist_none, parredist_none, parredist_none, parredist_static,
           parredist_static, parredist_dynamic, parredist_dynamic),
-      &parallelRedist);
-
-  setStringToIntegralParameter<int>("REDUNDANT_STORAGE", "Master",
-      "Type of redundancy in interface storage",
-      tuple<std::string>("All", "all", "Master", "master", "None", "none"),
-      tuple<int>(redundant_all, redundant_all, redundant_master, redundant_master, redundant_none,
-          redundant_none),
       &parallelRedist);
 
   BoolParameter("EXPLOIT_PROXIMITY", "Yes",

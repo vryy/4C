@@ -38,7 +38,7 @@ LM_SHAPEFCN                     Dual
 MESH_RELOCATION                 no
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta

@@ -312,12 +312,10 @@ namespace CONTACT
      *  \param spatialDim (in) : spatial dimension of the problem
      *  \param icontact (in) : global contact parameter-list
      *  \param selfcontact (in): Boolean flag to indicate self-contact
-     *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<CoInterface> Create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
     \brief Standard constructor creating empty contact interface
@@ -332,12 +330,11 @@ namespace CONTACT
     \param spatialDim (in): spatial dimension of the problem
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
-    \param redundant (in): type of redundancy in interface storage
 
     */
     CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+        bool selfcontact);
 
     /*!
     \brief Destructor

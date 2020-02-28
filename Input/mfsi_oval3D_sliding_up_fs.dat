@@ -78,7 +78,7 @@ TOL_VEL_RES_L2                  1e-06
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 no
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
