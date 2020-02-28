@@ -53,6 +53,15 @@ void FSI::DirichletNeumannVel::Setup()
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
       DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) ==
+      Teuchos::null)
+  {
+    dserror("Something went very wrong here! You should have a FBIStructureWrapper!\n");
+  }
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true) == Teuchos::null)
+  {
+    dserror("Something went very wrong here! You should have a FBIFluidMB adapter!\n");
+  }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -110,21 +119,16 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
   StructureField()->Solve();
   StructureField()->writeGmshStrucOutputStep();
 
-  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) !=
-      Teuchos::null)
+  if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
+          INPAR::FBI::BeamToFluidCoupling::solid) &&
+      fbi.get<int>("STARTSTEP") < Step())
   {
-    if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
-            INPAR::FBI::BeamToFluidCoupling::solid) &&
-        fbi.get<int>("STARTSTEP") < Step())
-    {
-      constraint_manager_->PrepareFluidSolve();
-      constraint_manager_->Evaluate();
-    }
-
-    return StructToFluid(iforce);
+    constraint_manager_->PrepareFluidSolve();
+    constraint_manager_->Evaluate();
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
   }
-  dserror("Something went very wrong here! You should have a FBIStructureWrapper!\n");
-  return Teuchos::null;
+
+  return StructToFluid(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

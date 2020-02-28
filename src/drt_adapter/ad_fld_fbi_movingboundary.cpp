@@ -139,16 +139,11 @@ void ADAPTER::FBIFluidMB::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMa
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-
 void ADAPTER::FBIFluidMB::ApplyInterfaceValues(
     Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
 {
   FluidField()->AddContributionToExternalLoads(iforce);
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FBIFluidMB::Veln() { return FluidField()->Veln(); }
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /// Get velocity at timestep n+1

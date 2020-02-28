@@ -4,7 +4,7 @@
 \brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
 interaction.
 
-\level 2
+\level 3
 
 \maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
@@ -210,7 +210,6 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
 /*----------------------------------------------------------------------*/
 
-// todo take a good look at dispn vs. dispnp and veln vs. velnp!
 void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
     std::vector<DRT::Element const*> elements, Teuchos::RCP<std::vector<double>>& beam_dofvec,
     Teuchos::RCP<std::vector<double>>& fluid_dofvec) const
@@ -220,8 +219,8 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
       elements[0], column_structure_displacement_,
-      *beam_dofvec);  // todo check time step todo get "interface" displacements only for beam
-                      // elements todo Only get centerline velocities?!
+      *beam_dofvec);  // todo get "interface" displacements only for beam
+                      // elements
   ;
   // extract veclocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(

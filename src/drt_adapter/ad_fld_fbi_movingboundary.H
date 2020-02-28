@@ -113,9 +113,6 @@ namespace ADAPTER
     /// create the testing of fields
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    /// Get velocity at timestep n
-    virtual Teuchos::RCP<const Epetra_Vector> Veln();
-
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
 

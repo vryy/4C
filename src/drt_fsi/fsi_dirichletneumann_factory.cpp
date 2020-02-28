@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-
+#include "fsi_dirichletneumann.H"
 #include "fsi_dirichletneumann_factory.H"
 #include "fsi_dirichletneumann_disp.H"
 #include "fsi_dirichletneumann_vel.H"
