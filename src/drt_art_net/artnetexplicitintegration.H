@@ -17,8 +17,6 @@
 #ifndef ARTNETEXPLICITINTEGRATION_H
 #define ARTNETEXPLICITINTEGRATION_H
 
-//#include "../drt_fluid/fluidimpedancecondition.H"
-
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -28,8 +26,6 @@
 
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
@@ -38,29 +34,6 @@
 #include "art_write_gnuplot.H"
 
 #include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
-#include <ml_agg_genP.h>
-#include <ml_operator.h>
-#include <MLAPI_Error.h>
-#include <MLAPI_CompObject.h>
-#include <MLAPI_TimeObject.h>
-#include <MLAPI_Operator.h>
-#include <MLAPI_Operator_Utils.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_InverseOperator.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_BaseOperator.h>
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Eig.h>
 
 #include <ctime>
 #include <cstdlib>
