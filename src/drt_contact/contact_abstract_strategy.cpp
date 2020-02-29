@@ -263,10 +263,7 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
       }
       else  // this is a regular time step (neither t=0 nor restart)
       {
-        ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
-
-        // no redistribution
-        perform_rebalancing = false;
+        // Nothing to do, since this is not the first time step.
       }
 
       break;
@@ -295,7 +292,7 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
          * (MAX_BALANCE - 1.0)*100%)
          *
          * Moreover, we redistribute if in the majority of iteration steps of the last time step
-         * there has been an unbalance in element distribution, i.e. if eaverage >= 0.5)
+         * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
          */
         if (time_average >= max_balance || elements_average >= 0.5) perform_rebalancing = true;
 
