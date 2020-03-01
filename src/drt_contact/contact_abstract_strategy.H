@@ -508,10 +508,13 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
+    /*! Max-to-min ratio of evaluation time across all processes for currnet time step \f$t_{n+1}\f$
+     */
     std::vector<double> unbalanceEvaluationTime_;
 
-    //! Parallel unbalance factors (num. of slave elements) for current time step \f$t_{n+1}\f$
+    /*! Max-to-min ratio of number of row slave elements across all processes for current time step
+     * \f$t_{n+1}\f$
+     */
     std::vector<int> unbalanceNumSlaveElements_;
 
     //! global LM dof row map (before parallel redistribution)
@@ -1831,10 +1834,14 @@ namespace CONTACT
     \brief Decide whether interface discretizations need to be rebalanced
 
     The decision to perform rebalancing is based on user input as well as history of
-    - contact evaluation time per process
-    - number of slave elements per process
+    - the max-to-min ratio of contact evaluation time across all processes
+    - the max-to-min ratio of the number of row slave elements across all processes
+
+    averaged over all contact evaluations of the previous time step.
 
     Naturally, serial runs do never require rebalancing.
+
+    \sa CheckParallelDistribution(), UpdateParallelDistributionStatus()
 
     @return True if rebalancing is necessary, false otherwise.
     */
@@ -1843,14 +1850,36 @@ namespace CONTACT
     /*!
     \brief Compute and reset indicators for necessity of parallel rebalancing
 
-    Compute averaged unbalance of interface evaluation time and interface element count per MPI
-    rank. These will be used to decide, whether rebalancing of the interface discretization is
-    necessary. At the end, reset the indicators in preparation for the next time step.
+    Unbalance is measured as the max-to-min ratio of eveluation time / number of row slave elements
+    over all processes.
 
-    @param time_average
-    @param elements_average
+    We average the unbalance of interface evaluation time and interface element count over all
+    contact evaluations of a time step. These will be used to decide, whether rebalancing of the
+    interface discretization is necessary. At the end, reset the indicators in preparation for the
+    next time step.
+
+    \sa CheckParallelDistribution(), IsRebalancingNecessary(), UpdateParallelDistributionStatus()
+
+    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+                                evaluations of previous time step
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+                                    over all evaluations of previous time step
     */
     void ComputeAndResetParallelBalanceIndicators(double& time_average, double& elements_average);
+
+    /*!
+    \brief Print indicators for current status of parallel load balancing
+
+    Indicators will be printed to screen on proc 0.
+
+    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+                                evaluations of previous time step
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+                                    over all evaluations of previous time step
+    @param[in] max_time_unbalance Upper bound for imbalance in evaluation time given in input file
+    */
+    void PrintParallelBalanceIndicators(
+        double& time_average, double& elements_average, const double& max_time_unbalance);
 
     /*!
     \brief Is an update of the interface ghosting necessary?

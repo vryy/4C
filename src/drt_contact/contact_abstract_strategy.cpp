@@ -237,12 +237,20 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
  *----------------------------------------------------------------------*/
 bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
 {
+  // No rebalancing of a serial run, since it makes no sense.
   if (Comm().NumProc() == 1) return false;
 
   bool perform_rebalancing = false;
+  const double max_time_unbalance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+
   double time_average = 0.0;
   double elements_average = 0.0;
-  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+  if (!first_time_step) ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
 
   switch (WhichParRedist())
   {
@@ -253,17 +261,10 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
     case INPAR::MORTAR::parredist_static:
     {
       // Static redistribution: ONLY at time t=0 or after restart
-      // (both cases can be identified via empty unbalance vectors)
-
-      // this is the first time step (t=0) or restart
-      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+      if (first_time_step)
       {
         // The user demanded to perform rebalancing, so let's do it.
         perform_rebalancing = true;
-      }
-      else  // this is a regular time step (neither t=0 nor restart)
-      {
-        // Nothing to do, since this is not the first time step.
       }
 
       break;
@@ -273,7 +274,7 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
       // Dynamic redistribution: whenever system is out of balance
 
       // This is the first time step (t=0) or restart
-      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+      if (first_time_step)
       {
         // Always perform rebalancing in the first time step
         perform_rebalancing = true;
@@ -282,8 +283,6 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
       // This is a regular time step (neither t=0 nor restart)
       else
       {
-        ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
-
         /* Decide on redistribution
          *
          * We allow a maximum value of the balance measure in the system as defined in the input
@@ -294,25 +293,15 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
          * Moreover, we redistribute if in the majority of iteration steps of the last time step
          * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
          */
-        if (time_average >= max_balance || elements_average >= 0.5) perform_rebalancing = true;
-
-        if (Comm().MyPID() == 0)
-        {
-          std::cout << "**********************************************************" << std::endl;
-          if (time_average > 0)
-          {
-            printf("Parallel balance (time): %e (limit %e) \n", time_average, max_balance);
-            printf("Parallel balance (eles): %e (limit %e) \n", elements_average, 0.5);
-          }
-          else
-            printf("Parallel balance: t=0/restart \n");
-          std::cout << "**********************************************************" << std::endl;
-        }
+        if (time_average >= max_time_unbalance || elements_average >= 0.5)
+          perform_rebalancing = true;
       }
 
       break;
     }
   }
+
+  PrintParallelBalanceIndicators(time_average, elements_average, max_time_unbalance);
 
   return perform_rebalancing;
 }
@@ -322,15 +311,39 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
 void CONTACT::CoAbstractStrategy::ComputeAndResetParallelBalanceIndicators(
     double& time_average, double& elements_average)
 {
+  dsassert(unbalanceEvaluationTime_.size() > 0, "Vector should have length > 0.");
+  dsassert(unbalanceNumSlaveElements_.size() > 0, "Vector should have length > 0.");
+
   // compute average balance factors of last time step
   for (const auto& time : unbalanceEvaluationTime_) time_average += time;
-  time_average /= (double)unbalanceEvaluationTime_.size();
+  time_average /= static_cast<double>(unbalanceEvaluationTime_.size());
   for (const auto& num_elements : unbalanceNumSlaveElements_) elements_average += num_elements;
-  elements_average /= (double)unbalanceNumSlaveElements_.size();
+  elements_average /= static_cast<double>(unbalanceNumSlaveElements_.size());
 
   // Reset balance factors of last time step
   unbalanceEvaluationTime_.resize(0);
   unbalanceNumSlaveElements_.resize(0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::PrintParallelBalanceIndicators(
+    double& time_average, double& elements_average, const double& max_time_unbalance)
+{
+  // Screen output only on proc 0
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "*************** DATA OF PREVIOUS TIME STEP ***************" << std::endl;
+    if (time_average > 0)
+    {
+      std::cout << "Parallel balance (time): " << time_average << " (limit " << max_time_unbalance
+                << ")\n"
+                << "Parallel balance (eles): " << elements_average << " (limit 0.5)" << std::endl;
+    }
+    else
+      std::cout << "Parallel balance: t=0/restart" << std::endl;
+    std::cout << "**********************************************************" << std::endl;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1283,9 +1296,8 @@ void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double&
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
-  // don't do this if parallel redistribution is switched off
-  // or if this is a single processor (serial) job
-  if (!ParRedist() or Comm().NumProc() == 1) return;
+  // don't do this if this is a single processor (serial) job
+  if (Comm().NumProc() == 1) return;
 
   // collect information about participation in coupling evaluation
   // and in parallel distribution of the individual interfaces
