@@ -110,6 +110,7 @@ namespace INPAR
     {
       regularization_undefined,
       regularization_none,
+      regularization_hein,
       regularization_polynomial,
       regularization_trigonometrical
     };

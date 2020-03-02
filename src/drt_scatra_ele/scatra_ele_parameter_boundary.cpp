@@ -159,6 +159,10 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           break;
         }
       }
+
+      // regularization is not relevant for scatra-scatra interface coupling without growth
+      regularizationtype_ = INPAR::S2I::RegularizationType::regularization_none;
+
       break;
     }
 
