@@ -160,9 +160,31 @@ namespace DRT
      private:
       //! @name general thermal functions
 
+      //! calculate complete internal force, tangent matrix k_TT and capacity matrix
+      //!
+      //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
+      void EvaluateFintTang(Element* ele, const double& time, Discretization& discretization,
+          Element::LocationArray& la,
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params);
+
+      /*!
+       * evaluate complete coupled tangent matrix k_Td
+       * @param ele the element whose matrix is calculated
+       * @param discretization discretization containing this element
+       * @param la LocationArray of this element inside discretization
+       * @param etangcoupl matrix k_Td to be filled
+       * @param params ParameterList of options
+       */
+      void EvaluateCoupledTang(Element* ele, const Discretization& discretization,
+          Element::LocationArray& la,
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
+          Teuchos::ParameterList& params);
+
       //! Calculate element vectors (internal/external) and a few matrices
-      void CalculateFintCondCapa(DRT::Element* ele,  //!< the element whose matrix is calculated
-          const double& time,                        //!< current time
+      void LinearThermoContribution(DRT::Element* ele,  //!< the element whose matrix is calculated
+          const double& time,                           //!< current time
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
@@ -201,6 +223,11 @@ namespace DRT
           const int iquad,                                         //!< id of current Gauss point
           const int eleid                                          //!< the element id
       );
+
+      //! Compute nodal position and velocity
+      inline void InitialAndCurrentNodalPositionVelocity(const Element* ele,
+          const std::vector<double>& disp, const std::vector<double>& vel,
+          LINALG::Matrix<nen_, nsd_>& xcurr, LINALG::Matrix<nen_, nsd_>& xcurrrate);
 
       //! prepare the evaluation of NURBS shape functions
       virtual void PrepareNurbsEval(DRT::Element* ele,  //!< the element whose matrix is calculated
@@ -242,7 +269,7 @@ namespace DRT
 
       //! Calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
-      void CalculateCouplFintCond(DRT::Element* ele,  //!< the element whose matrix is calculated
+      void LinearDispContribution(DRT::Element* ele,  //!< the element whose matrix is calculated
           const double& time,                         //!< current time
           std::vector<double>& disp,                  //!< current displacements
           std::vector<double>& vel,                   //!< current velocities
@@ -255,9 +282,9 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-      void CalculateCouplCond(DRT::Element* ele,  //!< the element whose matrix is calculated
-          std::vector<double>& disp,              //!< current displacements
-          std::vector<double>& vel,               //!< current velocities
+      void LinearCoupledTang(DRT::Element* ele,  //!< the element whose matrix is calculated
+          std::vector<double>& disp,             //!< current displacements
+          std::vector<double>& vel,              //!< current velocities
           LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,  //!< k_Tu matrix
           Teuchos::ParameterList& params);
@@ -288,13 +315,13 @@ namespace DRT
       //! material is used
       //! Clausius-Duhem inequality is no longer = 0, but > 0:
       //! mechanical energy dissipates as heat
-      void CalculateCouplDissipation(DRT::Element* ele,  //!< the element whose matrix is calculated
+      void LinearDissipationFint(DRT::Element* ele,  //!< the element whose matrix is calculated
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           Teuchos::ParameterList& params);
 
       //! calculate terms of dissipation for thermo-mechanical
       //! system matrix k_Td used in case of plastic material
-      void CalculateCouplDissipationCond(
+      void LinearDissipationCoupledTang(
           DRT::Element* ele,  // the element whose matrix is calculated
           LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
           Teuchos::ParameterList& params);
@@ -309,7 +336,7 @@ namespace DRT
       //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
       //! of the displacments
       //! --> all terms are coupled to the displacements/velocities
-      void CalculateCouplNlnFintCondCapa(
+      void NonlinearThermoDispContribution(
           DRT::Element* ele,          //!< the element whose matrix is calculated
           const double& time,         //!< current time
           std::vector<double>& disp,  //!< current displacements
@@ -327,9 +354,9 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
-      void CalculateCouplNlnCond(DRT::Element* ele,  //!< current element whose terms are calculated
-          std::vector<double>& disp,                 //!< current displacements
-          std::vector<double>& vel,                  //!< current velocities
+      void NonlinearCoupledTang(DRT::Element* ele,  //!< current element whose terms are calculated
+          std::vector<double>& disp,                //!< current displacements
+          std::vector<double>& vel,                 //!< current velocities
           LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,                 //!< k_Tu matrix
           Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
@@ -370,7 +397,7 @@ namespace DRT
       //! material is used within geometrically nonlinear analysis
       //! Clausius-Duhem inequality is no longer = 0, but > 0:
       //! mechanical energy dissipates as heat
-      void CalculateCouplNlnDissipation(
+      void NonlinearDissipationFintTang(
           DRT::Element* ele,          //!< the element whose matrix is calculated
           std::vector<double>& disp,  //!< current displacements
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
@@ -380,7 +407,7 @@ namespace DRT
 
       //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
       //! used in case of plastic material within geometrically nonlinear analysis
-      void CalculateCouplNlnDissipationCond(
+      void NonlinearDissipationCoupledTang(
           DRT::Element* ele,          //!< the element whose matrix is calculated
           std::vector<double>& disp,  //!< current displacements
           std::vector<double>& vel,   //!< current velocities
@@ -388,6 +415,10 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       /// @}
+
+      //! extract displacement and velocity vector from discretization
+      void ExtractDispVel(const Discretization& discretization, Element::LocationArray& la,
+          std::vector<double>& mydisp, std::vector<double>& myvel) const;
 
       // extract the node based phase information
       void ExtractPhaseInformation(DRT::Element* ele,         ///< current element
@@ -469,7 +500,6 @@ namespace DRT
       LINALG::Matrix<nen_, 1> weights_;
 
       /// @}
-
     };  // class TemperImpl
 
   }  // namespace ELEMENTS
