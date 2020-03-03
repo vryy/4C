@@ -24,8 +24,6 @@
  *----------------------------------------------------------------------------*/
 bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList& contactParams)
 {
-  using namespace INPAR::CONTACT;
-
   /* Limit the use of the new safe "redistribute & ghosting" branch to our core contact
    * capabilities. If your case of interest is missing here, feel free to migrate your scenario to
    * the new safe branch.
