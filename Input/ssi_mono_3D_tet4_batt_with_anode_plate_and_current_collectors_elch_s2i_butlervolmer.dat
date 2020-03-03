@@ -213,7 +213,7 @@ E 11 - 4 Slave KineticModel NoInterfaceFlux
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   1
 // cathode 
-E 3 - ID 1 c_0% 4.5536e4 c_100% 1.6776e4
+E 3 - ID 1 c_0% 4.5536e4 c_100% 1.6776e4 one_hour 3600000
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 // an-side_cc

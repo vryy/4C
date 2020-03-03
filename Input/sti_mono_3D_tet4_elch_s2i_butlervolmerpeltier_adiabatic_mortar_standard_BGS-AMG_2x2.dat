@@ -148,8 +148,8 @@ E 4 - 1 Master
 E 5 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 peltier -0.038
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
-E 1 - ID 0 c_0% 2.029 c_100% 10.88
-E 3 - ID 1 c_0% 22.37 c_100% 10.56
+E 1 - ID 0 c_0% 2.029 c_100% 10.88 one_hour 3600
+E 3 - ID 1 c_0% 22.37 c_100% 10.56 one_hour 3600
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 E 1 - ID 0
