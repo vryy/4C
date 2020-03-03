@@ -39,6 +39,84 @@
  *----------------------------------------------------------------------*/
 #define MPIBUFFSIZE (52428800) /* this is 50 MB */
 
+/* Collect and print data on memory high water mark of this run
+ *
+ * 1. Ask the operating system for memory usage.
+ * 2. Compute min/max/average and total memory usage across all MPI ranks.
+ * 3. Print a summary to the screen.
+ *
+ * If status file can't be opened, issue a message to the screen. Do not throw an error, since this
+ * is not considered a critical failure during a simulation.
+ *
+ * @param[in] global_comm Global Epetra_Comm object
+ */
+void GetMemoryHighWaterMark(const Epetra_Comm &comm)
+{
+  const std::string status_match = "VmHWM";
+  const std::string status_filename = "/proc/" + std::to_string(getpid()) + "/status";
+  std::ifstream status_file(status_filename, std::ios_base::in);
+  double local_mem = std::nan("0");
+
+  // Retrieve local memory use on each process
+  if (status_file.is_open())
+  {
+    std::string line;
+    while (std::getline(status_file, line))
+    {
+      if (line.find(status_match) != std::string::npos)
+      {
+        size_t start = line.find_first_of("1234567890");
+        size_t stop = line.find_last_of("1234567890");
+
+        std::stringstream(line.substr(start, stop + 1)) >> local_mem;
+        break;
+      }
+    }
+    status_file.close();
+
+    // Convert memory from KB to GB
+    local_mem /= (1 << 20);
+
+    // Gather values
+    const int num_procs = comm.NumProc();
+    double *recvbuf = new double[num_procs];
+    MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    // Compute and output statistics on proc 0
+    if (comm.MyPID() == 0)
+    {
+      double mem_min = recvbuf[0];
+      double mem_max = recvbuf[0];
+      double mem_tot = 0.0;
+      double mem_avg = 0.0;
+
+      for (int rank = 0; rank < num_procs; ++rank)
+      {
+        mem_min = std::min(mem_min, recvbuf[rank]);
+        mem_max = std::max(mem_max, recvbuf[rank]);
+        mem_tot += recvbuf[rank];
+      }
+
+      mem_avg = mem_tot / num_procs;
+
+      std::cout << std::endl
+                << std::scientific << std::setprecision(4)
+                << "Memory High Water Mark Summary across all MPI ranks (in GB):" << std::endl
+                << "  Minimum: " << mem_min << std::endl
+                << "  Maximum: " << mem_max << std::endl
+                << "  Average: " << mem_avg << std::endl
+                << "  Total:   " << mem_tot << std::endl
+                << std::endl;
+    }
+  }
+  else  // Failed to open the status file
+  {
+    std::cout << "Memory High Water Mark summary can not be generated,\nsince status file "
+              << status_filename << " could not be opened.\n"
+              << std::endl;
+  }
+}
+
 /*!
  * \brief FPE signal handle
  *
@@ -256,6 +334,8 @@ int main(int argc, char *argv[])
 #endif
     /*----------------------------------------------------------------------*/
   }
+
+  GetMemoryHighWaterMark(*gcomm);
 
   lcomm->Barrier();
   if (ngroups > 1)
