@@ -19,8 +19,8 @@
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVolmerCurrentDensity(
     const double i0, const double alphaa, const double alphac, const double frt,
     const double pot_ed, const double pot_el, const double epd, const double resistance,
-    const double thickness, DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
-    DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
+    const double thickness, const DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize Butler-Volmer current density
   double i(0.0);
@@ -81,7 +81,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVo
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactor(
     const double thickness, const double eta,
-    DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
 {
   // initialize regularization factor
   double regfac(1.0);
@@ -156,7 +156,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
 double
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactorDerivative(
     const double thickness, const double eta,
-    DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
 {
   // initialize derivative of regularization factor
   double regfacderiv(0.0);

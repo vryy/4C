@@ -53,8 +53,8 @@ namespace DRT
       static double GetButlerVolmerCurrentDensity(const double i0, const double alphaa,
           const double alphac, const double frt, const double pot_ed, const double pot_el,
           const double epd, const double resistance, const double thickness,
-          DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
-          DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+          const DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
       /*!
@@ -71,7 +71,7 @@ namespace DRT
        *
        */
       static double GetRegularizationFactor(const double thickness, const double eta,
-          DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
       /*!
@@ -89,7 +89,7 @@ namespace DRT
        * \date 01/17
        */
       static double GetRegularizationFactorDerivative(const double thickness, const double eta,
-          DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
