@@ -99,14 +99,21 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
 
       mem_avg = mem_tot / num_procs;
 
-      std::cout << std::endl
-                << std::scientific << std::setprecision(4)
-                << "Memory High Water Mark Summary across all MPI ranks (in GB):" << std::endl
-                << "  Minimum: " << mem_min << std::endl
-                << "  Maximum: " << mem_max << std::endl
-                << "  Average: " << mem_avg << std::endl
-                << "  Total:   " << mem_tot << std::endl
-                << std::endl;
+      if (num_procs > 1)
+      {
+        std::cout << std::scientific << std::setprecision(4) << "\nMemory High Water Mark Summary:"
+                  << "\t\tMinOverProcs\tMeanOverProcs\tMaxOverProcs\tSumOverProcs\n"
+                  << "(in GB)\t\t\t\t\t" << mem_min << "\t" << mem_avg << "\t" << mem_max << "\t"
+                  << mem_tot << "\n"
+                  << std::endl;
+      }
+      else
+      {
+        std::cout << std::scientific << std::setprecision(4)
+                  << "\nMemory High Water Mark Summary:\t\tTotal\n"
+                  << "(in GB)\t\t\t\t\t" << mem_tot << "\n"
+                  << std::endl;
+      }
     }
   }
   else  // Failed to open the status file
