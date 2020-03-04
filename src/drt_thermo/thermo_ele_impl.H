@@ -191,9 +191,7 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               ecapalin,  //!< linearization contribution of capacity
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  //!< external force
-          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
-          LINALG::Matrix<nquad_, nsd_>* etempgrad  //!< temperature gradients at Gauss points
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext   //!< external force
       );
 
       //! get the body force
@@ -246,6 +244,21 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxx,  //!< element heat flux in x-direction
           LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxy,  //!< element heat flux in y-direction
           LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxz   //!< element heat flux in z-direction
+      );
+
+      //! compute heatflux and temperature gradient in linear case
+      void LinearHeatfluxTempgrad(Element* ele,     //!< the current element
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< [out] heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad   //!< [out] temperature gradients at Gauss points
+      );
+
+      //! compute heatflux and temperature gradient in nonlinear case
+      void NonlinearHeatfluxTempgrad(Element* ele,  //!< the current element
+          std::vector<double>& disp,                //!< element displacements
+          std::vector<double>& vel,                 //!< element velocities
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< [out] heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad,  //!< [out] temperature gradients at Gauss points
+          Teuchos::ParameterList& params            //!< parameters containing type of flux and grad
       );
 
       //! calculate lumped capacity matrix in case of explicit time integration
@@ -333,8 +346,6 @@ namespace DRT
 
       //! calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
-      //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
-      //! of the displacments
       //! --> all terms are coupled to the displacements/velocities
       void NonlinearThermoDispContribution(
           DRT::Element* ele,          //!< the element whose matrix is calculated
@@ -347,10 +358,6 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               ecapalin,  //!< partial linearization dC/dT of capacity matrix
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
-          LINALG::Matrix<nquad_, nsd_>* etempgrad,    //!< temperature gradients at Gauss points
-          const INPAR::THR::HeatFluxType ioheatflux,  //!< heat flux output option
-          const INPAR::THR::TempGradType iotempgrad,  //!< tempgrad output option
           Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
@@ -423,6 +430,9 @@ namespace DRT
       // extract the node based phase information
       void ExtractPhaseInformation(DRT::Element* ele,         ///< current element
           LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase);  ///< vector to fill, view on elevec1
+
+      //! copy matrix contents into character vector
+      void CopyMatrixIntoCharVector(std::vector<char>& data, LINALG::Matrix<nquad_, nsd_>& stuff);
 
       // FDcheck of conductivity matrix on element level
       void FDCheckCouplNlnFintCondCapa(
