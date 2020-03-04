@@ -138,8 +138,8 @@ E 6 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e-
 E 7 - 2 Master
 ------------------DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS
 DSURF  2
-E 2 - ID 0 c_0% 0.0 c_100% 24.681
-E 3 - ID 1 c_0% 23.671 c_100% 0.0
+E 2 - ID 0 c_0% 0.0 c_100% 24.681 one_hour 3600
+E 3 - ID 1 c_0% 23.671 c_100% 0.0 one_hour 3600
 -------------------------------DESIGN CELL VOLTAGE LINE CONDITIONS
 DLINE  2
 E 2 - ID 0

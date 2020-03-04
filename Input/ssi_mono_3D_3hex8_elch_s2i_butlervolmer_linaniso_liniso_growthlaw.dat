@@ -177,8 +177,8 @@ E 2 - ID 1
 E 3 - ID 2
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
-E 1 - ID 0 c_0% 1.0e-10 c_100% 2.8760e4
-E 3 - ID 1 c_0% 4.5536e4 c_100% 1.6776e4
+E 1 - ID 0 c_0% 1.0e-10 c_100% 2.8760e4 one_hour 3600000
+E 3 - ID 1 c_0% 4.5536e4 c_100% 1.6776e4 one_hour 3600000
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 E 1 - ID 0
