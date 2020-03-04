@@ -163,10 +163,11 @@ namespace DRT
       //! calculate complete internal force, tangent matrix k_TT and capacity matrix
       //!
       //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
-      void EvaluateFintTang(Element* ele, const double& time, Discretization& discretization,
+      void EvaluateTangCapaFint(Element* ele, const double& time, Discretization& discretization,
           Element::LocationArray& la,
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params);
 
       /*!
@@ -460,8 +461,6 @@ namespace DRT
       LINALG::Matrix<nen_, 1> etempn_;
       //! temperatures in last time step T_{n}
       LINALG::Matrix<nen_, 1> etemp_;
-      //! capacity matrix
-      LINALG::Matrix<nen_, nen_> ecapa_;
 
       //! node reference coordinates
       LINALG::Matrix<nsd_, nen_> xyze_;
