@@ -528,9 +528,9 @@ void INPAR::S2I::SetValidConditions(
           butlervolmer.push_back(
               Teuchos::rcp(new StringConditionComponent("regularization type", "trigonometrical",
                   Teuchos::tuple<std::string>("none", "polynomial", "trigonometrical"),
-                  Teuchos::tuple<int>(INPAR::S2I::no_regularization,
-                      INPAR::S2I::polynomial_regularization,
-                      INPAR::S2I::trigonometrical_regularization))));
+                  Teuchos::tuple<int>(INPAR::S2I::regularization_none,
+                      INPAR::S2I::regularization_polynomial,
+                      INPAR::S2I::regularization_trigonometrical))));
           butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("regpar")));
           butlervolmer.push_back(
               Teuchos::rcp(new RealConditionComponent("regularization parameter")));

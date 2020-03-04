@@ -108,10 +108,10 @@ namespace INPAR
     //! regularization types for plating reaction
     enum RegularizationType
     {
-      undefined_regularization,
-      no_regularization,
-      polynomial_regularization,
-      trigonometrical_regularization
+      regularization_undefined,
+      regularization_none,
+      regularization_polynomial,
+      regularization_trigonometrical
     };
 
     //! set valid parameters for scatra-scatra interface coupling

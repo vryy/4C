@@ -3304,7 +3304,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "one-step-theta time integration scheme at the moment!");
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit and
         conditions[0]->GetInt("regularization type") !=
-            INPAR::S2I::RegularizationType::no_regularization)
+            INPAR::S2I::RegularizationType::regularization_none)
       dserror(
           "No regularization implemented for semi-implicit evaluation of scatra-scatra interface "
           "layer growth!");

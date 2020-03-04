@@ -105,7 +105,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
     switch (regularizationtype)
     {
       // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-      case INPAR::S2I::RegularizationType::polynomial_regularization:
+      case INPAR::S2I::RegularizationType::regularization_polynomial:
       {
         // use regularization parameter if specified, otherwise take default value according to
         // reference
@@ -118,7 +118,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
         break;
       }
       // trigonometrical regularization involving (co)sine half-wave
-      case INPAR::S2I::RegularizationType::trigonometrical_regularization:
+      case INPAR::S2I::RegularizationType::regularization_trigonometrical:
       {
         // use regularization parameter if specified, otherwise take lithium atom diameter as
         // default value
@@ -134,7 +134,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
         break;
       }
       // non-regularized Heaviside function
-      case INPAR::S2I::RegularizationType::no_regularization:
+      case INPAR::S2I::RegularizationType::regularization_none:
       {
         if (thickness <= 0.0) regfac = 0.0;
 
@@ -180,7 +180,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
     switch (regularizationtype)
     {
       // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-      case INPAR::S2I::RegularizationType::polynomial_regularization:
+      case INPAR::S2I::RegularizationType::regularization_polynomial:
       {
         // use regularization parameter if specified, otherwise take default value according to
         // reference
@@ -194,7 +194,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
         break;
       }
       // trigonometrical regularization involving (co)sine half-wave
-      case INPAR::S2I::RegularizationType::trigonometrical_regularization:
+      case INPAR::S2I::RegularizationType::regularization_trigonometrical:
       {
         // use regularization parameter if specified, otherwise take lithium atom diameter as
         // default value
@@ -209,7 +209,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
 
         break;
       }
-      case INPAR::S2I::RegularizationType::no_regularization:
+      case INPAR::S2I::RegularizationType::regularization_none:
       {
         // do nothing and retain derivative as initialized, since non-regularized Heaviside function
         // cannot be properly differentiated

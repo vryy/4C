@@ -77,7 +77,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       peltier_(0.0),
       permeabilities_(nullptr),
       regularizationparameter_(-1.0),
-      regularizationtype_(INPAR::S2I::RegularizationType::undefined_regularization),
+      regularizationtype_(INPAR::S2I::RegularizationType::regularization_undefined),
       resistivity_(0.0),
       stoichiometries_(nullptr),
       resistance_(0.0),
