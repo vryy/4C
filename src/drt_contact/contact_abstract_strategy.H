@@ -1843,9 +1843,10 @@ namespace CONTACT
 
     \sa CheckParallelDistribution(), UpdateParallelDistributionStatus()
 
+    @param[in] Flag to indicate first time step after start/restart of simulation
     @return True if rebalancing is necessary, false otherwise.
     */
-    bool IsRebalancingNecessary();
+    bool IsRebalancingNecessary(const bool first_time_step);
 
     /*!
     \brief Compute and reset indicators for necessity of parallel rebalancing
@@ -1864,6 +1865,7 @@ namespace CONTACT
                                 evaluations of previous time step
     @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
                                     over all evaluations of previous time step
+    @param[in] Flag to indicate first time step after start/restart of simulation
     */
     void ComputeAndResetParallelBalanceIndicators(double& time_average, double& elements_average);
 
@@ -1879,7 +1881,7 @@ namespace CONTACT
     @param[in] max_time_unbalance Upper bound for imbalance in evaluation time given in input file
     */
     void PrintParallelBalanceIndicators(
-        double& time_average, double& elements_average, const double& max_time_unbalance);
+        double& time_average, double& elements_average, const double& max_time_unbalance) const;
 
     /*!
     \brief Is an update of the interface ghosting necessary?
@@ -1892,9 +1894,12 @@ namespace CONTACT
     step to guarantee sufficient ghosting for a correct and safe contact search.
 
     @param ghosting_strategy User-chosen strategy to extend the interface ghosting
+    @param[in] Flag to indicate first time step after start/restart of simulation
+
     @return Flag to indicate, whether ghosting needs to be updated (true) or not (false)
     */
-    bool IsUpdateOfGhostingNecessary(const INPAR::MORTAR::ExtendGhosting& ghosting_strategy) const;
+    bool IsUpdateOfGhostingNecessary(
+        const INPAR::MORTAR::ExtendGhosting& ghosting_strategy, const bool first_time_step) const;
 
     /*!
     \brief Calculate absolute value of mean velocity of interface for binning

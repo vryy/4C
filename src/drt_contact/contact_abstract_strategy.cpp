@@ -235,7 +235,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
+bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_step)
 {
   // No rebalancing of a serial run, since it makes no sense.
   if (Comm().NumProc() == 1) return false;
@@ -243,10 +243,6 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary()
   bool perform_rebalancing = false;
   const double max_time_unbalance =
       Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
-
-  bool first_time_step = false;
-  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
-    first_time_step = true;
 
   double time_average = 0.0;
   double elements_average = 0.0;
@@ -328,7 +324,7 @@ void CONTACT::CoAbstractStrategy::ComputeAndResetParallelBalanceIndicators(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::PrintParallelBalanceIndicators(
-    double& time_average, double& elements_average, const double& max_time_unbalance)
+    double& time_average, double& elements_average, const double& max_time_unbalance) const
 {
   // Screen output only on proc 0
   if (Comm().MyPID() == 0)
@@ -349,7 +345,7 @@ void CONTACT::CoAbstractStrategy::PrintParallelBalanceIndicators(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
-    const INPAR::MORTAR::ExtendGhosting& ghosting_strategy) const
+    const INPAR::MORTAR::ExtendGhosting& ghosting_strategy, const bool first_time_step) const
 {
   bool enforce_update_of_ghosting = false;
   switch (ghosting_strategy)
@@ -358,7 +354,7 @@ bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
     case INPAR::MORTAR::ExtendGhosting::redundant_master:
     {
       // this is the first time step (t=0) or restart
-      if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+      if (first_time_step)
         enforce_update_of_ghosting = true;
       else
         enforce_update_of_ghosting = false;
@@ -418,8 +414,13 @@ bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
       Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
-  const bool perform_rebalancing = IsRebalancingNecessary();
-  const bool enforce_ghosting_update = IsUpdateOfGhostingNecessary(ghosting_strategy);
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+
+  const bool perform_rebalancing = IsRebalancingNecessary(first_time_step);
+  const bool enforce_ghosting_update =
+      IsUpdateOfGhostingNecessary(ghosting_strategy, first_time_step);
 
   // Prepare for extending the ghosting
   ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
@@ -459,7 +460,10 @@ bool CONTACT::CoAbstractStrategy::RedistributeContactOld(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // decide whether redistribution should be applied or not
-  const bool doredist = IsRebalancingNecessary();
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+  const bool doredist = IsRebalancingNecessary(first_time_step);
 
   // get out of here if simulation is still in balance
   if (!doredist) return false;
