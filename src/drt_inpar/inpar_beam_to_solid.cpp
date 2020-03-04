@@ -46,49 +46,6 @@ void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
 /**
  *
  */
-DRT::UTILS::GaussRule1D INPAR::BEAMTOSOLID::IntToGaussRule1D(const int n_gauss_points)
-{
-  switch (n_gauss_points)
-  {
-    case 1:
-      return DRT::UTILS::GaussRule1D::intrule_line_1point;
-    case 2:
-      return DRT::UTILS::GaussRule1D::intrule_line_2point;
-    case 3:
-      return DRT::UTILS::GaussRule1D::intrule_line_3point;
-    case 4:
-      return DRT::UTILS::GaussRule1D::intrule_line_4point;
-    case 5:
-      return DRT::UTILS::GaussRule1D::intrule_line_5point;
-    case 6:
-      return DRT::UTILS::GaussRule1D::intrule_line_6point;
-    case 7:
-      return DRT::UTILS::GaussRule1D::intrule_line_7point;
-    case 8:
-      return DRT::UTILS::GaussRule1D::intrule_line_8point;
-    case 9:
-      return DRT::UTILS::GaussRule1D::intrule_line_9point;
-    case 10:
-      return DRT::UTILS::GaussRule1D::intrule_line_10point;
-    case 16:
-      return DRT::UTILS::GaussRule1D::intrule_line_16point;
-    case 20:
-      return DRT::UTILS::GaussRule1D::intrule_line_20point;
-    case 32:
-      return DRT::UTILS::GaussRule1D::intrule_line_32point;
-    case 50:
-      return DRT::UTILS::GaussRule1D::intrule_line_50point;
-    default:
-    {
-      dserror("No Gauss rule defined for %d points", n_gauss_points);
-      return DRT::UTILS::GaussRule1D::intrule1D_undefined;
-    }
-  }
-};
-
-/**
- *
- */
 void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;

@@ -139,16 +139,11 @@ void ADAPTER::FBIFluidMB::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMa
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-
 void ADAPTER::FBIFluidMB::ApplyInterfaceValues(
     Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
 {
   FluidField()->AddContributionToExternalLoads(iforce);
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FBIFluidMB::Veln() { return FluidField()->Veln(); }
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /// Get velocity at timestep n+1
@@ -160,3 +155,9 @@ int ADAPTER::FBIFluidMB::Itemax() const { return fluidadapter_->Itemax(); }
 /*----------------------------------------------------------------------*/
 /// set the maximum number of iterations for the fluid field
 void ADAPTER::FBIFluidMB::SetItemax(int itemax) { FluidField()->SetItemax(itemax); }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIFluidMB::ResetExternalForces()
+{
+  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->ResetExternalForces();
+}

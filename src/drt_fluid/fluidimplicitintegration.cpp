@@ -6685,6 +6685,7 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
  * Add vector to external loads being applied to rhs before solve  rauch 12/14 |
  *                                                                             |
  * external_loads_ may have been built before by method ApplyExternalForces()  |
+ * Be carefull here, because the external loads are not reset after a timestep!|
  *----------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(
     const Teuchos::RCP<const Epetra_Vector> contributing_vector)
@@ -6725,7 +6726,7 @@ void FLD::FluidImplicitTimeInt::AssembleCouplingContributions()
   if (couplingcontributions_ != Teuchos::null)
   {
     // For now we assume to have a linear matrix, so we add the matrix itself to the system matrix
-    sysmat_->Add(*couplingcontributions_, false, 1.0, 1.0);
+    sysmat_->Add(*couplingcontributions_, false, 1.0 / ResidualScaling(), 1.0);
 
     // Add the matrix multiplied with the solution of the last time step to the rhs
     Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -6733,7 +6734,7 @@ void FLD::FluidImplicitTimeInt::AssembleCouplingContributions()
 
     if (err != 0) dserror(" Linalg Sparse Matrix Multiply threw error code %i ", err);
 
-    err = residual_->Update(-1.0, *tmp, 1.0);
+    err = residual_->Update(-1.0 / ResidualScaling(), *tmp, 1.0);
 
     if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
   }
@@ -6777,4 +6778,12 @@ void FLD::FluidImplicitTimeInt::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
   {
     meshtying_->UpdateSlaveDOF(f, velnp_);
   }
+}
+/*----------------------------------------------------------------------*|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::ResetExternalForces()
+{
+  if (external_loads_ == Teuchos::null)
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  external_loads_->PutScalar(0);
 }

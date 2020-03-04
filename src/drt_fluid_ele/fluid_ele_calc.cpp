@@ -879,7 +879,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
 
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
-    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    //  value at n+alpha_F for generalized-alpha-NP scheme, n+1 otherwise)
     double press = 0.0;
     if (fldparatimint_->IsGenalphaNP())
       press = funct_.Dot(eprenp);
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
 
     // get pressure gradient at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
-    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    //  value at n+alpha_F for generalized-alpha-NP scheme, n+1 otherwise)
     if (fldparatimint_->IsGenalphaNP())
       gradp_.Multiply(derxy_, eprenp);
     else

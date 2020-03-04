@@ -12,6 +12,7 @@
 
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 
+#include "../drt_inpar/inpar_geometry_pair.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -64,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
       dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
 
     // Gauss rule for integration along the beam (segments).
-    gauss_rule_ = INPAR::BEAMTOSOLID::IntToGaussRule1D(
+    gauss_rule_ = INPAR::GEOMETRYPAIR::IntToGaussRule1D(
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
 
     // Number of integrations points along the circumference of the cross section.

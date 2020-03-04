@@ -16,7 +16,7 @@ SHAPEFCT                              Polynomial
 ----------------------------------FLUID BEAM INTERACTION
 COUPLING                              fluid
 ----------------------------------FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING
-PENALTY_PARAMETER                     1e12
+PENALTY_PARAMETER                     1e13
 MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
 GEOMETRY_PAIR_STRATEGY                     segmentation
@@ -87,6 +87,7 @@ NONLINITER                            Newton
 PHYSICAL_TYPE                         Incompressible
 PREDICTOR                             steady_state
 SIMPLER                               no
+NUMSTASTEPS                              1
 THETA                                 1.0
 TIMEINTEGR                            One_Step_Theta
 RESULTSEVRY                           1

@@ -34,7 +34,7 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEARCH_POINTS");
 
     gauss_rule_ =
-        INPAR::BEAMTOSOLID::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
+        INPAR::GEOMETRYPAIR::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
 
     integration_points_circumference_ =
         input_parameter_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");

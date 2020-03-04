@@ -32,14 +32,19 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   /* parameters for beam to fluid meshtying */
 
-  Teuchos::ParameterList& beam_to_fluid_meshtying =
-      fbi.sublist("BEAM TO FLUID MESHTYING", false, "");
 
   setStringToIntegralParameter<BeamToFluidCoupling>("COUPLING", "two-way", "Type of FBI coupling",
       tuple<std::string>("two-way", "fluid", "solid"),
       tuple<BeamToFluidCoupling>(
           BeamToFluidCoupling::twoway, BeamToFluidCoupling::fluid, BeamToFluidCoupling::solid),
       &fbi);
+
+  IntParameter("STARTSTEP", 0,
+      "Time Step at which to begin the fluid beam coupling. Usually this will be the first step.",
+      &fbi);
+
+  Teuchos::ParameterList& beam_to_fluid_meshtying =
+      fbi.sublist("BEAM TO FLUID MESHTYING", false, "");
 
   setStringToIntegralParameter<BeamToFluidDiscretization>("MESHTYING_DISCRETIZATION", "none",
       "Type of employed meshtying discretization",
@@ -55,10 +60,6 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &beam_to_fluid_meshtying);
 
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-Fluid volume meshtying",
-      &beam_to_fluid_meshtying);
-
-  IntParameter("GAUSS_POINTS", 6,
-      "Number of Gauss Points for the integral evaluation along the beam segments",
       &beam_to_fluid_meshtying);
 
   DoubleParameter("SEARCH_RADIUS", 1000,

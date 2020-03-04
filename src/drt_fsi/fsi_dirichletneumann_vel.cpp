@@ -24,6 +24,7 @@
 #include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.H"
 #include "../drt_fbi/ad_fbi_constraintbridge.H"
 #include "../drt_fbi/beam_to_fluid_meshtying_params.H"
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
@@ -52,6 +53,15 @@ void FSI::DirichletNeumannVel::Setup()
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
       DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) ==
+      Teuchos::null)
+  {
+    dserror("Something went very wrong here! You should have a FBIStructureWrapper!\n");
+  }
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true) == Teuchos::null)
+  {
+    dserror("Something went very wrong here! You should have a FBIFluidMB adapter!\n");
+  }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -76,7 +86,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
     MBFluidField()->SetItemax(itemax);
 
-    constraint_manager_->Evaluate();
+    const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+
+    if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
+            INPAR::FBI::BeamToFluidCoupling::fluid) &&
+        fbi.get<int>("STARTSTEP") < Step())
+      constraint_manager_->Evaluate();
 
     return FluidToStruct(ivel);
   }
@@ -90,7 +105,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
 
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
   if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
-          INPAR::FBI::BeamToFluidCoupling::fluid))
+          INPAR::FBI::BeamToFluidCoupling::fluid) &&
+      fbi.get<int>("STARTSTEP") < Step())
   {
     if (not use_old_structure_)
       StructureField()->ApplyInterfaceForces(iforce);
@@ -102,16 +118,17 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
 
   StructureField()->Solve();
   StructureField()->writeGmshStrucOutputStep();
-  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) !=
-      Teuchos::null)
+
+  if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
+          INPAR::FBI::BeamToFluidCoupling::solid) &&
+      fbi.get<int>("STARTSTEP") < Step())
   {
     constraint_manager_->PrepareFluidSolve();
     constraint_manager_->Evaluate();
-
-    return StructToFluid(iforce);
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
   }
-  dserror("Something went very wrong here! You should have a FBIStructureWrapper!\n");
-  return Teuchos::null;
+
+  return StructToFluid(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -153,7 +170,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidToStruct(Teuchos::RCP
 
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return constraint_manager_->StructureToFluid();
+  return constraint_manager_->StructureToFluid(Step());
 }
 
 /*----------------------------------------------------------------------*/

@@ -14,10 +14,16 @@
 #ifndef FSI_DIRICHLETNEUMANN_FACTORY_H
 #define FSI_DIRICHLETNEUMANN_FACTORY_H
 
-#include "fsi_dirichletneumann.H"
+class Epetra_Comm;
+
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
 
 namespace FSI
 {
+  class DirichletNeumann;
   /**
    *  \brief Factory that creates the appropriate DirichletNeumann algorithm
    *

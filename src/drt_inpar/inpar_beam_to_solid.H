@@ -16,7 +16,6 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_condition.H"
 
 
@@ -105,13 +104,8 @@ namespace INPAR
     };
 
     /**
-     * \brief Map number of gauss points to 1D gauss rule
-     */
-    DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
-
-    /**
-     * \brief Set the beam-to-solid parameters
-     */
+    \brief Set the beam-to-solid parameters
+    */
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /**
