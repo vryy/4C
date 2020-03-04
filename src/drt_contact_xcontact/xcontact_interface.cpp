@@ -20,8 +20,8 @@
 XCONTACT::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant),
+    bool selfcontact)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       sndofrowmap_(Teuchos::null),
       stdofrowmap_(Teuchos::null),
       parent_discret_(*icontact.get<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(

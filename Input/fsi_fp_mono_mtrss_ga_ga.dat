@@ -92,7 +92,7 @@ THERM_TEMPGRAD                  None
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0

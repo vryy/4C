@@ -15,6 +15,7 @@
 #include "friction_node.H"
 #include "contact_paramsinterface.H"
 #include "contact_noxinterface.H"
+#include "contact_utils_parallel.H"
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
@@ -233,107 +234,236 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 }
 
 /*----------------------------------------------------------------------*
- | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_step)
+{
+  // No rebalancing of a serial run, since it makes no sense.
+  if (Comm().NumProc() == 1) return false;
+
+  bool perform_rebalancing = false;
+  const double max_time_unbalance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+
+  double time_average = 0.0;
+  double elements_average = 0.0;
+  if (!first_time_step) ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
+
+  switch (WhichParRedist())
+  {
+    case INPAR::MORTAR::parredist_none:
+    {
+      break;
+    }
+    case INPAR::MORTAR::parredist_static:
+    {
+      // Static redistribution: ONLY at time t=0 or after restart
+      if (first_time_step)
+      {
+        // The user demanded to perform rebalancing, so let's do it.
+        perform_rebalancing = true;
+      }
+
+      break;
+    }
+    case INPAR::MORTAR::parredist_dynamic:
+    {
+      // Dynamic redistribution: whenever system is out of balance
+
+      // This is the first time step (t=0) or restart
+      if (first_time_step)
+      {
+        // Always perform rebalancing in the first time step
+        perform_rebalancing = true;
+      }
+
+      // This is a regular time step (neither t=0 nor restart)
+      else
+      {
+        /* Decide on redistribution
+         *
+         * We allow a maximum value of the balance measure in the system as defined in the input
+         * parameter MAX_BALANCE, i.e. the maximum local processor workload and the minimum local
+         * processor workload for mortar evaluation of all interfaces may not differ by more than
+         * (MAX_BALANCE - 1.0)*100%)
+         *
+         * Moreover, we redistribute if in the majority of iteration steps of the last time step
+         * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
+         */
+        if (time_average >= max_time_unbalance || elements_average >= 0.5)
+          perform_rebalancing = true;
+      }
+
+      break;
+    }
+  }
+
+  PrintParallelBalanceIndicators(time_average, elements_average, max_time_unbalance);
+
+  return perform_rebalancing;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::ComputeAndResetParallelBalanceIndicators(
+    double& time_average, double& elements_average)
+{
+  dsassert(unbalanceEvaluationTime_.size() > 0, "Vector should have length > 0.");
+  dsassert(unbalanceNumSlaveElements_.size() > 0, "Vector should have length > 0.");
+
+  // compute average balance factors of last time step
+  for (const auto& time : unbalanceEvaluationTime_) time_average += time;
+  time_average /= static_cast<double>(unbalanceEvaluationTime_.size());
+  for (const auto& num_elements : unbalanceNumSlaveElements_) elements_average += num_elements;
+  elements_average /= static_cast<double>(unbalanceNumSlaveElements_.size());
+
+  // Reset balance factors of last time step
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::PrintParallelBalanceIndicators(
+    double& time_average, double& elements_average, const double& max_time_unbalance) const
+{
+  // Screen output only on proc 0
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "*************** DATA OF PREVIOUS TIME STEP ***************" << std::endl;
+    if (time_average > 0)
+    {
+      std::cout << "Parallel balance (time): " << time_average << " (limit " << max_time_unbalance
+                << ")\n"
+                << "Parallel balance (eles): " << elements_average << " (limit 0.5)" << std::endl;
+    }
+    else
+      std::cout << "Parallel balance: t=0/restart" << std::endl;
+    std::cout << "**********************************************************" << std::endl;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
+    const INPAR::MORTAR::ExtendGhosting& ghosting_strategy, const bool first_time_step) const
+{
+  bool enforce_update_of_ghosting = false;
+  switch (ghosting_strategy)
+  {
+    case INPAR::MORTAR::ExtendGhosting::redundant_all:
+    case INPAR::MORTAR::ExtendGhosting::redundant_master:
+    {
+      // this is the first time step (t=0) or restart
+      if (first_time_step)
+        enforce_update_of_ghosting = true;
+      else
+        enforce_update_of_ghosting = false;
+
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    case INPAR::MORTAR::ExtendGhosting::binning:
+    {
+      enforce_update_of_ghosting = true;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown strategy to extend ghosting if necessary.");
+    }
+  }
+
+  return enforce_update_of_ghosting;
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool CONTACT::CoAbstractStrategy::RedistributeContact(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
-  // get out of here if parallel redistribution is switched off
-  // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return false;
+  bool redistributed = false;
 
-  // decide whether redistribution should be applied or not
-  double taverage = 0.0;
-  double eaverage = 0.0;
-  bool doredist = false;
-  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
-
-  //**********************************************************************
-  // (1) static redistribution: ONLY at time t=0 or after restart
-  // (both cases can be identified via empty unbalance vectors)
-  //**********************************************************************
-  if (WhichParRedist() == INPAR::MORTAR::parredist_static)
+  if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(Params()))
+    redistributed = RedistributeWithSafeGhosting(*dis, *vel);
+  else
   {
-    // this is the first time step (t=0) or restart
-    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
+    if (Comm().MyPID() == 0)
     {
-      // do redistribution
-      doredist = true;
+      std::cout << "+++++++++++++++++++++++++++++++ WARNING +++++++++++++++++++++++++++++++\n"
+                << "+++ You're using an outdated contact redistribution implementation, +++\n"
+                << "+++ that might deliver an insufficient master-side ghosting.        +++\n"
+                << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+                << std::endl;
     }
-
-    // this is a regular time step (neither t=0 nor restart)
-    else
-    {
-      // compute average balance factors of last time step
-      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
-        taverage += unbalanceEvaluationTime_[k];
-      taverage /= (int)unbalanceEvaluationTime_.size();
-      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
-        eaverage += unbalanceNumSlaveElements_[k];
-      eaverage /= (int)unbalanceNumSlaveElements_.size();
-
-      // delete balance factors of last time step
-      unbalanceEvaluationTime_.resize(0);
-      unbalanceNumSlaveElements_.resize(0);
-
-      // no redistribution
-      doredist = false;
-    }
+    redistributed = RedistributeContactOld(dis, vel);
   }
 
-  //**********************************************************************
-  // (2) dynamic redistribution: whenever system is out of balance
-  //**********************************************************************
-  else if (WhichParRedist() == INPAR::MORTAR::parredist_dynamic)
+  return redistributed;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
+    const Epetra_Vector& displacement, const Epetra_Vector& velocity)
+{
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
+  const INPAR::MORTAR::ExtendGhosting ghosting_strategy =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+
+  const bool perform_rebalancing = IsRebalancingNecessary(first_time_step);
+  const bool enforce_ghosting_update =
+      IsUpdateOfGhostingNecessary(ghosting_strategy, first_time_step);
+
+  // Prepare for extending the ghosting
+  ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
+  if (ghosting_strategy == INPAR::MORTAR::ExtendGhosting::binning)
+    CalcMeanVelocityForBinning(velocity);
+
+  // Set old and current displacement state (needed for search within redistribution)
+  if (perform_rebalancing)
   {
-    // this is the first time step (t=0) or restart
-    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
-    {
-      // do redistribution
-      doredist = true;
-    }
-
-    // this is a regular time step (neither t=0 nor restart)
-    else
-    {
-      // compute average balance factors of last time step
-      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
-        taverage += unbalanceEvaluationTime_[k];
-      taverage /= (int)unbalanceEvaluationTime_.size();
-      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
-        eaverage += unbalanceNumSlaveElements_[k];
-      eaverage /= (int)unbalanceNumSlaveElements_.size();
-
-      // delete balance factors of last time step
-      unbalanceEvaluationTime_.resize(0);
-      unbalanceNumSlaveElements_.resize(0);
-
-      /* decide on redistribution
-       * -> (we allow a maximum value of the balance measure in the
-       * system as defined in the input parameter MAX_BALANCE, i.e.
-       * the maximum local processor workload and the minimum local
-       * processor workload for mortar evaluation of all interfaces
-       * may not differ by more than (MAX_BALANCE - 1.0)*100%)
-       * -> (moreover, we redistribute if in the majority of iteration
-       * steps of the last time step there has been an unbalance in
-       * element distribution, i.e. if eaverage >= 0.5) */
-      if (taverage >= max_balance || eaverage >= 0.5) doredist = true;
-    }
+    SetState(MORTAR::state_new_displacement, displacement);
+    SetState(MORTAR::state_old_displacement, displacement);
   }
 
-  // print balance information to screen
+  // Update parallel distribution and ghosting of all interfaces
+  for (std::size_t i = 0; i < Interfaces().size(); ++i)
+    Interfaces()[i]->UpdateParallelLayoutAndDataStructures(
+        perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
+
+  // Re-setup strategy to update internal map objects
+  if (perform_rebalancing) Setup(true, false);
+
+  // time measurement
+  Comm().Barrier();
+  double t_end = Teuchos::Time::wallTime() - t_start;
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "**********************************************************" << std::endl;
-    if (taverage > 0)
-    {
-      printf("Parallel balance (time): %e (limit %e) \n", taverage, max_balance);
-      printf("Parallel balance (eles): %e (limit %e) \n", eaverage, 0.5);
-    }
-    else
-      printf("Parallel balance: t=0/restart \n");
-    std::cout << "**********************************************************" << std::endl;
-  }
+    std::cout << "\nTime for parallel redistribution..............." << std::scientific
+              << std::setprecision(6) << t_end << " secs\n"
+              << std::endl;
+
+  return perform_rebalancing;
+}
+
+/*----------------------------------------------------------------------*
+ | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::RedistributeContactOld(
+    Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
+{
+  // decide whether redistribution should be applied or not
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+  const bool doredist = IsRebalancingNecessary(first_time_step);
 
   // get out of here if simulation is still in balance
   if (!doredist) return false;
@@ -344,9 +474,9 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(
 
   // Prepare for extending the ghosting
   ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
-      INPAR::MORTAR::binningstrategy)
+      INPAR::MORTAR::ExtendGhosting::binning)
     CalcMeanVelocityForBinning(*vel);
 
   /* set old and current displacement state
@@ -1062,12 +1192,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
   // get type of parallel strategy
   const Teuchos::ParameterList& mortarParallelRedistParams =
       Params().sublist("PARALLEL REDISTRIBUTION");
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+  INPAR::MORTAR::ExtendGhosting extendghosting =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           mortarParallelRedistParams, "GHOSTING_STRATEGY");
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE");
 
   // Evaluation for all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -1078,40 +1205,30 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
     // store required integration time
     inttime_ += Interfaces()[i]->Inttime();
 
-    /************************************************************
-     *  Round Robin loop only for ghosting                      *
-     ************************************************************/
-    if (strat == INPAR::MORTAR::roundrobinghost)
+    switch (extendghosting)
     {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
+      case INPAR::MORTAR::ExtendGhosting::roundrobin:
+      {
+        // first perform rrloop to detect the required ghosting
+        Interfaces()[i]->RoundRobinDetectGhosting();
 
-      // first perform rrloop to detect the required ghosting
-      Interfaces()[i]->RoundRobinDetectGhosting();
-
-      // second step --> evaluate
-      Interfaces()[i]->Evaluate(0, step_, iter_);
-    }
-    /************************************************************
-     *  Creating bins and ghost all mele within adjacent bins   *
-     ************************************************************/
-    else if (strat == INPAR::MORTAR::binningstrategy)
-    {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Binning strategy only for none-redundant storage of interface!");
-
-      // required master elements are already ghosted (preparestepcontact) !!!
-      // call evaluation
-      Interfaces()[i]->Evaluate(0, step_, iter_);
-    }
-    /************************************************************
-     *  Fully redundant ghosting of master side                 *
-     ************************************************************/
-    else  // std. evaluation for redundant ghosting
-    {
-      Interfaces()[i]->Evaluate(0, step_, iter_);
+        // second step --> evaluate
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
+      case INPAR::MORTAR::ExtendGhosting::binning:
+      {
+        // required master elements are already ghosted (preparestepcontact) !!!
+        // call evaluation
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
+      case INPAR::MORTAR::ExtendGhosting::redundant_all:
+      case INPAR::MORTAR::ExtendGhosting::redundant_master:
+      {
+        Interfaces()[i]->Evaluate(0, step_, iter_);
+        break;
+      }
     }
   }  // end interface loop
 
@@ -1182,9 +1299,8 @@ void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double&
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
-  // don't do this if parallel redistribution is switched off
-  // or if this is a single processor (serial) job
-  if (!ParRedist() or Comm().NumProc() == 1) return;
+  // don't do this if this is a single processor (serial) job
+  if (Comm().NumProc() == 1) return;
 
   // collect information about participation in coupling evaluation
   // and in parallel distribution of the individual interfaces

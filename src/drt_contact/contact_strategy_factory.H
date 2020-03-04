@@ -80,7 +80,7 @@ namespace CONTACT
        *  \author hiermeier \date 03/17 */
       static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(const int id,
           const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-          const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
+          const bool selfcontact,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
@@ -92,7 +92,6 @@ namespace CONTACT
       static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(
           const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const enum INPAR::MORTAR::RedundantStorage redundant,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,

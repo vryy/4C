@@ -104,29 +104,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   // ---------------------------------------------------------------------
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
-    dserror(
-        "Redundant storage only reasonable in combination with parallel"
-        " strategy: ghosting_redundant !");
-
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
-    dserror(
-        "Redundant storage only reasonable in combination with parallel strategy: "
-        "ghosting_redundant !");
-
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-           mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::binningstrategy or
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(mortarParallelRedistParams,
-              "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost) and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") != INPAR::MORTAR::redundant_none)
-    dserror("Parallel strategies only for none-redundant ghosting!");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
@@ -828,17 +805,17 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
-    INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-            icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-    if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror("ERROR: Self contact requires redundant slave and master storage");
+    INPAR::MORTAR::ExtendGhosting redundant =
+        Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+            icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+    if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
+      dserror("Self contact requires fully redundant slave and master storage");
 
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
-        icparams, isself[0], redundant, parent_dis_pair, Teuchos::null, contactconstitutivelawid);
+        icparams, isself[0], parent_dis_pair, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -1243,7 +1220,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
+    const bool selfcontact,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
@@ -1252,7 +1229,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair,
+  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, parent_dis_pair,
       interfaceData_ptr, contactconstitutivelawid);
 }
 
@@ -1261,7 +1238,6 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
@@ -1282,8 +1258,8 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       {
         idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
-        newinterface = Teuchos::rcp(new CONTACT::AUG::Interface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+        newinterface = Teuchos::rcp(
+            new CONTACT::AUG::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
@@ -1304,7 +1280,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
         idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+            idata_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
@@ -1324,8 +1300,8 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       {
         idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
-        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+        newinterface = Teuchos::rcp(
+            new CONTACT::AUG::LAGRANGE::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
@@ -1345,8 +1321,8 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       {
         idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
-        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+        newinterface = Teuchos::rcp(
+            new CONTACT::AUG::LAGRANGE::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
@@ -1366,15 +1342,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 
       icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(
           "ParentDiscretPair", parent_dis_pair);
-      newinterface = Teuchos::rcp(
-          new XCONTACT::Interface(idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+      newinterface =
+          Teuchos::rcp(new XCONTACT::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
 
       break;
     }
     case INPAR::CONTACT::solution_multiscale:
       idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
       newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
-          idata_ptr, id, comm, dim, icparams, selfcontact, redundant, contactconstitutivelawid));
+          idata_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelawid));
       break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case
@@ -1384,15 +1360,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
 
       if (wlaw != INPAR::WEAR::wear_none)
-        newinterface = Teuchos::rcp(
-            new WEAR::WearInterface(idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+        newinterface =
+            Teuchos::rcp(new WEAR::WearInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
       else if (icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi &&
                stype == INPAR::CONTACT::solution_lagmult)
-        newinterface = Teuchos::rcp(new CONTACT::CoTSIInterface(
-            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
-      else
         newinterface = Teuchos::rcp(
-            new CONTACT::CoInterface(idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+            new CONTACT::CoTSIInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+      else
+        newinterface =
+            Teuchos::rcp(new CONTACT::CoInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
       break;
     }
   }

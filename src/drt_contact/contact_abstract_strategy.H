@@ -508,10 +508,13 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
+    /*! Max-to-min ratio of evaluation time across all processes for currnet time step \f$t_{n+1}\f$
+     */
     std::vector<double> unbalanceEvaluationTime_;
 
-    //! Parallel unbalance factors (num. of slave elements) for current time step \f$t_{n+1}\f$
+    /*! Max-to-min ratio of number of row slave elements across all processes for current time step
+     * \f$t_{n+1}\f$
+     */
     std::vector<int> unbalanceNumSlaveElements_;
 
     //! global LM dof row map (before parallel redistribution)
@@ -1186,11 +1189,14 @@ namespace CONTACT
     /*!
     \brief Redistribute all contact interfaces in parallel
 
-    We hand in the current global displacement state so that a contact search can be performed and
-    set state called.
+    We have two code paths to perform contact load balancing:
+    - Using RedistributeWithSafeGhosting() will guarantee, that the master-sided ghosting is
+    sufficiently far and not master elements will be missed in the subsequent contact search.
+    Applicability of this code path is limited to some contact scenarios.
+    - RedistributeContactOld() provides the legacy implementation to be used with all specialized
+    contact features. However, master-sided interface ghosting might be insufficient.
 
-    The current velocity state is required in case of extedning the ghosting via binning to account
-    for relative motion between interfaces.
+    \post Each contact interface is FillComplete().
 
     \param[in] dis Current displacement state
     \param[in] vel Current velocity state
@@ -1399,17 +1405,25 @@ namespace CONTACT
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const;
 
-    /*! \brief Perform a write restart
+    /*!
+    \brief Read restart data from disk
 
-     A write restart is initiated by the contact manager. However, the manager has no
-     direct access to the nodal quantities. Hence, all the restart action has to be
-     performed on the level of the contact algorithm, for short: here's the right place.
-     */
+    @param reader Discretization reader to be used for reading the restart data
+    @param dis Displacement vector of the solid field
+    */
     virtual void DoReadRestart(
         IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
     {
       DoReadRestart(reader, dis, Teuchos::null);
     };
+
+    /*!
+    \brief Read restart data from disk
+
+    @param reader Discretization reader to be used for reading the restart data
+    @param dis Displacement vector of the solid field
+    @param cparams_ptr ??
+    */
     virtual void DoReadRestart(IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
@@ -1813,6 +1827,135 @@ namespace CONTACT
     }
 
    private:
+    //! @name Parallel distribution and ghosting
+    //! @{
+
+    /*!
+    \brief Decide whether interface discretizations need to be rebalanced
+
+    The decision to perform rebalancing is based on user input as well as history of
+    - the max-to-min ratio of contact evaluation time across all processes
+    - the max-to-min ratio of the number of row slave elements across all processes
+
+    averaged over all contact evaluations of the previous time step.
+
+    Naturally, serial runs do never require rebalancing.
+
+    \sa CheckParallelDistribution(), UpdateParallelDistributionStatus()
+
+    @param[in] Flag to indicate first time step after start/restart of simulation
+    @return True if rebalancing is necessary, false otherwise.
+    */
+    bool IsRebalancingNecessary(const bool first_time_step);
+
+    /*!
+    \brief Compute and reset indicators for necessity of parallel rebalancing
+
+    Unbalance is measured as the max-to-min ratio of eveluation time / number of row slave elements
+    over all processes.
+
+    We average the unbalance of interface evaluation time and interface element count over all
+    contact evaluations of a time step. These will be used to decide, whether rebalancing of the
+    interface discretization is necessary. At the end, reset the indicators in preparation for the
+    next time step.
+
+    \sa CheckParallelDistribution(), IsRebalancingNecessary(), UpdateParallelDistributionStatus()
+
+    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+                                evaluations of previous time step
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+                                    over all evaluations of previous time step
+    @param[in] Flag to indicate first time step after start/restart of simulation
+    */
+    void ComputeAndResetParallelBalanceIndicators(double& time_average, double& elements_average);
+
+    /*!
+    \brief Print indicators for current status of parallel load balancing
+
+    Indicators will be printed to screen on proc 0.
+
+    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+                                evaluations of previous time step
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+                                    over all evaluations of previous time step
+    @param[in] max_time_unbalance Upper bound for imbalance in evaluation time given in input file
+    */
+    void PrintParallelBalanceIndicators(
+        double& time_average, double& elements_average, const double& max_time_unbalance) const;
+
+    /*!
+    \brief Is an update of the interface ghosting necessary?
+
+    It depends on the actual interface ghosting strategy, if the interface ghosting needs to be
+    update in this time step:
+    - Any redundant storage does not require an update. It just has to be done in the very first
+    time step.
+    - In case of any non-redundant storage, the interface ghosting needs to be updated in every time
+    step to guarantee sufficient ghosting for a correct and safe contact search.
+
+    @param ghosting_strategy User-chosen strategy to extend the interface ghosting
+    @param[in] Flag to indicate first time step after start/restart of simulation
+
+    @return Flag to indicate, whether ghosting needs to be updated (true) or not (false)
+    */
+    bool IsUpdateOfGhostingNecessary(
+        const INPAR::MORTAR::ExtendGhosting& ghosting_strategy, const bool first_time_step) const;
+
+    /*!
+    \brief Calculate absolute value of mean velocity of interface for binning
+
+    For each interface, extract its velocity DOFs and compute their mean value.
+    Then, take the absolute value and store it to #ivel_.
+
+    \param[in] velocity Vector with velocities for all solid DOFs
+    */
+    void CalcMeanVelocityForBinning(const Epetra_Vector& velocity);
+
+    /*!
+    \brief Update parallel load balancing of each contact interface and guarantee correct ghosting
+
+    We hand in the current global displacement state, so that a contact search can be performed and
+    we can SetState the displacement field.
+
+    The current velocity state is required in case of extending the ghosting via binning to account
+    for relative motion between interfaces.
+
+    \post Each contact interface is FillComplete().
+
+    @param[in] displacement
+    @param[in] velocity
+    @return TRUE if the interface has been redistributed. Return FALSE otherwise.
+    */
+    bool RedistributeWithSafeGhosting(
+        const Epetra_Vector& displacement, const Epetra_Vector& velocity);
+
+    /*!
+    \brief Redistribute all contact interfaces in parallel (legacy implementation)
+
+    We hand in the current global displacement state, so that a contact search can be performed and
+    we can SetState the displacement field.
+
+    The current velocity state is required in case of extending the ghosting via binning to account
+    for relative motion between interfaces.
+
+    \post Each contact interface is FillComplete().
+
+    \warning The interplay of parallel redistribution and extension of the interface ghosting is
+    somehow fragile. The interface ghosting is only updated after an actual redistribution. However,
+    it can happen that redistribution is not necessary (or disabled by the user), but the ghosting
+    still needs to be updated due to changes in the contact area topology (e.g. large sliding). Such
+    cases are not captured properly. As a result, the ghosting does not include all necessary master
+    nodes and, thus, the contact search fails to detect all close slave/master element pairs. Use
+    RedistributeWithSafeGhosting() instead!
+
+    \param[in] dis Current displacement state
+    \param[in] vel Current velocity state
+
+    \return TRUE if the interface has been redistributed. Return FALSE otherwise.
+    */
+    bool RedistributeContactOld(
+        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel);
+
     /*! \brief Create the global Lagrange multiplier DoF row map
      *
      *  The global Lagrange multiplier DoF row map is created in a deterministic
@@ -1831,16 +1974,6 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     Teuchos::RCP<Epetra_Map> CreateDeterministicLMDofRowMap(const Epetra_Map& gsdofrowmap) const;
-
-    /*!
-    \brief Calculate absolute value of mean velocity of interface for binning
-
-    For each interface, extract its velocity DOFs and compute their mean value.
-    Then, take the absolute value and store it to #ivel_.
-
-    \param[in] velocity Vector with velocities for all solid DOFs
-    */
-    void CalcMeanVelocityForBinning(const Epetra_Vector& velocity);
 
     /*! return the mutable contact abstract data container
      *

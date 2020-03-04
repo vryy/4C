@@ -301,15 +301,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
   // create an empty mortar interface
-  // (To be on the safe side we still store all interface nodes and elements
-  // fully redundant here in the mortar ADAPTER. This makes applications such
-  // as SlidingALE much easier, whereas it would not be needed for others.)
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-
-  interface_ =
-      MORTAR::MortarInterface::Create(0, comm, DRT::Problem::Instance()->NDim(), input, redundant);
+  interface_ = MORTAR::MortarInterface::Create(0, comm, DRT::Problem::Instance()->NDim(), input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -573,17 +565,8 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
-  // (To be on the safe side we still store all interface nodes and elements
-  // fully redundant here in the mortar ADAPTER. This makes applications such
-  // as SlidingALE much easier, whereas it would not be needed for others.)
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-  // if (redundant != INPAR::MORTAR::redundant_all)
-  // if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master
-  // storage");
   Teuchos::RCP<MORTAR::MortarInterface> interface =
-      MORTAR::MortarInterface::Create(0, comm, dim, input, redundant);
+      MORTAR::MortarInterface::Create(0, comm, dim, input);
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = coupleddof.size();

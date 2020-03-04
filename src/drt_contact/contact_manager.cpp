@@ -29,6 +29,7 @@
 #include "friction_node.H"
 #include "contact_strategy_factory.H"
 #include "contact_utils.H"
+#include "contact_utils_parallel.H"
 
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
@@ -286,16 +287,15 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     icparams.set<bool>("Searchele_AllProc", Searchele_AllProc);
 
     // Safety check for interface storage redundancy in case of self contact
-    INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-            icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-    if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror("CoManager: Self contact requires redundant slave and master storage");
+    INPAR::MORTAR::ExtendGhosting redundant =
+        Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+            icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+    if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
+      dserror("CoManager: Self contact requires fully redundant slave and master storage");
 
     // Use factory to create an empty interface and store it in this Manager.
-    Teuchos::RCP<CONTACT::CoInterface> newinterface =
-        STRATEGY::Factory::CreateInterface(groupid1, Comm(), dim, icparams, isself[0], redundant,
-            Teuchos::null, Teuchos::null, contactconstitutivelawid);
+    Teuchos::RCP<CONTACT::CoInterface> newinterface = STRATEGY::Factory::CreateInterface(groupid1,
+        Comm(), dim, icparams, isself[0], Teuchos::null, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // Get the RCP to the last created interface
@@ -525,7 +525,17 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
      * setup. This is an initial one time cost, that does not matter compared to the repeated
      * FillComplete calls due to dynamic redistribution.
      */
-    interface->FillComplete(true, maxdof);
+    if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(contactParams))
+    {
+      /* Finalize parallel layout of maps. Note: Do not redistribute here.
+       *
+       * Since this is the initial setup, we don't need redistribution here, just a proper extension
+       * of the interface ghosting.
+       */
+      interface->UpdateParallelLayoutAndDataStructures(false, true, maxdof, 0.0);
+    }
+    else
+      interface->FillComplete(true, maxdof);
 
     if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
         algo != INPAR::MORTAR::algorithm_gpts)
@@ -646,7 +656,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  if (Comm().MyPID() == 0)
+  if (Comm().MyPID() == 0 && Comm().NumProc() > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
   for (auto& interface : interfaces) interface->PrintParallelDistribution();
 
@@ -686,29 +696,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
-    dserror(
-        "Redundant storage only reasonable in combination with parallel strategy: "
-        "ghosting_redundant !");
-
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
-    dserror(
-        "Redundant storage only reasonable in combination with parallel strategy: "
-        "ghosting_redundant !");
-
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-           mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::binningstrategy or
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(mortarParallelRedistParams,
-              "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost) and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") != INPAR::MORTAR::redundant_none)
-    dserror("Parallel strategies only for none-redundant ghosting!");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&

@@ -43,13 +43,11 @@ namespace CONTACT
     \param dim (in): Global problem dimension
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
-    \param redundant (in): type of redundancy in interface storage
-
     */
     ConstitutivelawInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant, const int contactconstitutivelawid);
+        const int contactconstitutivelawid);
 
     /*!
     \brief Destructor

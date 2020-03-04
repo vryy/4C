@@ -248,14 +248,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
-  // (To be on the safe side we still store all interface nodes and elements
-  // fully redundant here in the mortar ADAPTER. This makes applications such
-  // as SlidingALE much easier, whereas it would not be needed for others.)
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-
-  interface = CONTACT::CoInterface::Create(0, *comm_, dim, input, false, redundant);
+  interface = CONTACT::CoInterface::Create(0, *comm_, dim, input, false);
 
   //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and
   //  slidingale==false) or
@@ -671,17 +664,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
 
-  // create an empty mortar interface
-  // (To be on the safe side we still store all interface nodes and elements
-  // fully redundant here in the mortar ADAPTER. This makes applications such
-  // as SlidingALE much easier, whereas it would not be needed for others.)
-  INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-
   // generate contact interface
   Teuchos::RCP<CONTACT::CoInterface> interface =
-      CONTACT::CoInterface::Create(0, comm, dim, input, false, redundant);
+      CONTACT::CoInterface::Create(0, comm, dim, input, false);
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = 3;

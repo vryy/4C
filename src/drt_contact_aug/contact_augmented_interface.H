@@ -214,7 +214,7 @@ namespace CONTACT
       //! Constructor
       Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
-          bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+          bool selfcontact);
 
       //! Destructor
       virtual ~Interface() {}

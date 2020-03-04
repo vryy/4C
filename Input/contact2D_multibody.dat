@@ -78,7 +78,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               All
+GHOSTING_STRATEGY               redundant_all
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC

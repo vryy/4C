@@ -312,12 +312,10 @@ namespace CONTACT
      *  \param spatialDim (in) : spatial dimension of the problem
      *  \param icontact (in) : global contact parameter-list
      *  \param selfcontact (in): Boolean flag to indicate self-contact
-     *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<CoInterface> Create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
     \brief Standard constructor creating empty contact interface
@@ -332,12 +330,11 @@ namespace CONTACT
     \param spatialDim (in): spatial dimension of the problem
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
-    \param redundant (in): type of redundancy in interface storage
 
     */
     CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+        bool selfcontact);
 
     /*!
     \brief Destructor
@@ -623,6 +620,26 @@ namespace CONTACT
     */
     virtual void AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele);
 
+    //! @name Parallel distribution and ghosting
+    //! @{
+
+    /*!
+    \brief Update the parallel layout, distribution, and related data structures
+
+    1. If required by \c perform_rebalancing, let's rebalance the interface discretizations.
+    1. If required by \c enforce_ghosting_update, let's update the ghosting of the master-sided
+    interface.
+    1. FillComplete to update all relevant maps on all procs.
+    1. Re-create search tree, if ghosting has changed.
+
+    @param perform_rebalancing Flag to enforce rebalancing of interface discretizations
+    @param enforce_ghosting_update Flag to enforce an update of the interface ghosting
+    @param maxdof Largest GID of underlying solid discretization
+    @param meanVelocity Mean velocity of this interface
+    */
+    void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+        const bool enforce_ghosting_update, const int maxdof, const double meanVelocity) final;
+
     /*!
     \brief Redistribute contact interface among all procs
 
@@ -683,6 +700,8 @@ namespace CONTACT
     here.
     */
     void CollectDistributionData(int& numColElements, int& numRowElements);
+
+    //! @}
 
     /*!
     \brief Create binary search tree
@@ -1527,6 +1546,40 @@ namespace CONTACT
     void UpdateMasterSlaveSets() override;
 
    private:
+    //! @name Parallel distribution and ghosting
+    //! @{
+
+    /*!
+    \brief FillComplete the mortar interface
+
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization. Extension of the interface ghosting is done
+    separately.herefore, we also have to extend the interface
+    ghosting.
+
+    If we have arrived at the final parallel distribution, we have to ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested by the user/algorithm.
+
+    \sa ExtendInterfaceGhostingSafely()
+
+    @param[in] isFinalParallelDistribution Is this the final parallel distribution?
+    @param[in] maxdof Largest GID of underlying solid discretization
+    */
+    void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0) final;
+
+    /*!
+    \brief Extend the interface ghosting while guaranteeing sufficient extension
+
+    \note The argument \c meanVelocity is just needed for contact problems that extend the
+    master-sided interface ghosting via binning.
+
+    @param meanVelocity Mean velocity of this interface
+    */
+    void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0) final;
+
+    //! @}
+
     /*! \brief Set node active if it is active in input file
      *
      * A given node \c cnode is set to be active if it has been specified

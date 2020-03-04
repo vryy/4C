@@ -94,8 +94,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
     /* create a new interface by copying the data pointer from the reference
      * interface */
     newinterface = STRATEGY::Factory::CreateInterface(strat_type, idata.Id(), idata.Comm(),
-        idata.Dim(), idata.IMortar(), idata.IsSelfContact(), idata.RedundantStorage(),
-        Teuchos::null, idata_ptr);
+        idata.Dim(), idata.IMortar(), idata.IsSelfContact(), Teuchos::null, idata_ptr);
 
     strat_interfaces.push_back(newinterface);
     // reset pointer

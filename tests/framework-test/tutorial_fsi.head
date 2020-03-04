@@ -668,9 +668,9 @@ LM_SHAPEFCN                     Dual
 //                              None,none,No,no,Static,static,Dynamic,dynamic
 PARALLEL_REDIST                 Static
 //
-// Type of redundancy in interface storage
-//                              All,all,Master,master,None,none
-REDUNDANT_STORAGE               Master
+// Type of interface ghosting and ghosting extension algorithm
+//                              redundant_all, redundant_master, round_robin, bining
+GHOSTING_STRATEGY               redundant_master
 //
 // Maximum value of load balance measure before parallel redistribution
 MAX_BALANCE                     2

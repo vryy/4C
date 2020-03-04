@@ -62,9 +62,8 @@ CONTACT::AUG::Interface::Interface(
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
-    const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant),
+    const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       interfaceData_ptr_(
           Teuchos::rcp_dynamic_cast<AUG::InterfaceDataContainer>(interfaceData_ptr, true)),
       interfaceData_(*interfaceData_ptr_)

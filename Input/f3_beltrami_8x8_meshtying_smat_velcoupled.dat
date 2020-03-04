@@ -68,8 +68,8 @@ CROSSPOINTS               no
 SEARCH_ALGORITHM          Binarytree
 SEARCH_PARAM              0.3
 --------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST           no
-REDUNDANT_STORAGE         all
+PARALLEL_REDIST                 no
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 ---------------------------------------------------------SOLVER 1
