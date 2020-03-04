@@ -182,7 +182,16 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
           Teuchos::ParameterList& params);
 
-      //! Calculate element vectors (internal/external) and a few matrices
+      /*!
+       * evaluate external body loads
+       * @param ele the element whose matrix is calculated
+       * @param time time for function evaluation
+       * @param efext external force vector
+       */
+      void EvaluateFext(
+          Element* ele, const double& time, LINALG::Matrix<nen_ * numdofpernode_, 1>& efext);
+
+      //! Calculate element force vectors and a few matrices
       void LinearThermoContribution(DRT::Element* ele,  //!< the element whose matrix is calculated
           const double& time,                           //!< current time
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
@@ -190,8 +199,7 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               ecapalin,  //!< linearization contribution of capacity
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext   //!< external force
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint  //!< internal force
       );
 
       //! get the body force
@@ -282,17 +290,10 @@ namespace DRT
 
       //! Calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
-      void LinearDispContribution(DRT::Element* ele,  //!< the element whose matrix is calculated
-          const double& time,                         //!< current time
-          std::vector<double>& disp,                  //!< current displacements
-          std::vector<double>& vel,                   //!< current velocities
-          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-              econd,                                        //!< conductivity matrix
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  //!< external force
-          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
-          LINALG::Matrix<nquad_, nsd_>* etempgrad,  //!< temperature gradients at Gauss points
-          Teuchos::ParameterList& params);
+      void LinearDispContribution(DRT::Element* ele, const double& time, std::vector<double>& disp,
+          std::vector<double>& vel,
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix term needed in monolithic TSI
       void LinearCoupledTang(DRT::Element* ele,  //!< the element whose matrix is calculated
@@ -510,6 +511,7 @@ namespace DRT
       LINALG::Matrix<nen_, 1> weights_;
 
       /// @}
+
     };  // class TemperImpl
 
   }  // namespace ELEMENTS

@@ -366,7 +366,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // purely thermal / geometrically linear TSI problem
     if (kintype == INPAR::STR::kinem_linear)
     {
-      LinearThermoContribution(ele, time, &etang, &ecapa_, &ecapalin, &efint, nullptr);
+      LinearThermoContribution(ele, time, &etang, &ecapa_, &ecapalin, &efint);
     }
 
     // initialise the vectors
@@ -404,8 +404,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // geometrically linear TSI problem
     if ((kintype == INPAR::STR::kinem_linear) and (la.Size() > 1))
     {
-      LinearDispContribution(
-          ele, time, mydisp, myvel, &etang, &efint, nullptr, nullptr, nullptr, params);
+      LinearDispContribution(ele, time, mydisp, myvel, &etang, &efint, params);
 
       if (plasticmat_) LinearDissipationFint(ele, &efint, params);
     }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
@@ -831,7 +830,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     // difference between geometrically (non)linear TSI
 
     // we prescribe a scalar value on the volume, constant for (non)linear analysis
-    LinearThermoContribution(ele, time, nullptr, nullptr, nullptr, nullptr, &efext);
+    EvaluateFext(ele, time, efext);
   }
   else
   {
@@ -853,9 +852,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-        ecapalin,                                     // linearization contribution of capacity
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efext   // external force
+        ecapalin,                                    // linearization contribution of capacity
+    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint  // internal force
 )
 {
   // get node coordinates
@@ -872,22 +870,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
 
-    // ---------------------------------------------------------------------
-    // call routine for calculation of radiation in element nodes
-    // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-    // ---------------------------------------------------------------------
-    if (efext != nullptr)
-    {
-      Radiation(ele, time);
-    }
-    // get radiation in gausspoint
-    if (efext != nullptr)
-    {
-      // fext = fext + N . r. detJ . w(gp)
-      // with funct_: shape functions, fac_:detJ . w(gp)
-      efext->MultiplyNN(fac_, funct_, radiation_, 1.0);
-    }
-
     // gradient of current temperature value
     // grad T = d T_j / d x_i = L . N . T = B_ij T_j
     gradtemp_.MultiplyNN(derxy_, etempn_);
@@ -899,10 +881,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
 #ifdef THRASOUTPUT
     std::cout << "CalculateFintCondCapa heatflux_ = " << heatflux_ << std::endl;
     std::cout << "CalculateFintCondCapa gradtemp_ = " << gradtemp_ << std::endl;
-    if (etempgrad != nullptr)
-      std::cout << "CalculateFintCondCapa Nln etempgrad = " << *etempgrad << std::endl;
-    if (eheatflux != nullptr)
-      std::cout << "LinearThermoContribution Nln eheatflux = " << *eheatflux << std::endl;
 #endif  // THRASOUTPUT
 
     // internal force vector
@@ -973,17 +951,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
  | and rhs: r_T(d), k_TT(d) (public)                                    |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(
-    DRT::Element* ele,          // the element whose matrix is calculated
-    const double& time,         // current time
-    std::vector<double>& disp,  // current displacements
-    std::vector<double>& vel,   // current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      // internal force
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,                      // external force
-    LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad,  // temperature gradients at Gauss points
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* ele,
+    const double& time, std::vector<double>& disp, std::vector<double>& vel,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
+    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -2736,13 +2707,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFintTang(Element* ele, const do
     LinearThermoContribution(ele, time, etang,
         ecapa,    // capa matric
         nullptr,  // capa linearization
-        efint, nullptr);
+        efint);
 
     if (la.Size() > 1)
     {
       // coupled displacement dependent terms
-      LinearDispContribution(
-          ele, time, mydisp, myvel, etang, efint, nullptr, nullptr, nullptr, params);
+      LinearDispContribution(ele, time, mydisp, myvel, etang, efint, params);
 
       // if structural material is plastic --> calculate the mechanical dissipation terms
       // A_k * a_k - (d^2 psi / dT da_k) * a_k'
@@ -2801,6 +2771,38 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
       // calculate Dmech_d
       if (plasticmat_) NonlinearDissipationCoupledTang(ele, mydisp, myvel, etangcoupl, params);
     }
+  }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
+    DRT::Element* ele,                               // the element whose matrix is calculated
+    const double& time,                              // current time
+    LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+
+  // ------------------------------- integration loop for one element
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+  // ----------------------------------------- loop over Gauss Points
+  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
+
+    // ---------------------------------------------------------------------
+    // call routine for calculation of radiation in element nodes
+    // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+    // ---------------------------------------------------------------------
+    Radiation(ele, time);
+    // fext = fext + N . r. detJ . w(gp)
+    // with funct_: shape functions, fac_:detJ . w(gp)
+    efext.MultiplyNN(fac_, funct_, radiation_, 1.0);
   }
 }
 
