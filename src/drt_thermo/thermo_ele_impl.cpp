@@ -181,7 +181,6 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
       plasticmat_(false)
 
 {
-  return;
 }
 
 
@@ -263,7 +262,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   }  // (la.Size > 1)
 
   // if ele is a thermo element --> the THR element method KinType() exists
-  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
+  auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
   // kintype = 0: INPAR::STR::kinem_linear or purely thermal problem
   // kintype = 1: INPAR::STR::kinem_nonlinearTotLag
   const INPAR::STR::KinemType kintype = therm->KinType();
@@ -310,7 +309,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+      const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
           params, "time integrator", INPAR::THR::dyna_undefined);
       switch (timint)
       {
@@ -442,7 +441,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+    const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
         params, "time integrator", INPAR::THR::dyna_undefined);
     switch (timint)
     {
@@ -622,7 +621,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // extrapolate heatflux q and temperature gradient gradtemp stored at GP
     if ((heatfluxtype == "ndxyz") or (heatfluxtype == "cxyz_ndxyz"))
     {
-      processed = processed or true;
+      processed = true;
       // extrapolate heatfluxes/temperature gradients at Gauss points to nodes
       // and store results in
       ExtrapolateFromGaussPointsToNodes(ele, gpheatflux, efluxx, efluxy, efluxz);
@@ -632,7 +631,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // centered
     if ((heatfluxtype == "cxyz") or (heatfluxtype == "cxyz_ndxyz"))
     {
-      processed = processed or true;
+      processed = true;
 
       Teuchos::RCP<Epetra_MultiVector> eleheatflux =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("eleheatflux");
@@ -819,7 +818,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     etempn_.Update(etemp);                                                 // copy
   }
   // check for the action parameter
-  const THR::Action action = DRT::INPUT::get<THR::Action>(params, "action");
+  const auto action = DRT::INPUT::get<THR::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
@@ -1237,7 +1236,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
 
   // get step size dt
@@ -1774,7 +1773,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   switch (timint)
   {
@@ -1806,7 +1805,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     }
   }  // end of switch(timint)
 
-  const INPAR::STR::DynamicType s_timint =
+  const auto s_timint =
       DRT::INPUT::get<INPAR::STR::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
@@ -1879,21 +1878,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
 
     // put thermal material tangent in vector notation
     LINALG::Matrix<6, 1> cmat_vct(true);
-    if (nsd_ == 3)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-      cmat_vct(1) = cmat_(1, 1);
-      cmat_vct(2) = cmat_(2, 2);
-    }
-    else if (nsd_ == 2)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-      cmat_vct(1) = cmat_(1, 1);
-    }
-    else if (nsd_ == 1)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-    }  // THR_cmat_vct
+    for (unsigned i = 0; i < nsd_; ++i) cmat_vct(i) = cmat_(i, i);
 
     // B_T^T . B_T . T
     LINALG::Matrix<nen_, 1> bgradT(false);
@@ -2306,7 +2291,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -2508,8 +2493,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     // mechanical Dissipation
     // Dmech := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma/Dt
     // with MechDiss := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma
-    double Dmech = 0.0;
-    Dmech = thermoplhyperelast->MechDiss(iquad) / stepsize;
+    const double Dmech = thermoplhyperelast->MechDiss(iquad) / stepsize;
 
     // update/integrate internal force vector (coupling fraction towards displacements)
     if (efint != nullptr)
@@ -2597,7 +2581,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -2854,9 +2838,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
-  const INPAR::THR::HeatFluxType ioheatflux =
+  const auto ioheatflux =
       DRT::INPUT::get<INPAR::THR::HeatFluxType>(params, "ioheatflux", INPAR::THR::heatflux_none);
-  const INPAR::THR::TempGradType iotempgrad =
+  const auto iotempgrad =
       DRT::INPUT::get<INPAR::THR::TempGradType>(params, "iotempgrad", INPAR::THR::tempgrad_none);
 
   // update element geometry
@@ -3157,12 +3141,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     }
 
     // (SPATIAL) FUNCTION BUSINESS
-    const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int>>("funct");
+    const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
     LINALG::Matrix<nsd_, 1> xrefegp(false);
     bool havefunct = false;
     if (funct)
       for (int dim = 0; dim < nsd_; dim++)
-        if ((*funct)[dim] > 0) havefunct = havefunct or true;
+        if ((*funct)[dim] > 0) havefunct = true;
 
     // integrations points and weights
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -3200,8 +3184,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
             : 1.0;
 
     // get values and switches from the condition
-    const std::vector<int>* onoff = myneumcond[0]->Get<std::vector<int>>("onoff");
-    const std::vector<double>* val = myneumcond[0]->Get<std::vector<double>>("val");
+    const auto* onoff = myneumcond[0]->Get<std::vector<int>>("onoff");
+    const auto* val = myneumcond[0]->Get<std::vector<double>>("val");
 
     // set this condition to the radiation array
     for (int idof = 0; idof < numdofpernode_; idof++)
@@ -3214,8 +3198,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     // we have no dead load
     radiation_.Clear();
   }
-  return;
-
 }  // Radiation()
 
 
@@ -3349,8 +3331,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
   myknots_.resize(3);  // fixme: dimension
                        // get nurbs specific infos
   // cast to nurbs discretization
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // zero-sized element
@@ -3393,7 +3374,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
     }
   }  // loop over integration points
 
-  return;
 }  // TemperImpl<distype>::IntegrateShapeFunction
 
 
@@ -3455,8 +3435,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     if (nsd_ > 2) efluxz(idof) = ndheatflux(idof, 2);
   }
 
-  // bye
-  return;
 }  // ExtrapolateFromGaussPointsToNodes
 
 
@@ -3474,13 +3452,10 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
   // cast dimension to a double varible -> pow()
 
-  // get number of dimensions
-  const double dim = (double)nsd_;
-
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   // h = vol^(1/dim)
-  double h = std::pow(vol, (1.0 / dim));
+  double h = std::pow(vol, (1.0 / nsd_));
 
   return h;
 
@@ -3749,8 +3724,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   //  if (intpoints.IP().nquad != nquad_)
   //    dserror("Trouble with number of Gauss points");
 
-  const INPAR::THR::CalcError calcerr =
-      DRT::INPUT::get<INPAR::THR::CalcError>(params, "calculate error");
+  const auto calcerr = DRT::INPUT::get<INPAR::THR::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 
@@ -3939,7 +3913,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     // remove disturbance for next step
     etempn_(j, 0) -= delta;
   }
-  if (checkPassed == true)
+  if (checkPassed)
   {
     std::cout.precision(12);
     std::cout << "finite difference check successful! Maximal relative error = " << error_max
@@ -4149,7 +4123,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 #ifdef TSISLMFDCHECKDEBUG
   myfile.close();
 #endif
-  if (checkPassed == true)
+  if (checkPassed)
   {
     std::cout.precision(12);
     std::cout << "finite difference check successful! Maximal relative error = " << error_max

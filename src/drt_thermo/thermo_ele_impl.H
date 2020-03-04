@@ -40,9 +40,9 @@ namespace DRT
     {
      public:
       //! Empty constructor
-      TemperImplInterface() {}
+      TemperImplInterface() = default;
       //! Empty destructor
-      virtual ~TemperImplInterface() {}
+      ~TemperImplInterface() override = default;
 
       //! Evaluate the element
       //!  This class does not provide a definition for this function, it
@@ -118,7 +118,7 @@ namespace DRT
       static TemperImpl<distype>* Instance(bool create = true);
 
       //! called upon destruction
-      virtual void Done();
+      void Done() override;
 
       //! number of nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -134,7 +134,7 @@ namespace DRT
 
       // new method for volume coupling
       //! Evaluate for multiple dofsets
-      virtual int Evaluate(DRT::Element* ele,        //!< current element
+      int Evaluate(DRT::Element* ele,                //!< current element
           Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
           DRT::Discretization& discretization,       //!< current discretisation
           DRT::Element::LocationArray& la,           //!< location array
@@ -145,17 +145,17 @@ namespace DRT
           Epetra_SerialDenseVector&
               elevec2_epetra,  //!< external force, view on heat flux in y-direction
           Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
-      );
+          ) override;
 
       //! Evaluate the element
-      virtual int EvaluateNeumann(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,             //!< parameter list
-          DRT::Discretization& discretization,        //!< current discretisation
+      int EvaluateNeumann(DRT::Element* ele,    //!< current element
+          Teuchos::ParameterList& params,       //!< parameter list
+          DRT::Discretization& discretization,  //!< current discretisation
           std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
           Epetra_SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
-      );
+          ) override;
 
      private:
       //! @name general thermal functions
@@ -204,7 +204,7 @@ namespace DRT
 
       //! get the body force
       virtual void Radiation(DRT::Element* ele,  //!< current element we are dealing with
-          const double time                      //!< current times
+          double time                            //!< current times
       );
 
       //! post-Newton iteration update of temperatures and source terms to account for latent heat
@@ -220,14 +220,14 @@ namespace DRT
       //! determine heat flux and conductivity tensor
       //! based on material law
       virtual void Materialize(const DRT::Element* ele,  //!< current element
-          const int gp                                   //!< current GP id
+          int gp                                         //!< current GP id
       );
 
       //! evaluate shape functions and their derivatives at current integration point
       virtual void EvalShapeFuncAndDerivsAtIntPoint(
           const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          const int iquad,                                         //!< id of current Gauss point
-          const int eleid                                          //!< the element id
+          int iquad,                                               //!< id of current Gauss point
+          int eleid                                                //!< the element id
       );
 
       //! Compute nodal position and velocity
@@ -479,8 +479,6 @@ namespace DRT
       LINALG::Matrix<nsd_, nsd_> xij_;
       //! global derivatives of shape functions w.r.t x,y,z
       LINALG::Matrix<nsd_, nen_> derxy_;
-      //! global temperature rate derivatives in gausspoint w.r.t x,y,z
-      LINALG::Matrix<nsd_, nsd_> rderxy_;
       //! integration factor for current GP: fac = GaussWeight * det(J)
       double fac_;
       //! (global) gradient of temperature at integration point
@@ -498,9 +496,6 @@ namespace DRT
 
       //! @name material related stuff
       //! @{
-
-      //! material tangent of the structure
-      LINALG::Matrix<6, 1> ctemp_;
 
       //! flag plastic material is used
       bool plasticmat_;
