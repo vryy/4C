@@ -363,7 +363,6 @@ bool CONTACT::CoAbstractStrategy::IsUpdateOfGhostingNecessary(
       else
         enforce_update_of_ghosting = false;
 
-      enforce_update_of_ghosting = false;
       break;
     }
     case INPAR::MORTAR::ExtendGhosting::roundrobin:
