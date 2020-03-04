@@ -48,18 +48,37 @@
  * If status file can't be opened, issue a message to the screen. Do not throw an error, since this
  * is not considered a critical failure during a simulation.
  *
+ * \note Currently limited to Linux systems
+ *
  * @param[in] global_comm Global Epetra_Comm object
  */
 void GetMemoryHighWaterMark(const Epetra_Comm &comm)
 {
+#if defined(__linux__)  // This works only on Linux systems
   const std::string status_match = "VmHWM";
-  const std::string status_filename = "/proc/" + std::to_string(getpid()) + "/status";
+  const std::string status_filename = "/proc/self/status";
   std::ifstream status_file(status_filename, std::ios_base::in);
-  double local_mem = std::nan("0");
+
+  bool file_is_accessible = false;
+  {
+    /* Each proc knows about sucess/failure of opening its status file. Communication among all
+     * procs will reveal, if _any_ proc has failure status. */
+    // Get file status failure indicator on this proc
+    int local_status_failed = static_cast<int>(!status_file.is_open());
+
+    // Check file status among all procs
+    int global_status_failed = 0;
+    MPI_Reduce(&local_status_failed, &global_status_failed, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // Mark file as ok if no proc failed to open its file
+    if (global_status_failed == 0) file_is_accessible = true;
+  }
 
   // Retrieve local memory use on each process
-  if (status_file.is_open())
+  if (file_is_accessible)
   {
+    double local_mem = std::nan("0");
+
     std::string line;
     while (std::getline(status_file, line))
     {
@@ -89,9 +108,16 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
       double mem_max = recvbuf[0];
       double mem_tot = 0.0;
       double mem_avg = 0.0;
+      int rank_min = -1;
+      int rank_max = -1;
 
       for (int rank = 0; rank < num_procs; ++rank)
       {
+        // Check for rank ID with min/max memory consumption
+        if (recvbuf[rank] <= mem_min) rank_min = rank;
+        if (recvbuf[rank] >= mem_max) rank_max = rank;
+
+        // Compute memory statistics
         mem_min = std::min(mem_min, recvbuf[rank]);
         mem_max = std::max(mem_max, recvbuf[rank]);
         mem_tot += recvbuf[rank];
@@ -102,9 +128,9 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
       if (num_procs > 1)
       {
         std::cout << std::scientific << std::setprecision(4) << "\nMemory High Water Mark Summary:"
-                  << "\t\tMinOverProcs\tMeanOverProcs\tMaxOverProcs\tSumOverProcs\n"
-                  << "(in GB)\t\t\t\t\t" << mem_min << "\t" << mem_avg << "\t" << mem_max << "\t"
-                  << mem_tot << "\n"
+                  << "\t\tMinOverProcs [PID]\tMeanOverProcs\tMaxOverProcs [PID]\tSumOverProcs\n"
+                  << "(in GB)\t\t\t\t\t" << mem_min << "   [p" << rank_min << "]\t" << mem_avg
+                  << "\t" << mem_max << "   [p" << rank_max << "]\t" << mem_tot << "\n"
                   << std::endl;
       }
       else
@@ -118,10 +144,15 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
   }
   else  // Failed to open the status file
   {
-    std::cout << "Memory High Water Mark summary can not be generated,\nsince status file "
-              << status_filename << " could not be opened.\n"
+    std::cout << "Memory High Water Mark summary can not be generated, since\n"
+              << "status file '" << status_filename << "' could not be opened on every proc.\n"
               << std::endl;
   }
+#else
+  if (comm.MyPID() == 0)
+    std::cout << "Memory High Water Mark summary not available on this operating system.\n"
+              << std::endl;
+#endif
 }
 
 /*!
