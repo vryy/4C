@@ -14,7 +14,7 @@
 
 namespace MAT
 {
-  class ThermoMaterial : public virtual Material, public TRAIT::Thermo
+  class ThermoMaterial : public Material, public TRAIT::Thermo
   {
   };
 }  // namespace MAT

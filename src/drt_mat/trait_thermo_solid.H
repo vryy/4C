@@ -15,7 +15,7 @@ namespace MAT
 {
   namespace TRAIT
   {
-    class ThermoSolid : public virtual Thermo, public virtual Solid
+    class ThermoSolid : public Thermo, public Solid
     {
      public:
       using Thermo::Reinit;
