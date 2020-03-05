@@ -9,7 +9,7 @@
 
 \level 2
 
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 /*----------------------------------------------------------------------*
  | headers                                                   dano 02/10 |
