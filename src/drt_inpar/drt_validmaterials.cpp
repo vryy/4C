@@ -920,19 +920,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "number of Young's modulus in list (if 1 Young is const, if >1 Young is temperature) "
         "dependent");
     AddNamedRealVector(m, "YOUNG", "Young's modulus", "YOUNGNUM");
-    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus",
-        "YOUNGNUM", 0,
-        true);  // optional
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "THEXPANS", "constant coefficient of linear thermal expansion");
-    AddNamedIntVector(m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion",
-        3, 0,
-        true);  // optional
     AddNamedReal(m, "CAPA", "capacity");
     AddNamedReal(m, "CONDUCT", "conductivity");
     AddNamedReal(m, "INITTEMP", "initial temperature");
-    AddNamedInt(m, "CONSOLMAT", "consolidation material", -1, true);  // optional
 
     AppendMaterialDefinition(matlist, m);
   }

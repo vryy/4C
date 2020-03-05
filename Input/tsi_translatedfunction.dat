@@ -139,11 +139,11 @@ AZSUB                           300
 AZSOLVE                         CG
 NAME                            STRUCTURAL SOLVER
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 3 YOUNG 1 1 1 YOUNGFUNCT 4 4 4 NUE 0.0 DENS 8e-06 THEXPANS -1 THEXPANSFUNCT 5 5 5 CAPA -1 CONDUCT -1 INITTEMP 1673.15 CONSOLMAT 3
-MAT 2 THERM_FourierVar CAPAFUNCT 3 3 3 CONDUCTFUNCT 2 2 2 CONSOLMAT 3
+MAT 1 MAT_ThermoMech_ThreePhase YOUNGFUNCT 4 4 4 NUE 0.0 DENS 8e-06 THEXPANSFUNCT 5 5 5 THETAREF 1673.15 THERMOMAT 2 CONSOLMAT 3
+MAT 2 THERM_FourierVar CAPAFUNCT 3 3 3 CONDUCTFUNCT 2 2 2 CONSOLMAT -1
 MAT 3 MAT_Consolidation SOLIDUS 1548.15 LIQUIDUS 1773.15 LATENTHEAT 0
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 293.15
 ----------------------------------------------------------------------FUNCT2

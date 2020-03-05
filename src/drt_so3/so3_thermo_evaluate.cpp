@@ -634,8 +634,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     //============================================================================
     case calc_struct_update_istep:
     {
-      if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant or
-          Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false) != Teuchos::null)
+      auto thermoSolid = Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+      if (thermoSolid != Teuchos::null)
       {
         std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
         if (discretization.HasState(1, "temperature"))
@@ -693,22 +693,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           LINALG::Matrix<1, 1> NT(false);
           NT.MultiplyTN(shapefunct, etemp);
 
-          if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
-          {
-            Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-                Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-            // fixme remove when heat integration is moved to own class
-            if (thrstvk->Consolidation() != Teuchos::null)
-              thrstvk->Consolidation()->SetFunct(shapefunct);
-            thrstvk->Update(NT(0, 0), MapMyGpToSoHex8(gp));
-          }
-          else
-          {
-            Teuchos::RCP<MAT::TRAIT::ThermoSolid> mat =
-                Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
-            mat->Reinit(nullptr, nullptr, NT(0), MapMyGpToSoHex8(gp));
-            mat->CommitCurrentState();
-          }
+          thermoSolid->Reinit(NT(0), MapMyGpToSoHex8(gp));
+          thermoSolid->CommitCurrentState();
         }
       }
 

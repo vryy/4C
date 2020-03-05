@@ -23,7 +23,6 @@
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
-#include "consolidation.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 
@@ -50,27 +49,19 @@ namespace MAT
       //@{
 
       //! Young's modulus (temperature dependent --> polynomial expression)
-      const std::vector<double> youngsval_;
-      //! functions for Youngs' modulus
-      const std::vector<int> youngsfunct_;
-      //! flag if Young's modulus is a polynomial
-      bool youngpoly_;
+      const std::vector<double> youngs_;
       //! Possion's ratio \f$ \nu \f$
       const double poissonratio_;
       //! mass density \f$ \rho \f$
       const double density_;
       //! linear coefficient of thermal expansion  \f$ \alpha_T \f$
       const double thermexpans_;
-      //! functions for thermal expansion
-      const std::vector<int> thermexpansfunct_;
       //! heat capacity \f$ C_V \f$
       const double capa_;
       //! heat conductivity \f$ k \f$
       const double conduct_;
       //! initial temperature (constant) \f$ \theta_0 \f$
       const double thetainit_;
-      //! for SLM: consolidation material
-      const int consolmat_;
 
       //@}
 
@@ -152,22 +143,13 @@ namespace MAT
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const override
-    {
-      return INPAR::MAT::m_thermostvenant;
-    }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermostvenant; }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const override
+    virtual Teuchos::RCP<Material> Clone() const
     {
       return Teuchos::rcp(new ThermoStVenantKirchhoff(*this));
     }
-
-    //! setup history variables for consolidation process
-    virtual void Setup(const int numgp, DRT::INPUT::LineDefinition* linedef) override;
-
-    //! update after converged time step
-    virtual void Update(double temperature, int gp);
 
     //! evaluates stresses for 3d
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
@@ -176,14 +158,14 @@ namespace MAT
         LINALG::Matrix<6, 1>* stress,                          //!< stress
         LINALG::Matrix<6, 6>* cmat,                            //!< elastic material tangent
         const int eleGID                                       //!< element GID
-        ) override;
+    );
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(const LINALG::Matrix<1, 1>& Ntemp,  //!< temperature of element (N . T)
         LINALG::Matrix<6, 1>& ctemp,                  //!< temperature dependent material tangent
         LINALG::Matrix<6, 1>& stresstemp,             //!< temperature dependent stress term
-        const Teuchos::ParameterList& params          //!< parameter list
+        Teuchos::ParameterList& params                //!< parameter list
     );
 
     /// add strain energy
@@ -192,25 +174,35 @@ namespace MAT
         const int eleGID                                             ///< element GID
     );
 
+    //! computes isotropic elasticity tensor in matrix notion for 3d
+    void SetupCmat(LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList params);
+
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
     void SetupCthermo(LINALG::Matrix<6, 1>& ctemp,
-        const Teuchos::ParameterList& params  //!< parameter list
+        Teuchos::ParameterList& params  //!< parameter list
     );
+
+    //! calculates stress-temperature modulus
+    double STModulus(Teuchos::ParameterList& params  //!< parameter list
+        ) const;
 
     //! Young's modulus, here we suppose a constant value for E
     double Youngs() const
     {
       dserror(
           "return value 'E' not available due to possibly temperature-dependent Young's modulus.");
-      return -1;
+      return (params_->youngs_)[0];
     }
+
+    //! return true if Young's modulus is temperature dependent
+    bool YoungsIsTempDependent() const { return this->params_->youngs_.size() > 1; }
 
     //! Poisson's ratio \f$ \nu \f$
     double PoissonRatio() const { return params_->poissonratio_; }
 
     //! density \f$ \rho \f$
-    virtual double Density() const override { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     //! conductivity \f$ k \f$
     double Conductivity() const { return params_->conduct_; }
@@ -221,17 +213,16 @@ namespace MAT
     //! Initial temperature \f$ \theta_0 \f$
     double InitTemp() const { return params_->thetainit_; }
 
-    //!  @return true if Young's modulus is a function of temperature
-    bool YoungIsTempDependent() { return params_->youngsval_.size() > 1; }
-
-    //!  @return true if Young's modulus is a function of temperature
-    bool ThermExpansIsTempDependent() { return params_->thermexpansfunct_[0] != 0; }
+    //! shear modulus \f$ \mu \f$, here we suppose a constant value for E
+    double ShearMod() const
+    {
+      dserror(
+          "return value 'mu' not available due to possibly temperature-dependent Young's modulus");
+      return 0.5 * (params_->youngs_)[0] / (1.0 + params_->poissonratio_);
+    }
 
     //! Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const override { return params_; }
-
-    /// Get direct access to the Consolidation object
-    virtual Teuchos::RCP<MAT::Consolidation> Consolidation() { return consol_; }
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     //! @name temperature-dependent material parameters E(T)
     //@{
@@ -248,6 +239,17 @@ namespace MAT
         LINALG::Matrix<6, 1>* stresstemp_T  //!< linearisation of thermal stress w.r.t. T
     );
 
+    //! calculates stress-temperature modulus
+    double GetSTModulus_T(Teuchos::ParameterList& params  //!< parameter list
+        ) const;
+
+    //! calculates derivative of Cmat with respect to current temperatures
+    //! only in case of temperature-dependent material parameters
+    void GetCmatAtTempnp_T(
+        LINALG::Matrix<6, 6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t. T
+        Teuchos::ParameterList params     //!< parameter list
+    );
+
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void GetCthermoAtTempnp_T(
@@ -255,74 +257,23 @@ namespace MAT
         Teuchos::ParameterList& params     //!< parameter list
     );
 
-    //! service for postprocessing
-    template <unsigned int nen, unsigned int nsd>
-    void NodalYoungs(LINALG::Matrix<nen, 1>& nodaltemp, LINALG::Matrix<nen * nsd, 1>& nodalyoungs)
-    {
-      LINALG::Matrix<nen, 1> simple_youngs(false);
-      if (params_->youngpoly_)
-        for (unsigned int i = 0; i < nen; i++)
-          simple_youngs(i) = PolynomialFunction(&(params_->youngsval_), nodaltemp(i));
-      else
-        consol_->EvaluateTempDependentFunctionAtNodes(
-            nodaltemp, simple_youngs, params_->youngsfunct_);
+    //! calculate temperature dependent material parameter and return value
+    double GetMatParameterAtTempnp(
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     // tmpr (i) current temperature
+        ) const;
 
-      // map to structural vector, only use first dimension
-      for (unsigned int i = 0; i < nen; i++) nodalyoungs(i * nsd) = simple_youngs(i);
-    }
+    //! calculate temperature dependent material parameter and return value
+    double GetMatParameterAtTempnp_T(
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     // tmpr (i) current temperature
+        ) const;
 
     //@}
 
    private:
-    //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6, 6>& cmat, const Teuchos::ParameterList& params);
-
-    //! calculate temperature dependent Young's modulus and return value
-    double GetYoungAtTempnp(
-        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
-        const double& tempnp,                    // tmpr (i) current temperature
-        const int gp                             // integration point
-    );
-
-    //! calculate temperature dependent thermal expansion and return value
-    double GetThermexpansAtTempnp(const double& tempnp,  // tmpr (i) current temperature
-        const int gp                                     // integration point
-    );
-
-    //! calculate temperature dependent Young's Modulus and return value
-    double GetYoungAtTempnp_T(
-        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
-        const double& tempnp,                    // tmpr (i) current temperature
-        const int gp);
-
-    //! calculate temperature dependent thermal expansion coefficient and return value
-    double GetThermexpansAtTempnp_T(const double& tempnp,  // tmpr (i) current temperature
-        const int gp);
-
-    //! calculates stress-temperature modulus
-    double STModulus(const Teuchos::ParameterList& params  //!< parameter list
-    );
-
-    //! calculates stress-temperature modulus deriviative w.r.t. T
-    double GetSTModulus_T(const Teuchos::ParameterList& params  //!< parameter list
-    );
-
-    //! calculates derivative of Cmat with respect to current temperatures
-    //! only in case of temperature-dependent material parameters
-    void GetCmatAtTempnp_T(
-        LINALG::Matrix<6, 6>& derivcmat,      //!< linearisation of mechanical tangent w.r.t. T
-        const Teuchos::ParameterList& params  //!< parameter list
-    );
-
-    double PolynomialFunction(
-        const std::vector<double>* coeffs,  // coefficients, constant to highest degree
-        const double& tempnp);
-
     //! my material parameters
     MAT::PAR::ThermoStVenantKirchhoff* params_;
-
-    //! pointer to the consolidation material managing the actual evaluation of function
-    Teuchos::RCP<MAT::Consolidation> consol_;
 
   };  // ThermoStVenantKirchhoff
 }  // namespace MAT
