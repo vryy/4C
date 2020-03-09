@@ -26,6 +26,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
+#include <unordered_set>
 
 
 /**
@@ -208,6 +209,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
       // The pairs will need the mortar manager to extract their Lambda DOFs.
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->GetMortarManager());
+
+      // This map is used to ensure, that each discrete Lagrange multiplier is only written once per
+      // beam element.
+      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
+          Teuchos::rcp(new std::unordered_set<int>());
+      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
     }
   }
 
