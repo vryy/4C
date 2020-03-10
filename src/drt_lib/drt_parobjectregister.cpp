@@ -88,7 +88,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/thermomech_threephase.h"
+#include "../drt_mat/thermomech_threephase.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"

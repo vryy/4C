@@ -183,15 +183,13 @@ namespace MAT
     void CreateThermoMaterial();
 
     //! current temperature (set by Reinit())
-    double currentTemperature{};
+    double currentTemperature_{};
 
     //! current Gauss point (set by Reinit())
-    unsigned currentGp{};
+    unsigned currentGp_{};
 
-    //! current deformation gradient
-    const LINALG::Matrix<3, 3>* currentDefgrd{};
     //! current Green-Lagrange strain
-    const LINALG::Matrix<6, 1>* currentGlstrain{};
+    const LINALG::Matrix<6, 1>* currentGlstrain_{};
   };
 
 }  // namespace MAT

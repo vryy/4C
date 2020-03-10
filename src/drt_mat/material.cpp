@@ -17,7 +17,7 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
-#include "thermomech_threephase.h"
+#include "thermomech_threephase.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
 #include "crystal_plasticity.H"

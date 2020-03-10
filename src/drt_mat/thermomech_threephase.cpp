@@ -6,7 +6,7 @@
 \maintainer Sebastian Proell
 */
 
-#include "thermomech_threephase.h"
+#include "thermomech_threephase.H"
 #include "consolidation.H"
 #include "fouriervar.H"
 
@@ -135,9 +135,9 @@ void MAT::ThermoMechThreePhase::Setup(int numgp, DRT::INPUT::LineDefinition* lin
  *----------------------------------------------------------------------*/
 void MAT::ThermoMechThreePhase::Reinit(double temperature, unsigned gp)
 {
-  currentTemperature = temperature;
-  currentGp = gp;
-  fouriervar_->Reinit(currentTemperature, currentGp);
+  currentTemperature_ = temperature;
+  currentGp_ = gp;
+  fouriervar_->Reinit(currentTemperature_, currentGp_);
 }
 
 /*----------------------------------------------------------------------*|
@@ -146,8 +146,7 @@ void MAT::ThermoMechThreePhase::Reinit(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
 {
   Reinit(temperature, gp);
-  currentDefgrd = defgrd;
-  currentGlstrain = glstrain;
+  currentGlstrain_ = glstrain;
 }
 
 
@@ -165,14 +164,14 @@ void MAT::ThermoMechThreePhase::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   SetupCmat(*cmat);
   // purely mechanical part
-  stress->MultiplyNN(*cmat, *currentGlstrain);
+  stress->MultiplyNN(*cmat, *currentGlstrain_);
 
   // additive thermal part
   double Tref = params_->thetaref_;
   double m = STModulus();
 
   // loop over the element nodes, non-zero entries only in main directions
-  for (int i = 0; i < 3; ++i) (*stress)(i, 0) += m * (currentTemperature - Tref);
+  for (int i = 0; i < 3; ++i) (*stress)(i, 0) += m * (currentTemperature_ - Tref);
 }
 
 /*----------------------------------------------------------------------*|
@@ -184,7 +183,7 @@ void MAT::ThermoMechThreePhase::GetdSdT(LINALG::Matrix<6, 1>* dS_dT)
   SetupCmat_dT(cmat_T);
 
   // mechanical part
-  dS_dT->MultiplyNN(cmat_T, *currentGlstrain);
+  dS_dT->MultiplyNN(cmat_T, *currentGlstrain_);
 
   // additive thermal part
   double Tref = params_->thetaref_;
@@ -192,7 +191,7 @@ void MAT::ThermoMechThreePhase::GetdSdT(LINALG::Matrix<6, 1>* dS_dT)
   double m = STModulus();
 
   // compute derivative (product rule!)
-  for (int i = 0; i < 3; ++i) (*dS_dT)(i, 0) += m_dT * (currentTemperature - Tref) + m;
+  for (int i = 0; i < 3; ++i) (*dS_dT)(i, 0) += m_dT * (currentTemperature_ - Tref) + m;
 }
 
 void MAT::ThermoMechThreePhase::SetupCmat(LINALG::Matrix<6, 6>& cmat)
@@ -334,13 +333,14 @@ double MAT::ThermoMechThreePhase::STModulus_dT()
 }
 double MAT::ThermoMechThreePhase::GetMaterialParameter(const std::vector<int>& functions) const
 {
-  return consolidation_->EvaluateTempDependentFunction(currentTemperature, currentGp, functions);
+  return consolidation_->EvaluateTempDependentFunction(currentTemperature_, currentGp_, functions);
 }
 
 double MAT::ThermoMechThreePhase::GetMaterialParameterThermalDerivative(
     const std::vector<int>& functions) const
 {
-  return consolidation_->EvaluateTempDependentDerivative(currentTemperature, currentGp, functions);
+  return consolidation_->EvaluateTempDependentDerivative(
+      currentTemperature_, currentGp_, functions);
 }
 
 void MAT::ThermoMechThreePhase::ResetCurrentState() { fouriervar_->ResetCurrentState(); }
