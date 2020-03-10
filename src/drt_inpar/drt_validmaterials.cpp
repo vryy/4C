@@ -926,6 +926,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "CAPA", "capacity");
     AddNamedReal(m, "CONDUCT", "conductivity");
     AddNamedReal(m, "INITTEMP", "initial temperature");
+    AddNamedInt(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
     AppendMaterialDefinition(matlist, m);
   }

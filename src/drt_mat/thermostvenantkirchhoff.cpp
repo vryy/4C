@@ -32,7 +32,8 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR
       thermexpans_(matdata->GetDouble("THEXPANS")),
       capa_(matdata->GetDouble("CAPA")),
       conduct_(matdata->GetDouble("CONDUCT")),
-      thetainit_(matdata->GetDouble("INITTEMP"))
+      thetainit_(matdata->GetDouble("INITTEMP")),
+      thermomat_(matdata->GetInt("THERMOMAT"))
 {
 }
 
@@ -63,15 +64,24 @@ DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     dano 02/10 |
  *----------------------------------------------------------------------*/
-MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(NULL) {}
+MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(nullptr), thermo_(Teuchos::null)
+{
+}
 
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 02/10 |
  *----------------------------------------------------------------------*/
 MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(MAT::PAR::ThermoStVenantKirchhoff* params)
-    : params_(params)
+    : params_(params), thermo_(Teuchos::null)
 {
+  const int thermoMatId = params_->thermomat_;
+  if (thermoMatId != -1)
+  {
+    auto mat = MAT::Material::Factory(thermoMatId);
+    if (mat == Teuchos::null) dserror("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(mat);
+  }
 }
 
 
@@ -120,6 +130,15 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
+      const int thermoMatId = params_->thermomat_;
+      if (thermoMatId != -1)
+      {
+        auto mat = MAT::Material::Factory(thermoMatId);
+        if (mat == Teuchos::null) dserror("Failed to create thermo material, id=%d", thermoMatId);
+        thermo_ = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(mat);
+      }
+      else
+        thermo_ = Teuchos::null;
     }
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -134,10 +153,22 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
-  SetupCmat(*cmat, params);
-  // evaluate stresses
-  // \f \sigma = {\mathbf C} \,\varepsilon_{\rm GL} \f
-  stress->MultiplyNN(*cmat, *glstrain);
+  // fixme this backwards compatibility modification should be moved outside
+  // for now use existing value as a default value
+  double temperature = params.get<double>("scalartemp", currentTemperature);
+  unsigned gp = params.get<int>("gp", 0);
+  Reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
+
+  SetupCmat(*cmat);
+  // purely mechanical part
+  stress->MultiplyNN(*cmat, *currentGlstrain);
+
+  // additive thermal part
+  double Tref = params_->thetainit_;
+  double m = STModulus();
+
+  // loop over the element nodes, non-zero entries only in main directions
+  for (int i = 0; i < 3; ++i) (*stress)(i, 0) += m * (currentTemperature - Tref);
 
 }  // STR_Evaluate()
 
@@ -152,10 +183,8 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
 {
   if (YoungsIsTempDependent())
     dserror("Calculation of strain energy only for constant Young's modulus");
-  Teuchos::ParameterList p;
-  p.set<int>("young_temp", 0);
   LINALG::Matrix<6, 6> cmat;
-  SetupCmat(cmat, p);
+  SetupCmat(cmat);
   LINALG::Matrix<6, 1> s;
   s.Multiply(cmat, glstrain);
   psi += .5 * s.Dot(glstrain);
@@ -167,8 +196,7 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
  | computes isotropic elasticity tensor in matrix notion     dano 02/10 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCmat(
-    LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList params)
+void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6, 6>& cmat)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -176,8 +204,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
 
   if (YoungsIsTempDependent())
   {
-    double tempnp = params.get<double>("scalartemp");
-    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+    Emod = GetMatParameterAtTempnp(&(params_->youngs_), currentTemperature);
   }
   // young's modulus is constant
   else
@@ -252,14 +279,13 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params) const
+double MAT::ThermoStVenantKirchhoff::STModulus() const
 {
   double Emod = 0.0;
 
   if (YoungsIsTempDependent())
   {
-    double tempnp = params.get<double>("scalartemp");
-    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+    Emod = GetMatParameterAtTempnp(&(params_->youngs_), currentTemperature);
   }
   else
     Emod = params_->youngs_[0];
@@ -303,10 +329,9 @@ double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params) c
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo(
-    LINALG::Matrix<6, 1>& ctemp, Teuchos::ParameterList& params)
+void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6, 1>& ctemp)
 {
-  double m = STModulus(params);
+  double m = STModulus();
 
   // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
   //
@@ -328,29 +353,6 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(
   // else zeros
 
 }  // SetupCthermo()
-
-
-/*----------------------------------------------------------------------*
- | calculates stresses by evaluating the temperature tangent dano 05/10 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Evaluate(
-    const LINALG::Matrix<1, 1>& Ntemp,  // shapefcts . temperatures
-    LINALG::Matrix<6, 1>& ctemp, LINALG::Matrix<6, 1>& stresstemp, Teuchos::ParameterList& params)
-{
-  // calculate the temperature difference
-  LINALG::Matrix<1, 1> init(false);
-  init(0, 0) = (params_->thetainit_);
-  // Delta T = T - T_0
-  LINALG::Matrix<1, 1> deltaT(false);
-  deltaT.Update(1.0, Ntemp, (-1.0), init);
-
-  SetupCthermo(ctemp, params);
-
-  // temperature dependent stress
-  // sigma = C_T . Delta T = m . I . Delta T
-  stresstemp.MultiplyNN(ctemp, deltaT);
-
-}  // THR_Evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -428,7 +430,7 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
  | calculate linearisation of stress-temperature modulus     dano 04/10 |
  | w.r.t. T_{n+1} for k_dT, k_TT                                        |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& params) const
+double MAT::ThermoStVenantKirchhoff::GetSTModulus_T() const
 {
   // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
   // m = - (2 . mu + 3 . lambda) . varalpha_T
@@ -438,8 +440,7 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& para
 
   if (YoungsIsTempDependent())
   {
-    const double tempnp = params.get<double>("scalartemp");
-    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), tempnp);
+    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), currentTemperature);
 
     // initialise the parameters for the lame constants
     const double pv = params_->poissonratio_;
@@ -474,63 +475,18 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& para
 
 }  // GetSTModulus_T()
 
-
-/*----------------------------------------------------------------------*
- | calculates stresses with derived cmat w.r.t. T_{n+1}       dano 05/13 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::GetMechStress_T(const LINALG::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress)
-{
-  // calculate derivative of cmat w.r.t. T_{n+1}
-  LINALG::Matrix<6, 6> cmat_T(false);
-  GetCmatAtTempnp_T(cmat_T, params);
-
-  // evaluate stresses
-  // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
-  stress->MultiplyNN(cmat_T, *glstrain);
-
-}  // GetMechStress_T
-
-
-/*----------------------------------------------------------------------*
- | calculates stresses using one of the above method to      dano 05/13 |
- | evaluate the elasticity tensor                                       |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(const LINALG::Matrix<1, 1>* Ntemp,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stresstemp_T)
-{
-  // calculate the temperature difference
-  LINALG::Matrix<1, 1> init(false);
-  init(0, 0) = (params_->thetainit_);
-  // Delta T = T - T_0
-  LINALG::Matrix<1, 1> deltaT(false);
-  deltaT.Update(1.0, *Ntemp, (-1.0), init);
-
-  // calculate derivative of ctemp w.r.t. T_{n+1}
-  LINALG::Matrix<6, 1> ctemp_T(false);
-  GetCthermoAtTempnp_T(ctemp_T, params);
-
-  // temperature dependent stress
-  // sigma = C_T . Delta T = m . I . Delta T
-  stresstemp_T->MultiplyNN(ctemp_T, deltaT);
-
-}  // GetThermalStress_T
-
-
 /*----------------------------------------------------------------------*
  | computes thermal derivative of the isotropic elasticity   dano 01/13 |
  | tensor in matrix notion for 3d for k_dT                              |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(
-    LINALG::Matrix<6, 6>& derivcmat, Teuchos::ParameterList params)
+void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(LINALG::Matrix<6, 6>& derivcmat)
 {
   // clear the material tangent, identical to PutScalar(0.0)
   derivcmat.Clear();
 
   if (YoungsIsTempDependent())
   {
-    const double tempnp = params.get<double>("scalartemp");
-    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), tempnp);
+    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), currentTemperature);
     // Poisson's ratio (Querdehnzahl)
     const double nu = params_->poissonratio_;
 
@@ -601,10 +557,9 @@ void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(
  | computes linearisation of temperature-dependent isotropic dano 01/13 |
  | elasticity tensor in matrix notion for 3d, 2nd order tensor          |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(
-    LINALG::Matrix<6, 1>& derivctemp, Teuchos::ParameterList& params)
+void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(LINALG::Matrix<6, 1>& derivctemp)
 {
-  double m_T = GetSTModulus_T(params);
+  double m_T = GetSTModulus_T();
 
   // isotropic elasticity tensor C_T in Voigt matrix notation C_T = m I
   //
@@ -624,8 +579,99 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(
   // loop over the element nodes, non-zero entries only on main directions
   for (int i = 0; i < 3; ++i) derivctemp(i, 0) = m_T;
   // else zeros
+}
 
-}  // GetCthermoAtTempnp_T()
+void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 1>& gradtemp,
+    LINALG::Matrix<3, 3>& cmat, LINALG::Matrix<3, 1>& heatflux) const
+{
+  thermo_->Evaluate(gradtemp, cmat, heatflux);
+}
+
+void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<2, 1>& gradtemp,
+    LINALG::Matrix<2, 2>& cmat, LINALG::Matrix<2, 1>& heatflux) const
+{
+  thermo_->Evaluate(gradtemp, cmat, heatflux);
+}
+
+void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<1, 1>& gradtemp,
+    LINALG::Matrix<1, 1>& cmat, LINALG::Matrix<1, 1>& heatflux) const
+{
+  thermo_->Evaluate(gradtemp, cmat, heatflux);
+}
+
+void MAT::ThermoStVenantKirchhoff::ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const
+{
+  thermo_->ConductivityDerivT(dCondDT);
+}
+
+void MAT::ThermoStVenantKirchhoff::ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const
+{
+  thermo_->ConductivityDerivT(dCondDT);
+}
+
+void MAT::ThermoStVenantKirchhoff::ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const
+{
+  thermo_->ConductivityDerivT(dCondDT);
+}
+
+double MAT::ThermoStVenantKirchhoff::CapacityDerivT() const { return thermo_->CapacityDerivT(); }
+
+void MAT::ThermoStVenantKirchhoff::Reinit(double temperature, unsigned gp)
+{
+  currentTemperature = temperature;
+  if (thermo_ != Teuchos::null) thermo_->Reinit(temperature, gp);
+}
+void MAT::ThermoStVenantKirchhoff::ResetCurrentState()
+{
+  if (thermo_ != Teuchos::null) thermo_->ResetCurrentState();
+}
+
+void MAT::ThermoStVenantKirchhoff::CommitCurrentState()
+{
+  if (thermo_ != Teuchos::null) thermo_->CommitCurrentState();
+}
+
+void MAT::ThermoStVenantKirchhoff::Reinit(const LINALG::Matrix<3, 3>* defgrd,
+    const LINALG::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
+{
+  currentGlstrain = glstrain;
+  Reinit(temperature, gp);
+}
+
+void MAT::ThermoStVenantKirchhoff::GetdSdT(LINALG::Matrix<6, 1>* dS_dT)
+{
+  // total derivative of stress (mechanical + thermal part) wrt. temperature
+  // calculate derivative of cmat w.r.t. T_{n+1}
+  LINALG::Matrix<6, 6> cmat_T(false);
+  GetCmatAtTempnp_T(cmat_T);
+
+  // evaluate meachnical stress part
+  // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
+  dS_dT->MultiplyNN(cmat_T, *currentGlstrain);
+
+  // calculate the temperature difference
+  // Delta T = T - T_0
+  const double deltaT = currentTemperature - params_->thetainit_;
+
+  // calculate derivative of ctemp w.r.t. T_{n+1}
+  LINALG::Matrix<6, 1> ctemp_T(false);
+  GetCthermoAtTempnp_T(ctemp_T);
+
+  // temperature dependent stress part
+  // sigma = C_T . Delta T = m . I . Delta T
+  dS_dT->Update(deltaT, ctemp_T, 1.0);
+
+  SetupCthermo(ctemp_T);
+  dS_dT->Update(1.0, ctemp_T, 1.0);
+}
+
+void MAT::ThermoStVenantKirchhoff::StressTemperatureModulusAndDeriv(
+    LINALG::Matrix<6, 1>& stm, LINALG::Matrix<6, 1>& stm_dT)
+{
+  SetupCthermo(stm);
+  GetCthermoAtTempnp_T(stm_dT);
+}
+// GetCthermoAtTempnp_T()
 
 
 /*----------------------------------------------------------------------*/

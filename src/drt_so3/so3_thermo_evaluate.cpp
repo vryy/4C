@@ -693,7 +693,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           LINALG::Matrix<1, 1> NT(false);
           NT.MultiplyTN(shapefunct, etemp);
 
-          thermoSolid->Reinit(NT(0), MapMyGpToSoHex8(gp));
+          thermoSolid->Reinit(nullptr, nullptr, NT(0), MapMyGpToSoHex8(gp));
           thermoSolid->CommitCurrentState();
         }
       }
@@ -1024,42 +1024,21 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-    // default: material call in structural function is purely deformation dependent
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+    if (thermoSolidMaterial != Teuchos::null)
     {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-
-      // copy structural shape functions needed for the thermo field
-      // identical shapefunctions for the displacements and the temperatures
-      LINALG::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      double scalartemp = NT(0, 0);
-      // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", scalartemp);
-
       // calculate the nodal strains: strain = B . d
       LINALG::Matrix<numstr_, 1> strain(false);
-      strain.Multiply(boplin, edisp);  // (6x24)(24x1)= (6x1)
-      // k_dT += B_d^T . sigma_T . N_T = B_d^T . dC/dT . strain . N_T   with dC/dT = Cmat_T
-      // (24x8)  (24x6)  (6x1)    (1x8)
-      LINALG::Matrix<numstr_, 1> stress_T(true);
-      thrstvk->GetMechStress_T(&strain, params, &stress_T);
-      Bstress_T.MultiplyTN(boplin, stress_T);  // (24x6)(6x1)
+      strain.Multiply(boplin, edisp);
 
-      // k_dT += B_d^T . couplstress_T . N_T = B_d^T . dC_T/dT . (Delta T) . N_T
-      // k_dT += B_d^T . C_{T,T}() . (N_T . T - T_0) . N_T
-      //
-      // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT = derivE_fac . d(E(T))/dT . I
-      // insert the negative value of the coupling term (c.f. energy balance)
-      LINALG::Matrix<numstr_, 1> couplstress_T(true);
-      thrstvk->GetThermalStress_T(&NT, params, &couplstress_T);
-      // get thermal material tangent
-      thrstvk->SetupCthermo(ctemp, params);
-      Bcouplstress_T.MultiplyTN(boplin, couplstress_T);  // (24x6)(6x1)
-    }                                                    // m_thermostvenant
+      LINALG::Matrix<1, 1> NT(false);
+      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      thermoSolidMaterial->Reinit(nullptr, &strain, NT(0), MapMyGpToSoHex8(gp));
+      // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
+      // with shape functions)
+      thermoSolidMaterial->GetdSdT(&ctemp);
+    }
     // get thermal material tangent
     else
     {
@@ -1495,51 +1474,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
       // with shape functions)
       thermoSolidMaterial->GetdSdT(&ctemp);
     }
-
-    // default: material call in structural function is purely deformation dependent
-    else if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-
-      // copy structural shape functions needed for the thermo field
-      // identical shapefunctions for the displacements and the temperatures
-      LINALG::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
-
-      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      Epetra_SerialDenseVector glstrain_epetra(numstr_);
-      LINALG::Matrix<numstr_, 1> glstrain(glstrain_epetra.A(), true);
-      glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
-      glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
-      glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
-      glstrain(3) = cauchygreen(0, 1);  // Voigt notation
-      glstrain(4) = cauchygreen(1, 2);
-      glstrain(5) = cauchygreen(2, 0);
-
-      // k_dT += B_d^T . sigma_T . N_T = B_d^T . dC/dT . E . N_T   with dC/dT = Cmat_T
-      // (24x8)  (24x6)  (6x1)    (1x8)
-      LINALG::Matrix<numstr_, 1> stress_T(true);
-      thrstvk->GetMechStress_T(&glstrain, params, &stress_T);
-      Bstress_T.MultiplyTN(bop, stress_T);  // (24x6)(6x1)
-
-      // k_dT += B_d^T . couplstress_T . N_T = B_d^T . dC_T/dT . (Delta T) . N_T
-      // k_dT += B_d^T . C_{T,T}() . (N_T . T - T_0) . N_T
-      //
-      // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT = derivE_fac . d(E(T))/dT . I
-      // insert the negative value of the coupling term (c.f. energy balance)
-      LINALG::Matrix<numstr_, 1> couplstress_T(true);
-      thrstvk->GetThermalStress_T(&NT, params, &couplstress_T);
-      // get thermal material tangent
-      thrstvk->SetupCthermo(ctemp, params);
-      Bcouplstress_T.MultiplyTN(bop, couplstress_T);  // (24x6)(6x1)
-    }                                                 // m_thermostvenant
-
     else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
       // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
@@ -2102,10 +2036,29 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
         //                  . 1/(2 . mubar . beta0)
         Cmat_kdT.Update(thermoplhyperelast->CMat_kdT(gp));
       }
+      Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
+          Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+      if (thermoSolidMaterial != Teuchos::null)
+      {
+        LINALG::Matrix<numstr_, 1> glstrain(false);
+        glstrain(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
+        glstrain(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
+        glstrain(2) = 0.5 * (cauchygreen_bar(2, 2) - 1.0);
+        glstrain(3) = cauchygreen_bar(0, 1);  // Voigt notation
+        glstrain(4) = cauchygreen_bar(1, 2);
+        glstrain(5) = cauchygreen_bar(2, 0);
 
-      // get temperature-dependent material tangent
-      // in case of m_thermoplhyperelast: F, Cinv are passed via params
-      Ctemp(&ctemp, params);
+        LINALG::Matrix<1, 1> NT(false);
+        NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+        thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), MapMyGpToSoHex8(gp));
+        // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
+        // with shape functions)
+        thermoSolidMaterial->GetdSdT(&ctemp);
+      }
+      else
+        // get temperature-dependent material tangent
+        // in case of m_thermoplhyperelast: F, Cinv are passed via params
+        Ctemp(&ctemp, params);
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -2177,15 +2130,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Materialize(
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    // st.venant-kirchhoff-material with temperature
-    case INPAR::MAT::m_thermostvenant:
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      thrstvk->Evaluate(*Ntemp, *ctemp, *couplstress, params);
-      return;
-      break;
-    }
     // small strain von Mises thermoelastoplastic material
     case INPAR::MAT::m_thermopllinelast:
     {
@@ -2233,9 +2177,10 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Ctemp(
     // thermo st.venant-kirchhoff-material
     case INPAR::MAT::m_thermostvenant:
     {
+      dserror("Ctemp call no longer valid for ThermoStVenantKirchhoff. Fix implementation.");
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      return thrstvk->SetupCthermo(*ctemp, params);
+      return thrstvk->SetupCthermo(*ctemp);
       break;
     }
     // small strain von Mises thermoelastoplastic material
