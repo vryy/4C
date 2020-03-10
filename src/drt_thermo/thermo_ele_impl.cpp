@@ -1388,7 +1388,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
     if (thermoSolid != Teuchos::null)
     {
       LINALG::Matrix<6, 1> dctemp_dT(false);
-      thermoSolid->Reinit(NT(0), iquad);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
 
       LINALG::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
@@ -1656,7 +1656,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     if (thermoSolid != Teuchos::null)
     {
       LINALG::Matrix<6, 1> dctemp_dT(false);
-      thermoSolid->Reinit(NT(0), iquad);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
     else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
@@ -1953,7 +1953,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     if (thermoSolid != Teuchos::null)
     {
       LINALG::Matrix<6, 1> dctemp_dT(false);
-      thermoSolid->Reinit(NT(0), iquad);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
       // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
       double dctemp_dTCdot = 0.0;
@@ -2453,7 +2453,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     if (thermoSolid != Teuchos::null)
     {
       LINALG::Matrix<6, 1> dctemp_dT(false);
-      thermoSolid->Reinit(NT(0), iquad);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
 

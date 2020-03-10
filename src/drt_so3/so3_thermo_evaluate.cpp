@@ -706,7 +706,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           {
             Teuchos::RCP<MAT::TRAIT::ThermoSolid> mat =
                 Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
-            mat->Reinit(NT(0), MapMyGpToSoHex8(gp));
+            mat->Reinit(nullptr, nullptr, NT(0), MapMyGpToSoHex8(gp));
             mat->CommitCurrentState();
           }
         }

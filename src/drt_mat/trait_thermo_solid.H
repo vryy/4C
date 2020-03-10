@@ -18,8 +18,6 @@ namespace MAT
     class ThermoSolid : public Thermo, public Solid
     {
      public:
-      using Thermo::Reinit;
-
       /*!
        * Set current quantities for this material
        *
