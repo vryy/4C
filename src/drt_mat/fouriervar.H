@@ -170,13 +170,13 @@ namespace MAT
 
     void Reinit(double temperature, unsigned gp) override
     {
-      currentTemperature = temperature;
-      currentGp = gp;
+      currentTemperature_ = temperature;
+      currentGp_ = gp;
     };
 
     void ResetCurrentState() override { consolidation_->ResetLatentHeatLastStep(); }
 
-    void CommitCurrentState() override { consolidation_->Update(currentTemperature, currentGp); }
+    void CommitCurrentState() override { consolidation_->Update(currentTemperature_, currentGp_); }
 
     /// Get a capacity value useable for heat integration method
     double HeatIntegrationCapacity() const;
@@ -229,10 +229,10 @@ namespace MAT
     Teuchos::RCP<MAT::Consolidation> consolidation_;
 
     /// temperature used for evaluation
-    double currentTemperature{};
+    double currentTemperature_{};
 
     /// current evaluation Gauss point
-    unsigned currentGp{};
+    unsigned currentGp_{};
 
   };  // FourierVar
 

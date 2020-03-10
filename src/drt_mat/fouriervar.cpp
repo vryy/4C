@@ -165,14 +165,14 @@ void MAT::FourierVar::Setup(const int numgp) { consolidation_->Setup(numgp); }
 
 double MAT::FourierVar::Capacity() const
 {
-  return consolidation_->EvaluateFunction(currentTemperature, currentGp, params_->capafunct_) +
-         consolidation_->ApparentCapacityPeak(currentTemperature);
+  return consolidation_->EvaluateFunction(currentTemperature_, currentGp_, params_->capafunct_) +
+         consolidation_->ApparentCapacityPeak(currentTemperature_);
 }
 
 double MAT::FourierVar::CapacityDerivT() const
 {
-  return consolidation_->EvaluateDerivative(currentTemperature, currentGp, params_->capafunct_) +
-         consolidation_->ApparentCapacityDerivative(currentTemperature);
+  return consolidation_->EvaluateDerivative(currentTemperature_, currentGp_, params_->capafunct_) +
+         consolidation_->ApparentCapacityDerivative(currentTemperature_);
 }
 
 
@@ -204,7 +204,7 @@ void MAT::FourierVar::EvaluateInternal(const LINALG::Matrix<nsd, 1>& gradtemp,
   // conductivity tensor
   cmat.Clear();
   double cond =
-      consolidation_->EvaluateFunction(currentTemperature, currentGp, params_->conductfunct_);
+      consolidation_->EvaluateFunction(currentTemperature_, currentGp_, params_->conductfunct_);
   for (unsigned i = 0; i < nsd; ++i) cmat(i, i) = cond;
 
   // heatflux
@@ -216,7 +216,7 @@ void MAT::FourierVar::GetConductivityDerivTInternal(LINALG::Matrix<nsd, nsd>& dC
 {
   dCondDT.Clear();
   const double dCondDT_scalar =
-      consolidation_->EvaluateDerivative(currentTemperature, currentGp, params_->conductfunct_);
+      consolidation_->EvaluateDerivative(currentTemperature_, currentGp_, params_->conductfunct_);
   for (unsigned i = 0; i < nsd; ++i) dCondDT(i, i) = dCondDT_scalar;
 }
 
