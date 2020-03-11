@@ -24,6 +24,7 @@
 #include "../drt_mat/robinson.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_mat/trait_thermo_solid.H"
 
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |
@@ -633,7 +634,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     //============================================================================
     case calc_struct_update_istep:
     {
-      if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+      if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant or
+          Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false) != Teuchos::null)
       {
         std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
         if (discretization.HasState(1, "temperature"))
@@ -691,12 +693,22 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           LINALG::Matrix<1, 1> NT(false);
           NT.MultiplyTN(shapefunct, etemp);
 
-          Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-              Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-          // fixme remove when heat integration is moved to own class
-          if (thrstvk->Consolidation() != Teuchos::null)
-            thrstvk->Consolidation()->SetFunct(shapefunct);
-          thrstvk->Update(NT(0, 0), MapMyGpToSoHex8(gp));
+          if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+          {
+            Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
+                Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
+            // fixme remove when heat integration is moved to own class
+            if (thrstvk->Consolidation() != Teuchos::null)
+              thrstvk->Consolidation()->SetFunct(shapefunct);
+            thrstvk->Update(NT(0, 0), MapMyGpToSoHex8(gp));
+          }
+          else
+          {
+            Teuchos::RCP<MAT::TRAIT::ThermoSolid> mat =
+                Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+            mat->Reinit(nullptr, nullptr, NT(0), MapMyGpToSoHex8(gp));
+            mat->CommitCurrentState();
+          }
         }
       }
 
@@ -1478,8 +1490,28 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+    if (thermoSolidMaterial != Teuchos::null)
+    {
+      LINALG::Matrix<numstr_, 1> glstrain(false);
+      glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
+      glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
+      glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
+      glstrain(3) = cauchygreen(0, 1);  // Voigt notation
+      glstrain(4) = cauchygreen(1, 2);
+      glstrain(5) = cauchygreen(2, 0);
+
+      LINALG::Matrix<1, 1> NT(false);
+      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), MapMyGpToSoHex8(gp));
+      // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
+      // with shape functions)
+      thermoSolidMaterial->GetdSdT(&ctemp);
+    }
+
     // default: material call in structural function is purely deformation dependent
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
+    else if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
@@ -2142,6 +2174,16 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Materialize(
 #ifdef DEBUG
   if (!couplstress) dserror("No stress vector supplied");
 #endif
+
+  // backwards compatibility: not all materials use the new interface
+  Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
+      Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+  if (thermoSolidMaterial != Teuchos::null)
+  {
+    // new interface already includes temperature terms in stress evaluation
+    // no additive splitting into stress and couplstress -> nothing to do here
+    return;
+  }
 
   // All materials that have a pure LINALG::Matrix
   // interface go to the material law here.

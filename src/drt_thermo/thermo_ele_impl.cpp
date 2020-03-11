@@ -40,6 +40,7 @@
 #include "thermo_ele_action.H"
 
 #include "../drt_tsi/tsi_defines.H"
+#include "../drt_mat/trait_thermo_solid.H"
 
 
 /*----------------------------------------------------------------------*
@@ -836,7 +837,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nen_ * numdofpernode_, 1> econd(elevec1_epetra.A(), true);  // view
     LINALG::Matrix<nen_ * numdofpernode_, 1> ecapa(elevec2_epetra.A(), true);  // view
 
-    Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
+    auto mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
     mat->NodalConductivityCapacity(etempn_, econd, ecapa);
 
     // divide out number of node adjacent elements to remove assembly
@@ -929,24 +930,30 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     // call material specific update
     Teuchos::RCP<MAT::Material> material = ele->Material();
-    if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
-    {
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-      if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+    // we have to have a thermo-capable material here -> throw error if not
+    Teuchos::RCP<MAT::TRAIT::Thermo> thermoMat =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(material, true);
 
-      // --------------------------------------- loop over Gauss Points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+    // --------------------------------------- loop over Gauss Points
+    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    {
+      EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
+      LINALG::Matrix<1, 1> temp(false);
+      temp.MultiplyTN(funct_, etempn_);
+      const double temperature = temp(0, 0);
+
+      // fixme remove when heat integration is moved to own class
+      if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
       {
-        EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
-        LINALG::Matrix<1, 1> temp(false);
-        temp.MultiplyTN(funct_, etempn_);
-        const double temperature = temp(0, 0);
-        Teuchos::RCP<MAT::FourierVar> fouriermat =
-            Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material, true);
-        // fixme remove when heat integration is moved to own class
+        auto fouriermat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material, true);
         fouriermat->Consolidation()->SetFunct(funct_);
-        fouriermat->Update(temperature, iquad);
       }
+
+      thermoMat->Reinit(temperature, iquad);
+      thermoMat->CommitCurrentState();
 
     }  // -------------------------------- end loop over Gauss Points
   }
@@ -955,12 +962,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   // allowing the predictor TangTemp in .dat --> can be decisive in compressible case!
   else if (action == THR::calc_thermo_reset_istep)
   {
-    if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
-    {
-      Teuchos::RCP<MAT::FourierVar> mat =
-          Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-      mat->Consolidation()->ResetLatentHeatLastStep();
-    }
+    // we have to have a thermo-capable material here -> throw error if not
+    Teuchos::RCP<MAT::TRAIT::Thermo> thermoMat =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(ele->Material(), true);
+    thermoMat->ResetCurrentState();
   }
 
   //============================================================================
@@ -1377,7 +1382,24 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
     // for TSI validation with Tanaka: use T_0 here instead of current temperature!
     NT(0, 0) = thrstvk->InitTemp;
 #endif  // COUPLEINITTEMPERATURE
-    if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
+
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolid =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
+    if (thermoSolid != Teuchos::null)
+    {
+      LINALG::Matrix<6, 1> dctemp_dT(false);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
+      thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
+
+      LINALG::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
+      Ndctemp_dT.MultiplyNT(funct_, dctemp_dT);
+
+      LINALG::Matrix<nen_, 1> Ndctemp_dTBv(false);
+      Ndctemp_dTBv.Multiply(Ndctemp_dT, strainvel);
+
+      Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
+    }
+    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
@@ -1628,7 +1650,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // current element temperatures
     NT.MultiplyTN(funct_, etempn_);  // (1x8)(8x1)= (1x1)
 
-    if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
+
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolid =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
+    if (thermoSolid != Teuchos::null)
+    {
+      LINALG::Matrix<6, 1> dctemp_dT(false);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
+      thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
+    }
+    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
@@ -1916,6 +1947,35 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       std::cout << "element No. = " << ele->Id()
                 << " CalculateCouplNlnFintCondCapa PRIOR update: econd k_TT" << *econd << std::endl;
 #endif  // THRASOUTPUT
+
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolid =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
+    if (thermoSolid != Teuchos::null)
+    {
+      LINALG::Matrix<6, 1> dctemp_dT(false);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
+      thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
+      // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
+      double dctemp_dTCdot = 0.0;
+      for (int i = 0; i < 6; ++i)
+        dctemp_dTCdot += dctemp_dT(i, 0) * (1 / 2.0) * Cratevct(i, 0);  // (6x1)(6x1)
+
+      LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
+      Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
+      Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
+
+      // ------------------------------------ special terms due to material law
+      // if young's modulus is temperature-dependent, E(T), additional terms arise
+      // for the stiffness matrix k_TT
+      if (econd != NULL)
+      {
+        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
+        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
+        //
+        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
+        econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
+      }  // (econd != NULL)
+    }
 
     // ------------------------------------------------ call the material
     if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
@@ -2388,8 +2448,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       }
     }  // end DCinv_dd
 
+    Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolid =
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
+    if (thermoSolid != Teuchos::null)
+    {
+      LINALG::Matrix<6, 1> dctemp_dT(false);
+      thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
+      thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
+    }
+
     // ----------------------------------------------- call structural material
-    if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
+    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       // C_T = N_T . T . m_0 . I
       // scalar-valued current element temperature T_{n+1}
@@ -3344,38 +3413,26 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
 {
-  // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  auto material = ele->Material();
 
-  // get Fourier´s law (for "ordinary" thermal problem)
-  if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+  if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
   {
-    const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
-    actmat->Evaluate(gradtemp_, cmat_, heatflux_);
-    capacoeff_ = actmat->Capacity();
-  }
-  // Fourier's law for temp-dependent conductivity problems
-  else if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
-  {
-    // calculate the current temperature at the integration point
-    LINALG::Matrix<1, 1> temp;
-    temp.MultiplyTN(1.0, funct_, etempn_, 0.0);
-    MAT::FourierVar* actmat = static_cast<MAT::FourierVar*>(material.get());
+    // specific operation only for heat integration method
+    auto actmat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material);
     actmat->Consolidation()->SetFunct(funct_);
-    actmat->Evaluate(gradtemp_, cmat_, heatflux_, temp(0), gp);
-    capacoeff_ = actmat->Capacity(temp(0), gp);
-    // get derivative of conductivity
-    actmat->GetCmat_T(gradtemp_, dercmat_, temp(0), gp);
-    // get derivative of capacity
-    dercapa_ = actmat->Capacity_T(temp(0), gp);
-  }
-  else
-  {
-    dserror("Material type is not supported");
   }
 
-  return;
-}  // TemperImpl::Materialize
+  // calculate the current temperature at the integration point
+  LINALG::Matrix<1, 1> temp;
+  temp.MultiplyTN(1.0, funct_, etempn_, 0.0);
+
+  auto thermoMaterial = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(material);
+  thermoMaterial->Reinit(temp(0), gp);
+  thermoMaterial->Evaluate(gradtemp_, cmat_, heatflux_);
+  capacoeff_ = thermoMaterial->Capacity();
+  thermoMaterial->ConductivityDerivT(dercmat_);
+  dercapa_ = thermoMaterial->CapacityDerivT();
+}
 
 
 /*----------------------------------------------------------------------*

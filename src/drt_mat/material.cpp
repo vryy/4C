@@ -17,6 +17,7 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
+#include "thermomech_threephase.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
 #include "crystal_plasticity.H"
@@ -197,6 +198,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ThermoStVenantKirchhoff(curmat));
       MAT::PAR::ThermoStVenantKirchhoff* params =
           static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_thermomechthreephase:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::ThermoMechThreePhase(curmat));
+      auto params = dynamic_cast<MAT::PAR::ThermoMechThreePhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_thermopllinelast:

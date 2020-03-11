@@ -88,6 +88,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermomech_threephase.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
@@ -129,6 +130,7 @@
 #include "../drt_mat/viscoelasthyper.H"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/fouriervar.H"
 #include "../drt_mat/membrane_elasthyper.H"
 #include "../drt_mat/membrane_active_strain.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
@@ -338,8 +340,9 @@ std::string DRT::ParObjectList()
     << MAT::FluidPoroSingleReactionType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseReactionsType::Instance().Name() << " "
-    << MAT::FourierIsoType::Instance().Name() << " " << MAT::GrowthVolumetricType::Instance().Name()
-    << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
+    << MAT::FourierIsoType::Instance().Name() << " " << MAT::FourierVarType::Instance().Name()
+    << " " << MAT::GrowthVolumetricType::Instance().Name() << " "
+    << MAT::Membrane_ElastHyperType::Instance().Name() << " "
     << MAT::Membrane_ActiveStrainType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
     << MAT::Mixture_ElastHyperType::Instance().Name() << " "
@@ -363,6 +366,7 @@ std::string DRT::ParObjectList()
     << MAT::ScatraMatMultiPoroSolidType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroTemperatureType::Instance().Name() << " "
     << MAT::StVenantKirchhoffType::Instance().Name() << " "
+    << MAT::ThermoMechThreePhaseType::Instance().Name() << " "
     << MAT::SutherlandType::Instance().Name() << " " << MAT::TempDepWaterType::Instance().Name()
     << " " << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
     << MAT::ThermoPlasticLinElastType::Instance().Name() << " "

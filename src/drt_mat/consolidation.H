@@ -352,7 +352,7 @@ namespace MAT
     /// This is the main method to be used by classes holding an instance of Consolidation.
     /// Based on temperature and GP history the two functions are interpolated.
     double EvaluateTempDependentFunction(const double temperature,  ///< temperature at GP
-        const int gp,  ///< current GP to select internal phase information
+        const unsigned int gp,  ///< current GP to select internal phase information
         const std::vector<int>
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     );
@@ -363,7 +363,7 @@ namespace MAT
     /// Based on temperature and GP history the correct derivative of the interpolation is
     /// calculated.
     double EvaluateTempDependentDerivative(const double temperature,  ///< temperature at GP
-        const int gp,  ///< current GP to select internal phase information
+        const unsigned int gp,  ///< current GP to select internal phase information
         const std::vector<int>
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     );
@@ -386,7 +386,7 @@ namespace MAT
     //!
     //! \note new wrapper until refactored
     double EvaluateFunction(const double temperature,  ///< temperature at GP
-        const int gp,  ///< current GP to select internal phase information
+        const unsigned int gp,  ///< current GP to select internal phase information
         const std::vector<int>
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     )
@@ -404,7 +404,7 @@ namespace MAT
 
     // new wrapper
     double EvaluateDerivative(const double temperature,  ///< temperature at GP
-        const int gp,  ///< current GP to select internal phase information
+        const unsigned gp,  ///< current GP to select internal phase information
         const std::vector<int>
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     )

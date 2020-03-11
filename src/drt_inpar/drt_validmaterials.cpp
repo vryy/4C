@@ -961,6 +961,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ThermoMech_ThreePhase",
+        "Thermo mechanical material with three phases with thermo St.Venant--Kirchhoff and Fourier "
+        "laws",
+        INPAR::MAT::m_thermomechthreephase));
+
+    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus", 3);
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "mass density");
+    AddNamedIntVector(
+        m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion", 3);
+    AddNamedReal(m, "THETAREF", "reference temperature for thermal strain");
+    AddNamedInt(m, "THERMOMAT", "phase dependent thermo material");
+    AddNamedInt(m, "CONSOLMAT", "consolidation material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
   /*----------------------------------------------------------------------*/
   // Finite strain superelasticity of shape memory alloys
   {
@@ -2117,7 +2135,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         m, "CAPAFUNCT", "functions for capacity, first for powder-melt, second for solid-melt", 3);
     AddNamedIntVector(m, "CONDUCTFUNCT",
         "functions for thermal conductivity, first for powder-melt, second for solid-melt", 3);
-    AddNamedInt(m, "CONSOLMAT", "reference to material handling consolidation");
+    AddNamedInt(m, "CONSOLMAT",
+        "reference to material handling consolidation, -1 if injected by other material");
 
     AppendMaterialDefinition(matlist, m);
   }

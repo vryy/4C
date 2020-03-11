@@ -7,7 +7,6 @@ pseudo 1D melting of artificial material
 - distributed heat source
 - melt region growing from left to right
 - latent heat considered with apparent capacity method
-- smoothed parameter interpolation based on temperature
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10
 //NODES                         44
@@ -112,10 +111,10 @@ FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 0.556
 ----------------------------------------------------------------------FUNCT6
 COMPONENT                       0 FUNCTION 20000*(0.5-x)
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  1.99462527522490802e+02 TOLERANCE 1e-11
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.64757707973574298e+02 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.37702625481640979e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.74214531451486216e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  1.99462527522632314e+02 TOLERANCE 1e-11
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.64757707973687246e+02 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.37702625486249701e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.74214531400378547e+01 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
