@@ -8,14 +8,8 @@
 \maintainer Sebastian Proell
 */
 
-/*----------------------------------------------------------------------*
- | definitions                                               dano 08/09 |
- *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
-/*----------------------------------------------------------------------*
- | headers                                                   dano 08/09 |
- *----------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -42,10 +36,6 @@
 #include "../drt_tsi/tsi_defines.H"
 #include "../drt_mat/trait_thermo_solid.H"
 
-
-/*----------------------------------------------------------------------*
- |                                                           dano 09/09 |
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
   switch (ele->Shape())
@@ -74,10 +64,6 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
     {
       return TemperImpl<DRT::Element::wedge6>::Instance();
     }
-      /*  case DRT::Element::wedge15 :
-        {
-          return TemperImpl<DRT::Element::wedge15>::Instance();
-        } */
     case DRT::Element::pyramid5:
     {
       return TemperImpl<DRT::Element::pyramid5>::Instance();
@@ -98,18 +84,10 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
     {
       return TemperImpl<DRT::Element::tri3>::Instance();
     }
-      /*  case DRT::Element::tri6 :
-        {
-          return TemperImpl<DRT::Element::tri6>::Instance();
-        }*/
     case DRT::Element::line2:
     {
       return TemperImpl<DRT::Element::line2>::Instance();
-    } /*
-     case DRT::Element::line3 :
-     {
-       return TemperImpl<DRT::Element::line3>::Instance();
-     }*/
+    }
     case DRT::Element::nurbs27:
     {
       return TemperImpl<DRT::Element::nurbs27>::Instance();
@@ -119,34 +97,29 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
           DistypeToString(ele->Shape()).c_str(), ele->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 
 }  // TemperImperInterface::Impl()
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(bool create)
 {
   static TemperImpl<distype>* instance;
   if (create)
   {
-    if (instance == NULL)
+    if (instance == nullptr)
     {
       instance = new TemperImpl<distype>();
     }
   }
   else
   {
-    if (instance != NULL) delete instance;
-    instance = NULL;
+    if (instance != nullptr) delete instance;
+    instance = nullptr;
   }
   return instance;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Done()
 {
@@ -155,14 +128,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::Done()
   Instance(false);
 }
 
-
-/*----------------------------------------------------------------------*
- | initialisation of the data with respect to the declaration           |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
     : etempn_(false),
-      ecapa_(true),
       xyze_(true),
       radiation_(false),
       xsi_(true),
@@ -181,13 +149,8 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
       plasticmat_(false)
 
 {
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate for multiple dofsets                             dano 02/10 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -198,25 +161,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     Epetra_SerialDenseVector& elevec3_epetra   // capacity vector
 )
 {
-  // what actions are available
-  // (action == "calc_thermo_fint")
-  // (action == "calc_thermo_fintcapa")
-  // (action == "calc_thermo_finttang")
-  // (action == "calc_thermo_heatflux")
-  // (action == "postproc_thermo_heatflux")
-  // (action == "calc_thermo_phase")
-  // (action == "integrate_shape_functions")
-  // (action == "calc_thermo_update_istep")
-  // (action == "calc_thermo_reset_istep")
-  // (action == "calc_thermo_energy")
-  // (action == "calc_thermo_coupltang")
-  // action == "calc_thermo_fintcond"
-
-  // prepare nurbs
   PrepareNurbsEval(ele, discretization);
 
-  const THR::Action action = DRT::INPUT::get<THR::Action>(params, "action");
-
+  const auto action = DRT::INPUT::get<THR::Action>(params, "action");
 
   // check length
   if (la[0].Size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
@@ -250,9 +197,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     etemp_.Update(etemp);                                                 // copy
   }
 
-  // initialise capacity matrix
-  ecapa_.Clear();
-
   double time = 0.0;
 
   if (action != THR::calc_thermo_energy)
@@ -278,11 +222,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
       plasticmat_ = true;
   }  // (la.Size > 1)
 
-  // if ele is a thermo element --> the THR element method KinType() exists
-  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
-  // kintype = 0: INPAR::STR::kinem_linear or purely thermal problem
-  // kintype = 1: INPAR::STR::kinem_nonlinearTotLag
-  const INPAR::STR::KinemType kintype = therm->KinType();
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
@@ -297,74 +236,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // etang: tangent of thermal problem.
     // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
-    // default: purely thermal / geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
-    {
-      CalculateFintCondCapa(ele, time, &etang,
-          NULL,  // capa matric
-          NULL,  // capa linearization
-          &efint, NULL, NULL, NULL);
-    }
-
-    // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
-    // the coupling field is not yet known. Pass coupling vectors filled with zeros
-    // the size of the vectors is the length of the location vector*nsd_
-    std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
-    std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
-
-    // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if (la.Size() > 1)
-    {
-      // and now get the current displacements/velocities
-      if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
-      {
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
-
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
-
-        // if there is a displacement/velocity vector
-        // --> calculate coupling term
-
-#ifndef MonTSIwithoutSTR
-      }  // disp!=0 & vel!=0
-    }    // la.Size>1
-
-    // geometrically linear TSI problem
-    if ((kintype == INPAR::STR::kinem_linear) and (la.Size() > 1))
-    {
-      CalculateCouplFintCond(ele, time, mydisp, myvel, &etang, &efint, NULL, NULL, NULL, params);
-
-      // if structural material is plastic --> calculate the mechanical dissipation terms
-      // A_k * a_k - (d^2 psi / dT da_k) * a_k'
-      if (plasticmat_) CalculateCouplDissipation(ele, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
-
-    // geometrically nonlinear TSI problem
-    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
-    {
-      CalculateCouplNlnFintCondCapa(ele, time, mydisp, myvel, &etang, NULL, NULL, &efint, NULL,
-          NULL, INPAR::THR::heatflux_none, INPAR::THR::tempgrad_none,
-          params);  // action == THR::calc_thermo_fintcond
-
-#ifdef TSISLMFDCHECK
-      FDCheckCouplNlnFintCondCapa(ele, time, mydisp, myvel, &etang, &efint, params);
-#endif
-
-      if (plasticmat_) CalculateCouplNlnDissipation(ele, mydisp, &etang, &efint, params);
-    }   // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-#endif  // MonTSIwithoutSTR
-
-  }  // action == "calc_thermo_fintcond"
-
+    EvaluateTangCapaFint(ele, time, discretization, la, &etang, nullptr, nullptr, &efint, params);
+  }
   //============================================================================
   // calculate only the internal force F_int, needed for restart
   else if (action == THR::calc_thermo_fint)
@@ -373,76 +246,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // etang, ecapa, efext, efcap not needed for this action
 
-    // purely thermal / geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
-    {
-      CalculateFintCondCapa(ele, time, NULL, NULL, NULL, &efint, NULL, NULL, NULL);
-    }
-
-    // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
-    // the coupling field is not yet known. Pass coupling vectors filled with zeros
-    // the size of the vectors is the length of the location vector*nsd_
-    std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
-    std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
-
-    // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if (la.Size() > 1)
-    {
-      // and now get the current displacements/velocities
-      if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
-      {
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
-
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        // extract the velocities
-        DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
-
-        // if there is a displacement/velocity vector available go on here
-        // --> calculate coupling
-
-#ifndef MonTSIwithoutSTR
-
-      }  // disp!=0 & vel!=0
-    }    // end la.Size>1
-
-    // geometrically linear TSI problem
-    if ((kintype == INPAR::STR::kinem_linear) and (la.Size() > 1))
-    {
-      CalculateCouplFintCond(ele, time, mydisp, myvel, NULL, &efint, NULL, NULL, NULL, params);
-
-      if (plasticmat_) CalculateCouplDissipation(ele, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
-
-    // geometrically nonlinear TSI problem
-    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
-    {
-      CalculateCouplNlnFintCondCapa(ele,  // current element
-          time,                           // current time
-          mydisp,                         // current displacements
-          myvel,                          // current velocities
-          NULL,                           // element conductivity matrix
-          NULL,                           // element capacity matrix
-          NULL,                           // capacity linearization
-          &efint,                         // element internal force vector
-          NULL,                           // heat flux at GP
-          NULL,                           // temperature gradients at GP
-          INPAR::THR::heatflux_none,      // output option for q
-          INPAR::THR::tempgrad_none,      // output option for grad T
-          params);                        // action == THR::calc_thermo_fint
-
-      if (plasticmat_) CalculateCouplNlnDissipation(ele, mydisp, NULL, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-
-#endif  // MonTSIwithoutSTR
-
-  }  // action == THR::calc_thermo_fint
+    EvaluateTangCapaFint(ele, time, discretization, la, nullptr, nullptr, nullptr, &efint, params);
+  }
 
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
@@ -455,76 +260,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // etang, efext, efcap not needed for this action
 
-    // default: purely thermal / geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
-    {
-      CalculateFintCondCapa(ele, time, NULL,
-          &ecapa,  // delivers capacity matrix
-          NULL,    // capa linearization
-          &efint, NULL, NULL, NULL);
-    }
-
-    // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
-    // the coupling field is not yet known. Pass coupling vectors filled with zeros
-    // the size of the vectors is the length of the location vector*nsd_
-    std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
-    std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
-
-    // if it's a TSI problem with displacementcoupling_ --> go on here!
-
-    // and now get the current displacements/velocities
-    if (la.Size() > 1)
-    {
-      // and now get the current displacements/velocities
-      if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
-      {
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
-
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        // extract the velocities
-        DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
-
-        // if there is a strucutural vector available go on here
-        // --> calculate coupling
-
-      }  // (disp != 0) and (vel != 0)
-    }    // (la.Size > 1)
-
-    // geometrically linear TSI problem
-    if ((kintype == INPAR::STR::kinem_linear) and (la.Size() > 1))
-    {
-      CalculateCouplFintCond(ele, time, mydisp, myvel, NULL, &efint, NULL, NULL, NULL, params);
-
-      if (plasticmat_)
-      {
-        CalculateCouplDissipation(ele, &efint, params);
-      }
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
-
-    // geometrically nonlinear TSI problem
-    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
-    {
-      CalculateCouplNlnFintCondCapa(ele, time, mydisp, myvel, NULL,
-          &ecapa,  // element capacity matrix
-          NULL,
-          &efint,  // element internal force vector
-          NULL, NULL, INPAR::THR::heatflux_none, INPAR::THR::tempgrad_none,
-          params);  // action == THR::calc_thermo_fintcapa
-
-      if (plasticmat_) CalculateCouplNlnDissipation(ele, mydisp, NULL, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    EvaluateTangCapaFint(ele, time, discretization, la, nullptr, &ecapa, nullptr, &efint, params);
 
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+      const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
           params, "time integrator", INPAR::THR::dyna_undefined);
       switch (timint)
       {
@@ -547,26 +288,24 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           dserror("Undefined time integration scheme for thermal problem!");
           break;
         }
-      }  // end of switch(timint)
-    }    // end of lumping
-  }      // action == THR::calc_thermo_fintcapa
+      }
+    }
+  }
 
   //============================================================================
   // called from overloaded function ApplyForceTangInternal(), exclusively for
   // dynamic-timint (as OST, GenAlpha)
   // calculate effective dynamic tangent matrix K_{T, effdyn},
-  // i.e. sum consistent capacity matrix C and scaled conductivity matrix
+  // i.e. sum consistent capacity matrix C + its linearization and scaled conductivity matrix
   // --> for dynamic case
   else if (action == THR::calc_thermo_finttang)
   {
     // set views
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
         elemat1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
-        elemat2_epetra.A(), true);                                             // view only!
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(true);
     LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(elevec3_epetra.A(), true);  // view only!
-    // efext not needed for this action
 
     // etang: effective dynamic tangent of thermal problem
     // --> etang == k_{T,effdyn}^{(e)} = timefac_capa ecapa + timefac_cond econd
@@ -577,90 +316,31 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // helper matrix to store partial dC/dT*(T_{n+1} - T_n) linearization of capacity
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapalin(true);
 
-    // purely thermal / geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
-    {
-      CalculateFintCondCapa(ele, time, &etang, &ecapa_, &ecapalin, &efint, NULL, NULL, NULL);
-    }
+    EvaluateTangCapaFint(ele, time, discretization, la, &etang, &ecapa, &ecapalin, &efint, params);
 
-    // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
-    // the coupling field is not yet known. Pass coupling vectors filled with zeros
-    // the size of the vectors is the length of the location vector*nsd_
-    std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
-    std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
-
-    // if it's a TSI problem and if there are current displacements/velocities
-    if (la.Size() > 1)
-    {
-      if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
-      {
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
-
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        // extract the velocities
-        DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
-
-        // if there is a strucutural vector available go on here
-        // --> calculate coupling
-
-#ifndef MonTSIwithoutSTR
-
-      }  // disp!=0 & vel!=0
-    }    // la.Size>1
-
-    // geometrically linear TSI problem
-    if ((kintype == INPAR::STR::kinem_linear) and (la.Size() > 1))
-    {
-      CalculateCouplFintCond(ele, time, mydisp, myvel, &etang, &efint, NULL, NULL, NULL, params);
-
-      if (plasticmat_) CalculateCouplDissipation(ele, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
-
-    // geometrically nonlinear TSI problem
-    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
-    {
-      CalculateCouplNlnFintCondCapa(ele,  // current element
-          time,                           // current time
-          mydisp,                         // current displacements
-          myvel,                          // current velocities
-          &etang,                         // element conductivity matrix
-          &ecapa_,                        // element capacity matrix
-          &ecapalin,  // partial derivatice dC/dT, relevant for non-constant capacity function
-          &efint,     // element internal force vector
-          NULL,       // heat flux at GP
-          NULL,       // temperature gradients at GP
-          INPAR::THR::heatflux_none,  // output option for q
-          INPAR::THR::tempgrad_none,  // output option for grad T
-          params);                    // action == THR::calc_thermo_finttang
 
 #ifdef TSISLMFDCHECK
-      FDCheckCapalin(ele, time, mydisp, myvel, &ecapa_, &ecapalin, params);
+    FDCheckCapalin(ele, time, mydisp, myvel, &ecapa, &ecapalin, params);
 #endif
-
-      if (plasticmat_) CalculateCouplNlnDissipation(ele, mydisp, &etang, &efint, params);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-
-#endif  // MonTSIwithoutSTR
 
     if (params.get<bool>("lump capa matrix", false))
     {
-      CalculateLumpMatrix(&ecapa_);
+      CalculateLumpMatrix(&ecapa);
     }
-    // copy capacity matrix if available
-    if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+
+    // explicitly insert capacity matrix into corresponding Epetra matrix if existing
+    if (elemat2_epetra.A() != nullptr)
+    {
+      LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_export(
+          elemat2_epetra.A(), true);  // view only!
+      ecapa_export.Update(ecapa);
+    }
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACCORDING TO TIME INTEGRATOR
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+    const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
         params, "time integrator", INPAR::THR::dyna_undefined);
     switch (timint)
     {
@@ -680,15 +360,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         // etang = 1/Dt . ecapa + theta . econd
         // fac_capa = 1/Dt
         // fac_cond = theta
-        etang.Update(1.0 / stepsize, ecapa_, theta);
+        etang.Update(1.0 / stepsize, ecapa, theta);
         // add additional linearization term from variable capacity
         // + 1/Dt. ecapalin
         etang.Update(1.0 / stepsize, ecapalin, 1.0);
 
         // ---------------------------------------------------------- efcap
         // fcapn = ecapa(T_{n+1}) .  (T_{n+1} -T_n) /Dt
-        efcap.Multiply(ecapa_, etempn_);
-        efcap.Multiply(-1.0, ecapa_, etemp_, 1.0);
+        efcap.Multiply(ecapa, etempn_);
+        efcap.Multiply(-1.0, ecapa, etemp_, 1.0);
         efcap.Scale(1.0 / stepsize);
         break;
       }  // ost
@@ -707,7 +387,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         // fac_capa = alpham/(gamma . Dt)
         // fac_cond = alphaf
         double fac_capa = alpham / (gamma * stepsize);
-        etang.Update(fac_capa, ecapa_, alphaf);
+        etang.Update(fac_capa, ecapa, alphaf);
 
         // ---------------------------------------------------------- efcap
         // efcap = ecapa . R_{n+alpham}
@@ -720,7 +400,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           DRT::UTILS::ExtractMyValues(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
           LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(&(myratem[0]), true);  // view only!
-          efcap.Multiply(ecapa_, eratem);
+          efcap.Multiply(ecapa, eratem);
         }  // ratem != Teuchos::null
         break;
 
@@ -751,74 +431,36 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nquad_, nsd_> eheatflux(false);
     LINALG::Matrix<nquad_, nsd_> etempgrad(false);
 
+    // if ele is a thermo element --> the THR element method KinType() exists
+    auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
+    const INPAR::STR::KinemType kintype = therm->KinType();
     // thermal problem or geometrically linear TSI problem
     if (kintype == INPAR::STR::kinem_linear)
     {
-      CalculateFintCondCapa(ele, time, NULL, NULL, NULL, NULL, NULL, &eheatflux, &etempgrad);
+      LinearHeatfluxTempgrad(ele, &eheatflux, &etempgrad);
     }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
     if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
-      // specific choice of heat flux / temperature gradient
-      const INPAR::THR::HeatFluxType ioheatflux = DRT::INPUT::get<INPAR::THR::HeatFluxType>(
-          params, "ioheatflux", INPAR::THR::heatflux_none);
-      const INPAR::THR::TempGradType iotempgrad = DRT::INPUT::get<INPAR::THR::TempGradType>(
-          params, "iotempgrad", INPAR::THR::tempgrad_none);
-
       // if it's a TSI problem and there are current displacements/velocities
       if (la.Size() > 1)
       {
         if ((discretization.HasState(1, "displacement")) and
             (discretization.HasState(1, "velocity")))
         {
-          // get the displacements
-          std::vector<double> mydisp((la[1].lm_).size());
-          Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-          if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-          DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+          std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
+          std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
 
-          // get the velocities
-          std::vector<double> myvel((la[1].lm_).size());
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-          DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
+          ExtractDispVel(discretization, la, mydisp, myvel);
 
-          CalculateCouplNlnFintCondCapa(ele,  // current element
-              time,                           // current time
-              mydisp,                         // current displacements
-              myvel,                          // current velocities
-              NULL,                           // element conductivity matrix
-              NULL,                           // element capacity matrix
-              NULL,                           // capacity linearization
-              NULL,                           // element internal force vector
-              &eheatflux,                     // heat flux at GP
-              &etempgrad,                     // temperature gradients at GP
-              ioheatflux,                     // output option for q
-              iotempgrad,                     // output option for grad T
-              params);                        // action == THR::calc_thermo_heatflux
-        }                                     // disp!=0 & vel!=0
-      }                                       // la.Size>1
-    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+          NonlinearHeatfluxTempgrad(ele, mydisp, myvel, &eheatflux, &etempgrad, params);
+        }
+      }
+    }
 
-    // scale the heatflux with (-1)
-    // for the calculation the heatflux enters as positive value, but
-    // q = -k . (grad T)
-    eheatflux.Scale(-1);
-
-    // store in
-    DRT::PackBuffer hfdata;
-    ParObject::AddtoPack(hfdata, eheatflux);
-    hfdata.StartPacking();
-    ParObject::AddtoPack(hfdata, eheatflux);
-    std::copy(hfdata().begin(), hfdata().end(), std::back_inserter(*heatfluxdata));
-
-    DRT::PackBuffer tgdata;
-    ParObject::AddtoPack(tgdata, etempgrad);
-    tgdata.StartPacking();
-    ParObject::AddtoPack(tgdata, etempgrad);
-    std::copy(tgdata().begin(), tgdata().end(), std::back_inserter(*tempgraddata));
-
+    CopyMatrixIntoCharVector(*heatfluxdata, eheatflux);
+    CopyMatrixIntoCharVector(*tempgraddata, etempgrad);
   }  // action == THR::calc_thermo_heatflux
 
   //============================================================================
@@ -881,7 +523,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // extrapolate heatflux q and temperature gradient gradtemp stored at GP
     if ((heatfluxtype == "ndxyz") or (heatfluxtype == "cxyz_ndxyz"))
     {
-      processed = processed or true;
+      processed = true;
       // extrapolate heatfluxes/temperature gradients at Gauss points to nodes
       // and store results in
       ExtrapolateFromGaussPointsToNodes(ele, gpheatflux, efluxx, efluxy, efluxz);
@@ -891,7 +533,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // centered
     if ((heatfluxtype == "cxyz") or (heatfluxtype == "cxyz_ndxyz"))
     {
-      processed = processed or true;
+      processed = true;
 
       Teuchos::RCP<Epetra_MultiVector> eleheatflux =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("eleheatflux");
@@ -1016,50 +658,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         elemat1_epetra.A(), true);
 
     // if it's a TSI problem and there are the current displacements/velocities
-    if (la.Size() > 1)
-    {
-      // and now get the current displacements/velocities
-      if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
-      {
-        std::vector<double> mydisp((la[1].lm_).size());
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
-
-        std::vector<double> myvel((la[1].lm_).size());
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        // extract the velocities
-        DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
-
-        // if there is a strucutural vector available go on here
-        // --> calculate coupling stiffness term in case of monolithic TSI
-
-        // geometrically linear TSI problem
-        if (kintype == INPAR::STR::kinem_linear)
-        {
-          CalculateCouplCond(ele, mydisp, myvel, &etangcoupl, params);
-
-          // calculate Dmech_d
-          if (plasticmat_) CalculateCouplDissipationCond(ele, &etangcoupl, params);
-          // --> be careful: so far only implicit Euler for time integration
-          //                 of the evolution equation available!!!
-        }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
-
-        // geometrically nonlinear TSI problem
-        if (kintype == INPAR::STR::kinem_nonlinearTotLag)
-        {
-          CalculateCouplNlnCond(ele, mydisp, myvel, &etangcoupl, params);
-
-          // calculate Dmech_d
-          if (plasticmat_)
-            CalculateCouplNlnDissipationCond(ele, mydisp, myvel, &etangcoupl, params);
-        }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-      }    // disp!=0 & vel!=0
-    }      // la.Size>1
+    EvaluateCoupledTang(ele, discretization, la, &etangcoupl, params);
 
   }  // action == "calc_thermo_coupltang"
   //============================================================================
@@ -1089,15 +688,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 #endif  // THRASOUTPUT
 
   return 0;
+}
 
-}  // Evaluate()
-
-
-/*----------------------------------------------------------------------*
- | evaluate the external volume load                        bborn 09/09 |
- | condition corresponding to radiation r^ over dv with                 |
- | r^ = rho . r = scalar, i.e. even for geo nln: no difference          |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1121,7 +713,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     etempn_.Update(etemp);                                                 // copy
   }
   // check for the action parameter
-  const THR::Action action = DRT::INPUT::get<THR::Action>(params, "action");
+  const auto action = DRT::INPUT::get<THR::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
@@ -1132,7 +724,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     // difference between geometrically (non)linear TSI
 
     // we prescribe a scalar value on the volume, constant for (non)linear analysis
-    CalculateFintCondCapa(ele, time, NULL, NULL, NULL, NULL, &efext, NULL, NULL);
+    EvaluateFext(ele, time, efext);
   }
   else
   {
@@ -1143,22 +735,110 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   return 0;
 }
 
-
-/*----------------------------------------------------------------------*
- | calculate system matrix and rhs r_T(T), k_TT(T) (public) g.bau 08/08 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
-    DRT::Element* ele,   // the element whose matrix is calculated
-    const double& time,  // current time
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-        ecapalin,                                     // linearization contribution of capacity
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  // external force
-    LINALG::Matrix<nquad_, nsd_>* eheatflux,          // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad           // temperature gradients at Gauss points
+void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, const double& time,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
+    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
+{
+  auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
+  const INPAR::STR::KinemType kintype = therm->KinType();
+
+  // initialise the vectors
+  // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+  // the coupling field is not yet known. Pass coupling vectors filled with zeros
+  // the size of the vectors is the length of the location vector*nsd_
+  std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
+  std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
+
+  // if it's a TSI problem with displacementcoupling_ --> go on here!
+  if (la.Size() > 1)
+  {
+    ExtractDispVel(discretization, la, mydisp, myvel);
+  }  // la.Size>1
+
+  // geometrically linear TSI problem
+  if ((kintype == INPAR::STR::kinem_linear))
+  {
+    // purely thermal contributions
+    LinearThermoContribution(ele, time, etang,
+        ecapa,     // capa matric
+        ecapalin,  // capa linearization
+        efint);
+
+    if (la.Size() > 1)
+    {
+      // coupled displacement dependent terms
+      LinearDispContribution(ele, time, mydisp, myvel, etang, efint, params);
+
+      // if structural material is plastic --> calculate the mechanical dissipation terms
+      // A_k * a_k - (d^2 psi / dT da_k) * a_k'
+      if (plasticmat_) LinearDissipationFint(ele, efint, params);
+    }
+  }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
+
+  // geometrically nonlinear TSI problem
+  else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
+  {
+    NonlinearThermoDispContribution(
+        ele, time, mydisp, myvel, etang, ecapa, ecapalin, efint, params);
+
+#ifdef TSISLMFDCHECK
+    FDCheckCouplNlnFintCondCapa(ele, time, mydisp, myvel, &etang, &efint, params);
+#endif
+
+    if (plasticmat_) NonlinearDissipationFintTang(ele, mydisp, etang, efint, params);
+  }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
+    Teuchos::ParameterList& params)
+{
+  auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
+  const INPAR::STR::KinemType kintype = therm->KinType();
+
+  if (la.Size() > 1)
+  {
+    std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
+    std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
+
+    ExtractDispVel(discretization, la, mydisp, myvel);
+
+    // if there is a strucutural vector available go on here
+    // --> calculate coupling stiffness term in case of monolithic TSI
+
+    // geometrically linear TSI problem
+    if (kintype == INPAR::STR::kinem_linear)
+    {
+      LinearCoupledTang(ele, mydisp, myvel, etangcoupl, params);
+
+      // calculate Dmech_d
+      if (plasticmat_) LinearDissipationCoupledTang(ele, etangcoupl, params);
+      // --> be careful: so far only implicit Euler for time integration
+      //                 of the evolution equation available!!!
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
+
+    // geometrically nonlinear TSI problem
+    if (kintype == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      NonlinearCoupledTang(ele, mydisp, myvel, etangcoupl, params);
+
+      // calculate Dmech_d
+      if (plasticmat_) NonlinearDissipationCoupledTang(ele, mydisp, myvel, etangcoupl, params);
+    }
+  }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
+    DRT::Element* ele,                               // the element whose matrix is calculated
+    const double& time,                              // current time
+    LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
 )
 {
   // get node coordinates
@@ -1179,54 +859,64 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // call routine for calculation of radiation in element nodes
     // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
     // ---------------------------------------------------------------------
-    if (efext != NULL)
-    {
-      Radiation(ele, time);
-    }
-    // get radiation in gausspoint
-    if (efext != NULL)
-    {
-      // fext = fext + N . r. detJ . w(gp)
-      // with funct_: shape functions, fac_:detJ . w(gp)
-      efext->MultiplyNN(fac_, funct_, radiation_, 1.0);
-    }
+    Radiation(ele, time);
+    // fext = fext + N . r. detJ . w(gp)
+    // with funct_: shape functions, fac_:detJ . w(gp)
+    efext.MultiplyNN(fac_, funct_, radiation_, 1.0);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate system matrix and rhs r_T(T), k_TT(T) (public) g.bau 08/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
+    DRT::Element* ele,   // the element whose matrix is calculated
+    const double& time,  // current time
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        ecapalin,                                    // linearization contribution of capacity
+    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint  // internal force
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+
+  // ------------------------------- integration loop for one element
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+  // ----------------------------------------- loop over Gauss Points
+  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
 
     // gradient of current temperature value
     // grad T = d T_j / d x_i = L . N . T = B_ij T_j
     gradtemp_.MultiplyNN(derxy_, etempn_);
 
-    // store the temperature gradient for postprocessing
-    if (etempgrad != NULL)
-      for (int idim = 0; idim < nsd_; ++idim)
-        // (8x3)                    (3x1)
-        (*etempgrad)(iquad, idim) = gradtemp_(idim);
-
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
     Materialize(ele, iquad);
 
-    // store the heat flux for postprocessing
-    if (eheatflux != NULL)
-      for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = heatflux_(idim);
-
 #ifdef THRASOUTPUT
     std::cout << "CalculateFintCondCapa heatflux_ = " << heatflux_ << std::endl;
     std::cout << "CalculateFintCondCapa gradtemp_ = " << gradtemp_ << std::endl;
-    if (etempgrad != NULL)
-      std::cout << "CalculateFintCondCapa Nln etempgrad = " << *etempgrad << std::endl;
-    if (eheatflux != NULL)
-      std::cout << "CalculateFintCondCapa Nln eheatflux = " << *eheatflux << std::endl;
 #endif  // THRASOUTPUT
 
     // internal force vector
-    if (efint != NULL)
+    if (efint != nullptr)
     {
       // fint = fint + B^T . q . detJ . w(gp)
       efint->MultiplyTN(fac_, derxy_, heatflux_, 1.0);
     }
 
     // conductivity matrix
-    if (econd != NULL)
+    if (econd != nullptr)
     {
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_, nen_> aop(false);  // (3x8)
@@ -1242,7 +932,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     }
 
     // capacity matrix (equates the mass matrix in the structural field)
-    if (ecapa != NULL)
+    if (ecapa != nullptr)
     {
       // ce = ce + ( N^T .  (rho * C_V) . N ) * detJ * w(gp)
       // (8x8)      (8x1)               (1x8)
@@ -1251,7 +941,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
       ecapa->MultiplyNT((fac_ * capacoeff_), funct_, funct_, 1.0);
     }
 
-    if (ecapalin != NULL)
+    if (ecapalin != nullptr)
     {
       // calculate additional linearization d(C(T))/dT (3-tensor!)
       // multiply with temperatures to obtain 2-tensor
@@ -1271,14 +961,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
   }  // --------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
-  if (efint != NULL)
+  if (efint != nullptr)
     std::cout << "element No. = " << ele->Id() << " efint f_Td CalculateFintCondCapa" << *efint
               << std::endl;
-  if (econd != NULL)
-    std::cout << "element No. = " << ele->Id() << " econd nach CalculateFintCondCapa" << *econd
+  if (econd != nullptr)
+    std::cout << "element No. = " << ele->Id() << " econd nach LinearThermoContribution" << *econd
               << std::endl;
 #endif  // THRASOUTPUT
-}  // CalculateFintCondCapa
+}  // LinearThermoContribution
 
 
 /*----------------------------------------------------------------------*
@@ -1286,17 +976,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
  | and rhs: r_T(d), k_TT(d) (public)                                    |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
-    DRT::Element* ele,          // the element whose matrix is calculated
-    const double& time,         // current time
-    std::vector<double>& disp,  // current displacements
-    std::vector<double>& vel,   // current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      // internal force
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,                      // external force
-    LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad,  // temperature gradients at Gauss points
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* ele,
+    const double& time, std::vector<double>& disp, std::vector<double>& vel,
+    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
+    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -1490,7 +1173,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
     ncBv.Multiply(Nctemp, strainvel);
 
     // integrate internal force vector (coupling fraction towards displacements)
-    if (efint != NULL)
+    if (efint != nullptr)
     {
       // fintdisp += - N_T^T . ctemp : (B_L .  (d^e)') . N_T . T
       efint->Multiply((-fac_), ncBv, NT, 1.0);
@@ -1502,15 +1185,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
         std::cout << "CouplFint\n" << std::endl;
         std::cout << "ele Id= " << ele->Id() << std::endl;
         std::cout << "boplin\n" << boplin << std::endl;
-        std::cout << "etemp_ Ende CalculateCouplFintCond\n" << etempn_ << std::endl;
+        std::cout << "etemp_ Ende LinearDispContribution\n" << etempn_ << std::endl;
         std::cout << "ctemp_\n" << ctemp << std::endl;
         std::cout << "ncBv\n" << ncBv << std::endl;
       }
 #endif  // TSIMONOLITHASOUTPUT
-    }   // if (efint != NULL)
+    }   // if (efint != nullptr)
 
     // update conductivity matrix (with displacement dependent term)
-    if (econd != NULL)
+    if (econd != nullptr)
     {
       // k^e += - ( N_T^T . (-m . I) . (B_L . (d^e)') . N_T ) . detJ . w(gp)
       // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
@@ -1523,28 +1206,22 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
         econd->MultiplyNT(-fac_, Ndctemp_dTBvNT, funct_, 1.0);
       }
 
-    }  // if (econd != NULL)
+    }  // if (econd != nullptr)
 
 #ifdef THRASOUTPUT
-    if (efint != NULL)
+    if (efint != nullptr)
       std::cout << "element No. = " << ele->Id() << "efint f_Td CalculateCouplFintCond" << *efint
                 << std::endl;
-    if (econd != NULL)
-      std::cout << "element No. = " << ele->Id() << "econd nach CalculateCouplFintCond" << *econd
+    if (econd != nullptr)
+      std::cout << "element No. = " << ele->Id() << "econd nach LinearDispContribution" << *econd
                 << std::endl;
 #endif  // THRASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
+}
 
-}  // CalculateCouplFintCond()
-
-
-/*----------------------------------------------------------------------*
- | calculate thermal-mechanical system matrix k_Td needed    dano 03/11 |
- | in monolithic TSI (private)                                          |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
+void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
@@ -1579,7 +1256,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
 
   // get step size dt
@@ -1703,33 +1380,29 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
       std::cout << "Coupl Cond\n" << std::endl;
       std::cout << "ele Id= " << ele->Id() << std::endl;
       std::cout << "boplin \n" << boplin << std::endl;
-      std::cout << "etemp_ Ende CalculateCouplCond\n" << etempn_ << std::endl;
+      std::cout << "etemp_ Ende LinearCoupledTang\n" << etempn_ << std::endl;
       std::cout << "ctemp_\n" << ctemp << std::endl;
       std::cout << "NNTC\n" << NNTC << std::endl;
     }
 #endif  // TSIMONOLITHASOUTPUT
 
     // coupling stiffness matrix
-    if (etangcoupl != NULL)
+    if (etangcoupl != nullptr)
     {
       // k_Td^e = k_Td^e - timefac . ( N_T^T . N_T . T . C_T/str_timefac . B_L )
       //                   . detJ . w(gp)
       // with C_T = m . I
       // (8x24) = (8x6) . (6x24)
       etangcoupl->MultiplyNN((-timefac * fac_ * timefac_d), NNTC, boplin, 1.0);
-    }  // (etangcoupl != NULL)
+    }  // (etangcoupl != nullptr)
 
   }  //-------------------------------------- end loop over Gauss Points
 
-}  // CalculateCouplCond()
+}  // LinearCoupledTang()
 
 
-/*----------------------------------------------------------------------*
- | calculate coupled fraction for the system matrix          dano 11/12 |
- | and rhs: r_T(T,d), k_TT(T,d) (public)                                |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
+void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     DRT::Element* ele,          // the element whose matrix is calculated
     const double& time,         // current time
     std::vector<double>& disp,  // current displacements
@@ -1739,37 +1412,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         ecapalin,  //!< partial linearization dC/dT of capacity matrix
     LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
-    LINALG::Matrix<nquad_, nsd_>* eheatflux,          // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad,          // temperature gradients at Gauss points
-    const INPAR::THR::HeatFluxType ioheatflux,        // heat flux output option
-    const INPAR::THR::TempGradType iotempgrad,        // tempgrad output option
     Teuchos::ParameterList& params)
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
-
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xrefe;      // material coord. of element
   LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
   LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
-
-  DRT::Node** nodes = ele->Nodes();
-  for (int i = 0; i < nen_; ++i)
-  {
-    const double* x = nodes[i]->X();
-    // (8x3) = (nen_xnsd_)
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-
-    xcurr(i, 0) = xrefe(i, 0) + disp[i * nsd_ + 0];
-    xcurr(i, 1) = xrefe(i, 1) + disp[i * nsd_ + 1];
-    xcurr(i, 2) = xrefe(i, 2) + disp[i * nsd_ + 2];
-
-    xcurrrate(i, 0) = vel[i * nsd_ + 0];
-    xcurrrate(i, 1) = vel[i * nsd_ + 1];
-    xcurrrate(i, 2) = vel[i * nsd_ + 2];
-  }
+  InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
 #ifdef THRASOUTPUT
   std::cout << "xrefe" << xrefe << std::endl;
@@ -1863,89 +1511,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 
 #ifdef THRASOUTPUT
     std::cout << "CalculateCouplNlnFintCondCapa heatflux_ = " << heatflux_ << std::endl;
-    std::cout << "CalculateCouplNlnFintCondCapa Cinv = " << Cinv << std::endl;
-#endif  // THRASOUTPUT
-
-    // -------------------------------------------------- post processing
-    // store the temperature gradient for postprocessing
-    // return gp tempgrad (only in case of tempgrad output)
-    // RK: Grad T
-    // AK: grad T --> grad T = Grad T . F^{-1}
-    switch (iotempgrad)
-    {
-      case INPAR::THR::tempgrad_initial:
-      {
-        if (etempgrad == NULL) dserror("tempgrad data not available");
-        // etempgrad = Grad T
-        for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = gradtemp_(idim);
-        break;
-      }
-      case INPAR::THR::tempgrad_current:
-      {
-        if (etempgrad == NULL) dserror("tempgrad data not available");
-        // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
-        // (8x3)        (3x1)   (3x1)    (3x3)     (3x3)    (3x1)
-        // spatial temperature gradient
-        LINALG::Matrix<nsd_, 1> currentgradT(false);
-        currentgradT.MultiplyTN(invdefgrd, gradtemp_);
-        for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = currentgradT(idim);
-        break;
-      }
-      case INPAR::THR::tempgrad_none:
-      {
-        // no postprocessing of temperature gradients
-        break;
-      }
-      default:
-        dserror("requested tempgrad type not available");
-        break;
-    }  // iotempgrad
-
-    // return gp heatfluxes (only in case of heatflux/tempgrad output)
-    // RK: Q = -k_0 . Cinv . Grad T
-    // AK: q = -k . grad T --> q =  1/(detF) . F . Q
-    // with k_0 = J . k = detF . k
-    switch (ioheatflux)
-    {
-      case INPAR::THR::heatflux_initial:
-      {
-        // eheatflux := Q = -k_0 . Cinv . Grad T
-        if (eheatflux == NULL) dserror("heat flux data not available");
-        for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = heatflux_(idim);
-        break;
-      }
-      case INPAR::THR::heatflux_current:
-      {
-        if (eheatflux == NULL) dserror("heat flux data not available");
-        // eheatflux := q = 1/(detF) . F . Q
-        // (8x3)     (3x1)            (3x3)  (3x1)
-        const double detF = defgrd.Determinant();
-        LINALG::Matrix<nsd_, 1> spatialq;
-        spatialq.MultiplyNN((1.0 / detF), defgrd, heatflux_);
-        for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = spatialq(idim);
-        break;
-      }
-      case INPAR::THR::heatflux_none:
-      {
-        // no postprocessing of heat fluxes, continue!
-        break;
-      }
-      default:
-        dserror("requested heat flux type not available");
-        break;
-    }  // ioheatflux
-
-#ifdef THRASOUTPUT
-    if (etempgrad != NULL)
-      std::cout << "CalculateCouplNlnFintCondCapa etempgrad = " << *etempgrad << std::endl;
-    if (eheatflux != NULL)
-      std::cout << "CalculateCouplNlnFintCondCapa eheatflux = " << *eheatflux << std::endl;
-    if (efint != NULL)
-      std::cout << "element No. = " << ele->Id()
-                << " CalculateCouplNlnFintCondCapa PRIOR update: efint f_Td" << *efint << std::endl;
-    if (econd != NULL)
-      std::cout << "element No. = " << ele->Id()
-                << " CalculateCouplNlnFintCondCapa PRIOR update: econd k_TT" << *econd << std::endl;
+    std::cout << "NonlinearThermoDispContribution Cinv = " << Cinv << std::endl;
 #endif  // THRASOUTPUT
 
     Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolid =
@@ -1967,14 +1533,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       // ------------------------------------ special terms due to material law
       // if young's modulus is temperature-dependent, E(T), additional terms arise
       // for the stiffness matrix k_TT
-      if (econd != NULL)
+      if (econd != nullptr)
       {
         // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
         // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
         //
         // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
         econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
-      }  // (econd != NULL)
+      }  // (econd != nullptr)
     }
 
     // ------------------------------------------------ call the material
@@ -2012,14 +1578,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       // ------------------------------------ special terms due to material law
       // if young's modulus is temperature-dependent, E(T), additional terms arise
       // for the stiffness matrix k_TT
-      if (econd != NULL)
+      if (econd != nullptr)
       {
         // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
         // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
         //
         // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
         econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
-      }  // (econd != NULL)
+      }  // (econd != nullptr)
     }    // m_thermostvenant
 
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
@@ -2043,13 +1609,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       // H_p := - N^T_T . N_T . T . thrplheat . 1/Dt
       double thrplheat = thermoplhyperelast->ThermoPlastHeating(iquad);
 
-      if (efint != NULL)
+      if (efint != nullptr)
       {
         // fint += - N^T_T . N_T . T . thrplheat . 1/Dt . detJ . w(gp)
         efint->Multiply((-thrplheat / stepsize * fac_), funct_, NT, 1.0);
       }
 
-      if (econd != NULL)
+      if (econd != nullptr)
       {
         // k_TT += - N^T_T . thrplheat . 1/Dt . N_T . detJ . w(gp)
         econd->MultiplyNT((-thrplheat / stepsize * fac_), funct_, funct_, 1.0);
@@ -2067,7 +1633,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     // ------------------------------ integrate internal force vector r_T
     // add the displacement-dependent terms to fint
     // fint = fint + fint_{Td}
-    if (efint != NULL)
+    if (efint != nullptr)
     {
       // fint += B_T^T . Q . detJ * w(gp)
       //      += B_T^T . (k_0) . C^{-1} . B_T . T . detJ . w(gp)
@@ -2093,11 +1659,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 #endif
       // efint += H_p term is added to fint within material call
 
-    }  // (efint != NULL)
+    }  // (efint != nullptr)
 
     // ------------------------------- integrate conductivity matrix k_TT
     // update conductivity matrix k_TT (with displacement dependent term)
-    if (econd != NULL)
+    if (econd != nullptr)
     {
       // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
       // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
@@ -2135,20 +1701,20 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
         econd->MultiplyNT((-fac_ * ctempCdot), funct_, funct_, 1.0);
 #endif
       // be aware: special terms of materials are added within material call
-    }  // (econd != NULL)
+    }  // (econd != nullptr)
 
     // --------------------------------------- capacity matrix m_capa
     // capacity matrix is idependent of deformation
     // m_capa corresponds to the mass matrix of the structural field
-    if (ecapa != NULL)
+    if (ecapa != nullptr)
     {
       // m_capa = m_capa + ( N_T^T .  (rho_0 . C_V) . N_T ) . detJ . w(gp)
       //           (8x8)     (8x1)                 (1x8)
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
       ecapa->MultiplyNT((fac_ * capacoeff_), funct_, funct_, 1.0);
-    }  // (ecapa != NULL)
-    if (ecapalin != NULL)
+    }  // (ecapa != nullptr)
+    if (ecapalin != nullptr)
     {
       // calculate additional linearization d(C(T))/dT (3-tensor!)
       // multiply with temperatures to obtain 2-tensor
@@ -2177,25 +1743,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     std::cout << "CalculateCouplNlnFintCondCapa heatflux_ = " << heatflux_ << std::endl;
     std::cout << "CalculateCouplNlnFintCondCapa etemp_ = " << etempn_ << std::endl;
 
-    if (efint != NULL)
+    if (efint != nullptr)
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa: efint f_Td"
                 << *efint << std::endl;
-    if (econd != NULL)
-      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa: econd k_TT"
+    if (econd != nullptr)
+      std::cout << "element No. = " << ele->Id() << " NonlinearThermoDispContribution: econd k_TT"
                 << *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
+}
 
-}  // CalculateCouplNlnFintCondCapa()
-
-
-/*----------------------------------------------------------------------*
- | calculate thermal-mechanical system matrix k_Td(d)        dano 11/12 |
- | needed in monolithic TSI (private)                                   |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
+void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
@@ -2203,32 +1763,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     Teuchos::ParameterList& params  // parameter list
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
-
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xrefe(false);      // material coord. of element
   LINALG::Matrix<nen_, nsd_> xcurr(false);      // current  coord. of element
   LINALG::Matrix<nen_, nsd_> xcurrrate(false);  // current  velocity of element
-
-  // now get current element displacements and velocities
-  DRT::Node** nodes = ele->Nodes();
-  for (int i = 0; i < nen_; ++i)
-  {
-    const double* x = nodes[i]->X();
-    // (8x3) = (nen_xnsd_)
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-
-    xcurr(i, 0) = xrefe(i, 0) + disp[i * nsd_ + 0];
-    xcurr(i, 1) = xrefe(i, 1) + disp[i * nsd_ + 1];
-    xcurr(i, 2) = xrefe(i, 2) + disp[i * nsd_ + 2];
-
-    xcurrrate(i, 0) = vel[i * nsd_ + 0];
-    xcurrrate(i, 1) = vel[i * nsd_ + 1];
-    xcurrrate(i, 2) = vel[i * nsd_ + 2];
-  }
+  InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
 #ifdef THRASOUTPUT
   std::cout << "xrefe" << xrefe << std::endl;
@@ -2245,7 +1783,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   switch (timint)
   {
@@ -2277,7 +1815,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     }
   }  // end of switch(timint)
 
-  const INPAR::STR::DynamicType s_timint =
+  const auto s_timint =
       DRT::INPUT::get<INPAR::STR::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
@@ -2350,21 +1888,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
 
     // put thermal material tangent in vector notation
     LINALG::Matrix<6, 1> cmat_vct(true);
-    if (nsd_ == 3)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-      cmat_vct(1) = cmat_(1, 1);
-      cmat_vct(2) = cmat_(2, 2);
-    }
-    else if (nsd_ == 2)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-      cmat_vct(1) = cmat_(1, 1);
-    }
-    else if (nsd_ == 1)
-    {
-      cmat_vct(0) = cmat_(0, 0);
-    }  // THR_cmat_vct
+    for (unsigned i = 0; i < nsd_; ++i) cmat_vct(i) = cmat_(i, i);
 
     // B_T^T . B_T . T
     LINALG::Matrix<nen_, 1> bgradT(false);
@@ -2495,7 +2019,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     NNTC.MultiplyNT(NNT, ctemp);          // (8x6)
 
     // ----------------- coupling matrix k_Td only for monolithic TSI
-    if (etangcoupl != NULL)
+    if (etangcoupl != nullptr)
     {
       // for PlasticElastHyper materials (i.e. Semi-smooth Newton type plasticity)
       // these coupling terms have already been computed during the structural
@@ -2559,7 +2083,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       }
 
       etangcoupl->MultiplyNN(fac_, bgradTcmat, dCinv_dd, 1.0);
-    }  // (etangcoupl != NULL)
+    }  // (etangcoupl != nullptr)
 
     if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
@@ -2636,20 +2160,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   }  // ---------------------------------- end loop over Gauss Points
 
   // scale total tangent with timefac
-  if (etangcoupl != NULL)
+  if (etangcoupl != nullptr)
   {
     etangcoupl->Scale(timefac);
   }
+}
 
-}  // CalculateCouplNlnCond()
-
-
-/*----------------------------------------------------------------------*
- | calculate internal dissipation term, used in case of      dano 08/11 |
- | plastic material (private)                                           |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
+void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     DRT::Element* ele,                                // the element whose matrix is calculated
     LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
     Teuchos::ParameterList& params)
@@ -2724,7 +2242,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
     // --> no additional terms for fint, nor for econd!
 
     // update/integrate internal force vector (coupling fraction towards displacements)
-    if (efint != NULL)
+    if (efint != nullptr)
     {
       // update of the internal "force" vector
       // fint += N_T^T . 1/Dt . Dmech . detJ . w(gp)
@@ -2741,16 +2259,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // -------------------------------------------- end loop over Gauss Points
+}
 
-}  // CalculateCouplDissipation()
-
-
-/*----------------------------------------------------------------------*
- | calculate terms of dissipation for thermo-mechanical      dano 04/13 |
- | system matrix k_Td used in case of plastic material (private)        |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipationCond(
+void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     DRT::Element* ele,  // the element whose matrix is calculated
     LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
@@ -2759,7 +2271,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipationCond(
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
 #ifdef THRASOUTPUT
-  std::cout << "CalculateCouplDissipationCond evel\n" << evel << std::endl;
+  std::cout << "LinearDissipationCoupledTang evel\n" << evel << std::endl;
   std::cout << "edisp\n" << edisp << std::endl;
 #endif  // THRASOUTPUT
 
@@ -2778,7 +2290,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipationCond(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -2886,31 +2398,25 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipationCond(
     DBop.MultiplyTN(Dmech_d, boplin);
 
     // coupling stiffness matrix
-    if (etangcoupl != NULL)
+    if (etangcoupl != nullptr)
     {
       // k_Td^e += timefac . N_T^T . 1/Dt . Dmech_d . B_L . detJ . w(gp)
       // with C_T = m . I
       // (8x24) = (8x1) . (1x24)
       etangcoupl->MultiplyNN((fac_ * timefac / stepsize), funct_, DBop, 1.0);
-    }  // (etangcoupl != NULL)
+    }  // (etangcoupl != nullptr)
 
   }  //---------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
-  if (etangcoupl != NULL and ele->Id() == 0)
+  if (etangcoupl != nullptr and ele->Id() == 0)
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"
               << *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
+}
 
-}  // CalculateCouplDissipationCond()
-
-
-/*----------------------------------------------------------------------*
- | calculate internal dissipation term, used in case of      dano 08/11 |
- | plastic material and geometrically nonlinear deformation (private)   |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
+void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
@@ -2980,18 +2486,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     // mechanical Dissipation
     // Dmech := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma/Dt
     // with MechDiss := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma
-    double Dmech = 0.0;
-    Dmech = thermoplhyperelast->MechDiss(iquad) / stepsize;
+    const double Dmech = thermoplhyperelast->MechDiss(iquad) / stepsize;
 
     // update/integrate internal force vector (coupling fraction towards displacements)
-    if (efint != NULL)
+    if (efint != nullptr)
     {
       // update of the internal "force" vector
       // fint += - N_T^T . Dmech/Dt . detJ . w(gp)
       efint->Update((-fac_ * Dmech), funct_, 1.0);
     }
 
-    if (econd != NULL)
+    if (econd != nullptr)
     {
       // Contribution of dissipation to cond matirx
       // econd += - N_T^T . dDmech_dT/Dt . N_T
@@ -3010,65 +2515,35 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     // output of mechanical dissipation to fint
     LINALG::Matrix<nen_, 1> fint_Dmech(false);
     fint_Dmech.Update((-fac_ * Dmech), funct_);
-    std::cout << "CalculateCouplNlnDissipation: element No. = " << ele->Id() << " f_Td_Dmech "
+    std::cout << "NonlinearDissipationFintTang: element No. = " << ele->Id() << " f_Td_Dmech "
               << fint_Dmech << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
 
 #ifdef TSIMONOLITHASOUTPUT
-  if (efint != NULL)
+  if (efint != nullptr)
     std::cout << "CalculateCouplNlnDissipation: element No. = " << ele->Id() << " efint f_Td "
               << *efint << std::endl;
-  if (econd != NULL)
-    std::cout << "CalculateCouplNlnDissipation: element No. = " << ele->Id() << " econd k_TT"
+  if (econd != nullptr)
+    std::cout << "NonlinearDissipationFintTang: element No. = " << ele->Id() << " econd k_TT"
               << *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
+}
 
-}  // CalculateCouplNlnDissipation()
-
-
-/*----------------------------------------------------------------------*
- | calculate dissipation terms used in case of nonlinear     dano 09/13 |
- | analysis and plastic material (private)                              |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
+void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  //!< current displacements
     std::vector<double>& vel,   //!< current velocities
     LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
-
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
-
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xrefe;      // material coord. of element
   LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
   LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  velocity of element
 
-  // now get current element displacements and velocities
-  DRT::Node** nodes = ele->Nodes();
-  for (int i = 0; i < nen_; ++i)
-  {
-    const double* x = nodes[i]->X();
-    // (8x3) = (nen_xnsd_)
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-
-    xcurr(i, 0) = xrefe(i, 0) + disp[i * nsd_ + 0];
-    xcurr(i, 1) = xrefe(i, 1) + disp[i * nsd_ + 1];
-    xcurr(i, 2) = xrefe(i, 2) + disp[i * nsd_ + 2];
-
-    xcurrrate(i, 0) = vel[i * nsd_ + 0];
-    xcurrrate(i, 1) = vel[i * nsd_ + 1];
-    xcurrrate(i, 2) = vel[i * nsd_ + 2];
-  }
+  InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
 #ifdef THRASOUTPUT
   std::cout << "xrefe" << xrefe << std::endl;
@@ -3093,7 +2568,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+  const auto timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
       params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -3156,33 +2631,208 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
     dDmech_dd.MultiplyTN(dDmech_dE, bop);
 
     // coupling stiffness matrix
-    if (etangcoupl != NULL)
+    if (etangcoupl != nullptr)
     {
       // k_Td^e += - timefac . N_T^T . 1/Dt . dDmech_dE . B . detJ . w(gp)
       // (8x24)  = (8x1) .        (1x6)  (6x24)
       etangcoupl->MultiplyNN(-fac_ * timefac / stepsize, funct_, dDmech_dd, 1.0);
-    }  // (etangcoupl != NULL)
+    }  // (etangcoupl != nullptr)
 
   }  //--------------------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
-  if ((etangcoupl != NULL) and (ele->Id() == 0))
+  if ((etangcoupl != nullptr) and (ele->Id() == 0))
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"
               << *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
+}
 
-}  // CalculateCouplNlnDissipationCond()
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
+    DRT::Element* ele, LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
+    LINALG::Matrix<nquad_, nsd_>* etempgrad  // temperature gradients at Gauss points
+)
+{
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+  // ----------------------------------------- loop over Gauss Points
+  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
+
+    // gradient of current temperature value
+    // grad T = d T_j / d x_i = L . N . T = B_ij T_j
+    gradtemp_.MultiplyNN(derxy_, etempn_);
+
+    // store the temperature gradient for postprocessing
+    if (etempgrad != nullptr)
+      for (int idim = 0; idim < nsd_; ++idim)
+        // (8x3)                    (3x1)
+        (*etempgrad)(iquad, idim) = gradtemp_(idim);
+
+    // call material law => cmat_,heatflux_
+    // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
+    Materialize(ele, iquad);
+
+    // store the heat flux for postprocessing
+    if (eheatflux != nullptr)
+      // negative sign for heat flux introduced here
+      for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -heatflux_(idim);
+  }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
+    DRT::Element* ele,                        // the element whose matrix is calculated
+    std::vector<double>& disp,                // current displacements
+    std::vector<double>& vel,                 // current velocities
+    LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
+    LINALG::Matrix<nquad_, nsd_>* etempgrad,  // temperature gradients at Gauss points
+    Teuchos::ParameterList& params)
+{
+  // specific choice of heat flux / temperature gradient
+  const auto ioheatflux =
+      DRT::INPUT::get<INPAR::THR::HeatFluxType>(params, "ioheatflux", INPAR::THR::heatflux_none);
+  const auto iotempgrad =
+      DRT::INPUT::get<INPAR::THR::TempGradType>(params, "iotempgrad", INPAR::THR::tempgrad_none);
+
+  // update element geometry
+  LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
+  LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
+  InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
+
+  // build the deformation gradient w.r.t. material configuration
+  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  // inverse of deformation gradient
+  LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
+
+  // ----------------------------------- integration loop for one element
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+  // --------------------------------------------- loop over Gauss Points
+  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  {
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
+    // coordinates
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
+
+    gradtemp_.MultiplyNN(derxy_, etempn_);
+
+    // ---------------------------------------- call thermal material law
+    // call material law => cmat_,heatflux_ and dercmat_
+    // negative q is used for balance equation:
+    // heatflux_ = k_0 . Grad T
+    Materialize(ele, iquad);
+    // heatflux_ := qintermediate = k_0 . Grad T
+
+    // -------------------------------------------- coupling to mechanics
+    // (material) deformation gradient F
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr, derxy_);
+    // inverse of deformation gradient
+    invdefgrd.Invert(defgrd);
+
+    LINALG::Matrix<nsd_, nsd_> Cinv(false);
+    // build the inverse of the right Cauchy-Green deformation gradient C^{-1}
+    // C^{-1} = F^{-1} . F^{-T}
+    Cinv.MultiplyNT(invdefgrd, invdefgrd);
+
+    switch (iotempgrad)
+    {
+      case INPAR::THR::tempgrad_initial:
+      {
+        if (etempgrad == nullptr) dserror("tempgrad data not available");
+        // etempgrad = Grad T
+        for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = gradtemp_(idim);
+        break;
+      }
+      case INPAR::THR::tempgrad_current:
+      {
+        if (etempgrad == nullptr) dserror("tempgrad data not available");
+        // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
+        // (8x3)        (3x1)   (3x1)    (3x3)     (3x3)    (3x1)
+        // spatial temperature gradient
+        LINALG::Matrix<nsd_, 1> currentgradT(false);
+        currentgradT.MultiplyTN(invdefgrd, gradtemp_);
+        for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = currentgradT(idim);
+        break;
+      }
+      case INPAR::THR::tempgrad_none:
+      {
+        // no postprocessing of temperature gradients
+        break;
+      }
+      default:
+        dserror("requested tempgrad type not available");
+        break;
+    }  // iotempgrad
+
+    switch (ioheatflux)
+    {
+      case INPAR::THR::heatflux_initial:
+      {
+        if (eheatflux == nullptr) dserror("heat flux data not available");
+        LINALG::Matrix<nsd_, 1> initialheatflux(false);
+        // eheatflux := Q = -k_0 . Cinv . Grad T
+        initialheatflux.Multiply(Cinv, heatflux_);
+        for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -initialheatflux(idim);
+        break;
+      }
+      case INPAR::THR::heatflux_current:
+      {
+        if (eheatflux == nullptr) dserror("heat flux data not available");
+        // eheatflux := q = - k_0 . 1/(detF) . F^{-T} . Grad T
+        // (8x3)     (3x1)            (3x3)  (3x1)
+        const double detF = defgrd.Determinant();
+        LINALG::Matrix<nsd_, 1> spatialq;
+        spatialq.MultiplyTN((1.0 / detF), invdefgrd, heatflux_);
+        for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -spatialq(idim);
+        break;
+      }
+      case INPAR::THR::heatflux_none:
+      {
+        // no postprocessing of heat fluxes, continue!
+        break;
+      }
+      default:
+        dserror("requested heat flux type not available");
+        break;
+    }  // ioheatflux
+  }
+}
 
 
-/*----------------------------------------------------------------------*
- | lump capacity matrix (private)                            dano 01/12 |
- *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, std::vector<double>& mydisp, std::vector<double>& myvel) const
+{
+  if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
+  {
+    // get the displacements
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
+    if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+    // extract the displacements
+    DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+
+    // get the velocities
+    Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
+    if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+    // extract the displacements
+    DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
+  }
+}
+
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa)
 {
   // lump capacity matrix
-  if (ecapa != NULL)
+  if (ecapa != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned int c = 0; c < (*ecapa).N(); ++c)  // parse columns
@@ -3196,7 +2846,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
       (*ecapa)(c, c) = d;  // apply sum of row entries on diagonal
     }
   }
-}  // CalculateLumpMatrix()
+}
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
@@ -3234,9 +2884,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
     dserror("Latent heat as source term only with MAT::FourierVar");
 }
 
-/*----------------------------------------------------------------------*
- | incremental source term associated with latent heat     proell 08/18 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
     DRT::Element* ele,  //!< the element whose matrix is calculated
@@ -3299,10 +2946,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | get the radiation  (private)                              dano 09/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const double time)
 {
@@ -3345,12 +2988,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     }
 
     // (SPATIAL) FUNCTION BUSINESS
-    const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int>>("funct");
+    const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
     LINALG::Matrix<nsd_, 1> xrefegp(false);
     bool havefunct = false;
     if (funct)
       for (int dim = 0; dim < nsd_; dim++)
-        if ((*funct)[dim] > 0) havefunct = havefunct or true;
+        if ((*funct)[dim] > 0) havefunct = true;
 
     // integrations points and weights
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -3388,8 +3031,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
             : 1.0;
 
     // get values and switches from the condition
-    const std::vector<int>* onoff = myneumcond[0]->Get<std::vector<int>>("onoff");
-    const std::vector<double>* val = myneumcond[0]->Get<std::vector<double>>("val");
+    const auto* onoff = myneumcond[0]->Get<std::vector<int>>("onoff");
+    const auto* val = myneumcond[0]->Get<std::vector<double>>("val");
 
     // set this condition to the radiation array
     for (int idof = 0; idof < numdofpernode_; idof++)
@@ -3399,17 +3042,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
   }
   else
   {
-    // we have no dead load
     radiation_.Clear();
   }
-  return;
-
-}  // Radiation()
+}
 
 
-/*----------------------------------------------------------------------*
- | get the material                                          dano 09/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
 {
@@ -3434,10 +3071,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, co
   dercapa_ = thermoMaterial->CapacityDerivT();
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate shape functions and derivatives at int. point     gjb 08/08 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
@@ -3497,15 +3130,26 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // compute global derivatives
   derxy_.Multiply(xij_, deriv_);
+}
 
-  // say goodbye
-  return;
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
+    const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
+    LINALG::Matrix<nen_, nsd_>& xcurr, LINALG::Matrix<nen_, nsd_>& xcurrrate)
+{
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  for (int i = 0; i < nen_; ++i)
+  {
+    xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
+    xcurr(i, 1) = xyze_(1, i) + disp[i * nsd_ + 1];
+    xcurr(i, 2) = xyze_(2, i) + disp[i * nsd_ + 2];
 
-}  // EvalShapeFuncAndDerivsAtIntPoint
+    xcurrrate(i, 0) = vel[i * nsd_ + 0];
+    xcurrrate(i, 1) = vel[i * nsd_ + 1];
+    xcurrrate(i, 2) = vel[i * nsd_ + 2];
+  }
+}
 
-/*----------------------------------------------------------------------*
- | evaluate shape functions and derivatives at int. point     gjb 08/08 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     DRT::Element* ele,                   // the element whose matrix is calculated
@@ -3521,9 +3165,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
   myknots_.resize(3);  // fixme: dimension
                        // get nurbs specific infos
   // cast to nurbs discretization
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // zero-sized element
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_, ele->Id())) return;
@@ -3533,10 +3176,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 
-
-/*----------------------------------------------------------------------*
- | integrate shape functions over domain (private)            gjb 07/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
     Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
@@ -3565,13 +3204,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
     }
   }  // loop over integration points
 
-  return;
 }  // TemperImpl<distype>::IntegrateShapeFunction
 
 
-/*----------------------------------------------------------------------*
- | extrapolateFromGaussPointsToNodes                         dano 11/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     DRT::Element* ele,  // the element whose matrix is calculated
@@ -3626,15 +3261,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     if (nsd_ > 1) efluxy(idof) = ndheatflux(idof, 1);
     if (nsd_ > 2) efluxz(idof) = ndheatflux(idof, 2);
   }
+}
 
-  // bye
-  return;
-}  // ExtrapolateFromGaussPointsToNodes
-
-
-/*----------------------------------------------------------------------*
- | calculation of characteristic element length              dano 02/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
 {
@@ -3646,29 +3274,22 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
   // cast dimension to a double varible -> pow()
 
-  // get number of dimensions
-  const double dim = (double)nsd_;
-
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   // h = vol^(1/dim)
-  double h = std::pow(vol, (1.0 / dim));
+  double h = std::pow(vol, (1.0 / nsd_));
 
   return h;
+}
 
-}  // CalculateCharEleLength()
 
-
-/*----------------------------------------------------------------------*
- | calculate the linear B-operator                           dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
     LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin, LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // in thermo element derxy_ == N_XYZ in structural element (i.e. So3_Thermo)
   // lump mass matrix
-  if (boplin != NULL)
+  if (boplin != nullptr)
   {
     // linear B-operator B_L = N_XYZ
     // disperse global derivatives to bop-lines
@@ -3702,19 +3323,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
       (*boplin)(5, nsd_ * numdofpernode_ * i + 2) = (*N_XYZ)(0, i);
     }
   }
-}  // CalculateBoplin()
+}
 
-
-/*----------------------------------------------------------------------*
- | calculate the nonlinear B-operator                        dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
     LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop, LINALG::Matrix<nsd_, nsd_>* defgrd,
     LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // lump mass matrix
-  if (bop != NULL)
+  if (bop != nullptr)
   {
     /* non-linear B-operator (may so be called, meaning of B-operator is not so
     ** sharp in the non-linear realm) *
@@ -3772,12 +3389,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
           (*defgrd)(2, 2) * (*N_XYZ)(0, i) + (*defgrd)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-}  // CalculateBop()
+}
 
-
-/*----------------------------------------------------------------------*
- | calculate right Cauchy Green tensor in different styles   dano 11/13 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd, const double& J,
@@ -3824,13 +3437,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     dJ_dd.MultiplyTN(J, defgrd_inv_vec, N_X);
 
   }  // method only implemented for fully three dimensional analysis
+}
 
-}  // CalculateLinearisationOfJacobian()
-
-
-/*----------------------------------------------------------------------*
- | calculate right Cauchy Green tensor in different styles   dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
     LINALG::Matrix<6, 1>& Cratevct,          // (io) C' in vector notation
@@ -3870,13 +3478,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
   Cinvvct(3) = Cinv(0, 1);
   Cinvvct(4) = Cinv(1, 2);
   Cinvvct(5) = Cinv(2, 0);
+}
 
-}  // CalculateCauchyGreens()
-
-
-/*----------------------------------------------------------------------*
- | get the corresponding structural material                 dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
     DRT::Element* ele  // the element whose matrix is calculated
@@ -3891,12 +3494,8 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
     dserror("no second material defined for element %i", ele->Id());
 
   return structmat;
+}
 
-}  // GetSTRMaterial()
-
-/*----------------------------------------------------------------------*
- | compute error compared to analytical solution              vuong 03/15 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
     DRT::Element* ele,  // the element whose matrix is calculated
@@ -3921,8 +3520,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   //  if (intpoints.IP().nquad != nquad_)
   //    dserror("Trouble with number of Gauss points");
 
-  const INPAR::THR::CalcError calcerr =
-      DRT::INPUT::get<INPAR::THR::CalcError>(params, "calculate error");
+  const auto calcerr = DRT::INPUT::get<INPAR::THR::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 
@@ -4012,10 +3610,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | extract the phase at node-level                         proell 05/18 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtractPhaseInformation(
     DRT::Element* ele, LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase)
@@ -4029,6 +3623,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractPhaseInformation(
   // divide out number of node adjacent elements to remove assembly
   DRT::Node** node = ele->Nodes();
   for (int i = 0; i < nen_; i++) ephase(i) /= (*(node++))->NumElement();
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::CopyMatrixIntoCharVector(
+    std::vector<char>& data, LINALG::Matrix<nquad_, nsd_>& stuff)
+{
+  DRT::PackBuffer tempBuffer;
+  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  tempBuffer.StartPacking();
+  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  std::copy(tempBuffer().begin(), tempBuffer().end(), std::back_inserter(data));
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -4066,10 +3671,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     efint_disturb.Clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
-    CalculateCouplNlnFintCondCapa(ele, time, disp, vel,
-        NULL,  // <- etang, not needed here
-        NULL, &efint_disturb, NULL, NULL, INPAR::THR::heatflux_none, INPAR::THR::tempgrad_none,
-        params);
+    NonlinearThermoDispContribution(ele, time, disp, vel,
+        nullptr,  // <- etang, not needed here
+        nullptr, &efint_disturb, nullptr, params);
     // loop over rows
     for (int i = 0; i < nen_ * numdofpernode_; i++)
     {
@@ -4101,7 +3705,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     // remove disturbance for next step
     etempn_(j, 0) -= delta;
   }
-  if (checkPassed == true)
+  if (checkPassed)
   {
     std::cout.precision(12);
     std::cout << "finite difference check successful! Maximal relative error = " << error_max
@@ -4182,29 +3786,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 
 #endif
 
-  /*
-  // get efcap (at the last time step) by evaluating elements with etemp
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> ecapa_last(true);
-  LINALG::Matrix<nen_*numdofpernode_,1> etempn_save(etempn_);
-  etempn_ = etemp_;
-  CalculateCouplNlnFintCondCapa(
-    ele,
-    time,
-    disp,
-    vel,
-    NULL,
-    &ecapa_last,  // element capacity matrix
-    NULL,
-    NULL,
-    NULL,
-    INPAR::THR::heatflux_none,
-    INPAR::THR::tempgrad_none,
-    params
-    );
-
-  // restore temperature
-  etempn_ = etempn_save;
-  */
 
   // f_cap = C(T_{n+1}) * T_n
   // TODO this is not(!) how it's done right now in time integration, should be changed there
@@ -4225,9 +3806,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
     ecapa_disturb.Clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
-    CalculateCouplNlnFintCondCapa(ele, time, disp, vel, NULL,
+    NonlinearThermoDispContribution(ele, time, disp, vel, nullptr,
         &ecapa_disturb,  // <- ecapa at disturbed temp
-        NULL, NULL, NULL, INPAR::THR::heatflux_none, INPAR::THR::tempgrad_none, params);
+        nullptr, nullptr, params);
 
     // evaluate the disturbed capacity force
     res_disturb.Multiply(ecapa_disturb, etempn_);  // disturbed efcap
@@ -4311,7 +3892,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 #ifdef TSISLMFDCHECKDEBUG
   myfile.close();
 #endif
-  if (checkPassed == true)
+  if (checkPassed)
   {
     std::cout.precision(12);
     std::cout << "finite difference check successful! Maximal relative error = " << error_max
@@ -4359,6 +3940,4 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
 }
 #endif  // CALCSTABILOFREACTTERM
 
-
-/*----------------------------------------------------------------------*/
 #endif  // D_THERMO
