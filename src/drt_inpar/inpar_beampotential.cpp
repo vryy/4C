@@ -80,10 +80,12 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   setStringToIntegralParameter<int>("AUTOMATIC_DIFFERENTIATION", "No",
       "apply automatic differentiation via FAD?", yesnotuple, yesnovalue, &beampotential);
 
-  setStringToIntegralParameter<int>("CHOICE_MASTER_SLAVE", "smaller_eleGID_is_slave",
+  setStringToIntegralParameter<MasterSlaveChoice>("CHOICE_MASTER_SLAVE", "smaller_eleGID_is_slave",
       "According to which rule shall the role of master and slave be assigned to beam elements?",
       tuple<std::string>("smaller_eleGID_is_slave", "higher_eleGID_is_slave"),
-      tuple<int>(smaller_eleGID_is_slave, higher_eleGID_is_slave), &beampotential);
+      tuple<MasterSlaveChoice>(
+          MasterSlaveChoice::smaller_eleGID_is_slave, MasterSlaveChoice::higher_eleGID_is_slave),
+      &beampotential);
 
   setStringToIntegralParameter<int>("BEAMPOT_BTSOL", "No",
       "decide, whether potential-based interaction between beams and solids is considered",

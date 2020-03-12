@@ -60,8 +60,10 @@ namespace INPAR
       regularization_none       ///< no regularization
     };
 
-    /// rule for how to assign the role of slave and master to beam elements
-    enum MasterSlaveChoice
+    /**
+     * \brief rule for how to assign the role of slave and master to beam elements
+     */
+    enum class MasterSlaveChoice
     {
       smaller_eleGID_is_slave,
       higher_eleGID_is_slave,

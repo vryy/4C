@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       num_integration_segments_(-1),
       num_GPs_(-1),
       useFAD_(false),
-      choice_master_slave_(INPAR::BEAMPOTENTIAL::choice_master_slave_vague),
+      choice_master_slave_(INPAR::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
       vtk_output_(false),
       params_runtime_vtk_BTB_potential_(Teuchos::null)
 {
@@ -154,10 +154,10 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   useFAD_ = DRT::INPUT::IntegralValue<int>(beam_potential_params_list, "AUTOMATIC_DIFFERENTIATION");
 
   /****************************************************************************/
-  choice_master_slave_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::MasterSlaveChoice>(
+  choice_master_slave_ = Teuchos::getIntegralValue<INPAR::BEAMPOTENTIAL::MasterSlaveChoice>(
       beam_potential_params_list, "CHOICE_MASTER_SLAVE");
 
-  if (choice_master_slave_ == INPAR::BEAMPOTENTIAL::choice_master_slave_vague)
+  if (choice_master_slave_ == INPAR::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague)
   {
     dserror("Invalid choice of master and slave!");
   }

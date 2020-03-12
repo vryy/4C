@@ -70,7 +70,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   /* take care of how to assign the role of master and slave (only applicable to
    * "SingleLengthSpecific" approach). Immediately before this Setup(), the element with smaller GID
    * has been assigned as element1_, i.e., slave. */
-  if (Params()->ChoiceMasterSlave() == INPAR::BEAMPOTENTIAL::higher_eleGID_is_slave)
+  if (Params()->ChoiceMasterSlave() ==
+      INPAR::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)
   {
     // interchange order, i.e., role of elements
     DRT::Element const* tmp_ele_ptr = Element1();
