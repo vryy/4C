@@ -3614,11 +3614,6 @@ template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::AreElementsMuchMoreSeparatedThanCutoffDistance()
 {
-  // The idea is to get a conservative lower bound estimate for the minimal centerline separation of
-  // both elements, which doesn't require any interpolation, i.e., information on the deformation of
-  // the elements and is thus cheap to compute before we begin with the actual, expensive evaluation
-  // of the pair on Gauss point level.
-
   const unsigned int num_spatial_dim = 3;
 
   // multiple of the cutoff radius to be considered as "far enough" apart
