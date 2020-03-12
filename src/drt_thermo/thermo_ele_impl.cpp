@@ -8,14 +8,8 @@
 \maintainer Sebastian Proell
 */
 
-/*----------------------------------------------------------------------*
- | definitions                                               dano 08/09 |
- *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
-/*----------------------------------------------------------------------*
- | headers                                                   dano 08/09 |
- *----------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -42,10 +36,6 @@
 #include "../drt_tsi/tsi_defines.H"
 #include "../drt_mat/trait_thermo_solid.H"
 
-
-/*----------------------------------------------------------------------*
- |                                                           dano 09/09 |
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
   switch (ele->Shape())
@@ -74,10 +64,6 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
     {
       return TemperImpl<DRT::Element::wedge6>::Instance();
     }
-      /*  case DRT::Element::wedge15 :
-        {
-          return TemperImpl<DRT::Element::wedge15>::Instance();
-        } */
     case DRT::Element::pyramid5:
     {
       return TemperImpl<DRT::Element::pyramid5>::Instance();
@@ -98,18 +84,10 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
     {
       return TemperImpl<DRT::Element::tri3>::Instance();
     }
-      /*  case DRT::Element::tri6 :
-        {
-          return TemperImpl<DRT::Element::tri6>::Instance();
-        }*/
     case DRT::Element::line2:
     {
       return TemperImpl<DRT::Element::line2>::Instance();
-    } /*
-     case DRT::Element::line3 :
-     {
-       return TemperImpl<DRT::Element::line3>::Instance();
-     }*/
+    }
     case DRT::Element::nurbs27:
     {
       return TemperImpl<DRT::Element::nurbs27>::Instance();
@@ -123,9 +101,6 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
 
 }  // TemperImperInterface::Impl()
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(bool create)
 {
@@ -145,8 +120,6 @@ DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance
   return instance;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Done()
 {
@@ -155,10 +128,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Done()
   Instance(false);
 }
 
-
-/*----------------------------------------------------------------------*
- | initialisation of the data with respect to the declaration           |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
     : etempn_(false),
@@ -182,10 +151,6 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
 {
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate for multiple dofsets                             dano 02/10 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -257,11 +222,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
       plasticmat_ = true;
   }  // (la.Size > 1)
 
-  // if ele is a thermo element --> the THR element method KinType() exists
-  auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
-  // kintype = 0: INPAR::STR::kinem_linear or purely thermal problem
-  // kintype = 1: INPAR::STR::kinem_nonlinearTotLag
-  const INPAR::STR::KinemType kintype = therm->KinType();
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
@@ -471,6 +431,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nquad_, nsd_> eheatflux(false);
     LINALG::Matrix<nquad_, nsd_> etempgrad(false);
 
+    // if ele is a thermo element --> the THR element method KinType() exists
+    auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
+    const INPAR::STR::KinemType kintype = therm->KinType();
     // thermal problem or geometrically linear TSI problem
     if (kintype == INPAR::STR::kinem_linear)
     {
@@ -726,14 +689,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
   return 0;
 }
-// Evaluate()
 
-
-/*----------------------------------------------------------------------*
- | evaluate the external volume load                        bborn 09/09 |
- | condition corresponding to radiation r^ over dv with                 |
- | r^ = rho . r = scalar, i.e. even for geo nln: no difference          |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1262,14 +1218,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 #endif  // THRASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
+}
 
-}  // LinearDispContribution()
-
-
-/*----------------------------------------------------------------------*
- | calculate thermal-mechanical system matrix k_Td needed    dano 03/11 |
- | in monolithic TSI (private)                                          |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
@@ -1451,10 +1401,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 }  // LinearCoupledTang()
 
 
-/*----------------------------------------------------------------------*
- | calculate coupled fraction for the system matrix          dano 11/12 |
- | and rhs: r_T(T,d), k_TT(T,d) (public)                                |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     DRT::Element* ele,          // the element whose matrix is calculated
@@ -1806,14 +1752,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
+}
 
-}  // NonlinearThermoDispContribution()
-
-
-/*----------------------------------------------------------------------*
- | calculate thermal-mechanical system matrix k_Td(d)        dano 11/12 |
- | needed in monolithic TSI (private)                                   |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
@@ -2226,11 +2166,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | calculate internal dissipation term, used in case of      dano 08/11 |
- | plastic material (private)                                           |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     DRT::Element* ele,                                // the element whose matrix is calculated
@@ -2324,14 +2259,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // -------------------------------------------- end loop over Gauss Points
+}
 
-}  // LinearDissipationFint()
-
-
-/*----------------------------------------------------------------------*
- | calculate terms of dissipation for thermo-mechanical      dano 04/13 |
- | system matrix k_Td used in case of plastic material (private)        |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     DRT::Element* ele,  // the element whose matrix is calculated
@@ -2484,14 +2413,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"
               << *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
+}
 
-}  // LinearDissipationCoupledTang()
-
-
-/*----------------------------------------------------------------------*
- | calculate internal dissipation term, used in case of      dano 08/11 |
- | plastic material and geometrically nonlinear deformation (private)   |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     DRT::Element* ele,          // the element whose matrix is calculated
@@ -2606,14 +2529,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     std::cout << "NonlinearDissipationFintTang: element No. = " << ele->Id() << " econd k_TT"
               << *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
+}
 
-}  // NonlinearDissipationFintTang()
-
-
-/*----------------------------------------------------------------------*
- | calculate dissipation terms used in case of nonlinear     dano 09/13 |
- | analysis and plastic material (private)                              |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
@@ -2728,8 +2645,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"
               << *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
-
-}  // NonlinearDissipationCoupledTang()
+}
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
@@ -2911,9 +2827,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
   }
 }
 
-/*----------------------------------------------------------------------*
- | lump capacity matrix (private)                            dano 01/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
     LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa)
@@ -2933,7 +2846,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
       (*ecapa)(c, c) = d;  // apply sum of row entries on diagonal
     }
   }
-}  // CalculateLumpMatrix()
+}
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
@@ -2971,9 +2884,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
     dserror("Latent heat as source term only with MAT::FourierVar");
 }
 
-/*----------------------------------------------------------------------*
- | incremental source term associated with latent heat     proell 08/18 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
     DRT::Element* ele,  //!< the element whose matrix is calculated
@@ -3036,10 +2946,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | get the radiation  (private)                              dano 09/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const double time)
 {
@@ -3136,15 +3042,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
   }
   else
   {
-    // we have no dead load
     radiation_.Clear();
   }
-}  // Radiation()
+}
 
 
-/*----------------------------------------------------------------------*
- | get the material                                          dano 09/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
 {
@@ -3169,10 +3071,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, co
   dercapa_ = thermoMaterial->CapacityDerivT();
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate shape functions and derivatives at int. point     gjb 08/08 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
@@ -3232,8 +3130,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // compute global derivatives
   derxy_.Multiply(xij_, deriv_);
-
-}  // EvalShapeFuncAndDerivsAtIntPoint
+}
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
@@ -3253,10 +3150,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate shape functions and derivatives at int. point     gjb 08/08 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     DRT::Element* ele,                   // the element whose matrix is calculated
@@ -3283,10 +3176,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 
-
-/*----------------------------------------------------------------------*
- | integrate shape functions over domain (private)            gjb 07/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
     Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
@@ -3318,9 +3207,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
 }  // TemperImpl<distype>::IntegrateShapeFunction
 
 
-/*----------------------------------------------------------------------*
- | extrapolateFromGaussPointsToNodes                         dano 11/09 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     DRT::Element* ele,  // the element whose matrix is calculated
@@ -3375,13 +3261,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     if (nsd_ > 1) efluxy(idof) = ndheatflux(idof, 1);
     if (nsd_ > 2) efluxz(idof) = ndheatflux(idof, 2);
   }
+}
 
-}  // ExtrapolateFromGaussPointsToNodes
-
-
-/*----------------------------------------------------------------------*
- | calculation of characteristic element length              dano 02/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
 {
@@ -3399,13 +3280,9 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
   double h = std::pow(vol, (1.0 / nsd_));
 
   return h;
+}
 
-}  // CalculateCharEleLength()
 
-
-/*----------------------------------------------------------------------*
- | calculate the linear B-operator                           dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
     LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin, LINALG::Matrix<nsd_, nen_>* N_XYZ)
@@ -3446,12 +3323,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
       (*boplin)(5, nsd_ * numdofpernode_ * i + 2) = (*N_XYZ)(0, i);
     }
   }
-}  // CalculateBoplin()
+}
 
-
-/*----------------------------------------------------------------------*
- | calculate the nonlinear B-operator                        dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
     LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop, LINALG::Matrix<nsd_, nsd_>* defgrd,
@@ -3516,12 +3389,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
           (*defgrd)(2, 2) * (*N_XYZ)(0, i) + (*defgrd)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-}  // CalculateBop()
+}
 
-
-/*----------------------------------------------------------------------*
- | calculate right Cauchy Green tensor in different styles   dano 11/13 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd, const double& J,
@@ -3568,13 +3437,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     dJ_dd.MultiplyTN(J, defgrd_inv_vec, N_X);
 
   }  // method only implemented for fully three dimensional analysis
+}
 
-}  // CalculateLinearisationOfJacobian()
-
-
-/*----------------------------------------------------------------------*
- | calculate right Cauchy Green tensor in different styles   dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
     LINALG::Matrix<6, 1>& Cratevct,          // (io) C' in vector notation
@@ -3614,13 +3478,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
   Cinvvct(3) = Cinv(0, 1);
   Cinvvct(4) = Cinv(1, 2);
   Cinvvct(5) = Cinv(2, 0);
+}
 
-}  // CalculateCauchyGreens()
-
-
-/*----------------------------------------------------------------------*
- | get the corresponding structural material                 dano 11/12 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
     DRT::Element* ele  // the element whose matrix is calculated
@@ -3635,12 +3494,8 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
     dserror("no second material defined for element %i", ele->Id());
 
   return structmat;
+}
 
-}  // GetSTRMaterial()
-
-/*----------------------------------------------------------------------*
- | compute error compared to analytical solution              vuong 03/15 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
     DRT::Element* ele,  // the element whose matrix is calculated
@@ -3755,10 +3610,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- | extract the phase at node-level                         proell 05/18 |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtractPhaseInformation(
     DRT::Element* ele, LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase)
@@ -3935,29 +3786,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 
 #endif
 
-  /*
-  // get efcap (at the last time step) by evaluating elements with etemp
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> ecapa_last(true);
-  LINALG::Matrix<nen_*numdofpernode_,1> etempn_save(etempn_);
-  etempn_ = etemp_;
-  NonlinearThermoDispContribution(
-    ele,
-    time,
-    disp,
-    vel,
-    nullptr,
-    &ecapa_last,  // element capacity matrix
-    nullptr,
-    nullptr,
-    nullptr,
-    INPAR::THR::heatflux_none,
-    INPAR::THR::tempgrad_none,
-    params
-    );
-
-  // restore temperature
-  etempn_ = etempn_save;
-  */
 
   // f_cap = C(T_{n+1}) * T_n
   // TODO this is not(!) how it's done right now in time integration, should be changed there
@@ -4112,6 +3940,4 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
 }
 #endif  // CALCSTABILOFREACTTERM
 
-
-/*----------------------------------------------------------------------*/
 #endif  // D_THERMO
