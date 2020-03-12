@@ -132,7 +132,6 @@ namespace DRT
       //! number of Gauss points
       static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
-      // new method for volume coupling
       //! Evaluate for multiple dofsets
       int Evaluate(DRT::Element* ele,                //!< current element
           Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
@@ -159,6 +158,7 @@ namespace DRT
 
      private:
       //! @name general thermal functions
+      //! @{
 
       //! calculate complete internal force, tangent matrix k_TT and capacity matrix
       //!
@@ -283,10 +283,10 @@ namespace DRT
 
       //! build linearisation of Jacobian w.r.t. d: dJ_dd
       void CalculateLinearisationOfJacobian(
-          LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd,  //  (o) dJ_dd
-          const double& J,                                         // Jacobian
-          const LINALG::Matrix<nsd_, nen_>& N_XYZ,      // linear gradient of shape functions
-          const LINALG::Matrix<nsd_, nsd_>& defgrd_inv  // inverse of F
+          LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd,  //!<  [out] dJ_dd
+          const double& J,                                         //!< Jacobian
+          const LINALG::Matrix<nsd_, nen_>& N_XYZ,      //!< linear gradient of shape functions
+          const LINALG::Matrix<nsd_, nsd_>& defgrd_inv  //!< inverse of F
       );
 
       //! build derivatives of right Cauchy-Green deformation tensor C
@@ -323,7 +323,8 @@ namespace DRT
           DRT::Element* ele,          //!< the element whose matrix is calculated
           std::vector<double>& disp,  //!< current displacements
           std::vector<double>& vel,   //!< current velocities
-          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
+              etangcoupl,  //!< k_Td
           Teuchos::ParameterList& params);
 
       /// @}
@@ -394,13 +395,10 @@ namespace DRT
       //! calculate characteristic element length
       double CalculateCharEleLength();
 
-      /// Evaluate element ERROR
-      /*!
-          general function to compute the error (analytical solution from input file)
-       */
+      //! Compute the error compared to an analytical solution from input file
       virtual void ComputeError(DRT::Element* ele,  //!< current element whose terms are calculated
           LINALG::Matrix<nen_ * numdofpernode_, 1>& evector,  //!< element vectorr
-          Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
+          Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 
       //! Compute nodal position and velocity
@@ -438,7 +436,7 @@ namespace DRT
       //! copy matrix contents into character vector
       void CopyMatrixIntoCharVector(std::vector<char>& data, LINALG::Matrix<nquad_, nsd_>& stuff);
 
-      // FDcheck of conductivity matrix on element level
+      //! FDcheck of conductivity matrix on element level
       void FDCheckCouplNlnFintCondCapa(
           DRT::Element* ele,          //!< the element whose matrix is calculated
           const double& time,         //!< current time
@@ -449,7 +447,7 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
           Teuchos::ParameterList& params);
 
-      // FDcheck of linearized capacity matrix on element level
+      //! FDcheck of linearized capacity matrix on element level
       void FDCheckCapalin(DRT::Element* ele,  //!< the element whose matrix is calculated
           const double& time,                 //!< current time
           std::vector<double>& disp,          //!< current displacements
