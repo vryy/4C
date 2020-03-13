@@ -1158,32 +1158,32 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   std::vector<std::string> blocksmoother;
   std::vector<double> schuromega;
   {
-    int word1;
-    double word2;
+    std::string word1;
+    std::string word2;
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
-      while (pciterstream >> word1) pciter.push_back(word1);
-      while (pcomegastream >> word2) pcomega.push_back(word2);
+      while (pciterstream >> word1) pciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) pcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
       std::istringstream pcomegastream(
           Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
-      while (pciterstream >> word1) spciter.push_back(word1);
-      while (pcomegastream >> word2) spcomega.push_back(word2);
+      while (pciterstream >> word1) spciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) spcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
-      while (pciterstream >> word1) fpciter.push_back(word1);
-      while (pcomegastream >> word2) fpcomega.push_back(word2);
+      while (pciterstream >> word1) fpciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) fpcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
-      while (pciterstream >> word1) apciter.push_back(word1);
-      while (pcomegastream >> word2) apcomega.push_back(word2);
+      while (pciterstream >> word1) apciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) apcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::string word;
@@ -1194,7 +1194,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     {
       std::istringstream blocksmootherstream(
           Teuchos::getNumericStringParameter(fsimono, "SCHUROMEGA"));
-      while (blocksmootherstream >> word2) schuromega.push_back(word2);
+      while (blocksmootherstream >> word2) schuromega.push_back(std::atof(word2.c_str()));
     }
   }
 

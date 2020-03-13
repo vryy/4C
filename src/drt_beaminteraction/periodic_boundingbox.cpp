@@ -65,9 +65,12 @@ void GEO::MESHFREE::BoundingBox::Init()
   {
     for (int row = 0; row < 3; ++row)
     {
-      double value = 1.0e12;
+      std::string value;
       if (xaabbstream >> value)
-        box_(row, col) = value;
+      {
+        double doublevalue = std::atof(value.c_str());
+        box_(row, col) = doublevalue;
+      }
       else
         dserror(
             " Specify six values for bounding box in three dimensional problem."
@@ -82,10 +85,11 @@ void GEO::MESHFREE::BoundingBox::Init()
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
   {
-    int val = -1;
+    std::string val;
     if (periodicbc >> val)
     {
-      if (val)
+      int intval = std::atoi(val.c_str());
+      if (intval)
       {
         // set flag
         pbconoff_[dim] = true;

@@ -61,7 +61,7 @@ void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
   // values for damping coefficients of beams if they are specified via input file
   // (per unit length, NOT yet multiplied by fluid viscosity)
-  setNumericStringParameter("BEAMS_DAMPING_COEFF_PER_UNITLENGTH", "0.0 0.0 0.0",
+  StringParameter("BEAMS_DAMPING_COEFF_PER_UNITLENGTH", "0.0 0.0 0.0",
       "values for beam damping coefficients (per unit length and NOT yet multiplied by fluid "
       "viscosity): "
       "translational perpendicular/parallel to beam axis, rotational around axis",

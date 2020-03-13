@@ -540,16 +540,13 @@ void FPSI::Monolithic::SetupSolver()
   combinedconvergence_ =
       DRT::INPUT::IntegralValue<INPAR::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
 
-  // toleranceiterinc_        = fpsidynamicparams.get<double> ("INCTOL");
-  // toleranceresidualforces_ = fpsidynamicparams.get<double> ("RESTOL");
-
   {
     std::istringstream tolresstream(
         Teuchos::getNumericStringParameter(fpsidynamicparams, "RESTOL"));
-    double word;
+    std::string word;
     while (tolresstream >> word)
     {
-      toleranceresidualforceslist_.push_back(word);
+      toleranceresidualforceslist_.push_back(std::atof(word.c_str()));
     }
     toleranceresidualforces_ = toleranceresidualforceslist_[0];
 
@@ -557,7 +554,7 @@ void FPSI::Monolithic::SetupSolver()
         Teuchos::getNumericStringParameter(fpsidynamicparams, "INCTOL"));
     while (tolincstream >> word)
     {
-      toleranceiterinclist_.push_back(word);
+      toleranceiterinclist_.push_back(std::atof(word.c_str()));
     }
     toleranceiterinc_ = toleranceiterinclist_[0];
   }

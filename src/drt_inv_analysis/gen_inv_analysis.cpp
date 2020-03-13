@@ -218,12 +218,13 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     const Teuchos::ParameterList& myiap = DRT::Problem::Instance(prob)->InverseAnalysisParams();
     std::set<int> myset;
 
-    int word1;
+    std::string word1;
     std::istringstream matliststream(Teuchos::getNumericStringParameter(myiap, "INV_LIST"));
     while (matliststream >> word1)
     {
-      if (word1 != -1)  // this means there was no matlist specified in the input file
-        myset.insert(word1);
+      int word1_int = std::atoi(word1.c_str());
+      if (word1_int != -1)  // this means there was no matlist specified in the input file
+        myset.insert(word1_int);
     }
     matset_.push_back(myset);
   }

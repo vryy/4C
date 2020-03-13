@@ -204,8 +204,8 @@ SHAPEDERIVATIVES                Yes
 USESHAPEDERIVATIVES             Yes
 PARTITIONED                     monolithic
 SECONDORDER                     No
-RESTOL                          1e-10
-INCTOL                          1e-10
+RESTOL                          1.0e-10 1.0e-8
+INCTOL                          1.0e-10 1.0e-8
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFINC               And

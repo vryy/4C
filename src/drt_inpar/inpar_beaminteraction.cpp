@@ -53,7 +53,7 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "CROSSLINKER", "No", "Crosslinker in problem", yesnotuple, yesnovalue, &crosslinking);
 
   // bounding box for initial random crosslinker position
-  setNumericStringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  StringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Linker are initially set randomly within this bounding box", &crosslinking);
 
   // time step for stochastic events concerning crosslinking
@@ -86,10 +86,10 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &crosslinking);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  setNumericStringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
   // start and end for bspots on a filament in percent of reference filament length
-  setNumericStringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
 
 
@@ -122,10 +122,10 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &spherebeamlink);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  setNumericStringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
   // start and end for bspots on a filament in percent of reference filament length
-  setNumericStringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
 
   /*----------------------------------------------------------------------*/
