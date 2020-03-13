@@ -167,6 +167,16 @@ namespace BEAMINTERACTION
     //! get Gauss rule to be used
     DRT::UTILS::GaussRule1D GetGaussRule() const;
 
+    /*!
+    \brief Set first element
+    */
+    inline void SetElement1(DRT::Element const* element1) { element1_ = element1; };
+
+    /*!
+    \brief Set second element
+    */
+    inline void SetElement2(DRT::Element const* element2) { element2_ = element2; };
+
     //@}
 
    protected:

@@ -60,6 +60,16 @@ namespace INPAR
       regularization_none       ///< no regularization
     };
 
+    /**
+     * \brief rule for how to assign the role of slave and master to beam elements
+     */
+    enum class MasterSlaveChoice
+    {
+      smaller_eleGID_is_slave,
+      higher_eleGID_is_slave,
+      choice_master_slave_vague
+    };
+
     /// data format for written numeric data via vtk
     enum OutputDataFormat
     {
