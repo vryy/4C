@@ -154,8 +154,8 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
   // fixme this backwards compatibility modification should be moved outside
-  // for now use existing value as a default value
-  double temperature = params.get<double>("scalartemp", currentTemperature);
+  // use initial value as a default value
+  double temperature = params.get<double>("scalartemp", params_->thetainit_);
   unsigned gp = params.get<int>("gp", 0);
   Reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
 

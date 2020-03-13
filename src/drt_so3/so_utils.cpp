@@ -198,8 +198,71 @@ void DRT::ELEMENTS::UTILS::NodalFiber(DRT::Node** nodes,
   return;
 }
 
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
+        shapefctsGP,                // shape function of current Gauss-point
+    Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
+)
+{
+  // initialise the temperature
+  Teuchos::RCP<std::vector<double>> temperature_vector =
+      params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
+  double scalartemp = 0.0;
+
+  // current temperature vector is available
+  if (temperature_vector != Teuchos::null)
+  {
+    // scalar-valued temperature: T = shapefunctions . element temperatures
+    // T = N_T^(e) . T^(e)
+    // get the temperature vector by extraction from parameter list
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1> etemp(true);
+    for (int i = 0; i < DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+    {
+      etemp(i, 0) = (*temperature_vector)[i];
+    }
+    // identical shapefunctions for displacements and temperatures
+    scalartemp = shapefctsGP.Dot(etemp);
+
+    // insert current element temperature T_{n+1} into parameter list
+    params.set<double>("scalartemp", scalartemp);
+  }
+}
+
 template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
     const DRT::Element*, const std::vector<double>&, LINALG::Matrix<3, 3>&);
 template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(DRT::Node**,
     const std::vector<LINALG::Matrix<10, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
     std::vector<LINALG::Matrix<3, 1>>&);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet4>(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
+        1>& shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex27>(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
+        1>& shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex8>(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
+        1>& shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::nurbs27>(
+    const LINALG::Matrix<
+        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::nurbs27>::numNodePerElement, 1>&
+        shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet10>(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
+        1>& shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex20>(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
+        1>& shapefctsGP,
+    Teuchos::ParameterList& params);

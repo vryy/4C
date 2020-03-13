@@ -1227,6 +1227,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     }
 
     params.set<int>("gp", gp);
+    UTILS::GetTemperatureForStructuralMaterial<tet10>(shapefcts_4gp[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

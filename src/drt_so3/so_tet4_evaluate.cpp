@@ -30,6 +30,10 @@
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplastichyperelast.H"
+#include "../drt_mat/robinson.H"
+#include "so_utils.H"
 
 //#define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -1600,6 +1604,10 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     }
 
     params.set<int>("gp", gp);
+
+
+    UTILS::GetTemperatureForStructuralMaterial<tet4>(shapefcts[gp], params);
+
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
 
     // return gp stresses

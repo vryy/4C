@@ -30,6 +30,12 @@ namespace DRT
               shapefcts,
           std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& fibergp,
           std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& sheetgp);
+
+      template <DRT::Element::DiscretizationType distype>
+      void GetTemperatureForStructuralMaterial(
+          const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
+              shapefctsGP,
+          Teuchos::ParameterList& params);
     }  // namespace UTILS
   }    // namespace ELEMENTS
 }  // namespace DRT

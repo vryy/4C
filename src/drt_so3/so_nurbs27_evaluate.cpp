@@ -21,6 +21,7 @@
 #include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_elements_paramsinterface.H"
+#include "so_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -903,6 +904,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     LINALG::Matrix<6, 6> cmat(true);
     LINALG::Matrix<6, 1> stress(true);
     params.set<int>("gp", gp);
+    UTILS::GetTemperatureForStructuralMaterial<nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
     // end of call material law
 
