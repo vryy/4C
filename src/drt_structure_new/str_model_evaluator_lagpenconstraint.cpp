@@ -201,7 +201,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
     block_ptr =
         (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true));
     block_ptr->Scale(timefac_np);
-    GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::block_displ_lm);
+    GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::displ_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
 
@@ -209,7 +209,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
     block_ptr =
         (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true))
             ->Transpose();
-    GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::block_lm_displ);
+    GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }

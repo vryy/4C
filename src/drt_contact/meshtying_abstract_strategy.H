@@ -497,7 +497,7 @@ namespace CONTACT
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      *
-     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint, ...
+     *  \param bt (in): Desired vector block type, e.g. displ, constraint, ...
      *
      *  \date 05/2016
      *  \author hiermeier */
@@ -509,7 +509,7 @@ namespace CONTACT
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      *
-     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *
      *  \date 05/2016
      *  \author hiermeier */

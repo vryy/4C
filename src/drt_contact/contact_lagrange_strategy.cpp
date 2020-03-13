@@ -4082,7 +4082,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
   // if there are no active LM contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    if (nonSmoothContact_ && bt == DRT::UTILS::block_displ_displ)
+    if (nonSmoothContact_ && bt == DRT::UTILS::MatBlockType::displ_displ)
       return nonsmooth_Penalty_stiff_;
     else
       return Teuchos::null;
@@ -4093,7 +4093,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
     {
       mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
@@ -4122,7 +4122,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       break;
     }
-    case DRT::UTILS::block_displ_lm:
+    case DRT::UTILS::MatBlockType::displ_lm:
     {
       // build constraint matrix kdz
       Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
@@ -4142,7 +4142,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       break;
     }
-    case DRT::UTILS::block_lm_displ:
+    case DRT::UTILS::MatBlockType::lm_displ:
     {
       // build constraint matrix kzd
       Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
@@ -4176,7 +4176,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, LinSystemLMDoFRowMapPtr(), ProblemDofs());
       break;
     }
-    case DRT::UTILS::block_lm_lm:
+    case DRT::UTILS::MatBlockType::lm_lm:
     {
       // build constraint matrix kzz
       Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr = Teuchos::null;
@@ -4281,7 +4281,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
   // if there are no active LM contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    if (nonSmoothContact_ && bt == DRT::UTILS::block_displ)
+    if (nonSmoothContact_ && bt == DRT::UTILS::VecBlockType::displ)
     {
       return nonsmooth_Penalty_force_;
     }
@@ -4292,7 +4292,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       if (nonSmoothContact_ && nonsmooth_Penalty_force_ != Teuchos::null)
       {
@@ -4314,7 +4314,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
 
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
     {
       vec_ptr = constrrhs_;
       if (IsSelfContact() && !IsCondensedSystem())

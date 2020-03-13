@@ -255,7 +255,7 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector() const
 {
-  return CreateGlobalVector(DRT::UTILS::vec_init_zero, Teuchos::null);
+  return CreateGlobalVector(DRT::UTILS::VecInitType::zero, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
@@ -598,7 +598,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
   switch (vecinittype)
   {
     /* use the last converged state to construct a new solution vector */
-    case DRT::UTILS::vec_init_last_time_step:
+    case DRT::UTILS::VecInitType::last_time_step:
     {
       if (modeleval_ptr.is_null()) dserror("We need access to the STR::ModelEvaluator object!");
 
@@ -616,7 +616,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
       break;
     }
     /* use the current global state to construct a new solution vector */
-    case DRT::UTILS::vec_init_current_state:
+    case DRT::UTILS::VecInitType::init_current_state:
     {
       if (modeleval_ptr.is_null()) dserror("We need access to the STR::ModelEvaluator object!");
 
@@ -633,7 +633,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
       break;
     }
     /* construct a new solution vector filled with zeros */
-    case DRT::UTILS::vec_init_zero:
+    case DRT::UTILS::VecInitType::zero:
     default:
     {
       // nothing to do.
@@ -903,22 +903,22 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(LINALG::SparseOperator& 
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case DRT::UTILS::block_displ_displ:
+      case DRT::UTILS::MatBlockType::displ_displ:
       {
         blockmat_ptr->Matrix(0, 0).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::block_displ_lm:
+      case DRT::UTILS::MatBlockType::displ_lm:
       {
         blockmat_ptr->Matrix(0, b_id).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::block_lm_displ:
+      case DRT::UTILS::MatBlockType::lm_displ:
       {
         blockmat_ptr->Matrix(b_id, 0).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::block_lm_lm:
+      case DRT::UTILS::MatBlockType::lm_lm:
       {
         blockmat_ptr->Matrix(b_id, b_id).Assign(access, matrix);
         break;
@@ -933,7 +933,8 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(LINALG::SparseOperator& 
   }
 
   // sanity check
-  if (model_block_id_.find(mt) == model_block_id_.end() or bt != DRT::UTILS::block_displ_displ)
+  if (model_block_id_.find(mt) == model_block_id_.end() or
+      bt != DRT::UTILS::MatBlockType::displ_displ)
     dserror(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
@@ -968,22 +969,22 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractMode
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case DRT::UTILS::block_displ_displ:
+      case DRT::UTILS::MatBlockType::displ_displ:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, 0));
         break;
       }
-      case DRT::UTILS::block_displ_lm:
+      case DRT::UTILS::MatBlockType::displ_lm:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, b_id));
         break;
       }
-      case DRT::UTILS::block_lm_displ:
+      case DRT::UTILS::MatBlockType::lm_displ:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, 0));
         break;
       }
-      case DRT::UTILS::block_lm_lm:
+      case DRT::UTILS::MatBlockType::lm_lm:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, b_id));
         break;
@@ -998,7 +999,8 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractMode
   }
 
   // sanity check
-  if (model_block_id_.find(mt) == model_block_id_.end() or bt != DRT::UTILS::block_displ_displ)
+  if (model_block_id_.find(mt) == model_block_id_.end() or
+      bt != DRT::UTILS::MatBlockType::displ_displ)
     dserror(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
@@ -1075,7 +1077,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
 Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractDisplBlock(
     LINALG::SparseOperator& jac) const
 {
-  return ExtractModelBlock(jac, INPAR::STR::model_structure, DRT::UTILS::block_displ_displ);
+  return ExtractModelBlock(jac, INPAR::STR::model_structure, DRT::UTILS::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*

@@ -452,7 +452,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       if (force_.is_null()) dserror("force vector not available");
       vec_ptr = force_;
@@ -476,7 +476,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
       if (stiff_.is_null()) dserror("stiffness not available");
       mat_ptr = stiff_;
       break;

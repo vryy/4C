@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
 {
   switch (bt)
   {
-    case DRT::UTILS::block_temp:
+    case DRT::UTILS::VecBlockType::temp:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()));
     default:
@@ -144,7 +144,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
 
   switch (bt)
   {
-    case DRT::UTILS::block_temp:
+    case DRT::UTILS::VecBlockType::temp:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(ft_), 0));
     default:
       return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bt);
@@ -156,13 +156,13 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlo
 {
   switch (bt)
   {
-    case DRT::UTILS::block_displ_temp:
+    case DRT::UTILS::MatBlockType::displ_temp:
       return Teuchos::rcp(
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
               100, true, false, LINALG::SparseMatrix::FE_MATRIX));
-    case DRT::UTILS::block_temp_displ:
-    case DRT::UTILS::block_temp_temp:
+    case DRT::UTILS::MatBlockType::temp_displ:
+    case DRT::UTILS::MatBlockType::temp_temp:
       return Teuchos::rcp(
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
@@ -177,14 +177,14 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
 {
   switch (bt)
   {
-    case DRT::UTILS::block_displ_temp:
+    case DRT::UTILS::MatBlockType::displ_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap(),  // col map
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),           // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::block_temp_displ:
+    case DRT::UTILS::MatBlockType::temp_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
@@ -192,7 +192,7 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::block_temp_temp:
+    case DRT::UTILS::MatBlockType::temp_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
@@ -209,11 +209,11 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlock
 
   switch (bt)
   {
-    case DRT::UTILS::block_temp_temp:
+    case DRT::UTILS::MatBlockType::temp_temp:
       return ktt_;
-    case DRT::UTILS::block_temp_displ:
+    case DRT::UTILS::MatBlockType::temp_displ:
       return ktd_;
-    case DRT::UTILS::block_displ_temp:
+    case DRT::UTILS::MatBlockType::displ_temp:
       return kdt_;
     default:
       return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bt, cparams);
@@ -225,8 +225,8 @@ void CONTACT::CoNitscheStrategyTsi::Integrate(CONTACT::ParamsInterface& cparams)
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 
-  ft_ = CreateRhsBlockPtr(DRT::UTILS::block_temp);
-  ktt_ = CreateMatrixBlockPtr(DRT::UTILS::block_temp_temp);
-  ktd_ = CreateMatrixBlockPtr(DRT::UTILS::block_temp_displ);
-  kdt_ = CreateMatrixBlockPtr(DRT::UTILS::block_displ_temp);
+  ft_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::temp);
+  ktt_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp);
+  ktd_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_displ);
+  kdt_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_temp);
 }

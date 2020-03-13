@@ -938,12 +938,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       vec_ptr = fc_;
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
       return Teuchos::null;
       break;
     default:
@@ -1048,7 +1048,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBlockPtr
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
     {
       mat_ptr = kc_;
       break;

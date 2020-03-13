@@ -63,7 +63,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
     return -1.0;
 
   Teuchos::RCP<const Epetra_Vector> constrRhs =
-      Strategy().GetRhsBlockPtrForNormCheck(DRT::UTILS::block_constraint);
+      Strategy().GetRhsBlockPtrForNormCheck(DRT::UTILS::VecBlockType::constraint);
 
   // no contact contributions present
   if (constrRhs.is_null()) return 0.0;

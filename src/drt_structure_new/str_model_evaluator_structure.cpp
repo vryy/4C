@@ -237,7 +237,7 @@ bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
     LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   int err = Stiff().Scale(timefac_np);
-  GState().AssignModelBlock(jac, Stiff(), Type(), DRT::UTILS::block_displ_displ);
+  GState().AssignModelBlock(jac, Stiff(), Type(), DRT::UTILS::MatBlockType::displ_displ);
 
   // add the visco and mass contributions
   Int().AddViscoMassContributions(jac);
@@ -1312,7 +1312,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateJacobianContributionsFromElementLev
 void STR::MODELEVALUATOR::Structure::AssembleJacobianContributionsFromElementLevelForPTC(
     Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n)
 {
-  GState().AssignModelBlock(*modjac, StiffPTC(), Type(), DRT::UTILS::block_displ_displ);
+  GState().AssignModelBlock(*modjac, StiffPTC(), Type(), DRT::UTILS::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*

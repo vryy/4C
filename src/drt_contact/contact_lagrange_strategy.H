@@ -101,7 +101,7 @@ namespace CONTACT
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      *
-     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint,*/
+     *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const;
 
@@ -132,7 +132,7 @@ namespace CONTACT
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      *
-     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,

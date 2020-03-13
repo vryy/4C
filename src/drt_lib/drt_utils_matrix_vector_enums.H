@@ -19,65 +19,65 @@ namespace DRT
   namespace UTILS
   {
     /// enum, which specifies the desired global vector initialization during creation
-    enum VecInitType
+    enum class VecInitType
     {
-      vec_init_zero,            ///< fill the vector with zeros
-      vec_init_last_time_step,  ///< use the last converged time step state
-      vec_init_current_state    ///< use the current state
+      zero,               ///< fill the vector with zeros
+      last_time_step,     ///< use the last converged time step state
+      init_current_state  ///< use the current state
     };
 
     /// enum, which specifies the desired matrix block for the different models
-    enum MatBlockType
+    enum class MatBlockType
     {
-      block_displ_displ,          ///< Kdd block (structural block)
-      block_displ_lm,             ///< Kdz block (of the corresponding model evaluator)
-      block_lm_displ,             ///< Kzd block (of the corresponding model evaluator)
-      block_lm_lm,                ///< Kzz block (of the corresponding model evaluator)
-      block_temp_temp,            ///< Ktt block (thermal block)
-      block_temp_displ,           ///< Ktd block (structure-thermo-coupling)
-      block_displ_temp,           ///< Kdt block (thermo-structure-coupling)
-      block_porofluid_porofluid,  ///< Kpp block (porofluid-porofluid)
-      block_porofluid_displ,      ///< Kpd block (porofluid-structure)
-      block_displ_porofluid       ///< Kdp block (structure-porofluid)
+      displ_displ,          ///< Kdd block (structural block)
+      displ_lm,             ///< Kdz block (of the corresponding model evaluator)
+      lm_displ,             ///< Kzd block (of the corresponding model evaluator)
+      lm_lm,                ///< Kzz block (of the corresponding model evaluator)
+      temp_temp,            ///< Ktt block (thermal block)
+      temp_displ,           ///< Ktd block (structure-thermo-coupling)
+      displ_temp,           ///< Kdt block (thermo-structure-coupling)
+      porofluid_porofluid,  ///< Kpp block (porofluid-porofluid)
+      porofluid_displ,      ///< Kpd block (porofluid-structure)
+      displ_porofluid       ///< Kdp block (structure-porofluid)
     };
 
     //! map matrix block type enum to std::string
-    inline const std::string MatBlockType2String(const enum MatBlockType type)
+    inline const std::string MatBlockType2String(const enum DRT::UTILS::MatBlockType type)
     {
       switch (type)
       {
-        case block_displ_displ:
+        case DRT::UTILS::MatBlockType::displ_displ:
           return "block_displ_displ";
-        case block_displ_lm:
+        case DRT::UTILS::MatBlockType::displ_lm:
           return "block_displ_lm";
-        case block_lm_displ:
+        case DRT::UTILS::MatBlockType::lm_displ:
           return "block_lm_displ";
-        case block_lm_lm:
+        case DRT::UTILS::MatBlockType::lm_lm:
           return "block_lm_lm";
-        case block_temp_temp:
+        case DRT::UTILS::MatBlockType::temp_temp:
           return "block_temp_temp";
-        case block_temp_displ:
+        case DRT::UTILS::MatBlockType::temp_displ:
           return "block_temp_displ";
-        case block_displ_temp:
+        case DRT::UTILS::MatBlockType::displ_temp:
           return "block_displ_temp";
-        case block_porofluid_porofluid:
+        case DRT::UTILS::MatBlockType::porofluid_porofluid:
           return "block_porofluid_porofluid";
-        case block_porofluid_displ:
+        case DRT::UTILS::MatBlockType::porofluid_displ:
           return "block_porofluid_displ";
-        case block_displ_porofluid:
+        case DRT::UTILS::MatBlockType::displ_porofluid:
           return "block_displ_porofluid";
         default:
           return "unknown matrix block type";
       }
     }
 
-    /** enum, which specifies the desired vector blocks for the different models */
-    enum VecBlockType
+    //! enum, which specifies the desired vector blocks for the different models
+    enum class VecBlockType
     {
-      block_displ,       ///< displacement block (structural block)
-      block_constraint,  ///< lagrange multiplier/constraint block of the corresponding model
-      block_temp,        ///< temperature block (thermal block)
-      block_porofluid,   ///< porofluid block (porofluid block)
+      displ,       ///< displacement block (structural block)
+      constraint,  ///< lagrange multiplier/constraint block of the corresponding model
+      temp,        ///< temperature block (thermal block)
+      porofluid,   ///< porofluid block (porofluid block)
     };
 
     //! map vector block type enum to std::string
@@ -85,13 +85,13 @@ namespace DRT
     {
       switch (type)
       {
-        case block_displ:
+        case DRT::UTILS::VecBlockType::displ:
           return "block_displ";
-        case block_constraint:
+        case DRT::UTILS::VecBlockType::constraint:
           return "block_constraint";
-        case block_temp:
+        case DRT::UTILS::VecBlockType::temp:
           return "block_temp";
-        case block_porofluid:
+        case DRT::UTILS::VecBlockType::porofluid:
           return "block_porofluid";
         default:
           return "unknown vector block type";

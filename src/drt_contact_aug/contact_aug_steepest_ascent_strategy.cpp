@@ -67,13 +67,13 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
 
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       dserror("Unused!");
 
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
     {
       rhs_block = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
 
@@ -103,7 +103,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy::GetMa
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
     {
       mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
@@ -121,19 +121,19 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy::GetMa
 
       break;
     }
-    case DRT::UTILS::block_displ_lm:
+    case DRT::UTILS::MatBlockType::displ_lm:
     {
       // do nothing
 
       break;
     }
-    case DRT::UTILS::block_lm_displ:
+    case DRT::UTILS::MatBlockType::lm_displ:
     {
       // do nothing
 
       break;
     }
-    case DRT::UTILS::block_lm_lm:
+    case DRT::UTILS::MatBlockType::lm_lm:
     {
       // do nothing
 

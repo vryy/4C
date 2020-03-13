@@ -1053,12 +1053,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       vec_ptr = f_;
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
     {
       break;
     }
@@ -1080,18 +1080,18 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPt
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
       mat_ptr = Teuchos::null;
       break;
-    case DRT::UTILS::block_displ_lm:
+    case DRT::UTILS::MatBlockType::displ_lm:
       if (dm_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_;
       break;
-    case DRT::UTILS::block_lm_displ:
+    case DRT::UTILS::MatBlockType::lm_displ:
       if (dm_matrix_t_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_t_;
       break;
-    case DRT::UTILS::block_lm_lm:
+    case DRT::UTILS::MatBlockType::lm_lm:
       if (lm_diag_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = lm_diag_matrix_;
       break;
