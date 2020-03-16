@@ -158,8 +158,8 @@ void MAT::ThermoMechThreePhase::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
   // fixme this backwards compatibility modification should be moved outside
-  double temperature = params.get<double>("scalartemp");
-  unsigned gp = params.get<int>("gp");
+  double temperature = params.get<double>("scalartemp", currentTemperature_);
+  unsigned gp = params.get<int>("gp", currentGp_);
   Reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
 
   SetupCmat(*cmat);
