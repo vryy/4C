@@ -6,7 +6,7 @@ import shlex
 import json
 
 
-def do_vscode_configuration(src_dir, build_dir, cmake_config):
+def do_vscode_configuration(src_dir, build_dir, cmake_config, mpi_header):
     print('Configure VS Code')
     vscode_dir = os.path.join(src_dir, '.vscode')
     if not os.path.isdir(vscode_dir):
@@ -16,7 +16,6 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
     cmake_args = shlex.split(cmake_config)
 
     compiler_path = None
-    mpi_header_path = '/usr/include/openmpi-x86_64'
     compile_commands = os.path.join(build_dir, 'compile_commands.json')
 
     # read compiler
@@ -26,13 +25,17 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
 
     # check if compiler was found
     if compiler_path is None:
-        print('Compiler not found')
+        print('Compiler not found in the cmake configuration string. Cannot setup VS Code automatically.')
         return
 
     # check, whether the mpi header directory exists
-    if not os.path.isdir(mpi_header_path):
+    if mpi_header is None:
+        print('MPIINCLUDEDIR is not set in your config file. Please add the path to the directory of mpi.h if you want to use VS Code.')
+        return
+
+    if not os.path.isdir(mpi_header):
         # Could not find openmpi (the location is currently hard-coded)
-        print('Could not find openmpi include path. VS Code setup failed!')
+        print('The mpi include path could not be found on your system. Please repair MPIINCLUDEDIR in your config file if you want to use VS Code')
         return
 
     # Check, whether there is already a configuration or not
@@ -49,15 +52,15 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
 
         # check for compatibility
         if 'version' not in cpp_properties:
-            print('The c_cpp_properties.json file is corrupt!')
+            print('The c_cpp_properties.json file is corrupt! Have to abort automaic setup of VS Code')
             return
         elif cpp_properties['version'] != 4:
-            print('Currently only version 4 of c_cpp_properties.json is supported. You may need to adapt adapt_vscode.py')
+            print('Currently only version 4 of c_cpp_properties.json is supported. You may need to adapt adapt_vscode.py to support more versions.')
             return
 
     # check, whether cmake wrote the compilation database
     if not os.path.isfile(compile_commands):
-        print('CMAKE has not written the compilation database (compile_commands.json)')
+        print('CMAKE has not written the compilation database (compile_commands.json).')
         return
 
     name = os.path.basename(build_dir)
@@ -65,7 +68,7 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
     # check whether the target was already configured
     for configuration in cpp_properties['configurations']:
         if configuration['name'] == name:
-            print('CS Code already configured')
+            print('VS Code is already configured')
             return
 
     # create new configuration
@@ -73,7 +76,7 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
         'name': name,
         'includePath': [
             '${{workspaceFolder}}/**',
-            mpi_header_path
+            mpi_header
         ],
         'compileCommands': compile_commands,
         'defines': [],
@@ -99,7 +102,13 @@ if __name__ == '__main__':
     parser.add_argument('src_dir', help='Path to the source directory'),
     parser.add_argument('build_dir', help='Path to the build directory'),
     parser.add_argument('cmake_config', help='CMake configuration.')
+    parser.add_argument('-mpiheaderdir', help='Path to the mpi header file')
 
     args = parser.parse_args()
 
-    do_vscode_configuration(args.src_dir, args.build_dir, args.cmake_config)
+    mpi_header = args.mpiheaderdir
+
+    if mpi_header == 'undefined':
+        mpi_header = None
+
+    do_vscode_configuration(args.src_dir, args.build_dir, args.cmake_config, mpi_header)
