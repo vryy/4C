@@ -207,6 +207,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D "CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=$LINKERFLAGSRELEASE" \
   -D "CMAKE_Fortran_FLAGS:STRING=$FFLAGS" \
   -D "CMAKE_Fortran_FLAGS_RELEASE:STRING=$FFLAGSRELEASE" \
+  -D "CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON" \
   -D "CMAKE_VERBOSE_MAKEFILE:BOOL=OFF" \
   -D "BUILD_SHARED_LIBS:BOOL=$SHARED_LIBS" \
   -D "CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH=./src" \
@@ -263,4 +264,10 @@ if [ -f .cproject ]; then ./utilities/ides/adapt_eclipse_cproject.py "`basename 
 if [ -f .idea/workspace.xml ]; then
   CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
   ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
+fi
+
+# adapt VSCode settings
+if [ -d .vscode ]; then
+  CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
+  ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
 fi
