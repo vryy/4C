@@ -213,6 +213,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D "HAVE_DEAL_II:BOOL=$BUILD_Deal" \
   -D "HAVE_TEKO:BOOL=$BUILD_Teko" \
   -D "HAVE_MueLu:BOOL=$BUILD_MueLu" \
+  -D HAVE_MueLuContact:BOOL=$BUILD_MueLuContact \
   -D "HAVE_Stratimikos:BOOL=$BUILD_Stratimikos" \
   -D "HAVE_OpenMP:BOOL=OFF" \
   -D "HAVE_Kokkos:BOOL=$BUILD_MueLu" \
