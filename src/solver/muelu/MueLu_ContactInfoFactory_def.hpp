@@ -10,7 +10,8 @@
 #ifndef MUELU_CONTACTINFOFACTORY_DEF_HPP_
 #define MUELU_CONTACTINFOFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 
 #include "MueLu_ContactInfoFactory_decl.hpp"
 

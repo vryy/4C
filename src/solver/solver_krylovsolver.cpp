@@ -21,7 +21,10 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 #include <MueLu_HierarchyHelpers.hpp>
+#endif
 #include <MueLu_VerboseObject.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -63,7 +66,8 @@ typedef Node NO;
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
 #endif  // HAVE_MueLu
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
 #include "solver_muelucontactsppreconditioner.H"
@@ -248,7 +252,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
@@ -257,7 +262,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact2) Parameters"))
     {
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner2(
           outfile_, Params().sublist("MueLu (Contact2) Parameters")));
 #else
@@ -266,7 +272,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
     {
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPenaltyPreconditioner(
           outfile_, Params().sublist("MueLu (PenaltyContact) Parameters")));
 #else
@@ -353,7 +360,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else

@@ -9,7 +9,8 @@
 Created on: Aug 2, 2012
 Author: wiesner
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 
 #include "../drt_lib/drt_dserror.H"
 

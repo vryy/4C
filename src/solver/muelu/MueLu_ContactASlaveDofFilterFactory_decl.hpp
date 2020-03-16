@@ -11,7 +11,8 @@
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_
 
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 
 #include "MueLu_ConfigDefs.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"

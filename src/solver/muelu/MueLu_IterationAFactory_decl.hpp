@@ -10,7 +10,8 @@
 #ifndef MUELU_ITERATIONAFACTORY_DECL_HPP_
 #define MUELU_ITERATIONAFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 
 #include <Xpetra_Map_fwd.hpp>
 #include <Xpetra_Vector_fwd.hpp>

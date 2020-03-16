@@ -12,7 +12,8 @@
 #ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 #define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 
 #include "solver_preconditionertype.H"
 

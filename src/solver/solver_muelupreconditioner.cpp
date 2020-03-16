@@ -44,7 +44,8 @@
 
 #include <MueLu_EpetraOperator.hpp>  // Aztec interface
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 #include "muelu/MueLu_BaciFactoryFactory_decl.hpp"  // Baci specific MueLu factories with xml interface
 #endif
 
@@ -229,7 +230,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
       mueluOp->SetFixedBlockSize(numdf);
 
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
       Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>>
           myFactFact = Teuchos::rcp(
               new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());

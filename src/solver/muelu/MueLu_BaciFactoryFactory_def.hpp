@@ -6,6 +6,7 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLuContact
+#include <Trilinos_version.h>
+#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
 #include "MueLu_BaciFactoryFactory_decl.hpp"
-#endif HAVE_MueLuContact
+#endif  // HAVE_MueLuContact
