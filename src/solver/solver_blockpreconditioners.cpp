@@ -10,6 +10,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Trilinos_version.h>
+
 #ifdef HAVE_MueLu
 #include <Xpetra_StridedMap.hpp>
 #include <Xpetra_MapExtractor.hpp>
@@ -120,7 +122,11 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
 
       // create maps
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> epetra_fullrangemap =
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+          Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
+#else
           Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+#endif
       Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> fullrangemap =
           Xpetra::StridedMapFactory<LO, GO, NO>::Build(
               epetra_fullrangemap, stridingInfo, -1 /* stridedBlock */, 0 /*globalOffset*/);
@@ -141,16 +147,28 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
       xmaps.push_back(strMap1);
       xmaps.push_back(strMap2);
 
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+      Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO, NO>> map_extractor =
+          Xpetra::MapExtractorFactory<Scalar, LO, GO, NO>::Build(fullrangemap, xmaps);
+#else
       Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
           Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
+#endif
 
       // build blocked Xpetra operator
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+      bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
+      bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
+      bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
+      bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
+#else
       bOp->setMatrix(0, 0, xA11);
       bOp->setMatrix(0, 1, xA12);
       bOp->setMatrix(1, 0, xA21);
       bOp->setMatrix(1, 1, xA22);
+#endif
       bOp->fillComplete();
 
       // create velocity null space
@@ -224,7 +242,11 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
       if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+          Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
+#else
           Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+#endif
 
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
           Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
@@ -254,16 +276,28 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
       xmaps.push_back(strMap1);
       xmaps.push_back(strMap2);
 
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+      Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO, NO>> map_extractor =
+          Xpetra::MapExtractorFactory<Scalar, LO, GO, NO>::Build(fullrangemap, xmaps);
+#else
       Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
           Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
+#endif
 
       // build blocked Xpetra operator
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+      bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
+      bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
+      bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
+      bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
+#else
       bOp->setMatrix(0, 0, xA11);
       bOp->setMatrix(0, 1, xA12);
       bOp->setMatrix(1, 0, xA21);
       bOp->setMatrix(1, 1, xA22);
+#endif
       bOp->fillComplete();
 
       ///////////////////////////////////////////////////////////////////////

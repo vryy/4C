@@ -27,6 +27,10 @@
 #endif
 #include <MueLu_VerboseObject.hpp>
 
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400  // Can this be merged with above?
+#include <MueLu_HierarchyUtils.hpp>
+#endif
+
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
@@ -416,8 +420,13 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
   // check, if "SlaveDofMap" information is available in parameter lists
   if (epSlaveDofMap != Teuchos::null)
   {
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+    Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xSlaveDofMap =
+        Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(epSlaveDofMap));
+#else
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
         Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
+#endif
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(
                                   xSlaveDofMap));  // set map with active dofs
 

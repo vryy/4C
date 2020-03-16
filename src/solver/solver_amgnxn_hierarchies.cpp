@@ -13,6 +13,7 @@ Created on: Aug 11, 2014
 #ifdef HAVE_MueLu
 #include <iostream>
 
+#include <Trilinos_version.h>
 #include <Teuchos_PtrDecl.hpp>
 #include <Epetra_Time.h>
 #include <Teuchos_XMLParameterListHelpers.hpp>
@@ -136,6 +137,12 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::Setup");
 
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+  using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
+#else
+  using MueLuUtils = MueLu::Utils<double, int, int, Node>;
+#endif
+
   // ===========================================================
   // Build up MueLu Hierarchies of each one of the blocks
   // ===========================================================
@@ -231,7 +238,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
         if (this_level->IsAvailable("A"))
         {
           myA = this_level->Get<Teuchos::RCP<Matrix>>("A");
-          myAcrs = MueLu::Utils<double, int, int, Node>::Op2NonConstEpetraCrs(myA);
+          myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
           myAspa =
               Teuchos::rcp(new SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
           A_level[level] = myAspa;
@@ -265,7 +272,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
           if (this_level->IsAvailable("P"))
           {
             myA = this_level->Get<Teuchos::RCP<Matrix>>("P");
-            myAcrs = MueLu::Utils<double, int, int, Node>::Op2NonConstEpetraCrs(myA);
+            myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
             myAspa =
                 Teuchos::rcp(new SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
             P_level[level - 1] = myAspa;
@@ -276,7 +283,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
           if (this_level->IsAvailable("R"))
           {
             myA = this_level->Get<Teuchos::RCP<Matrix>>("R");
-            myAcrs = MueLu::Utils<double, int, int, Node>::Op2NonConstEpetraCrs(myA);
+            myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
             myAspa =
                 Teuchos::rcp(new SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
             R_level[level - 1] = myAspa;
@@ -311,6 +318,12 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
     int offsetFineLevel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy");
+
+#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
+  using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
+#else
+  using MueLuUtils = MueLu::Utils<double, int, int, Node>;
+#endif
 
   Epetra_Time timer(A_eop->Comm());
   timer.ResetStartTime();
@@ -423,7 +436,7 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
           myA = this_level
                     ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>(
                         "A");  // Matrix
-          myAcrs = MueLu::Utils<double, int, int, Node>::Op2NonConstEpetraCrs(myA);
+          myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
         }
         else
           dserror("Error in extracting A");
