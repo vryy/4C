@@ -1,4 +1,4 @@
-#
+
 # Build system for baci and support tools.
 # Including nightly test definitions.
 #
@@ -124,6 +124,7 @@ if (HDF5_FOUND)
   set(LIBRARIES
     ${LIBRARIES}
     ${HDF5_LIBRARIES}
+    ${SEARCH_HDF5_LIBRARIES}
     )
 endif(HDF5_FOUND)
 
