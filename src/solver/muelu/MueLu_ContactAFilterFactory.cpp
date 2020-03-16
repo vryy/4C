@@ -6,7 +6,7 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -32,4 +32,4 @@ template class MueLu::ContactAFilterFactory<std::complex<double>, int, int, Kokk
 # endif
 #endif*/
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact

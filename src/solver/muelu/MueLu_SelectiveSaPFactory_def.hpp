@@ -10,7 +10,7 @@
 #ifndef MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 #define MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include <Epetra_RowMatrixTransposer.h>
 
@@ -501,6 +501,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DEF_HPP_ */

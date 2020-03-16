@@ -11,7 +11,7 @@
 #define MUELU_SELECTIVESAPFACTORY_FWD_HPP_
 
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 namespace MueLu
 {
@@ -23,6 +23,6 @@ namespace MueLu
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 #endif
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_SELECTIVESAPFACTORY_FWD_HPP_ */

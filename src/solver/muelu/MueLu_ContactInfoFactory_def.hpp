@@ -10,7 +10,7 @@
 #ifndef MUELU_CONTACTINFOFACTORY_DEF_HPP_
 #define MUELU_CONTACTINFOFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ContactInfoFactory_decl.hpp"
 
@@ -226,7 +226,7 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 
 #endif /* MUELU_CONTACTINFOFACTORY_DEF_HPP_ */

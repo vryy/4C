@@ -61,12 +61,14 @@ typedef Node NO;
 #include "solver_mlpreconditioner.H"
 #ifdef HAVE_MueLu
 #include "solver_muelupreconditioner.H"
+#include "solver_amgnxn_preconditioner.H"
+#endif  // HAVE_MueLu
+#ifdef HAVE_MueLuContact
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
-#include "solver_amgnxn_preconditioner.H"
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif  // HAVE_TEKO
@@ -246,7 +248,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
@@ -255,7 +257,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact2) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner2(
           outfile_, Params().sublist("MueLu (Contact2) Parameters")));
 #else
@@ -264,7 +266,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPenaltyPreconditioner(
           outfile_, Params().sublist("MueLu (PenaltyContact) Parameters")));
 #else
@@ -351,7 +353,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else

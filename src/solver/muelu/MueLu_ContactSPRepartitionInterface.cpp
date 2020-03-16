@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -28,4 +28,4 @@ template class MueLu::ContactSPRepartitionInterface<int, long long int, KokkosSe
 #endif
 #endif
 
-#endif
+#endif  // HAVE_MueLuContact

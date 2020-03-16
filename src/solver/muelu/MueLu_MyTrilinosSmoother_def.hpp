@@ -10,7 +10,7 @@
 #ifndef MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 #define MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_MyTrilinosSmoother_decl.hpp"
 
@@ -175,6 +175,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_MYTRILINOSSMOOTHER_DEF_HPP_ */

@@ -9,7 +9,7 @@
 #ifndef MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ContactAFilterFactory_decl.hpp"
 
@@ -340,6 +340,6 @@ namespace MueLu
   }
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_CONTACTAFILTERFACTORY_DEF_HPP_ */

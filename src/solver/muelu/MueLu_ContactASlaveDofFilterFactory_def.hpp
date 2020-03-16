@@ -10,7 +10,7 @@
 #ifndef MUELU_CONTACTASLAVEDOFFILTERFACTORY_DEF_HPP_
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ContactASlaveDofFilterFactory_decl.hpp"
 
@@ -139,6 +139,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_CONTACTASLAVEDOFFILTERFACTORY_DEF_HPP_ */

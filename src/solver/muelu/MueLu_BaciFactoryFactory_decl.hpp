@@ -10,7 +10,7 @@
 #ifndef MUELU_BACIFACTORYFACTORY_DECL_HPP
 #define MUELU_BACIFACTORYFACTORY_DECL_HPP
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ConfigDefs.hpp"
 
@@ -85,7 +85,6 @@ namespace MueLu
             paramList, factoryMapIn, factoryManagersIn);
       if (factoryName == "FilteredTrilinosSmoother")
         return myBuildSmoother(paramList, factoryMapIn, factoryManagersIn);
-
       if (factoryMapIn.find(factoryName) != factoryMapIn.end())
       {
         // factory handled here
@@ -213,5 +212,5 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_BACIFACTORYFACTORY_SHORT
-#endif /* HAVE_MueLu */
+#endif /* HAVE_MueLuContact */
 #endif /* MUELU_BACIFACTORYFACTORY_DECL_HPP */

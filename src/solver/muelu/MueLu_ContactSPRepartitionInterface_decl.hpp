@@ -9,7 +9,7 @@
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include <Xpetra_Map.hpp>
 #include <Xpetra_Matrix.hpp>
@@ -90,5 +90,5 @@ namespace MueLu
 
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 #endif  /* MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_ */

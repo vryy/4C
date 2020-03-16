@@ -10,7 +10,7 @@
 #ifndef MUELU_ITERATIONAFACTORY_DEF_HPP_
 #define MUELU_ITERATIONAFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_IterationAFactory_decl.hpp"
 
@@ -166,6 +166,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_ITERATIONAFACTORY_DEF_HPP_ */

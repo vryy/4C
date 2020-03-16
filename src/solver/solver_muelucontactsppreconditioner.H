@@ -12,7 +12,7 @@
 #ifndef SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 #define SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "solver_preconditionertype.H"
 
@@ -216,6 +216,6 @@ namespace LINALG
   }     // namespace SOLVER
 }  // namespace LINALG
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* SOLVER_MUELUCONTACTSPPRECONDITIONER_H_ */

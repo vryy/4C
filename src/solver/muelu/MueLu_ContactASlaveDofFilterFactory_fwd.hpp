@@ -10,7 +10,7 @@
 #ifndef MUELU_CONTACTASLAVEDOFFILTERFACTORY_FWD_HPP_
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_FWD_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 namespace MueLu
 {
@@ -22,6 +22,6 @@ namespace MueLu
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_SHORT
 #endif
 
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact
 
 #endif /* MUELU_CONTACTASLAVEDOFFILTERFACTORY_FWD_HPP_ */

@@ -9,7 +9,7 @@
 Created on: Sep 7, 2012
 Author: wiesner
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -1204,4 +1204,4 @@ LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(
   return SmooFact;
 }
 
-#endif  // #ifdef HAVE_MueLu
+#endif  // #ifdef HAVE_MueLuContact

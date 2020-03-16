@@ -6,7 +6,7 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLu
+#ifdef HAVE_MueLuContact
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -29,4 +29,4 @@ template class MueLu::ContactASlaveDofFilterFactory<double, int, long long int, 
 // template class MueLu::ContactASlaveDofFilterFactory<std::complex<double>, int, int,
 // KokkosSerialNode>; # else # warning To compile MueLu with 'complex' support, please turn on
 // Teuchos_ENABLE_COMPLEX # endif #endif
-#endif  // HAVE_MueLu
+#endif  // HAVE_MueLuContact

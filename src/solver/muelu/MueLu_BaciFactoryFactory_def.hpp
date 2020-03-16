@@ -6,5 +6,6 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-
+#ifdef HAVE_MueLuContact
 #include "MueLu_BaciFactoryFactory_decl.hpp"
+#endif HAVE_MueLuContact
