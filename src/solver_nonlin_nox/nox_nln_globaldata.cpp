@@ -216,6 +216,20 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
     solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic>>(
         "User Defined Merit Function", mrtFctPtr_);
 
+  /* NOX has become quite strict about parameter lists. They may only contain parameters,
+   * that are then actually used. Hence, we have to remove some.
+   *
+   * ToDo: Clean this up by not setting unused parameters in the first place.
+   */
+  {
+    // remove "Merit Function" parameter entry after building the user-defined function
+    // (NOX does not accept this parameter)
+    solverOptionsList.remove("Merit Function", false);
+
+    // also remove *PrintEqualSign*
+    solverOptionsList.remove("*PrintEqualSign*", false);
+  }
+
   // Similar to the merit function we provide our own direction factory, if
   // the direction method is set to "User Defined"
   {
