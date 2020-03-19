@@ -41,10 +41,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~ThermoStVenantKirchhoff() { ; }
+      ~ThermoStVenantKirchhoff() override { ; }
 
       //! @name material parameters
       //@{
@@ -63,13 +63,13 @@ namespace MAT
       const double conduct_;
       //! initial temperature (constant) \f$ \theta_0 \f$
       const double thetainit_;
-
+      //! thermal material id, -1 if not used (old interface)
+      const int thermomat_;
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      const int thermomat_;
     };  // class ThermoStVenantKirchhoff
 
   }  // namespace PAR
@@ -77,11 +77,11 @@ namespace MAT
   class ThermoStVenantKirchhoffType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ThermoStVenantKirchhoffType"; }
+    std::string Name() const override { return "ThermoStVenantKirchhoffType"; }
 
     static ThermoStVenantKirchhoffType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoStVenantKirchhoffType instance_;
@@ -106,13 +106,13 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ThermoStVenantKirchhoffType::Instance().UniqueParObjectId();
     }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
@@ -126,8 +126,8 @@ namespace MAT
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
     */
-    virtual void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
-        ) const;
+    void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
+        ) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -138,36 +138,87 @@ namespace MAT
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
     */
-    virtual void Unpack(const std::vector<char>&
+    void Unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
-    );
+        ) override;
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermostvenant; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_thermostvenant; }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoStVenantKirchhoff(*this));
     }
 
     //! evaluates stresses for 3d
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  //!< Green-Lagrange strain
-        Teuchos::ParameterList& params,                        //!< parameter list
-        LINALG::Matrix<6, 1>* stress,                          //!< stress
-        LINALG::Matrix<6, 6>* cmat,                            //!< elastic material tangent
-        const int eleGID                                       //!< element GID
-    );
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
+        Teuchos::ParameterList& params,                //!< parameter list
+        LINALG::Matrix<6, 1>* stress,                  //!< stress
+        LINALG::Matrix<6, 6>* cmat,                    //!< elastic material tangent
+        int eleGID                                     //!< element GID
+        ) override;
 
     /// add strain energy
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-        double& psi,                                                 ///< strain energy functions
-        const int eleGID                                             ///< element GID
-    );
+    void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                         ///< strain energy functions
+        int eleGID                                           ///< element GID
+        ) override;
 
+    //! return true if Young's modulus is temperature dependent
+    bool YoungsIsTempDependent() const { return this->params_->youngs_.size() > 1; }
+
+    //! density \f$ \rho \f$
+    double Density() const override { return params_->density_; }
+
+    //! conductivity \f$ k \f$
+    double Conductivity() const { return params_->conduct_; }
+
+    //! material capacity \f$ C_V \f$
+    double Capacity() const override { return params_->capa_; }
+
+    //! Initial temperature \f$ \theta_0 \f$
+    double InitTemp() const { return params_->thetainit_; }
+
+    //! Return quick accessible material parameter data
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
+
+    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
+        LINALG::Matrix<3, 1>& heatflux) const override;
+
+    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
+        LINALG::Matrix<2, 1>& heatflux) const override;
+
+    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
+        LINALG::Matrix<1, 1>& heatflux) const override;
+
+    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override;
+
+    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override;
+
+    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override;
+
+    double CapacityDerivT() const override;
+
+    void Reinit(double temperature, unsigned gp) override;
+
+    void ResetCurrentState() override;
+
+    void CommitCurrentState() override;
+
+    void Reinit(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        double temperature, unsigned gp) override;
+
+    void GetdSdT(LINALG::Matrix<6, 1>* dS_dT) override;
+
+    void StressTemperatureModulusAndDeriv(
+        LINALG::Matrix<6, 1>& stm, LINALG::Matrix<6, 1>& stm_dT) override;
+    //@}
+
+   private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6, 6>& cmat);
 
@@ -177,46 +228,6 @@ namespace MAT
 
     //! calculates stress-temperature modulus
     double STModulus() const;
-
-    //! Young's modulus, here we suppose a constant value for E
-    double Youngs() const
-    {
-      dserror(
-          "return value 'E' not available due to possibly temperature-dependent Young's modulus.");
-      return (params_->youngs_)[0];
-    }
-
-    //! return true if Young's modulus is temperature dependent
-    bool YoungsIsTempDependent() const { return this->params_->youngs_.size() > 1; }
-
-    //! Poisson's ratio \f$ \nu \f$
-    double PoissonRatio() const { return params_->poissonratio_; }
-
-    //! density \f$ \rho \f$
-    virtual double Density() const { return params_->density_; }
-
-    //! conductivity \f$ k \f$
-    double Conductivity() const { return params_->conduct_; }
-
-    //! material capacity \f$ C_V \f$
-    double Capacity() const { return params_->capa_; }
-
-    //! Initial temperature \f$ \theta_0 \f$
-    double InitTemp() const { return params_->thetainit_; }
-
-    //! shear modulus \f$ \mu \f$, here we suppose a constant value for E
-    double ShearMod() const
-    {
-      dserror(
-          "return value 'mu' not available due to possibly temperature-dependent Young's modulus");
-      return 0.5 * (params_->youngs_)[0] / (1.0 + params_->poissonratio_);
-    }
-
-    //! Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
-
-    //! @name temperature-dependent material parameters E(T)
-    //@{
 
     //! calculates stress-temperature modulus
     double GetSTModulus_T() const;
@@ -230,27 +241,6 @@ namespace MAT
     void GetCthermoAtTempnp_T(LINALG::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
     );
 
-    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
-        LINALG::Matrix<3, 1>& heatflux) const override;
-    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
-        LINALG::Matrix<2, 1>& heatflux) const override;
-    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
-        LINALG::Matrix<1, 1>& heatflux) const override;
-    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override;
-    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override;
-    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override;
-    double CapacityDerivT() const override;
-    void Reinit(double temperature, unsigned gp) override;
-    void ResetCurrentState() override;
-    void CommitCurrentState() override;
-    void Reinit(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        double temperature, unsigned gp) override;
-    void GetdSdT(LINALG::Matrix<6, 1>* dS_dT) override;
-    void StressTemperatureModulusAndDeriv(
-        LINALG::Matrix<6, 1>& stm, LINALG::Matrix<6, 1>& stm_dT) override;
-    //@}
-
-   private:
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
@@ -263,6 +253,9 @@ namespace MAT
         const double& tempnp                     // tmpr (i) current temperature
         ) const;
 
+    //! create thermo material object if specified in input (!= -1)
+    void CreateThermoMaterialIfSet();
+
     //! my material parameters
     MAT::PAR::ThermoStVenantKirchhoff* params_;
 
@@ -270,10 +263,10 @@ namespace MAT
     Teuchos::RCP<MAT::TRAIT::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
-    double currentTemperature{};
+    double currentTemperature_{};
 
     //! current Green-Lagrange strain
-    const LINALG::Matrix<6, 1>* currentGlstrain{};
+    const LINALG::Matrix<6, 1>* currentGlstrain_{};
 
   };  // ThermoStVenantKirchhoff
 }  // namespace MAT

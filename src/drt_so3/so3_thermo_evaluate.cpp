@@ -2178,10 +2178,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Ctemp(
     case INPAR::MAT::m_thermostvenant:
     {
       dserror("Ctemp call no longer valid for ThermoStVenantKirchhoff. Fix implementation.");
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      return thrstvk->SetupCthermo(*ctemp);
-      break;
     }
     // small strain von Mises thermoelastoplastic material
     case INPAR::MAT::m_thermopllinelast:
