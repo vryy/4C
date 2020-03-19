@@ -216,7 +216,9 @@ namespace MAT
 
     void StressTemperatureModulusAndDeriv(
         LINALG::Matrix<6, 1>& stm, LINALG::Matrix<6, 1>& stm_dT) override;
-    //@}
+
+    //! general thermal tangent of material law depending on stress-temperature modulus
+    static void FillCthermo(LINALG::Matrix<6, 1>& ctemp, double m);
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d

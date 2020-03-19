@@ -12,6 +12,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "matpar_bundle.H"
+#include "stvenantkirchhoff.H"
+#include "thermostvenantkirchhoff.H"
 
 MAT::PAR::ThermoMechThreePhase::ThermoMechThreePhase(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
@@ -198,67 +200,17 @@ void MAT::ThermoMechThreePhase::SetupCmat(LINALG::Matrix<6, 6>& cmat)
 {
   const double nu = params_->poissonratio_;
   double Emod = GetMaterialParameter(params_->youngsfunct_);
-  // isotropic elasticity tensor C in Voigt matrix notation
-  //                     [ 1-nu     nu     nu |       0       0       0    ]
-  //                     [        1-nu     nu |       0       0       0    ]
-  //         E           [               1-nu |       0       0       0    ]
-  // C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~~~~  ~~~~~~ ]
-  //     (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0       0    ]
-  //                     [                    |         (1-2*nu)/2    0    ]
-  //                     [ symmetric          |                 (1-2*nu)/2 ]
-  //
-  const double mfac = Emod / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
-  // clear the material tangent
-  cmat.Clear();
-  // write non-zero components
-  cmat(0, 0) = mfac * (1.0 - nu);
-  cmat(0, 1) = mfac * nu;
-  cmat(0, 2) = mfac * nu;
-  cmat(1, 0) = mfac * nu;
-  cmat(1, 1) = mfac * (1.0 - nu);
-  cmat(1, 2) = mfac * nu;
-  cmat(2, 0) = mfac * nu;
-  cmat(2, 1) = mfac * nu;
-  cmat(2, 2) = mfac * (1.0 - nu);
-  // ~~~
-  cmat(3, 3) = mfac * 0.5 * (1.0 - 2.0 * nu);
-  cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
-  cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
+  StVenantKirchhoff::FillCmat(cmat, Emod, nu);
 }
 
 void MAT::ThermoMechThreePhase::SetupCmat_dT(LINALG::Matrix<6, 6>& derivcmat)
 {
-  // clear the material tangent, identical to PutScalar(0.0)
-  derivcmat.Clear();
   const double E_T = GetMaterialParameterThermalDerivative(params_->youngsfunct_);
   // Poisson's ratio (Querdehnzahl)
   const double nu = params_->poissonratio_;
-  // isotropic elasticity tensor C in Voigt matrix notation
-  //                          [ 1-nu     nu     nu |       0       0       0    ]
-  //                          [        1-nu     nu |       0       0       0    ]
-  //                1         [               1-nu |       0       0       0    ]
-  // C_{,T} = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~~~~  ~~~~~~ ] . d[E(T)]/dT
-  //          (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0       0    ]
-  //                          [                    |         (1-2*nu)/2    0    ]
-  //                          [ symmetric          |                 (1-2*nu)/2 ]
-  //
-  const double mfac = E_T / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
-  // write non-zero components
-  derivcmat(0, 0) = mfac * (1.0 - nu);
-  derivcmat(0, 1) = mfac * nu;
-  derivcmat(0, 2) = mfac * nu;
-  derivcmat(1, 0) = mfac * nu;
-  derivcmat(1, 1) = mfac * (1.0 - nu);
-  derivcmat(1, 2) = mfac * nu;
-  derivcmat(2, 0) = mfac * nu;
-  derivcmat(2, 1) = mfac * nu;
-  derivcmat(2, 2) = mfac * (1.0 - nu);
-  // ~~~
-  derivcmat(3, 3) = mfac * 0.5 * (1.0 - 2.0 * nu);
-  derivcmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
-  derivcmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
+  StVenantKirchhoff::FillCmat(derivcmat, E_T, nu);
 }
 
 
@@ -395,13 +347,8 @@ void MAT::ThermoMechThreePhase::StressTemperatureModulusAndDeriv(
   const double stm_scalar = STModulus();
   const double stm_dT_scalar = STModulus_dT();
 
-  stm.Clear();
-  stm_dT.Clear();
-  for (unsigned i = 0; i < 3; i++)
-  {
-    stm(i) = stm_scalar;
-    stm_dT(i) = stm_dT_scalar;
-  }
+  ThermoStVenantKirchhoff::FillCthermo(stm, stm_scalar);
+  ThermoStVenantKirchhoff::FillCthermo(stm_dT, stm_dT_scalar);
 }
 
 // static initializer

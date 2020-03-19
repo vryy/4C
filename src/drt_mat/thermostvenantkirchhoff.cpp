@@ -15,6 +15,7 @@
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
 #include "thermostvenantkirchhoff.H"
+#include "stvenantkirchhoff.H"
 #include "matpar_bundle.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -300,68 +301,8 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6, 6>& cmat)
   // Poisson's ratio (Querdehnzahl)
   const double nu = params_->poissonratio_;
 
-  /*
-    if (nu == 0.5) {
-      // linearly isochoric. i.e. deviatoric, isotropic elasticity tensor C in
-      // Voigt matrix notation
-      //
-      //             [  2/3   -1/3   -1/3 |   0    0    0 ]
-      //             [         2/3   -1/3 |   0    0    0 ]
-      //         E   [                2/3 |   0    0    0 ]
-      // C = ------- [ ~~~~   ~~~~   ~~~~   ~~~  ~~~  ~~~ ]
-      //     (1+nu)  [                    | 1/2    0    0 ]
-      //             [                    |      1/2    0 ]
-      //             [ symmetric          |           1/2 ]
-      //
-      const double mfac = Emod/(1.0+nu);  // 2x shear modulus
-      cmat(0,0) = mfac*2.0/3.0;
-      cmat(0,1) = -mfac*1.0/3.0;
-      cmat(0,2) = -mfac*1.0/3.0;
-      cmat(1,0) = -mfac*1.0/3.0;
-      cmat(1,1) = mfac*2.0/3.0;
-      cmat(1,2) = -mfac*1.0/3.0;
-      cmat(2,0) = -mfac*1.0/3.0;
-      cmat(2,1) = -mfac*1.0/3.0;
-      cmat(2,2) = mfac*2.0/3.0;
-      // ~~~
-      cmat(3,3) = mfac*0.5;
-      cmat(4,4) = mfac*0.5;
-      cmat(5,5) = mfac*0.5;
-    }
-    else */
-  {
-    // isotropic elasticity tensor C in Voigt matrix notation
-    //                     [ 1-nu     nu     nu |       0       0       0    ]
-    //                     [        1-nu     nu |       0       0       0    ]
-    //         E           [               1-nu |       0       0       0    ]
-    // C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~~~~  ~~~~~~ ]
-    //     (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0       0    ]
-    //                     [                    |         (1-2*nu)/2    0    ]
-    //                     [ symmetric          |                 (1-2*nu)/2 ]
-    //
-    const double mfac = Emod / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
-
-    // clear the material tangent
-    cmat.Clear();
-    // write non-zero components
-    cmat(0, 0) = mfac * (1.0 - nu);
-    cmat(0, 1) = mfac * nu;
-    cmat(0, 2) = mfac * nu;
-    cmat(1, 0) = mfac * nu;
-    cmat(1, 1) = mfac * (1.0 - nu);
-    cmat(1, 2) = mfac * nu;
-    cmat(2, 0) = mfac * nu;
-    cmat(2, 1) = mfac * nu;
-    cmat(2, 2) = mfac * (1.0 - nu);
-    // ~~~
-    cmat(3, 3) = mfac * 0.5 * (1.0 - 2.0 * nu);
-    cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
-    cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
-  }
+  StVenantKirchhoff::FillCmat(cmat, Emod, nu);
 }
-
-// SetupCmat()
-
 
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
@@ -414,7 +355,11 @@ double MAT::ThermoStVenantKirchhoff::STModulus() const
 void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6, 1>& ctemp)
 {
   double m = STModulus();
+  FillCthermo(ctemp, m);
+}
 
+void MAT::ThermoStVenantKirchhoff::FillCthermo(LINALG::Matrix<6, 1>& ctemp, double m)
+{
   // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
   //
   // Matrix-notation for 3D case
@@ -433,8 +378,8 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6, 1>& ctemp)
   // loop over the element nodes, non-zero entries only in main directions
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;
   // else zeros
-
-}  // SetupCthermo()
+}
+// SetupCthermo()
 
 
 /*----------------------------------------------------------------------*
@@ -572,67 +517,9 @@ void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(LINALG::Matrix<6, 6>& deriv
     // Poisson's ratio (Querdehnzahl)
     const double nu = params_->poissonratio_;
 
-    /*
-      if (nu == 0.5) {
-        // linearly isochoric. i.e. deviatoric, isotropic elasticity tensor C in
-        // Voigt matrix notation
-        //                [  2/3   -1/3   -1/3 |   0    0    0 ]
-        //                [         2/3   -1/3 |   0    0    0 ]
-        //           1    [                2/3 |   0    0    0 ]
-        // dC/dT = -------[ ~~~~   ~~~~   ~~~~   ~~~  ~~~  ~~~ ] . d[E(T)]/dT
-        //         (1+nu) [                    | 1/2    0    0 ]
-        //                [                    |      1/2    0 ]
-        //                [ symmetric          |           1/2 ]
-        //
-        const double mfac = Ederiv/(1.0+nu);  // 2x shear modulus
-        cmat(0,0) = mfac*2.0/3.0;
-        cmat(0,1) = -mfac*1.0/3.0;
-        cmat(0,2) = -mfac*1.0/3.0;
-        cmat(1,0) = -mfac*1.0/3.0;
-        cmat(1,1) = mfac*2.0/3.0;
-        cmat(1,2) = -mfac*1.0/3.0;
-        cmat(2,0) = -mfac*1.0/3.0;
-        cmat(2,1) = -mfac*1.0/3.0;
-        cmat(2,2) = mfac*2.0/3.0;
-        // ~~~
-        cmat(3,3) = mfac*0.5;
-        cmat(4,4) = mfac*0.5;
-        cmat(5,5) = mfac*0.5;
-      }
-      else */
-    {
-      // isotropic elasticity tensor C in Voigt matrix notation
-      //                          [ 1-nu     nu     nu |       0       0       0    ]
-      //                          [        1-nu     nu |       0       0       0    ]
-      //                1         [               1-nu |       0       0       0    ]
-      // C_{,T} = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~~~~  ~~~~~~ ] . d[E(T)]/dT
-      //          (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0       0    ]
-      //                          [                    |         (1-2*nu)/2    0    ]
-      //                          [ symmetric          |                 (1-2*nu)/2 ]
-      //
-      const double mfac = Ederiv / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
-
-      // write non-zero components
-      derivcmat(0, 0) = mfac * (1.0 - nu);
-      derivcmat(0, 1) = mfac * nu;
-      derivcmat(0, 2) = mfac * nu;
-      derivcmat(1, 0) = mfac * nu;
-      derivcmat(1, 1) = mfac * (1.0 - nu);
-      derivcmat(1, 2) = mfac * nu;
-      derivcmat(2, 0) = mfac * nu;
-      derivcmat(2, 1) = mfac * nu;
-      derivcmat(2, 2) = mfac * (1.0 - nu);
-      // ~~~
-      derivcmat(3, 3) = mfac * 0.5 * (1.0 - 2.0 * nu);
-      derivcmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
-      derivcmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
-    }
+    StVenantKirchhoff::FillCmat(derivcmat, Ederiv, nu);
   }
-  // else (young_temp == false)
-  // constant young's modulus, i.e. independent of T, no linearisation, do nothing
-  // return derivcmat == zero;
-
-}  // GetCmatAtTempnp_T()
+}
 
 
 /*----------------------------------------------------------------------*
@@ -643,24 +530,7 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(LINALG::Matrix<6, 1>& de
 {
   double m_T = GetSTModulus_T();
 
-  // isotropic elasticity tensor C_T in Voigt matrix notation C_T = m I
-  //
-  // Matrix-notation for 3D case
-  //                      [ m_T      0      0 ]
-  // (C_T)/dT = C_{T,T} = [ 0      m_T      0 ]
-  //                      [ 0      0      m_T ]
-  //
-  // in Vector notation
-  // C_T = [m_{,T}, m_{,T}, m_{,T}, 0, 0, 0]^T
-  //
-  // write non-zero components
-
-  // clear the material tangent, identical to PutScalar(0.0), but faster
-  derivctemp.Clear();
-
-  // loop over the element nodes, non-zero entries only on main directions
-  for (int i = 0; i < 3; ++i) derivctemp(i, 0) = m_T;
-  // else zeros
+  FillCthermo(derivctemp, m_T);
 }
 
 
