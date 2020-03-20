@@ -209,21 +209,15 @@ void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
   // initialise the temperature
   Teuchos::RCP<std::vector<double>> temperature_vector =
       params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
-  double scalartemp = 0.0;
 
   // current temperature vector is available
   if (temperature_vector != Teuchos::null)
   {
-    // scalar-valued temperature: T = shapefunctions . element temperatures
-    // T = N_T^(e) . T^(e)
-    // get the temperature vector by extraction from parameter list
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1> etemp(true);
+    double scalartemp = 0.0;
     for (int i = 0; i < DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
     {
-      etemp(i, 0) = (*temperature_vector)[i];
+      scalartemp += shapefctsGP(i) * (*temperature_vector)[i];
     }
-    // identical shapefunctions for displacements and temperatures
-    scalartemp = shapefctsGP.Dot(etemp);
 
     // insert current element temperature T_{n+1} into parameter list
     params.set<double>("scalartemp", scalartemp);
