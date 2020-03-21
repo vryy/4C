@@ -36,6 +36,7 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR
       thetainit_(matdata->GetDouble("INITTEMP")),
       thermomat_(matdata->GetInt("THERMOMAT"))
 {
+  if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
 }
 
 
@@ -314,16 +315,16 @@ double MAT::ThermoStVenantKirchhoff::STModulus() const
                           : params_->youngs_[0];
 
   // initialise the parameters for the lame constants
-  const double pv = params_->poissonratio_;
+  const double nu = params_->poissonratio_;
 
   // initialise the thermal expansion coefficient
   const double thermexpans = params_->thermexpans_;
 
   // plane strain, rotational symmetry
   // E / (1+nu)
-  const double c1 = Emod / (1.0 + pv);
+  const double c1 = Emod / (1.0 + nu);
   // (E*nu) / ((1+nu)(1-2nu))
-  const double b1 = c1 * pv / (1.0 - 2.0 * pv);
+  const double b1 = c1 * nu / (1.0 - 2.0 * nu);
 
   // build the lame constants
   //            E
@@ -470,16 +471,16 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T() const
     const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), currentTemperature_);
 
     // initialise the parameters for the lame constants
-    const double pv = params_->poissonratio_;
+    const double nu = params_->poissonratio_;
 
     // initialise the thermal expansion coefficient
     const double thermexpans = params_->thermexpans_;
 
     // plane strain, rotational symmetry
     // E / (1+nu)
-    const double c1 = Ederiv / (1.0 + pv);
+    const double c1 = Ederiv / (1.0 + nu);
     // (E . nu) / ((1+nu)(1-2nu))
-    const double b1 = c1 * pv / (1.0 - 2.0 * pv);
+    const double b1 = c1 * nu / (1.0 - 2.0 * nu);
 
     // build the lame constants
     //         E

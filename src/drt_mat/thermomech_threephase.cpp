@@ -25,7 +25,12 @@ MAT::PAR::ThermoMechThreePhase::ThermoMechThreePhase(Teuchos::RCP<MAT::PAR::Mate
       fouriervarmat_(matdata->GetInt("THERMOMAT")),
       consolmat_(matdata->GetInt("CONSOLMAT"))
 {
-  // TODO safety checks
+  if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
+  if (youngsfunct_.size() != 3)
+    dserror("Exactly three functions for Young's modulus in powder, melt and solid are required.");
+  if (thermexpansfunct_.size() != 3)
+    dserror(
+        "Exactly three functions for thermal expansion in powder, melt and solid are required.");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::ThermoMechThreePhase::CreateMaterial()
