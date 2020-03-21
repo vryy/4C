@@ -17,6 +17,8 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
+#include "../drt_lib/voigt_notation.H"
+
 // headers of thermo-materials
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
@@ -2004,12 +2006,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       LINALG::Matrix<nsd_, nsd_> Cinv_bar(false);
       Cinv_bar.Invert(cauchygreen_bar);
       LINALG::Matrix<numstr_, 1> Cinv_barvct(false);
-      Cinv_barvct(0) = Cinv_bar(0, 0);
-      Cinv_barvct(1) = Cinv_bar(1, 1);
-      Cinv_barvct(2) = Cinv_bar(2, 2);
-      Cinv_barvct(3) = Cinv_bar(0, 1);
-      Cinv_barvct(4) = Cinv_bar(1, 2);
-      Cinv_barvct(5) = Cinv_bar(2, 0);
+      ::UTILS::VOIGT::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
 
       // calculate nonlinear B-operator
       LINALG::Matrix<numstr_, numdofperelement_> bop(false);
@@ -2044,12 +2041,10 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
         glstrain(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen_bar(2, 2) - 1.0);
-        glstrain(3) = cauchygreen_bar(0, 1);  // Voigt notation
+        glstrain(3) = cauchygreen_bar(0, 1);
         glstrain(4) = cauchygreen_bar(1, 2);
         glstrain(5) = cauchygreen_bar(2, 0);
 
-        LINALG::Matrix<1, 1> NT(false);
-        NT.MultiplyTN(shapefunct, etemp);  // (1x1)
         thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), MapMyGpToSoHex8(gp));
         // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
         // with shape functions)
