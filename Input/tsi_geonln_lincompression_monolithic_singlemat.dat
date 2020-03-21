@@ -112,53 +112,22 @@ NORMCOMBI_RESFINC               And  // And,Or,{{Coupl_}And,Or}_Singl
 NORM_RESF                       Rel  //Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
-AZREUSE                         0
-AZSCAL                          none  // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+AZPREC                          BGS2x2
+AZSOLVE                         GMRES
+SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL SOLVER
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL SOLVER
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 //parameters for steel [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.0 DENS 7850.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0 THERMOMAT 2
 // CAPA = C_V* rho = 420*7850 = 3297000
 MAT 2 THERM_FourierIso CAPA 3297000.0 CONDUCT 52.0
 --------------------------------------------------------CLONING MATERIAL MAP
+// cloning from same source to target id --> copy str material instance to thermo
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 300.0
