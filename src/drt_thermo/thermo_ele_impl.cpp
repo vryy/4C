@@ -1082,41 +1082,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 
       Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
-
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
-      params.set<int>("gp", iquad);
-
-      // get the temperature-dependent material tangent
-      thrstvk->SetupCthermo(ctemp, params);
-
-      // if young's modulus is temperature-dependent, E(T), additional terms arise
-      // for the stiffness matrix k_TT
-      {
-        // k_TT += - N_T^T . dC_T/dT : B_d . d' . N_T . T
-        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
-        //
-        // k_TT += - N_T^T . dC_T/dT : B_d . d' . N_T . T . N_T
-        LINALG::Matrix<6, 1> dctemp_dT(false);
-        thrstvk->GetCthermoAtTempnp_T(dctemp_dT, params);
-
-        LINALG::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
-        Ndctemp_dT.MultiplyNT(funct_, dctemp_dT);
-
-        LINALG::Matrix<nen_, 1> Ndctemp_dTBv(false);
-        Ndctemp_dTBv.Multiply(Ndctemp_dT, strainvel);
-
-        Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
-      }
-
-    }  // m_thermostvenant
-
     else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
@@ -1336,27 +1301,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
-
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
-      params.set<int>("gp", iquad);
-
-      // get the temperature-dependent material tangent
-      thrstvk->SetupCthermo(ctemp, params);
-
-      //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
-#ifdef COUPLEINITTEMPERATURE
-      NT(0, 0) = thrstvk->InitTemp();
-#endif  // COUPLEINITTEMPERATURE
-
-    }  // m_thermostvenant
-
     else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
@@ -1542,52 +1486,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
         econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
       }  // (econd != nullptr)
     }
-
-    // ------------------------------------------------ call the material
-    if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
-    {
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
-      params.set<int>("gp", iquad);
-
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
-      thrstvk->SetupCthermo(ctemp, params);
-
-      // if young's modulus is temperature-dependent, E(T), additional terms arise
-      // for the stiffness matrix k_TT
-
-      // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T
-      // with dC_T/dT = d(m . I)/dT . N_T = d (m(T) . I)/dT . N_T
-      //
-      // k_TT += - N_T^T . (dC_T/dT} . N_T) : 1/2 . C' . N_T . T
-      // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T . N_T
-      LINALG::Matrix<6, 1> dctemp_dT(false);
-      thrstvk->GetCthermoAtTempnp_T(dctemp_dT, params);
-      // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
-      double dctemp_dTCdot = 0.0;
-      for (int i = 0; i < 6; ++i)
-        dctemp_dTCdot += dctemp_dT(i, 0) * (1 / 2.0) * Cratevct(i, 0);  // (6x1)(6x1)
-
-      LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
-      Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
-      Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
-
-      // ------------------------------------ special terms due to material law
-      // if young's modulus is temperature-dependent, E(T), additional terms arise
-      // for the stiffness matrix k_TT
-      if (econd != nullptr)
-      {
-        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
-        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
-        //
-        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
-        econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
-      }  // (econd != nullptr)
-    }    // m_thermostvenant
-
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
@@ -1980,24 +1878,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
-
-    // ----------------------------------------------- call structural material
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
-    {
-      // C_T = N_T . T . m_0 . I
-      // scalar-valued current element temperature T_{n+1}
-      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      double scalartemp = NT(0, 0);
-      // insert current element temperature T_{n+1} into parameter list
-      params.set<double>("scalartemp", scalartemp);
-      params.set<int>("gp", iquad);
-
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
-      // get the temperature-dependent material tangent
-      thrstvk->SetupCthermo(ctemp, params);
-    }  // m_thermostvenant
-
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
       // C_T = m_0 . (J + 1/J) . C^{-1}

@@ -29,6 +29,7 @@
 #include "../drt_patspec/patspec.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_structure_new/str_enum_lists.H"
+#include "so_utils.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -1257,10 +1258,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
 
     // in case of temperature-dependent material parameters, e.g. Young's modulus,
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
-    if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-    {
-      GetTemperatureForStructuralMaterial(shapefcts[gp], params);
-    }
+
+    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)

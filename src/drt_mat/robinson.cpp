@@ -359,8 +359,8 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc(*strain);
   straininc.Update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;
-  const double scalartemp = params.get<double>("scalartemp", -1.0);
-  if (scalartemp < 0.0) dserror("No temperature available in Robinson material");
+  // if no temperature has been set use the initial value
+  const double scalartemp = params.get<double>("scalartemp", InitTemp());
 
   // update history of the condensed variables plastic strain and back stress
   // iterative update of the current history vectors at current Gauss point gp

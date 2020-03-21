@@ -49,6 +49,7 @@
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_mat/thermomech_threephase.H"
+#include "so_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
@@ -2472,14 +2473,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    // default: material call in structural function is purely deformation-dependent
-    // in case of temperature-dependent material parameters, e.g. Young's modulus,
-    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) or
-        (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast) or
-        (Material()->MaterialType() == INPAR::MAT::m_vp_robinson) or
-        (Material()->MaterialType() == INPAR::MAT::m_thermomechthreephase))
-      GetTemperatureForStructuralMaterial(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
@@ -3810,74 +3804,6 @@ void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_di
   // you're done here
   return;
 }
-
-/*----------------------------------------------------------------------*
- | get and set temperature required for some materials        dano 09/13|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
-    const LINALG::Matrix<NUMNOD_SOH8, 1>& shapefctsGP,  // shape function of current Gauss-point
-    Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
-)
-{
-  // initialise the temperature
-  Teuchos::RCP<std::vector<double>> temperature_vector =
-      params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
-  double scalartemp = 0.0;
-
-  // current temperature vector is available
-  if (temperature_vector != Teuchos::null)
-  {
-    // scalar-valued temperature: T = shapefunctions . element temperatures
-    // T = N_T^(e) . T^(e)
-    // get the temperature vector by extraction from parameter list
-    LINALG::Matrix<NUMNOD_SOH8, 1> etemp(true);
-    for (int i = 0; i < NUMNOD_SOH8; ++i)
-    {
-      etemp(i, 0) = (*temperature_vector)[i];
-    }
-    // identical shapefunctions for displacements and temperatures
-    scalartemp = shapefctsGP.Dot(etemp);
-  }
-  else
-  {
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    // provide a sensible start value
-    if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrstvk->InitTemp();
-
-    }  // m_thermostvenant
-
-    // in this case the yield stress is temperature-dependent
-    else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-    {
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyp =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrplhyp->InitTemp();
-
-    }  // m_thermoplhyperelast
-
-    // if Robinson's material --> pass the current temperature to the material
-    else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
-    {
-      LINALG::Matrix<MAT::NUM_STRESS_3D, 1> ctemp(true);
-      Teuchos::RCP<MAT::Robinson> robinson =
-          Teuchos::rcp_dynamic_cast<MAT::Robinson>(Material(), true);
-      // initialise the temperature field
-      scalartemp = robinson->InitTemp();
-
-    }  // end Robinson's material
-  }
-
-  // insert current element temperature T_{n+1} into parameter list
-  params.set<double>("scalartemp", scalartemp);
-
-}  // GetTemperatureForStructuralMaterial()
-
 
 /*----------------------------------------------------------------------*/
 
