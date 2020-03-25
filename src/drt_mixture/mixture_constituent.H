@@ -18,6 +18,11 @@
 #include "../drt_lib/drt_pack_buffer.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+// forward declaration
+namespace MAT
+{
+  class Anisotropy;
+}
 
 /*!
  * \brief The mixture namespace holds all mixture specific classes.
@@ -28,7 +33,9 @@
  */
 namespace MIXTURE
 {
+  // forward declaration
   class MixtureConstituent;
+  class MixtureRule;
 
   namespace PAR
   {
@@ -106,6 +113,16 @@ namespace MIXTURE
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
     /*!
+     * \brief Register anisotropy extensions of all sub-materials of the constituent
+     *
+     * \param anisotropy Reference to the global anisotropy manager
+     */
+    virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+    {
+      // do nothing in the default case
+    }
+
+    /*!
      * Initialize the constituent with the parameters of the input line
      *
      * @param numgp (in) Number of Gauß-points
@@ -135,8 +152,9 @@ namespace MIXTURE
      * The constituent should setup all internal variables and materials.
      *
      * @param params Container for additional information
+     * @param eleGID Global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the internal variables

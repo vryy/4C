@@ -39,72 +39,18 @@ MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(Teuchos::RCP<MAT::PAR::Material>
  |  Constructor                             (public)   st         03/12 |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* params)
-    : params_(params)
+    : params_(params),
+      anisotropyExtension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
+          params_->StructuralTensorStrategy())
 {
+  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension::FIBER_VECTORS |
+                                             FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS |
+                                             FiberAnisotropyExtension::STRUCTURAL_TENSOR);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpo::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpo::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
-  AddtoPack(data, a_);
-  AddtoPack(data, A_);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
-{
-  ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, A_);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  // path if fibers aren't given in .dat file
-  if (params_->init_ == 0)
-  {
-    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    LINALG::Matrix<3, 3> Id(true);
-    for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-    SetFiberVecs(-1.0, Id, Id);
-  }
-
-  // path if fibers are given in .dat file
-  else if (params_->init_ == 1)
-  {
-    // CIR-AXI-RAD nomenclature
-    if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
-    {
-      // Read in of data
-      LINALG::Matrix<3, 3> locsys(true);
-      ReadRadAxiCir(linedef, locsys);
-      LINALG::Matrix<3, 3> Id(true);
-      for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      // final setup of fiber data
-      SetFiberVecs(0.0, locsys, Id);
-    }
-
-    // FIBER1 nomenclature
-    else if (linedef->HaveNamed("FIBER1"))
-    {
-      // Read in of fiber data and setting fiber data
-      ReadFiber(linedef, "FIBER1", a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
-    }
-
-    // error path
-    else
-    {
-      dserror("Reading of element local cosy for anisotropic materials failed");
-    }
-  }
-  else
-    dserror("INIT mode not implemented");
+  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
 
@@ -121,9 +67,8 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStrainEnergy(double& psi, const LINALG::Mat
   rcg(4) = 2.0 * glstrain(4);
   rcg(5) = 2.0 * glstrain(5);
 
-  double I4 = 0.0;
-  I4 = A_(0) * rcg(0) + A_(1) * rcg(1) + A_(2) * rcg(2) + A_(3) * rcg(3) + A_(4) * rcg(4) +
-       A_(5) * rcg(5);
+  double I4 = anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)
+                  .Dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -135,8 +80,6 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStrainEnergy(double& psi, const LINALG::Mat
   }
 
   psi += (k1 / (2.0 * k2)) * (exp(k2 * (I4 - 1.0) * (I4 - 1.0)) - 1.0);
-
-  return;
 };
 
 
@@ -148,7 +91,9 @@ void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc(
 {
   T I4_fad = 0.0;
   static LINALG::Matrix<6, 1, T> Av_T(true);
-  for (int i = 0; i < 6; ++i) Av_T(i) = A_(i);
+  for (int i = 0; i < 6; ++i)
+    Av_T(i) =
+        anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)(i);
   I4_fad = Av_T(0) * rcg(0, 0) + Av_T(1) * rcg(1, 1) + Av_T(2) * rcg(2, 2) +
            Av_T(3) * (rcg(0, 1) + rcg(1, 0)) + Av_T(4) * (rcg(1, 2) + rcg(2, 1)) +
            Av_T(5) * (rcg(0, 2) + rcg(2, 0));
@@ -167,7 +112,6 @@ void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc(
   return;
 };
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
@@ -177,10 +121,15 @@ void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1, T>& d
 {
   T I4 = 0.0;
   LINALG::Matrix<3, 3, T> AM(true);
-  for (int i = 0; i < 3; ++i) AM(i, i) = A_(i);
-  AM(0, 1) = AM(1, 0) = A_(3);
-  AM(2, 1) = AM(1, 2) = A_(4);
-  AM(0, 2) = AM(2, 0) = A_(5);
+  for (int i = 0; i < 3; ++i)
+    AM(i, i) =
+        anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)(i);
+  AM(0, 1) = AM(1, 0) =
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)(3);
+  AM(2, 1) = AM(1, 2) =
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)(4);
+  AM(0, 2) = AM(2, 0) =
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)(5);
 
   I4 = AM.Dot(rcg);
 
@@ -212,8 +161,8 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStressAnisoPrincipal(const LINALG::Matrix<6
     const int eleGID)
 {
   double I4 = 0.0;
-  I4 = A_(0) * rcg(0) + A_(1) * rcg(1) + A_(2) * rcg(2) + A_(3) * rcg(3) + A_(4) * rcg(4) +
-       A_(5) * rcg(5);
+  I4 = anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0)
+           .Dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -225,11 +174,14 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStressAnisoPrincipal(const LINALG::Matrix<6
   }
 
   double gamma = 2. * (k1 * (I4 - 1.) * exp(k2 * (I4 - 1.) * (I4 - 1.)));
-  stress.Update(gamma, A_, 1.0);
+  stress.Update(gamma,
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0), 1.0);
 
   double delta =
       2. * (1. + 2. * k2 * (I4 - 1.) * (I4 - 1.)) * 2. * k1 * exp(k2 * (I4 - 1.) * (I4 - 1.));
-  cmat.MultiplyNT(delta, A_, A_, 1.0);
+  cmat.MultiplyNT(delta,
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0),
+      anisotropyExtension_.GetStructuralTensor_stress(BaseAnisotropyExtension::GPDEFAULT, 0), 1.0);
 }
 
 
@@ -239,7 +191,7 @@ void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  fibervecs.push_back(a_);
+  fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
 /*----------------------------------------------------------------------*/
@@ -247,44 +199,14 @@ void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
-  if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
-  // convert
-  double gamma = (params_->gamma_ * PI) / 180.;
-
-  if (params_->adapt_angle_ && newgamma != -1.0)
-  {
-    if (gamma * newgamma < 0.0)
-      gamma = -1.0 * newgamma;
-    else
-      gamma = newgamma;
-  }
-
-  LINALG::Matrix<3, 1> ca(true);
-  for (int i = 0; i < 3; ++i)
-  {
-    // a = cos gamma e3 + sin gamma e2
-    ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
-  }
-  // pull back in reference configuration
-  LINALG::Matrix<3, 1> a_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
-
-  a_0.Multiply(idefgrd, ca);
-  a_.Update(1. / a_0.Norm2(), a_0);
-
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+  anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec)
 {
-  a_.Update(1.0 / fibervec.Norm2(), fibervec);
-
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
-
-  return;
+  anisotropyExtension_.SetFiberVecs(fibervec);
 }
 
 

@@ -80,7 +80,8 @@ DRT::ParObject* MAT::Mixture_ElastHyperType::Create(const std::vector<char>& dat
 MAT::Mixture_ElastHyper::Mixture_ElastHyper()
     : params_(nullptr),
       constituents_(Teuchos::rcp(new std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>(0))),
-      setup_(false)
+      setup_(false),
+      anisotropy_()
 {
 }
 
@@ -88,7 +89,8 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper()
 MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params)
     : params_(params),
       constituents_(Teuchos::rcp(new std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>(0))),
-      setup_(false)
+      setup_(false),
+      anisotropy_()
 {
   // create instances of constituents
   for (auto const& constituent : params_->constituents_)
@@ -96,12 +98,15 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params
     Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent();
     constituents_->emplace_back(Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(c));
     c->SetInitialReferenceDensity(params_->density_);
+    c->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   // create instance of mixture rule
   mixture_rule_ =
       Teuchos::rcp_static_cast<MIXTURE::MixtureRule>(params->mixture_rule_->CreateRule());
   mixture_rule_->SetConstituents(constituents_);
+  mixture_rule_->SetMaterialMassDensity(params_->density_);
+  mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
 }
 
 // Pack data
@@ -128,8 +133,7 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
     constituent->PackConstituent(data);
   }
 
-  // pack mixture law
-  mixture_rule_->PackMixtureLaw(data);
+  anisotropy_.PackAnisotropy(data);
 }
 
 // Unpack data
@@ -189,12 +193,21 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       for (auto const& constituent : *constituents_)
       {
         constituent->UnpackConstituent(position, data);
+        constituent->RegisterAnisotropyExtensions(anisotropy_);
       }
 
       // unpack mixture law
       mixture_rule_->UnpackMixtureLaw(position, data);
       mixture_rule_->SetConstituents(constituents_);
+      mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
     }
+  }
+
+  anisotropy_.UnpackAnisotropy(data, position);
+
+  if (position != data.size())
+  {
+    dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
   }
 }
 
@@ -202,6 +215,10 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
 void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);
+
+  // Setup anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
 
   // Let all constituents read the line definition
   for (auto const& constituent : *constituents_)
@@ -213,9 +230,10 @@ void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition*
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule
-void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params)
+void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
-  So3Material::PostSetup(params);
+  So3Material::PostSetup(params, eleGID);
+  anisotropy_.ReadAnisotropyFromParameterList(params);
 
   for (auto const& constituent : *constituents_)
   {

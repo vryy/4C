@@ -37,7 +37,7 @@ namespace MIXTURE
       ~MixtureRule() override = default;
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<MAT::Material> CreateMaterial() override
+      Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
         dserror("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;
@@ -145,8 +145,9 @@ namespace MIXTURE
      * variables and materials.
      *
      * @param params (in/out) : Container for additional information
+     * @param eleGID (in) : global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the material law

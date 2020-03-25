@@ -177,6 +177,8 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
       for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
         AddtoPack(data, histfractartstresslastall_->at(gp).at(step));
   }
+
+  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -238,9 +240,10 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     }
 
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->UnpackSummand(data, position);
+      p->UnpackSummand(data, position);
+      p->RegisterAnisotropyExtensions(anisotropy_);
     }
 
     // history data 09/13
@@ -306,12 +309,13 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
         for (int step = 0; step < histfractartstressall_stepsize; ++step)
           ExtractfromPack(position, data, histfractartstresslastall_->at(gp).at(step));
     }
-
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
+
+  anisotropy_.UnpackAnisotropy(data, position);
+
+  // in the postprocessing mode, we do not unpack everything we have packed
+  // -> position check cannot be done in this case
+  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -319,8 +323,12 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  // read anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
+
   // Setup summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p) potsum_[p]->Setup(numgp, linedef);
+  for (auto& p : potsum_) p->Setup(numgp, linedef);
 
   // find out which formulations are used
   isovisco_ = false;
@@ -334,10 +342,9 @@ void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 
   if (summandProperties_.viscoGeneral)
   {
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->SpecifyViscoFormulation(
-          isovisco_, viscogenmax_, viscogeneralizedgenmax_, viscofract_);
+      p->SpecifyViscoFormulation(isovisco_, viscogenmax_, viscogeneralizedgenmax_, viscofract_);
     }
   }
 

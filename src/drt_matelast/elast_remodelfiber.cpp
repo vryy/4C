@@ -154,6 +154,14 @@ void MAT::ELASTIC::RemodelFiber::UnpackSummand(
   return;
 }
 
+void MAT::ELASTIC::RemodelFiber::RegisterAnisotropyExtensions(Anisotropy& anisotropy)
+{
+  for (auto& summand : potsumfiber_)
+  {
+    summand->fiber->RegisterAnisotropyExtensions(anisotropy);
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::Setup(
@@ -662,13 +670,14 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmat(LINALG::Matrix<3, 3> const& CM,
   static LINALG::Matrix<6, 6> secderiv(true);
   static LINALG::Matrix<6, 1> stressactv(true);
   static LINALG::Matrix<6, 6> cmatact(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
+  if ((t1 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr() !=
+      nullptr)
   {
     DerivdC(CM, iFinM, fiberdat.AM, *t1, eleGID, firstderivM);
     DerivdCdC(CM, iFinM, fiberdat.AM, *t1, eleGID, secderiv);
   }
   else if ((t2 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr())
+               .getRawPtr() != nullptr)
   {
     DerivdC(CM, iFinM, fiberdat.AM, *t2, eleGID, firstderivM);
     DerivdCdC(CM, iFinM, fiberdat.AM, *t2, eleGID, secderiv);

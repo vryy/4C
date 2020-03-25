@@ -108,8 +108,8 @@ void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* li
   has_read_element_ = true;
 }
 
-// Setup the mixture rule - Called once per gp
-void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params)
+// Setup the mixture rule
+void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after ReadElement()
   if (!has_read_element_) dserror("ReadElement() must be called before Setup()!");

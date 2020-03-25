@@ -14,6 +14,8 @@
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/anisotropy_extension_default.H"
+#include "../drt_mat/anisotropy_extension_provider.H"
 
 namespace MAT
 {
@@ -108,11 +110,13 @@ namespace MAT
     /// \author braeu
     /// \date 07/16
 
-    class CoupAnisoExpoActive : public Summand
+    class CoupAnisoExpoActive : public Summand, public FiberAnisotropyExtensionProvider
     {
      public:
       /// constructor with given material parameters
       CoupAnisoExpoActive(MAT::ELASTIC::PAR::CoupAnisoExpoActive* params);
+
+      ~CoupAnisoExpoActive() override = default;
 
       ///@name Packing and Unpacking
       //@{
@@ -224,21 +228,29 @@ namespace MAT
         return;
       };
 
+
+      /*!
+       * \brief Returns the reference to the used MAT::FiberAnisotropyExtension
+       *
+       * \return FiberAnisotropyExtension& Reference to the used MAT::AnisotropyExtension
+       */
+      FiberAnisotropyExtension& GetFiberAnisotropyExtension() override
+      {
+        return anisotropyExtension_;
+      }
+
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;
-
-      /// fiber direction
-      LINALG::Matrix<3, 1> a_;
-
-      /// structural tensors in voigt notation for anisotropy
-      LINALG::Matrix<6, 1> A_;
 
       /// first derivative of active fiber potential w.r.t. the active fiber stretch
       double dPIact_;
 
       /// active fiber stretch for a given muscle tone
       double lambdaact_;
+
+      /// Anisotropy extension that manages fibers and structural tensors
+      DefaultAnisotropyExtension anisotropyExtension_;
     };
 
   }  // namespace ELASTIC

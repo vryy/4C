@@ -16,6 +16,7 @@ B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_mat/anisotropy_extension.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -42,44 +43,10 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
-    : Anisotropy(2, params->init_, params->StructuralTensorStrategy()), params_(params), a1a2_(0.0)
+    : params_(params), anisotropyExtension_(params_)
 {
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PackSummand(DRT::PackBuffer& data) const
-{
-  AddtoPack(data, a1a2_);
-  AddtoPack(data, A1A2_);
-
-  PackAnisotropy(data);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
-{
-  ExtractfromPack(position, data, a1a2_);
-  ExtractfromPack(position, data, A1A2_);
-
-  UnpackAnisotropy(data, position);
-}
-
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  Summand::Setup(numgp, linedef);
-
-  Anisotropy::SetNumberOfGaussPoints(numgp);
-  Anisotropy::ReadAnisotropyFromElement(linedef);
-}
-
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PostSetup(Teuchos::ParameterList& params)
-{
-  Summand::PostSetup(params);
-  Anisotropy::ReadAnisotropyFromParameterList(params);
+  anisotropyExtension_.RegisterNeededTensors(
+      FiberAnisotropyExtension::FIBER_VECTORS | FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
 }
 
 /*----------------------------------------------------------------------*/
@@ -88,12 +55,13 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int eleGID)
 {
-  int gp = GetGPId(params);
+  int gp = anisotropyExtension_.GetVirtualGaussPoint(params);
 
-  LINALG::Matrix<6, 1> A1 = GetStructuralTensor_stress(gp, 0);
-  LINALG::Matrix<6, 1> A2 = GetStructuralTensor_stress(gp, 1);
-  LINALG::Matrix<6, 1> A1A2 = A1A2_[gp];
-  double a1a2 = a1a2_[gp];
+  LINALG::Matrix<6, 1> A1 = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
+  LINALG::Matrix<6, 1> A2 = anisotropyExtension_.GetStructuralTensor_stress(gp, 1);
+  LINALG::Matrix<6, 1> A1A2 = anisotropyExtension_.GetCoupledStructuralTensor_stress(gp);
+
+  double a1a2 = anisotropyExtension_.GetCoupledScalarProduct(gp);
 
   double I4 = A1.Dot(rcg);
   double I6 = A2.Dot(rcg);
@@ -141,7 +109,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  if (params_->init_ == INIT_MODE_NODAL_FIBERS)
+  if (params_->init_ == DefaultAnisotropyExtension::INIT_MODE_NODAL_FIBERS)
   {
     // This method expects constant fibers within this element but the init mode is such that
     // fibers are defined on the Gauss points
@@ -151,8 +119,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
     return;
   }
 
-  fibervecs.push_back(GetFiber(GPDEFAULT, 0));
-  fibervecs.push_back(GetFiber(GPDEFAULT, 1));
+  fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
+  fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 1));
 }
 
 /*----------------------------------------------------------------------*/
@@ -160,106 +128,39 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
-  if (params_->init_ != INIT_MODE_EXTERNAL and params_->init_ != INIT_MODE_ELEMENT_FIBERS)
-  {
-    dserror("Setting the fiber vectors is only possible for external mode and element fibers");
-  }
-  LINALG::Matrix<3, 1> ca1(true);
-  LINALG::Matrix<3, 1> ca2(true);
-
-  // Fiber direction derived from local cosy
-  if (params_->init_ == 0 || params_->init_ == 1)
-  {
-    // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-    if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) dserror("Fiber angle not in [0,90]");
-    // convert
-    double gamma = (params_->gamma_ * PI) / 180.;
-
-    if (params_->adapt_angle_ != 0 && newgamma != -1.0)
-    {
-      if (gamma * newgamma < 0.0)
-      {
-        gamma = -1.0 * newgamma;
-      }
-      else
-      {
-        gamma = newgamma;
-      }
-    }
-
-    // TODO a1 and a2 aren't orthogonal in the current definition; leads to non-zero value for I8
-    // and therefore
-    // a non-zero stress value at the reference configuration
-    for (int i = 0; i < 3; ++i)
-    {
-      // a1 = cos gamma e3 + sin gamma e2
-      ca1(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
-      // a2 = cos gamma e3 - sin gamma e2
-      ca2(i) = cos(gamma) * locsys(i, 2) - sin(gamma) * locsys(i, 1);
-    }
-  }
-  // INIT = 2 : Fiber direction aligned to local cosy
-  else if (params_->init_ == 2)
-  {
-    for (int i = 0; i < 3; ++i)
-    {
-      ca1(i) = locsys(i, 0);
-      ca2(i) = locsys(i, 1);
-    }
-  }
-  else
-  {
-    dserror("Problem with fiber initialization");
-  }
-
-  // pull back in reference configuration
-  LINALG::Matrix<3, 1> a1_0(true);
-  LINALG::Matrix<3, 1> a2_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
-
-  a1_0.Multiply(idefgrd, ca1);
-  a1_0.Scale(1.0 / a1_0.Norm2());
-
-  a2_0.Multiply(idefgrd, ca2);
-  a2_0.Scale(1.0 / a2_0.Norm2());
-
-  std::vector<LINALG::Matrix<3, 1>> fibers(0);
-  fibers.emplace_back(a1_0);
-  fibers.emplace_back(a2_0);
-
-  SetFibers(GPDEFAULT, fibers);
+  anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
+}
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+{
+  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys)
+MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::CoupAnisoExpoTwoCoupAnisoExtension(
+    MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
+    : DefaultAnisotropyExtension(params->init_, params->gamma_, params->adapt_angle_ != 0,
+          params->StructuralTensorStrategy())
 {
-  LINALG::Matrix<3, 3> Id(false);
-  MAT::IdentityMatrix(Id);
-
-  // final setup of fiber data
-  SetFiberVecs(0.0, locsys, Id);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::DoFiberInitialization()
+void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::PackAnisotropy(DRT::PackBuffer& data) const
 {
-  // Setup coupling tensor for anisotropy
-  if (params_->init_ != 0)
-  {
-    dserror(
-        "The fibers should only be set up manually if INIT is 0, otherwise we (should) get them "
-        "from the input file.");
-  }
+  DefaultAnisotropyExtension::PackAnisotropy(data);
 
-  // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-  LINALG::Matrix<3, 3> Id(false);
-  MAT::IdentityMatrix(Id);
-  SetFiberVecs(-1.0, Id, Id);
+  DRT::ParObject::AddtoPack(data, a1a2_);
+  DRT::ParObject::AddtoPack(data, A1A2_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::OnFibersInitialized()
+void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
+    const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  Anisotropy::OnFibersInitialized();
+  DefaultAnisotropyExtension::UnpackAnisotropy(data, position);
 
+  DRT::ParObject::ExtractfromPack(position, data, a1a2_);
+  DRT::ParObject::ExtractfromPack(position, data, A1A2_);
+}
+
+void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
+{
   // Setup structural tensor of the coupling part
   const int fibersperele = GetFibersPerElement();
 
@@ -283,4 +184,15 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::OnFibersInitialized()
       a1a2_[gp] += a1(i) * a2(i);
     }
   }
+}
+
+const LINALG::Matrix<6, 1>&
+MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_stress(int gp) const
+{
+  return A1A2_[gp];
+}
+
+double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledScalarProduct(int gp) const
+{
+  return a1a2_[gp];
 }

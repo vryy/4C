@@ -33,6 +33,8 @@ namespace DRT
 
 namespace MAT
 {
+  class Anisotropy;
+
   namespace ELASTIC
   {
     namespace PAR
@@ -73,7 +75,7 @@ namespace MAT
       Summand() { ; }
 
       /// destructor
-      virtual ~Summand() { ; }
+      virtual ~Summand() = default;
 
       ///@name Packing and Unpacking (dummy routines)
       //@{
@@ -102,6 +104,17 @@ namespace MAT
       );
 
       /*!
+       * @brief Register anisotropy extensions that compute the structural tensors and fiber
+       * directions that are needed for the evaluation of the material
+       *
+       * @param anisotropy Global anisotropy holder
+       */
+      virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+      {
+        // do nothing
+      }
+
+      /*!
        * \brief Dummy routine for setup of summand.
        *
        * This method is called during Element input with the LineDefinition of the element.
@@ -109,10 +122,10 @@ namespace MAT
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) { return; };
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef){};
 
       /// Dummy routine for setup of patient-specific materials
-      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID) { return; };
+      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};
 
       /*!
        * Post setup routine for summands. It will be called once after everything is set up.

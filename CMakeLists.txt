@@ -659,7 +659,12 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
-  src/drt_mat/mixture_elasthyper.cpp)
+  src/drt_mat/mixture_elasthyper.cpp
+  src/drt_mat/anisotropy_utils.cpp
+  src/drt_mat/anisotropy_cylinder_coordinate_system_manager.cpp
+  src/drt_mat/anisotropy_extension_cylinder_cosy.cpp
+  src/drt_mat/anisotropy_extension_default.cpp
+  src/drt_mat/anisotropy_extension.cpp)
 
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp

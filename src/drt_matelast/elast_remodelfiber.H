@@ -289,7 +289,7 @@ namespace MAT
         RemodelFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
         /// destructor
-        virtual ~RemodelFiber() { ; }
+        virtual ~RemodelFiber() {}
 
         /// length of material list
         const int nummat_;
@@ -377,6 +377,13 @@ namespace MAT
 
       /// Update of summand
       virtual void Update();
+
+      /*!
+       * \brief Register anisotropy extensions to be passed to all summands
+       *
+       * \param anisotropy Reference to the anisotropy
+       */
+      virtual void RegisterAnisotropyExtensions(Anisotropy& anisotropy);
 
       /// Setup of summand
       virtual void Setup(int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef);

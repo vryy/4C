@@ -92,13 +92,13 @@ DRT::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper() : summandProperties_(), params_(nullptr), potsum_(0) {}
+MAT::ElastHyper::ElastHyper() : summandProperties_(), params_(nullptr), potsum_(0), anisotropy_() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
-    : summandProperties_(), params_(params), potsum_(0)
+    : summandProperties_(), params_(params), potsum_(0), anisotropy_()
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -108,6 +108,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsum_.push_back(sum);
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   // For Stat Inverse Analysis
@@ -154,6 +155,8 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
       p->PackSummand(data);
     }
   }
+
+  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -207,16 +210,25 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     for (auto& p : potsum_)
     {
       p->UnpackSummand(data, position);
+      p->RegisterAnisotropyExtensions(anisotropy_);
     }
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 
   // For Stat Inverse Analysis
   // pointer to elasthyper
   if (params_ != nullptr) params_->SetMaterialPtrSIA(this);
+
+  anisotropy_.UnpackAnisotropy(data, position);
+
+  if (params_ != nullptr)
+  {
+    // in the postprocessing mode, we do not unpack everything we have packed
+    // -> position check cannot be done in this case
+    if (position != data.size())
+    {
+      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -282,6 +294,10 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  // Read anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
+
   // Setup summands
   for (auto& p : potsum_)
   {
@@ -296,8 +312,10 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
         "instead.");
 }
 
-void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params)
+void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
+  anisotropy_.ReadAnisotropyFromParameterList(params);
+
   // Forward PostSetup call to all summands
   for (auto& p : potsum_)
   {

@@ -17,6 +17,8 @@
 #include "so3_material.H"
 #include "../drt_mixture/mixture_constituent.H"
 #include "../drt_mixture/mixture_rule.H"
+#include "../drt_matelast/elast_summand.H"
+#include "anisotropy.H"
 
 namespace MAT
 {
@@ -192,7 +194,7 @@ namespace MAT
      *
      * @param params Container for additional information
      */
-    void PostSetup(Teuchos::ParameterList& params) override;
+    void PostSetup(Teuchos::ParameterList& params, const int eleGID) override;
 
     /*!
      * \brief Update of the material
@@ -255,6 +257,9 @@ namespace MAT
 
     /// Flag whether constituents are already set up.
     bool setup_;
+
+    /// Holder for anisotropic materials
+    Anisotropy anisotropy_;
   };
 
 }  // namespace MAT

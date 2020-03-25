@@ -1557,7 +1557,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       LINALG::SYEV(avg_stress, lambda, locsys);
 
       // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-      double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+      double newgamma = atan2(lambda(1, 1), lambda(2, 2));
       // compression in 2nd max direction, thus fibers are alligned to max principal direction
       if (lambda(1, 1) < 0) newgamma = 0.0;
 

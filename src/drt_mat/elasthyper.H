@@ -23,6 +23,7 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "elasthyper_service.H"
+#include "../drt_mat/anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -357,8 +358,9 @@ namespace MAT
      * summands
      *
      * @param params Container for additional information
+     * @param eleGID Global element id
      */
-    void PostSetup(Teuchos::ParameterList& params) override;
+    void PostSetup(Teuchos::ParameterList& params, const int eleGID) override;
 
     /// update
     void Update() override;
@@ -417,6 +419,9 @@ namespace MAT
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
+
+    /// Holder of anisotropy
+    MAT::Anisotropy anisotropy_;
   };
 
 }  // namespace MAT
