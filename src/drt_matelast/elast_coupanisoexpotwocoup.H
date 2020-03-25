@@ -66,7 +66,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
 
         /// @name Write methods
         //@{

@@ -124,7 +124,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
   psi += params_->s_ / params_->dens_ *
          (lambdaact_ + (1. / 3.) * (std::pow(params_->lambdamax_ - lambdaact_, 3.0) /
                                        std::pow(params_->lambdamax_ - params_->lambda0_, 2.0)));
-};
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ template <typename T>
 void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc(
     T& psi, LINALG::Matrix<3, 3, T> const& rcg, int const eleGID) const
 {
-  T I4_fad = 0.0;
+  T I4_fad;
   static LINALG::Matrix<6, 1, T> Av_T(true);
   for (int i = 0; i < 6; ++i) Av_T(i) = anisotropyExtension_.GetStructuralTensor_stress(0, 0)(i);
   I4_fad = Av_T(0) * rcg(0, 0) + Av_T(1) * rcg(1, 1) + Av_T(2) * rcg(2, 2) +
@@ -169,11 +169,60 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(
 
   T dPIact_T = 0.0;
   dPIact_T = dPIact_;
-  stress.Update(dPIact_T * 1. / lambda_sq, Av_T, 1.0);
-  cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 1.0);
+  stress.Update(dPIact_T * 1. / lambda_sq, Av_T, 0.0);
+  cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 0.0);
 }
 
-  return;
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupAnisoExpoActive::AddActiveStressCmatAniso(LINALG::Matrix<3, 3> const& CM,
+    LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, const int eleGID) const
+{
+  double lambda_sq = CM.Dot(anisotropyExtension_.GetStructuralTensor(0, 0));
+
+  double dPIact_T = 0.0;
+  dPIact_T = dPIact_;
+  stress.Update(
+      dPIact_T * 1. / lambda_sq, anisotropyExtension_.GetStructuralTensor_stress(0, 0), 1.0);
+  cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq),
+      anisotropyExtension_.GetStructuralTensor_stress(0, 0),
+      anisotropyExtension_.GetStructuralTensor_stress(0, 0), 1.0);
+}
+
+void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFirstDerivativesAniso(
+    LINALG::Matrix<2, 1>& dPI_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
+{
+  double I4 = anisotropyExtension_.GetStructuralTensor(gp, 0).Dot(rcg);
+
+  double k1 = params_->k1_;
+  double k2 = params_->k2_;
+
+  if (I4 < 1.0)
+  {
+    k1 = params_->k1comp_;
+    k2 = params_->k2comp_;
+  }
+
+  dPI_aniso(0) = k1 * (I4 - 1.0) * exp(k2 * (I4 - 1.0) * (I4 - 1.0));
+}
+
+void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateSecondDerivativesAniso(
+    LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
+{
+  double I4 = anisotropyExtension_.GetStructuralTensor(gp, 0).Dot(rcg);
+
+  double k1 = params_->k1_;
+  double k2 = params_->k2_;
+
+  if (I4 < 1.0)
+  {
+    k1 = params_->k1comp_;
+    k2 = params_->k2comp_;
+  }
+
+  ddPII_aniso(0) =
+      (1.0 + 2.0 * k2 * (I4 - 1.0) * (I4 - 1.0)) * k1 * exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 }
 
 

@@ -1869,8 +1869,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         false, true);
     AddNamedReal(m, "LAMBDA_LOWER", "lower fiber stretch for Frank-Starling law", 1.0, true);
     AddNamedReal(m, "LAMBDA_UPPER", "upper fiber stretch for Frank-Starling law", 1.0, true);
-    AddNamedReal(m, "GAMMA", "azimuth angle", 0.0, true);
-    AddNamedReal(m, "THETA", "polar angle", 0.0, true);
+    AddNamedReal(m, "GAMMA", "angle", 0.0, true);
     AddNamedInt(m, "STR_TENS_ID", "MAT ID for definition of Structural Tensor");
     AddNamedInt(m, "INIT", "initialization mode for fiber alignment", 1, true);
     AddNamedBool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
@@ -3577,7 +3576,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         m, "MATIDSCONST", "list material IDs of the mixture constituents", "NUMCONST");
     AddNamedRealVector(
         m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
-    AddNamedInt(m, "MATIDMIXTURELAW", "material id of the mixture law");
+    AddNamedInt(m, "MATIDMIXTURERULE", "material id of the mixturerule");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3590,6 +3589,57 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedInt(m, "NUMMAT", "number of summands");
     AddNamedIntVector(m, "MATIDS", "list material IDs of the summands", "NUMMAT");
+    AddNamedInt(m, "PRESTRESS_STRATEGY",
+        "Material id of the prestress strategy (optional, by default no prestretch)", 0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for ElastHyper toolbox with a damage process
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ElastHyper_Elastin",
+        "ElastHyper toolbox with damage", INPAR::MAT::mix_elasthyper_elastin));
+
+    AddNamedInt(m, "NUMMAT", "number of summands");
+    AddNamedIntVector(m, "MATIDS", "list material IDs of the membrane summands", "NUMMAT");
+    AddNamedInt(m, "MEMBRANENUMMAT", "number of summands");
+    AddNamedIntVector(
+        m, "MEMBRANEMATIDS", "list material IDs of the membrane summands", "MEMBRANENUMMAT");
+    AddNamedInt(m, "PRESTRESS_STRATEGY",
+        "Material id of the prestress strategy (optional, by default no prestretch)", 0, true);
+    AddNamedInt(m, "DAMAGE_FUNCT",
+        "Reference to the function that is a gain for the increase/decrease of the reference mass "
+        "density.");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Prestress strategy for a cylinder
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Cylinder",
+        "Simple prestress strategy for a cylinder", INPAR::MAT::mix_prestress_strategy_cylinder));
+
+    AddNamedReal(m, "INNER_RADIUS", "Inner radius of the cylinder");
+    AddNamedReal(m, "WALL_THICKNESS", "Wall thickness of the cylinder");
+    AddNamedReal(m, "AXIAL_PRESTRETCH", "Prestretch in axial direction");
+    AddNamedReal(m, "CIRCUMFERENTIAL_PRESTRETCH", "Prestretch in circumferential direction");
+    AddNamedReal(m, "PRESSURE", "Pressure in the inner of the cylinder");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for a remodel fiber
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ExplicitRemodelFiber",
+        "A 1D constituent that remodels", INPAR::MAT::mix_remodelfiber_expl));
+
+    AddNamedInt(m, "MATID", "Id of the elasthyper summand");
+    AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
+    AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
+    AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3599,6 +3649,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   {
     auto m = Teuchos::rcp(
         new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Base mixture rule for solid mixtures
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_GrowthRemodelMixtureRule",
+        "Mixture rule for growth/remodel homogenized constrained mixture models",
+        INPAR::MAT::mix_rule_growthremodel));
+
+    AddNamedInt(m, "GROWTH_TYPE", "Growth type (0: isotropic growth, 1: anisotropic growth)");
 
     AppendMaterialDefinition(matlist, m);
   }

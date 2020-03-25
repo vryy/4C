@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Definition of the mixture material holding a general mixture law and mixture constituents
+\brief Definition of the mixture material holding a general mixturerule and mixture constituents
 
 \level 3
 
@@ -22,9 +22,8 @@
 
 namespace MAT
 {
-  // forward declaraction
+  // forward declaration
   class Mixture_ElastHyper;
-
 
   namespace PAR
   {
@@ -37,7 +36,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit Mixture_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// destructor
       ~Mixture_ElastHyper() override = default;
@@ -86,7 +85,7 @@ namespace MAT
    * mixture framework is needed.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURELAW 10
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
    * MAT 10 MIX_Rule_Base
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
@@ -252,11 +251,14 @@ namespace MAT
     /// list of the references to the constituents
     Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> constituents_;
 
-    /// Reference to the mixture law
+    /// Reference to the mixturerule
     Teuchos::RCP<MIXTURE::MixtureRule> mixture_rule_;
 
     /// Flag whether constituents are already set up.
     bool setup_;
+
+    /// Flag for each gauss point whether the mixture rule and constituents are pre-evaluated
+    std::vector<bool> isPreEvaluated_;
 
     /// Holder for anisotropic materials
     Anisotropy anisotropy_;

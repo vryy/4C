@@ -1476,7 +1476,7 @@ namespace MAT
 namespace MIXTURE
 {
   /*!
-   * \brief Input data parameters for mixture constituents and mixture laws
+   * \brief Input data parameters for mixture constituents and mixturerules
    */
   namespace PAR
   {

@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "mixture_rule_growthremodel.H"
 
 // Constructor of the material parameters
 MIXTURE::PAR::MixtureRule::MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -32,11 +33,15 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
+  {
     dserror("List of materials cannot be accessed in the global problem instance.");
+  }
 
   // yet another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
+  {
     dserror("List of materials in the global problem instance is empty.");
+  }
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -49,32 +54,50 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
     case INPAR::MAT::mix_rule_base:
     {
       if (curmat->Parameter() == nullptr)
+      {
         curmat->SetParameter(new MIXTURE::PAR::MixtureRule(curmat));
+      }
       auto* params = dynamic_cast<MIXTURE::PAR::MixtureRule*>(curmat->Parameter());
       return params;
     }
+    case INPAR::MAT::mix_rule_growthremodel:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(new MIXTURE::PAR::GrowthRemodelMixtureRule(curmat));
+      }
+      auto* params = dynamic_cast<MIXTURE::PAR::GrowthRemodelMixtureRule*>(curmat->Parameter());
+      return params;
+    }
     default:
-      dserror("The referenced material with id %d is not registered as a Mixture Law!", matid);
+      dserror("The referenced material with id %d is not registered as a mixturerule!", matid);
   }
   return nullptr;
 }
 
-// Empty constructor
-MIXTURE::MixtureRule::MixtureRule()
-    : constituents_(Teuchos::null), numgp_(0), has_read_element_(false), is_setup_(false)
-{
-}
-
 // Constructor with parameters
 MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
-    : constituents_(Teuchos::null), numgp_(0), has_read_element_(false), is_setup_(false)
+    : constituents_(Teuchos::null),
+      numgp_(0),
+      has_read_element_(false),
+      is_setup_(false),
+      material_mass_density_(0.0)
 {
 }
 
-// Pack the mixture law
-void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
+// Store material mass density
+void MIXTURE::MixtureRule::SetMaterialMassDensity(double density)
 {
-  // Add number of Gaußpoints
+  material_mass_density_ = density;
+}
+
+// Get material mass density
+double MIXTURE::MixtureRule::GetMaterialMassDensity() const { return material_mass_density_; }
+
+// Pack the mixture rule
+void MIXTURE::MixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
+{
+  // Add number of Gauss points
   DRT::ParObject::AddtoPack(data, numgp_);
 
   // Add flag whether it has already read the element
@@ -85,7 +108,7 @@ void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
 }
 
 // Unpack the mixture rule
-void MIXTURE::MixtureRule::UnpackMixtureLaw(
+void MIXTURE::MixtureRule::UnpackMixtureRule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // Read initialized flag
@@ -128,7 +151,7 @@ void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
   static LINALG::Matrix<6, 1> cstress;
   static LINALG::Matrix<6, 6> ccmat;
 
-  // This is the simplest mixture law
+  // This is the simplest mixture rule
   // Just iterate over all constituents and add all stress/cmat contributions
   for (auto const& constituent : *Constituents())
   {
@@ -137,7 +160,7 @@ void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
     constituent->Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress
-    // In this basic mixture law, the mass fractions do not change
+    // In this basic mixture rule, the mass fractions do not change
     S_stress.Update(1.0, cstress, 1.0);
     cmat.Update(1.0, ccmat, 1.0);
   }

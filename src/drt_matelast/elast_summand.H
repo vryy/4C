@@ -361,6 +361,56 @@ namespace MAT
         return;  // do nothing
       }
 
+      /*!
+       * @brief Retrieve first derivative of the summand with respect to the anisotropic invariants
+       *
+       * The derivatives of the summand
+       * \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$ in which
+       * the principal/modified anisotropic invariants are the arguments (depending on the
+       * formulation) are defined as following:
+       *
+       * \f[
+       *  dPI_{0,aniso} = \frac{\partial \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       * \f[
+       *  dPI_{1,aniso} = \frac{\partial \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       *
+       * @param dPI_aniso First derivative of the summand with respect to the anisotropic invariants
+       * @param rcg Right Cauchy-Green deformation tensor
+       * @param gp Gauss-Point
+       * @param eleGID Global element id
+       */
+      virtual void EvaluateFirstDerivativesAniso(
+          LINALG::Matrix<2, 1>& dPI_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
+
+      /*!
+       * @brief Retrieve second derivative of the summand with respect to the anisotropic invariants
+       *
+       * The second derivative of the summand
+       * \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$ in which
+       * the principal/modified anisotropic invariants are the arguments (depending on the
+       * formulation) are defined as following:
+       *
+       * \f[
+       *  ddPII_{0,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+       * \f]
+       * \f[
+       *  ddPII_{1,aniso} = \frac{\partial^2 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+       * \f]
+       * \f[
+       *  ddPII_{2,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+       *  \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       *
+       * @param dPI_aniso First derivative of the summand with respect to the anisotropic invariants
+       * @param rcg Right Cauchy-Green deformation tensor
+       * @param gp Gauss-Point
+       * @param eleGID Global element id
+       */
+      virtual void EvaluateSecondDerivativesAniso(
+          LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
+
       /// retrieve coefficients of first and second derivative
       /// of summand for fiber directions with respect to principal invariants
       ///

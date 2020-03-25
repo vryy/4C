@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Implementation of the mixture material holding a general mixture law and mixture constituents
+\brief Implementation of the mixture material holding a general mixturerule and mixture constituents
 
 \level 3
 
@@ -14,7 +14,7 @@
 #include "../drt_mat/matpar_bundle.H"
 
 // constructor of the parameters
-MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       mass_fractions_(matdata->Get<std::vector<double>>("MASSFRAC")),
       density_(matdata->GetDouble("DENS")),
@@ -49,8 +49,8 @@ MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(Teuchos::RCP<MAT::PAR::Material
     constituents_.emplace_back(mix_const);
   }
 
-  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->GetInt("MATIDMIXTURELAW"));
-
+  // Create mixture rule
+  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->GetInt("MATIDMIXTURERULE"));
 
   // check, whether the mass frac sums up to 1
   double sum = 0.0;
@@ -127,11 +127,23 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
   // pack setup flag
   AddtoPack(data, static_cast<const int>(setup_));
 
+  // Pack isPreEvaluated flag
+  std::vector<int> isPreEvaluatedInt;
+  isPreEvaluatedInt.resize(isPreEvaluated_.size());
+  for (unsigned i = 0; i < isPreEvaluated_.size(); ++i)
+  {
+    isPreEvaluatedInt[i] = static_cast<int>(isPreEvaluated_[i]);
+  }
+  AddtoPack(data, isPreEvaluatedInt);
+
   // pack all constituents
   for (auto const& constituent : *constituents_)
   {
     constituent->PackConstituent(data);
   }
+
+  // pack mixturerule
+  mixture_rule_->PackMixtureRule(data);
 
   anisotropy_.PackAnisotropy(data);
 }
@@ -173,6 +185,16 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
     // Extract setup flag
     setup_ = (bool)ExtractInt(position, data);
 
+
+    // Extract is isPreEvaluated
+    std::vector<int> isPreEvaluatedInt(0);
+    DRT::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
+    isPreEvaluated_.resize(isPreEvaluatedInt.size());
+    for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
+    {
+      isPreEvaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
+    }
+
     // extract constituents
     // constituents are not accessible during post processing
     if (params_ != nullptr)
@@ -196,9 +218,10 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
         constituent->RegisterAnisotropyExtensions(anisotropy_);
       }
 
-      // unpack mixture law
-      mixture_rule_->UnpackMixtureLaw(position, data);
+      // unpack mixturerule
+      mixture_rule_->UnpackMixtureRule(position, data);
       mixture_rule_->SetConstituents(constituents_);
+      mixture_rule_->SetMaterialMassDensity(params_->density_);
       mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
     }
   }
@@ -215,6 +238,9 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
 void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);
+
+  // resize preevaluation flag
+  isPreEvaluated_.resize(numgp, false);
 
   // Setup anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
@@ -237,10 +263,10 @@ void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const in
 
   for (auto const& constituent : *constituents_)
   {
-    constituent->Setup(params);
+    constituent->Setup(params, eleGID);
   }
 
-  mixture_rule_->Setup(params);
+  mixture_rule_->Setup(params, eleGID);
 
   setup_ = true;
 }
@@ -255,7 +281,7 @@ void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const i
     constituent->Update(defgrd, params, gp, eleGID);
   }
 
-  mixture_rule_->Update(defgrd, params, gp);
+  mixture_rule_->Update(defgrd, params, gp, eleGID);
 }
 
 // Evaluates the material
@@ -269,7 +295,18 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // read Gauß point
   int gp = params.get<int>("gp");
 
-  // Evaluate mixture law
+  if (!isPreEvaluated_[gp])
+  {
+    for (auto const& constituent : *constituents_)
+    {
+      isPreEvaluated_[gp] = true;
+      constituent->PreEvaluate(*mixture_rule_, params, gp, eleGID);
+    }
+
+    mixture_rule_->PreEvaluate(params, gp, eleGID);
+  }
+
+  // Evaluate mixturerule
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 

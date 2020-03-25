@@ -14,8 +14,9 @@
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 
 #include "../drt_mat/matpar_parameter.H"
-#include "mixture_constituent.H"
+#include "mixture_constituent_elasthyperbase.H"
 #include "../drt_mat/elasthyper_service.H"
+#include "mixture_prestress_strategy.H"
 
 namespace MIXTURE
 {
@@ -23,10 +24,8 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent_ElastHyper : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituent_ElastHyper : public MIXTURE::PAR::MixtureConstituent_ElastHyperBase
     {
-      friend class MIXTURE::MixtureConstituent_ElastHyper;
-
      public:
       explicit MixtureConstituent_ElastHyper(
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
@@ -38,28 +37,9 @@ namespace MIXTURE
 
       /// @name material parameters
       /// @{
-
-      /// number of summands
-      const int nummat_;
-
-      /// List of material ids of the summands
-      const std::vector<int>* matids_;
       /// @}
     };
   }  // namespace PAR
-
-  class MixtureConstituent_ElastHyperType : public DRT::ParObjectType
-  {
-   public:
-    std::string Name() const override { return "MixtureConstituent_ElastHyperType"; }
-
-    static MixtureConstituent_ElastHyperType& Instance() { return instance_; }
-
-    DRT::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static MixtureConstituent_ElastHyperType instance_;
-  };
 
   /*!
    * \brief Constituent for any hyperelastic material
@@ -67,49 +47,14 @@ namespace MIXTURE
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
    * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
    */
-  class MixtureConstituent_ElastHyper : public MIXTURE::MixtureConstituent
+  class MixtureConstituent_ElastHyper : public MIXTURE::MixtureConstituent_ElastHyperBase
   {
    public:
-    MixtureConstituent_ElastHyper();
-
     /// Constructor for the materiak given the material parameters
     explicit MixtureConstituent_ElastHyper(MIXTURE::PAR::MixtureConstituent_ElastHyper* params);
 
-    /*!
-     * \brief Pack data into a char vector from this class
-     *
-     * The vector data contains all information to rebuild the exact copy of an instance of a class
-     * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
-     *
-     * @param data (in/put) : vector storing all data to be packed into this instance.
-     */
-    void PackConstituent(DRT::PackBuffer& data) const override;
-
-    /*!
-     * \brief Unpack data from a char vector into this class to be called from a derived class
-     *
-     * The vector data contains all information to rebuild the exact copy of an instance of a class
-     * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
-     *
-     * @param position (in/out) : current position to unpack data
-     * @param data (in) : vector storing all data to be unpacked into this instance.
-     */
-    void UnpackConstituent(
-        std::vector<char>::size_type& position, const std::vector<char>& data) override;
-
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;
-
-
-    /*!
-     * Initialize the constituent with the parameters of the input line
-     *
-     * @param numgp (in) Number of Gauß-points
-     * @param params (in/out) Parameter list for exchange of parameters
-     */
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
@@ -126,52 +71,38 @@ namespace MIXTURE
         int gp, int eleGID) override;
 
     /*!
-     * \brief Updates the material and all its summands
+     * @brief Evaluates the stress and material linearization of the constituents with an inelastic
+     * part of the deformation
      *
-     * This method is called once between each timestep after convergence.
+     * The total deformation is #F, which is split into two parts:
      *
-     * @param defgrd Deformation gradient
+     * $\boldsymbol{F} = \boldsymbol{F}_e \cdot \boldsymbol{F}_in$
+     *
+     * Only elastic part $\boldsymbol{F}_e$ causes stresses. The inelastic part is only needed
+     * for the linearization.
+     *
+     * @param F Total deformation gradient
+     * @param iF_in Inverse of inelastic part of the deformation
      * @param params Container for additional information
-     * @param gp Gauß point
-     * @param eleGID Global element identifier
+     * @param S_stress 2nd Piola-Kirchhoff stress in stress-like Voigt notation
+     * @param cmat Linearization of the material tensor in Voigt notation
+     * @param gp Gauss-point
+     * @param eleGID Global element id
      */
-    void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
-        int eleGID) override;
+    void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iF_in,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+        int gp, int eleGID) override;
 
     /*!
      * \brief Returns the current reference mass density of the constituent
+     *
+     * @param gp (in) : Gauss point
      * @return
      */
-    double CurrentRefDensity() const override;
-
-    /*!
-     * \brief Get the names and dimension of the quantities to visualize
-     *
-     * @param names (out) Tuple of names and the corresponding dimension of the quantity
-     */
-    void VisNames(std::map<std::string, int>& names) override;
-
-    /*!
-     * \brief
-     * @param name (in) Name of the quantity
-     * @param data (out) Values of the quantity
-     * @param numgp (in) number of Gauß points
-     * @param eleGID (in) Global element id
-     */
-    bool VisData(
-        const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
+    double CurrentRefDensity(int gp) const override;
 
    private:
-    /// @name Flags to specify the elastic formulations (initialize with false)
-    //@{
-    MAT::SummandProperties summandProperties_;  ///< holder for formulation specification
-    //@}
-
-    /// my material parameters
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params_;
-
-    /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
   };
 
 }  // namespace MIXTURE

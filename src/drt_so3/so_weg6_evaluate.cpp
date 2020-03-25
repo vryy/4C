@@ -969,7 +969,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_WEG6, 1> funct(true);

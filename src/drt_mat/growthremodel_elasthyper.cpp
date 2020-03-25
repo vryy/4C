@@ -668,7 +668,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(
             std::pow(params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ *
                          params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ * lamb_pre *
                          lamb_pre,
-                -2. / 3.) *
+                -2. / 3.) *  // ToDo: Verify that -1.0 / 3.0 would be correct here
             (lamb_pre * lamb_pre -
                 (1. / 3.) * (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ +
                                 params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ +

@@ -126,6 +126,38 @@ namespace MAT
        */
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
+      /*!
+       * \brief Evaluate first derivative of the strain energy function with respect to the
+       * anisotropic invariants.
+       *
+       * \param dPI_aniso (out) : First derivatives of the strain energy function with respect to
+       * the anisotropic invariants
+       *
+       * \param C (in) : Cauchy Green deformation tensor
+       *
+       * \param gp (in) : Gauss point
+       *
+       * \param eleGID (in) : global element id
+       */
+      void EvaluateFirstDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
+          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+
+      /*!
+       * \brief Evaluate second derivative of the strain energy function with respect to the
+       * anisotropic invariants.
+       *
+       * \param ddPI_aniso (out) : Second derivatives of the strain energy function with respect to
+       * the anisotropic invariants
+       *
+       * \param C (in) : Cauchy Green deformation tensor
+       *
+       * \param gp (in) : Gauss point
+       *
+       * \param eleGID (in) : global element id
+       */
+      void EvaluateSecondDerivativesAniso(LINALG::Matrix<3, 1>& ddPI_aniso,
+          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
       ///
