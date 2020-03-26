@@ -9,8 +9,7 @@
 #ifndef MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ContactAFilterFactory_decl.hpp"
 
@@ -341,6 +340,6 @@ namespace MueLu
   }
 }  // namespace MueLu
 
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_CONTACTAFILTERFACTORY_DEF_HPP_ */

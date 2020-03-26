@@ -6,8 +6,7 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -30,4 +29,4 @@ template class MueLu::ContactASlaveDofFilterFactory<double, int, long long int, 
 // template class MueLu::ContactASlaveDofFilterFactory<std::complex<double>, int, int,
 // KokkosSerialNode>; # else # warning To compile MueLu with 'complex' support, please turn on
 // Teuchos_ENABLE_COMPLEX # endif #endif
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015

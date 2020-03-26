@@ -7,8 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -35,4 +34,4 @@ template class MueLu::IterationAFactory<std::complex<double>, int, int, KokkosSe
 #warning To compile MueLu with 'complex' support, please turn on Teuchos_ENABLE_COMPLEX
 #endif
 #endif
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015

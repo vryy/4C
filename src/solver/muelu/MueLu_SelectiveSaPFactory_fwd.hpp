@@ -11,8 +11,7 @@
 #define MUELU_SELECTIVESAPFACTORY_FWD_HPP_
 
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 namespace MueLu
 {
@@ -24,6 +23,6 @@ namespace MueLu
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 #endif
 
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_SELECTIVESAPFACTORY_FWD_HPP_ */

@@ -25,7 +25,7 @@
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
 #include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 #include <MueLu_HierarchyHelpers.hpp>
 #endif
 #include <MueLu_VerboseObject.hpp>

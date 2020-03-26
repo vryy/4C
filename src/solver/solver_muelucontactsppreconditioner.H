@@ -12,8 +12,7 @@
 #ifndef SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 #define SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "solver_preconditionertype.H"
 
@@ -217,6 +216,6 @@ namespace LINALG
   }     // namespace SOLVER
 }  // namespace LINALG
 
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015
 
 #endif /* SOLVER_MUELUCONTACTSPPRECONDITIONER_H_ */

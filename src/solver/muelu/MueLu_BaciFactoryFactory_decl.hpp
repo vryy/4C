@@ -10,8 +10,7 @@
 #ifndef MUELU_BACIFACTORYFACTORY_DECL_HPP
 #define MUELU_BACIFACTORYFACTORY_DECL_HPP
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ConfigDefs.hpp"
 
@@ -213,5 +212,5 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_BACIFACTORYFACTORY_SHORT
-#endif /* HAVE_MueLuContact */
+#endif /* TRILINOS_Q1_2015 */
 #endif /* MUELU_BACIFACTORYFACTORY_DECL_HPP */

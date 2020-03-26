@@ -24,7 +24,7 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>  // remove me
-#if !TRILINOS_MAJOR_MINOR_VERSION >= 120400 || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 #include <MueLu_HierarchyHelpers.hpp>
 #endif
 #include <MueLu_VerboseObject.hpp>

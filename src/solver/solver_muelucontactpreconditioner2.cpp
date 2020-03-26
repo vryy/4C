@@ -9,8 +9,7 @@
 Created on: Sep 7, 2012
 Author: wiesner
 *----------------------------------------------------------------------*/
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -1205,4 +1204,4 @@ LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(
   return SmooFact;
 }
 
-#endif
+#endif  // TRILINOS_Q1_2015

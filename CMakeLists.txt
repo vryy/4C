@@ -104,6 +104,12 @@ if (HAVE_Kokkos)
   add_definitions("-DHAVE_Kokkos")
 endif(HAVE_Kokkos)
 
+option (TRILINOS_Q1_2015 "Select Trilinos installation Q1_2015" OFF)
+if (TRILINOS_Q1_2015)
+  MESSAGE("II Trilinos installation: Q1_2015")
+  add_definitions("-DTRILINOS_Q1_2015")
+endif (TRILINOS_Q1_2015)
+
 option (ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
 if (ENABLE_STACKTR)
   MESSAGE("II Print stacktrace in dserror")

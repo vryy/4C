@@ -65,18 +65,18 @@ namespace LINALG
         }
 
         // check if myMap is an Epetra_Map
-#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
-        Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xmyMap = Teuchos::null;
-#else
+#ifdef TRILINOS_Q1_2015
         Teuchos::RCP<Xpetra::EpetraMap> xmyMap = Teuchos::null;
+#else
+        Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xmyMap = Teuchos::null;
 #endif
         Teuchos::RCP<Epetra_Map> epTest = Teuchos::rcp_dynamic_cast<Epetra_Map>(myMap);
         if (epTest != Teuchos::null)
         {
-#if TRILINOS_MAJOR_MINOR_VERSION >= 121400
-          xmyMap = Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(myMap));
-#else
+#ifdef TRILINOS_Q1_2015
           xmyMap = Teuchos::rcp(new Xpetra::EpetraMap(myMap));
+#else
+          xmyMap = Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(myMap));
 #endif
           H.GetLevel(0)->Set(
               name, Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(xmyMap));

@@ -7,8 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Trilinos_version.h>
-#if !(TRILINOS_MAJOR_MINOR_VERSION >= 121400) || defined(HAVE_MueLuContact)
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -29,4 +28,4 @@ template class MueLu::ContactSPRepartitionInterface<int, long long int, KokkosSe
 #endif
 #endif
 
-#endif  // HAVE_MueLuContact
+#endif  // TRILINOS_Q1_2015
