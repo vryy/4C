@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
               expterm);
 
         // core residual term associated with Butler-Volmer mass flux density
-        const double jfacrhsfac = j0 * expterm * timefacrhsfac;
+        const double j = j0 * expterm;
 
         // forward declarations
         double dj_dc_slave(.0);
@@ -278,15 +278,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         double dj_dpot_master(.0);
 
         // calculate core linearizations
-        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
-            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
-            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+            alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax,
+            dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-            test_master, numelectrons, nen_master, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master, jfacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+            test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+            dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
       }
 
       break;
@@ -323,19 +322,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         double dj_dpot_slave(.0);
         double dj_dpot_master(.0);
 
-        // calculate core residual term associated with Butler-Volmer mass flux density
-        const double jfacrhsfac = j * timefacrhsfac;
-
         // calculate core linearizations
-        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
-            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
-            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+            alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax,
+            dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-            test_master, numelectrons, nen_master, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master, jfacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+            test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+            dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
       }
 
       break;
@@ -623,7 +618,7 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
     const Teuchos::RCP<const MAT::Material>& material,  // element material
     const int k                                         // species number
-    ) const
+) const
 {
   // valence cannot be computed for electrode material
   dserror("Valence cannot be computed for electrode material!");
@@ -654,12 +649,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
     const LINALG::Matrix<my::nen_, 1>& test_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         test_master,
-    const double numelectrons, const int nen_master, const double dj_dc_slave,
-    const double dj_dc_master, const double dj_dpot_slave, const double dj_dpot_master,
-    const double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-    Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-    Epetra_SerialDenseVector& r_m)
+    const double numelectrons, const int nen_master, const double timefacfac,
+    const double timefacrhsfac, const double dj_dc_slave, const double dj_dc_master,
+    const double dj_dpot_slave, const double dj_dpot_master, const double j,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
+  // pre calculate integrand values
+  const double jtimefacrhsfac = j * timefacrhsfac;
+  const double dj_dc_slave_timefacfac = dj_dc_slave * timefacfac;
+  const double dj_dc_master_timefacfac = dj_dc_master * timefacfac;
+  const double dj_dpot_slave_timefacfac = dj_dpot_slave * timefacfac;
+  const double dj_dpot_master_timefacfac = dj_dpot_master * timefacfac;
+
+  // assemble slave side element rhs and linearizations
   if (k_ss.M() and k_sm.M() and r_s.Length())
   {
     for (int vi = 0; vi < my::nen_; ++vi)
@@ -672,10 +675,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_ss(row_conc, col_conc) += test_slave(vi) * dj_dc_slave * funct_slave(ui);
-        k_ss(row_conc, col_pot) += test_slave(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ss(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_slave * funct_slave(ui);
-        k_ss(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ss(row_conc, col_conc) += test_slave(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ss(row_conc, col_pot) += test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+        k_ss(row_pot, col_conc) +=
+            numelectrons * test_slave(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ss(row_pot, col_pot) +=
+            numelectrons * test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -683,20 +688,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_sm(row_conc, col_conc) += test_slave(vi) * dj_dc_master * funct_master(ui);
-        k_sm(row_conc, col_pot) += test_slave(vi) * dj_dpot_master * funct_master(ui);
-        k_sm(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_master * funct_master(ui);
-        k_sm(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_master * funct_master(ui);
+        k_sm(row_conc, col_conc) += test_slave(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_sm(row_conc, col_pot) += test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+        k_sm(row_pot, col_conc) +=
+            numelectrons * test_slave(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_sm(row_pot, col_pot) +=
+            numelectrons * test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
       }
 
-      r_s[row_conc] -= test_slave(vi) * j;
-      r_s[row_pot] -= numelectrons * test_slave(vi) * j;
+      r_s[row_conc] -= test_slave(vi) * jtimefacrhsfac;
+      r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
     }
   }
   else if (k_ss.M() or k_sm.M() or r_s.Length())
     dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
-
+  // assemble master side element rhs and linearizations
   if (k_ms.M() and k_mm.M() and r_m.Length())
   {
     for (int vi = 0; vi < nen_master; ++vi)
@@ -709,10 +716,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_ms(row_conc, col_conc) -= test_master(vi) * dj_dc_slave * funct_slave(ui);
-        k_ms(row_conc, col_pot) -= test_master(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ms(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_slave * funct_slave(ui);
-        k_ms(row_pot, col_pot) -= numelectrons * test_master(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ms(row_conc, col_conc) -= test_master(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ms(row_conc, col_pot) -= test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+        k_ms(row_pot, col_conc) -=
+            numelectrons * test_master(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ms(row_pot, col_pot) -=
+            numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -720,15 +729,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_mm(row_conc, col_conc) -= test_master(vi) * dj_dc_master * funct_master(ui);
-        k_mm(row_conc, col_pot) -= test_master(vi) * dj_dpot_master * funct_master(ui);
-        k_mm(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_master * funct_master(ui);
+        k_mm(row_conc, col_conc) -= test_master(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_mm(row_conc, col_pot) -= test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+        k_mm(row_pot, col_conc) -=
+            numelectrons * test_master(vi) * dj_dc_master_timefacfac * funct_master(ui);
         k_mm(row_pot, col_pot) -=
-            numelectrons * test_master(vi) * dj_dpot_master * funct_master(ui);
+            numelectrons * test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
       }
 
-      r_m[row_conc] += test_master(vi) * j;
-      r_m[row_pot] += numelectrons * test_master(vi) * j;
+      r_m[row_conc] += test_master(vi) * jtimefacrhsfac;
+      r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
     }
   }
   else if (k_ms.M() or k_mm.M() or r_m.Length())

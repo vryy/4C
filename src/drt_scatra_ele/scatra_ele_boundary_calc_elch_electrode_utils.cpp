@@ -18,11 +18,11 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinearizations(
-    const int kineticmodel, const double timefacfac, const double timefacrhsfac, const double j0,
-    const double frt, const double epdderiv, const double alphaa, const double alphac,
-    const double resistance, const double expterm1, const double expterm2, const double kr,
-    const double faraday, const double emasterphiint, const double eslavephiint, const double cmax,
-    double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
+    const int kineticmodel, const double j0, const double frt, const double epdderiv,
+    const double alphaa, const double alphac, const double resistance, const double expterm1,
+    const double expterm2, const double kr, const double faraday, const double emasterphiint,
+    const double eslavephiint, const double cmax, double& dj_dc_slave, double& dj_dc_master,
+    double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double expterm = expterm1 - expterm2;
   // core linearizations associated with Butler-Volmer mass flux density
@@ -30,22 +30,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
   {
     case INPAR::S2I::kinetics_butlervolmerreduced:
     {
-      dj_dc_slave = timefacfac * j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
+      dj_dc_slave = j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
       dj_dc_master = 0.0;
-      dj_dpot_slave = timefacfac * j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
+      dj_dpot_slave = j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
     case INPAR::S2I::kinetics_butlervolmer:
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
-      dj_dc_slave =
-          timefacfac * (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                               pow(eslavephiint, alphac - 1.) *
-                               (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-                           j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
-      dj_dc_master = timefacfac * j0 * alphaa / emasterphiint * expterm;
-      dj_dpot_slave = timefacfac * j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
+      dj_dc_slave = (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
+                         pow(eslavephiint, alphac - 1.) *
+                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
+                     j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
+      dj_dc_master = j0 * alphaa / emasterphiint * expterm;
+      dj_dpot_slave = j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
@@ -56,12 +55,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       const double dF_di_inverse =
           1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_slave =
-          timefacfac * (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                               pow(eslavephiint, alphac - 1.) *
-                               (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-                           j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2));
-      const double dF_dc_master = -timefacfac * j0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = -timefacfac * j0 * frt * (alphaa * expterm1 + alphac * expterm2);
+          (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
+                  pow(eslavephiint, alphac - 1.) *
+                  (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
+              j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2));
+      const double dF_dc_master = -j0 * alphaa / emasterphiint * expterm;
+      const double dF_dpot_slave = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);
       const double dF_dpot_master = -dF_dpot_slave;
 
       // rule of implicit differentiation
@@ -77,10 +76,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
       const double dF_di_inverse =
           1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
-      const double dF_dc_slave =
-          timefacfac * j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
+      const double dF_dc_slave = j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
       const double dF_dc_master = 0.0;
-      const double dF_dpot_slave = -timefacfac * j0 * frt * (alphaa * expterm1 + alphac * expterm2);
+      const double dF_dpot_slave = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);
       const double dF_dpot_master = -dF_dpot_slave;
 
       // rule of implicit differentiation

@@ -120,6 +120,8 @@ namespace DRT
        * @param[in] numelectrons     number of electrons involved in charge transfer at
        *                             electrode-electrolyte interface
        * @param[in] nen_master       number of nodes of master-side mortar element
+       * @param[in] timefacfac       time and domain integration factor for linearization terms
+       * @param[in] timefacrhsfac    time and domain integration factor for RHS terms
        * @param[in] dj_dc_slave      linearization of Butler-Volmer mass flux density w.r.t.
        *                             concentration on slave-side
        * @param[in] dj_dc_master     linearization of Butler-Volmer mass flux density w.r.t.
@@ -147,9 +149,10 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const double numelectrons, const int nen_master, const double dj_dc_slave,
-          const double dj_dc_master, const double dj_dpot_slave, const double dj_dpot_master,
-          const double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          const double numelectrons, const int nen_master, const double timefacfac,
+          const double timefacrhsfac, const double dj_dc_slave, const double dj_dc_master,
+          const double dj_dpot_slave, const double dj_dpot_master, const double j,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
           Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
           Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
@@ -180,7 +183,7 @@ namespace DRT
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-          ) const override;
+      ) const override;
 
       //! evaluate factor F/RT
       virtual double GetFRT() const;
