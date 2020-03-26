@@ -2080,6 +2080,8 @@ if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 
+# Baci-internal contact preconditioners only w/ Trilinos Q1_2015
+#ifdef TRILINOS_Q1_2015
 # contact (condensed formulation, different permutation)
 baci_test(contact3D_lin_duallagr_algebr_contact1 2 "")
 baci_test(contact3D_lin_duallagr_algebr_contact1_new_struct 2 "")
@@ -2101,6 +2103,7 @@ baci_test(meshtying3D_duallagr_muelu_contact2_new_struct 2 "")
 # 2 block contact (saddlepoint formulation)
 baci_test(contact3D_lin_duallagr_SP 2 "")
 baci_test(contact3D_lin_duallagr_SP_new_struct 2 "")
+#endif
 
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 
