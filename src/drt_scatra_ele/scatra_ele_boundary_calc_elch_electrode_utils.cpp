@@ -14,7 +14,6 @@
 #include "../drt_inpar/inpar_s2i.H"
 #include "../drt_lib/drt_dserror.H"
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinearizations(
@@ -39,7 +38,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
     case INPAR::S2I::kinetics_butlervolmer:
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
-      dj_dc_slave = (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
+      dj_dc_slave = (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
                          pow(eslavephiint, alphac - 1.) *
                          (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
                      j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
@@ -53,10 +52,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       // core linearizations associated with Butler-Volmer current density according to MA Schmidt
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
       const double dF_di_inverse =
-          1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
+          1.0 / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_slave =
-          (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                  pow(eslavephiint, alphac - 1.) *
+          (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
+                  pow(eslavephiint, alphac - 1.0) *
                   (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
               j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_master = -j0 * alphaa / emasterphiint * expterm;
@@ -75,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       // core linearizations associated with Butler-Volmer current density according to MA Schmidt
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
       const double dF_di_inverse =
-          1. / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
+          1.0 / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_slave = j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
       const double dF_dc_master = 0.0;
       const double dF_dpot_slave = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);
@@ -94,7 +93,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       break;
     }
   }  // switch(kineticmodel)
-  return;
 }
 
 /*----------------------------------------------------------------------*
