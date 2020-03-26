@@ -40,11 +40,11 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
 
   else
   {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto& i : instances)
+      if (i.second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
+        delete i.second;
+        instances.erase(i.first);
         return nullptr;
       }
   }
@@ -227,8 +227,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
   const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
                           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance
                       ? kr
-                      : kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa) *
-                            pow(eslavephiint, alphac));
+                      : kr * std::pow(emasterphiint, alphaa) *
+                            std::pow(cmax - eslavephiint, alphaa) * std::pow(eslavephiint, alphac));
 
   // compute matrix and vector contributions according to kinetic model for current scatra-scatra
   // interface coupling condition
@@ -247,8 +247,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double eta = eslavepotint - emasterpotint - epd;
 
         // exponential Butler-Volmer terms
-        const double expterm1 = exp(alphaa * frt * eta);
-        const double expterm2 = exp(-alphac * frt * eta);
+        const double expterm1 = std::exp(alphaa * frt * eta);
+        const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
         // safety check
@@ -295,8 +295,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
 
         // exponential Butler-Volmer terms
-        const double expterm1 = exp(alphaa * frt * eta);
-        const double expterm2 = exp(-alphac * frt * eta);
+        const double expterm1 = std::exp(alphaa * frt * eta);
+        const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
         // safety check
@@ -505,12 +505,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
           // Butler-Volmer exchange mass flux density
           const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced
                               ? kr
-                              : kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa) *
-                                    pow(eslavephiint, alphac));
+                              : kr * std::pow(emasterphiint, alphaa) *
+                                    std::pow(cmax - eslavephiint, alphaa) *
+                                    std::pow(eslavephiint, alphac));
 
           // exponential Butler-Volmer terms
-          const double expterm1 = exp(alphaa * frt * eta);
-          const double expterm2 = exp(-alphac * frt * eta);
+          const double expterm1 = std::exp(alphaa * frt * eta);
+          const double expterm2 = std::exp(-alphac * frt * eta);
           const double expterm = expterm1 - expterm2;
 
           // safety check

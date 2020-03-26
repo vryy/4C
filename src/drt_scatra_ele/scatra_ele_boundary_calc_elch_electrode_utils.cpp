@@ -38,10 +38,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
     case INPAR::S2I::kinetics_butlervolmer:
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
-      dj_dc_slave = (kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
-                         pow(eslavephiint, alphac - 1.) *
-                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-                     j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
+      dj_dc_slave =
+          (kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
+                  std::pow(eslavephiint, alphac - 1.0) *
+                  (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
+              j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
       dj_dc_master = j0 * alphaa / emasterphiint * expterm;
       dj_dpot_slave = j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
       dj_dpot_master = -dj_dpot_slave;
@@ -54,8 +55,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       const double dF_di_inverse =
           1.0 / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_slave =
-          (-kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
-                  pow(eslavephiint, alphac - 1.0) *
+          (-kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
+                  std::pow(eslavephiint, alphac - 1.0) *
                   (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
               j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_master = -j0 * alphaa / emasterphiint * expterm;
@@ -127,8 +128,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
       // compute current Newton-Raphson residual
       const double eta = pot_ed - pot_el - epd - resistance * i;
-      const double expterm1 = exp(alphaa * frt * eta);
-      const double expterm2 = exp(-alphac * frt * eta);
+      const double expterm1 = std::exp(alphaa * frt * eta);
+      const double expterm2 = std::exp(-alphac * frt * eta);
       const double residual = i0 * (expterm1 - expterm2) - i;
 
       // convergence check
