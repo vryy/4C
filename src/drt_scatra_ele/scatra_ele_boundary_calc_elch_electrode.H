@@ -142,7 +142,7 @@ namespace DRT
        * @param[out] r_s             slave-side residual vector
        * @param[out] r_m             master-side residual vector
        *
-       * \tparam distype_master  This method is templated on the master-side discretization type.
+       * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystem(const LINALG::Matrix<my::nen_, 1>& funct_slave,
@@ -186,7 +186,7 @@ namespace DRT
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  ///< element material
           int k                                                             ///< species number
-      ) const override;
+          ) const override;
 
       //! evaluate factor F/RT
       virtual double GetFRT() const;
