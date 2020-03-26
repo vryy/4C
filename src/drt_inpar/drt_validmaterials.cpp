@@ -920,19 +920,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "number of Young's modulus in list (if 1 Young is const, if >1 Young is temperature) "
         "dependent");
     AddNamedRealVector(m, "YOUNG", "Young's modulus", "YOUNGNUM");
-    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus",
-        "YOUNGNUM", 0,
-        true);  // optional
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "THEXPANS", "constant coefficient of linear thermal expansion");
-    AddNamedIntVector(m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion",
-        3, 0,
-        true);  // optional
     AddNamedReal(m, "CAPA", "capacity");
     AddNamedReal(m, "CONDUCT", "conductivity");
     AddNamedReal(m, "INITTEMP", "initial temperature");
-    AddNamedInt(m, "CONSOLMAT", "consolidation material", -1, true);  // optional
+    AddNamedInt(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -957,6 +951,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedRealVector(
         m, "EPSBAR_P", "accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
     AddNamedReal(m, "TOL", "tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ThermoMech_ThreePhase",
+        "Thermo mechanical material with three phases with thermo St.Venant--Kirchhoff and Fourier "
+        "laws",
+        INPAR::MAT::m_thermomechthreephase));
+
+    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus", 3);
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "mass density");
+    AddNamedIntVector(
+        m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion", 3);
+    AddNamedReal(m, "THETAREF", "reference temperature for thermal strain");
+    AddNamedInt(m, "THERMOMAT", "phase dependent thermo material");
+    AddNamedInt(m, "CONSOLMAT", "consolidation material");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2117,7 +2129,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         m, "CAPAFUNCT", "functions for capacity, first for powder-melt, second for solid-melt", 3);
     AddNamedIntVector(m, "CONDUCTFUNCT",
         "functions for thermal conductivity, first for powder-melt, second for solid-melt", 3);
-    AddNamedInt(m, "CONSOLMAT", "reference to material handling consolidation");
+    AddNamedInt(m, "CONSOLMAT",
+        "reference to material handling consolidation, -1 if injected by other material");
 
     AppendMaterialDefinition(matlist, m);
   }

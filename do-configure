@@ -267,3 +267,9 @@ if [ -f .idea/workspace.xml ]; then
   CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
   ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
 fi
+
+# adapt VSCode settings
+if [ -d .vscode ]; then
+  CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
+  ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING" "-mpiheaderdir" "$MPIINCLUDEDIR"
+fi

@@ -824,6 +824,17 @@ namespace DRT
      */
     virtual void SetMaterial(int matnum);
 
+    /// @brief Set specific element material
+    /*!
+      Store Material object in element's list of materials at given index.
+
+      @note This method enables using the exact same Material instance in multiple elements.
+
+      @param index index in material list
+      @param mat pointer to the Material instance to set
+     */
+    virtual void SetMaterial(int index, Teuchos::RCP<MAT::Material> mat);
+
     /// Add element material
     /*!
       In case of volume coupled problems the element needs information
@@ -1270,7 +1281,6 @@ namespace DRT
 
     //! is this a nurbs element?
     bool isNurbs_;
-
   };  // class Element
 
 

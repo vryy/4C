@@ -67,6 +67,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   ele1pos_.Clear();
   ele2pos_.Clear();
 
+  /* take care of how to assign the role of master and slave (only applicable to
+   * "SingleLengthSpecific" approach). Immediately before this Setup(), the element with smaller GID
+   * has been assigned as element1_, i.e., slave. */
+  if (Params()->ChoiceMasterSlave() ==
+      INPAR::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)
+  {
+    // interchange order, i.e., role of elements
+    DRT::Element const* tmp_ele_ptr = Element1();
+    SetElement1(Element2());
+    SetElement2(tmp_ele_ptr);
+  }
 
   // get initial length of beam elements
   beam_element1_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
@@ -81,15 +92,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
     dserror(
         "The class BeamToBeamPotentialPair currently only supports element "
         "pairs of the same beam element type!");
-
-  // Todo check this prerequisite, still necessary?
-  if (Element1()->Id() >= Element2()->Id())
-  {
-    dserror(
-        "Element 1 has to have the smaller element-ID. Ele1GID: %d, Ele2GID: %d."
-        " Adapt your search algorithm!",
-        Element1()->Id(), Element2()->Id());
-  }
 
   // initialize line charge conditions applied to element1 and element2
   linechargeconds_.resize(2);
@@ -106,8 +108,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
     const std::vector<DRT::Condition*> linechargeconds, const double k, const double m)
 {
-  // nothing to do in case of k==0.0
-  if (k == 0.0) return false;
+  // no need to evaluate this pair in case of separation by far larger than cutoff or prefactor zero
+  if ((Params()->CutoffRadius() != -1.0 and AreElementsMuchMoreSeparatedThanCutoffDistance()) or
+      k == 0.0)
+    return false;
 
 
   // set class variables
@@ -1091,6 +1095,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int numgp_persegment = gausspoints.nquad;
   int numgp_total = num_integration_segments * numgp_persegment;
 
+  int igp_total = 0;
+  double xi_GP_tilde = 0.0;
+  double xi_GP = 0.0;
+
+  double rho1rho2_JacFac_GaussWeight = 0.0;
+
+  const unsigned int num_initial_values = 9;
+  const double xi_master_initial_guess_values[num_initial_values] = {
+      0.0, -1.0, 1.0, -0.5, 0.5, -0.75, -0.25, 0.25, 0.75};
+
+  unsigned int iter_projection = 0;
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
@@ -1121,14 +1136,62 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   LINALG::Matrix<3, 1, T> r_xixi_master(true);  // 2nd deriv of master curve
   LINALG::Matrix<3, 1, T> t_master(true);       // unit centerline tangent vector on master
 
-  LINALG::Matrix<3, 1, T> dist_ul(true);  // = r_slave-r_master
-  T alpha = 0.0;                          // mutual angle of tangent vectors
-  T cos_alpha = 0.0;                      // cosine of mutual angle of tangent vectors
+  T norm_r_xi_slave = 0.0;
+  T norm_r_xi_master = 0.0;
 
+  T signum_tangentsscalarproduct = 0.0;
+
+  LINALG::Matrix<3, 1, T> dist_ul(true);  // = r_slave-r_master
+  T norm_dist_ul = 0.0;
+
+  // unilateral normal vector
+  LINALG::Matrix<3, 1, T> normal_ul(true);
+
+  // gap of unilateral closest points
+  T gap_ul = 0.0;
+  // regularized gap of unilateral closest points
+  T gap_ul_regularized = 0.0;
+
+  T alpha = 0.0;      // mutual angle of tangent vectors
+  T cos_alpha = 0.0;  // cosine of mutual angle of tangent vectors
+
+  // auxiliary quantity
+  T a = 0.0;
 
   T interaction_potential_GP = 0.0;
 
 
+  // derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
+  T pot_ia_deriv_gap_ul = 0.0;
+  T pot_ia_deriv_cos_alpha = 0.0;
+
+  T pot_ia_2ndderiv_gap_ul = 0.0;
+  T pot_ia_2ndderiv_cos_alpha = 0.0;
+  T pot_ia_deriv_gap_ul_deriv_cos_alpha = 0.0;
+
+  // third derivatives
+  T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep = 0.0;
+  T pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
+
+  // fourth derivative
+  T pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
+
+
+  // components from variation of unilateral gap
+  LINALG::Matrix<3, 1, T> gap_ul_deriv_r_slave(true);
+  LINALG::Matrix<3, 1, T> gap_ul_deriv_r_master(true);
+
+  // components from variation of cosine of enclosed angle
+  LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
+  T cos_alpha_partial_xi_master = 0.0;
+
+  LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_slave(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_master(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_slave(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_master(true);
+
+  T a_deriv_cos_alpha = 0.0;
 
   // components from variation of parameter coordinate on master beam
   LINALG::Matrix<1, 3, T> xi_master_partial_r_slave(true);
@@ -1167,15 +1230,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // constant prefactor of the disk-cylinder interaction potential
-  double prefactor = k_ * M_PI * M_PI * M_PI;
+  double prefactor = k_ * M_PI * M_PI;
 
   switch ((int)m_)
   {
     case 6:
-      prefactor *= 0.25;
+      prefactor /= 3.0;
       break;
     case 12:
-      prefactor *= 3003 / 128;
+      prefactor *= 286.0 / 15.0;
       break;
     default:
       dserror(
@@ -1204,6 +1267,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   moments_pot_GP2_.resize(numgp_total, LINALG::Matrix<3, 1, double>(true));
 
 
+  LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
+  LINALG::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
+
+
   for (unsigned int isegment = 0; isegment < num_integration_segments; ++isegment)
   {
     // compute element parameter coordinate for lower and upper limit of current integration segment
@@ -1224,7 +1291,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     // so far, element 1 is always treated as the slave element!
     for (int igp = 0; igp < numgp_persegment; ++igp)
     {
-      const int igp_total = isegment * numgp_persegment + igp;
+      igp_total = isegment * numgp_persegment + igp;
 
       //************************** DEBUG ******************************************
       //      std::cout << "\nEvaluate igp_total=" << igp_total;
@@ -1232,28 +1299,27 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
       // Get location of GP in element parameter space xi \in [-1;1]
-      const double xi_GP_tilde = gausspoints.qxg[igp][0];
+      xi_GP_tilde = gausspoints.qxg[igp][0];
 
       /* do a mapping into integration segment, i.e. coordinate transformation
        * note: this has no effect if integration interval is [-1;1] */
-      const double xi_GP = 0.5 * ((1.0 - xi_GP_tilde) * integration_segment_lower_limit +
-                                     (1.0 + xi_GP_tilde) * integration_segment_upper_limit);
+      xi_GP = 0.5 * ((1.0 - xi_GP_tilde) * integration_segment_lower_limit +
+                        (1.0 + xi_GP_tilde) * integration_segment_upper_limit);
 
 
       // compute coord vector and tangent vector on slave side
       ComputeCenterlinePosition(r_slave, N_i_slave[igp], ele1pos_);
       ComputeCenterlineTangent(r_xi_slave, N_i_xi_slave[igp], ele1pos_);
 
-      T norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
+      norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
 
       t_slave.Update(1.0 / norm_r_xi_slave, r_xi_slave);
 
       // store for vtk visualization
       centerline_coords_GP1_[igp_total] = FADUTILS::CastToDouble<T, 3, 1>(r_slave);
 
-      double rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
-                                           BeamElement1()->GetJacobiFacAtXi(xi_GP) *
-                                           gausspoints.qwgt[igp];
+      rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
+                                    BeamElement1()->GetJacobiFacAtXi(xi_GP) * gausspoints.qwgt[igp];
 
       //************************** DEBUG ******************************************
       //      std::cout << "\n\nGP " << igp_total << ":";
@@ -1268,21 +1334,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       /* point-to-curve projection, i.e. 'unilateral' closest-point projection
        * to determine point on master beam (i.e. parameter coordinate xi_master) */
-      const unsigned int num_initial_values = 9;
-      double xi_master_initial_guess_values[num_initial_values] = {
-          0.0, -1.0, 1.0, -0.5, 0.5, -0.75, -0.25, 0.25, 0.75};
+      iter_projection = 0;
 
-      unsigned int i = 0;
-
-      while (i < num_initial_values and
+      while (iter_projection < num_initial_values and
              (not BEAMINTERACTION::GEO::PointToCurveProjection<numnodes, numnodalvalues, T>(r_slave,
-                 xi_master, xi_master_initial_guess_values[i], ele2pos_, Element2()->Shape(),
-                 ele2length_)))
+                 xi_master, xi_master_initial_guess_values[iter_projection], ele2pos_,
+                 Element2()->Shape(), ele2length_)))
       {
-        i++;
+        iter_projection++;
       }
 
-      if (i == num_initial_values)
+      if (iter_projection == num_initial_values)
       {
         std::cout << "\nWARNING: Point-to-Curve Projection ultimately failed at "
                      "xi_slave="
@@ -1331,7 +1393,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       ComputeCenterlineTangent(r_xixi_master, N_i_xixi_master, ele2pos_);
 
 
-      T norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
+      norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
 
       t_master.Update(1.0 / norm_r_xi_master, r_xi_master);
 
@@ -1352,7 +1414,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // distance vector between unilateral closest points
       dist_ul.Update(1.0, r_slave, -1.0, r_master);
 
-      T norm_dist_ul = FADUTILS::VectorNorm(dist_ul);
+      norm_dist_ul = FADUTILS::VectorNorm(dist_ul);
 
       if (FADUTILS::CastToDouble(norm_dist_ul) == 0.0)
       {
@@ -1431,10 +1493,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple)
       {
         // gap of unilateral closest points
-        T gap_ul = norm_dist_ul - radius1_ - radius2_;
+        gap_ul = norm_dist_ul - radius1_ - radius2_;
 
         // regularized gap of unilateral closest points
-        T gap_ul_regularized = gap_ul;
+        gap_ul_regularized = gap_ul;
 
 
         if (regularization_type != INPAR::BEAMPOTENTIAL::regularization_none and
@@ -1466,13 +1528,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // unilateral normal vector
-        LINALG::Matrix<3, 1, T> normal_ul(true);
-
         normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
 
 
         // auxiliary quantity
-        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
+        a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
 
         // safety check
         if (FADUTILS::CastToDouble(a) <= 0.0)
@@ -1485,35 +1545,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         interaction_potential_GP = std::pow(4 * gap_ul_regularized, -m_ + 4.5) / FADUTILS::sqrt(a);
 
 
-        // Todo: move the initialization of these variables out of the Gauss loop
-        // derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
-        T pot_ia_deriv_gap_ul = 0.0;
-        T pot_ia_deriv_cos_alpha = 0.0;
-
-        T pot_ia_2ndderiv_gap_ul = 0.0;
-        T pot_ia_2ndderiv_cos_alpha = 0.0;
-        T pot_ia_deriv_gap_ul_deriv_cos_alpha = 0.0;
-
-
-        // components from variation of unilateral gap
-        LINALG::Matrix<3, 1, T> gap_ul_deriv_r_slave(true);
-        LINALG::Matrix<3, 1, T> gap_ul_deriv_r_master(true);
-
-        // components from variation of cosine of enclosed angle
-        LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
-        LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
-        T cos_alpha_partial_xi_master = 0.0;
-
-        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_slave(true);
-        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_master(true);
-        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_slave(true);
-        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_master(true);
-
-
         // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
         pot_ia_deriv_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
 
-        T a_deriv_cos_alpha = cos_alpha / radius2_;
+        a_deriv_cos_alpha = cos_alpha / radius2_;
         pot_ia_deriv_cos_alpha = -0.5 / a * interaction_potential_GP * a_deriv_cos_alpha;
 
 
@@ -1530,15 +1565,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             0.75 * a_deriv_cos_alpha * a_deriv_cos_alpha / (a * a) * interaction_potential_GP;
 
         // third derivatives
-        T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
+        pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
             (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
             pot_ia_deriv_cos_alpha;
 
-        T pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep =
+        pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep =
             (-m_ + 4.5) / gap_ul_regularized * pot_ia_2ndderiv_cos_alpha;
 
         // fourth derivative
-        T pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep =
+        pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep =
             (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
             pot_ia_2ndderiv_cos_alpha;
 
@@ -1614,7 +1649,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // compute components from variation of cosine of enclosed angle
-        T signum_tangentsscalarproduct = FADUTILS::Signum(r_xi_slave.Dot(r_xi_master));
+        signum_tangentsscalarproduct = FADUTILS::Signum(r_xi_slave.Dot(r_xi_master));
         // auxiliary variables
         LINALG::Matrix<3, 3, T> v_mat_tmp(true);
 
@@ -1665,7 +1700,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
 
 
-        LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
 
         moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
@@ -1674,12 +1708,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
          * part of) rotation vector theta_perp describing cross-section orientation can be used to
          *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
          */
-        LINALG::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
-
         LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
-
-        // Fixme this has been computed and used before
-        T norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
 
         moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave),
             spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(t_slave));
@@ -1701,9 +1730,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
         LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-        // Fixme this has been computed and used before
-        T norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
-
         moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_master),
             spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(t_master));
 
@@ -1722,9 +1748,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         //********************************************************************
-        // calculate fpot1: force/residual vector on slave element
+        // calculate force/residual vector of slave and master element
         //********************************************************************
         force_pot_slave_GP.Clear();
+        force_pot_master_GP.Clear();
+
         // sum up the contributions of all nodes (in all dimensions)
         for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
         {
@@ -1740,22 +1768,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             force_pot_slave_GP(3 * idofperdim + jdim) += N_i_xi_slave[igp](idofperdim) *
                                                          pot_ia_deriv_cos_alpha *
                                                          cos_alpha_deriv_r_xi_slave(jdim);
-          }
-        }
 
-        //********************************************************************
-        // calculate fpot2: force/residual vector on master element
-        //********************************************************************
-        force_pot_master_GP.Clear();
-        // sum up the contributions of all nodes (in all dimensions)
 
-        // Fixme: we can remove these two for loops and compute force_pot_master_GP in the loops
-        // above, used for force_pot_slave_GP (as long as both elements have same number of Dofs)
-        for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
-        {
-          // loop over dimensions
-          for (unsigned int jdim = 0; jdim < 3; ++jdim)
-          {
             force_pot_master_GP(3 * idofperdim + jdim) +=
                 N_i_master(idofperdim) * pot_ia_deriv_gap_ul * gap_ul_deriv_r_master(jdim);
 
@@ -3593,6 +3607,66 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   // Additionally, we set the parameter coordinate on the master side xi_master as primary Dof
   xi_master.diff(2 * 3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues + 1);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+    T>::AreElementsMuchMoreSeparatedThanCutoffDistance()
+{
+  const unsigned int num_spatial_dim = 3;
+
+  // multiple of the cutoff radius to be considered as "far enough" apart
+  const double safety_factor = 2.0;
+
+  // extract the current position of both elements' boundary nodes
+  LINALG::Matrix<num_spatial_dim, 1> position_element1node1(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element1node2(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element2node1(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element2node2(true);
+
+  for (unsigned int i_dim = 0; i_dim < num_spatial_dim; ++i_dim)
+  {
+    position_element1node1(i_dim) = FADUTILS::CastToDouble(ele1pos_(0 + i_dim));
+    position_element1node2(i_dim) =
+        FADUTILS::CastToDouble(ele1pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+
+    position_element2node1(i_dim) = FADUTILS::CastToDouble(ele2pos_(0 + i_dim));
+    position_element2node2(i_dim) =
+        FADUTILS::CastToDouble(ele2pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+  }
+
+
+  // the following rough estimate of the elements' separation is based on spherical bounding boxes
+  LINALG::Matrix<num_spatial_dim, 1> spherical_boxes_midpoint_distance(true);
+
+  spherical_boxes_midpoint_distance.Update(
+      0.5, position_element1node1, 0.5, position_element1node2);
+
+  spherical_boxes_midpoint_distance.Update(
+      -0.5, position_element2node1, -0.5, position_element2node2, 1.0);
+
+
+  LINALG::Matrix<num_spatial_dim, 1> element1_boundary_nodes_distance(true);
+  element1_boundary_nodes_distance.Update(
+      1.0, position_element1node1, -1.0, position_element1node2);
+  double element1_spherical_box_radius = 0.5 * element1_boundary_nodes_distance.Norm2();
+
+  LINALG::Matrix<num_spatial_dim, 1> element2_boundary_nodes_distance(true);
+  element2_boundary_nodes_distance.Update(
+      1.0, position_element2node1, -1.0, position_element2node2);
+  double element2_spherical_box_radius = 0.5 * element2_boundary_nodes_distance.Norm2();
+
+  double estimated_minimal_centerline_separation = spherical_boxes_midpoint_distance.Norm2() -
+                                                   element1_spherical_box_radius -
+                                                   element2_spherical_box_radius;
+
+
+  if (estimated_minimal_centerline_separation > safety_factor * Params()->CutoffRadius())
+    return true;
+  else
+    return false;
 }
 
 // explicit template instantiations

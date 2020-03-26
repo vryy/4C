@@ -25,6 +25,7 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "so_utils.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -1411,6 +1412,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     params.set<int>("gp", gp);
+    UTILS::GetTemperatureForStructuralMaterial<hex27>(shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

@@ -1459,6 +1459,13 @@ namespace MAT
   namespace ScatraMatMultiPoro
   {
   }  // namespace ScatraMatMultiPoro
+
+  /*!
+   * @brief Interfaces specifying which physical fields a material can be used for.
+   */
+  namespace TRAIT
+  {
+  }
 }  // namespace MAT
 
 /*!

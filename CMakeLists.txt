@@ -594,6 +594,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/tempdepwater.cpp
+  src/drt_mat/thermomech_threephase.cpp
   src/drt_mat/thermoplastichyperelast.cpp
   src/drt_mat/thermoplasticlinelast.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp

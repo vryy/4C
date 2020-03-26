@@ -7,7 +7,7 @@ the input line should read
   MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*
@@ -117,9 +117,6 @@ void MAT::FourierIso::Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Mat
 
   // heatflux
   heatflux.MultiplyNN(cmat, gradtemp);
-
-  // done
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -134,9 +131,6 @@ void MAT::FourierIso::Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Mat
 
   // heatflux
   heatflux.MultiplyNN(cmat, gradtemp);
-
-  // done
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -151,9 +145,4 @@ void MAT::FourierIso::Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Mat
 
   // heatflux
   heatflux.MultiplyNN(cmat, gradtemp);
-
-  // done
-  return;
 }
-
-/*----------------------------------------------------------------------*/

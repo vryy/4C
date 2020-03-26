@@ -92,6 +92,18 @@ namespace THR
       case calc_thermo_coupltang:
         s = "calc_thermo_coupltang";
         break;
+      case calc_thermo_phase:
+        s = "calc_thermo_phase";
+        break;
+      case calc_thermo_condcapa:
+        s = "calc_thermo_condcapa";
+        break;
+      case calc_thermo_phasechangeinc:
+        s = "calc_thermo_phasechangeinc";
+        break;
+      case calc_thermo_totallatentheat:
+        s = "calc_thermo_totallatentheat";
+        break;
       default:
         std::cout << action << std::endl;
         dserror("no string for this action defined!");

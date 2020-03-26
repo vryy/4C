@@ -149,7 +149,9 @@ namespace DRT
           case 1:
           {
             // evaluate Lagrange shape function derivs at xi
-            dserror("Please implement 3rd derivatives of Lagrange shape functions!");
+            if (nnode >= 4)
+              dserror("Please implement 3rd derivatives of Lagrange shape functions!");
+
             break;
           }
           case 2:

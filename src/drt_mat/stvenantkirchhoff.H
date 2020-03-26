@@ -188,6 +188,9 @@ namespace MAT
 
     //@}
 
+    //! general setup of constitutive tensor based on Young's and poisson's ratio
+    static void FillCmat(LINALG::Matrix<6, 6>& cmat, double Emod, double nu);
+
    private:
     /// my material parameters
     MAT::PAR::StVenantKirchhoff* params_;

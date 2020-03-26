@@ -92,11 +92,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
  *--------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateMinMaxOverpotential(
-    const DRT::FaceElement* ele,          //!< current boundary element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -121,7 +118,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
         "layer growth!");
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
   if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
@@ -137,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
     my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -153,8 +149,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt,
-        eslavepotint, emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
         my::scatraparamsboundary_);
 
     // calculate electrode-electrolyte overpotential at integration point
@@ -259,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -286,8 +282,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt,
-        eslavepotint, emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
         my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations and residual contributions only in case of
@@ -304,32 +300,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
+      double di_dc_slave(0.0), di_dc_master(0.0), di_dpot_slave(0.0), di_dpot_master(0.0);
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      const double dF_dc_slave =
-          s2iconditiontype == DRT::Condition::S2ICoupling
-              ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
-                        pow(eslavephiint, alphac - 1.0) *
-                        (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
-                    i0 * (alphaa * frt * epdderiv * expterm1 + alphac * frt * epdderiv * expterm2)
-              : 0.0;
-      const double dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = i0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse =
-          -1.0 /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
-      const double di_dc_slave = -dF_dc_slave * dF_di_inverse;
-      const double di_dc_master = -dF_dc_master * dF_di_inverse;
-      const double di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      const double di_dpot_master = -dF_dpot_master * dF_di_inverse;
+      myelectrodegrowthutils::CalculateS2IElchElchLinearizations(i0, frt, epdderiv,
+          eslaveresistanceint, regfac, expterm1, expterm2, faraday, emasterphiint, eslavephiint,
+          cmax, my::scatraparamsboundary_, di_dc_slave, di_dc_master, di_dpot_slave,
+          di_dpot_master);
 
       // compute linearizations and residual contributions associated with equations for lithium
       // transport
@@ -388,17 +365,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAction(
-    DRT::FaceElement* ele,                     //!< boundary element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    SCATRA::BoundaryAction action,             //!< action
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-)
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+    Epetra_SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -446,13 +417,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix                    ///< element matrix for slave side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -524,7 +492,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -548,8 +516,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt,
-        eslavepotint, emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
         my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current
@@ -567,22 +535,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth =
-          -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
-      const double dF_di_inverse =
-          -1.0 /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
-      const double di_dgrowth = -dF_dgrowth * dF_di_inverse;
+      const double di_dgrowth = myelectrodegrowthutils::CalculateS2IElchGrowthLinearizations(i0, i,
+          frt, eslaveresistanceint, resistivity, regfac, regfacderiv, expterm1, expterm2,
+          my::scatraparamsboundary_);
 
       // compute linearizations associated with equations for lithium transport
       for (int irow = 0; irow < my::nen_; ++irow)
@@ -616,14 +572,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix,                   ///< element matrix for slave side
-        Epetra_SerialDenseMatrix& emastermatrix  ///< element matrix for master side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseMatrix& emastermatrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -684,7 +637,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -700,8 +653,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     const double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt,
-        eslavepotint, emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
         my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current
@@ -717,24 +670,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
+      double dummy(0.0), di_dc_master(0.0), di_dpot_slave(0.0), di_dpot_master(0.0);
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      const double dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = i0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse =
-          -1. /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.);
-      const double di_dc_master = -dF_dc_master * dF_di_inverse;
-      const double di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      const double di_dpot_master = -dF_dpot_master * dF_di_inverse;
+      myelectrodegrowthutils::CalculateS2IElchElchLinearizations(i0, frt, dummy,
+          eslaveresistanceint, regfac, expterm1, expterm2, faraday, emasterphiint, dummy, dummy,
+          my::scatraparamsboundary_, dummy, di_dc_master, di_dpot_slave, di_dpot_master);
 
       // compute linearizations associated with equation for scatra-scatra interface layer growth
       for (int irow = 0; irow < my::nen_; ++irow)
@@ -766,14 +707,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix,                   ///< element matrix for slave side
-        Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -841,7 +779,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -858,13 +796,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     const double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt,
-        eslavepotint, emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
         my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations and residual contributions only in case of
     // non-zero Butler-Volmer current density to avoid unnecessary effort and to consistently
-    // enforce the lithium plating condition
+    // enforce the lithium plating condition. (If the plating condition is not fulfilled, we
+    // manually set the Butler-Volmer current density to zero, and thus we need to make sure that
+    // all linearizations are also zero, i.e., that nothing is added to the element matrix.)
     if (std::abs(i) > 1.0e-16)
     {
       // calculate electrode-electrolyte overpotential at integration point, regularization factor
@@ -878,22 +818,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth =
-          -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
-      const double dF_di_inverse =
-          -1.0 /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
-      const double di_dgrowth = -dF_dgrowth * dF_di_inverse;
+      const double di_dgrowth = myelectrodegrowthutils::CalculateS2IElchGrowthLinearizations(i0, i,
+          frt, eslaveresistanceint, resistivity, regfac, regfacderiv, expterm1, expterm2,
+          my::scatraparamsboundary_);
 
       // compute linearizations and residual contributions associated with equation for
       // scatra-scatra interface layer growth
@@ -919,9 +847,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNodeValues(
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la             //!< location array
-)
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
   my::ExtractNodeValues(discretization, la);
