@@ -543,7 +543,9 @@ baci_test(xcontact2D_semi_sphere 3 "")
 baci_test(contact2D_aug_wall_two_beams_horizontal 3 3)
 baci_test(contact2D_aug_wall_two_beams_vertical_gen_alpha 3 15)
 baci_test(contact2D_aug_steepest_ascent_large_pen 3 "")
+if (TRILINOS_Q1_2015)
 baci_test(contact2D_aug_combo_large_pen 3 "")
+endif (TRILINOS_Q1_2015)
 baci_test(contact2D_aug_half_circle_sufficient_angle 3 "" )
 baci_test(contact2D_aug_circle_segment_plot_wgap_gradient_pgf 1 "" )
 result_file(contact2D_aug_circle_segment_plot_wgap_gradient_pgf 1 pgf xxx_plot/func_wgap_grad_7_step_1_iter_last.vectorfield2d.pgf ref/func_wgap_grad_7_step_1_iter_last.vectorfield2d.pgf 1e-10)
@@ -2081,7 +2083,7 @@ baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 
 # Baci-internal contact preconditioners only w/ Trilinos Q1_2015
-#ifdef TRILINOS_Q1_2015
+if (TRILINOS_Q1_2015)
 # contact (condensed formulation, different permutation)
 baci_test(contact3D_lin_duallagr_algebr_contact1 2 "")
 baci_test(contact3D_lin_duallagr_algebr_contact1_new_struct 2 "")
@@ -2103,7 +2105,7 @@ baci_test(meshtying3D_duallagr_muelu_contact2_new_struct 2 "")
 # 2 block contact (saddlepoint formulation)
 baci_test(contact3D_lin_duallagr_SP 2 "")
 baci_test(contact3D_lin_duallagr_SP_new_struct 2 "")
-#endif
+endif (TRILINOS_Q1_2015)
 
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 
