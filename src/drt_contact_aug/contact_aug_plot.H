@@ -13,7 +13,11 @@ MATLAB, PGFPlot or other tools.
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_PLOT_H_
 
 #include <Teuchos_RCP.hpp>
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
 #include <NOX_Abstract_PrePostOperator.H>
+#else
+#include <NOX_Observer.hpp>
+#endif
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -296,7 +300,11 @@ namespace NOX
       {
         namespace CONTACT
         {
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
           class Plot : public NOX::Abstract::PrePostOperator
+#else
+          class Plot : public NOX::Observer
+#endif
           {
            public:
             Plot(const Teuchos::RCP<::CONTACT::AUG::Plot>& plot_ptr);

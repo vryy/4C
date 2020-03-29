@@ -19,6 +19,9 @@ SHARED_LIBS=OFF
 ENABLE_ENSIGHT_POSTPROCESSING_TESTS=ON
 Trilinos_SOURCE_DIR=""
 
+USE_TRILINOS_Q1_2015=OFF
+USE_TRILINOS_Q1_2019=OFF
+
 # activate debug version: ./do-configure --debug
 # or choose do-configure-debug which does the same
 
@@ -219,6 +222,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D HAVE_Kokkos:BOOL=$BUILD_MueLu \
   -D TRILINOS_DEV:BOOL=OFF \
   -D TRILINOS_Q1_2015:BOOL=$USE_TRILINOS_Q1_2015 \
+  -D TRILINOS_Q1_2019:BOOL=$USE_TRILINOS_Q1_2019 \
   -D DEAL_II_DIR:PATH="$DEAL_II_DIR" \
   -D TRAP_FE:BOOL=ON \
   -D PARMETIS:BOOL=ON \
