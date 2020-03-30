@@ -16,6 +16,8 @@
 
 #include "../drt_inpar/inpar_s2i.H"
 
+#include "ssi_monolithic_assemble_strategy.H"
+
 // forward declarations
 namespace ADAPTER
 {
@@ -63,6 +65,18 @@ namespace SSI
     //! return global map extractor (0: scalar transport, 1: structure)
     const Teuchos::RCP<LINALG::MapExtractor>& Maps() const { return maps_; };
 
+    //! retrun map extractor associated with all degrees of freedom inside structural field
+    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const
+    {
+      return map_structure_;
+    };
+
+    //! return meshtying strategy
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> S2IMeshtyingStrategy() const
+    {
+      return strategy_scatra_;
+    };
+
     //! setup monolithic algorithm
     void Setup();
 
@@ -81,14 +95,22 @@ namespace SSI
     class ConvCheckStrategyStd;
     class ConvCheckStrategyElch;
 
+    // assembly strategies
+    class AssemblyStrategyGeneric;
+    class AssemblyStrategyBlock;
+    class AssemblyStrategySparse;
+
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
     //! assemble off-diagonal scatra-structure block of global system matrix
-    void AssembleODBlockScatraStructure() const;
+    void EvaluateODBlockScatraStructureDomain();
+
+    //! assemble off-diagonal scatra-structure block of global system matrix
+    void EvaluateODBlockScatraStructureInterface();
 
     //! assemble off-diagonal structure-scatra block of global system matrix
-    void AssembleODBlockStructureScatra() const;
+    void EvaluateODBlockStructureScatraDomain() const;
 
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
@@ -160,8 +182,12 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> residual_;
 
     //! scatra-structure block of global system matrix (derivatives of scalar transport residuals
-    //! w.r.t. structural degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock_;
+    //! w.r.t. structural degrees of freedom) containing domain contributions
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
+
+    //! scatra-structure block of global system matrix (derivatives of scalar transport residuals
+    //! w.r.t. structural degrees of freedom) containing interface contributions
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
@@ -169,12 +195,15 @@ namespace SSI
     //! strategy for Newton-Raphson convergence check
     Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
 
+    //! strategy how to assembly system matrix and rhs
+    Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
+
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy_scatra_;
 
     //! structure-scatra block of global system matrix (derivatives of structural residuals w.r.t.
     //! scalar transport degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> structurescatrablock_;
+    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
 
     //! global system matrix
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
