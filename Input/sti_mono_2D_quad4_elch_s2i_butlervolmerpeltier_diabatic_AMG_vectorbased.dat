@@ -100,7 +100,6 @@ SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE  6.44625222042591983e-01 TOLERANCE
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE  6.45747765196629464e-01 TOLERANCE 6.5e-10 // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE  3.78785483865420058e+00 TOLERANCE 3.8e-09 // cell voltage
 STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE  4.00000000000000000e+00 TOLERANCE 1.0e-16 // number of Newton-Raphson iterations during last time step
-STI SPECIAL QUANTITY numiterlastlinearsolve VALUE  9.50000000000000000e+01 TOLERANCE 1.0e-16 // number of iterations performed by linear solver during last Newton-Raphson iteration
 ------------------------------------------------DESIGN DESCRIPTION
 NDLINE  17
 NDSURF  5
