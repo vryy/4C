@@ -78,7 +78,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
   {
     std::vector<int> epropID(num_elem_blk);
     std::vector<int> ebids(num_elem_blk);
-    error = ex_get_elem_blk_ids(exoid_, &(ebids[0]));
+    error = ex_get_ids(exoid_, EX_ELEM_BLOCK, &(ebids[0]));
     if (error != 0) dserror("exo error returned");
     error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", &(epropID[0]));
     if (error != 0) dserror("exo error returned");
@@ -89,8 +89,8 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       int num_el_in_blk, num_nod_per_elem, num_attr;
       // error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem,
       // &num_attr);
-      error =
-          ex_get_elem_block(exoid_, ebids[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
+      error = ex_get_block(exoid_, EX_ELEM_BLOCK, ebids[i], mychar, &num_el_in_blk,
+          &num_nod_per_elem, NULL, NULL, &num_attr);
       if (error != 0) dserror("exo error returned");
       // prefer std::string to store element type
       std::string ele_type(mychar);
@@ -103,7 +103,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get element connectivity
       std::vector<int> allconn(num_nod_per_elem * num_el_in_blk);
-      error = ex_get_elem_conn(exoid_, ebids[i], &allconn[0]);
+      error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], &allconn[0], 0, 0);
       if (error != 0) dserror("exo error returned");
       Teuchos::RCP<std::map<int, std::vector<int>>> eleconn =
           Teuchos::rcp(new std::map<int, std::vector<int>>);
@@ -134,7 +134,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
     {
       // Read NodeSet params
       int num_nodes_in_set, num_df_in_set;
-      error = ex_get_node_set_param(exoid_, npropID[i], &num_nodes_in_set, &num_df_in_set);
+      error = ex_get_set_param(exoid_, EX_NODE_SET, npropID[i], &num_nodes_in_set, &num_df_in_set);
 
       // get NodeSet name
       char mychar[MAX_STR_LENGTH + 1];
@@ -144,10 +144,10 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get nodes in node set
       std::vector<int> node_set_node_list(num_nodes_in_set);
-      error = ex_get_node_set(exoid_, npropID[i], &(node_set_node_list[0]));
+      error = ex_get_set(exoid_, EX_NODE_SET, npropID[i], &(node_set_node_list[0]), NULL);
       if (error > 0)
-        std::cout << "'ex_get_node_set' returned warning while reading node set " << npropID[i]
-                  << std::endl;
+        std::cout << "'ex_get_set' for EX_NODE_SET returned warning while reading node set "
+                  << npropID[i] << std::endl;
       else if (error < 0)
         dserror("error reading node set");
       std::set<int> nodes_in_set;
@@ -219,13 +219,14 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // Read SideSet params
       int num_side_in_set, num_dist_fact_in_set;
-      error = ex_get_side_set_param(exoid_, spropID[i], &num_side_in_set, &num_dist_fact_in_set);
+      error = ex_get_set_param(
+          exoid_, EX_SIDE_SET, spropID[i], &num_side_in_set, &num_dist_fact_in_set);
 
       // get SideSet
       std::vector<int> side_set_elem_list(num_side_in_set);
       std::vector<int> side_set_side_list(num_side_in_set);
-      error =
-          ex_get_side_set(exoid_, spropID[i], &(side_set_elem_list[0]), &(side_set_side_list[0]));
+      error = ex_get_set(
+          exoid_, EX_SIDE_SET, spropID[i], &(side_set_elem_list[0]), &(side_set_side_list[0]));
       if (error != 0) dserror("error reading side set");
       std::map<int, std::vector<int>> sides_in_set;
       for (int j = 0; j < num_side_in_set; ++j)
@@ -1036,14 +1037,15 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
       const char* nsname = name.c_str();
       const std::string propname = ns.GetPropName();
       const std::set<int> nodes = ns.GetNodeSet();
-      error = ex_put_node_set_param(exoid,  // of write file
-          nsID,                             // node set id
+      error = ex_put_set_param(exoid,  // of write file
+          EX_NODE_SET,
+          nsID,  // node set id
           num_nodes_in_set,
           0);  // yet no distribution factors
       if (error != 0) dserror("error writing node set params");
       std::vector<int> nodelist(num_nodes_in_set);
       ns.FillNodelistArray(&nodelist[0]);
-      error = ex_put_node_set(exoid, nsID, &nodelist[0]);
+      error = ex_put_set(exoid, EX_NODE_SET, nsID, &nodelist[0], NULL);
       if (error != 0) dserror("error writing node set \"%s\" ", nsname);
       error = ex_put_name(exoid, EX_NODE_SET, nsID, nsname);
       if (error != 0) dserror("error writing node set name");
@@ -1063,17 +1065,19 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     const int num_nod_per_elem = exampleconn.size();
     const int numele = eb.GetNumEle();
     const char* elem_type = shapestring.c_str();
-    error = ex_put_elem_block(exoid,  // of write file
-        blockID,                      // element block id
-        elem_type,                    // its name
-        numele,                       // number of element in block
-        num_nod_per_elem,             // num of nodes per ele
-        1);                           // num of attributes, not supported yet ->1
+    error = ex_put_block(exoid,  // of write file
+        EX_ELEM_BLOCK,
+        blockID,           // element block id
+        elem_type,         // its name
+        numele,            // number of element in block
+        num_nod_per_elem,  // num of nodes per ele
+        0, 0,
+        1);  // num of attributes, not supported yet ->1
     if (error != 0) dserror("error writing element block");
     // Write Element Connectivity
     std::vector<int> conn(num_nod_per_elem * numele);
     eb.FillEconnArray(&conn[0]);
-    error = ex_put_elem_conn(exoid, blockID, &conn[0]);
+    error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, &conn[0], 0, 0);
     if (error != 0) dserror("error writing element block conns");
     // write block name
     const std::string bname = eb.GetName();
@@ -1092,8 +1096,9 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     const int num_side_in_set = ss.GetNumSides();
     const std::string name = ss.GetName();
     const char* ssname = name.c_str();
-    error = ex_put_side_set_param(exoid,  // of write file
-        ssID,                             // side set id
+    error = ex_put_set_param(exoid,  // of write file
+        EX_SIDE_SET,
+        ssID,  // side set id
         num_side_in_set,
         0);  // yet no distribution factors
     if (error != 0) dserror("error writing side set params");
@@ -1109,7 +1114,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     else
       ss.FillSideLists(&side_set_elem_list[0], &side_set_side_list[0]);
 
-    error = ex_put_side_set(exoid, ssID, &side_set_elem_list[0], &side_set_side_list[0]);
+    error = ex_put_set(exoid, EX_SIDE_SET, ssID, &side_set_elem_list[0], &side_set_side_list[0]);
     if (error != 0) dserror("error writing side set");
     error = ex_put_name(exoid, EX_SIDE_SET, ssID, ssname);
     if (error != 0) dserror("error writing sideset name");
