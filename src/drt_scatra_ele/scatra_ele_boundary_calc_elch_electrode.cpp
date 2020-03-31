@@ -521,7 +521,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
                 expterm);
 
           // core linearization associated with Butler-Volmer mass flux density
-          const double dj_dd_slave = timefacwgt * j0 * expterm;
+          const double dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
 
           // loop over matrix columns
           for (int ui = 0; ui < my::nen_; ++ui)
@@ -533,7 +533,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             {
               const int row_conc = vi * 2;
               const int row_pot = row_conc + 1;
-              const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave;
+              const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
 
               // loop over spatial dimensions
               for (int dim = 0; dim < 3; ++dim)
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // calculate linearizations
         const double inv_massfluxresistance =
             1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
-        const double dj_dd_slave =
+        const double dj_dd_slave_timefacwgt =
             timefacwgt * (eslavepotint - emasterpotint) * inv_massfluxresistance;
 
         // loop over matrix columns
@@ -566,7 +566,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
           for (int vi = 0; vi < my::nen_; ++vi)
           {
             const int row_pot = vi * 2 + 1;
-            const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave;
+            const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
 
             // loop over spatial dimensions
             for (int dim = 0; dim < 3; ++dim)
