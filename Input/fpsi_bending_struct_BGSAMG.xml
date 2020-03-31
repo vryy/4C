@@ -29,6 +29,11 @@
   <ParameterList name="myMuelu">
     <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
+
+      <ParameterList name="Matrix">
+        <Parameter name="PDE equations" type="int" value="3"/>
+      </ParameterList>
+
       <ParameterList name="Hierarchy">
         <Parameter name="max levels"       type="int"    value="3"/>
         <Parameter name="coarse: max size" type="int"    value="1"/>
@@ -114,6 +119,11 @@
   <ParameterList name="myMueluF">
     <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
+
+      <ParameterList name="Matrix">
+        <Parameter name="PDE equations" type="int" value="4"/>
+      </ParameterList>
+
       <ParameterList name="Hierarchy">
         <Parameter name="max levels"       type="int"    value="3"/>
         <Parameter name="coarse: max size" type="int"    value="1"/>
