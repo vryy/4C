@@ -52,6 +52,18 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   // make all Yes/No integral values to Boolean
   DRT::INPUT::BoolifyValidInputParameters(*noxparams_);
 
+  // Remove legacy parameters
+  {
+    Teuchos::ParameterList& solverOptionsList = noxparams_->sublist("Solver Options");
+
+    // remove "Merit Function" parameter entry after building the user-defined function
+    // (NOX does not accept this parameter)
+    solverOptionsList.remove("Merit Function", false);
+
+    // also remove *PrintEqualSign*
+    solverOptionsList.remove("*PrintEqualSign*", false);
+  }
+
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = noxparams_->sublist("Printing");
   printParams.set("MyPID", myrank_);
