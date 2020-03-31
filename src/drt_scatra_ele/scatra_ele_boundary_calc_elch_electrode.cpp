@@ -17,7 +17,6 @@
 #include "../drt_inpar/inpar_s2i.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/electrode.H"
 
@@ -41,13 +40,11 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleBoundaryCalcElchElectrode<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto& i : instances)
+      if (i.second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
+        delete i.second;
+        instances.erase(i.first);
         return nullptr;
       }
   }
@@ -64,8 +61,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -77,7 +72,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCal
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
 {
-  return;
 }
 
 
@@ -86,14 +80,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCal
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele,              ///< current boundary element
-    Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization,      ///< discretization
-    DRT::Element::LocationArray& la,          ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-    Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // safety checks
   if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
@@ -148,8 +138,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         timefacrhsfac, GetFRT(), eslavematrix, emastermatrix, dummymatrix, dummymatrix,
         eslaveresidual, dummyvector);
   }  // loop over integration points
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling
 
 
@@ -239,8 +227,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
   const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
                           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance
                       ? kr
-                      : kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa) *
-                            pow(eslavephiint, alphac));
+                      : kr * std::pow(emasterphiint, alphaa) *
+                            std::pow(cmax - eslavephiint, alphaa) * std::pow(eslavephiint, alphac));
 
   // compute matrix and vector contributions according to kinetic model for current scatra-scatra
   // interface coupling condition
@@ -259,8 +247,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double eta = eslavepotint - emasterpotint - epd;
 
         // exponential Butler-Volmer terms
-        const double expterm1 = exp(alphaa * frt * eta);
-        const double expterm2 = exp(-alphac * frt * eta);
+        const double expterm1 = std::exp(alphaa * frt * eta);
+        const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
         // safety check
@@ -269,24 +257,23 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
               expterm);
 
         // core residual term associated with Butler-Volmer mass flux density
-        const double jfacrhsfac = j0 * expterm * timefacrhsfac;
+        const double j = j0 * expterm;
 
         // forward declarations
-        double dj_dc_slave(.0);
-        double dj_dc_master(.0);
-        double dj_dpot_slave(.0);
-        double dj_dpot_master(.0);
+        double dj_dc_slave(0.0);
+        double dj_dc_master(0.0);
+        double dj_dpot_slave(0.0);
+        double dj_dpot_master(0.0);
 
         // calculate core linearizations
-        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
-            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
-            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+            alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax,
+            dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-            test_master, numelectrons, nen_master, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master, jfacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+            test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+            dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
       }
 
       break;
@@ -308,8 +295,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
 
         // exponential Butler-Volmer terms
-        const double expterm1 = exp(alphaa * frt * eta);
-        const double expterm2 = exp(-alphac * frt * eta);
+        const double expterm1 = std::exp(alphaa * frt * eta);
+        const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
         // safety check
@@ -318,24 +305,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
               expterm);
 
         // forward declarations
-        double dj_dc_slave(.0);
-        double dj_dc_master(.0);
-        double dj_dpot_slave(.0);
-        double dj_dpot_master(.0);
-
-        // calculate core residual term associated with Butler-Volmer mass flux density
-        const double jfacrhsfac = j * timefacrhsfac;
+        double dj_dc_slave(0.0);
+        double dj_dc_master(0.0);
+        double dj_dpot_slave(0.0);
+        double dj_dpot_master(0.0);
 
         // calculate core linearizations
-        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, timefacfac, timefacrhsfac, j0,
-            frt, epdderiv, alphaa, alphac, resistance, expterm1, expterm2, kr, faraday,
-            emasterphiint, eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master);
+        myelectrodeutils::CalculateCoreLinearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+            alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax,
+            dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
         // calculate RHS and linearizations of master and slave-side residuals
         CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-            test_master, numelectrons, nen_master, dj_dc_slave, dj_dc_master, dj_dpot_slave,
-            dj_dpot_master, jfacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+            test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+            dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
       }
 
       break;
@@ -345,12 +328,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     {
       // core residual
       const double inv_massfluxresistance = 1.0 / (resistance * faraday);
-      const double jfacrhsfac =
+      const double jtimefacrhsfac =
           timefacrhsfac * (eslavepotint - emasterpotint) * inv_massfluxresistance;
 
       // calculate core linearizations
-      const double dj_dpot_slave = timefacfac * inv_massfluxresistance;
-      const double dj_dpot_master = -dj_dpot_slave;
+      const double dj_dpot_slave_timefacfac = timefacfac * inv_massfluxresistance;
+      const double dj_dpot_master_timefacfac = -dj_dpot_slave_timefacfac;
 
       // calculate RHS and linearizations of master and slave-side residuals
       if (k_ss.M() and k_sm.M() and r_s.Length())
@@ -363,17 +346,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ss(row_pot, col_pot) += test_slave(vi) * dj_dpot_slave * funct_slave(ui);
+            k_ss(row_pot, col_pot) += test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_sm(row_pot, col_pot) += test_slave(vi) * dj_dpot_master * funct_master(ui);
+            k_sm(row_pot, col_pot) += test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
           }
 
-          r_s[row_pot] -= test_slave(vi) * jfacrhsfac;
+          r_s[row_pot] -= test_slave(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ss.M() or k_sm.M() or r_s.Length())
@@ -389,17 +372,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ms(row_pot, col_pot) -= test_master(vi) * dj_dpot_slave * funct_slave(ui);
+            k_ms(row_pot, col_pot) -= test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_mm(row_pot, col_pot) -= test_master(vi) * dj_dpot_master * funct_master(ui);
+            k_mm(row_pot, col_pot) -=
+                test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
           }
 
-          r_m[row_pot] += test_master(vi) * jfacrhsfac;
+          r_m[row_pot] += test_master(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ms.M() or k_mm.M() or r_m.Length())
@@ -420,8 +404,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       break;
     }
   }  // switch(kineticmodel)
-
-  return;
 }
 
 
@@ -431,12 +413,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
  *---------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICouplingOD(
-    const DRT::FaceElement* ele,            ///< current boundary element
-    Teuchos::ParameterList& params,         ///< parameter list
-    DRT::Discretization& discretization,    ///< discretization
-    DRT::Element::LocationArray& la,        ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -526,12 +505,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
           // Butler-Volmer exchange mass flux density
           const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced
                               ? kr
-                              : kr * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa) *
-                                    pow(eslavephiint, alphac));
+                              : kr * std::pow(emasterphiint, alphaa) *
+                                    std::pow(cmax - eslavephiint, alphaa) *
+                                    std::pow(eslavephiint, alphac));
 
           // exponential Butler-Volmer terms
-          const double expterm1 = exp(alphaa * frt * eta);
-          const double expterm2 = exp(-alphac * frt * eta);
+          const double expterm1 = std::exp(alphaa * frt * eta);
+          const double expterm2 = std::exp(-alphac * frt * eta);
           const double expterm = expterm1 - expterm2;
 
           // safety check
@@ -556,7 +536,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
               const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave;
 
               // loop over spatial dimensions
-              for (unsigned dim = 0; dim < 3; ++dim)
+              for (int dim = 0; dim < 3; ++dim)
               {
                 // compute linearizations w.r.t. slave-side structural displacements
                 eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
@@ -589,7 +569,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave;
 
             // loop over spatial dimensions
-            for (unsigned dim = 0; dim < 3; ++dim)
+            for (int dim = 0; dim < 3; ++dim)
             {
               // finalize linearizations w.r.t. slave-side structural displacements
               eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
@@ -611,8 +591,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       }
     }  // switch(kineticmodel)
   }    // loop over integration points
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICouplingOD
 
 
@@ -621,9 +599,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
-    const Teuchos::RCP<const MAT::Material>& material,  // element material
-    const int k                                         // species number
-    ) const
+    const Teuchos::RCP<const MAT::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
   dserror("Valence cannot be computed for electrode material!");
@@ -640,7 +616,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT() cons
 {
   // fetch factor F/RT from electrochemistry parameter list in isothermal case
   return myelch::elchparams_->FRT();
-};
+}
 
 /*------------------------------------------------------------------------------------*
  | calculate RHS and global system                                      civaner 09/19 |
@@ -654,12 +630,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
     const LINALG::Matrix<my::nen_, 1>& test_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         test_master,
-    const double numelectrons, const int nen_master, const double dj_dc_slave,
-    const double dj_dc_master, const double dj_dpot_slave, const double dj_dpot_master,
-    const double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-    Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-    Epetra_SerialDenseVector& r_m)
+    const double numelectrons, const int nen_master, const double timefacfac,
+    const double timefacrhsfac, const double dj_dc_slave, const double dj_dc_master,
+    const double dj_dpot_slave, const double dj_dpot_master, const double j,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
+  // pre calculate integrand values
+  const double jtimefacrhsfac = j * timefacrhsfac;
+  const double dj_dc_slave_timefacfac = dj_dc_slave * timefacfac;
+  const double dj_dc_master_timefacfac = dj_dc_master * timefacfac;
+  const double dj_dpot_slave_timefacfac = dj_dpot_slave * timefacfac;
+  const double dj_dpot_master_timefacfac = dj_dpot_master * timefacfac;
+
+  // assemble slave side element rhs and linearizations
   if (k_ss.M() and k_sm.M() and r_s.Length())
   {
     for (int vi = 0; vi < my::nen_; ++vi)
@@ -672,10 +656,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_ss(row_conc, col_conc) += test_slave(vi) * dj_dc_slave * funct_slave(ui);
-        k_ss(row_conc, col_pot) += test_slave(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ss(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_slave * funct_slave(ui);
-        k_ss(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ss(row_conc, col_conc) += test_slave(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ss(row_conc, col_pot) += test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+        k_ss(row_pot, col_conc) +=
+            numelectrons * test_slave(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ss(row_pot, col_pot) +=
+            numelectrons * test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -683,20 +669,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_sm(row_conc, col_conc) += test_slave(vi) * dj_dc_master * funct_master(ui);
-        k_sm(row_conc, col_pot) += test_slave(vi) * dj_dpot_master * funct_master(ui);
-        k_sm(row_pot, col_conc) += numelectrons * test_slave(vi) * dj_dc_master * funct_master(ui);
-        k_sm(row_pot, col_pot) += numelectrons * test_slave(vi) * dj_dpot_master * funct_master(ui);
+        k_sm(row_conc, col_conc) += test_slave(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_sm(row_conc, col_pot) += test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+        k_sm(row_pot, col_conc) +=
+            numelectrons * test_slave(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_sm(row_pot, col_pot) +=
+            numelectrons * test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
       }
 
-      r_s[row_conc] -= test_slave(vi) * j;
-      r_s[row_pot] -= numelectrons * test_slave(vi) * j;
+      r_s[row_conc] -= test_slave(vi) * jtimefacrhsfac;
+      r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
     }
   }
   else if (k_ss.M() or k_sm.M() or r_s.Length())
     dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
-
+  // assemble master side element rhs and linearizations
   if (k_ms.M() and k_mm.M() and r_m.Length())
   {
     for (int vi = 0; vi < nen_master; ++vi)
@@ -709,10 +697,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_ms(row_conc, col_conc) -= test_master(vi) * dj_dc_slave * funct_slave(ui);
-        k_ms(row_conc, col_pot) -= test_master(vi) * dj_dpot_slave * funct_slave(ui);
-        k_ms(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_slave * funct_slave(ui);
-        k_ms(row_pot, col_pot) -= numelectrons * test_master(vi) * dj_dpot_slave * funct_slave(ui);
+        k_ms(row_conc, col_conc) -= test_master(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ms(row_conc, col_pot) -= test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+        k_ms(row_pot, col_conc) -=
+            numelectrons * test_master(vi) * dj_dc_slave_timefacfac * funct_slave(ui);
+        k_ms(row_pot, col_pot) -=
+            numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
       }
 
       for (int ui = 0; ui < nen_master; ++ui)
@@ -720,20 +710,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalculateRHSand
         const int col_conc = ui * 2;
         const int col_pot = col_conc + 1;
 
-        k_mm(row_conc, col_conc) -= test_master(vi) * dj_dc_master * funct_master(ui);
-        k_mm(row_conc, col_pot) -= test_master(vi) * dj_dpot_master * funct_master(ui);
-        k_mm(row_pot, col_conc) -= numelectrons * test_master(vi) * dj_dc_master * funct_master(ui);
+        k_mm(row_conc, col_conc) -= test_master(vi) * dj_dc_master_timefacfac * funct_master(ui);
+        k_mm(row_conc, col_pot) -= test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+        k_mm(row_pot, col_conc) -=
+            numelectrons * test_master(vi) * dj_dc_master_timefacfac * funct_master(ui);
         k_mm(row_pot, col_pot) -=
-            numelectrons * test_master(vi) * dj_dpot_master * funct_master(ui);
+            numelectrons * test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
       }
 
-      r_m[row_conc] += test_master(vi) * j;
-      r_m[row_pot] += numelectrons * test_master(vi) * j;
+      r_m[row_conc] += test_master(vi) * jtimefacrhsfac;
+      r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
     }
   }
   else if (k_ms.M() or k_mm.M() or r_m.Length())
     dserror("Must provide both master-side matrices and master-side vector or none of them!");
-  return;
 }
 
 // template classes
