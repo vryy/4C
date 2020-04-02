@@ -156,10 +156,6 @@ if (QHULL_FOUND)
     )
 endif (QHULL_FOUND)
 
-if (NOT QHULL_FOUND)
-   MESSAGE(FATAL_ERROR "QHull not found")
-endif ()
-
 if (HAVE_OpenMP)
 find_package(OpenMP)
 if (OPENMP_FOUND)
