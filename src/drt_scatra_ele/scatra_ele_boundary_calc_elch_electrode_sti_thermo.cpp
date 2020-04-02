@@ -237,7 +237,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
             expterm);
 
       // linearization of Butler-Volmer mass flux density w.r.t. temperature
-      const double dj_dT =
+      const double dj_dT_timefacfac =
           -timefacfac * j0 * frt / eslavetempint * eta * (alphaa * expterm1 + alphac * expterm2);
 
       // compute matrix contributions associated with slave-side residuals
@@ -248,11 +248,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         for (int ui = 0; ui < my::nen_; ++ui)
         {
           // compute linearizations associated with slave-side equations for lithium transport
-          k_ss(row_conc, ui) += test_slave(vi) * dj_dT * funct_slave(ui);
+          k_ss(row_conc, ui) += test_slave(vi) * dj_dT_timefacfac * funct_slave(ui);
 
           // compute linearizations associated with slave-side closing equations for electric
           // potential
-          k_ss(row_conc + 1, ui) += numelectrons * test_slave(vi) * dj_dT * funct_slave(ui);
+          k_ss(row_conc + 1, ui) +=
+              numelectrons * test_slave(vi) * dj_dT_timefacfac * funct_slave(ui);
         }
       }
 
@@ -266,11 +267,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
           for (int ui = 0; ui < my::nen_; ++ui)
           {
             // compute linearizations associated with master-side equations for lithium transport
-            k_ms(row_conc, ui) -= test_master(vi) * dj_dT * funct_slave(ui);
+            k_ms(row_conc, ui) -= test_master(vi) * dj_dT_timefacfac * funct_slave(ui);
 
             // compute linearizations associated with master-side closing equations for electric
             // potential
-            k_ms(row_conc + 1, ui) -= numelectrons * test_master(vi) * dj_dT * funct_slave(ui);
+            k_ms(row_conc + 1, ui) -=
+                numelectrons * test_master(vi) * dj_dT_timefacfac * funct_slave(ui);
           }
         }
       }

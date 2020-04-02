@@ -218,18 +218,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
             expterm);
 
       // core residual term
-      const double residual = timefacrhsfac * i0 * expterm * (eta + peltier);
+      const double residual_timefacrhsfac = timefacrhsfac * i0 * expterm * (eta + peltier);
 
       // core linearization w.r.t. temperature
-      const double linearization = -timefacfac * i0 * frt / eslavetempint * eta *
-                                   (alphaa * expterm1 + alphac * expterm2) * (eta + peltier);
+      const double linearization_timefacfac = -timefacfac * i0 * frt / eslavetempint * eta *
+                                              (alphaa * expterm1 + alphac * expterm2) *
+                                              (eta + peltier);
 
       // compute matrix and vector contributions
       for (int vi = 0; vi < my::nen_; ++vi)
       {
         for (int ui = 0; ui < my::nen_; ++ui)
-          k_ss(vi, ui) -= funct_slave(vi) * linearization * funct_slave(ui);
-        r_s[vi] += funct_slave(vi) * residual;
+          k_ss(vi, ui) -= funct_slave(vi) * linearization_timefacfac * funct_slave(ui);
+        r_s[vi] += funct_slave(vi) * residual_timefacrhsfac;
       }
 
       break;
@@ -387,19 +388,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       // core linearizations w.r.t. master-side and slave-side concentrations and electric
       // potentials
       const double dres_dc_slave =
-          timefacfac *
-          ((kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                   pow(eslavephiint, alphac - 1.) *
-                   (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
-               i0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2)) *
-                  (eta + peltier) -
-              i0 * expterm * epdderiv);
-      const double dres_dc_master =
-          timefacfac * i0 * alphaa / emasterphiint * expterm * (eta + peltier);
+          (kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
+                  pow(eslavephiint, alphac - 1.) *
+                  (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm +
+              i0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2)) *
+              (eta + peltier) -
+          i0 * expterm * epdderiv;
+      const double dres_dc_slave_timefacfac = timefacfac * dres_dc_slave;
+
+      const double dres_dc_master = i0 * alphaa / emasterphiint * expterm * (eta + peltier);
+      const double dres_dc_master_timefacfac = timefacfac * dres_dc_master;
+
       const double dres_dpot_slave =
-          timefacfac *
-          (i0 * frt * (alphaa * expterm1 + alphac * expterm2) * (eta + peltier) + i0 * expterm);
-      const double dres_dpot_master = -dres_dpot_slave;
+          i0 * frt * (alphaa * expterm1 + alphac * expterm2) * (eta + peltier) + i0 * expterm;
+      const double dres_dpot_slave_timefacfac = timefacfac * dres_dpot_slave;
+
+      const double dres_dpot_master_timefacfac = -dres_dpot_slave_timefacfac;
 
       // compute matrix contributions associated with slave-side residuals
       for (int vi = 0; vi < my::nen_; ++vi)
@@ -407,19 +411,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         for (int ui = 0; ui < my::nen_; ++ui)
         {
           // compute linearizations w.r.t. slave-side concentrations
-          k_ss(vi, ui * 2) -= funct_slave(vi) * dres_dc_slave * funct_slave(ui);
+          k_ss(vi, ui * 2) -= funct_slave(vi) * dres_dc_slave_timefacfac * funct_slave(ui);
 
           // compute linearizations w.r.t. slave-side electric potentials
-          k_ss(vi, ui * 2 + 1) -= funct_slave(vi) * dres_dpot_slave * funct_slave(ui);
+          k_ss(vi, ui * 2 + 1) -= funct_slave(vi) * dres_dpot_slave_timefacfac * funct_slave(ui);
         }
 
         for (int ui = 0; ui < nen_master; ++ui)
         {
           // compute linearizations w.r.t. master-side concentrations
-          k_sm(vi, ui * 2) -= funct_slave(vi) * dres_dc_master * funct_master(ui);
+          k_sm(vi, ui * 2) -= funct_slave(vi) * dres_dc_master_timefacfac * funct_master(ui);
 
           // compute linearizations w.r.t. master-side electric potentials
-          k_sm(vi, ui * 2 + 1) -= funct_slave(vi) * dres_dpot_master * funct_master(ui);
+          k_sm(vi, ui * 2 + 1) -= funct_slave(vi) * dres_dpot_master_timefacfac * funct_master(ui);
         }
       }
 
