@@ -114,6 +114,12 @@ namespace MAT
       /// \param result (out) : result of dyadic product
       void DyadicProduct(const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result);
 
+      /// \brief calculate MxM
+      ///
+      /// \param M (in) : vector (e.g. fiber direction)
+      /// \param result (out) : result of dyadic product
+      void DyadicProduct(const LINALG::Matrix<3, 1>& M, LINALG::Matrix<3, 3>& result);
+
      protected:
       /// return residual tolerance of structural problem
       double GetResidualTol();
@@ -172,10 +178,7 @@ namespace MAT
       /// \param structural_tensor (out) : structural tensor is 'H' filled inside
       ///
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<3, 3>& structural_tensor) override
-      {
-        structural_tensor.MultiplyNT(fiber_vector, fiber_vector);
-      }
+          LINALG::Matrix<3, 3>& structural_tensor) override;
 
     };  // class StructuralTensorStrategyStandard
 
@@ -294,10 +297,7 @@ namespace MAT
        * @param structural_tensor
        */
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<3, 3>& structural_tensor) override
-      {
-        dserror("This structural tensor is not implemented in tensor notation!");
-      }
+          LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyByDistributionFunction
 
 
@@ -361,10 +361,7 @@ namespace MAT
        * @param structural_tensor
        */
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<3, 3>& structural_tensor) override
-      {
-        dserror("This structural tensor is not implemented in tensor notation!");
-      }
+          LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyDispersedTransverselyIsotropic
 
   }  // namespace ELASTIC
