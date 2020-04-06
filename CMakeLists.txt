@@ -9,6 +9,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(baci CXX C Fortran)
 
+# Print CMake version to screen
+message("II Using CMAke ${CMAKE_VERSION}")
+
 # The version number.
 set (baci_VERSION_MAJOR 1)
 set (baci_VERSION_MINOR 0)
