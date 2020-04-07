@@ -128,19 +128,22 @@ endif (ENABLE_STACKTR)
 
 #   additional features
 
-
-find_package(HDF5 REQUIRED)
+if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
+set(HDF5_PREFER_PARALLEL true)
+endif()
+find_package(HDF5 REQUIRED COMPONENTS C HL)
 if (HDF5_FOUND)
   MESSAGE("-- HDF5_IS_PARALLEL: ${HDF5_IS_PARALLEL}")
   MESSAGE("-- HDF5 include directory: ${HDF5_INCLUDE_DIRS}")
   MESSAGE("-- HDF5 library directory: ${HDF5_LIBRARY_DIRS}")
   MESSAGE("-- HDF5 libraries: ${HDF5_LIBRARIES}")
+  MESSAGE("-- HDF5 HL libraries: ${HDF5_HL_LIBRARIES}")
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${HDF5_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
     ${HDF5_LIBRARIES}
-    ${SEARCH_HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
     )
 endif(HDF5_FOUND)
 
