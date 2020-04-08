@@ -67,7 +67,7 @@ Feel free to add supplementary material here (e.g. screen output, log files, scr
 
 ## Interested Parties
 <!--
-If there's any team or dveloper, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams and possible reviewers.
+If there's any team or developer, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams and possible reviewers.
 -->
 
 Possible reviewers:
