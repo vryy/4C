@@ -124,20 +124,6 @@ namespace IMMERSED
         const std::vector<int> dvol_fenode, const DRT::Condition::ConditionType condtype,
         const std::string condname, bool buildgeometry);
 
-
-    /*!
-    \brief Determine Elements fully covered by the immersed dis., but connected to intersected
-    elements.
-
-           These elements are, so to speak, the first row of elements with the property
-    'IsImmersed'.
-
-    \author rauch
-    \date 03/17
-    */
-    std::vector<int> DetermineElesInFirstImmersedRow(
-        const Teuchos::RCP<const DRT::Discretization>& dis, std::vector<int>* eleids);
-
     /*!
     \brief construct the dof row map for a given condition.
 
@@ -195,30 +181,6 @@ namespace IMMERSED
     \date 02/17
     */
     void ApplyDirichletToFluid(const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper,
-        const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
-        Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals);
-
-
-    /*!
-    \brief Apply Dirichlet boundary condition to artificial part of solid ECM field.
-
-    \author rauch
-    \date 02/17
-    */
-    void ApplyDirichletToArtificialECM(
-        const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper,
-        const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
-        Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals);
-
-    /*!
-    \brief Apply Dirichlet boundary condition to real part of solid ECM field.
-
-    \author rauch
-    \date 02/17
-    */
-    void ApplyDirichletToRealECM(const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -787,10 +749,6 @@ namespace IMMERSED
             if (action == 81311)
             {  // experimental pre cmbe
               params.set<std::string>("action", "interpolate_porosity_to_given_point");
-            }
-            else if (action == 813112)
-            {
-              params.set<int>("action", (int)SCATRA::calc_immersed_phi_at_given_point);
             }
             else
               params.set<int>("action", action);

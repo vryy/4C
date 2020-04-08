@@ -431,10 +431,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure interaction interface meshtying condition: ";
   else if (Type() == CellFocalAdhesion)
     os << "Scalar transport boundary condition depending on structural surface stress";
-  else if (Type() == ScaTraCellIntCalc)
-    os << "Scalar transport biochemo internalization boundary condition for cell migration";
-  else if (Type() == ScaTraCellExtCalc)
-    os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type() == S2ICoupling)
     os << "Scatra-scatra interface coupling: ";
   else if (Type() == SilverMueller)

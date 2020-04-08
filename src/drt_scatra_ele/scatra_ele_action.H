@@ -23,10 +23,6 @@ namespace SCATRA
   enum Action
   {
     // domain action
-    calc_cell_mechanotransduction,  // calculate response of cell internal transport to mechanical
-                                    // stimulus
-    calc_cell_growth_sourcesandsinks,  // calculate sources and sinks of actin polymerization
-                                       // related biomolecules
     calc_dissipation,  // calculate dissipation introduced by stabilization and turbulence models
     calc_domain_and_bodyforce,           // calc_domain_and_bodyforce,
     calc_domain_integral,                // n/a
@@ -39,13 +35,11 @@ namespace SCATRA
     calc_flux_domain,                    // calc_condif_flux,
     calc_immersed_element_source,  // calculate sink/source term due to segregation from an immersed
                                    // discretizaton
-    calc_immersed_phi_at_given_point,  // calculate concentration at a given point during immersed
-                                       // cell migration
-    calc_initial_time_deriv,           // calc_initial_time_deriv,
-    calc_integr_grad_diff,            // calculate diffusion coefficient gradient for photoacoustics
-    calc_integr_grad_reac,            // calculate reaction coefficient gradient for photoacoustics
-    calc_integr_pat_rhsvec,           // integrate rhs vec for adjoint pat
-    calc_integr_reaction,             // calculate integral reaction
+    calc_initial_time_deriv,       // calc_initial_time_deriv,
+    calc_integr_grad_diff,         // calculate diffusion coefficient gradient for photoacoustics
+    calc_integr_grad_reac,         // calculate reaction coefficient gradient for photoacoustics
+    calc_integr_pat_rhsvec,        // integrate rhs vec for adjoint pat
+    calc_integr_reaction,          // calculate integral reaction
     calc_mass_center_smoothingfunct,  // calculate mass center of minus domain, using the smoothing
                                       // function. (Interface thickness required)
     calc_mass_matrix,                 // calculate mass matrix
@@ -78,15 +72,13 @@ namespace SCATRA
     calc_heteroreac_mat_and_rhs,     // calculate RHS and linearizations of heterogeneous reaction
                                      // terms
     check_scatra_element_parameter,  // set parameter defined in every single element
-    get_material_internal_state,  // get material internal state (for postprocessing for example),
-    get_material_ionic_currents,  // get material ionic currents (for postprocessing for example),
-    get_material_parameters,      // get_material_parameters,
-    integrate_shape_functions,    // integrate_shape_functions,
-    integrate_weighted_scalar,  // integrate scalar provided in params over domain (weighted by user
-                                // defined prefac),
-    interpolate_hdg_to_node,    // interpolate hdg to node,
-    micro_scale_initialize,     // initialize micro scale in multi-scale simulations
-    micro_scale_output,         // output micro-scale quantities in multi-scale simulations
+    get_material_internal_state,    // get material internal state (for postprocessing for example),
+    get_material_ionic_currents,    // get material ionic currents (for postprocessing for example),
+    get_material_parameters,        // get_material_parameters,
+    integrate_shape_functions,      // integrate_shape_functions,
+    interpolate_hdg_to_node,        // interpolate hdg to node,
+    micro_scale_initialize,         // initialize micro scale in multi-scale simulations
+    micro_scale_output,             // output micro-scale quantities in multi-scale simulations
     micro_scale_prepare_time_step,  // prepare time step on micro scale in multi-scale simulations
     micro_scale_read_restart,       // read restart on micro scale in multi-scale simulations
     micro_scale_solve,              // solve micro scale in multi-scale simulations
@@ -126,7 +118,6 @@ namespace SCATRA
   {
     bd_calc_Neumann,
     bd_add_convective_mass_flux,
-    bd_integrate_weighted_scalar,
     bd_calc_boundary_integral,
     bd_calc_convective_heat_transfer,
     bd_calc_elch_boundary_kinetics,
@@ -137,7 +128,6 @@ namespace SCATRA
     bd_calc_fs3i_surface_permeability,
     bd_calc_loma_therm_press,
     bd_calc_mass_matrix,
-    bd_calc_mechanotransduction,
     bd_calc_Neumann_inflow,
     bd_calc_normal_vectors,
     bd_calc_Robin,                     // Robin boundary condition

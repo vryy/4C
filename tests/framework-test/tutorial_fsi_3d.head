@@ -46,8 +46,6 @@ NUMAIRWAYSDIS                   1
 //     Fluid_Top_Opt
 //     Fluid_XFEM
 //     Fluid_XFEM_LevelSet
-//     Gas_Fluid_Structure_Interaction
-//     Immersed_CellMigration
 //     Immersed_FSI
 //     Inverse_Analysis
 //     Level_Set

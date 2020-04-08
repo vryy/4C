@@ -77,7 +77,6 @@ void ntacal()
     case prb_ehl:
       ehl_dyn();
       break;
-    case prb_scatra_endoexocytosis:
     case prb_scatra:
       scatra_dyn(restart);
       break;
@@ -157,7 +156,6 @@ void ntacal()
       break;
 
     case prb_immersed_fsi:
-    case prb_immersed_cell:
     case prb_immersed_membrane_fsi:
       immersed_problem_drt();
       break;

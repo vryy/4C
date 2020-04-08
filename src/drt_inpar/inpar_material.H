@@ -64,21 +64,19 @@ namespace INPAR
                                                          ///< beam: hyperelastic stored energy
                                                          ///< function, specified for indivual
                                                          ///< deformation modes
-      m_biochemomechano_active,   ///< biochemo-mechano coupled model for stress fiber activity
-      m_biochemomechano_passive,  ///< biochemo-mechano coupled model for homogenized cytoskeleton
-      m_carreauyasuda,            ///< fluid with nonlinear viscosity according to Carreau-Yasuda
-      m_cnst_art,                 ///< 1D_Artery constant material properties
-      m_compogden,                ///< compressible Ogden material (with shell8)
-      m_consolidation,            ///< material providing a general interface for consolidation
-      m_constraintmixture,        ///< growth and remodeling of arteries
-      m_crosslinkermat,           ///< material for crosslinker in biopolymer networks
-      m_crystplast,               ///< crystal plasticity
-      m_elasthyper,               ///< collection of hyperelastic materials
-      m_elchmat,                  ///< material for porous separators
-      m_elchphase,                ///< material for porous phase inside porous separator
-      m_electrode,                ///< electrode material
-      m_electromagneticmat,       ///< electromagnetic material
-      m_elpldamage,               ///< elasto-plastic material with von Mises plasticity and damage
+      m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda
+      m_cnst_art,            ///< 1D_Artery constant material properties
+      m_compogden,           ///< compressible Ogden material (with shell8)
+      m_consolidation,       ///< material providing a general interface for consolidation
+      m_constraintmixture,   ///< growth and remodeling of arteries
+      m_crosslinkermat,      ///< material for crosslinker in biopolymer networks
+      m_crystplast,          ///< crystal plasticity
+      m_elasthyper,          ///< collection of hyperelastic materials
+      m_elchmat,             ///< material for porous separators
+      m_elchphase,           ///< material for porous phase inside porous separator
+      m_electrode,           ///< electrode material
+      m_electromagneticmat,  ///< electromagnetic material
+      m_elpldamage,          ///< elasto-plastic material with von Mises plasticity and damage
       m_ferech_pv,  ///< material with simplified chemical kinetics due to Ferziger and Echekki
                     ///< (1993) with a modification by Poinsot and Veynante (2005) (progress
                     ///< variable)
@@ -143,7 +141,6 @@ namespace INPAR
       m_matlist,            ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of reactions (used for advanced reaction elements)
-      m_matlist_bondreacs,
       m_matlist_chemotaxis,  ///< collection of single materials (used for scalar transport
                              ///< problems) and collection of chemotactic pairs (used for chemotaxis
                              ///< elements)
@@ -198,7 +195,6 @@ namespace INPAR
       m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
                                        ///< porous ECM
       m_scatra_reaction,               ///< reaction definition and parameters
-      m_scatra_bondreac,               ///< biochemical bond reactions in cell migration context
       m_scatra_chemotaxis,             ///< chemotaxis definition parameters
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
