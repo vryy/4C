@@ -67,12 +67,12 @@ Feel free to add supplementary material here (e.g. screen output, log files, scr
 
 ## Interested Parties
 <!--
-If there's anyone you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention possible reviewers as well as the maintainers of all the files you've touched.
+If there's any team or dveloper, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams and possible reviewers.
 -->
 
 Possible reviewers:
 
-Other interested parties:
+Other interested parties/teams:
 
 <!-- 
 DO NOT TOUCH SECTION BELOW. LIST WILL BE GENERATED AUTOMATICALLY!
