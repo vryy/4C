@@ -14,11 +14,11 @@ Feel free to delete anything from this template that is not applicable to the is
 -->
 
 <!---
-Assignees:  If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
+Assignees: If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
 -->
 
 <!---
-Labels:  Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
+Labels: Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
 This template is specifically for failing tests, so the label 'testing' might be appropriate.
 -->
 

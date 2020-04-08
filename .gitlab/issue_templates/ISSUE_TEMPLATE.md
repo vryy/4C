@@ -3,7 +3,7 @@ Provide a general summary of the issue in the Title above.
 -->
 
 <!---
-Note that anything between these delimiters is a comment that will not appear in the issue description once created.  Click on the Preview tab to see what everything will look like when you submit.
+Note that anything between these delimiters is a comment that will not appear in the issue description once created. Click on the Preview tab to see what everything will look like when you submit.
 -->
 
 <!---
@@ -11,15 +11,15 @@ Feel free to delete anything from this template that is not applicable to the is
 -->
 
 <!---
-Assignees:  If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
+Assignees: If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
 -->
 
 <!---
-Labels:  Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
+Labels: Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
 -->
 
 <!---
-Boards: Make sure your issue will show up in the "Backlog" of our issue board.  Drag it to the "In Progress" list when you start working on the issue.
+Boards: Make sure your issue will show up in the "Backlog" of our issue board. Drag it to the "In Progress" list when you start working on the issue.
 -->
 
 ## Description
@@ -27,7 +27,7 @@ Boards: Make sure your issue will show up in the "Backlog" of our issue board.  
 Tell us about
 - your expectations for future code behavior or features,
 - the current behavior: What's good? What needs to be changed, added, or improved?
-- the motivation and context:  What are you trying to accomplish?  Why do we need to address this?
+- the motivation and context: What are you trying to accomplish? Why do we need to address this?
 
 Providing all this information helps all of us to come up with a solution that is most useful in the real world.
 -->
@@ -35,7 +35,7 @@ Providing all this information helps all of us to come up with a solution that i
 
 ## Possible Solution and Definition of Done
 <!---
-Tell us what needs to happen and outline as possible solution.  If possible, provide a setp-by-step task list along the lines of:
+Tell us what needs to happen and outline a possible solution. If possible, provide a step-by-step task list along the lines of:
 - [ ] First do this.
 - [ ] Then do that.
 - [ ] Also this other thing.

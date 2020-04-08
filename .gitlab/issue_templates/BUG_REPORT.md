@@ -6,7 +6,7 @@ Provide a general summary of the bug in the Title above.
 -->
 
 <!---
-Note that anything between these delimiters is a comment that will not appear in the issue description once created.  Click on the Preview tab to see what everything will look like when you submit.
+Note that anything between these delimiters is a comment that will not appear in the issue description once created. Click on the Preview tab to see what everything will look like when you submit.
 -->
 
 <!---
@@ -14,11 +14,11 @@ Feel free to delete anything from this template that is not applicable to the bu
 -->
 
 <!---
-Assignees:  If you know anyone who should likely tackle this bug, select them from the Assignees drop-down on the right.
+Assignees: If you know anyone who should likely tackle this bug, select them from the Assignees drop-down on the right.
 -->
 
 <!---
-Labels:  Choose the label "Bug Report" as well as assign team labels if appropriate.
+Labels: Choose the label "Bug Report" as well as assign team labels if appropriate.
 -->
 
 <!---
@@ -34,7 +34,7 @@ Include configure logs / build logs / error logs / screenshots / ... to provide 
 
 ## Expectations
 <!---
-What behavior is expected, such that this bug is condisered fixed? How can this be tested to prevent this bug in the future?
+What behavior is expected, such that this bug is considered fixed? How can this be tested to prevent this bug in the future?
 - [ ] First do this.
 - [ ] Then do that.
 - [ ] Also this other thing.
@@ -47,7 +47,7 @@ Not obligatory, but if you have any idea how to address this, please outline it 
 
 ## Steps to Reproduce
 <!---
-Provide a link to a live example, or an unambiguous set of steps to reproduce this issue.  Include code to reproduce, if relevant.
+Provide a link to a live example, or an unambiguous set of steps to reproduce this issue. Include code to reproduce, if relevant.
 1. Do this.
 1. Do that.
 1. Shake fist angrily at computer.
