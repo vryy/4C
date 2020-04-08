@@ -53,12 +53,9 @@ MIXTURE::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
       potsum_(0),
       cosyAnisotropyExtension_()
 {
-  std::vector<int>::const_iterator m;
-
   // Create summands
-  for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+  for (const auto& matid : *params_->matids_)
   {
-    const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to read elastic summand.");
     potsum_.push_back(sum);

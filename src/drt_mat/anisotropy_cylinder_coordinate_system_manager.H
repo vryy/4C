@@ -75,11 +75,6 @@ namespace MAT
      */
     bool IsDefined() const { return isDefined_; }
 
-    /*!
-     * \brief Returns the unit vector pointing in radial direction
-     *
-     * \return const LINALG::Matrix<3, 1>& Unit vector pointing in radial direction
-     */
     const LINALG::Matrix<3, 1>& GetRad() const override
     {
       if (!isDefined_)
@@ -89,11 +84,6 @@ namespace MAT
       return radial_;
     };
 
-    /*!
-     * \brief Returns the unit vector pointing in axial direction
-     *
-     * \return const LINALG::Matrix<3, 1>& Unit vector pointing in axial direction
-     */
     const LINALG::Matrix<3, 1>& GetAxi() const override
     {
       if (!isDefined_)
@@ -103,11 +93,6 @@ namespace MAT
       return axial_;
     }
 
-    /*!
-     * \brief Returns the unit vector pointing in circumferential direction
-     *
-     * \return const LINALG::Matrix<3, 1>& Unit vector pointing in circumferential direction
-     */
     const LINALG::Matrix<3, 1>& GetCir() const override
     {
       if (!isDefined_)
@@ -129,21 +114,18 @@ namespace MAT
     bool isDefined_ = false;
 
     /*!
-     * \brief List of unit vectors in radial direction (normally 1 for an element coordinate system,
-     * otherwise one per GP)
+     * \brief Unit vector in radial direction
      */
     LINALG::Matrix<3, 1> radial_;
 
     /*!
-     * \brief List of unit vectors in axial direction (normally 1 for an element coordinate system,
-     * otherwise one per GP)
+     * \brief unit vector in axial direction
      */
     LINALG::Matrix<3, 1> axial_;
 
 
     /*!
-     * \brief List of unit vectors in circumferential direction (normally 1 for an element
-     * coordinate system, otherwise one per GP)
+     * \brief unit vector in circumferential direction
      */
     LINALG::Matrix<3, 1> circumferential_;
   };

@@ -25,7 +25,7 @@ void MAT::ReadAnisotropyFiber(
   {
     f1norm += fiber[i] * fiber[i];
   }
-  f1norm = sqrt(f1norm);
+  f1norm = std::sqrt(f1norm);
 
   if (f1norm < 1e-9)
   {

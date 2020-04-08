@@ -289,7 +289,7 @@ namespace MAT
         RemodelFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
         /// destructor
-        virtual ~RemodelFiber() {}
+        virtual ~RemodelFiber() = default;
 
         /// length of material list
         const int nummat_;

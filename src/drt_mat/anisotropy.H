@@ -59,7 +59,7 @@ namespace MAT
      */
     Anisotropy();
 
-    /// Constructor
+    /// Destructor
     virtual ~Anisotropy() = default;
 
     ///@name Packing and Unpacking

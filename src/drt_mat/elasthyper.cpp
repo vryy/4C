@@ -214,14 +214,15 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  // For Stat Inverse Analysis
-  // pointer to elasthyper
-  if (params_ != nullptr) params_->SetMaterialPtrSIA(this);
-
+  // Pack anisotropy
   anisotropy_.UnpackAnisotropy(data, position);
 
   if (params_ != nullptr)
   {
+    // For Stat Inverse Analysis
+    // pointer to elasthyper
+    params_->SetMaterialPtrSIA(this);
+
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())

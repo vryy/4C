@@ -94,7 +94,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
   double Res = 1.0;
   double dResdlamb_pre;
   double lamb_pre = 1. / (params_->circumferential_prestretch_ * params_->axial_prestretch_);
-  while (fabs(Res) > 1.0e-10)
+  while (std::abs(Res) > 1.0e-10)
   {
     Res =
         constituent.InitialConstituentRefDensity() * matiso->Mue() *

@@ -360,7 +360,7 @@ namespace MAT
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    void PostSetup(Teuchos::ParameterList& params, const int eleGID) override;
+    void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// update
     void Update() override;

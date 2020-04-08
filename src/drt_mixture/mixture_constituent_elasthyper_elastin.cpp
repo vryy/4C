@@ -119,12 +119,9 @@ MIXTURE::MixtureConstituent_ElastHyperElastin::MixtureConstituent_ElastHyperElas
       anisotropyExtension_(Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
           new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)))
 {
-  std::vector<int>::const_iterator m;
-
   // Create summands
-  for (m = params_->matids_membrane_->begin(); m != params_->matids_membrane_->end(); ++m)
+  for (const auto& matid : *params_->matids_membrane_)
   {
-    const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to read elastic summand.");
 

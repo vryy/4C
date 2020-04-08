@@ -61,9 +61,9 @@ void MAT::DefaultAnisotropyExtension::SetFiberVecs(
     for (int i = 0; i < 3; ++i)
     {
       // a1 = cos gamma e3 + sin gamma e2
-      ca1(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
+      ca1(i) = std::cos(gamma) * locsys(i, 2) + std::sin(gamma) * locsys(i, 1);
       // a2 = cos gamma e3 - sin gamma e2
-      ca2(i) = cos(gamma) * locsys(i, 2) - sin(gamma) * locsys(i, 1);
+      ca2(i) = std::cos(gamma) * locsys(i, 2) - std::sin(gamma) * locsys(i, 1);
     }
   }
   else

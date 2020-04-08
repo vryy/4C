@@ -46,13 +46,12 @@ void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
     DRT::ParObject::AddtoPack(data, static_cast<int>(false));
   }
 
-  for (const CylinderCoordinateSystemManager& gpCylinderCoordinateSystemManager :
-      gpCylinderCoordinateSystemManagers_)
+  for (const auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
   {
     gpCylinderCoordinateSystemManager.Pack(data);
   }
 
-  for (const Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+  for (const auto& extension : extensions_)
   {
     extension->PackAnisotropy(data);
   }
@@ -77,13 +76,12 @@ void MAT::Anisotropy::UnpackAnisotropy(
     elementCylinderCoordinateSystemManager_ = boost::none;
   }
 
-  for (CylinderCoordinateSystemManager& gpCylinderCoordinateSystemManager :
-      gpCylinderCoordinateSystemManagers_)
+  for (auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
   {
     gpCylinderCoordinateSystemManager.Unpack(data, position);
   }
 
-  for (const Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+  for (const auto& extension : extensions_)
   {
     extension->UnpackAnisotropy(data, position);
   }
@@ -214,14 +212,14 @@ void MAT::Anisotropy::RegisterAnisotropyExtension(BaseAnisotropyExtension& exten
 void MAT::Anisotropy::OnElementFibersInitialized()
 {
   element_fibers_initialized_ = true;
-  for (Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+  for (auto& extension : extensions_)
   {
     extension->OnGlobalElementDataInitialized();
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
-    for (Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+    for (auto& extension : extensions_)
     {
       extension->OnGlobalDataInitialized();
     }
@@ -231,14 +229,14 @@ void MAT::Anisotropy::OnElementFibersInitialized()
 void MAT::Anisotropy::OnGPFibersInitialized()
 {
   gp_fibers_initialized_ = true;
-  for (Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+  for (auto& extension : extensions_)
   {
     extension->OnGlobalGPDataInitialized();
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
-    for (Teuchos::RCP<BaseAnisotropyExtension>& extension : extensions_)
+    for (auto& extension : extensions_)
     {
       extension->OnGlobalDataInitialized();
     }

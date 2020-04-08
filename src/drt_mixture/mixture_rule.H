@@ -180,7 +180,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void PreEvaluate(Teuchos::ParameterList& params, int gp, int eleGID)
+    virtual void PreEvaluate(Teuchos::ParameterList& params, const int gp, const int eleGID)
     {
       // do nothing in the default case
     }
@@ -215,7 +215,8 @@ namespace MIXTURE
      * @param numgp (in) : number of Gauß points
      * @param eleGID (in) : Global element id
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
+    virtual bool VisData(
+        const std::string& name, std::vector<double>& data, const int numgp, const int eleGID)
     {
       return false;
     }
