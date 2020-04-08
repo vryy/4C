@@ -77,5 +77,5 @@ Anything else that might be helpful to know in addressing this issue:
 
 ## Interested Parties
 <!---
-If there's anyone you think should be looped in on this issue, feel free to @mention them here.
+If there's any team or developer, who you think should be looped in on this issue, feel free to @mention them here.
 -->
