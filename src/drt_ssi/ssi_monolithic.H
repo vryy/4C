@@ -95,21 +95,17 @@ namespace SSI
     class ConvCheckStrategyStd;
     class ConvCheckStrategyElch;
 
-    // assembly strategies
-    class AssemblyStrategyGeneric;
-    class AssemblyStrategyBlock;
-    class AssemblyStrategySparse;
-
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
-    //! assemble off-diagonal scatra-structure block of global system matrix
+    //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateODBlockScatraStructureDomain();
 
-    //! assemble off-diagonal scatra-structure block of global system matrix
+    //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
+    //! matrix
     void EvaluateODBlockScatraStructureInterface();
 
-    //! assemble off-diagonal structure-scatra block of global system matrix
+    //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
     void EvaluateODBlockStructureScatraDomain() const;
 
     //! build null spaces associated with blocks of global system matrix

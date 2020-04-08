@@ -114,13 +114,13 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   // build system matrix and residual for scalar transport field
   scatra_->ScaTraField()->PrepareLinearSolve();
 
-  // assemble off-diagonal scatra-structure block (domain contributions) of global system matrix
+  // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   EvaluateODBlockScatraStructureDomain();
 
-  // assemble off-diagonal scatra-structure block (interface contributions) of global system matrix
+  // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying()) EvaluateODBlockScatraStructureInterface();
 
-  // assemble off-diagonal structure-scatra block (we only have domain contributions so far) of
+  // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
   EvaluateODBlockStructureScatraDomain();
 

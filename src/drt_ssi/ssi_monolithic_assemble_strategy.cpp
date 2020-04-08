@@ -71,7 +71,7 @@ SSI::AssembleStrategySparse::AssembleStrategySparse(
 }
 
 /*----------------------------------------------------------------------*
- |                             assemble scatra domain into system matrix |
+ |                            assemble scatra domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBlockBlock::AssembleScatraDomain(
     Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
@@ -781,7 +781,7 @@ void SSI::AssembleStrategySparse::CastSystemMatrixSparse(
 }
 
 /*----------------------------------------------------------------------*
- |                                     copy slave values on master side |
+ |                                copy slave side values on master side |
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Isparse(
     Teuchos::RCP<LINALG::SparseMatrix>& scatrastructureinterface_sparse,
@@ -856,7 +856,6 @@ void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Iblock(
   }
 
   scatrastructureinterface_block->Complete();
-
 
   return;
 };

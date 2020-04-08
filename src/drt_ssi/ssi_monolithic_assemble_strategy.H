@@ -51,7 +51,7 @@ namespace SSI
         ADAPTER::CouplingSlaveConverter converter);
 
     //! destructor
-    virtual ~AssembleStrategyBase() { return; };
+    virtual ~AssembleStrategyBase() = default;
 
     //! write 1.0 on main diagonal of slave side dofs
     virtual void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) = 0;
@@ -68,11 +68,11 @@ namespace SSI
     virtual void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) = 0;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     virtual void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) = 0;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     virtual void AssembleScatraStructureInterface(
         Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) = 0;
@@ -81,7 +81,7 @@ namespace SSI
     virtual void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) = 0;
 
-    //! assemble Structure-ScaTra-Block into system matrix
+    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     virtual void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) = 0;
 
@@ -89,15 +89,15 @@ namespace SSI
     //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure);
 
-    //! assemble scatra-structure block into system matrix for meshtying
+    //! assemble scatra-structure block (domain contributions) into system matrix for meshtying
     void AssembleScatraStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_scatra_structure,
         LINALG::SparseMatrix scatrastructuredomain, bool zero);
 
-    //! assemble structure block into system matrix for meshtying
+    //! assemble structure block (domain contributions) into system matrix for meshtying
     void AssembleStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain, bool zero);
 
-    //! assemble structure-scatra block into system matrix for meshtying
+    //! assemble structure-scatra block (domain contributions) into system matrix for meshtying
     void AssembleStructureScatraDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure_scatra,
         LINALG::SparseMatrix structurescatradomain, bool zero);
 
@@ -110,8 +110,6 @@ namespace SSI
     void CopyScatraStructureInterfaceS2Isparse(
         Teuchos::RCP<LINALG::SparseMatrix>& scatrastructureinterface_sparse,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside);
-
-
 
     //! structural coupling converter
     ADAPTER::CouplingSlaveConverter converter_;
@@ -130,7 +128,7 @@ namespace SSI
         ADAPTER::CouplingSlaveConverter converter);
 
     //! destructor
-    virtual ~AssembleStrategyBlock() { return; };
+    ~AssembleStrategyBlock() override = default;
 
     //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override = 0;
@@ -143,11 +141,11 @@ namespace SSI
     void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) override = 0;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override = 0;
 
@@ -155,7 +153,7 @@ namespace SSI
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override = 0;
 
-    //! assemble Structure-ScaTra-Block into system matrix
+    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override = 0;
 
@@ -175,7 +173,8 @@ namespace SSI
         ADAPTER::CouplingSlaveConverter converter);
 
     //! destructor
-    virtual ~AssembleStrategyBlockBlock() { return; };
+    ~AssembleStrategyBlockBlock() override = default;
+
     //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
 
@@ -183,11 +182,11 @@ namespace SSI
     void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
 
@@ -195,7 +194,7 @@ namespace SSI
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;
 
-    //! assemble Structure-ScaTra-Block into system matrix
+    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override;
   };
@@ -210,7 +209,7 @@ namespace SSI
         ADAPTER::CouplingSlaveConverter converter);
 
     //! destructor
-    virtual ~AssembleStrategyBlockSparse() { return; };
+    ~AssembleStrategyBlockSparse() override = default;
 
     //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
@@ -219,11 +218,11 @@ namespace SSI
     void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
 
@@ -231,7 +230,7 @@ namespace SSI
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;
 
-    //! assemble Structure-ScaTra-Block into system matrix
+    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override;
   };
@@ -246,7 +245,7 @@ namespace SSI
         ADAPTER::CouplingSlaveConverter converter);
 
     //! destructor
-    virtual ~AssembleStrategySparse() { return; };
+    ~AssembleStrategySparse() override = default;
 
     //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
@@ -259,11 +258,11 @@ namespace SSI
     void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) override;
 
-    //! assemble ScaTra-Structure-Block into system matrix
+    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
 
@@ -271,7 +270,7 @@ namespace SSI
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;
 
-    //! assemble Structure-ScaTra-Block into system matrix
+    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override;
 
