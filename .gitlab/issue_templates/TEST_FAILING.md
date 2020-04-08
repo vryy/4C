@@ -1,3 +1,6 @@
+<!-- Set default label: testing -->
+/label "testing"
+
 <!---
 List build type and brief reference to failing test in the Title above.
 -->
