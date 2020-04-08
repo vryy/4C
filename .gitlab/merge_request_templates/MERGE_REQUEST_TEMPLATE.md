@@ -51,12 +51,10 @@ Feel free to provide further information if useful or necessary.
 Go over all the following points, and put an `x` in all the boxes that apply. If you are unsure about any of these, please ask; we are here to help.
 -->
 - [ ] My commit messages mention the appropriate GitLab issue numbers.
-- [ ] My change requires a change to the documentation.
-- [ ] I have updated the Doxygen documentation accordingly.
+- [ ] I have added/updated documentation where necessary.
 - [ ] I have read the [code contribution guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) for this project.
 - [ ] My code adheres to our [coding guidelines](https://gitlab.lrz.de/baci/baci/wikis/Baci-development-guidelines).
 - [ ] I have added as (few,) small and fast tests as possible to cover my changes.
-- [ ] All new and existing tests passed.
 - [ ] These changes maintain backwards compatibility.
 
 ## Additional Information
