@@ -217,7 +217,6 @@ namespace INPAR
       m_thermopllinelast,      ///< Temperature-dependent Hooke elasticity and von Mises plasticity
       m_thermostvenant,        ///< St.Venant Kirchhoff material with temperature
       m_thermomechthreephase,  ///< three phase thermo-mechnial material for additive manufacturing
-      m_var_chemdiffusion,     ///< Chemical diffusion under a variational setting
       m_viscoanisotropic,      ///< Viscous Anisotropic Fiber Material
       m_viscoelasthyper,       ///< viscohyperelastic material
       m_visconeohooke,         ///< Viscous NeoHookean Material

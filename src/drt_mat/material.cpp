@@ -39,7 +39,6 @@
 #include "scatra_mat_multiporo.H"
 #include "scatra_mat_multiscale.H"
 #include "scatra_mat_aniso.H"
-#include "scatra_mat_var_chemdiffusion.H"
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
@@ -429,14 +428,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       MAT::PAR::ScatraMatAniso* params =
           static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_var_chemdiffusion:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraMatVarChemDiffusion(curmat));
-      MAT::PAR::ScatraMatVarChemDiffusion* params =
-          static_cast<MAT::PAR::ScatraMatVarChemDiffusion*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:

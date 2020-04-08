@@ -559,8 +559,6 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
     numdofpernode_ = actmat->NumDOF();
   }
-  else if (mat->MaterialType() == INPAR::MAT::m_var_chemdiffusion)
-    numdofpernode_ = 2;  // concentration and chemical potential //TODO: Generalize for n species
   else
     dserror("Transport element got unsupported material type %d", mat->MaterialType());
 
