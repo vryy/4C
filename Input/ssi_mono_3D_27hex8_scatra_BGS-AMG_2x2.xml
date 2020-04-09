@@ -42,7 +42,7 @@
             </ParameterList>
 
             <ParameterList name="Matrix">
-                <Parameter name="PDE equations" type="int" value="2"/>
+                <Parameter name="PDE equations" type="int" value="1"/>
             </ParameterList>
 
             <ParameterList name="Factories">
