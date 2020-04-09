@@ -18,6 +18,11 @@
 #include "../drt_lib/drt_pack_buffer.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+// forward declaration
+namespace MAT
+{
+  class Anisotropy;
+}
 
 /*!
  * \brief The mixture namespace holds all mixture specific classes.
@@ -28,7 +33,9 @@
  */
 namespace MIXTURE
 {
+  // forward declaration
   class MixtureConstituent;
+  class MixtureRule;
 
   namespace PAR
   {
@@ -61,7 +68,7 @@ namespace MIXTURE
    * paired with MAT::Mixture_ElastHyper and MIXTURE::MixtureRule.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURELAW 10
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
    * MAT 10 MIX_Rule_Base
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
@@ -75,8 +82,7 @@ namespace MIXTURE
   class MixtureConstituent
   {
    public:
-    MixtureConstituent();
-
+    explicit MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params);
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -104,6 +110,16 @@ namespace MIXTURE
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+
+    /*!
+     * \brief Register anisotropy extensions of all sub-materials of the constituent
+     *
+     * \param anisotropy Reference to the global anisotropy manager
+     */
+    virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+    {
+      // do nothing in the default case
+    }
 
     /*!
      * Initialize the constituent with the parameters of the input line
@@ -135,8 +151,9 @@ namespace MIXTURE
      * The constituent should setup all internal variables and materials.
      *
      * @param params Container for additional information
+     * @param eleGID Global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the internal variables
@@ -155,6 +172,61 @@ namespace MIXTURE
     }
 
     /*!
+     * @brief Update of the internal variables used for mixture rules evaluating the elastic part of
+     * the deformation. This method must be explicitly called by the mixture rule and will not be
+     * invoked automatically!
+     *
+     * @param F Deformation gradient of the previous timestep
+     * @param iFext External deformation gradient of the previous timestep
+     * @param params Container for additional information
+     * @param dt Time increment from the previous timestep
+     * @param gp Gauss-point
+     * @param eleGID Global element id
+     */
+    virtual void UpdateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFext,
+        Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
+    {
+      // do nothing
+    }
+
+    /*!
+     *
+     * @brief Method that is executed before the first evaluate call, once for each Gauss point
+     *
+     * @param params (in) : Container for additional information
+     * @param gp (in) : Gauss point
+     * @param eleGID (in) : Global element id
+     */
+    virtual void PreEvaluate(
+        MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
+    {
+      // do nothing in the default case
+    }
+
+    /*!
+     * @brief Evaluates the stress and material linearization of the constituents with an
+     * inelastic part of the deformation
+     *
+     * The total deformation is #F, which is split into two parts:
+     *
+     * $\boldsymbol{F} = \boldsymbol{F}_e \cdot \boldsymbol{F}_in$
+     *
+     * Only elastic part $\boldsymbol{F}_e$ causes stresses. The inelastic part is only needed
+     * for the linearization.
+     *
+     * @param F Total deformation gradient
+     * @param iF_in inverse inelastic part of the deformation
+     * @param params Container for additional information
+     * @param S_stress 2nd Piola-Kirchhoff stress in stress-like Voigt notation
+     * @param cmat Linearization of the material tensor in Voigt notation
+     * @param gp Gauss-point
+     * @param eleGID Global element id
+     */
+    virtual void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
+        const LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID);
+
+    /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
@@ -170,8 +242,16 @@ namespace MIXTURE
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) = 0;
 
-    /// Returns the refenrece mass density. Needs to be implemented by the deriving class.
-    virtual double CurrentRefDensity() const = 0;
+    /// Returns the refenrence mass density. Needs to be implemented by the deriving class.
+
+    /*!
+     * @brief Returns the current reference mass density at the specific Gauss point. It is the
+     * reference mass density in a reference configuration that may changes during the simulation.
+     *
+     * @param gp Gauss point
+     * @return reference mass density
+     */
+    virtual double CurrentRefDensity(int gp) const = 0;
 
     /*!
      * \brief Get the names and dimension of the quantities to visualize
@@ -192,6 +272,22 @@ namespace MIXTURE
       return false;
     }
 
+    /*!
+     * Returns the initial reference density of the mixture
+     * @return
+     */
+    double InitialRefDensity() const { return initialReferenceDensity_; }
+
+    /*!
+     * \brief Returns the initial reference density of the constituent
+     *
+     * \return double
+     */
+    double InitialConstituentRefDensity() const
+    {
+      return InitialRefDensity() * params_->RefMassFraction();
+    }
+
    protected:
     /*!
      * Get number of Gauß points used
@@ -200,13 +296,10 @@ namespace MIXTURE
      */
     int NumGP() const { return numgp_; }
 
-    /*!
-     * Returns the initial reference density of the consitituent
-     * @return
-     */
-    double InitialRefDensity() const { return initialReferenceDensity_; }
-
    private:
+    /// my material parameters
+    MIXTURE::PAR::MixtureConstituent* params_;
+
     ///! Mixture parameters
     double initialReferenceDensity_;
 

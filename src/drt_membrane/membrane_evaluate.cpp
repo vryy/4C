@@ -1036,7 +1036,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
           ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
     }
     // growth remodel elasthyper evaluation
-    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
+             Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // set current gauss point
       params.set<int>("gp", gp);

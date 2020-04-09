@@ -107,8 +107,7 @@ namespace MAT
       /// This function is called by the material factory MAT::Material::Factory.
       /// To circumvent more than this single major switch of material type to
       /// object, #params_ are allocated externally.
-      inline void SetParameter(MAT::PAR::Parameter* matparam  ///< the pointer
-      )
+      inline void SetParameter(MAT::PAR::Parameter* matparam)  ///< the pointer
       {
         params_ = Teuchos::rcp(matparam);
       }

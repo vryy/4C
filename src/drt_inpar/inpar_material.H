@@ -282,7 +282,14 @@ namespace INPAR
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
       mix_rule_base,       ///< Base rule for the mixture model
-      mix_elasthyper,      ///< Elast Hyper toolbox for Constituents
+      mix_rule_growthremodel,           ///< Homogenized constrained mixture
+      mix_prestress_strategy_cylinder,  ///< Prestress strategy for a cylinder
+      mix_elasthyper,                   ///< Elast Hyper toolbox for Constituents
+      mix_elasthyper_elastin,           ///< Elast Hyper toolbox with temporal damage
+      mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
+                              ///< with explicit solution of the growth and remodel equations
+      mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
+                              ///< with implicit solution of the growth and remodel equations
       mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                               ///< is a polynomial function of the scalar (in material
                               ///< configuration) that causes the volume change
