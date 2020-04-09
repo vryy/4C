@@ -671,7 +671,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_field_wrapper.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
-  src/drt_adapter/ad_fld_fluid_ale_immersed.cpp
   src/drt_adapter/ad_fld_base_algorithm.cpp
   src/drt_adapter/ad_fld_lung.cpp
   src/drt_adapter/ad_fld_moving_boundary.cpp
@@ -2623,7 +2622,6 @@ src/drt_immersed_problem/immersed_partitioned_adhesion_traction.cpp
 src/drt_immersed_problem/immersed_partitioned_protrusion_formation.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
 src/drt_immersed_problem/immersed_partitioned_flow_cell_interaction.cpp
-src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_ale.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_membrane.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp

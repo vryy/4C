@@ -213,7 +213,6 @@ namespace IMMERSED
     bool output_evry_nlniter_;   //!< true if output after every iteration of the outer fsi loop.
                                  //!< Useful for debugging.
     bool is_relaxation_;         //!< true if relaxation is used
-    bool isALE_;                 //!< true if background mesh is suppose to be deformable
     int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested
     int degree_gp_fluid_bound_;  //!< determines number of gp in fluid elements cut by boundary. gps
                                  //!< covered by structure are "compressible" gps.

@@ -2081,37 +2081,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_immersed_ale_fsi:
-    {
-      // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-      aledis = Teuchos::rcp(new DRT::DiscretizationFaces("ale", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
-      AddDis("structure", structdis);
-      AddDis("fluid", fluiddis);
-      AddDis("ale", aledis);
-
-      std::set<std::string> fluidelementtypes;
-      fluidelementtypes.insert("FLUIDIMMERSED");
-
-      std::set<std::string> structelementtypes;
-      fluidelementtypes.insert("SOLIDH8");
-
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(
-          structdis, reader, "--STRUCTURE ELEMENTS", structelementtypes)));
-      nodereader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
-
-      break;
-    }
     case prb_immersed_cell:
     {
       // create empty discretizations
