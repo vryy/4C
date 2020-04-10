@@ -1139,7 +1139,8 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
       GetTemperatureForStructuralMaterial(shapefcts[gp], params);
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOP5, 1> funct(true);

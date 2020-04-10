@@ -1262,7 +1262,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       LINALG::Matrix<1, NUMDIM_SOH8> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
@@ -1806,8 +1807,19 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
+
+    // center of element in reference configuration
+    LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    point.Clear();
+    soh8_ElementCenterRefeCoords(point, xrefe);
+    params.set("elecenter", point);
+
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
+      LINALG::Matrix<1, NUMDIM_SOH8> point(true);
+      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      params.set("gprefecoord", point);
+
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
        **     J^-1 = [ x_,s  y_,s  z_,s ]

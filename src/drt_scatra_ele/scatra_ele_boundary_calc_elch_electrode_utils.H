@@ -16,8 +16,6 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    // forward declaration
-
     // class implementation
     class ScaTraEleBoundaryCalcElchElectrodeUtils
     {
@@ -29,8 +27,6 @@ namespace DRT
        *         EvaluateS2ICouplingAtIntegrationPoint.
        *
        * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
-       * @param[in] timefacfac       time-integration factor times domain-integration factor
-       * @param[in] timefacrhsfac    time-integration factor for right-hand side times
        * @param[in] j0               exchange mass flux density
        * @param[in] frt              factor F/(RT)
        * @param[in] epdderiv         derivative of equilibrium electric potential difference w.r.t.
@@ -59,12 +55,11 @@ namespace DRT
        *
        * \date 09/19
        */
-      static void CalculateCoreLinearizations(const int kineticmodel, const double timefacfac,
-          const double timefacrhsfac, const double j0, const double frt, const double epdderiv,
-          const double alphaa, const double alphac, const double resistance, const double expterm1,
-          const double expterm2, const double kr, const double faraday, const double emasterphiint,
-          const double eslavephiint, const double cmax, double& dj_dc_slave, double& dj_dc_master,
-          double& dj_dpot_slave, double& dj_dpot_master);
+      static void CalculateCoreLinearizations(int kineticmodel, double j0, double frt,
+          double epdderiv, double alphaa, double alphac, double resistance, double expterm1,
+          double expterm2, double kr, double faraday, double emasterphiint, double eslavephiint,
+          double cmax, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
+          double& dj_dpot_master);
 
       /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method
@@ -89,10 +84,9 @@ namespace DRT
        *
        * \date 08/19
        */
-      static double CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
-          const double alphaa, const double alphac, const double frt, const double pot_ed,
-          const double pot_el, const double epd, const double resistance, const double itemax,
-          const double convtol, const double faraday);
+      static double CalculateModifiedButlerVolmerMassFluxDensity(double j0, double alphaa,
+          double alphac, double frt, double pot_ed, double pot_el, double epd, double resistance,
+          double itemax, double convtol, double faraday);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

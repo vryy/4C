@@ -121,7 +121,8 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper()
       potsumelmem_(0),
       potsumelpenalty_(0),
       t_tot_(0),
-      nr_rf_tot_(0)
+      nr_rf_tot_(0),
+      anisotropy_()
 {
 }
 
@@ -135,7 +136,8 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
       potsumelmem_(0),
       potsumelpenalty_(0),
       t_tot_(0),
-      nr_rf_tot_(0)
+      nr_rf_tot_(0),
+      anisotropy_()
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -148,6 +150,7 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
         Teuchos::rcp_static_cast<MAT::ELASTIC::RemodelFiber>(MAT::ELASTIC::Summand::Factory(matid));
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsumrf_.push_back(sum);
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   // 2d Elastin matrix
@@ -162,6 +165,7 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
           "prestretching algorithm needs it. "
           "The prestretching algorithm can easily be expanded to other materials!");
     potsumelmem_.push_back(sum);
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   if (params_->membrane_ != 1)
@@ -178,6 +182,7 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
             "prestretching algorithm needs it"
             "The prestretching algorithm can easily be expanded to other materials!");
       potsumeliso_.push_back(sum);
+      sum->RegisterAnisotropyExtensions(anisotropy_);
     }
 
     // VolPenalty
@@ -190,6 +195,7 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
           "prestretching algorithm needs it. "
           "This can easily be expanded to other materials!");
     potsumelpenalty_ = sum;
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   // initialize total simulation time
@@ -248,6 +254,8 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
       potsumelpenalty_->PackSummand(data);
     }
   }
+
+  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -321,7 +329,11 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
       potsumrf_.push_back(sum);
     }
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsumrf_.size(); ++p) potsumrf_[p]->UnpackSummand(data, position);
+    for (auto& p : potsumrf_)
+    {
+      p->UnpackSummand(data, position);
+      p->RegisterAnisotropyExtensions(anisotropy_);
+    }
 
     // 2D Elastin matrix
     for (m = params_->matids_elastinmem_->begin(); m != params_->matids_elastinmem_->end(); ++m)
@@ -337,8 +349,11 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
       potsumelmem_.push_back(sum);
     }
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsumelmem_.size(); ++p)
-      potsumelmem_[p]->UnpackSummand(data, position);
+    for (auto& p : potsumelmem_)
+    {
+      p->UnpackSummand(data, position);
+      p->RegisterAnisotropyExtensions(anisotropy_);
+    }
 
     if (params_->membrane_ != 1)
     {
@@ -356,8 +371,11 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
         potsumeliso_.push_back(sum);
       }
       // loop map of associated potential summands
-      for (unsigned int p = 0; p < potsumeliso_.size(); ++p)
-        potsumeliso_[p]->UnpackSummand(data, position);
+      for (auto& p : potsumeliso_)
+      {
+        p->UnpackSummand(data, position);
+        p->RegisterAnisotropyExtensions(anisotropy_);
+      }
 
       // VolPenalty
       Teuchos::RCP<MAT::ELASTIC::Summand> sum =
@@ -371,7 +389,14 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
       potsumelpenalty_ = sum;
       potsumelpenalty_->UnpackSummand(data, position);
     }
+  }
 
+  anisotropy_.UnpackAnisotropy(data, position);
+
+
+
+  if (params_->membrane_ != 1)
+  {
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
@@ -384,6 +409,10 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  // read anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
+
   // Initialize some variables
   v_.resize(numgp, 1.0);
   gp_ax_.resize(numgp, 0.0);
@@ -431,6 +460,10 @@ void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition*
   return;
 }
 
+void MAT::GrowthRemodel_ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
+{
+  anisotropy_.ReadAnisotropyFromParameterList(params);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -635,7 +668,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(
             std::pow(params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ *
                          params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ * lamb_pre *
                          lamb_pre,
-                -2. / 3.) *
+                -2. / 3.) *  // ToDo: Verify that -1.0 / 3.0 would be correct here
             (lamb_pre * lamb_pre -
                 (1. / 3.) * (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ +
                                 params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ +
@@ -1118,7 +1151,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateKinQuantElast(LINALG::Matrix<3, 3> c
     LINALG::Matrix<3, 3> const& iFinM, LINALG::Matrix<6, 1>& iCinv,
     LINALG::Matrix<6, 1>& iCinCiCinv, LINALG::Matrix<6, 1>& iCv, LINALG::Matrix<3, 3>& iCinCM,
     LINALG::Matrix<3, 3>& iFinCeM, LINALG::Matrix<9, 1>& CiFin9x1, LINALG::Matrix<9, 1>& CiFinCe9x1,
-    LINALG::Matrix<9, 1>& CiFiniCe9x1, LINALG::Matrix<3, 1>& prinv, const int gp) const
+    LINALG::Matrix<9, 1>& CiFiniCe9x1, LINALG::Matrix<3, 1>& prinv, const int gp)
 {
   // inverse inelastic right Cauchy-Green
   static LINALG::Matrix<3, 3> iCinM(true);

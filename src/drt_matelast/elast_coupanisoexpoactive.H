@@ -12,8 +12,10 @@
 #ifndef ELAST_COUPANISOEXPOACTIVE_H_
 #define ELAST_COUPANISOEXPOACTIVE_H_
 
-#include "elast_summand.H"
+#include "elast_activesummand.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/anisotropy_extension_default.H"
+#include "../drt_mat/anisotropy_extension_provider.H"
 
 namespace MAT
 {
@@ -31,10 +33,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        CoupAnisoExpoActive(Teuchos::RCP<MAT::PAR::Material> matdata);
+        explicit CoupAnisoExpoActive(Teuchos::RCP<MAT::PAR::Material> matdata);
 
         /// destructor
-        virtual ~CoupAnisoExpoActive() { ; }
+        ~CoupAnisoExpoActive() override = default;
 
         /// @name material parameters
         //@{
@@ -70,7 +72,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -108,19 +110,21 @@ namespace MAT
     /// \author braeu
     /// \date 07/16
 
-    class CoupAnisoExpoActive : public Summand
+    class CoupAnisoExpoActive : public ActiveSummand, public FiberAnisotropyExtensionProvider
     {
      public:
       /// constructor with given material parameters
-      CoupAnisoExpoActive(MAT::ELASTIC::PAR::CoupAnisoExpoActive* params);
+      explicit CoupAnisoExpoActive(MAT::ELASTIC::PAR::CoupAnisoExpoActive* params);
+
+      ~CoupAnisoExpoActive() override = default;
 
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
@@ -128,7 +132,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_coupanisoexpoactive;
       }
@@ -136,7 +140,15 @@ namespace MAT
       //@}
 
       /// Setup of active summand
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+
+      void EvaluateFirstDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
+          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+
+      void EvaluateSecondDerivativesAniso(LINALG::Matrix<3, 1>& dPI_aniso,
+          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
@@ -147,24 +159,32 @@ namespace MAT
           LINALG::Matrix<3, 1, T>& ddPII_aniso,    ///< second derivative with respect to invariants
           LINALG::Matrix<4, 1, T>& dddPIII_aniso,  ///< third derivative with respect to invariants
           LINALG::Matrix<3, 3, T> const& rcg,      ///< right Cauchy-Green tensor
-          const int eleGID) const;                 ///< element GID
+          int eleGID) const;                       ///< element GID
 
       /// Add anisotropic principal stresses
       /// ATTENTION: this is only the passive contribution of the fiber!
-      virtual void AddStressAnisoPrincipal(
+      void AddStressAnisoPrincipal(
           const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green in "strain-like" Voigt notation
           LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
-              params,       ///< additional parameters for computation of material properties
-          const int eleGID  ///< element GID
-      );
+              params,  ///< additional parameters for computation of material properties
+          int eleGID   ///< element GID
+          ) override;
 
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
       void EvaluateFunc(T& psi,                ///< strain energy functions
           LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
-          int const eleGID) const;             ///< element GID
+          int eleGID) const;                   ///< element GID
+
+      /// evaluate stress and cmat
+      /// ATTENTION: this is only the active contribution of the fiber!
+      void AddActiveStressCmatAniso(LINALG::Matrix<3, 3> const& CM,  ///< rigtht Cauchy Green tensor
+          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
+          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
+          int eleGID) const override;                                ///< element GID
+
 
       /// evaluate stress and cmat
       /// ATTENTION: this is only the active contribution of the fiber!
@@ -173,16 +193,16 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const& CM,  ///< rigtht Cauchy Green tensor
           LINALG::Matrix<6, 6, T>& cmat,      ///< material stiffness matrix
           LINALG::Matrix<6, 1, T>& stress,    ///< 2nd PK-stress
-          const int eleGID) const;            ///< element GID
+          int eleGID) const;                  ///< element GID
 
       // add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy functions
+      void AddStrainEnergy(double& psi,       ///< strain energy functions
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>&
-              glstrain,     ///< Green-Lagrange strain in strain like Voigt notation
-          const int eleGID  ///< element GID
-      );
+              glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
+          int eleGID     ///< element GID
+          ) override;
 
       /// @name Access methods
       //@{
@@ -195,50 +215,58 @@ namespace MAT
       inline void GetDerivativeAnisoActive(T& dPIact) const
       {
         dPIact = dPIact_;
-        return;
       };
+
+      double GetDerivativeAnisoActive() const override { return dPIact_; };
 
       //@}
 
       /// Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
-      );
+      void SetFiberVecs(double newgamma,       ///< new angle
+          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          ) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         anisoprinc = true;
-        return;
       };
+
+
+      /*!
+       * \brief Returns the reference to the used MAT::FiberAnisotropyExtension
+       *
+       * \return FiberAnisotropyExtension& Reference to the used MAT::AnisotropyExtension
+       */
+      FiberAnisotropyExtension& GetFiberAnisotropyExtension() override
+      {
+        return anisotropyExtension_;
+      }
 
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;
-
-      /// fiber direction
-      LINALG::Matrix<3, 1> a_;
-
-      /// structural tensors in voigt notation for anisotropy
-      LINALG::Matrix<6, 1> A_;
 
       /// first derivative of active fiber potential w.r.t. the active fiber stretch
       double dPIact_;
 
       /// active fiber stretch for a given muscle tone
       double lambdaact_;
+
+      /// Anisotropy extension that manages fibers and structural tensors
+      DefaultAnisotropyExtension anisotropyExtension_;
     };
 
   }  // namespace ELASTIC

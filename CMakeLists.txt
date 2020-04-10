@@ -558,6 +558,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper.cpp
+  src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H
   src/drt_mat/myocard.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp
@@ -673,7 +674,12 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
-  src/drt_mat/mixture_elasthyper.cpp)
+  src/drt_mat/mixture_elasthyper.cpp
+  src/drt_mat/anisotropy_utils.cpp
+  src/drt_mat/anisotropy_cylinder_coordinate_system_manager.cpp
+  src/drt_mat/anisotropy_extension_cylinder_cosy.cpp
+  src/drt_mat/anisotropy_extension_default.cpp
+  src/drt_mat/anisotropy_extension.cpp)
 
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
@@ -2606,6 +2612,7 @@ src/drt_ssi/ssi_base.cpp
 src/drt_ssi/ssi_clonestrategy.cpp
 src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
+src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
@@ -2671,7 +2678,7 @@ src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
 )
 
 set(OBJS_DRT_FIBER_LIB
-src/drt_fiber/drt_fiber_node.cpp
+  src/drt_fiber/drt_fiber_node.cpp
   src/drt_fiber/nodal_fiber_holder.cpp)
 
 set(OBJS_DRT_GEOMETRY_PAIR
@@ -2692,9 +2699,18 @@ src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
 src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 )
 set(OBJS_DRT_MIXTURE
+  src/drt_mixture/growth_evolution_linear_cauchy.H
+  src/drt_mixture/growth_evolution.H
   src/drt_mixture/mixture_constituent.cpp
+  src/drt_mixture/mixture_constituent_elasthyperbase.cpp
+  src/drt_mixture/mixture_constituent_elasthyper.cpp
+  src/drt_mixture/mixture_constituent_elasthyper_elastin.cpp
+  src/drt_mixture/mixture_constituent_remodelfiber.cpp
+  src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
   src/drt_mixture/mixture_rule.cpp
-  src/drt_mixture/mixture_constituent_elasthyper.cpp)
+  src/drt_mixture/mixture_rule_growthremodel.cpp
+  src/drt_mixture/mixture_prestress_strategy.cpp
+  src/drt_mixture/mixture_prestress_strategy_isocyl.cpp)
 
 
 ###------------------------------------------------------------------ Element flags

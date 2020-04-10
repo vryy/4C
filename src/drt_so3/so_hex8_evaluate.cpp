@@ -2476,7 +2476,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       LINALG::Matrix<1, NUMDIM_SOH8> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
@@ -3497,12 +3498,16 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
     // update element geometry
+    LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       const double* x = nodes[i]->X();
+      xrefe(i, 0) = x[0];
+      xrefe(i, 1) = x[1];
+      xrefe(i, 2) = x[2];
       xcurr(i, 0) = x[0] + disp[i * NODDOF_SOH8 + 0];
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOH8 + 2];
@@ -3525,8 +3530,19 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOH8));
+
+    // center of element in reference configuration
+    LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    point.Clear();
+    soh8_ElementCenterRefeCoords(point, xrefe);
+    params.set("elecenter", point);
+
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
+      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      params.set("gprefecoord", point);
+
+
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
        **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -3649,7 +3665,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
         LINALG::SYEV(avg_stress, lambda, locsys);
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-        double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+        double newgamma = atan2(lambda(1, 1), lambda(2, 2));
         // compression in 2nd max direction, thus fibers are alligned to max principal direction
         if (lambda(1, 1) < 0) newgamma = 0.0;
 

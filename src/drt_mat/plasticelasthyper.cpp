@@ -162,6 +162,7 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsum_.push_back(sum);
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 }
 
@@ -218,6 +219,8 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
 
   AddtoPack(data, cpl());
   AddtoPack(data, s());
+
+  anisotropy_.PackAnisotropy(data);
 
   return;
 }
@@ -277,6 +280,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
       potsum_[p]->UnpackSummand(data, position);
+      potsum_[p]->RegisterAnisotropyExtensions(anisotropy_);
     }
   }
 
@@ -323,6 +327,8 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   double s = ExtractDouble(position, data);
   GetParams(s, cpl);
 
+  anisotropy_.UnpackAnisotropy(data, position);
+
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -334,6 +340,10 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  // Read anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
+
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {

@@ -389,6 +389,15 @@ namespace MAT
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
+    /*!
+     * \brief Post setup routine, will be called after the complete inout is a´ready befire the
+     * first evaluate call
+     *
+     * \param params Container for additional information
+     * \param eleGID Global element id
+     */
+    void PostSetup(const Teuchos::ParameterList params, int eleGID);
+
     /// setup material TSI data
     virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas,
         const INPAR::TSI::DissipationMode mode);
@@ -596,7 +605,6 @@ namespace MAT
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element
     /// temperature this is an additional term to dHepDissdT_ that only appears in EAS elements
     Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDissdTeas_;
-
 
     //  private:
 

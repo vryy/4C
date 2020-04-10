@@ -16,7 +16,6 @@
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "mixture_constituent.H"
-#include "../drt_mat/matpar_parameter.H"
 
 namespace MIXTURE
 {
@@ -37,7 +36,7 @@ namespace MIXTURE
       ~MixtureRule() override = default;
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<MAT::Material> CreateMaterial() override
+      Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
         dserror("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;
@@ -52,7 +51,7 @@ namespace MIXTURE
        * This static method generates the specific class of the mixture rule defined in the datfile
        * at the corresponding material id
        *
-       * @param matid Material id of the mixture law
+       * @param matid Material id of the mixturerule
        * @return Parameters of the referenced mixture rule
        */
       static MIXTURE::PAR::MixtureRule* Factory(int matid);
@@ -72,7 +71,7 @@ namespace MIXTURE
    * response using the mass density of each constituent.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURELAW 10
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
    * MAT 10 MIX_Rule_Base
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
@@ -86,13 +85,10 @@ namespace MIXTURE
   class MixtureRule
   {
    public:
-    /// Constructor for an empty material object
-    MixtureRule();
-
-    /// Constructor for the materiak given the material parameters
+    /// Constructor for the material given the material parameters
     explicit MixtureRule(MIXTURE::PAR::MixtureRule* params);
 
-    void PackMixtureLaw(DRT::PackBuffer& data) const;
+    virtual void PackMixtureRule(DRT::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -104,7 +100,8 @@ namespace MIXTURE
      * @param data (in) : vector storing all data to be unpacked into this instance.
      * @param position (in/out) : current position to unpack data
      */
-    void UnpackMixtureLaw(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void UnpackMixtureRule(
+        std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
      * This method should be called after creation of the constituents
@@ -118,19 +115,29 @@ namespace MIXTURE
     }
 
     /*!
-     * Initialize the mixture law with the element parameters of the input line
+     * @brief This method sets the material mass denisty as part of setting up the rule
+     * @param density material mass density as defined in the DAT file
+     */
+    void SetMaterialMassDensity(double density);
+
+    /*!
+     * @brief Gets the material mass density as defined in the dat file
+     * @return Material mass density
+     */
+    double GetMaterialMassDensity() const;
+
+    virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+    {
+      // do nothing in the default case
+    }
+
+    /*!
+     * Initialize the mixturerule with the element parameters of the input line
      *
      * @param numgp (in) Number of Gauß-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
-
-    /*!
-     * This method should be called after ReadElement and stores the ParameterList internally
-     *
-     * @param params (in/out) : Parameter list containing different parameters
-     */
-    void Init(Teuchos::ParameterList& params);
+    virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up
@@ -145,8 +152,9 @@ namespace MIXTURE
      * variables and materials.
      *
      * @param params (in/out) : Container for additional information
+     * @param eleGID (in) : global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params);
+    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the material law
@@ -155,16 +163,31 @@ namespace MIXTURE
      *
      * @param F (in) : Deformation gradient
      * @param params (in/out) : Container for additional information
-     * @param gp (in) : Gauß point
+     * @param gp (in) : Gauss point
+     * @param eleGID (in) : Global element id
      */
-    virtual void Update(LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, const int gp)
+    virtual void Update(LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, const int gp,
+        const int eleGID)
     {
-      // Nothing needs to be updated in this simple mixture law
+      // Nothing needs to be updated in this simple mixture rule
+    }
+
+    /*!
+     *
+     * @brief Method that is executed before the first evaluate call, once for each Gauss point
+     *
+     * @param params (in) : Container for additional information
+     * @param gp (in) : Gauss point
+     * @param eleGID (in) : Global element id
+     */
+    virtual void PreEvaluate(Teuchos::ParameterList& params, const int gp, const int eleGID)
+    {
+      // do nothing in the default case
     }
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
-     * of the displacements. Will be called for each Gauß point
+     * of the displacements. Will be called for each Gauss point
      *
      * @param F (in) : Deformation gradient
      * @param E_strain (in) : Green-Lagrange strain tensor in strain-like Voigt notation
@@ -192,7 +215,8 @@ namespace MIXTURE
      * @param numgp (in) : number of Gauß points
      * @param eleGID (in) : Global element id
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
+    virtual bool VisData(
+        const std::string& name, std::vector<double>& data, const int numgp, const int eleGID)
     {
       return false;
     }
@@ -202,7 +226,7 @@ namespace MIXTURE
      * \brief Returns a reference to the constituents
      * @return
      */
-    Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> Constituents()
+    Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> Constituents() const
     {
       return constituents_;
     }
@@ -226,6 +250,9 @@ namespace MIXTURE
 
     ///! Indicator, whether the constituent is already set up
     bool is_setup_;
+
+    ///! Material mass density as defined in the input file
+    double material_mass_density_;
   };
 }  // namespace MIXTURE
 

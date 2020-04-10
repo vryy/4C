@@ -15,6 +15,7 @@
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -214,7 +215,15 @@ namespace MAT
 
 
     /// setup
-    virtual void Setup(int const numgp, DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+
+    /*!
+     * \brief Post setup routine called before the first Evaluate call
+     *
+     * \param params Container for additional information
+     * \param eleGID Global element id
+     */
+    void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// This material uses the extended update call
     virtual bool UsesExtendedUpdate() { return true; }
@@ -310,18 +319,19 @@ namespace MAT
 
     /// Evaluates some kinematic quantities which are used in stress and elasticity tensor
     /// calculation
-    void EvaluateKinQuantElast(LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
-        LINALG::Matrix<3, 3> const& iFinM,  ///< Inverse inelastic deformation gradient
-        LINALG::Matrix<6, 1>& iCinv,        ///< Inverse inelastic right Cauchy-Green tensor
-        LINALG::Matrix<6, 1>& iCinCiCinv,   ///< C_{in}^{-1} * C * C_{in}^{-1}
-        LINALG::Matrix<6, 1>& iCv,          ///< Inverse right Cauchy-Green tensor
-        LINALG::Matrix<3, 3>& iCinCM,       ///< C_{in}^{-1} * C
-        LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
-        LINALG::Matrix<9, 1>& CiFin9x1,     ///< C * F_{in}^{-1}
-        LINALG::Matrix<9, 1>& CiFinCe9x1,   ///< C * F_{in}^{-1} * C_e
-        LINALG::Matrix<9, 1>& CiFiniCe9x1,  ///< C * F_{in}^{-1} * C_e^{-1}
+    static void EvaluateKinQuantElast(
+        LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+        LINALG::Matrix<3, 3> const& iFinM,         ///< Inverse inelastic deformation gradient
+        LINALG::Matrix<6, 1>& iCinv,               ///< Inverse inelastic right Cauchy-Green tensor
+        LINALG::Matrix<6, 1>& iCinCiCinv,          ///< C_{in}^{-1} * C * C_{in}^{-1}
+        LINALG::Matrix<6, 1>& iCv,                 ///< Inverse right Cauchy-Green tensor
+        LINALG::Matrix<3, 3>& iCinCM,              ///< C_{in}^{-1} * C
+        LINALG::Matrix<3, 3>& iFinCeM,             ///< F_{in}^{-1} * C_e
+        LINALG::Matrix<9, 1>& CiFin9x1,            ///< C * F_{in}^{-1}
+        LINALG::Matrix<9, 1>& CiFinCe9x1,          ///< C * F_{in}^{-1} * C_e
+        LINALG::Matrix<9, 1>& CiFiniCe9x1,         ///< C * F_{in}^{-1} * C_e^{-1}
         LINALG::Matrix<3, 1>& prinv,  ///< Principal invariants of elastic right Cauchy-Green tensor
-        int const gp) const;          ///< Current Gauß-Point
+        int const gp);                ///< Current Gauß-Point
 
     /// calculate modified invariants
     void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
@@ -497,6 +507,9 @@ namespace MAT
 
     /// First call of Evaluate()
     std::vector<int> setup_;
+
+    /// Holder for anisotropic behavior
+    Anisotropy anisotropy_;
   };
 
 }  // namespace MAT

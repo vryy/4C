@@ -51,12 +51,10 @@ Feel free to provide further information if useful or necessary.
 Go over all the following points, and put an `x` in all the boxes that apply. If you are unsure about any of these, please ask; we are here to help.
 -->
 - [ ] My commit messages mention the appropriate GitLab issue numbers.
-- [ ] My change requires a change to the documentation.
-- [ ] I have updated the Doxygen documentation accordingly.
+- [ ] I have added/updated documentation where necessary.
 - [ ] I have read the [code contribution guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) for this project.
 - [ ] My code adheres to our [coding guidelines](https://gitlab.lrz.de/baci/baci/wikis/Baci-development-guidelines).
 - [ ] I have added as (few,) small and fast tests as possible to cover my changes.
-- [ ] All new and existing tests passed.
 - [ ] These changes maintain backwards compatibility.
 
 ## Additional Information
@@ -67,12 +65,12 @@ Feel free to add supplementary material here (e.g. screen output, log files, scr
 
 ## Interested Parties
 <!--
-If there's anyone you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention possible reviewers as well as the maintainers of all the files you've touched.
+If there's any team or developer, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams and possible reviewers.
 -->
 
 Possible reviewers:
 
-Other interested parties:
+Other interested parties/teams:
 
 <!-- 
 DO NOT TOUCH SECTION BELOW. LIST WILL BE GENERATED AUTOMATICALLY!

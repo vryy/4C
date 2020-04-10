@@ -1216,7 +1216,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOTET10, 1> funct(true);
@@ -1780,12 +1781,16 @@ void DRT::ELEMENTS::So_tet10::Update_element(
         so_tet10_4gp_derivs();
 
     // update element geometry
+    LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOTET10; ++i)
     {
       const double* x = nodes[i]->X();
+      xrefe(i, 0) = x[0];
+      xrefe(i, 1) = x[1];
+      xrefe(i, 2) = x[2];
       xcurr(i, 0) = x[0] + disp[i * NODDOF_SOTET10 + 0];
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOTET10 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOTET10 + 2];
@@ -1810,6 +1815,10 @@ void DRT::ELEMENTS::So_tet10::Update_element(
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOTET10));
     for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
     {
+      LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
+      point.MultiplyTN(so_tet10_4gp_shapefcts()[gp], xrefe);
+      params.set("gprefecoord", point);
+
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
        **     J^-1 = [ x_,s  y_,s  z_,s ]

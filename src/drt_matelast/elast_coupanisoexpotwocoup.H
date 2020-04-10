@@ -14,6 +14,7 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/anisotropy.H"
+#include "../drt_mat/anisotropy_extension_default.H"
 
 namespace MAT
 {
@@ -65,7 +66,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
 
         /// @name Write methods
         //@{
@@ -80,6 +81,67 @@ namespace MAT
       };  // class CoupAnisoExpoTwoCoup
 
     }  // namespace PAR
+
+    /*!
+     * \brief Anisotropy manager for two fibers and the structural tensor of the combination of
+     * those two
+     */
+    class CoupAnisoExpoTwoCoupAnisoExtension : public DefaultAnisotropyExtension
+    {
+     public:
+      /*!
+       * \brief Constructor
+       *
+       * \param params Material parameters
+       */
+      explicit CoupAnisoExpoTwoCoupAnisoExtension(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
+
+      /*!
+       * \brief Pack all data for parallel distribution and restart
+       *
+       * \param data data array to pack to
+       */
+      void PackAnisotropy(DRT::PackBuffer& data) const override;
+
+      /*!
+       * \brief Unpüack data from the pack from parallel distribution and restart
+       *
+       * \param data data array to unpack from
+       * \param position position of the data
+       */
+      void UnpackAnisotropy(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+
+      /*!
+       * \brief Notifier method when fibers are initialized.
+       */
+      void OnFibersInitialized() override;
+
+      /*!
+       * \brief Returns the reference to the coupled structural tensor in stress like Voigt notation
+       *
+       * \param gp Gauss point
+       * \return const LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in stress
+       * like Voigt notation
+       */
+      const LINALG::Matrix<6, 1>& GetCoupledStructuralTensor_stress(int gp) const;
+
+      /*!
+       * \brief Returns the coupled scalar product at the Gauss point
+       *
+       * \param gp Gauss point
+       * \return double Scalar product of the two fibers
+       */
+      double GetCoupledScalarProduct(int gp) const;
+
+     private:
+      /// dot product fiber direction
+      std::vector<double> a1a2_;
+
+      /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
+      /// stress like Voigt notation
+      std::vector<LINALG::Matrix<6, 1>> A1A2_;
+    };
 
     /*----------------------------------------------------------------------*/
     /// Anisotropic cardiac material, implemented with two possible fiber families acc [1]
@@ -105,21 +167,11 @@ namespace MAT
     ///
     /// \author nagler
     /// \date 11/11
-    class CoupAnisoExpoTwoCoup : public Summand, public Anisotropy
+    class CoupAnisoExpoTwoCoup : public Summand
     {
      public:
       /// constructor with given material parameters
       explicit CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
-
-      ///@name Packing and Unpacking
-      //@{
-
-      void PackSummand(DRT::PackBuffer& data) const override;
-
-      void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
-
-      //@}
 
       /// @name Access material constants
       //@{
@@ -132,18 +184,11 @@ namespace MAT
       //@}
 
       /*!
-       * Default setup routine
-       * @param numgp number of Gauss points
-       * @param linedef Element line definition
-       */
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
-
-      /*!
-       * Post setup routine. Is needed to initialize nodal fibers
+       * \brief Register the local anisotropy extension to the global anisotropy manager
        *
-       * @param params Container for additional information. Should contain nodal fibers if needed.
+       * \param anisotropy Reference to the global anisotropy manager
        */
-      void PostSetup(Teuchos::ParameterList& params) override;
+      void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
 
       /// Add anisotropic principal stresses
       void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
@@ -186,32 +231,12 @@ namespace MAT
         anisoprinc = true;
       };
 
-      ///@name Methods derived from Anisotropy
-      //@{
-
-      void SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys) override;
-
-      /*!
-       * This method should be used to setup the fibers if no fibers are given in the input file
-       */
-      void DoFiberInitialization() override;
-
-      /*!
-       * This method will be called when the fibers are initialized or changed.
-       */
-      void OnFibersInitialized() override;
-      //@}
-
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params_;
 
-      /// dot product fiber direction
-      std::vector<double> a1a2_;
-
-      /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
-      /// stress like Voigt notation
-      std::vector<LINALG::Matrix<6, 1>> A1A2_;
+      /// Special anisotropic behavior
+      CoupAnisoExpoTwoCoupAnisoExtension anisotropyExtension_;
     };
 
   }  // namespace ELASTIC

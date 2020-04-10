@@ -40,12 +40,12 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcElchElectrode* delete_me = NULL);
+      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(int numdofpernode, int numscal,
+          const std::string& disname,
+          const ScaTraEleBoundaryCalcElchElectrode* delete_me = nullptr);
 
       //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrode() { return; };
+      virtual ~ScaTraEleBoundaryCalcElchElectrode() = default;
 
       //! singleton destruction
       virtual void Done();
@@ -70,6 +70,11 @@ namespace DRT
        * @param[in] kr               charge transfer constant
        * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
+       * @param[in] resistance       ohmic resistance at the interface
+       * @param[in] itemaxmodifiedBV   maximum number of iterations for local Newton due to the
+       *                               implicit modified BV
+       * @param[in] convtolmodifiedBV  convergence tolerance for local Newton due to the implicit
+       *                               modified BV
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac    time-integration factor for right-hand side times
        *                             domain-integration factor
@@ -99,13 +104,12 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const int kineticmodel, const int numelectrons, const std::vector<int>* stoichiometries,
-          const double kr, const double alphaa, const double alphac, const double resistance,
-          const double itemaxmodifiedBV, const double convtolmodifiedBV, const double timefacfac,
-          const double timefacrhsfac, const double frt, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          int kineticmodel, int numelectrons, const std::vector<int>* stoichiometries, double kr,
+          double alphaa, double alphac, double resistance, double itemaxmodifiedBV,
+          double convtolmodifiedBV, double timefacfac, double timefacrhsfac, double frt,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
       /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
@@ -120,6 +124,8 @@ namespace DRT
        * @param[in] numelectrons     number of electrons involved in charge transfer at
        *                             electrode-electrolyte interface
        * @param[in] nen_master       number of nodes of master-side mortar element
+       * @param[in] timefacfac       time and domain integration factor for linearization terms
+       * @param[in] timefacrhsfac    time and domain integration factor for RHS terms
        * @param[in] dj_dc_slave      linearization of Butler-Volmer mass flux density w.r.t.
        *                             concentration on slave-side
        * @param[in] dj_dc_master     linearization of Butler-Volmer mass flux density w.r.t.
@@ -136,7 +142,7 @@ namespace DRT
        * @param[out] r_s             slave-side residual vector
        * @param[out] r_m             master-side residual vector
        *
-       * \tparam distype_master  This method is templated on the master-side discretization type.
+       * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystem(const LINALG::Matrix<my::nen_, 1>& funct_slave,
@@ -147,16 +153,16 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const double numelectrons, const int nen_master, const double dj_dc_slave,
-          const double dj_dc_master, const double dj_dpot_slave, const double dj_dpot_master,
-          const double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          double numelectrons, int nen_master, double timefacfac, double timefacrhsfac,
+          double dj_dc_slave, double dj_dc_master, double dj_dpot_slave, double dj_dpot_master,
+          double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
           Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
           Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
      protected:
       //! protected constructor for singletons
       ScaTraEleBoundaryCalcElchElectrode(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
       //! evaluate scatra-scatra interface coupling condition
       void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
@@ -178,8 +184,8 @@ namespace DRT
           ) override;
 
       //! extract valence of species k from element material
-      double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
-          const int k                                                       //! species number
+      double GetValence(const Teuchos::RCP<const MAT::Material>& material,  ///< element material
+          int k                                                             ///< species number
           ) const override;
 
       //! evaluate factor F/RT
