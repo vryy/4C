@@ -53,7 +53,7 @@ SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
 void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 {
   // consider adaptive time stepping for scatra-scatra interface layer growth if necessary
-  if (intlayergrowth_timestep_ > 0.)
+  if (intlayergrowth_timestep_ > 0.0)
   {
     // add state vectors to discretization
     scatratimint_->Discretization()->ClearState();
@@ -69,14 +69,21 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     condparams.set<double>("etagrowthmin", std::numeric_limits<double>::infinity());
     condparams.set<double>("etagrowthmax", -std::numeric_limits<double>::infinity());
 
+    // extract boundary conditions for scatra-scatra interface layer growth
+    std::vector<DRT::Condition*> conditions;
+    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+
+    // collect condition specific data and store to scatra boundary parameter class
+    SetConditionSpecificScaTraParameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
-    scatratimint_->Discretization()->EvaluateCondition(condparams, "S2ICouplingGrowth");
+    scatratimint_->Discretization()->EvaluateCondition(condparams, Teuchos::null, Teuchos::null,
+        Teuchos::null, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
     scatratimint_->Discretization()->ClearState();
 
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
     // growth
-    double etagrowthmin(0.);
+    double etagrowthmin(0.0);
     scatratimint_->Discretization()->Comm().MinAll(
         &condparams.get<double>("etagrowthmin"), &etagrowthmin, 1);
 
@@ -88,7 +95,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
       // but would turn negative after adding twice the change in the minimum interfacial
       // overpotential during the previous time step, i.e., eta - 2*(eta_old - eta) < 0, so that
       // lithium plating could take place after the current time step
-      if (etagrowthmin > 0. and etagrowthmin - 2. * (etagrowthmin_ - etagrowthmin) < 0.)
+      if (etagrowthmin > 0.0 and etagrowthmin - 2.0 * (etagrowthmin_ - etagrowthmin) < 0.0)
         // activate adaptive time stepping for scatra-scatra interface layer growth
         intlayergrowth_timestep_active_ = true;
     }
@@ -98,12 +105,12 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     {
       // communicate maximum interfacial overpotential associated with scatra-scatra interface layer
       // growth
-      double etagrowthmax(0.);
+      double etagrowthmax(0.0);
       scatratimint_->Discretization()->Comm().MaxAll(
           &condparams.get<double>("etagrowthmax"), &etagrowthmax, 1);
 
       // check whether maximum interfacial overpotential has become negative
-      if (etagrowthmax < 0. and intlayergrowth_startstep_ < 0)
+      if (etagrowthmax < 0.0 and intlayergrowth_startstep_ < 0)
         // store current time step as indicator for completed onset of scatra-scatra interface layer
         // growth
         intlayergrowth_startstep_ = scatratimint_->Step();
@@ -113,7 +120,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
       // scatra-scatra interface layer growth or if the minimum interfacial overpotential is
       // positive and increasing
       if (scatratimint_->Step() == intlayergrowth_startstep_ + 10 or
-          (etagrowthmin > 0. and etagrowthmin > etagrowthmin_))
+          (etagrowthmin > 0.0 and etagrowthmin > etagrowthmin_))
       {
         // deactivate adaptive time stepping for scatra-scatra interface layer growth
         intlayergrowth_timestep_active_ = false;
@@ -130,8 +137,6 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     if (dt > intlayergrowth_timestep_ and intlayergrowth_timestep_active_)
       dt = intlayergrowth_timestep_;
   }
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize
 
 
