@@ -344,29 +344,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // Chemical Diffusion material (using a variational setting)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_variational_chemicaldiffusion",
-        "chemical diffusion under a variational formulation", INPAR::MAT::m_var_chemdiffusion));
-
-    AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
-    AddNamedReal(m, "REFMU", "Reference Chemical potential", 0.0, true);
-    AddNamedReal(m, "REFC", "Reference concentration", 0.0, true);
-    AddNamedReal(m, "REFTEMP", "Reference temperature", 298.15, true);
-    AddNamedReal(m, "GASCON", "specific gas constant R (J/(kg*K))", 8.314, true);
-    AddNamedReal(
-        m, "REACOEFF", "reaction coefficient", 0.0, true);  // TODO NOT VALID MATERIAL: Create error
-    AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);  // TODO NOT VALID MATERIAL: Create error
-    AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0,
-        true);  // TODO NOT VALID MATERIAL: Create error
-
-    // Model for constitutive law under a variational framework
-    AddNamedString(m, "MODEL", "model for constitutive chemical diffusion", "fickean", true);
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in fluid)
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_fluid",

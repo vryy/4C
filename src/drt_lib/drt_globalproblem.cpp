@@ -301,7 +301,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
-  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/VARIATIONAL", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
   reader.ReadGidSection("--STI DYNAMIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/MONOLITHIC", *list);
@@ -1429,7 +1428,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_var_chemdiff:
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:

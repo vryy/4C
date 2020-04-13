@@ -572,7 +572,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_multiscale.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_mat_multiporo.cpp
-  src/drt_mat/scatra_mat_var_chemdiffusion.cpp
   src/drt_mat/scatra_multiscale.cpp
   src/drt_mat/scatra_reaction_mat.cpp
   src/drt_mat/scatra_bondreac_mat.cpp
@@ -1087,9 +1086,6 @@ set(OBJS_DRT_ELCH
   src/drt_elch/elch_dyn.cpp
   src/drt_elch/elch_moving_boundary_algorithm.cpp
 )
-set(OBJS_DRT_VAR
-  src/drt_variational/var_chemdiff_dyn.cpp
-)
 set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/bele2.cpp
   src/drt_bele3/bele2_evaluate.cpp
@@ -1203,13 +1199,10 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_s2i_elch.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std_elch.cpp
-  src/drt_scatra/scatra_timint_meshtying_strategy_std_var_chemdiff.cpp 
   src/drt_scatra/scatra_timint_meshtying_strategy_artery.cpp
   src/drt_scatra/scatra_timint_elch.cpp
   src/drt_scatra/scatra_timint_elch_scheme.cpp
   src/drt_scatra/scatra_timint_poromulti.cpp
-  src/drt_scatra/scatra_timint_variational.cpp
-  src/drt_scatra/scatra_timint_variational_scheme.cpp 
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/scatra_utils.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
@@ -1410,7 +1403,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_boundary_factory.cpp
   src/drt_scatra_ele/scatra_ele_calc.cpp
-  src/drt_scatra_ele/scatra_ele_calc_variational.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
   src/drt_scatra_ele/scatra_ele_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
@@ -2788,7 +2780,6 @@ set(ELEMENT_LIBRARIES
 
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
-add_library(alg_var ${OBJS_DRT_VAR})
 add_library(alg_fbi ${OBJS_DRT_FBI})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
@@ -2810,7 +2801,6 @@ add_library(alg_pasi ${OBJS_DRT_PASI})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
-  alg_var
   alg_fsi
   alg_fbi
   alg_fsi_xfem
