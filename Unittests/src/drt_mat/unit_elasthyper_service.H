@@ -54,20 +54,6 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     (*C_strain_)(3) = 0.02;
     (*C_strain_)(4) = 0.04;
     (*C_strain_)(5) = 0.06;
-
-    // Create potsum
-    // ToDo: Here we need more summands to actually test everything. Unfortunately this is not
-    //  easy since for anisotropic materials, the global problem is needed, to create the
-    //  structural tensor strategy.
-    potsum_.clear();
-    Teuchos::RCP<MAT::PAR::Material> isoNeoHookeParams = Teuchos::rcp(new MAT::PAR::Material());
-    isoNeoHookeParams->Add("MUE", 1.3);
-    isoNeoHookeParams->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
-    auto* isoNeoHookeParams2 =
-        dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(isoNeoHookeParams->Parameter());
-    potsum_.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(isoNeoHookeParams2)));
-
-    MAT::ElastHyperProperties(potsum_, properties);
   }
 
   void test_EvaluateRightCauchyGreenStrainLikeVoigt()
@@ -84,11 +70,27 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(C_strain(5), 0.06, 1e-10)
   }
 
-  // ToDo: I deactivated the unit test for now, as the framework has problems with static
-  //  variables that are used within ElastHyperEvaluateInvariantDerivatives(...)
-  //  Remove X, after a solution for this problem has been found.
-  void Xtest_EvaluateInvariantDerivatives()
+  void test_EvaluateInvariantDerivatives()
   {
+    // Create summands to test the elast hyper functions
+    // Currently, only an isotropic summand is supported. Anisotropic summands are not easy to be
+    // added here as the setup of the anisotropy is not trivial.
+
+    // Create parameter of IsoNeoHooke material
+    Teuchos::RCP<MAT::PAR::Material> isoNeoHookeParams = Teuchos::rcp(new MAT::PAR::Material());
+    isoNeoHookeParams->Add("MUE", 1.3);
+    isoNeoHookeParams->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
+    auto* isoNeoHookeParams2 =
+        dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(isoNeoHookeParams->Parameter());
+
+    // Create summand vector
+    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum(0);
+    potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(isoNeoHookeParams2)));
+
+    // Read summand properties
+    SummandProperties properties;
+    MAT::ElastHyperProperties(potsum, properties);
+
     LINALG::Matrix<3, 1> prinv_new(true);
     LINALG::Matrix<3, 1> dPI_new(true);
     LINALG::Matrix<6, 1> ddPII_new(true);
@@ -97,7 +99,9 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     prinv_new(1) = 3.2;
     prinv_new(2) = 1.05;
 
-    ElastHyperEvaluateInvariantDerivatives(prinv_new, dPI_new, ddPII_new, potsum_, properties, 0);
+    // Compute derivatives of the strain energy function w.r.t. the principal invariants of the
+    // strain energy function
+    ElastHyperEvaluateInvariantDerivatives(prinv_new, dPI_new, ddPII_new, potsum, properties, 0);
 
     TS_ASSERT_DELTA(dPI_new(0), 0.639514, 1e-4);
     TS_ASSERT_DELTA(dPI_new(1), 0., 1e-4);
@@ -113,8 +117,6 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
  private:
   Teuchos::RCP<LINALG::Matrix<6, 1>> E_strain_;
   Teuchos::RCP<LINALG::Matrix<6, 1>> C_strain_;
-  std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
-  SummandProperties properties;
 };
 
 #endif  // BACI_UNIT_ELASTHYPER_SERVICE_H
