@@ -111,12 +111,6 @@ namespace IMMERSED
     /// set state necessary state vectors
     virtual void SetStatesStructOP();
 
-    /// update nodal positions of fluid nodes (stored in this class)
-    virtual void UpdateCurrentPositionsFluidNodes()
-    { /* fixed grid */
-      return;
-    };
-
     /// call the nonlinear fluid solver
     virtual void SolveFluid();
 
