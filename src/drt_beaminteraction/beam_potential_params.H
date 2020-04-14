@@ -108,6 +108,12 @@ namespace BEAMINTERACTION
       return useFAD_;
     }
 
+    inline enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return choice_master_slave_;
+    }
+
     //! whether to write vtk output for beam contact
     inline bool VtkRuntimeOutput() const
     {
@@ -158,6 +164,9 @@ namespace BEAMINTERACTION
 
     //! use automatic differentiation via FAD
     bool useFAD_;
+
+    //! rule how to assign the role of master and slave to beam elements (if applicable)
+    enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
 
     //! whether to write vtk output at runtime
     bool vtk_output_;

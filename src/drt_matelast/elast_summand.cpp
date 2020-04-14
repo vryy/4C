@@ -56,6 +56,8 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "elast_summand.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -510,5 +512,31 @@ void MAT::ELASTIC::Summand::ReadRadAxiCir(
     locsys(i, 0) = fiber_rad(i);
     locsys(i, 1) = fiber_axi(i);
     locsys(i, 2) = fiber_cir(i);
+  }
+}
+
+void MAT::ELASTIC::Summand::EvaluateFirstDerivativesAniso(
+    LINALG::Matrix<2, 1>& dPI_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
+{
+  bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
+  SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+  if (anisoprinc or anisomod)
+  {
+    dserror(
+        "This anisotropic material does not support the first derivative of the free-energy "
+        "function with respect to the anisotropic invariants. You need to implement them.");
+  }
+}
+
+void MAT::ELASTIC::Summand::EvaluateSecondDerivativesAniso(
+    LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
+{
+  bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
+  SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+  if (anisoprinc or anisomod)
+  {
+    dserror(
+        "This anisotropic material does not support the second derivative of the free-energy "
+        "function with respect to the anisotropic invariants. You need to implement them.");
   }
 }

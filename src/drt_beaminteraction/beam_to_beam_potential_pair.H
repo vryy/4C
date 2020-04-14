@@ -534,6 +534,16 @@ namespace BEAMINTERACTION
             ele2centerlinedofvec,
         Sacado::Fad::DFad<double>& xi_master);
 
+    /** \brief estimate whether the elements' separation is much more than the cutoff distance
+     *
+     *  The idea is to get a conservative lower bound estimate for the minimal centerline separation
+     *  of both elements, which doesn't require any interpolation, i.e., information on the
+     *  deformation of the elements and is thus cheap to compute before we begin with the actual,
+     *  expensive evaluation of the pair on Gauss point level.
+     *
+     *  \author grill
+     *  \date 08/19 */
+    bool AreElementsMuchMoreSeparatedThanCutoffDistance();
 
     //@}
 

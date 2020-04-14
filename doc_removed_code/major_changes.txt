@@ -7,6 +7,11 @@ few years at this point. This research topic is not actively developed
 at this time and code removal will lead to lower code complexity.
 - removed by Nora Hagmeyer
 
+chemical diffusion module in variational formulation (by Jorge de Anda Salazar)
+- removed in commit 18ab8339e1223bf87e991e24e5e1a3f3d811e48a on 2020-04-08
+- reasons: This part of the ScaTra framework is currently unused and not subject to ongoing research. This will thus reduce dependencies and ease maintenance work.
+- removed by Christoph Schmidt
+
 old particle framework including dependent modules (by Georg Hammerl)
 - removed in the following commits on 2019-09-09:
   8b80cd4eeada94e912b49cd4d7650b0c10926ad3 (old particle framework including MD interaction)

@@ -14,6 +14,7 @@ multiplicatively into elastic and inelastic parts
 #include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "anisotropy.H"
 
 /*----------------------------------------------------------------------*/
 /*! \class MultiplicativeSplitDefgrad_ElastHyper
@@ -165,7 +166,7 @@ namespace MAT
         const int eleGID) final;                        ///< Element ID
 
     /// setup
-    void Setup(const int numgp, DRT::INPUT::LineDefinition* linedef) final;
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) final;
 
     /// update
     void Update() final;
@@ -310,6 +311,9 @@ namespace MAT
 
     /// map to inelastic deformation gradient factors
     std::vector<Teuchos::RCP<MAT::InelasticDefgradFactors>> facdefgradin_;
+
+    /// Holder for anisotropy
+    Anisotropy anisotropy_;
   };
 
 }  // namespace MAT

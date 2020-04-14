@@ -207,7 +207,6 @@ namespace INPAR
       impltype_std_hdg,
       impltype_cardiac_monodomain_hdg,
       impltype_bondreac,
-      impltype_variational_diffusion,
       impltype_one_d_artery,
       impltype_no_physics
     };

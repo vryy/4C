@@ -1,3 +1,6 @@
+<!-- Set default label: team-->
+/label "team"
+
 <!---
 Fill the Title field above with "Onboarding FirstName LastName".
 -->

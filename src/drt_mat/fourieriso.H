@@ -2,7 +2,7 @@
 /*! \file
 \brief material for heat conduction according to fourier's law
 \level 1
-\maintainer Christoph Meier
+\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*
@@ -15,9 +15,9 @@
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
-#include "material.H"
 
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "material_thermo.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -82,7 +82,7 @@ namespace MAT
   ///
   /// \author dano
   /// \date 09/09
-  class FourierIso : public Material
+  class FourierIso : public ThermoMaterial
   {
    public:
     /// empty constructor
@@ -130,7 +130,7 @@ namespace MAT
     double Conductivity() const { return params_->conduct_; }
 
     /// volumetric heat capacity
-    double Capacity() const { return params_->capa_; }
+    double Capacity() const override { return params_->capa_; }
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_th_fourier_iso; }
@@ -140,23 +140,37 @@ namespace MAT
 
     //@}
 
-    /// Main 1D material call to determine heat flux and constitutive tensor
-    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-        LINALG::Matrix<1, 1>& cmat,                      ///< constitutive matrix
-        LINALG::Matrix<1, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
-        ) const;
+    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
+        LINALG::Matrix<1, 1>& heatflux) const override;
 
-    /// Main 2D material call to determine heat flux and constitutive tensor
-    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-        LINALG::Matrix<2, 2>& cmat,                      ///< constitutive matrix
-        LINALG::Matrix<2, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
-        ) const;
+    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
+        LINALG::Matrix<2, 1>& heatflux) const override;
 
-    /// Main 3D material call to determine heat flux and constitutive tensor
-    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-        LINALG::Matrix<3, 3>& cmat,                      ///< constitutive matrix
-        LINALG::Matrix<3, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
-        ) const;
+    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
+        LINALG::Matrix<3, 1>& heatflux) const override;
+
+    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
+
+    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
+
+    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
+
+    double CapacityDerivT() const override { return 0; }
+
+    void Reinit(double temperature, unsigned gp) override
+    {
+      // do nothing
+    }
+
+    void ResetCurrentState() override
+    {
+      // do nothing
+    }
+
+    void CommitCurrentState() override
+    {
+      // do nothing
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

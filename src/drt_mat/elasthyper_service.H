@@ -40,7 +40,7 @@ namespace MAT
   void ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<6, 1>& glstrain,
       Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
       int eleGID, const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-      SummandProperties& properties, bool checkpolyconvexity = false);
+      const SummandProperties& properties, bool checkpolyconvexity = false);
 
   /*!
    * Evaluates the Right Cauchy-Green strain tensor in strain like Voigt notation

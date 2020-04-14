@@ -430,7 +430,6 @@ void runEnsightVtuFilter(PostProblem& problem)
         dserror("wrong number of discretizations");
       break;
     }
-    case prb_var_chemdiff:
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:

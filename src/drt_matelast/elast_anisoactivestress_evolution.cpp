@@ -16,7 +16,7 @@
 #include "../drt_mat/material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/material_service.H"
+#include "../drt_mat/anisotropy_extension.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -34,7 +34,6 @@ MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
       lambda_lower_(matdata->GetDouble("LAMBDA_LOWER")),
       lambda_upper_(matdata->GetDouble("LAMBDA_UPPER")),
       gamma_(matdata->GetDouble("GAMMA")),
-      theta_(matdata->GetDouble("THETA")),
       init_(matdata->GetInt("INIT")),
       adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
 {
@@ -45,9 +44,14 @@ MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
     MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params)
-    : Anisotropy(1), params_(params), tauc_np_(0.0), tauc_n_(0.0)
+    : params_(params),
+      tauc_np_(0.0),
+      tauc_n_(0.0),
+      anisotropyExtension_(params->init_, params_->gamma_, params_->adapt_angle_ != 0,
+          params_->StructuralTensorStrategy())
 {
-  Anisotropy::Initialize(params->init_, params->StructuralTensorStrategy());
+  anisotropyExtension_.RegisterNeededTensors(
+      FiberAnisotropyExtension::FIBER_VECTORS | FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
 }
 
 /*----------------------------------------------------------------------*
@@ -56,10 +60,7 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
 void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
-
-  PackAnisotropy(data);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -67,8 +68,12 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, tauc_n_);
+}
 
-  UnpackAnisotropy(data, position);
+void MAT::ELASTIC::AnisoActiveStress_Evolution::RegisterAnisotropyExtensions(
+    MAT::Anisotropy& anisotropy)
+{
+  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -76,9 +81,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
 void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(
     int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  Anisotropy::SetNumberOfGaussPoints(numgp);
-  Anisotropy::ReadAnisotropyFromElement(linedef);
-
   // Setup of active stress model
   tauc_n_ = params_->tauc0_;
   tauc_np_ = params_->tauc0_;
@@ -97,8 +99,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(
 void MAT::ELASTIC::AnisoActiveStress_Evolution::PostSetup(Teuchos::ParameterList& params)
 {
   Summand::PostSetup(params);
-
-  Anisotropy::ReadAnisotropyFromParameterList(params);
 }
 
 /*----------------------------------------------------------------------*/
@@ -108,9 +108,9 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Virtual GP (is zero for element fibers, otherwise it is the current GP)
-  int virtualgp = GetGPId(params);
+  int virtualgp = anisotropyExtension_.GetVirtualGaussPoint(params);
 
-  LINALG::Matrix<6, 1> A = GetStructuralTensor_stress(virtualgp, 0);
+  LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(virtualgp, 0);
 
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0)
@@ -220,7 +220,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  if (params_->init_ == INIT_MODE_NODAL_FIBERS)
+  if (params_->init_ == DefaultAnisotropyExtension::INIT_MODE_NODAL_FIBERS)
   {
     // This method expects constant fibers within this element but the init mode is such that
     // fibers are defined on the Gauss points
@@ -230,7 +230,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
     return;
   }
 
-  fibervecs.push_back(GetFiber(GPDEFAULT, 0));
+  fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
 /*----------------------------------------------------------------------*
@@ -243,87 +243,5 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Update() { tauc_n_ = tauc_np_; }
 void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
-  if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
-  {
-    dserror("Fiber angle not in [-90,90]");
-  }
-  // convert
-  double gamma = (params_->gamma_ * PI) / 180.;
-
-  if (params_->adapt_angle_ != 0 && newgamma != -1.0)
-  {
-    if (gamma * newgamma < 0.0)
-    {
-      gamma = -1.0 * newgamma;
-    }
-    else
-    {
-      gamma = newgamma;
-    }
-  }
-
-  LINALG::Matrix<3, 1> ca(true);
-  for (int i = 0; i < 3; ++i)
-  {
-    // a = cos gamma e3 + sin gamma e2
-    ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
-  }
-  // pull back in reference configuration
-  LINALG::Matrix<3, 1> a_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
-
-  a_0.Multiply(idefgrd, ca);
-  a_0.Scale(1.0 / a_0.Norm2());
-
-  SetFibers(GPDEFAULT, std::vector<LINALG::Matrix<3, 1>>(1, a_0));
-}
-
-void MAT::ELASTIC::AnisoActiveStress_Evolution::SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys)
-{
-  LINALG::Matrix<3, 3> Id(false);
-  MAT::IdentityMatrix(Id);
-
-  // final setup of fiber data
-  SetFiberVecs(0.0, locsys, Id);
-}
-
-void MAT::ELASTIC::AnisoActiveStress_Evolution::DoFiberInitialization()
-{
-  // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-  LINALG::Matrix<3, 3> Id(true);
-  LINALG::Matrix<3, 3> locsys(true);
-  MAT::IdentityMatrix(Id);
-
-  // To realize a full rotated fiber orientation and to keep the general structure of
-  // SetFiberVec() the input of locsys has to be adapted if one sets
-  //               1           0                 sin(theta_)
-  //  locsys := [  0       sin(theta_)               0                  ]
-  //               0  sin(gamma)*cos(theta_)    cos(gamma_)*cos(theta_)
-  // The call of SetFiberVec() will leed to the following fiber direction
-  // a = cos(gamma_)*locsys(:,2) + sin(gamma_)*locsys(:,1)
-  //         cos(gamma_)*sin(theta_)               0 cos(gamma_)*sin(theta_)
-  //   = [             0              ] + [  sin(gamma_)*sin(theta_)  ] = [
-  //   sin(gamma_)*sin(theta_) ] =: sperical coordinates
-  //         cos(gamma)^2*cos(theta_)        sin(gamma_)^2*cos(theta_)               cos(theta_)
-  //
-  {
-    // Local initialization of spherical angles
-    double theta = (params_->theta_);
-    double gamma = (params_->gamma_);
-    if (gamma < 0.0 || gamma > 180.0 || abs(theta) > 180.0)
-    {
-      dserror(
-          "Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in "
-          "[-180, 180]");
-    }
-    // conversion to radian measure
-    theta = (theta * PI) / 180.0;
-    gamma = (gamma * PI) / 180.0;
-    locsys(1, 1) = sin(theta);
-    locsys(2, 1) = sin(gamma) * cos(theta);
-    locsys(0, 2) = sin(theta);
-    locsys(2, 2) = cos(gamma) * cos(theta);
-  }
-  SetFiberVecs(-1.0, locsys, Id);
+  anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }

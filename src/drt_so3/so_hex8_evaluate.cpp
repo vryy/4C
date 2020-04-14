@@ -48,6 +48,8 @@
 #include "so_hex8_determinant_analysis.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_mat/thermomech_threephase.H"
+#include "so_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
@@ -2440,16 +2442,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    // default: material call in structural function is purely deformation-dependent
-    // in case of temperature-dependent material parameters, e.g. Young's modulus,
-    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) or
-        (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast) or
-        (Material()->MaterialType() == INPAR::MAT::m_vp_robinson))
-      GetTemperatureForStructuralMaterial(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       LINALG::Matrix<1, NUMDIM_SOH8> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
@@ -3470,12 +3467,16 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
     // update element geometry
+    LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       const double* x = nodes[i]->X();
+      xrefe(i, 0) = x[0];
+      xrefe(i, 1) = x[1];
+      xrefe(i, 2) = x[2];
       xcurr(i, 0) = x[0] + disp[i * NODDOF_SOH8 + 0];
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOH8 + 2];
@@ -3498,8 +3499,19 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOH8));
+
+    // center of element in reference configuration
+    LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    point.Clear();
+    soh8_ElementCenterRefeCoords(point, xrefe);
+    params.set("elecenter", point);
+
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
+      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      params.set("gprefecoord", point);
+
+
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
        **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -3622,7 +3634,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
         LINALG::SYEV(avg_stress, lambda, locsys);
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-        double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+        double newgamma = atan2(lambda(1, 1), lambda(2, 2));
         // compression in 2nd max direction, thus fibers are alligned to max principal direction
         if (lambda(1, 1) < 0) newgamma = 0.0;
 
@@ -3777,80 +3789,6 @@ void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_di
   // you're done here
   return;
 }
-
-/*----------------------------------------------------------------------*
- | get and set temperature required for some materials        dano 09/13|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
-    const LINALG::Matrix<NUMNOD_SOH8, 1>& shapefctsGP,  // shape function of current Gauss-point
-    Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
-)
-{
-  // initialise the temperature
-  Teuchos::RCP<std::vector<double>> temperature_vector =
-      params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
-  double scalartemp = 0.0;
-
-  if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
-  {
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrstvk->InitTemp();
-    }
-  }  // m_thermostvenant
-
-  // in this case the yield stress is temperature-dependent
-  else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-  {
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyp =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrplhyp->InitTemp();
-    }
-  }  // m_thermoplhyperelast
-
-  // if Robinson's material --> pass the current temperature to the material
-  else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
-  {
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> ctemp(true);
-
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::Robinson> robinson =
-          Teuchos::rcp_dynamic_cast<MAT::Robinson>(Material(), true);
-      // initialise the temperature field
-      scalartemp = robinson->InitTemp();
-    }
-  }  // end Robinson's material
-
-  // current temperature vector is available
-  if (temperature_vector != Teuchos::null)
-  {
-    // scalar-valued temperature: T = shapefunctions . element temperatures
-    // T = N_T^(e) . T^(e)
-    // get the temperature vector by extraction from parameter list
-    LINALG::Matrix<NUMNOD_SOH8, 1> etemp(true);
-    for (int i = 0; i < NUMNOD_SOH8; ++i)
-    {
-      etemp(i, 0) = (*temperature_vector)[i];
-    }
-    // identical shapefunctions for displacements and temperatures
-    scalartemp = shapefctsGP.Dot(etemp);
-  }
-
-  // insert current element temperature T_{n+1} into parameter list
-  params.set<double>("scalartemp", scalartemp);
-
-}  // GetTemperatureForStructuralMaterial()
-
 
 /*----------------------------------------------------------------------*/
 

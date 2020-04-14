@@ -21,7 +21,7 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, int eleGID,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-    MAT::SummandProperties& properties, bool checkpolyconvexity)
+    const MAT::SummandProperties& properties, bool checkpolyconvexity)
 {
   static LINALG::Matrix<6, 1> id2(false);
   id2.Clear();

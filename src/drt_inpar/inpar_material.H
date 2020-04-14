@@ -209,18 +209,18 @@ namespace INPAR
       m_structpororeactionECM,  ///< wrapper material for poroelasticity (structure)
       m_superelast,             ///< Superelastic material behaviour of shape memory alloys
       m_stvenant,               ///< St.Venant Kirchhoff material
-      m_sutherland,          ///< material with temperature dependence according to Sutherland law
-      m_tempdepwater,        ///< temperature-dependent water
-      m_th_fourier_iso,      ///< isotropic (linear) Fourier's law of heat conduction
-      m_th_fourier_var,      ///< Fourier's law with variable conductivity
-      m_thermoplhyperelast,  ///< Temperature-dependent hyperelasticity and von Mises plasticity
-      m_thermopllinelast,    ///< Temperature-dependent Hooke elasticity and von Mises plasticity
-      m_thermostvenant,      ///< St.Venant Kirchhoff material with temperature
-      m_var_chemdiffusion,   ///< Chemical diffusion under a variational setting
-      m_viscoanisotropic,    ///< Viscous Anisotropic Fiber Material
-      m_viscoelasthyper,     ///< viscohyperelastic material
-      m_visconeohooke,       ///< Viscous NeoHookean Material
-      m_vp_robinson,         ///< Robinson's visco-plastic material
+      m_sutherland,            ///< material with temperature dependence according to Sutherland law
+      m_tempdepwater,          ///< temperature-dependent water
+      m_th_fourier_iso,        ///< isotropic (linear) Fourier's law of heat conduction
+      m_th_fourier_var,        ///< Fourier's law with variable conductivity
+      m_thermoplhyperelast,    ///< Temperature-dependent hyperelasticity and von Mises plasticity
+      m_thermopllinelast,      ///< Temperature-dependent Hooke elasticity and von Mises plasticity
+      m_thermostvenant,        ///< St.Venant Kirchhoff material with temperature
+      m_thermomechthreephase,  ///< three phase thermo-mechnial material for additive manufacturing
+      m_viscoanisotropic,      ///< Viscous Anisotropic Fiber Material
+      m_viscoelasthyper,       ///< viscohyperelastic material
+      m_visconeohooke,         ///< Viscous NeoHookean Material
+      m_vp_robinson,           ///< Robinson's visco-plastic material
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and
                   ///< extended by an Arrhenius-type term to account for temperature dependence
       mes_anisoactivestress_evolution,  ///< anisotropic single fiber summand with active stress
@@ -281,7 +281,14 @@ namespace INPAR
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
       mix_rule_base,       ///< Base rule for the mixture model
-      mix_elasthyper,      ///< Elast Hyper toolbox for Constituents
+      mix_rule_growthremodel,           ///< Homogenized constrained mixture
+      mix_prestress_strategy_cylinder,  ///< Prestress strategy for a cylinder
+      mix_elasthyper,                   ///< Elast Hyper toolbox for Constituents
+      mix_elasthyper_elastin,           ///< Elast Hyper toolbox with temporal damage
+      mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
+                              ///< with explicit solution of the growth and remodel equations
+      mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
+                              ///< with implicit solution of the growth and remodel equations
       mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                               ///< is a polynomial function of the scalar (in material
                               ///< configuration) that causes the volume change

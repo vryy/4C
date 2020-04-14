@@ -24,6 +24,8 @@ functions for the traction.
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
 
+#include <unordered_set>
+
 
 /**
  *
@@ -205,42 +207,56 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     // Add the discrete values of the Lagrange multipliers.
     if (visualization_discret != Teuchos::null)
     {
-      // Get the visualization vectors.
-      std::vector<double>& point_coordinates =
-          visualization_discret->GetMutablePointCoordinateVector();
-      std::vector<double>& displacement =
-          visualization_discret->GetMutablePointDataVector("displacement");
-      std::vector<double>& lambda_vis = visualization_discret->GetMutablePointDataVector("lambda");
+      // Check if data for this beam was already written.
+      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
+          visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker");
 
-      for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+      auto it = beam_tracker->find(this->Element1()->Id());
+      if (it == beam_tracker->end())
       {
-        // Get the local coordinate of this node.
-        xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+        // Only do something if this beam element did not write any output yet.
 
-        // Get position and displacement of the mortar node.
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            xi_mortar_node(0), this->ele1pos_, r, this->Element1());
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            xi_mortar_node(0), this->ele1posref_, X, this->Element1());
-        u = r;
-        u -= X;
+        // Add this element Id to the tracker.
+        beam_tracker->insert(this->Element1()->Id());
 
-        // Get the discrete Lagrangian multiplier.
-        GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+        // Get the visualization vectors.
+        std::vector<double>& point_coordinates =
+            visualization_discret->GetMutablePointCoordinateVector();
+        std::vector<double>& displacement =
+            visualization_discret->GetMutablePointDataVector("displacement");
+        std::vector<double>& lambda_vis =
+            visualization_discret->GetMutablePointDataVector("lambda");
 
-        // Add to output data.
-        for (unsigned int dim = 0; dim < 3; dim++)
+        for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-          lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+          // Get the local coordinate of this node.
+          xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+
+          // Get position and displacement of the mortar node.
+          GEOMETRYPAIR::EvaluatePosition<beam>(
+              xi_mortar_node(0), this->ele1pos_, r, this->Element1());
+          GEOMETRYPAIR::EvaluatePosition<beam>(
+              xi_mortar_node(0), this->ele1posref_, X, this->Element1());
+          u = r;
+          u -= X;
+
+          // Get the discrete Lagrangian multiplier.
+          GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+
+          // Add to output data.
+          for (unsigned int dim = 0; dim < 3; dim++)
+          {
+            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+          }
         }
       }
     }
 
 
     // Add the continuous values for the Lagrange multipliers.
-    if (visualization_continuous != Teuchos::null)
+    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
     {
       const unsigned int mortar_segments =
           visualization_params
