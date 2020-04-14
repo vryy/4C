@@ -168,6 +168,9 @@ namespace SSI
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
 
+    //! equilibration method applied to system matrix
+    const INPAR::SSI::EquilibrationMethod equilibration_method_;
+
     //! type of global system matrix in global system of equations
     const INPAR::SSI::MatrixType matrixtype_;
 

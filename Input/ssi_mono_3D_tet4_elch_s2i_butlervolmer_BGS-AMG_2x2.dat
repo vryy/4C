@@ -38,7 +38,6 @@ INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
-EQUILIBRATION                   rows_full
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -59,6 +58,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
+EQUILIBRATION                   rows_full
 ----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
