@@ -163,22 +163,6 @@ namespace DRT
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra);
 
-      /*! \brief search for immersed boundary fluid elements
-       *
-       *  \author fuchs \date 11/2016
-       */
-      int SearchImmersedBoundaryElements(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
-
-      /*! \brief get least squares matrix and rhs for immersed boundary elements
-       *
-       *  \author fuchs \date 11/2016
-       */
-      int GetLeastSquaresMatrixImmersedBoundary(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseVector& elevec1);
-
       /*! \brief Interpolate velocity to given point
        *
        *  \author rauch \date 07/2015

@@ -442,7 +442,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       }
       break;
       case prb_immersed_fsi:
-      case prb_immersed_membrane_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }

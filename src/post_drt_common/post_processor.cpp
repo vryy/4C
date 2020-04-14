@@ -758,7 +758,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_membrane_fsi:
     case prb_fbi:
     {
       std::string basename = problem.outname();

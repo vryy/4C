@@ -46,14 +46,13 @@ typedef enum _PROBLEM_TYP
   prb_freesurf,   // free surface fluid
   prb_fsi,        // fluid structure interaction problem
   prb_fsi_lung,   // airway fsi problem with attached parenchyma balloon
-  prb_fsi_redmodels,          // fluid structure interaction problem
-  prb_fsi_xfem,               // fluid structure interaction problem including XFEM interfaces
-  prb_gas_fsi,                // fsi with gas transport
-  prb_immersed_fsi,           // immersed fsi
-  prb_immersed_membrane_fsi,  // immersed fsi with membrane finite elements
-  prb_invana,                 // inverse analysis of structures(so far)
-  prb_level_set,              // level-set problem
-  prb_loma,                   // low-Mach-number flow problem
+  prb_fsi_redmodels,  // fluid structure interaction problem
+  prb_fsi_xfem,       // fluid structure interaction problem including XFEM interfaces
+  prb_gas_fsi,        // fsi with gas transport
+  prb_immersed_fsi,   // immersed fsi
+  prb_invana,         // inverse analysis of structures(so far)
+  prb_level_set,      // level-set problem
+  prb_loma,           // low-Mach-number flow problem
   prb_lubrication,  // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
   prb_np_support,   // supporting procs for nested parallelism
   prb_opt,          // structural optimization  problem
