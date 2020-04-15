@@ -36,8 +36,12 @@ namespace INPAR
       elemag_explicit_euler,
       /// implicit euler method
       elemag_implicit_euler,
-      /// backward differentiation formula
+      /// BDF2
       elemag_bdf,
+      /// BDF4
+      elemag_bdf4,
+      /// Generalized-Alpha method
+      elemag_genAlpha,
       /// runge-kutta method
       elemag_rk,
       /// crank-nicolson method

@@ -35,7 +35,9 @@ CALCERR                         yes
 ERRORFUNCNO                     1
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
+SOLVER                          Aztec_MSR
+AZSOLVE                         CG
+AZPREC                          ICC
 
 ----------------------------------------------------------MATERIALS
 
@@ -57,7 +59,7 @@ NDSURF  6
 NDVOL   0
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.68123214011973740e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 3.11766846842939926e-02 TOLERANCE 1e-6
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // front_face

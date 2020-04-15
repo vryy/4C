@@ -128,34 +128,35 @@ int DRT::DiscretizationHDG::FillComplete(
   // nds = 0 used for trace values
   // nds = 1 used for interior values
   // nds = 2 used for nodal ALE values
-  if (this->lRowElement(0)->ElementType().Name() == "FluidHDGWeakCompType")
-  {
-    // add nds 1
-    if (this->NumDofSets() == 1)
+  if (this->NumMyRowElements())
+    if (this->lRowElement(0)->ElementType().Name() == "FluidHDGWeakCompType")
     {
-      int ndof_ele = this->NumMyRowElements() > 0
-                         ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
-                               ->NumDofPerElementAuxiliary()
-                         : 0;
-      Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
-          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
+      // add nds 1
+      if (this->NumDofSets() == 1)
+      {
+        int ndof_ele = this->NumMyRowElements() > 0
+                           ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
+                                 ->NumDofPerElementAuxiliary()
+                           : 0;
+        Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
+            Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
-      this->AddDofSet(dofset_ele);
+        this->AddDofSet(dofset_ele);
+      }
+
+      // add nds 2
+      if (this->NumDofSets() == 2)
+      {
+        int ndof_node = this->NumMyRowElements() > 0
+                            ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
+                                  ->NumDofPerNodeAuxiliary()
+                            : 0;
+        Teuchos::RCP<DRT::DofSetInterface> dofset_node =
+            Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
+
+        this->AddDofSet(dofset_node);
+      }
     }
-
-    // add nds 2
-    if (this->NumDofSets() == 2)
-    {
-      int ndof_node = this->NumMyRowElements() > 0
-                          ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
-                                ->NumDofPerNodeAuxiliary()
-                          : 0;
-      Teuchos::RCP<DRT::DofSetInterface> dofset_node =
-          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
-
-      this->AddDofSet(dofset_node);
-    }
-  }
 
   return 0;
 }

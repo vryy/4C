@@ -339,13 +339,29 @@ namespace DRT
       // we are in a discontinuous setting here
       //! @name interior stored states
 
-      /// This variable represents the elctric field in the nodes
+      /// Electric field current step
       Epetra_SerialDenseVector eleinteriorElectric_;
-      Epetra_SerialDenseVector eleinteriorElectricnm_;
 
-      /// This variable represents the magnetic field in thge nodes
+      /// Electric field step n-1 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorElectricnm1_;
+
+      /// Electric field step n-2 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorElectricnm2_;
+
+      /// Electric field step n-3 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorElectricnm3_;
+
+      /// Magnetic field current step
       Epetra_SerialDenseVector eleinteriorMagnetic_;
-      Epetra_SerialDenseVector eleinteriorMagneticnm_;
+
+      /// Magnetic field step n-1 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorMagneticnm1_;
+
+      /// Magnetic field step n-2 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorMagneticnm2_;
+
+      /// Magnetic field step n-3 for higher orders BDF
+      Epetra_SerialDenseVector eleinteriorMagneticnm3_;
 
       //@}
 

@@ -42,6 +42,14 @@ namespace DRT
           const std::string eletype, const std::string eledistype, const int id, const int owner);
       /// Create
       virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      /// Nodal block information
+      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+
+      /// Null space computation
+      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+          const double* x0, int numdf, int dimns);
+
       /// Element definition
       virtual void SetupElementDefinition(
           std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
@@ -138,6 +146,9 @@ namespace DRT
       void Print(std::ostream& os) const;
 
       virtual DRT::ElementType& ElementType() const { return ElemagDiffType::Instance(); }
+
+      /// Element location data
+      LocationData lm_;
 
      private:
       // don't want = operator
@@ -339,18 +350,12 @@ namespace DRT
       virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
       /// Nodal block information
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
-      {
-      }
+      virtual void NodalBlockInformation(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np){};
 
-      /*!
-        \brief Null space
-        \note Implementation to be fixed
-       */
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
-      {
-      }
+      /// Null space
+      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+          const double* x0, int numdf, int dimns){};
 
      private:
       /// instance of the class

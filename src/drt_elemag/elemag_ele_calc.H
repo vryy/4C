@@ -126,14 +126,14 @@ namespace DRT
         /// Calls local solver to compute matrices: internal and face
         void ComputeMatrices(DRT::Discretization& discretization,
             const Teuchos::RCP<MAT::Material>& mat, DRT::ELEMENTS::Elemag& ele, double dt,
-            INPAR::ELEMAG::DynamicType dyna);
+            INPAR::ELEMAG::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
         void ComputeInteriorMatrices(double dt, double sigma, double mu, double epsilon);
 
         /// Set up face matrices
-        void ComputeFaceMatrices(
-            const int face, double dt, int indexstart, int newindex, double sigma, double mu);
+        void ComputeFaceMatrices(const int face, double dt, int indexstart, int newindex,
+            double sigma, double mu, const double tau);
 
         /// Condense the local matrx into the element matrix for the trace and similarly for the
         /// residuals.

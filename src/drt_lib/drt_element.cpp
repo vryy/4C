@@ -723,6 +723,70 @@ void DRT::Element::LocationVector(
           lmowner.push_back(owner);
           lm.push_back(dof[j]);
         }
+
+        if (doDirichlet)
+        {
+          std::vector<DRT::Condition*> dirich_vec;
+          dis.GetCondition("Dirichlet", dirich_vec);
+          DRT::Condition* dirich;
+          bool dirichRelevant = false;
+          // Check if there exist a dirichlet condition
+          if (dirich_vec.size())
+          {
+            // do only faces where all nodes are present in the node list
+            const int nummynodes = face_[i]->NumNode();
+            const int* mynodes = face_[i]->NodeIds();
+            // Check if the face belongs to any condition
+            for (std::vector<DRT::Condition*>::iterator iter = dirich_vec.begin();
+                 iter != dirich_vec.end(); ++iter)
+            {
+              bool faceRelevant = true;
+              dirich = *iter;
+              for (int j = 0; j < nummynodes; ++j)
+              {
+                if (!dirich->ContainsNode(mynodes[j]))
+                {
+                  faceRelevant = false;
+                  break;
+                }
+              }
+              // If the face is not relevant the dirichlet flag is always zero
+              if (!faceRelevant)
+              {
+                continue;  // This is related to the dirichlet conditions loop
+              }
+              else
+              {
+                dirichRelevant = true;
+                break;  // We found the right dirichlet
+              }
+            }
+
+            if (!dirichRelevant)
+            {
+              for (int j = 0; j < this->NumDofPerFace(i); ++j) lmdirich.push_back(0);
+              continue;
+            }
+
+            const std::vector<int>* flag = NULL;
+            if (dirich->Type() != DRT::Condition::PointDirichlet &&
+                dirich->Type() != DRT::Condition::LineDirichlet &&
+                dirich->Type() != DRT::Condition::SurfaceDirichlet &&
+                dirich->Type() != DRT::Condition::VolumeDirichlet)
+              dserror("condition with name Dirichlet is not of type Dirichlet");
+            flag = dirich->Get<std::vector<int>>("onoff");
+
+            // Every component gets NumDofPerComponent ones or zeros
+            for (unsigned j = 0; j < flag->size(); ++j)
+              for (int k = 0; k < NumDofPerComponent(i); ++k)
+              {
+                if (flag && (*flag)[j])
+                  lmdirich.push_back(1);
+                else
+                  lmdirich.push_back(0);
+              }
+          }
+        }
       }
     }
 

@@ -80,7 +80,7 @@ namespace ELEMAG
     virtual ~ElemagTimeInt();
 
     /// Initialization routine.
-    void Init();
+    virtual void Init();
 
     /*!
     \brief Prints information about the discretization and time integration to screen.
@@ -98,7 +98,9 @@ namespace ELEMAG
           return "Implicit Euler";
         // break;
         case INPAR::ELEMAG::DynamicType::elemag_bdf:
-          return "Second order Backward Differentiation Formula";
+          return "BDF2";
+        case INPAR::ELEMAG::DynamicType::elemag_bdf4:
+          return "BDF4";
           // break;
         default:
           return "General time integration class. No scheme implemented.";
@@ -117,15 +119,19 @@ namespace ELEMAG
     virtual void Integrate();
     // void Integrate();
 
+    /// Elements initialization
+    virtual void ElementsInit();
+
     /*!
     \brief Set initial field by given function or null function.
     */
-    virtual void SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno);
+    virtual void SetInitialField(
+        const INPAR::ELEMAG::InitialField init, Teuchos::ParameterList& start_params);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    Teuchos::RCP<Epetra_SerialDenseVector> ComputeError();
+    virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError();
 
     /*!
     \brief ProjectfieldTest is used for debugging purposes.
@@ -142,6 +148,11 @@ namespace ELEMAG
     local solver works. It is the dual of ProjectFieldTest.
     */
     virtual void ProjectFieldTestTrace(int startfuncno);
+
+    /*!
+    \brief Initialize the algorithm using BDF1 as first step
+    */
+    void InitializeAlgorithm();
 
     /*!
     \brief Call elements to calculate system matrix and RHS.
@@ -214,14 +225,22 @@ namespace ELEMAG
     // void ReadRestart(int step);
 
     /*!
+    \brief Obtain system matrix
+    */
+    Epetra_CrsMatrix SystemMatrix()
+    {
+      return (*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix());
+    };
+
+    /*!
     \brief print the system matrix giving the output filename
 
     */
-    void SpySysmat(std::string filename)
+    void SpySysmat(std::string filename, int precision = 20)
     {
       std::ofstream out;
       out.open(filename);
-      SpySysmat(out);
+      SpySysmat(out << std::setprecision(precision));
       out.close();
     };
     /*!
@@ -277,8 +296,9 @@ namespace ELEMAG
     int uprestart_;  /// write restart data every uprestart_ steps
     int upres_;      /// write output every upres_ steps
 
-    int numdim_;  /// number of spatial dimensions
-    double dtp_;  /// time step size
+    int numdim_;        /// number of spatial dimensions
+    double dtp_;        /// time step size
+    const double tau_;  /// stabilization parameter
 
     double dtele_;    /// element evaluation time
     double dtsolve_;  /// solver time
