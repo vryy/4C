@@ -102,7 +102,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Fluid_XFEM"] = prb_fluid_xfem;
     string2prbtype["Fluid_XFEM_LevelSet"] = prb_fluid_xfem_ls;
     string2prbtype["Gas_Fluid_Structure_Interaction"] = prb_gas_fsi;
-    string2prbtype["Immersed_ALE_FSI"] = prb_immersed_ale_fsi;
     string2prbtype["Immersed_CellMigration"] = prb_immersed_cell;
     string2prbtype["Immersed_FSI"] = prb_immersed_fsi;
     string2prbtype["Immersed_Membrane_FSI"] = prb_immersed_membrane_fsi;

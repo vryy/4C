@@ -49,7 +49,6 @@ typedef enum _PROBLEM_TYP
   prb_fsi_redmodels,          // fluid structure interaction problem
   prb_fsi_xfem,               // fluid structure interaction problem including XFEM interfaces
   prb_gas_fsi,                // fsi with gas transport
-  prb_immersed_ale_fsi,       // immersed fsi coupled with ale fsi
   prb_immersed_cell,          // immersed cell migration process (poroelast-structure interaction)
   prb_immersed_fsi,           // immersed fsi
   prb_immersed_membrane_fsi,  // immersed fsi with membrane finite elements
