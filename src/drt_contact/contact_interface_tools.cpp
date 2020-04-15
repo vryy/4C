@@ -28,9 +28,6 @@
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   //**********************************************************************
   // GMSH output of all interface elements
   //**********************************************************************
@@ -91,9 +88,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc = 0; proc < lComm()->NumProc(); ++proc)
+  for (int proc = 0; proc < Comm().NumProc(); ++proc)
   {
-    if (proc == lComm()->MyPID())
+    if (proc == Comm().MyPID())
     {
       // open files (overwrite if proc==0, else append)
       if (proc == 0)
@@ -668,7 +665,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       }
 
       // end GMSH output section in all files
-      if (proc == lComm()->NumProc() - 1)
+      if (proc == Comm().NumProc() - 1)
       {
         gmshfilecontent << "};" << std::endl;
         gmshfilecontentslave << "};" << std::endl;
@@ -683,7 +680,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       fclose(fps);
       fclose(fpm);
     }
-    lComm()->Barrier();
+    Comm().Barrier();
   }
 
 
@@ -696,7 +693,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   int lnslayers = binarytree_->Streenodesmap().size();
   int gnmlayers = binarytree_->Mtreenodesmap().size();
   int gnslayers = 0;
-  lComm()->MaxAll(&lnslayers, &gnslayers, 1);
+  Comm().MaxAll(&lnslayers, &gnslayers, 1);
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
@@ -728,13 +725,13 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     filenametn << iter;
   }
 
-  if (lComm()->MyPID() == 0)
+  if (Comm().MyPID() == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {"
@@ -744,12 +741,12 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     }
   }
 
-  lComm()->Barrier();
+  Comm().Barrier();
 
   // for every proc, one after another, put data of slabs into files
-  for (int i = 0; i < lComm()->NumProc(); i++)
+  for (int i = 0; i < Comm().NumProc(); i++)
   {
-    if ((i == lComm()->MyPID()) && (binarytree_->Sroot()->Type() != 4))
+    if ((i == Comm().MyPID()) && (binarytree_->Sroot()->Type() != 4))
     {
       // print full tree with treenodesmap
       for (int j = 0; j < (int)binarytree_->Streenodesmap().size(); j++)
@@ -789,18 +786,18 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       }
     }
 
-    lComm()->Barrier();
+    Comm().Barrier();
   }
 
-  lComm()->Barrier();
+  Comm().Barrier();
   // close all slave-gmsh files
-  if (lComm()->MyPID() == 0)
+  if (Comm().MyPID() == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << lComm()->MyPID()<< "current filename: " <<
+      // std::cout << std::endl << Comm().MyPID()<< "current filename: " <<
       // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::ostringstream gmshfilecontent;
@@ -809,16 +806,16 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
   }
-  lComm()->Barrier();
+  Comm().Barrier();
 
   // create master slabs
-  if (lComm()->MyPID() == 0)
+  if (Comm().MyPID() == 0)
   {
     for (int i = 0; i < gnmlayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {"
@@ -901,16 +898,16 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   int lcontactmapsize = (int)(binarytree_->CouplingMap()[0].size());
   int gcontactmapsize;
 
-  lComm()->MaxAll(&lcontactmapsize, &gcontactmapsize, 1);
+  Comm().MaxAll(&lcontactmapsize, &gcontactmapsize, 1);
 
   if (gcontactmapsize > 0)
   {
     // open/create new file
-    if (lComm()->MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << std::endl;
@@ -919,9 +916,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     }
 
     // every proc should plot its contacting treenodes!
-    for (int i = 0; i < lComm()->NumProc(); i++)
+    for (int i = 0; i < Comm().NumProc(); i++)
     {
-      if (lComm()->MyPID() == i)
+      if (Comm().MyPID() == i)
       {
         if ((int)(binarytree_->CouplingMap()[0]).size() !=
             (int)(binarytree_->CouplingMap()[1]).size())
@@ -934,7 +931,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           std::ostringstream newgmshfile;
 
           // create new sheet for slave
-          if (lComm()->MyPID() == 0 && j == 0)
+          if (Comm().MyPID() == 0 && j == 0)
           {
             currentfilename << filenamectn.str().c_str() << "_ct.pos";
             fp = fopen(currentfilename.str().c_str(), "w");
@@ -963,15 +960,15 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           (binarytree_->CouplingMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
         }
       }
-      lComm()->Barrier();
+      Comm().Barrier();
     }
 
     // close file
-    if (lComm()->MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::ostringstream gmshfile;
       gmshfile << "};";
@@ -993,9 +990,6 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1261,9 +1255,6 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1754,9 +1745,6 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for D-Matrix entries
   std::map<int, double> refD;  // stores dof-wise the entries of D
   std::map<int, double> newD;
@@ -2027,9 +2015,6 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for M-Matrix entries
   std::map<int, double> refM;  // stores dof-wise the entries of M
   std::map<int, double> newM;
@@ -2298,9 +2283,6 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refU(nrow);
@@ -2533,9 +2515,6 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2770,9 +2749,6 @@ void CONTACT::CoInterface::FDCheckAlphaDeriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3158,9 +3134,6 @@ void CONTACT::CoInterface::FDCheckGapDerivLTL()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3555,9 +3528,6 @@ void CONTACT::CoInterface::FDCheckJumpDerivLTL()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refG0(nrow);
@@ -3951,9 +3921,6 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refG(nrow);
@@ -4336,9 +4303,6 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
@@ -4910,9 +4874,6 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   int dim = Dim();
@@ -5443,9 +5404,6 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
@@ -6284,9 +6242,6 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   std::cout << std::setprecision(14);
 
   // create storage for lm entries
@@ -6572,9 +6527,6 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // information from interface contact parameter list
   double frcoeff = InterfaceParams().get<double>("FRCOEFF");

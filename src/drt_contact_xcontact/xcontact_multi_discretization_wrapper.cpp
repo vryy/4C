@@ -8,6 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include <vector>
 
 #include "xcontact_multi_discretization_wrapper.H"
 #include "../drt_lib/drt_discret.H"

@@ -7,6 +7,7 @@
 \maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils_sparse_algebra_print.H"

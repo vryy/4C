@@ -4,7 +4,7 @@
 \brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
 interaction.
 
-\level 2
+\level 3
 
 \maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
@@ -117,14 +117,15 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int step)
 {
   // todo only access the parameter list once
 
   // Check if we want to couple the fluid
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
   if (Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") !=
-      INPAR::FBI::BeamToFluidCoupling::solid)
+          INPAR::FBI::BeamToFluidCoupling::solid &&
+      fbi.get<int>("STARTSTEP") < step)
   {
     // Assemble the fluid stiffness matrix and hand it to the fluid solver
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
@@ -209,7 +210,6 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
 /*----------------------------------------------------------------------*/
 
-// todo take a good look at dispn vs. dispnp and veln vs. velnp!
 void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
     std::vector<DRT::Element const*> elements, Teuchos::RCP<std::vector<double>>& beam_dofvec,
     Teuchos::RCP<std::vector<double>>& fluid_dofvec) const
@@ -219,8 +219,8 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
       elements[0], column_structure_displacement_,
-      *beam_dofvec);  // todo check time step todo get "interface" displacements only for beam
-                      // elements todo Only get centerline velocities?!
+      *beam_dofvec);  // todo get "interface" displacements only for beam
+                      // elements
   ;
   // extract veclocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
@@ -259,6 +259,8 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
 {
   if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
   {
+    double penalty_parameter = GetBridge()->GetParams()->GetPenaltyParameter();
+
     Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
         Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
 
@@ -270,15 +272,18 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
 
     if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
 
-    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), 0.0);
+    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
     if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
 
     double norm, normf, norms;
     double norm_vel;
 
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->MaxValue(&norm_vel);
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
+        ->Velnp()
+        ->MaxValue(&norm_vel);  // todo this uses the pressure. Fix such that only the maximum
+                                // velocity quantity is used
 
-    violation->Norm2(&norm);
+    violation->MaxValue(&norm);
     if (norm_vel > 1e-15) normf = norm / norm_vel;
 
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
@@ -292,7 +297,8 @@ void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".penalty");
       log.open(s.c_str(), std::ofstream::app);
-      log << time << "\t" << step << "\t" << norm << "\t" << normf << "\t" << norms << std::endl;
+      log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"
+          << normf / penalty_parameter << "\t" << norms / penalty_parameter << std::endl;
     }
   }
 }

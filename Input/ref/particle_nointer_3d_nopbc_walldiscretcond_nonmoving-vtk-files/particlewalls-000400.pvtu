@@ -17,6 +17,5 @@
     <Piece Source="particlewalls-000400-0.vtu"/>
     <Piece Source="particlewalls-000400-1.vtu"/>
     <Piece Source="particlewalls-000400-2.vtu"/>
-    <Piece Source="particlewalls-000400-3.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>

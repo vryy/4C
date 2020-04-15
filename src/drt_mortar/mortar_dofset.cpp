@@ -24,45 +24,53 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  const int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
-    dserror("ERROR: Point coupling cinditions not yet implemented for MortarDofSet");
+    dserror("ERROR: Point coupling conditions not yet implemented for MortarDofSet");
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
-  int nummyrow = dofrowmap_->NumMyElements();
+  const int nummyrow = dofrowmap_->NumMyElements();
   std::vector<int> myrow(nummyrow);
-  int nummycol = dofcolmap_->NumMyElements();
+  const int nummycol = dofcolmap_->NumMyElements();
   std::vector<int> mycol(nummycol);
 
-  // now we loop all nodes in dis and create the new dof vectors
-  for (int i = 0; i < dis.NumMyColNodes(); ++i)
+  // now we loop all nodes in the interface discretization and create the new DOF vectors
+  const int numMyColumnNodes = dis.NumMyColNodes();
+  for (int i = 0; i < numMyColumnNodes; ++i)
   {
     DRT::Node* node = dis.lColNode(i);
     if (!node) dserror("Cannot find local column node %d", i);
+
     // get dofs of node as created by base class DofSet
     std::vector<int> gdofs = Dof(node);
+    const std::size_t numDofsOfNode = gdofs.size();
+
     // get dofs of node as we want them
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
     const int* newdofs = mrtrnode->Dofs();
-    for (int j = 0; j < (int)gdofs.size(); ++j)
+    for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
+      // build dof column map
       if (!dofcolmap_->MyGID(gdofs[j])) dserror("Mismatch in degrees of freedom");
       int lid = dofcolmap_->LID(gdofs[j]);
       mycol[lid] = newdofs[j];
-      // build dofrowmap as well
-      if (!dofrowmap_->MyGID(gdofs[j])) continue;
-      lid = dofrowmap_->LID(gdofs[j]);
-      myrow[lid] = newdofs[j];
+
+      // build dof row map
+      if (dofrowmap_->MyGID(gdofs[j]))  // only if proc owns this DOF
+      {
+        lid = dofrowmap_->LID(gdofs[j]);
+        myrow[lid] = newdofs[j];
+      }
     }
-    if (gdofs.size() > 0)
+    if (numDofsOfNode > 0)
     {
       (*idxcolnodes_)[i] = newdofs[0];
     }
   }
 
-  // we have new vectors, so recreate epetra maps and replace old ones with them
+  // we have new vectors, so recreate Epetra maps and replace old ones with them
   Teuchos::RCP<Epetra_Map> newdofrowmap =
       Teuchos::rcp(new Epetra_Map(-1, nummyrow, &myrow[0], 0, dofrowmap_->Comm()));
   Teuchos::RCP<Epetra_Map> newdofcolmap =

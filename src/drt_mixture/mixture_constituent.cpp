@@ -12,11 +12,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_constituent_elasthyper.H"
+#include "mixture_constituent_elasthyper_elastin.H"
+#include "mixture_constituent_remodelfiber_expl.H"
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
@@ -25,7 +26,7 @@ MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
 {
 }
 
-// Create instance of the constituent from the parameters
+// Create an instance of the constituent from the parameters
 Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 {
   dserror("Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
@@ -64,9 +65,25 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
         curmat->SetParameter(
             new MIXTURE::PAR::MixtureConstituent_ElastHyper(curmat, ref_mass_fraction));
       }
-      auto* params =
-          dynamic_cast<MIXTURE::PAR::MixtureConstituent_ElastHyper*>(curmat->Parameter());
-      return params;
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+    }
+    case INPAR::MAT::mix_elasthyper_elastin:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_ElastHyperElastin(curmat, ref_mass_fraction));
+      }
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+    }
+    case INPAR::MAT::mix_remodelfiber_expl:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat, ref_mass_fraction));
+      }
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
     default:
       break;
@@ -75,14 +92,17 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
   return nullptr;
 }
 
-// Empty constructor
-MIXTURE::MixtureConstituent::MixtureConstituent()
-    : initialReferenceDensity_(0.0), numgp_(0), has_read_element_(false), is_setup_(false)
+MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params)
+    : params_(params),
+      initialReferenceDensity_(0.0),
+      numgp_(0),
+      has_read_element_(false),
+      is_setup_(false)
 {
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::ReadElement(const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MIXTURE::MixtureConstituent::ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");
@@ -91,7 +111,7 @@ void MIXTURE::MixtureConstituent::ReadElement(const int numgp, DRT::INPUT::LineD
 }
 
 // Setup of the mixture constituents and all its subparts
-void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params)
+void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after Init()
   if (!has_read_element_) dserror("ReadElement() must be called before Setup()");
@@ -122,4 +142,11 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
 
   has_read_element_ = (bool)DRT::ParObject::ExtractInt(position, data);
   is_setup_ = (bool)DRT::ParObject::ExtractInt(position, data);
+}
+
+void MIXTURE::MixtureConstituent::EvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
+    const LINALG::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+{
+  dserror("This constituent cannot handle an additional inelastic part.");
 }

@@ -227,20 +227,10 @@ void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeff
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  // ------ rho_inf specified --> calculate optimal parameters -----------------
-  if (coeffs.rhoinf_ != -1.)
-  {
-    if ((coeffs.rhoinf_ < 0.0) or (coeffs.rhoinf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
-    if ((coeffs.beta_ != 0.25) or (coeffs.gamma_ != 0.5) or (coeffs.alpham_ != 0.5) or
-        (coeffs.alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other four parameters");
-    coeffs.alpham_ = (2.0 * coeffs.rhoinf_ - 1.0) / (coeffs.rhoinf_ + 1.0);
-    coeffs.alphaf_ = coeffs.rhoinf_ / (coeffs.rhoinf_ + 1.0);
-    coeffs.beta_ =
-        0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
-    coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
-  }
+  STR::ComputeGeneralizedAlphaParameters(coeffs);
 }
+
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

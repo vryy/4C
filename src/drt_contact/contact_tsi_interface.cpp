@@ -33,8 +33,8 @@
 CONTACT::CoTSIInterface::CoTSIInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant)
+    bool selfcontact)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   return;
 }
@@ -51,9 +51,6 @@ void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMg
   // in the calculation of the friction coefficient may be the master side temperature, which has
   // a displacement derivative due to the projection
 
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
@@ -175,9 +172,6 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglo
   dserror("CONSISTENTSLIP not implemented for CTSI");
 #endif
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> slipnodes = slipnodes_;
   Teuchos::RCP<Epetra_Map> slipt = slipt_;
@@ -293,9 +287,6 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(LINALG::SparseMatrix& linConduc
     LINALG::SparseMatrix& linConductTEMPglobal, LINALG::SparseMatrix& linConductThermoLMglobal,
     LINALG::SparseMatrix& linConductContactLMglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active contact nodes
   if (activenodes_->NumMyElements() == 0) return;
 
@@ -320,9 +311,6 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(LINALG::SparseMatrix& linConduc
 void CONTACT::CoTSIInterface::AssembleDualMassLumped(
     LINALG::SparseMatrix& dualMassGlobal, LINALG::SparseMatrix& linDualMassGlobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -400,9 +388,6 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
     LINALG::SparseMatrix* linM_X, const double fac, const LinDM_X_mode mode,
     const Teuchos::RCP<Epetra_Map> node_rowmap)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get out if there's nothing to do
   if (linD_X == NULL && linM_X == NULL) return;
 
@@ -565,9 +550,6 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
     LINALG::SparseMatrix* m_LinDissDISP, LINALG::SparseMatrix* d_LinDissContactLM,
     LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get out if there's nothing to do
   if (d_LinDissDISP == NULL && m_LinDissDISP == NULL && d_LinDissContactLM == NULL &&
       m_LinDissContactLM == NULL)
@@ -697,9 +679,6 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
 void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     const double fac, LINALG::SparseMatrix* lin_disp, LINALG::SparseMatrix* lin_lm)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get out if there's nothing to do
   if (lin_disp == NULL) dserror("called to assemble something but didn't provide a matrix");
 
@@ -778,9 +757,6 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
 
 void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMatrix* DM_LMn)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get out if there's nothing to do
   if (DM_LMn == NULL) dserror("called to assemble something but didn't provide a matrix");
 
@@ -823,9 +799,6 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
 
 void CONTACT::CoTSIInterface::AssembleInactive(LINALG::SparseMatrix* linConductThermoLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // get out if there's nothing to do
   if (linConductThermoLM == NULL)
     dserror("called to assemble something but didn't provide a matrix");
@@ -852,9 +825,6 @@ void CONTACT::CoTSIInterface::AssembleInactive(LINALG::SparseMatrix* linConductT
 void CONTACT::CoTSIInterface::Initialize()
 {
   CONTACT::CoInterface::Initialize();
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)

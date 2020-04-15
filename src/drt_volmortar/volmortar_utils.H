@@ -12,6 +12,8 @@
 #ifndef VOLMORTAR_UTILIS_H_
 #define VOLMORTAR_UTILIS_H_
 
+#include <vector>
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |
  *---------------------------------------------------------------------*/

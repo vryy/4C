@@ -32,10 +32,7 @@ TOLRES                          1.0E-10
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+RHO_INF                         1.0
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
@@ -95,7 +92,7 @@ RELAX                           0.825
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK

@@ -15,6 +15,7 @@
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_vtu_output_writer_utils.H"
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
 #include "beam_to_solid_mortar_manager.H"
 #include "beaminteraction_calc_utils.H"
@@ -25,6 +26,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
+#include <unordered_set>
 
 
 /**
@@ -171,41 +173,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
       output_writer_base_ptr_->GetVisualizationWriter("nodal-forces");
   if (visualization != Teuchos::null)
-  {
-    // Add the reference geometry and displacement to the visualization.
-    visualization->AddDiscretizationNodalReferencePosition(beam_contact->DiscretPtr());
-    visualization->AddDiscretizationNodalData(
-        "displacement", beam_contact->BeamInteractionDataState().GetDisNp());
-
-    // Create maps with the GIDs of beam and solid nodes.
-    std::vector<int> gid_beam_dof;
-    std::vector<int> gid_solid_dof;
-    std::vector<int> gid_node;
-    for (int i_lid = 0; i_lid < beam_contact->DiscretPtr()->NumMyRowNodes(); i_lid++)
-    {
-      gid_node.clear();
-      DRT::Node* current_node = beam_contact->DiscretPtr()->lRowNode(i_lid);
-      beam_contact->DiscretPtr()->Dof(current_node, gid_node);
-      if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
-        for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
-      else
-        for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
-    }
-    Epetra_Map beam_dof_map(
-        -1, gid_beam_dof.size(), &gid_beam_dof[0], 0, beam_contact->DiscretPtr()->Comm());
-    Epetra_Map solid_dof_map(
-        -1, gid_solid_dof.size(), &gid_solid_dof[0], 0, beam_contact->DiscretPtr()->Comm());
-
-    // Extract the forces and add them to the discretization.
-    Teuchos::RCP<Epetra_Vector> force_beam =
-        Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-    LINALG::Export(*beam_contact->BeamInteractionDataState().GetForceNp(), *force_beam);
-    Teuchos::RCP<Epetra_Vector> force_solid =
-        Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(solid_dof_map, true));
-    LINALG::Export(*beam_contact->BeamInteractionDataState().GetForceNp(), *force_solid);
-    visualization->AddDiscretizationNodalData("force_beam", force_beam);
-    visualization->AddDiscretizationNodalData("force_solid", force_solid);
-  }
+    AddBeamInteractionNodalForces(visualization, beam_contact->DiscretPtr(),
+        beam_contact->BeamInteractionDataState().GetDisNp(),
+        beam_contact->BeamInteractionDataState().GetForceNp());
 
 
   // Add the discrete Lagrange multiplicator values at the nodes of the Lagrange multiplicator
@@ -239,6 +209,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
       // The pairs will need the mortar manager to extract their Lambda DOFs.
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->GetMortarManager());
+
+      // This map is used to ensure, that each discrete Lagrange multiplier is only written once per
+      // beam element.
+      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
+          Teuchos::rcp(new std::unordered_set<int>());
+      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
     }
   }
 

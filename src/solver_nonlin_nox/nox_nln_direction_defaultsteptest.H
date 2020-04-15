@@ -12,6 +12,7 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_DIRECTION_DEFAULTSTEPTEST_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_DIRECTION_DEFAULTSTEPTEST_H_
 
+#include <set>
 
 #include <Teuchos_RCP.hpp>
 #include <NOX_Abstract_Group.H>

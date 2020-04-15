@@ -253,6 +253,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM INTERACTION/SPHERE BEAM LINK", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", *list);
   reader.ReadGidSection(
       "--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
@@ -299,7 +301,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
-  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/VARIATIONAL", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
   reader.ReadGidSection("--STI DYNAMIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/MONOLITHIC", *list);
@@ -1427,7 +1428,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_var_chemdiff:
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
@@ -2076,37 +2076,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-
-      break;
-    }
-    case prb_immersed_ale_fsi:
-    {
-      // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-      aledis = Teuchos::rcp(new DRT::DiscretizationFaces("ale", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
-      AddDis("structure", structdis);
-      AddDis("fluid", fluiddis);
-      AddDis("ale", aledis);
-
-      std::set<std::string> fluidelementtypes;
-      fluidelementtypes.insert("FLUIDIMMERSED");
-
-      std::set<std::string> structelementtypes;
-      fluidelementtypes.insert("SOLIDH8");
-
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(
-          structdis, reader, "--STRUCTURE ELEMENTS", structelementtypes)));
-      nodereader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
       break;
     }

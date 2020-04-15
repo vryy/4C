@@ -72,7 +72,7 @@ DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
  | construct empty material                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper()
-    : params_(NULL), potsumel_(0), facdefgradin_(0)
+    : params_(NULL), potsumel_(0), facdefgradin_(0), anisotropy_()
 {
 }
 
@@ -82,7 +82,7 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
  *--------------------------------------------------------------------*/
 MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
     MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params)
-    : params_(params), potsumel_(0), facdefgradin_(0)
+    : params_(params), potsumel_(0), facdefgradin_(0), anisotropy_()
 {
   std::vector<int>::const_iterator m;
 
@@ -93,6 +93,7 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsumel_.push_back(sum);
+    sum->RegisterAnisotropyExtensions(anisotropy_);
   }
 
   // inelastic deformation gradient factors
@@ -148,6 +149,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) con
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->PackSummand(data);
   }
+
+  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -198,7 +201,11 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
       potsumel_.push_back(sum);
     }
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->UnpackSummand(data, position);
+    for (auto& p : potsumel_)
+    {
+      p->UnpackSummand(data, position);
+      p->RegisterAnisotropyExtensions(anisotropy_);
+    }
 
     // inelastic deformation gradient factors
     for (m = params_->inel_defgradfacids_->begin(); m != params_->inel_defgradfacids_->end(); ++m)
@@ -209,6 +216,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
       facdefgradin_.push_back(fac);
     }
   }
+
+  anisotropy_.UnpackAnisotropy(data, position);
 }
 
 
@@ -542,10 +551,12 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
     const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  // elastic materials
-  for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->Setup(numgp, linedef);
+  // Read anisotropy
+  anisotropy_.SetNumberOfGaussPoints(numgp);
+  anisotropy_.ReadAnisotropyFromElement(linedef);
 
-  return;
+  // elastic materials
+  for (auto& p : potsumel_) p->Setup(numgp, linedef);
 }
 
 

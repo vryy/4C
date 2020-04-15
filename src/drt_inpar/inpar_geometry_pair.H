@@ -13,6 +13,8 @@
 #define INPAR_GEOMETRYPAIR_H
 
 
+#include "../drt_fem_general/drt_utils_integration.H"
+
 // Forward declaration.
 namespace Teuchos
 {
@@ -39,12 +41,17 @@ namespace INPAR
     };
 
     /**
+     * \brief Map number of gauss points to 1D gauss rule
+     */
+    DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
+
+    /**
      * \brief Set valid input parameters for line to 3D geometry pairs.
      *
      * This function adds all available input parameters to a given section. Call this function with
      * the parameter list of the input section you want the line to 3D parameters to be added to.
      *
-     * @param (in) Parameter list to add the line to 3D parameters to.
+     * @param (out) Parameter list to add the line to 3D parameters to.
      */
     void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
 

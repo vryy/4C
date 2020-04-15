@@ -11,6 +11,8 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
+
 #include "pre_exodus_reader.H"
 #include "Epetra_SerialComm.h"
 #include "Epetra_Time.h"

@@ -11,6 +11,7 @@ growth, e.g., lithium plating
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch_electrode_growth.H"
 
+#include "scatra_ele_boundary_calc_elch_electrode_growth_utils.H"
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
@@ -34,7 +35,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(const
 {
   static std::map<std::string, ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -50,7 +51,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(const
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
   }
 
@@ -78,10 +79,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     distype>::ScaTraEleBoundaryCalcElchElectrodeGrowth(const int numdofpernode, const int numscal,
     const std::string& disname)
-    :  // constructor of base class
-      myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
-
-      // initialize member variable
+    : myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
       egrowth_(true)
 {
   return;
@@ -94,11 +92,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
  *--------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateMinMaxOverpotential(
-    const DRT::FaceElement* ele,          //!< current boundary element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -123,9 +118,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
         "layer growth!");
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // integration points and weights
@@ -139,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
     my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -155,8 +149,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt, eslavepotint,
-        emasterpotint, 0., eslaveresistanceint, eslavegrowthint);
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+        my::scatraparamsboundary_);
 
     // calculate electrode-electrolyte overpotential at integration point
     const double eta = eslavepotint - emasterpotint - i * eslaveresistanceint;
@@ -224,7 +219,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
         "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
         "interface!");
   const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == NULL)
+  if (stoichiometries == nullptr)
     dserror(
         "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
         "coupling!");
@@ -232,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
-  const double invF = 1. / faraday;
+  const double invF = 1.0 / faraday;
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
@@ -241,7 +236,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
   // extract saturation value of intercalated lithium concentration from electrode material
   const double cmax = matelectrode->CMax();
-  if (cmax < 1.e-12)
+  if (cmax < 1.0e-12)
     dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // integration points and weights
@@ -257,10 +252,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -277,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     // electrode surface
     const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
-                           : 0.;
+                           : 0.0;
     const double epdderiv =
         matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint, faraday, frt);
 
@@ -287,48 +282,31 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt, eslavepotint,
-        emasterpotint, epd, eslaveresistanceint, eslavegrowthint);
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+        my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations and residual contributions only in case of
     // non-zero Butler-Volmer current density to avoid unnecessary effort and to consistently
     // enforce the lithium plating condition
-    if (std::abs(i) > 1.e-16)
+    if (std::abs(i) > 1.0e-16)
     {
       // calculate electrode-electrolyte overpotential at integration point and regularization
       // factor
       const double eta = eslavepotint - emasterpotint - epd - i * eslaveresistanceint;
-      const double regfac = GetRegularizationFactor(eslavegrowthint, eta);
+      const double regfac = myelectrodegrowthutils::GetRegularizationFactor(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
 
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
+      double di_dc_slave(0.0), di_dc_master(0.0), di_dpot_slave(0.0), di_dpot_master(0.0);
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      const double dF_dc_slave =
-          s2iconditiontype == DRT::Condition::S2ICoupling
-              ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.) *
-                        pow(eslavephiint, alphac - 1.) *
-                        (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
-                    i0 * (alphaa * frt * epdderiv * expterm1 + alphac * frt * epdderiv * expterm2)
-              : 0.;
-      const double dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = i0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse =
-          -1. /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.);
-      const double di_dc_slave = -dF_dc_slave * dF_di_inverse;
-      const double di_dc_master = -dF_dc_master * dF_di_inverse;
-      const double di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      const double di_dpot_master = -dF_dpot_master * dF_di_inverse;
+      myelectrodegrowthutils::CalculateS2IElchElchLinearizations(i0, frt, epdderiv,
+          eslaveresistanceint, regfac, expterm1, expterm2, faraday, emasterphiint, eslavephiint,
+          cmax, my::scatraparamsboundary_, di_dc_slave, di_dc_master, di_dpot_slave,
+          di_dpot_master);
 
       // compute linearizations and residual contributions associated with equations for lithium
       // transport
@@ -387,17 +365,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAction(
-    DRT::FaceElement* ele,                     //!< boundary element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    SCATRA::BoundaryAction action,             //!< action
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-)
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+    Epetra_SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -445,13 +417,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix                    ///< element matrix for slave side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -487,7 +456,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
         "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
         "interface!");
   const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == NULL)
+  if (stoichiometries == nullptr)
     dserror(
         "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
         "coupling!");
@@ -495,16 +464,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
-  const double invF = 1. / faraday;
+  const double invF = 1.0 / faraday;
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // extract saturation value of intercalated lithium concentration from electrode material
   const double cmax = matelectrode->CMax();
-  if (cmax < 1.e-12)
+  if (cmax < 1.0e-12)
     dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // integration points and weights
@@ -520,10 +489,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -539,7 +508,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     // equilibrium electric potential difference at electrode surface
     const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
-                           : 0.;
+                           : 0.0;
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
@@ -547,38 +516,29 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt, eslavepotint,
-        emasterpotint, epd, eslaveresistanceint, eslavegrowthint);
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, epd, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+        my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current
     // density to avoid unnecessary effort and to consistently enforce the lithium plating condition
-    if (std::abs(i) > 1.e-16)
+    if (std::abs(i) > 1.0e-16)
     {
       // calculate electrode-electrolyte overpotential at integration point, regularization factor
       // and derivative of regularization factor
       const double eta = eslavepotint - emasterpotint - epd - i * eslaveresistanceint;
-      const double regfac = GetRegularizationFactor(eslavegrowthint, eta);
-      const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint, eta);
+      const double regfac = myelectrodegrowthutils::GetRegularizationFactor(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
+      const double regfacderiv = myelectrodegrowthutils::GetRegularizationFactorDerivative(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
 
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth =
-          -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
-      const double dF_di_inverse =
-          -1. /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.);
-      const double di_dgrowth = -dF_dgrowth * dF_di_inverse;
+      const double di_dgrowth = myelectrodegrowthutils::CalculateS2IElchGrowthLinearizations(i0, i,
+          frt, eslaveresistanceint, resistivity, regfac, regfacderiv, expterm1, expterm2,
+          my::scatraparamsboundary_);
 
       // compute linearizations associated with equations for lithium transport
       for (int irow = 0; irow < my::nen_; ++irow)
@@ -612,14 +572,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix,                   ///< element matrix for slave side
-        Epetra_SerialDenseMatrix& emastermatrix  ///< element matrix for master side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseMatrix& emastermatrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -648,7 +605,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
         "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
         "interface!");
   const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == NULL)
+  if (stoichiometries == nullptr)
     dserror(
         "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
         "coupling!");
@@ -659,7 +616,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
   const double factor =
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
@@ -677,10 +634,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -696,39 +653,29 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     const double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt, eslavepotint,
-        emasterpotint, 0., eslaveresistanceint, eslavegrowthint);
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+        my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current
     // density to avoid unnecessary effort and to consistently enforce the lithium plating condition
-    if (std::abs(i) > 1.e-16)
+    if (std::abs(i) > 1.0e-16)
     {
       // calculate electrode-electrolyte overpotential at integration point and regularization
       // factor
       const double eta = eslavepotint - emasterpotint - i * eslaveresistanceint;
-      const double regfac = GetRegularizationFactor(eslavegrowthint, eta);
+      const double regfac = myelectrodegrowthutils::GetRegularizationFactor(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
 
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
+      double dummy(0.0), di_dc_master(0.0), di_dpot_slave(0.0), di_dpot_master(0.0);
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      const double dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      const double dF_dpot_slave = i0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse =
-          -1. /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.);
-      const double di_dc_master = -dF_dc_master * dF_di_inverse;
-      const double di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-      const double di_dpot_master = -dF_dpot_master * dF_di_inverse;
+      myelectrodegrowthutils::CalculateS2IElchElchLinearizations(i0, frt, dummy,
+          eslaveresistanceint, regfac, expterm1, expterm2, faraday, emasterphiint, dummy, dummy,
+          my::scatraparamsboundary_, dummy, di_dc_master, di_dpot_slave, di_dpot_master);
 
       // compute linearizations associated with equation for scatra-scatra interface layer growth
       for (int irow = 0; irow < my::nen_; ++irow)
@@ -760,14 +707,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  interface layer growth   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
-    EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,  ///< current boundary element
-        Teuchos::ParameterList& params,                           ///< parameter list
-        DRT::Discretization& discretization,                      ///< discretization
-        DRT::Element::LocationArray& la,                          ///< location array
-        Epetra_SerialDenseMatrix& eslavematrix,                   ///< element matrix for slave side
-        Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-    )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
+    distype>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -798,7 +742,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
         "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
         "interface!");
   const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == NULL)
+  if (stoichiometries == nullptr)
     dserror(
         "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
         "coupling!");
@@ -809,7 +753,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
   const double factor =
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
@@ -832,10 +776,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT();
+    const double frt = myelch::elchparams_->FRT();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -852,39 +796,32 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
     const double i0 = kr * faraday * pow(emasterphiint, alphaa);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0, alphaa, alphac, frt, eslavepotint,
-        emasterpotint, 0., eslaveresistanceint, eslavegrowthint);
+    const double i = myelectrodegrowthutils::GetButlerVolmerCurrentDensity(i0, frt, eslavepotint,
+        emasterpotint, 0.0, eslaveresistanceint, eslavegrowthint, my::scatraparams_,
+        my::scatraparamsboundary_);
 
     // continue with evaluation of linearizations and residual contributions only in case of
     // non-zero Butler-Volmer current density to avoid unnecessary effort and to consistently
-    // enforce the lithium plating condition
-    if (std::abs(i) > 1.e-16)
+    // enforce the lithium plating condition. (If the plating condition is not fulfilled, we
+    // manually set the Butler-Volmer current density to zero, and thus we need to make sure that
+    // all linearizations are also zero, i.e., that nothing is added to the element matrix.)
+    if (std::abs(i) > 1.0e-16)
     {
       // calculate electrode-electrolyte overpotential at integration point, regularization factor
       // and derivative of regularization factor
       const double eta = eslavepotint - emasterpotint - i * eslaveresistanceint;
-      const double regfac = GetRegularizationFactor(eslavegrowthint, eta);
-      const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint, eta);
+      const double regfac = myelectrodegrowthutils::GetRegularizationFactor(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
+      const double regfacderiv = myelectrodegrowthutils::GetRegularizationFactorDerivative(
+          eslavegrowthint, eta, my::scatraparamsboundary_);
 
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa * frt * eta);
       const double expterm2 = exp(-alphac * frt * eta);
-      const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (abs(expterm) > 1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth =
-          -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-          regfacderiv * i0 * (expterm1 + expterm2);
-      const double dF_di_inverse =
-          -1. /
-          (i0 * frt * eslaveresistanceint * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.);
-      const double di_dgrowth = -dF_dgrowth * dF_di_inverse;
+      const double di_dgrowth = myelectrodegrowthutils::CalculateS2IElchGrowthLinearizations(i0, i,
+          frt, eslaveresistanceint, resistivity, regfac, regfacderiv, expterm1, expterm2,
+          my::scatraparamsboundary_);
 
       // compute linearizations and residual contributions associated with equation for
       // scatra-scatra interface layer growth
@@ -910,9 +847,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNodeValues(
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la             //!< location array
-)
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
   my::ExtractNodeValues(discretization, la);
@@ -921,199 +856,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNo
   my::ExtractNodeValues(egrowth_, discretization, la, "growth", 2);
 
   return;
-}
-
-
-/*---------------------------------------------------------------------------------*
- | compute Butler-Volmer current density via Newton-Raphson iteration   fang 01/17 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetButlerVolmerCurrentDensity(
-    const double i0, const double alphaa, const double alphac, const double frt,
-    const double pot_ed, const double pot_el, const double epd, const double resistance,
-    const double thickness) const
-{
-  // initialize Butler-Volmer current density
-  double i(0.);
-
-  // compute Butler-Volmer current density in case of physically reasonable half-cell open-circuit
-  // potential
-  if (not std::isinf(epd))
-  {
-    // compute initial guess of Butler-Volmer current density, neglecting overpotential due to
-    // scatra-scatra interface layer resistance
-    double eta = pot_ed - pot_el - epd;
-    double regfac = GetRegularizationFactor(thickness, eta);
-    i = i0 * regfac * (exp(alphaa * frt * eta) - exp(-alphac * frt * eta));
-
-    // initialize Newton-Raphson iteration counter
-    unsigned iternum(0);
-
-    // apply Newton-Raphson method to compute Butler-Volmer current density, involving overpotential
-    // due to scatra-scatra interface layer resistance
-    while (true)
-    {
-      // increment counter
-      ++iternum;
-
-      // compute current Newton-Raphson residual
-      eta = pot_ed - pot_el - epd - resistance * i;
-      regfac = GetRegularizationFactor(thickness, eta);
-      const double expterm1 = exp(alphaa * frt * eta);
-      const double expterm2 = exp(-alphac * frt * eta);
-      const double residual = i0 * regfac * (expterm1 - expterm2) - i;
-
-      // convergence check
-      if (std::abs(residual) < my::scatraparams_->IntLayerGrowthConvTol())
-        break;
-      else if (iternum == my::scatraparams_->IntLayerGrowthIteMax())
-        dserror(
-            "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
-
-      // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
-      // density
-      const double linearization =
-          -i0 * resistance * frt * regfac * (alphaa * expterm1 + alphac * expterm2) - 1.;
-
-      // update Butler-Volmer current density
-      i -= residual / linearization;
-    }
-
-    // enforce plating condition, i.e., consider initial lithium plating only in case of negative
-    // overpotential
-    if (std::abs(regfac) < 1.e-16 and eta >= 0.) i = 0.;
-  }
-
-  return i;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute regularization factor for lithium stripping       fang 01/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactor(
-    const double thickness, const double eta) const
-{
-  // initialize regularization factor
-  double regfac(1.);
-
-  // actually compute regularization factor if lithium stripping is relevant
-  if (my::scatraparamsboundary_->ConditionType() == DRT::Condition::S2ICouplingGrowth and eta > 0.)
-  {
-    // get the regularization type
-    const std::string regtype = my::scatraparamsboundary_->RegularizationType();
-
-    // extract regularization parameter from scatra-scatra interface coupling condition
-    const double regpar = my::scatraparamsboundary_->RegularizationParameter();
-    if (regpar < 0.)
-      dserror("Regularization parameter for lithium stripping must not be negative!");
-
-    // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-    if (regtype == "polynomial")
-    {
-      // use regularization parameter if specified, otherwise take default value according to
-      // reference
-      const double thickness0 = regpar > 0. ? regpar : 4.8e-7;
-
-      // compute regularization factor
-      regfac = thickness <= 0. ? 0. : pow(thickness, 4) / (pow(thickness, 4) + pow(thickness0, 4));
-    }
-
-    // trigonometrical regularization involving (co)sine half-wave
-    else if (regtype == "trigonometrical")
-    {
-      // use regularization parameter if specified, otherwise take lithium atom diameter as default
-      // value
-      const double thickness_regend = regpar > 0. ? regpar : 2.9e-7;
-
-      // compute regularization factor
-      if (thickness <= 0.)
-        regfac = 0.;
-      else if (thickness < thickness_regend)
-        regfac = 0.5 * cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
-    }
-
-    // non-regularized Heaviside function
-    else if (regtype == "none")
-    {
-      if (thickness <= 0.) regfac = 0.;
-    }
-
-    // safety check
-    else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
-  }
-
-  return regfac;
-}
-
-
-/*-------------------------------------------------------------------------------------------------------------------*
- | compute derivative of regularization factor for lithium stripping w.r.t. thickness of plated
- lithium   fang 01/17 |
- *-------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactorDerivative(
-    const double thickness, const double eta) const
-{
-  // initialize derivative of regularization factor
-  double regfacderiv(0.);
-
-  // actually compute derivative of regularization factor if lithium stripping is relevant
-  if (my::scatraparamsboundary_->ConditionType() == DRT::Condition::S2ICouplingGrowth and
-      thickness > 0. and eta > 0.)
-  {
-    // get the regularization type
-    const std::string regtype = my::scatraparamsboundary_->RegularizationType();
-
-    // extract regularization parameter from scatra-scatra interface coupling condition
-    const double regpar = my::scatraparamsboundary_->RegularizationParameter();
-    if (regpar < 0.)
-      dserror("Regularization parameter for lithium stripping must not be negative!");
-
-    // polynomial regularization, cf. Hein, Latz, Electrochimica Acta 201 (2016) 354-365
-    if (regtype == "polynomial")
-    {
-      // use regularization parameter if specified, otherwise take default value according to
-      // reference
-      const double thickness0 = regpar > 0. ? regpar : 4.8e-7;
-
-      // compute derivative of regularization factor
-      const double thickness0_pow4 = pow(thickness0, 4);
-      regfacderiv =
-          4. * pow(thickness, 3) * thickness0_pow4 / pow(thickness0_pow4 + pow(thickness, 4), 2);
-    }
-
-    // trigonometrical regularization involving (co)sine half-wave
-    else if (regtype == "trigonometrical")
-    {
-      // use regularization parameter if specified, otherwise take lithium atom diameter as default
-      // value
-      const double thickness_regend = regpar > 0. ? regpar : 2.9e-7;
-
-      // compute derivative of regularization factor
-      const double thickness_regend_inverse = 1. / thickness_regend;
-      if (thickness < thickness_regend)
-        regfacderiv = 0.5 * sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
-                      thickness_regend_inverse;
-    }
-
-    // non-regularized Heaviside function
-    else if (regtype == "none")
-    {
-      // do nothing and retain derivative as initialized, since non-regularized Heaviside function
-      // cannot be properly differentiated
-    }
-
-    // safety check
-    else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
-  }
-
-  return regfacderiv;
 }
 
 // template classes

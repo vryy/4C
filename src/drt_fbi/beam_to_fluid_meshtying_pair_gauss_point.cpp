@@ -44,12 +44,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(
-        this->ele1poscur_, this->ele2poscur_, this->line_to_volume_segments_);
+        this->ele1poscur_, this->ele2poscur_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_volume_segments_.size() == 0) return false;
+  if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
@@ -78,18 +78,18 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_volume_segments_.size(); i_segment++)
+  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
-    beam_segmentation_factor = 0.5 * this->line_to_volume_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(

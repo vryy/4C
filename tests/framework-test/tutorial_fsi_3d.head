@@ -47,7 +47,6 @@ NUMAIRWAYSDIS                   1
 //     Fluid_XFEM
 //     Fluid_XFEM_LevelSet
 //     Gas_Fluid_Structure_Interaction
-//     Immersed_ALE_FSI
 //     Immersed_CellMigration
 //     Immersed_FSI
 //     Inverse_Analysis
@@ -299,7 +298,8 @@ GEOMETRY                        full
 // mid-average type of internal forces
 //     Vague,ImrLike,TrLike
 GENAVG                          TrLike
-//
+//RHO must be set to -1 to activate the four parameters
+RHO_INF                         -1.0
 // Generalised-alpha factor in (0,1/2]
 BETA                            0.25
 //
@@ -377,21 +377,9 @@ MAX_BALANCE                     2
 // Minimum no. of elements per processor for parallel redistribution
 MIN_ELEPROC                     0
 //
-// Type of redundancy in interface storage
-//     All,all,Master,master,None,none
-REDUNDANT_STORAGE               Master
-//
-// Type of parallel interface evaluation
-//     rg
-//     redundant_ghosting
-//     ghosting
-//     rrg
-//     roundrobinghost
-//     RoundRobinGhost
-//     bs
-//     binningstrategy
-//     binning
-GHOSTING_STRATEGY               redundant_ghosting
+// Type of interface ghosting and ghosting extension algorithm
+//                              redundant_all, redundant_master, round_robin, bining
+GHOSTING_STRATEGY               redundant_master
 //
 // Type of redistribution algorithm
 //     None,none,No,no,Static,static,Dynamic,dynamic

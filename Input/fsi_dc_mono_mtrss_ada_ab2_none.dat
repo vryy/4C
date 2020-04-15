@@ -29,6 +29,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+RHO_INF                         -1.0
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -94,7 +95,7 @@ TOL_VEL_RES_INF                 1e-10
 TOL_VEL_RES_L2                  1e-10
 -------------------------------------------------------------MORTAR COUPLING
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

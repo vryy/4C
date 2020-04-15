@@ -15,6 +15,8 @@
 #ifndef SRC_DRT_XFEM_XFEM_MULTI_FIELD_MAPEXTRACTOR_H_
 #define SRC_DRT_XFEM_XFEM_MULTI_FIELD_MAPEXTRACTOR_H_
 
+#include <set>
+
 #include "../drt_lib/drt_dserror.H"
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

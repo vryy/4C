@@ -7,6 +7,8 @@
    \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
+#include <numeric>
+
 #include "porofluid_phasemanager.H"
 
 #include "porofluid_variablemanager.H"

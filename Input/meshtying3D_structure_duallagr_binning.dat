@@ -57,7 +57,6 @@ SYSTEM                          Condensed
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
-REDUNDANT_STORAGE               None
 GHOSTING_STRATEGY               binning
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

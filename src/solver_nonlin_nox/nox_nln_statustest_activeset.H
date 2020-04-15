@@ -15,6 +15,8 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_
 
+#include <deque>
+
 #include <NOX_StatusTest_Generic.H>  // base class
 
 #include <Teuchos_RCP.hpp>

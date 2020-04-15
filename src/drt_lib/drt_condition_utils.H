@@ -14,6 +14,8 @@
 #ifndef DRT_CONDITION_UTILS_H
 #define DRT_CONDITION_UTILS_H
 
+#include <set>
+#include <vector>
 
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>

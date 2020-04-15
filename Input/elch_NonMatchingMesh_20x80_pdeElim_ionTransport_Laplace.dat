@@ -50,7 +50,7 @@ LM_SHAPEFCN                     Dual
 MESH_RELOCATION                 no
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 no
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

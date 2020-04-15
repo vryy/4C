@@ -158,6 +158,8 @@ void INPAR::ELCH::SetValidConditions(
       electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_0%")));
       electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_100%")));
       electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_100%")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("one_hour")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("one_hour")));
     }
 
     // insert input file line components into condition definitions

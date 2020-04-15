@@ -16,6 +16,7 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
 
+#include <vector>
 
 #include <NOX_StatusTest_Generic.H>
 

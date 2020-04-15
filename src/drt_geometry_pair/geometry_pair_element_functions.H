@@ -16,10 +16,62 @@
 #include "../drt_beam3/beam3.H"
 #include "../headers/FAD_utils.H"
 #include "geometry_pair_element.H"
+#include "geometry_pair_utility_functions.H"
 
 
 namespace GEOMETRYPAIR
 {
+  /**
+   * \brief For some face elements the normals face inside the volume, this factor corrects this.
+   *
+   * @tparam element_type Type of the surface element.
+   */
+  template <typename element_type>
+  struct SurfaceNormalFactor
+  {
+   public:
+    /**
+     * \brief Return the factor to scale the normals with.
+     *
+     * A factor of 1 means that the normals already face outside of the volume, -1 means that the
+     * direction has to be changed.
+     *
+     * The function has to be inline to avoid a compiler error.
+     *
+     * @param element (in) Face element for which the normal is evaluated.
+     * @return Normal factor.
+     */
+    static inline double GetFactor(const DRT::Element* element) { return 1.0; };
+  };
+
+  /**
+   * \brief Template specialization for nurbs9 elements.
+   */
+  template <>
+  inline double SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor(const DRT::Element* element)
+  {
+    auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
+    if (face_element == nullptr)
+      dserror(
+          "SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor needs a face element pointer.");
+
+    switch (face_element->FaceMasterNumber())
+    {
+      case 0:
+      case 3:
+      case 5:
+        return -1.0;
+      case 1:
+      case 2:
+      case 4:
+        return 1.0;
+      default:
+        dserror("Invalid face number in SurfaceNormalFactor<GEOMETRYPAIR::t_nurbs9>::GetFactor");
+    }
+    return 0.0;
+  }
+
+
   /**
    * \brief Get the position in the element.
    * @param xi (in) Parameter coordinate on the element.
@@ -29,7 +81,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
-      const DRT::Element* element = NULL)
+      const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
     LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
@@ -56,7 +108,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
     LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
@@ -74,33 +126,6 @@ namespace GEOMETRYPAIR
           for (unsigned int val = 0; val < element_type::n_val_; val++)
             dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
                                   dN(direction, element_type::n_val_ * node + val);
-  }
-
-  /**
-   * \brief Get a normal on an element. This only makes sense for a 2D element.
-   * @param xi (in) Parameter coordinate on the element.
-   * @param q (in) Degrees of freedom for the element.
-   * @param n (out) Normal of the element.
-   * @param element (in) Pointer to the element.
-   */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluateNormal(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& n,
-      const DRT::Element* element = NULL)
-  {
-    // Calculate derivative of the position on the element.
-    LINALG::Matrix<3, element_type::dim_, scalar_type>& dr;
-    EvaluatePositionDerivative1<element_type>(xi, q, dr, element);
-
-    // Calculate the cross product between the two direction vectors.
-    LINALG::Matrix<3, 1, scalar_type>& dr_0;
-    LINALG::Matrix<3, 1, scalar_type>& dr_1;
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-    {
-      dr_0[i_dim] = dr[i_dim, 0];
-      dr_1[i_dim] = dr[i_dim, 1];
-    }
-    n.CrossProduct(dr_0, dr_1);
-    n.Scale(1. / FADUTILS::VectorNorm(n));
   }
 
   /**
@@ -124,7 +149,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
@@ -157,6 +182,80 @@ namespace GEOMETRYPAIR
   }
 
   /**
+   * \brief Evaluate the normal at a position on the surface.
+   *
+   * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
+   * parameter coordiantes, the third one is in the normal direction).
+   * @param q_surface (in) Degrees of freedom for the surface.
+   * @param normal (out) Normal on the surface.
+   * @param element (in) Pointer to the element object.
+   * @param nodal_normals (in) Optional - Normals on the nodes.
+   */
+  template <typename surface, typename T, typename scalar_type_dof, typename scalar_type_result>
+  void EvaluateSurfaceNormal(const T& xi,
+      const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
+      LINALG::Matrix<3, 1, scalar_type_result>& normal, const DRT::Element* element,
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
+  {
+    // Check at compile time if a surface (2D) element is given.
+    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+
+    if (nodal_normals == nullptr)
+    {
+      // Calculate the normal as the geometrical normal on the element.
+      LINALG::Matrix<3, 2, scalar_type_result> dr;
+      LINALG::Matrix<3, 1, scalar_type_result> dr_0;
+      LINALG::Matrix<3, 1, scalar_type_result> dr_1;
+      GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_surface, dr, element);
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+      {
+        dr_0(i_dir) = dr(i_dir, 0);
+        dr_1(i_dir) = dr(i_dir, 1);
+      }
+      normal.CrossProduct(dr_0, dr_1);
+      normal.Scale(SurfaceNormalFactor<surface>::GetFactor(element) / FADUTILS::VectorNorm(normal));
+    }
+    else
+    {
+      // Calculate the normal as a interpolation of nodal normals.
+      GEOMETRYPAIR::EvaluatePosition<surface>(xi, *nodal_normals, normal, element);
+      normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
+    }
+  }
+
+  /**
+   * \brief Evaluate a position on the surface.
+   *
+   * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
+   * parameter coordiantes, the third one is in the normal direction).
+   * @param q_surface (in) Degrees of freedom for the surface.
+   * @param r (out) Position on the surface.
+   * @param element (in) Pointer to the element object.
+   * @param nodal_normals (in) Optional - Normals on the nodes.
+   */
+  template <typename surface, typename scalar_type_xi, typename scalar_type_dof,
+      typename scalar_type_result>
+  void EvaluateSurfacePosition(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+      const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
+      LINALG::Matrix<3, 1, scalar_type_result>& r, const DRT::Element* element,
+      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
+  {
+    // Check at compile time if a surface (2D) element is given.
+    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+
+    // Evaluate the normal.
+    LINALG::Matrix<3, 1, scalar_type_result> normal;
+    EvaluateSurfaceNormal<surface>(xi, q_surface, normal, element, nodal_normals);
+
+    // Evaluate the position on the surface.
+    GEOMETRYPAIR::EvaluatePosition<surface>(xi, q_surface, r, element);
+
+    // Add the normal part to the position.
+    normal.Scale(xi(2));
+    r += normal;
+  }
+
+  /**
    * \brief Check if the parameter coordinate xi is in the valid range for a 1D element.
    * @param xi (in) Parameter coordinate on the line.
    * @return True if xi is in a valid range for the element.
@@ -180,11 +279,11 @@ namespace GEOMETRYPAIR
   bool ValidParameter2D(const T& xi)
   {
     const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
+    if (element_type::geometry_type_ == DiscretizationTypeGeometry::quad)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit) return true;
     }
-    else if (element_type::surface_type_ == DiscretizationTypeSurface::triangle)
+    else if (element_type::geometry_type_ == DiscretizationTypeGeometry::triangle)
     {
       if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
           xi(0) + xi(1) < 1.0 + CONSTANTS::projection_xi_eta_tol)
@@ -192,7 +291,7 @@ namespace GEOMETRYPAIR
     }
     else
     {
-      dserror("Wrong surface type given!");
+      dserror("Wrong DiscretizationTypeGeometry given!");
     }
 
     // Default value.
@@ -208,11 +307,11 @@ namespace GEOMETRYPAIR
   bool ValidParameter3D(const T& xi)
   {
     const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
+    if (element_type::geometry_type_ == DiscretizationTypeGeometry::hexahedron)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
     }
-    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
+    else if (element_type::geometry_type_ == DiscretizationTypeGeometry::tetraeder)
     {
       if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
           xi(2) > -CONSTANTS::projection_xi_eta_tol &&
@@ -221,7 +320,7 @@ namespace GEOMETRYPAIR
     }
     else
     {
-      dserror("Wrong volume type given!");
+      dserror("Wrong DiscretizationTypeGeometry given!");
     }
 
     // Default value.
@@ -229,42 +328,89 @@ namespace GEOMETRYPAIR
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of an 1D element.
-   * @param xi(in/out) Parameter coordinate.
+   * \brief This struct sets parameter coordinates start values for local Newton iterations on an
+   * element.
+   *
+   * @tparam geometry_type The geometry type of the element, this type is typically known at
+   * compile time.
    */
+  template <DiscretizationTypeGeometry geometry_type>
+  struct StartValues
+  {
+   public:
+    /**
+     * \brief Set the start values for a local Newton iterations on the element.
+     *
+     * This method will be specialized for each geometry type. By doing so the values can be set at
+     * compile time.
+     *
+     * @param xi (out) Parameter coordinate on element.
+     */
+    template <typename T>
+    static void Set(T& xi)
+    {
+      std::string error_string =
+          "This is the default implementation of StartValues::Set and should never be called, "
+          "since we only want to call the templated versions. You are calling it with the "
+          "DiscretizationTypeGeometry ";
+      error_string += DiscretizationTypeGeometryToString(geometry_type);
+      dserror(error_string.c_str());
+    }
+  };
+
+  /**
+   * \brief Template specialization for line elements.
+   */
+  template <>
   template <typename T>
-  void SetStartValuesElement1D(T& xi)
+  void StartValues<DiscretizationTypeGeometry::line>::Set(T& xi)
   {
-    xi = 0.;
+    xi = 0.0;
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of a 2D element.
-   * @param xi(in/out) Parameter coordinates.
+   * \brief Template specialization for triangle surface elements.
    */
-  template <typename element_type, typename T>
-  void SetStartValuesElement2D(T& xi)
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::triangle>::Set(T& xi)
   {
-    if (element_type::surface_type_ == DiscretizationTypeSurface::quad)
-      xi.PutScalar(0.0);
-    else
-      dserror("Wrong volume type given!");
+    // We do not use xi.PutScalar(0.25) here, since this might be a surface element which has a
+    // normal direction and we do not want to set an initial value in the normal direction.
+    xi.PutScalar(0.0);
+    for (int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = 0.25;
   }
 
   /**
-   * \brief Set the parameter coordinate to the middle of a 2D element.
-   * @param xi(in/out) Parameter coordinates.
+   * \brief Template specialization for quad surface elements.
    */
-  template <typename element_type, typename T>
-  void SetStartValuesElement3D(T& xi)
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::quad>::Set(T& xi)
   {
-    if (element_type::volume_type_ == DiscretizationTypeVolume::hexaeder)
-      xi.PutScalar(0.0);
-    else if (element_type::volume_type_ == DiscretizationTypeVolume::tetraeder)
-      xi.PutScalar(0.25);
-    else
-      dserror("Wrong element type given!");
+    xi.PutScalar(0.0);
   }
+
+  /**
+   * \brief Template specialization for tetraeder volume elements.
+   */
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::tetraeder>::Set(T& xi)
+  {
+    xi.PutScalar(0.25);
+  }
+
+  /**
+   * \brief Template specialization for hexahedron volume elements.
+   */
+  template <>
+  template <typename T>
+  void StartValues<DiscretizationTypeGeometry::hexahedron>::Set(T& xi)
+  {
+    xi.PutScalar(0.0);
+  }
+
 }  // namespace GEOMETRYPAIR
 
 

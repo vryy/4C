@@ -20,8 +20,8 @@
 XCONTACT::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant),
+    bool selfcontact)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       sndofrowmap_(Teuchos::null),
       stdofrowmap_(Teuchos::null),
       parent_discret_(*icontact.get<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(
@@ -34,12 +34,6 @@ XCONTACT::Interface::Interface(
  *---------------------------------------------------------------------------*/
 void XCONTACT::Interface::Initialize()
 {
-  // Return if not participating in interface
-  if (!lComm())
-  {
-    return;
-  }
-
   // ========================================================================
   // Initialize all general contact related quantities
   // ========================================================================
@@ -97,9 +91,6 @@ void XCONTACT::Interface::PostMortarCoupling(const MORTAR::MortarElement* sele,
  *---------------------------------------------------------------------------*/
 void XCONTACT::Interface::AssembleWeightedGap(Epetra_Vector& wgap) const
 {
-  // Return if not participating in interface
-  if (!lComm()) return;
-
   // Loop over procs active slave nodes of the interface for assembly
   // (use standard row map to assemble each node only once)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -128,12 +119,6 @@ void XCONTACT::Interface::AssembleWeightedGap(Epetra_Vector& wgap) const
  *---------------------------------------------------------------------------*/
 void XCONTACT::Interface::AssembleContactRHS(Epetra_Vector& Wc_lm, Epetra_Vector& lmN) const
 {
-  // Return if not participating in interface
-  if (!lComm())
-  {
-    return;
-  }
-
   // Loop over procs active slave nodes of the interface for assembly
   // (use standard row map to assemble each node only once)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -167,12 +152,6 @@ void XCONTACT::Interface::AssembleContactRHS(Epetra_Vector& Wc_lm, Epetra_Vector
  *---------------------------------------------------------------------------*/
 void XCONTACT::Interface::AssembleMortar(LINALG::SparseMatrix& D, LINALG::SparseMatrix& M) const
 {
-  // Return if not participating in interface
-  if (!lComm())
-  {
-    return;
-  }
-
   // Loop over procs active slave nodes of the interface for assembly
   // (use standard row map to assemble each node only once)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -233,12 +212,6 @@ void XCONTACT::Interface::AssembleMortar(LINALG::SparseMatrix& D, LINALG::Sparse
 void XCONTACT::Interface::AssembleWcUU(
     LINALG::SparseMatrix& Wc_su_u, LINALG::SparseMatrix& Wc_mu_u) const
 {
-  // Return if not participating in interface
-  if (!lComm())
-  {
-    return;
-  }
-
   // Loop over procs active slave nodes of the interface for assembly
   // (use standard row map to assemble each node only once)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)

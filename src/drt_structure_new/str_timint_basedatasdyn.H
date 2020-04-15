@@ -15,6 +15,8 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
 
+#include <set>
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 

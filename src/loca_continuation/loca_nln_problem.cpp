@@ -9,6 +9,7 @@
 
 */
 /*-----------------------------------------------------------*/
+#include <set>
 
 #include "loca_nln_problem.H"
 #include "loca_nln_statustest_factory.H"

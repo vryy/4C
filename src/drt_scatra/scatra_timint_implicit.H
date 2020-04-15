@@ -25,6 +25,8 @@
 #ifndef SCATRA_TIMINT_IMPLICIT_H
 #define SCATRA_TIMINT_IMPLICIT_H
 
+#include <set>
+
 #include "../drt_adapter/ad_scatra_wrapper.H"
 
 #include <Epetra_MultiVector.h>

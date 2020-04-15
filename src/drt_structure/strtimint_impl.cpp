@@ -1050,6 +1050,7 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<LINALG::SparseOp
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln, bool predict, Teuchos::ParameterList psprdash)
 {
+  psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
     springman_->StiffnessAndInternalForces(stiff, fint, disn, veln, psprdash);
 

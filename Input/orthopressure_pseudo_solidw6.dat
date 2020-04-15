@@ -52,10 +52,7 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.459
-ALPHA_M                         0.378
-BETA                            0.291
-GAMMA                           0.581
+RHO_INF                         0.85
 -------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
@@ -9483,7 +9480,7 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.6 100000 VALUES 0 16132.0 16132.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 2238 QUANTITY dispx VALUE 2.521740653256748571e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2238 QUANTITY dispx VALUE 2.52183727925716565e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1403 QUANTITY dispz VALUE 1.825326151509139660e-06 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

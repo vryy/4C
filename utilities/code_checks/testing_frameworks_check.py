@@ -1,4 +1,4 @@
-import os, sys, argparse, re
+import os, sys, argparse, re, json
 import common_utils as utils
 
 # CHECK UNITTESTS
@@ -134,31 +134,94 @@ def check_inputtests(look_cmd, allerrors):
 
   # read TestingFramework.cmake
   entries = []
+  mpi_ranks = []
+  categories = []
   with open('TestingFramework.cmake', 'r') as cmakefile:
     entry_regex = [
-      re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+) *'),
-      re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+) *'),
+      re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
+      re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_Nested_Par *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+) *'),
       re.compile(r'baci_test_Nested_Par_MultipleInvana *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+)*'),
-      re.compile(r'baci_test_Nested_Par_CopyDat *\( *([a-zA-Z0-9_\.\-]+) *'),
-      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+) *'),
-      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+) *')
+      re.compile(r'baci_test_Nested_Par_CopyDat *\( *([a-zA-Z0-9_\.\-]+ .) *'),
+      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-\"\"]+ .) *')
     ]
+
+    # list of test categories as one test can be run in different scenarios using differnt mpi-ranks
+    test_categories = ['', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
+
+    # go through all lines in the TestingFramework.cmake file
     for line in cmakefile:
       # split comments
       line = line.split('#', 1)[0]
-
       line_entries = []
-      for regex in entry_regex:
+      line_categories = []
+
+      # check if the regex expressions for our test cases are matched
+      for regex, category in zip(entry_regex, test_categories):
         for item in regex.findall(line):
           if isinstance(item, tuple):
-            line_entries.extend(list(item))
+            new_list = list(item)
+
+            # get the name of the tests and the mpi rank
+            try:
+                mpirank = new_list[-1].split(None,1)[1]
+                new_list[:-1] = [list_item + ' ' + mpirank for list_item in new_list[:-1]]
+            except IndexError:  # Ignore baci_test_Nested_Par as it uses a prefixed mpi rank
+                pass
+
+            # append list of tests and their category
+            line_entries.extend(new_list)
+            line_categories.extend([category]*len(list(item)))
           else:
             line_entries.append(item)
+            line_categories.append(category)
 
-      for entry in line_entries:
-        entries.append(entry)
+      # get test cases, names and their mpi rank
+      for entry,category in zip(line_entries,line_categories):
 
+        # some options could be optional or empty so exclude them
+        if entry.split(None, 1)[0] != '""':
+            entries.append(entry.split(None, 1)[0])
+            categories.append(category)
+
+            # check for mpi ranks
+            try:
+                mpi_ranks.append(float(entry.split(None, 1)[1]))
+            except IndexError:  # Ignore baci_test_Nested_Par as it uses a prefixed mpi rank
+                mpi_ranks.append(None)
+
+  # boolean array of all test with mpi rank > 3
+  mpi_bool = [mpi > 3 for mpi in mpi_ranks]
+
+  from itertools import compress
+  high_mpi_tests = list(compress(entries, mpi_bool))
+  high_mpi_categories = list(compress(categories, mpi_bool))
+  high_mpi = list(compress(mpi_ranks, mpi_bool))
+
+  # get data from our whitelist for mpi ranks > 3
+  with open(os.path.join(sys.path[0],'whitelist_mpi_ranks.json')) as whitelist_file:
+      whitelist = json.load(whitelist_file)
+  whitelist_name = [ ele['test_name'] for ele in whitelist]
+  whitelist_category = [ ele['test_category'] for ele in whitelist]
+  whitelist_rank = [ ele['mpi_rank'] for ele in whitelist]
+  whitelist_justification = [ ele['justification'] for ele in whitelist]
+
+  # write out error for mpi rank > 3 and not on whitelist
+  non_compliant_tests_name = []
+  for test_name, category, mpi in zip(high_mpi_tests, high_mpi_categories, high_mpi):
+      if (test_name,category) not in zip(whitelist_name,whitelist_category):
+          non_compliant_tests_name.append(test_name)
+      if (test_name,category) in zip(whitelist_name,whitelist_category):
+          if whitelist_justification[whitelist_name.index(test_name)] == "":
+              non_compliant_tests_name.append(test_name)
+
+  if len(non_compliant_tests_name) > 0:
+    errors += 1
+    allerrors.append('The following tests use an unjustified high mpi rank:')
+    allerrors.append('')
+    allerrors.extend(non_compliant_tests_name)
+
+  # check if some input tests are missing
   missing_input_tests = []
   for input_test in input_tests:
     # check, whether this input file is in TestingFramework.cmake
@@ -211,7 +274,7 @@ def main():
       allerrors.extend(['Refer to our Wiki-page for good-style unittests:',
         'https://gitlab.lrz.de/baci/baci/wikis/Unit-testing:-good-practice-in-software-development'])
 
-    # check input fiile tests
+    # check input file tests
     errors += check_inputtests(look_cmd, allerrors)
   except ValueError:
     print("Something went wrong! Check the error functions in this script again!")

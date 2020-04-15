@@ -430,7 +430,6 @@ void runEnsightVtuFilter(PostProblem& problem)
         dserror("wrong number of discretizations");
       break;
     }
-    case prb_var_chemdiff:
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
@@ -760,7 +759,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     case prb_fbi:
     {

@@ -53,10 +53,7 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Penalty
@@ -77,10 +74,9 @@ NDLINE                          24
 NDSURF                          12
 NDVOL                           2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1 1 2
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive
@@ -4344,9 +4340,6 @@ NODE 1472 COORD -1.999999911791123e+00 -1.999999911791122e+00 1.000000000000000e
 127 SOLIDH27 HEX27 1174 1209 1172 1117 919 970 918 870 1195 1192 1142 1145 1047 1088 1046 992 939 937 890 894 1167 1066 1065 1015 1018 915 1037 MAT 1 KINEM nonlinear
 128 SOLIDH27 HEX27 1156 1174 1117 1101 907 919 870 847 1162 1145 1111 1127 1026 1047 992 975 911 894 854 875 1133 1034 1018 979 999 883 1005 MAT 1 KINEM nonlinear
 129 SOLIDH27 HEX27 1153 764 546 930 1019 636 414 811 931 641 724 1028 1068 677 469 849 812 509 592 902 813 850 559 642 948 691 730 MAT 2 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
@@ -4354,10 +4347,7 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.8 VALUES 0 0 0.6
-----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.8 VALUES 0 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 0.5 VALUES 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 642 QUANTITY dispx VALUE 0.0000000000000000e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 642 QUANTITY dispy VALUE 0.0000000000000000e+00 TOLERANCE 1e-8

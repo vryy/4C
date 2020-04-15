@@ -2354,13 +2354,37 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
       const double time_fac = params.get("time_fac", 0.0);
 
-      const std::vector<int>* onoff = params.get<const std::vector<int>*>("onoff");
-      const std::vector<double>* springstiff =
-          params.get<const std::vector<double>*>("springstiff");
-      const std::vector<double>* dashpotvisc =
-          params.get<const std::vector<double>*>("dashpotvisc");
-      const std::vector<double>* disploffset =
-          params.get<const std::vector<double>*>("disploffset");
+      const auto* onoff = params.get<const std::vector<int>*>("onoff");
+      auto springstiff = *(params.get<const std::vector<double>*>("springstiff"));
+      auto dashpotvisc = *(params.get<const std::vector<double>*>("dashpotvisc"));
+      auto disploffset = *(params.get<const std::vector<double>*>("disploffset"));
+      const auto* numfuncstiff = params.get<const std::vector<int>*>("funct_stiff");
+      const auto* numfuncvisco = params.get<const std::vector<int>*>("funct_visco");
+      const auto* numfuncdisploffset = params.get<const std::vector<int>*>("funct_disploffset");
+
+      const double time = ParentElement()->IsParamsInterface()
+                              ? ParentElement()->ParamsInterfacePtr()->GetTotalTime()
+                              : params.get("total time", 0.0);
+
+      // scale coefficients with time function if activated
+      for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+        springstiff[i] =
+            (*numfuncstiff)[i] != 0
+                ? springstiff[i] *
+                      DRT::Problem::Instance()->Funct((*numfuncstiff)[i] - 1).EvaluateTime(time)
+                : springstiff[i];
+      for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+        dashpotvisc[i] =
+            (*numfuncvisco)[i] != 0
+                ? dashpotvisc[i] *
+                      DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
+                : dashpotvisc[i];
+      for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+        disploffset[i] = (*numfuncdisploffset)[i] != 0
+                             ? disploffset[i] * DRT::Problem::Instance()
+                                                    ->Funct((*numfuncdisploffset)[i] - 1)
+                                                    .EvaluateTime(time)
+                             : disploffset[i];
 
       // type of Robin conditions
       enum RobinType
@@ -2463,7 +2487,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   elevector2[node * numdf + dim1] * elevector2[node * numdf + dim2];
 
         // displacement offset, only take the first one and use this as the one in refsurfnormal
-        const double ref_disploff = (*disploffset)[0];
+        const double ref_disploff = disploffset[0];
 
         // (N \otimes N) disp, (N \otimes N) velo
         for (int node = 0; node < numnode; ++node)
@@ -2531,8 +2555,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
             {
               if ((*onoff)[dim])  // is this dof activated?
               {
-                const double fac_d = intpoints.qwgt[gp] * detA * (*springstiff)[dim];
-                const double fac_v = intpoints.qwgt[gp] * detA * (*dashpotvisc)[dim];
+                const double fac_d = intpoints.qwgt[gp] * detA * springstiff[dim];
+                const double fac_v = intpoints.qwgt[gp] * detA * dashpotvisc[dim];
 
                 // displacement and velocity at Gauss point
                 double dispnp_gp = 0.;
@@ -2547,22 +2571,22 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
                 for (int node = 0; node < numnode; ++node)
                   elevector1[node * numdf + dim] +=
-                      funct[node] * (fac_d * (dispnp_gp - (*disploffset)[dim] + offprestrn_gp) +
-                                        fac_v * velonp_gp);
+                      funct[node] *
+                      (fac_d * (dispnp_gp - disploffset[dim] + offprestrn_gp) + fac_v * velonp_gp);
 
                 // spring stress for output (const per element)
                 for (int node = 0; node < numnode; ++node)
                   elevector3[node * numdf + dim] -=
-                      (*springstiff)[dim] * (dispnp_gp - (*disploffset)[dim] + offprestrn_gp) +
-                      (*dashpotvisc)[dim] * velonp_gp;
+                      springstiff[dim] * (dispnp_gp - disploffset[dim] + offprestrn_gp) +
+                      dashpotvisc[dim] * velonp_gp;
               }
             }
 
             for (int dim = 0; dim < numdim; dim++)
               if ((*onoff)[dim])  // is this dof activated?
               {
-                const double fac_d = intpoints.qwgt[gp] * detA * (*springstiff)[dim];
-                const double fac_v = intpoints.qwgt[gp] * detA * (*dashpotvisc)[dim];
+                const double fac_d = intpoints.qwgt[gp] * detA * springstiff[dim];
+                const double fac_v = intpoints.qwgt[gp] * detA * dashpotvisc[dim];
                 for (int node1 = 0; node1 < numnode; ++node1)
                   for (int node2 = 0; node2 < numnode; ++node2)
                     (elematrix1)(node1 * numdf + dim, node2 * numdf + dim) +=
@@ -2578,8 +2602,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               if ((*onoff)[checkdof] != 0)
                 dserror("refsurfnormal Robin condition on 1st dof only!");
 
-            const double ref_stiff = (*springstiff)[0];
-            const double ref_visco = (*dashpotvisc)[0];
+            const double ref_stiff = springstiff[0];
+            const double ref_visco = dashpotvisc[0];
 
             const double fac_d = intpoints.qwgt[gp] * detA * ref_stiff;
             const double fac_v = intpoints.qwgt[gp] * detA * ref_visco;

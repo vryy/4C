@@ -89,7 +89,7 @@ THERM_TEMPGRAD                  None
 LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
@@ -99,10 +99,7 @@ DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1
 PREDICT                         ConstVel
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.444444444444
-ALPHA_M                         0.333333333333
-BETA                            0.308641975309
-GAMMA                           0.611111111111
+RHO_INF                         0.8
 GENAVG                          TrLike
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

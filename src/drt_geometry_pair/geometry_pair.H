@@ -60,6 +60,24 @@ namespace GEOMETRYPAIR
      */
     virtual void Setup();
 
+    /**
+     * \brief Pointer to the first element.
+     */
+    inline const DRT::Element* Element1() const { return element1_; };
+
+    /**
+     * \brief Pointer to the second element.
+     */
+    inline const DRT::Element* Element2() const { return element2_; };
+
+    /**
+     * \brief Set the pointer to the second element.
+     *
+     * For surface elements the pairs need the face element representing the surface, not the volume
+     * element.
+     */
+    inline void SetElement2(const DRT::Element* element2) { element2_ = element2; };
+
    protected:
     /**
      * \brief Check if Init was already called.
@@ -76,17 +94,6 @@ namespace GEOMETRYPAIR
     {
       if (!isinit_ || !issetup_) dserror("Init() and Setup() have not been called yet!");
     };
-
-    /**
-     * \brief  Pointer to the first element.
-     */
-    inline const DRT::Element* Element1() const { return element1_; };
-
-    /**
-     * \brief  Pointer to the second element.
-     */
-    inline const DRT::Element* Element2() const { return element2_; };
-
 
    protected:
     //! Indicates if the Init() function has been called.

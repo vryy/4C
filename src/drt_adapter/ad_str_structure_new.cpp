@@ -418,7 +418,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   {
     case prb_fsi:
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     case prb_immersed_cell:
     case prb_fbi:
@@ -511,11 +510,14 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") !=
-          INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none or
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID SURFACE MESHTYING"),
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 
@@ -953,7 +955,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));

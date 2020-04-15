@@ -12,14 +12,22 @@
 #ifndef BEAM_TO_SOLID_CONDITIONS_H_
 #define BEAM_TO_SOLID_CONDITIONS_H_
 
+#include <set>
 
 #include "beaminteraction_conditions.H"
 
 #include "../drt_lib/drt_dserror.H"
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <Teuchos_RCP.hpp>
+
+
+// Forward declarations.
+namespace DRT
+{
+  class FaceElement;
+}
 
 
 namespace BEAMINTERACTION
@@ -51,11 +59,22 @@ namespace BEAMINTERACTION
     bool IdsInCondition(const int id_line, const int id_other) const override;
 
     /**
+     * \brief Clear not reusable data (derived).
+     */
+    void Clear() override;
+
+    /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
         const std::vector<DRT::Element const*>& ele_ptrs,
         const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+
+    /**
+     * \brief Return a pointer to the condition of the other geometry (volume or surface).
+     * @return
+     */
+    const Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
 
    protected:
     /**
@@ -80,6 +99,9 @@ namespace BEAMINTERACTION
    protected:
     //! Pointer to the solid condition.
     Teuchos::RCP<const DRT::Condition> condition_other_;
+
+    //! Vector containing all beam contact pairs created by this condition.
+    std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
   };
 
   /**
@@ -101,8 +123,9 @@ namespace BEAMINTERACTION
     ~BeamToSolidConditionVolumeMeshtying(){};
 
     /**
-     * \brief Build the volume ID sets for this condition. The BuildIdSets method from the base
-     * class is called to build the beam IDs.
+     * \brief Build the volume ID sets for this condition.
+     *
+     * The BuildIdSets method from the base class is called to build the beam IDs.
      */
     void BuildIdSets() override;
 
@@ -150,7 +173,20 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void BuildIdSets() override { dserror("Not yet implemented!"); }
+    void BuildIdSets() override;
+
+    /**
+     * \brief Here we get all face elements that are needed for the created pairs. This includes
+     * elements which are not part of any pair, but share a node with a surface of a pair.
+     */
+    void Setup() override;
+
+    /**
+     * \brief Set the displacement state (derived).
+     */
+    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+            beaminteraction_data_state) override;
 
    protected:
     /**
@@ -165,10 +201,15 @@ namespace BEAMINTERACTION
      */
     inline bool IdInOther(const int id_other) const override
     {
-      dserror("Not yet implemented!");
+      if (surface_ids_.find(id_other) != surface_ids_.end()) return true;
       return false;
     }
-  };
+
+   private:
+    //! Map containing the global volume element IDs for each face element of the surface in this
+    //! condition.
+    std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;
+  };  // namespace BEAMINTERACTION
 }  // namespace BEAMINTERACTION
 
 #endif

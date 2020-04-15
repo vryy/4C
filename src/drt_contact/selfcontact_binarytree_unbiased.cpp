@@ -21,9 +21,8 @@
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
 CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& discret,
-    const Epetra_Comm* lcomm, const Teuchos::ParameterList& iparams,
-    Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
-    : SelfBinaryTree(discret, lcomm, iparams, elements, dim, eps),
+    const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
+    : SelfBinaryTree(discret, iparams, elements, dim, eps),
       Two_half_pass_(iparams.get<bool>("Two_half_pass")),
       Check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface")),
       Searchele_AllProc_(iparams.get<bool>("Searchele_AllProc"))
@@ -203,9 +202,6 @@ void CONTACT::UnbiasedSelfBinaryTree::GetContractedNode(
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::Init()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // call initialization method of base class
   MORTAR::BaseBinaryTree::Init();
 
@@ -224,7 +220,7 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
       procdualgraph;
 
   // loop over all interface processors
-  for (int p = 0; p < lComm()->NumProc(); ++p)
+  for (int p = 0; p < Comm().NumProc(); ++p)
   {
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
 
@@ -439,9 +435,6 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // check is root node available
   if (Roots().size() == 0) dserror("ERROR: No root node for search!");
   if (Roots()[0] == Teuchos::null) dserror("ERROR: No root node for search!");
@@ -466,7 +459,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
   // therefore find out which processor owns which root node
   std::vector<unsigned> myroots(0);
   for (unsigned i = 0; i < Roots().size(); ++i)
-    if (Roots()[i]->Owner() == lComm()->MyPID()) myroots.push_back(i);
+    if (Roots()[i]->Owner() == Comm().MyPID()) myroots.push_back(i);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes

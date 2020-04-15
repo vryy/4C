@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include <map>
+#include <set>
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
@@ -38,6 +39,13 @@ namespace GEOMETRYPAIR
 {
   class GeometryEvaluationDataBase;
 }
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class BeamInteractionDataState;
+  }
+}  // namespace STR
 
 
 namespace BEAMINTERACTION
@@ -78,15 +86,41 @@ namespace BEAMINTERACTION
     virtual void BuildIdSets();
 
     /**
-     * \brief Reset data that was build up in this condition.
+     * \brief Set the displacement state.
+     *
+     * @param discret (in) Discretization.
+     * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void Reset();
+    virtual void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+            beaminteraction_data_state)
+    {
+    }
 
     /**
-     * \brief Check if a combination of a beam element ID and another element (beam, solid, ...) ID
-     * is in this condition.
+     * \brief Setup geometry data.
+     */
+    virtual void Setup();
+
+    /**
+     * \brief Clear not reusable data.
+     */
+    virtual void Clear();
+
+    /**
+     * \brief Check if a combination of a beam element ID and another element (beam, solid, ...)
+     * ID is in this condition.
      */
     virtual bool IdsInCondition(const int id_line, const int id_other) const = 0;
+
+    /**
+     * \brief Return a pointer to the geometry evaluation data in this condition.
+     */
+    const Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData()
+        const
+    {
+      return geometry_evaluation_data_;
+    }
 
    protected:
     //! Pointer to the beam condition.
@@ -113,7 +147,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    ~BeamInteractionConditions(){};
+    virtual ~BeamInteractionConditions(){};
 
     /**
      * \brief Get all beam interaction conditions from the discretization.
@@ -130,9 +164,24 @@ namespace BEAMINTERACTION
     void BuildIdSets();
 
     /**
-     * \brief Reset data that was build up in the conditions.
+     * \brief Set the displacement state.
+     *
+     * @param discret (in) Discretization.
+     * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void Reset();
+    virtual void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+            beaminteraction_data_state);
+
+    /**
+     * \brief Setup data in the conditions.
+     */
+    virtual void Setup();
+
+    /**
+     * \brief Clear not reusable data in the conditions.
+     */
+    virtual void Clear();
 
     /**
      * \brief Create the correct pair for the given element pointers.

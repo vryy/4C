@@ -54,13 +54,6 @@ MATERIALTANGENT                 analytical
 NEGLECTINERTIA                  No
 PREDICT                         TangDis
 LINEAR_SOLVER                   1
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
-RHO_INF                         -1
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                Binarytree
@@ -73,11 +66,10 @@ NUMGP_PER_DIM                   3
 TRIANGULATION                   Delaunay
 RESTART_WITH_MESHTYING          No
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               Master
-GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 Dynamic
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
+GHOSTING_STRATEGY               redundant_master
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 RESTART_WITH_CONTACT            No

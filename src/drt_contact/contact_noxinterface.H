@@ -13,6 +13,7 @@
 #ifndef SRC_DRT_CONTACT_CONTACT_NOXINTERFACE_H_
 #define SRC_DRT_CONTACT_CONTACT_NOXINTERFACE_H_
 
+#include <vector>
 
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 

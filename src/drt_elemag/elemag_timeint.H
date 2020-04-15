@@ -17,6 +17,7 @@
 /*----------------------------------------------------------------------*
  | headers                                             gravemeier 06/17 |
  *----------------------------------------------------------------------*/
+#include <fstream>
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

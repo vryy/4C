@@ -36,6 +36,7 @@ namespace BEAMINTERACTION
   class BeamContactPair;
   class BeamInteractionConditions;
   class BeamToSolidVolumeMeshtyingVtkOutputWriter;
+  class BeamToSolidSurfaceVtkOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -159,6 +160,15 @@ namespace BEAMINTERACTION
         return contact_elepairs_;
       }
 
+      /**
+       * \brief Return the conditions in this submodel evaluator.
+       */
+      inline const Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions()
+          const
+      {
+        return beam_interaction_conditions_ptr_;
+      }
+
       //! @}
 
      protected:
@@ -229,6 +239,10 @@ namespace BEAMINTERACTION
       //  to get force and stiffness contributions from beam interactions
       void CreateBeamContactElementPairs();
 
+      /// Add the restart displacement to the pairs, if the coupling should be evaluated with
+      /// respect to the restart state.
+      void SetRestartDisplacementInPairs();
+
       //! @}
 
      private:
@@ -257,6 +271,10 @@ namespace BEAMINTERACTION
       //! This object handles all beam to solid volume related visualization output.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
           beam_to_solid_volume_meshtying_vtk_writer_ptr_;
+
+      //! This object handles all beam to solid surface related visualization output.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>
+          beam_to_solid_surface_vtk_writer_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR

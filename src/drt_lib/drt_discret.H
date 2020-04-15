@@ -289,6 +289,9 @@ namespace DRT
     /*!
     \brief Replace the dofset associated with the discretisation by a new dofset.
                    Sets havedof_ to false.
+
+    @param[in] newdofset New DofSet to be used in this discretization
+    @param[in] replaceinstatdofsets Replace also in static dofsets?
     */
     virtual void ReplaceDofSet(
         Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
@@ -2042,35 +2045,75 @@ namespace DRT
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
         std::map<int, Teuchos::RCP<DRT::Element>>& finalelements);
 
-    // internal data
-    std::string name_;                               // name of this discretization
-    Teuchos::RCP<Epetra_Comm> comm_;                 // an Epetra_comm
-    Teuchos::RCP<IO::DiscretizationWriter> writer_;  // a DiscretizationWriter
-    bool filled_;   // flag indicating whether getOrganized has been called
-    bool havedof_;  // flag indicating whether degrees of freedom where assigned
 
-    Teuchos::RCP<Epetra_Map> elerowmap_;    // unique distribution of element ownerships
-    Teuchos::RCP<Epetra_Map> elecolmap_;    // distribution of elements including ghost elements
-    std::vector<DRT::Element*> elerowptr_;  // vector of pointers to row elements for faster access
-    std::vector<DRT::Element*>
-        elecolptr_;  // vector of pointers to column elements for faster access
-    std::map<int, Teuchos::RCP<DRT::Element>> element_;  // map of elements
+    //! Name of this discretization
+    std::string name_;
 
-    Teuchos::RCP<Epetra_Map> noderowmap_;  // unique distribution of nodal ownerships
-    Teuchos::RCP<Epetra_Map> nodecolmap_;  // distribution of nodes including ghost nodes
-    std::vector<DRT::Node*> noderowptr_;   // vector of pointers to row nodes for faster access
-    std::vector<DRT::Node*> nodecolptr_;   // vector of pointers to column nodes for faster access
-    std::map<int, Teuchos::RCP<DRT::Node>> node_;  // map from nodal Gid to node pointers
+    //! Epetra_comm
+    Teuchos::RCP<Epetra_Comm> comm_;
 
-    std::vector<std::map<std::string, Teuchos::RCP<const Epetra_Vector>>>
-        state_;  // map of references to solution states
+    //! DiscretizationWriter
+    Teuchos::RCP<IO::DiscretizationWriter> writer_;
 
-    std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;  // map of import objects for states
+    //! Flag indicating whether FillComplete() has been called
+    bool filled_;
 
-    std::multimap<std::string, Teuchos::RCP<Condition>> condition_;  // some conditions e.g. BCs
+    //! Flag indicating whether degrees of freedom where assigned
+    bool havedof_;
 
-    std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;  // vector of DofSets
-  };                                                      // class Discretization
+
+    //! @name Elements
+    //! @{
+
+    //! Unique distribution of element ownerships
+    Teuchos::RCP<Epetra_Map> elerowmap_;
+
+    //! Distribution of elements including ghost elements
+    Teuchos::RCP<Epetra_Map> elecolmap_;
+
+    //! Vector of pointers to row elements for faster access
+    std::vector<DRT::Element*> elerowptr_;
+
+    //! Vector of pointers to column elements for faster access
+    std::vector<DRT::Element*> elecolptr_;
+
+    //! Map of elements
+    std::map<int, Teuchos::RCP<DRT::Element>> element_;
+
+    //! @}
+
+    //! @name Nodes
+    //! @{
+
+    //! Unique distribution of nodal ownerships
+    Teuchos::RCP<Epetra_Map> noderowmap_;
+
+    //! Distribution of nodes including ghost nodes
+    Teuchos::RCP<Epetra_Map> nodecolmap_;
+
+    //! Vector of pointers to row nodes for faster access
+    std::vector<DRT::Node*> noderowptr_;
+
+    //! Vector of pointers to column nodes for faster access
+    std::vector<DRT::Node*> nodecolptr_;
+
+    //! Map from nodal Gid to node pointers
+    std::map<int, Teuchos::RCP<DRT::Node>> node_;
+
+    //! @}
+
+    //! Map of references to solution states
+    std::vector<std::map<std::string, Teuchos::RCP<const Epetra_Vector>>> state_;
+
+    ///< Map of import objects for states
+    std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;
+
+    ///< Some conditions e.g. boundary conditions
+    std::multimap<std::string, Teuchos::RCP<Condition>> condition_;
+
+    //! Vector of DofSets
+    std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;
+  };  // class Discretization
 }  // namespace DRT
 
 

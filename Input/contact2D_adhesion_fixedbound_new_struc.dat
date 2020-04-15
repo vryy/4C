@@ -49,12 +49,6 @@ NORM_DISP             Abs
 NORMCOMBI_RESFDISP    And
 MAXITER               50
 PREDICT               TangDis
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                TrLike
-BETA                  0.309
-GAMMA                 0.611
-ALPHA_M               0.333
-ALPHA_F               0.444
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               sp

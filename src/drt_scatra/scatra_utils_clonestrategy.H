@@ -12,6 +12,8 @@
 #ifndef SCATRA_UTILS_CLONESTRATEGY_H
 #define SCATRA_UTILS_CLONESTRATEGY_H
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 

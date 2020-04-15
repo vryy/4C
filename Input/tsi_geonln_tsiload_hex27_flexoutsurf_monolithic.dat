@@ -82,10 +82,7 @@ TOLCONSTR                       1e-08  // 1e-06
 TOLDISP                         1e-10  // 1e-08
 TOLRES                          1e-08  // 1e-06
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
+RHO_INF                         1.0
 GENAVG                          TrLike
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5

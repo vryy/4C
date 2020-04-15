@@ -13,6 +13,10 @@
 #ifndef UTILS_PARALLEL_PROCTOPROC_H
 #define UTILS_PARALLEL_PROCTOPROC_H
 
+
+#include <map>
+#include <vector>
+
 #include "Teuchos_RCP.hpp"
 
 

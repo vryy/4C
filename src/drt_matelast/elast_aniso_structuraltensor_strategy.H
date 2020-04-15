@@ -95,17 +95,30 @@ namespace MAT
       /// destructor
       virtual ~StructuralTensorStrategyBase() { ; };
 
-      /// method for computing the structural tensor for anisotropic materials.
+      /// method for computing the structural tensor in stress like Voigt notation for anisotropic
+      /// materials. this is the core functionality of this object. each derived class has to
+      /// implement this method (pure virtual).
+      virtual void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<6, 1>& structural_tensor_stress) = 0;
+
+
+      /// method for computing the structural tensor in matrix notation for anisotropic materials.
       /// this is the core functionality of this object.
       /// each derived class has to implement this method (pure virtual).
       virtual void SetupStructuralTensor(
-          const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor) = 0;
+          const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor) = 0;
 
       /// \brief calculate MxM
       ///
       /// \param M (in) : vector (e.g. fiber direction)
       /// \param result (out) : result of dyadic product
       void DyadicProduct(const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result);
+
+      /// \brief calculate MxM
+      ///
+      /// \param M (in) : vector (e.g. fiber direction)
+      /// \param result (out) : result of dyadic product
+      void DyadicProduct(const LINALG::Matrix<3, 1>& M, LINALG::Matrix<3, 3>& result);
 
      protected:
       /// return residual tolerance of structural problem
@@ -137,7 +150,23 @@ namespace MAT
       /// constructor with given material parameters
       StructuralTensorStrategyStandard(MAT::ELASTIC::PAR::StructuralTensorParameter* params);
 
-      /// \brief method for computing the structural tensor for anisotropic materials
+      /// \brief method for computing the structural tensor for anisotropic materials in stress like
+      /// Voigt notation
+      ///
+      /// Simplest variant assuming perfect alignment of fiber with a given fiber direction M.
+      ///
+      /// <h3>Definiton of Structural Tensor H</h3>
+      ///
+      ///  H = M x M (x denotes the dydic product)
+      ///
+      /// \param fiber_vector (in) : direction of fiber 'M'
+      /// \param structural_tensor_stress (out) : structural tensor is 'H' filled inside
+      ///
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<6, 1>& structural_tensor_stress) override;
+
+      /// \brief method for computing the structural tensor for anisotropic materials in tensor
+      /// notation
       ///
       /// Simplest variant assuming perfect alignment of fiber with a given fiber direction M.
       ///
@@ -149,7 +178,7 @@ namespace MAT
       /// \param structural_tensor (out) : structural tensor is 'H' filled inside
       ///
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<6, 1>& structural_tensor) override;
+          LINALG::Matrix<3, 3>& structural_tensor) override;
 
     };  // class StructuralTensorStrategyStandard
 
@@ -251,12 +280,25 @@ namespace MAT
         In case of a perfect alignment of all fibres the integral yields the standard
 
         \param fiber_vector (in) : mean direction of fiber
-        \param structural_tensor (out) : generalized structural tensor
+        \param structural_tensor_stress (out) : generalized structural tensor in stress-like Voigt
+        notation
 
         \author rauch
         \date 10/17    */
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<6, 1>& structural_tensor) override;
+          LINALG::Matrix<6, 1>& structural_tensor_stress) override;
+
+      /*!
+       * @brief Evaluate generalized structural tensor with given distribution function in matrix
+       * notation
+       *
+       * @note This method is not yet implemented
+       *
+       * @param fiber_vector
+       * @param structural_tensor
+       */
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyByDistributionFunction
 
 
@@ -308,7 +350,19 @@ namespace MAT
         \author rauch
         \date 10/17    */
       void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
-          LINALG::Matrix<6, 1>& structural_tensor) override;
+          LINALG::Matrix<6, 1>& structural_tensor_stress) override;
+
+      /*!
+       * @brief Evaluates the transversely isotropic structural tensor with dispersin in matrix
+       * notation
+       *
+       * @note: This is not implemented yet.
+       *
+       * @param fiber_vector
+       * @param structural_tensor
+       */
+      void SetupStructuralTensor(const LINALG::Matrix<3, 1>& fiber_vector,
+          LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyDispersedTransverselyIsotropic
 
   }  // namespace ELASTIC

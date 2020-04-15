@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_fluid.H"
@@ -966,7 +967,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       case prb_fsi:
       case prb_immersed_fsi:
-      case prb_immersed_ale_fsi:
       case prb_immersed_membrane_fsi:
       case prb_gas_fsi:
       case prb_biofilm_fsi:

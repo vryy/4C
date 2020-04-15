@@ -43,7 +43,6 @@
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_two_phase_flow/two_phase_dyn.H"
-#include "../drt_variational/var_chemdiff_dyn.H"
 #include "../drt_wear/wear_dyn.H"
 #ifdef HAVE_FFTW
 #include "../drt_mlmc/drt_uq_dyn.H"
@@ -141,10 +140,6 @@ void ntacal()
       elch_dyn(restart);
       break;
 
-    case prb_var_chemdiff:
-      var_chemdiff_dyn(restart);
-      break;
-
     case prb_fluid_topopt:
       fluid_topopt_dyn();
       break;
@@ -163,7 +158,6 @@ void ntacal()
 
     case prb_immersed_fsi:
     case prb_immersed_cell:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
       immersed_problem_drt();
       break;

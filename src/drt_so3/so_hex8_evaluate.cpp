@@ -48,6 +48,8 @@
 #include "so_hex8_determinant_analysis.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_mat/thermomech_threephase.H"
+#include "so_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
@@ -1153,156 +1155,125 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       //==================================================================================
     case ELEMENTS::struct_interpolate_velocity_to_point:
     {
-      static bool is_immersed_ale_fsi =
-          (DRT::Problem::Instance()->GetProblemType() == prb_immersed_ale_fsi);
-      static DRT::Condition* porocondition = discretization.GetCondition("PoroCoupling");
-      bool is_ale_structure = false;
-      if (is_immersed_ale_fsi)
+      // get displacements and extract values of this element (set in PrepareFluidOp())
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
+
+#ifdef DEBUG
+      if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
+#endif
+
+      std::vector<double> mydispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+
+      std::vector<double> myvelnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+
+      // update element geometry
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
+      DRT::Node** nodes = Nodes();
+      for (int i = 0; i < NUMNOD_SOH8; ++i)
       {
-        if (porocondition->Geometry().find(Id()) != porocondition->Geometry().end())
+        const double* X = nodes[i]->X();
+        xrefe(i, 0) = X[0];
+        xrefe(i, 1) = X[1];
+        xrefe(i, 2) = X[2];
+
+        xcurr(i, 0) = xrefe(i, 0) + mydispnp[i * NODDOF_SOH8 + 0];
+        xcurr(i, 1) = xrefe(i, 1) + mydispnp[i * NODDOF_SOH8 + 1];
+        xcurr(i, 2) = xrefe(i, 2) + mydispnp[i * NODDOF_SOH8 + 2];
+      }
+
+      // shape functions and derivatives w.r.t. r,s,t
+      LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
+      LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv1;
+      // coordinates of given point in reference coordinates
+      LINALG::Matrix<NUMDIM_SOH8, 1> xsi;
+      xsi(0) = elevec2_epetra(0);
+      xsi(1) = elevec2_epetra(1);
+      xsi(2) = elevec2_epetra(2);
+      // evaluate shape functions and derivatives at given point w.r.t r,s,t
+      DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
+      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
+
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
+      for (int node = 0; node < NUMNOD_SOH8; ++node)
+      {
+        for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
         {
-          is_ale_structure = true;
+          myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
         }
       }
 
-      if (is_ale_structure == false)
+      if (params.get("calculate_velocity", 1))
       {
-        // get displacements and extract values of this element (set in PrepareFluidOp())
-        Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
+        //************************************************************************
+        // 1.) interpolation of velocity at n+1 to given point
+        //************************************************************************
 
-#ifdef DEBUG
-        if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
-        if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
-#endif
-
-        std::vector<double> mydispnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
-
-        std::vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
-
-        //    /////////////
-        //    // DEBUG
-        //    /////////////
-        //    for(int i=0; i<(int)mydispnp.size() ;++i)
-        //    {
-        //      std::cout<<mydispnp[i]<<" ";
-        //    }
-        //    std::cout<<""<<std::endl;
-
-        // update element geometry
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-        DRT::Node** nodes = Nodes();
-        for (int i = 0; i < NUMNOD_SOH8; ++i)
-        {
-          const double* X = nodes[i]->X();
-          xrefe(i, 0) = X[0];
-          xrefe(i, 1) = X[1];
-          xrefe(i, 2) = X[2];
-
-          xcurr(i, 0) = xrefe(i, 0) + mydispnp[i * NODDOF_SOH8 + 0];
-          xcurr(i, 1) = xrefe(i, 1) + mydispnp[i * NODDOF_SOH8 + 1];
-          xcurr(i, 2) = xrefe(i, 2) + mydispnp[i * NODDOF_SOH8 + 2];
-        }
-
-        // shape functions and derivatives w.r.t. r,s,t
-        LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-        LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv1;
-        // coordinates of given point in reference coordinates
-        LINALG::Matrix<NUMDIM_SOH8, 1> xsi;
-        xsi(0) = elevec2_epetra(0);
-        xsi(1) = elevec2_epetra(1);
-        xsi(2) = elevec2_epetra(2);
-        // evaluate shape functions and derivatives at given point w.r.t r,s,t
-        DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
-        DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
-
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
-        for (int node = 0; node < NUMNOD_SOH8; ++node)
-        {
-          for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
-          {
-            myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
-          }
-        }
-
-        if (params.get("calculate_velocity", 1))
-        {
-          //************************************************************************
-          // 1.) interpolation of velocity at n+1 to given point
-          //************************************************************************
-
-          // give back velocity at given point
-          LINALG::Matrix<3, 1> result;
-          result.MultiplyTN(myvelocitynp, shapefcts);
-          for (int i = 0; i < 3; ++i) elevec1_epetra(i) = result(i, 0);
-        }
-        else
-        {
-          //************************************************************************
-          // 2.) calculation of divergence of structural velocity
-          //************************************************************************
-
-          // get Jacobian matrix
-          // actually compute its transpose....
-          /*
-                   +-            -+ -1
-                   | dx   dy   dz |
-                   | --   --   -- |
-                   | dr   dr   dr |
-                   |              |
-                   | dx   dy   dz |
-          J^{-T} = | --   --   -- |
-                   | ds   ds   ds |
-                   |              |
-                   | dx   dy   dz |
-                   | --   --   -- |
-                   | dt   dt   dt |
-                   +-            -+
-          */
-
-          // global first derivatives of shape functions w.r.t x,y,z (by derxy1 = J^-T * deriv1)
-          LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> derxy1;
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> transJ;
-          transJ.Multiply(deriv1, xrefe);
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(transJ);
-          invJ.Invert();
-          derxy1.Multiply(invJ, deriv1);
-
-          // build (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * derxy1^T
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp(true);
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp_inv(true);
-          defgrdnp.MultiplyTT(xcurr, derxy1);
-          defgrdnp_inv.Invert(defgrdnp);
-
-          // evaluate divergence of structural velocity
-          double velocitydivergence = 0.0;
-
-          // div(v) = derxy1_A,I (dX_I/dx_i) v_Ai
-          for (int I = 0; I < NUMDIM_SOH8; ++I)
-          {
-            for (int A = 0; A < NUMNOD_SOH8; ++A)
-            {
-              for (int i = 0; i < NUMDIM_SOH8; ++i)
-              {
-                velocitydivergence += derxy1(I, A) * (defgrdnp_inv(I, i) * myvelocitynp(A, i));
-              }
-            }
-          }
-
-          // vector to fill
-          elevec1_epetra(3) = velocitydivergence;
-        }
-      }  // if immersed structure
+        // give back velocity at given point
+        LINALG::Matrix<3, 1> result;
+        result.MultiplyTN(myvelocitynp, shapefcts);
+        for (int i = 0; i < 3; ++i) elevec1_epetra(i) = result(i, 0);
+      }
       else
       {
-        for (int i = 0; i < 3; ++i) elevec1_epetra(i) = -12345.0;
+        //************************************************************************
+        // 2.) calculation of divergence of structural velocity
+        //************************************************************************
 
-        elevec1_epetra(3) = -12345.0;
+        // get Jacobian matrix
+        // actually compute its transpose....
+        /*
+                 +-            -+ -1
+                 | dx   dy   dz |
+                 | --   --   -- |
+                 | dr   dr   dr |
+                 |              |
+                 | dx   dy   dz |
+        J^{-T} = | --   --   -- |
+                 | ds   ds   ds |
+                 |              |
+                 | dx   dy   dz |
+                 | --   --   -- |
+                 | dt   dt   dt |
+                 +-            -+
+        */
 
-      }  // fsi structure
+        // global first derivatives of shape functions w.r.t x,y,z (by derxy1 = J^-T * deriv1)
+        LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> derxy1;
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> transJ;
+        transJ.Multiply(deriv1, xrefe);
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(transJ);
+        invJ.Invert();
+        derxy1.Multiply(invJ, deriv1);
+
+        // build (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * derxy1^T
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp(true);
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp_inv(true);
+        defgrdnp.MultiplyTT(xcurr, derxy1);
+        defgrdnp_inv.Invert(defgrdnp);
+
+        // evaluate divergence of structural velocity
+        double velocitydivergence = 0.0;
+
+        // div(v) = derxy1_A,I (dX_I/dx_i) v_Ai
+        for (int I = 0; I < NUMDIM_SOH8; ++I)
+        {
+          for (int A = 0; A < NUMNOD_SOH8; ++A)
+          {
+            for (int i = 0; i < NUMDIM_SOH8; ++i)
+            {
+              velocitydivergence += derxy1(I, A) * (defgrdnp_inv(I, i) * myvelocitynp(A, i));
+            }
+          }
+        }
+
+        // vector to fill
+        elevec1_epetra(3) = velocitydivergence;
+      }
     }
     break;
     //==================================================================================
@@ -2471,16 +2442,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    // default: material call in structural function is purely deformation-dependent
-    // in case of temperature-dependent material parameters, e.g. Young's modulus,
-    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) or
-        (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast) or
-        (Material()->MaterialType() == INPAR::MAT::m_vp_robinson))
-      GetTemperatureForStructuralMaterial(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       LINALG::Matrix<1, NUMDIM_SOH8> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
@@ -3501,12 +3467,16 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
     // update element geometry
+    LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       const double* x = nodes[i]->X();
+      xrefe(i, 0) = x[0];
+      xrefe(i, 1) = x[1];
+      xrefe(i, 2) = x[2];
       xcurr(i, 0) = x[0] + disp[i * NODDOF_SOH8 + 0];
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOH8 + 2];
@@ -3529,8 +3499,19 @@ void DRT::ELEMENTS::So_hex8::Update_element(
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOH8));
+
+    // center of element in reference configuration
+    LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    point.Clear();
+    soh8_ElementCenterRefeCoords(point, xrefe);
+    params.set("elecenter", point);
+
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
+      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      params.set("gprefecoord", point);
+
+
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
        **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -3653,7 +3634,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
         LINALG::SYEV(avg_stress, lambda, locsys);
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-        double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+        double newgamma = atan2(lambda(1, 1), lambda(2, 2));
         // compression in 2nd max direction, thus fibers are alligned to max principal direction
         if (lambda(1, 1) < 0) newgamma = 0.0;
 
@@ -3808,80 +3789,6 @@ void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_di
   // you're done here
   return;
 }
-
-/*----------------------------------------------------------------------*
- | get and set temperature required for some materials        dano 09/13|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
-    const LINALG::Matrix<NUMNOD_SOH8, 1>& shapefctsGP,  // shape function of current Gauss-point
-    Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
-)
-{
-  // initialise the temperature
-  Teuchos::RCP<std::vector<double>> temperature_vector =
-      params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
-  double scalartemp = 0.0;
-
-  if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
-  {
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrstvk->InitTemp();
-    }
-  }  // m_thermostvenant
-
-  // in this case the yield stress is temperature-dependent
-  else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-  {
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyp =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
-      // initialise the temperature field
-      scalartemp = thrplhyp->InitTemp();
-    }
-  }  // m_thermoplhyperelast
-
-  // if Robinson's material --> pass the current temperature to the material
-  else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
-  {
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> ctemp(true);
-
-    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-    if (temperature_vector == Teuchos::null)
-    {
-      Teuchos::RCP<MAT::Robinson> robinson =
-          Teuchos::rcp_dynamic_cast<MAT::Robinson>(Material(), true);
-      // initialise the temperature field
-      scalartemp = robinson->InitTemp();
-    }
-  }  // end Robinson's material
-
-  // current temperature vector is available
-  if (temperature_vector != Teuchos::null)
-  {
-    // scalar-valued temperature: T = shapefunctions . element temperatures
-    // T = N_T^(e) . T^(e)
-    // get the temperature vector by extraction from parameter list
-    LINALG::Matrix<NUMNOD_SOH8, 1> etemp(true);
-    for (int i = 0; i < NUMNOD_SOH8; ++i)
-    {
-      etemp(i, 0) = (*temperature_vector)[i];
-    }
-    // identical shapefunctions for displacements and temperatures
-    scalartemp = shapefctsGP.Dot(etemp);
-  }
-
-  // insert current element temperature T_{n+1} into parameter list
-  params.set<double>("scalartemp", scalartemp);
-
-}  // GetTemperatureForStructuralMaterial()
-
 
 /*----------------------------------------------------------------------*/
 

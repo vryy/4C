@@ -18,19 +18,23 @@
 
 
 // forward declaration ...
+class Epetra_FEVector;
 namespace LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
+  class SparseMatrix;
 }  // namespace LINALG
 namespace DRT
 {
+  class Discretization;
   class Element;
-}
+}  // namespace DRT
 namespace GEOMETRYPAIR
 {
   class GeometryPair;
   class GeometryEvaluationDataBase;
+  class FaceElement;
 }  // namespace GEOMETRYPAIR
 
 
@@ -103,6 +107,20 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const { return params_; }
+
+    /*!
+    \brief Get an element pointer by the elements index.
+    */
+    inline const DRT::Element* GetElement(const unsigned int index) const
+    {
+      if (index == 0)
+        return element1_;
+      else if (index == 1)
+        return element2_;
+      else
+        dserror("Index has to be 0 or 1, got %d", index);
+      return NULL;
+    };
 
     /*!
     \brief Get first element
@@ -243,6 +261,26 @@ namespace BEAMINTERACTION
     inline virtual bool IsAssemblyIndirect() const { return false; };
 
     /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix.
+     *
+     * This method can be used for pairs that couple more DOF than the ones from the two contact
+     * elements, e.g. surface patches with averaged normals also create coupling terms in the DOF of
+     * the neighbouring surface elements. Those pairs write their coupling terms into the global
+     * system vector / matrix and do not require an outside routine to do so.
+     *
+     * In some cases this can also be used to avoid the creation of variable size element vectors
+     * and matrices, by directly assembling templated vectors and matrices into the global ones.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param force_vector (in / out) Global force vector.
+     * @param stiffness_matrix (in / out) Global stiffness matrix.
+     */
+    virtual void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix){};
+
+    /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
      * @param local_D (out) Local mortar matrix $D$.
      * @param local_M (out) Local mortar matrix $M$.
@@ -286,6 +324,32 @@ namespace BEAMINTERACTION
       if (isinit_)
         dserror("If a geometry pair is created, it has has to be done before Init is called.");
     };
+
+    /**
+     * \brief Set the restart displacement in this pair.
+     *
+     * If coupling interactions should be evaluated w.r.t the restart state. Has to be implemented
+     * in derived class.
+     *
+     * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
+     * step, for all contained elements (Vector of vector).
+     */
+    virtual void SetRestartDisplacement(
+        const std::vector<std::vector<double>>& centerline_restart_vec_)
+    {
+      CheckInitSetup();
+    };
+
+    /**
+     * \brief Link the contact pair with the face element storing information on the averaged nodal
+     * normals.
+     *
+     * @param face_element (in) RCP to the face element.
+     */
+    virtual void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+    {
+      dserror("This method has to be implemented in the derived class.");
+    }
 
    protected:
     //! returns init state

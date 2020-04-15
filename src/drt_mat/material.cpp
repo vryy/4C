@@ -17,6 +17,7 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
+#include "thermomech_threephase.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
 #include "crystal_plasticity.H"
@@ -38,7 +39,6 @@
 #include "scatra_mat_multiporo.H"
 #include "scatra_mat_multiscale.H"
 #include "scatra_mat_aniso.H"
-#include "scatra_mat_var_chemdiffusion.H"
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
@@ -197,6 +197,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ThermoStVenantKirchhoff(curmat));
       MAT::PAR::ThermoStVenantKirchhoff* params =
           static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_thermomechthreephase:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::ThermoMechThreePhase(curmat));
+      auto params = dynamic_cast<MAT::PAR::ThermoMechThreePhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_thermopllinelast:
@@ -421,14 +428,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       MAT::PAR::ScatraMatAniso* params =
           static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_var_chemdiffusion:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraMatVarChemDiffusion(curmat));
-      MAT::PAR::ScatraMatVarChemDiffusion* params =
-          static_cast<MAT::PAR::ScatraMatVarChemDiffusion*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:
@@ -922,7 +921,12 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mfi_lin_scalar_aniso:
     case INPAR::MAT::mfi_lin_scalar_iso:
     case INPAR::MAT::mix_rule_base:
+    case INPAR::MAT::mix_rule_growthremodel:
     case INPAR::MAT::mix_elasthyper:
+    case INPAR::MAT::mix_elasthyper_elastin:
+    case INPAR::MAT::mix_prestress_strategy_cylinder:
+    case INPAR::MAT::mix_remodelfiber_expl:
+    case INPAR::MAT::mix_remodelfiber_impl:
     case INPAR::MAT::mfi_poly_scalar_aniso:
     case INPAR::MAT::mfi_poly_scalar_iso:
     {

@@ -83,8 +83,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement GetConstraintEnforcement()
-        const
+    inline INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement GetConstraintEnforcement() const
     {
       return constraint_enforcement_;
     }
@@ -92,8 +91,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization GetContactDiscretization()
-        const
+    inline INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization GetContactDiscretization() const
     {
       return contact_discretization_;
     }
@@ -101,8 +99,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions GetMortarShapeFunctionType()
-        const
+    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionType() const
     {
       return mortar_shape_function_;
     }
@@ -120,13 +117,13 @@ namespace BEAMINTERACTION
     inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
-     * \brief Returns the number of integration points along the circumfence of the beams cross
+     * \brief Returns the number of integration points along the circumference of the beams cross
      * section.
      * @return Number of points.
      */
-    inline unsigned int GetNumberOfIntegrationPointsCircumfence() const
+    inline unsigned int GetNumberOfIntegrationPointsCircumference() const
     {
-      return integration_points_circumfence_;
+      return integration_points_circumference_;
     }
 
     /**
@@ -134,6 +131,11 @@ namespace BEAMINTERACTION
      * @return Pointer to vtk output parameters.
      */
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> GetVtkOuputParamsPtr();
+
+    /**
+     * \brief Returns if the restart configuration should be coupled.
+     */
+    inline bool GetCoupleRestartState() const { return couple_restart_state_; }
 
    private:
     //! Flag if Init was called.
@@ -143,13 +145,13 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Enforcement strategy for constraints.
-    INPAR::BEAMTOSOLID::BeamToSolidVolumeConstraintEnforcement constraint_enforcement_;
+    INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement constraint_enforcement_;
 
     //! Discretization used for the contact.
-    INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization contact_discretization_;
+    INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization_;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    INPAR::BEAMTOSOLID::BeamToSolidVolumeMortarShapefunctions mortar_shape_function_;
+    INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_;
 
     //! Penalty parameter.
     double penalty_parameter_;
@@ -157,12 +159,15 @@ namespace BEAMINTERACTION
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
 
-    //! Number of integration points along the circumfencial direction in the cross section
+    //! Number of integration points along the circumferencial direction in the cross section
     //! projection.
-    unsigned int integration_points_circumfence_;
+    unsigned int integration_points_circumference_;
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;
+
+    //! If the coupling terms should be evaluated with the restart configuration.
+    bool couple_restart_state_;
   };
 
 }  // namespace BEAMINTERACTION

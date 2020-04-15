@@ -44,21 +44,24 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
-        this->ele1posref_, this->ele2posref_, this->line_to_volume_segments_);
+        beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_volume_segments_.size() == 0) return false;
+  if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_solid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
-  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
-  LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
+  LINALG::Matrix<3, 1, scalar_type_fad> r_beam;
+  LINALG::Matrix<3, 1, scalar_type_fad> r_solid;
+  LINALG::Matrix<3, 1, scalar_type_fad> force;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type_fad> force_element_1(true);
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> force_element_2(true);
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
@@ -67,18 +70,18 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_volume_segments_.size(); i_segment++)
+  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
-    beam_segmentation_factor = 0.5 * this->line_to_volume_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
@@ -116,14 +119,14 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
-    if (forcevec2 != NULL) forcevec2->Size(solid::n_dof_);
-    if (stiffmat11 != NULL) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != NULL) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != NULL) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != NULL) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->Size(beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->Size(solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
 
-    if (forcevec1 != NULL && forcevec2 != NULL)
+    if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
@@ -133,7 +136,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
         (*forcevec2)(i_dof) = force_element_2(i_dof).val();
     }
 
-    if (stiffmat11 != NULL && stiffmat12 != NULL && stiffmat21 != NULL && stiffmat22 != NULL)
+    if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
+        stiffmat22 != nullptr)
     {
       // $k_{11}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)

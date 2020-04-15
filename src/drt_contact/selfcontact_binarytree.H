@@ -508,15 +508,13 @@ namespace CONTACT
     For now, we only consider the serial case (1 processor) here!!!
 
     \param discret (in):    The contact interface discretization
-    \param lcomm (in):      Local interface communicator
     \param iparams (in):    interface specific parameter list
     \param elements (in):   All elements on self contact interface (fully overlapping map)
     \param dim (in):        The problem dimension
 
     */
-    SelfBinaryTree(DRT::Discretization& discret, const Epetra_Comm* lcomm,
-        const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim,
-        double eps);
+    SelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
+        Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
     /*!
     \brief Destructor
@@ -576,12 +574,6 @@ namespace CONTACT
 
     */
     std::map<int, std::vector<int>>& SetContactPairs() { return contactpairs_; }
-
-    /*!
-    \brief Get local interface communicator (only contains participating processors)
-
-    */
-    const Epetra_Comm* lComm() const { return lcomm_; }
 
     /*!
     \brief Get map of leaf nodes
@@ -826,9 +818,6 @@ namespace CONTACT
     // don't want = operator and cctor
     SelfBinaryTree operator=(const SelfBinaryTree& old) = delete;
     SelfBinaryTree(const SelfBinaryTree& old) = delete;
-
-    //! Local interface communicator
-    const Epetra_Comm* lcomm_;
 
     //! All contact elements on surface (full map)
     Teuchos::RCP<Epetra_Map> elements_;

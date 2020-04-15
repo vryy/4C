@@ -28,6 +28,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.1
 ALPHA_F                         0.1
+RHO_INF                         -1.0
 ---------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    gen
 //SPECIAL_INV_ANALYSIS            none

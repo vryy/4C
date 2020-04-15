@@ -10,6 +10,7 @@ lid-driven cavity.
 
 */
 /*----------------------------------------------------------------------*/
+#include <fstream>
 
 #include "turbulence_statistics_ldc.H"
 

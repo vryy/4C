@@ -26,7 +26,10 @@
 
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_dofset.H"
 #include "../drt_mortar/mortar_projector.H"
+
+#include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -88,12 +91,12 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-    const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    const bool selfcontact)
 {
   Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr =
       Teuchos::rcp(new CONTACT::InterfaceDataContainer());
   return Teuchos::rcp(
-      new CoInterface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact, redundant));
+      new CoInterface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact));
 }
 
 /*----------------------------------------------------------------------------*
@@ -141,9 +144,8 @@ CONTACT::CoInterface::CoInterface(
  *----------------------------------------------------------------------*/
 CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
-    const Teuchos::ParameterList& icontact, bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact, redundant),
+    const Teuchos::ParameterList& icontact, bool selfcontact)
+    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact),
       interfaceData_(
           Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
       selfcontact_(interfaceData_->IsSelfContact()),
@@ -204,9 +206,10 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContai
   // for self contact this is ensured in BuildInterfaces in contact_strategy_factory.cpp
   // so we only print a warning here, as it is possible to have another contact interface with a
   // different ID that does not need to be a self contact interface
-  if (!(selfcontact_ or nonSmoothContact_) && redundant == INPAR::MORTAR::redundant_all)
+  if (!(selfcontact_ or nonSmoothContact_) &&
+      interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
     if (Comm().MyPID() == 0)
-      std::cout << "WARNING: We do not want redundant interface storage for contact where not "
+      std::cout << "\n\nWARNING: We do not want redundant interface storage for contact where not "
                    "needed, as it is very expensive. But we need it e.g. for self contact."
                 << std::endl;
 
@@ -409,6 +412,292 @@ void CONTACT::CoInterface::AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele)
 
   idiscret_->AddElement(cele);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+    const bool enforce_ghosting_update, const int maxdof, const double meanVelocity)
+{
+  if (perform_rebalancing)
+  {
+    Redistribute();
+    FillCompleteNew(false, maxdof);
+  }
+
+  if (perform_rebalancing || enforce_ghosting_update)
+  {
+    // Assure that at least some maps are available
+    if (!Filled()) FillCompleteNew(false, maxdof);
+
+    // Finalize interface maps
+    ExtendInterfaceGhostingSafely(meanVelocity);
+    FillCompleteNew(true, maxdof);
+  }
+
+  // print new parallel distribution
+  if (perform_rebalancing)
+  {
+    if (Comm().MyPID() == 0)
+      std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
+    PrintParallelDistribution();
+  }
+
+  if (perform_rebalancing || enforce_ghosting_update) CreateSearchTree();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof)
+{
+  // store maximum global dof ID handed in
+  // this ID is later needed when setting up the Lagrange multiplier
+  // dof map, which of course must not overlap with existing dof ranges
+  maxdofglobal_ = maxdof;
+
+  /* We'd like to call idiscret_.FillComplete(true,false,false) but this will assign all nodes new
+   * degrees of freedom which we don't want. We would like to use the degrees of freedom that were
+   * stored in the mortar nodes. To do so, we have to create and set our own version of a DofSet
+   * class before we call FillComplete on the interface discretization. The specialized MortarDofSet
+   * class will not assign new dofs but will assign the dofs stored in the nodes.
+   */
+  {
+    Teuchos::RCP<MORTAR::MortarDofSet> mrtrdofset = Teuchos::rcp(new MORTAR::MortarDofSet());
+    Discret().ReplaceDofSet(mrtrdofset);
+  }
+
+  // FillComplete the interface discretization
+  Discret().FillComplete(isFinalParallelDistribution, false, false);
+
+  // check whether crosspoints / edge nodes shall be considered or not
+  InitializeCrossPoints();
+
+  // check for const/linear interpolation of 2D/3D quadratic Lagrange multipliers
+  InitializeLagMultConst();
+  InitializeLagMultLin();
+
+  // check/init corner/edge modification
+  InitializeCornerEdge();
+
+  // need row and column maps of slave and master nodes / elements / dofs
+  // separately so we can easily address them
+  UpdateMasterSlaveSets();
+
+  // initialize node and element data container
+  InitializeDataContainer();
+
+  // Communicate quadslave status among ALL processors
+  CommunicateQuadSlaveStatusAmongAllProcs();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVelocity)
+{
+  using Teuchos::RCP;
+
+  if (Discret().NodeColMap() == nullptr) dserror("NodeColMap not set.");
+  if (Discret().ElementColMap() == nullptr) dserror("ElementColMap not set.");
+
+  // later we might export node and element column map to extended or even FULL overlap,
+  // thus store the standard column maps first
+  {
+    // get standard nodal column map (overlap=1)
+    oldnodecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().NodeColMap())));
+
+    // get standard element column map (overlap=1)
+    oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().ElementColMap())));
+  }
+
+  switch (interfaceData_->GetExtendGhosting())
+  {
+    case INPAR::MORTAR::ExtendGhosting::redundant_all:
+    {
+      // to ease our search algorithms we'll afford the luxury to ghost all nodes
+      // on all processors. To do so, we'll take the node row map and export it to
+      // full overlap. Then we export the discretization to full overlap column map.
+      // This way, also all mortar elements will be fully ghosted on all processors.
+
+      // we want to do full ghosting on all procs
+      std::vector<int> allproc(Comm().NumProc());
+      for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+
+      // fill my own row node ids
+      const Epetra_Map* noderowmap = Discret().NodeRowMap();
+      std::vector<int> sdata(noderowmap->NumMyElements());
+      for (int i = 0; i < noderowmap->NumMyElements(); ++i) sdata[i] = noderowmap->GID(i);
+
+      // gather all gids of nodes redundantly
+      std::vector<int> rdata;
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+
+      // build completely overlapping map of nodes (on ALL processors)
+      Teuchos::RCP<Epetra_Map> newnodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+      sdata.clear();
+      rdata.clear();
+
+      // fill my own row element ids
+      const Epetra_Map* elerowmap = Discret().ElementRowMap();
+      sdata.resize(elerowmap->NumMyElements());
+      for (int i = 0; i < elerowmap->NumMyElements(); ++i) sdata[i] = elerowmap->GID(i);
+
+      // gather all gids of elements redundantly
+      rdata.resize(0);
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+
+      // build complete overlapping map of elements (on ALL processors)
+      Teuchos::RCP<Epetra_Map> newelecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+      sdata.clear();
+      rdata.clear();
+      allproc.clear();
+
+      // redistribute the discretization of the interface according to the
+      // new column layout
+      Discret().ExportColumnNodes(*newnodecolmap);
+      Discret().ExportColumnElements(*newelecolmap);
+
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::redundant_master:
+    {
+      // to ease our search algorithms we'll afford the luxury to ghost all master
+      // nodes on all processors. To do so, we'll take the master node row map and
+      // export it to full overlap. Then we export the discretization to partially
+      // full overlap column map. This way, also all master elements will be fully
+      // ghosted on all processors.
+
+      // at least for master, we want to do full ghosting on all procs
+      std::vector<int> allproc(Comm().NumProc());
+      for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+
+      // fill my own master row node ids
+      const Epetra_Map* noderowmap = Discret().NodeRowMap();
+      std::vector<int> sdata;
+      for (int i = 0; i < noderowmap->NumMyElements(); ++i)
+      {
+        int gid = noderowmap->GID(i);
+        DRT::Node* node = Discret().gNode(gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
+        MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+        if (!mrtrnode->IsSlave()) sdata.push_back(gid);
+      }
+
+      // gather all master row node gids redundantly
+      std::vector<int> rdata;
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+
+      // add my own slave column node ids (non-redundant, standard overlap)
+      const Epetra_Map* nodecolmap = Discret().NodeColMap();
+      for (int i = 0; i < nodecolmap->NumMyElements(); ++i)
+      {
+        int gid = nodecolmap->GID(i);
+        DRT::Node* node = Discret().gNode(gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
+        MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+        if (mrtrnode->IsSlave()) rdata.push_back(gid);
+      }
+
+      // build new node column map (on ALL processors)
+      Teuchos::RCP<Epetra_Map> newnodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+      sdata.clear();
+      rdata.clear();
+
+      // fill my own master row element ids
+      const Epetra_Map* elerowmap = Discret().ElementRowMap();
+      sdata.resize(0);
+      for (int i = 0; i < elerowmap->NumMyElements(); ++i)
+      {
+        int gid = elerowmap->GID(i);
+        DRT::Element* ele = Discret().gElement(gid);
+        if (!ele) dserror("Cannot find element with gid %", gid);
+        MORTAR::MortarElement* mrtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
+        if (!mrtrele->IsSlave()) sdata.push_back(gid);
+      }
+
+      // gather all gids of elements redundantly
+      rdata.resize(0);
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+
+      // add my own slave column node ids (non-redundant, standard overlap)
+      const Epetra_Map* elecolmap = Discret().ElementColMap();
+      for (int i = 0; i < elecolmap->NumMyElements(); ++i)
+      {
+        int gid = elecolmap->GID(i);
+        DRT::Element* ele = Discret().gElement(gid);
+        if (!ele) dserror("Cannot find element with gid %", gid);
+        MORTAR::MortarElement* mrtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
+        if (mrtrele->IsSlave()) rdata.push_back(gid);
+      }
+
+      // build new element column map (on ALL processors)
+      Teuchos::RCP<Epetra_Map> newelecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+      sdata.clear();
+      rdata.clear();
+      allproc.clear();
+
+      // redistribute the discretization of the interface according to the
+      // new node / element column layout (i.e. master = full overlap)
+      Discret().ExportColumnNodes(*newnodecolmap);
+      Discret().ExportColumnElements(*newelecolmap);
+
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    {
+      // Nothing to do in case of Round-Robin
+      break;
+    }
+    case INPAR::MORTAR::ExtendGhosting::binning:
+    {
+      // Extend master column map via binning
+
+      // Create the binning strategy
+      RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(meanVelocity);
+
+      // fill master and slave elements into bins
+      std::map<int, std::set<int>> slavebinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+      std::map<int, std::set<int>> masterbinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+      // Extend ghosting of the master elements
+      std::map<int, std::set<int>> ext_bin_to_ele_map;
+      RCP<const Epetra_Map> extendedmastercolmap =
+          binningstrategy->ExtendElementColMap(slavebinelemap, masterbinelemap, ext_bin_to_ele_map,
+              Teuchos::null, Teuchos::null, Discret().ElementColMap());
+
+      Discret().ExportColumnElements(*extendedmastercolmap);
+
+      // get the node ids of the elements that are to be ghosted and create a proper node column
+      // map for their export
+      std::set<int> nodes;
+      const int numMasterColElements = extendedmastercolmap->NumMyElements();
+      for (int lid = 0; lid < numMasterColElements; ++lid)
+      {
+        DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        const int* nodeids = ele->NodeIds();
+        for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+      }
+
+      std::vector<int> colnodes(nodes.begin(), nodes.end());
+      Teuchos::RCP<Epetra_Map> nodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+
+      Discret().ExportColumnNodes(*nodecolmap);
+      break;
+    }
+    default:
+    {
+      dserror("This case of redundant interface storage has not been covered, yet. Implement it!");
+      break;
+    }
+  }
 }
 
 
@@ -819,10 +1108,6 @@ void CONTACT::CoInterface::CollectDistributionData(int& numColElements, int& num
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::CreateSearchTree()
 {
-  // ***WARNING:*** This is commented out here, as idiscret_->SetState()
-  // needs all the procs around, not only the interface local ones!
-  // if (!lComm()) return;
-
   // warning
 #ifdef MORTARGMSHCTN
   if (Dim() == 3 && Comm().MyPID() == 0)
@@ -851,14 +1136,14 @@ void CONTACT::CoInterface::CreateSearchTree()
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
         binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
-            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
         binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
-            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       // initialize the self binary tree
       binarytreeself_->Init();
@@ -866,38 +1151,40 @@ void CONTACT::CoInterface::CreateSearchTree()
     //*****TWO BODY CONTACT*****
     else
     {
-      // get out of here if not participating in interface
-      if (!lComm()) return;
-
-      // create fully overlapping map of all master elements
-      // for non-redundant storage (RRloop) we handle the master elements
-      // like the slave elements --> melecolmap_
-      INPAR::MORTAR::GhostingStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-              InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-
-      // get update type of binary tree
-      INPAR::MORTAR::BinaryTreeUpdateType updatetype =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
-              InterfaceParams(), "BINARYTREE_UPDATETYPE");
-
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-      if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
+      switch (interfaceData_->GetExtendGhosting())
       {
-        melefullmap = melecolmap_;
+        case INPAR::MORTAR::ExtendGhosting::roundrobin:
+        case INPAR::MORTAR::ExtendGhosting::binning:
+        {
+          melefullmap = melecolmap_;
+          break;
+        }
+        case INPAR::MORTAR::ExtendGhosting::redundant_all:
+        case INPAR::MORTAR::ExtendGhosting::redundant_master:
+        {
+          melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+          break;
+        }
+        default:
+        {
+          dserror("Chosen parallel strategy not supported!");
+          break;
+        }
       }
-      else if (strat == INPAR::MORTAR::ghosting_redundant)
-      {
-        melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-      }
-      else
-        dserror("Chosen parallel strategy not supported!");
 
-      // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap, Dim(),
-          SearchParam(), updatetype, SearchUseAuxPos()));
-      // initialize the binary tree
-      binarytree_->Init();
+      {
+        // get update type of binary tree
+        INPAR::MORTAR::BinaryTreeUpdateType updatetype =
+            DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+                InterfaceParams(), "BINARYTREE_UPDATETYPE");
+
+        // create binary tree object for contact search and setup tree
+        binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap,
+            Dim(), SearchParam(), updatetype, SearchUseAuxPos()));
+        // initialize the binary tree
+        binarytree_->Init();
+      }
     }
   }
 
@@ -947,9 +1234,6 @@ void CONTACT::CoInterface::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::Initialize()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
 
@@ -7695,9 +7979,6 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
     const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   if (friction_ == false)
     dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
 
@@ -8066,9 +8347,6 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
   if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // create an interpolator instance
   Teuchos::RCP<NTS::CoInterpolator> interpolator =
       Teuchos::rcp(new NTS::CoInterpolator(imortar_, Dim()));
@@ -8428,9 +8706,6 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 void CONTACT::CoInterface::AssembleRegNormalForces(
     bool& localisincontact, bool& localactivesetchange)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter
   double pp = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -8565,9 +8840,6 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
   double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
@@ -8924,9 +9196,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
   double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
@@ -9291,9 +9560,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all slave nodes (row map)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
@@ -9350,9 +9616,6 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 void CONTACT::CoInterface::AssembleTN(
     Teuchos::RCP<LINALG::SparseMatrix> tglobal, Teuchos::RCP<LINALG::SparseMatrix> nglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9498,9 +9761,6 @@ void CONTACT::CoInterface::AssembleTN(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9546,9 +9806,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal,
     Teuchos::RCP<LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -9695,9 +9952,6 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
   /**********************************************************************/
@@ -9786,9 +10040,6 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
   /**********************************************************************/
@@ -9891,9 +10142,6 @@ void CONTACT::CoInterface::AssembleLinDM(
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -9984,9 +10232,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // FIXME It's possible to improve the performance, if only recently active nodes of the inactive
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
@@ -10042,9 +10287,6 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   static std::vector<int> lm_gid(Dim() - 1);
   static std::vector<int> lm_owner(Dim() - 1);
   static Epetra_SerialDenseVector lm_t(Dim() - 1);
@@ -10145,9 +10387,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   // rivatives of the Lagrange multipliers. This is according to Hüeber.
   // Because of worse convergence, this is not implemented, but the
   // code is commented after the algorithm.
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
 
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
@@ -10974,9 +11213,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -12737,9 +12973,6 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
     LINALG::SparseMatrix& linslipLMglobal, LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
@@ -14099,9 +14332,6 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
 {
   static int step = 0;
 
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   double lresMoSl[3] = {0.0, 0.0, 0.0};  // local slave moment
   double gresMoSl[3] = {0.0, 0.0, 0.0};  // global slave moment
   double lresMoMa[3] = {0.0, 0.0, 0.0};  // local master momemnt
@@ -14210,9 +14440,6 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
  *--------------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -14253,9 +14480,6 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
 void CONTACT::CoInterface::AssembleNCoupLin(
     LINALG::SparseMatrix& sglobal, ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
@@ -14334,9 +14558,6 @@ const CONTACT::CoInterface& CONTACT::CoInterface::GetMaSharingRefInterface() con
 void CONTACT::CoInterface::AssembleCoupLinD(
     LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
   //                 with c = Displacement slave or master dof
@@ -14415,8 +14636,6 @@ void CONTACT::CoInterface::AssembleCoupLinD(
 void CONTACT::CoInterface::AssembleCoupLinM(
     LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
-  if (!lComm()) return;
-
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof
   //                 with c = Displacement slave or master dof

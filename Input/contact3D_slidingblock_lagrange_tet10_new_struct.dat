@@ -47,6 +47,7 @@ BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+RHO_INF                         -1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 FRICTION                        Coulomb
@@ -69,10 +70,10 @@ LM_DUAL_CONSISTENT              none
 PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1

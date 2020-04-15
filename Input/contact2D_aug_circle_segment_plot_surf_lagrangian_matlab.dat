@@ -68,11 +68,10 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   4
 TRIANGULATION                   Delaunay
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               Master
-GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
+GHOSTING_STRATEGY               redundant_master
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        StdLagrange

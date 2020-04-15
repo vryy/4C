@@ -56,10 +56,7 @@ UZAWAMAXITER                    20
 UZAWAALGO                       direct
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-ALPHA_F                         0.459
-ALPHA_M                         0.378
-BETA                            0.291
-GAMMA                           0.581
+RHO_INF                         0.85
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -68,7 +65,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.64479346212057180e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.64479007935912236e+01 TOLERANCE 1e-8
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALUES 0 2 0 0

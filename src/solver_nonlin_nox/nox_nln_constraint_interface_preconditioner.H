@@ -15,6 +15,8 @@
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_CONSTRAINT_INTERFACE_PRECONDITIONER_H_
 
 
+#include <vector>
+
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include "nox_nln_enum_lists.H"
 #include <Teuchos_RCP.hpp>

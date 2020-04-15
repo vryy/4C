@@ -169,6 +169,20 @@ void SCATRA::ScaTraTimIntElch::Setup()
     electrodesoc_->resize(electrodesocconditions.size(), -1.);
     electrodecrates_ = Teuchos::rcp(new std::vector<double>);
     electrodecrates_->resize(electrodesocconditions.size(), -1.);
+
+    // safety checks
+    for (int i = 0; i < static_cast<int>(electrodesocconditions.size()); ++i)
+    {
+      const double one_hour = electrodesocconditions[i]->GetDouble("one_hour");
+
+      if (one_hour <= 0.0) dserror("One hour must not be negative");
+      if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
+        dserror("This is not one hour in SI units");
+      if (i > 0)  // in case of more than one condition
+        for (int j = 0; j < i; ++j)
+          if (one_hour != electrodesocconditions[j]->GetDouble("one_hour"))
+            dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
+    }
   }
 
   // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total
@@ -1333,6 +1347,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       const double c_100 = conditions[icond]->GetDouble("c_100%") * volratio;
       const double c_delta_inv = 1. / (c_100 - c_0);
 
+      // get one hour for c_rate
+      const double one_hour = conditions[icond]->GetDouble("one_hour");
+
       // compute state of charge and C rate for current electrode
       const double c_avg = (*scalars)(0) / intdomain;
       const double soc = (c_avg - c_0) * c_delta_inv;
@@ -1340,7 +1357,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       if (isale_)  // ToDo: The ALE case is still doing some weird stuff (strong temporal
                    // oscillations of C rate), so one should have a closer look at that...
         c_rate += (*scalars)(4) + (*scalars)(5) - c_avg * (*scalars)(3);
-      c_rate *= c_delta_inv * 3600. / intdomain;
+      c_rate *= c_delta_inv * one_hour / intdomain;
 
       // determine operation mode
       std::string mode;

@@ -120,25 +120,28 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(newele);
   if (therm != Teuchos::null)
   {
-    therm->SetMaterial(matid);
+    // cloning to same material id -> use the same material instance
+    if (so_base->Material()->Parameter()->Id() == matid)
+      therm->SetMaterial(0, so_base->Material());
+    else
+      therm->SetMaterial(matid);
     therm->SetDisType(oldele->Shape());  // set distype as well!
     therm->SetKinematicType(kintype);    // set kintype in cloned thermal element
     if (therm->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
     {
-      Teuchos::RCP<MAT::FourierVar> thermmat =
-          Teuchos::rcp_dynamic_cast<MAT::FourierVar>(therm->Material(), true);
-      // setup to create NumGP-sized history variables
-      int numgp = -1;
       switch (therm->Shape())
       {
         case DRT::Element::hex8:
-          THR::DisTypeToNumGaussPoints<DRT::Element::hex8> g;
-          numgp = g.nquad;
+        {
+          int numgp = THR::DisTypeToNumGaussPoints<DRT::Element::hex8>::nquad;
+          Teuchos::RCP<MAT::FourierVar> thermmat =
+              Teuchos::rcp_dynamic_cast<MAT::FourierVar>(therm->Material(), true);
+          thermmat->Setup(numgp);
           break;
+        }
         default:
           dserror("Shape not implemented.");
       }
-      thermmat->Setup(numgp);
     }
   }
   else

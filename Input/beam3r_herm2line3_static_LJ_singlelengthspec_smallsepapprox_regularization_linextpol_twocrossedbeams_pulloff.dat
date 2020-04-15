@@ -66,7 +66,7 @@ DOMAINBOUNDINGBOX               -2 -2 -1 2 2 1
 --------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY             Everydt
 --------------------------------------------------------------BEAM POTENTIAL
-POT_LAW_PREFACTOR               -1e-7 5e-25
+POT_LAW_PREFACTOR               -2.356194490192345e-7 1.8948417228819560e-24
 POT_LAW_EXPONENT                6.0 12.0
 BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox

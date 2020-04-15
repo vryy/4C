@@ -15,6 +15,7 @@
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 /**
@@ -43,13 +44,17 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Init(
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToSurface(
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
     const LINALG::Matrix<3, 1, scalar_type>& point,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
     const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   // Initialize data structures
+
+  // Approximated size of surface and beam diameter for valid projection check.
+  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const double beam_radius = GetLineRadius();
 
   // Vectors in 3D.
   LINALG::Matrix<3, 1, scalar_type> r_surface;
@@ -77,7 +82,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       // Check if tolerance is fulfilled.
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
-        if (ValidParameter2D<surface>(xi))
+        if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -104,27 +109,66 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
   }
 }
 
+
 /**
  *
  */
 template <typename scalar_type, typename line, typename surface>
-template <typename scalar_type_evaluate>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::EvaluateSurfacePosition(
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithOther(
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-    LINALG::Matrix<3, 1, scalar_type_evaluate>& r,
+    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
+    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
     const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
-  // Evaluate the normal.
-  LINALG::Matrix<3, 1, scalar_type_evaluate> normal;
-  EvaluateSurfaceNormal(q_surface, xi, normal, nodal_normals);
+  // Get number of faces for this volume and create a vector with the indices of the faces, so all
+  // surfaces of the volume can be checked for an intersection with the line.
+  unsigned int n_faces;
+  std::vector<unsigned int> face_fixed_parameters;
+  std::vector<double> face_fixed_values;
+  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
+  {
+    n_faces = 4;
+    face_fixed_parameters = {0, 0, 1, 1};
+    face_fixed_values = {-1., 1., -1., 1.};
+  }
+  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
+  {
+    n_faces = 3;
+    face_fixed_parameters = {0, 1, 2};
+    face_fixed_values = {0., 0., 1.};
+  }
+  else
+  {
+    dserror("Wrong DiscretizationTypeGeometry given!");
+  }
 
-  // Evaluate the position on the surface.
-  GEOMETRYPAIR::EvaluatePosition<surface>(xi, q_surface, r, Element2());
+  // Clear the input vector.
+  intersection_points.clear();
+  intersection_points.reserve(n_faces);
 
-  // Add the normal part to the position.
-  normal.Scale(xi(2));
-  r += normal;
+  // Create variables.
+  scalar_type eta;
+  LINALG::Matrix<3, 1, scalar_type> xi;
+  ProjectionResult intersection_found;
+
+  // Try to intersect the beam with each face.
+  for (unsigned int i = 0; i < n_faces; i++)
+  {
+    // Set starting values.
+    xi = xi_start;
+    eta = eta_start;
+
+    // Intersect the line with the surface.
+    IntersectLineWithSurfaceEdge(q_line, q_surface, face_fixed_parameters[i], face_fixed_values[i],
+        eta, xi, intersection_found, nodal_normals);
+
+    // If a valid intersection is found, add it to the output vector.
+    if (intersection_found == ProjectionResult::projection_found_valid)
+    {
+      intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
+    }
+  }
 }
 
 /**
@@ -147,47 +191,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   LINALG::Matrix<3, 1, FAD_outer> r_AD;
 
   // Evaluate the position.
-  EvaluateSurfacePosition(q_surface, xi_AD, r_AD, nodal_normals);
+  EvaluateSurfacePosition<surface>(xi_AD, q_surface, r_AD, Element2(), nodal_normals);
 
   // Extract the return values from the AD types.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
   {
     r(i_dir) = r_AD(i_dir).val();
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) dr(i_dir, i_dim) = r_AD(i_dir).dx(i_dim);
-  }
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-template <typename scalar_type_evaluate>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::EvaluateSurfaceNormal(
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    const LINALG::Matrix<3, 1, scalar_type_evaluate>& xi,
-    LINALG::Matrix<3, 1, scalar_type_evaluate>& normal,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
-{
-  if (nodal_normals == NULL)
-  {
-    // Calculate the normal as the geometrical normal on the element.
-    LINALG::Matrix<3, 2, scalar_type_evaluate> dr;
-    LINALG::Matrix<3, 1, scalar_type_evaluate> dr_0;
-    LINALG::Matrix<3, 1, scalar_type_evaluate> dr_1;
-    GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_surface, dr, Element2());
-    for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-    {
-      dr_0(i_dir) = dr(i_dir, 0);
-      dr_1(i_dir) = dr(i_dir, 1);
-    }
-    normal.CrossProduct(dr_0, dr_1);
-    normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
-  }
-  else
-  {
-    // Calculate the normal as a interpolation of nodal normals.
-    GEOMETRYPAIR::EvaluatePosition<surface>(xi, *nodal_normals, normal, Element2());
-    normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
   }
 }
 
@@ -205,15 +215,19 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 {
   // Check the input parameters.
   {
-    if (surface::surface_type_ == DiscretizationTypeSurface::quad && fixed_parameter > 1)
+    if (surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
       dserror(
           "Fixed_parameter in IntersectLineWithSurfaceEdge has to be smaller than 2 with a "
           "quad element.");
-    else if (surface::surface_type_ == DiscretizationTypeSurface::none)
-      dserror("Wrong DiscretizationTypeVolume type given.");
+    else if (surface::geometry_type_ == DiscretizationTypeGeometry::none)
+      dserror("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 2)
       dserror("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
   }
+
+  // Approximated size of surface and beam diameter for valid projection check.
+  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const double beam_radius = GetLineRadius();
 
   // Initialize data structures.
   // Point on line.
@@ -271,7 +285,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // Check if the parameter coordinates are valid.
-        if (ValidParameter1D(eta) && ValidParameter2D<surface>(xi))
+        if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -315,61 +329,70 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithSurface(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+bool GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ValidParameterSurface(
+    LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
+    const double beam_radius) const
 {
-  // Get number of faces for this volume and create a vector with the indices of the faces, so all
-  // surfaces of the volume can be checked for an intersection with the line.
-  unsigned int n_faces;
-  std::vector<unsigned int> face_fixed_parameters;
-  std::vector<double> face_fixed_values;
-  if (surface::surface_type_ == DiscretizationTypeSurface::quad)
-  {
-    n_faces = 4;
-    face_fixed_parameters = {0, 0, 1, 1};
-    face_fixed_values = {-1., 1., -1., 1.};
-  }
-  else if (surface::surface_type_ == DiscretizationTypeSurface::triangle)
-  {
-    n_faces = 3;
-    face_fixed_parameters = {0, 1, 2};
-    face_fixed_values = {0., 0., 1.};
-  }
+  // We only need to theck the normal distance if the coordinates are within the surface.
+  if (!ValidParameter2D<surface>(xi)) return false;
+
+  if ((-surface_size < xi(2) and xi(2) < surface_size) or
+      (-3.0 * beam_radius < xi(2) and xi(2) < 3 * beam_radius))
+    return true;
   else
+    return false;
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetLineRadius() const
+{
+  if (is_unit_test_)
+    return 1e10;
+  else
+    return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
+        ->GetCircularCrossSectionRadiusForInteractions();
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const
+{
+  // Get the position of the first 3 nodes of the surface.
+  LINALG::Matrix<2, 1, double> xi_corner_node;
+  LINALG::Matrix<3, 1, LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
+  LINALG::SerialDenseMatrix nodal_coordinates =
+      DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+  for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
-    dserror("Wrong surface type given!");
+    for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+      xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
+    EvaluatePosition<surface>(xi_corner_node, q_surface, corner_nodes(i_node), Element2());
   }
 
-  // Clear the input vector.
-  intersection_points.clear();
-  intersection_points.reserve(n_faces);
-
-  // Create variables.
-  scalar_type eta;
-  LINALG::Matrix<3, 1, scalar_type> xi;
-  ProjectionResult intersection_found;
-
-  // Try to intersect the beam with each face.
-  for (unsigned int i = 0; i < n_faces; i++)
+  // Calculate the maximum distance between the three points.
+  scalar_type max_distance = 0.0;
+  scalar_type distance = 0.0;
+  LINALG::Matrix<3, 1, scalar_type> diff;
+  for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
-    // Set starting values.
-    xi = xi_start;
-    eta = eta_start;
-
-    // Intersect the line with the surface.
-    IntersectLineWithSurfaceEdge(q_line, q_surface, face_fixed_parameters[i], face_fixed_values[i],
-        eta, xi, intersection_found, nodal_normals);
-
-    // If a valid intersection is found, add it to the output vector.
-    if (intersection_found == ProjectionResult::projection_found_valid)
+    for (unsigned int j_node = 0; j_node < 3; j_node++)
     {
-      intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
+      if (i_node == j_node) continue;
+
+      diff = corner_nodes(j_node);
+      diff -= corner_nodes(i_node);
+      distance = diff.Norm2();
+      if (distance > max_distance) max_distance = distance;
     }
   }
+
+  return max_distance;
 }
 
 
@@ -386,3 +409,5 @@ template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_h
     GEOMETRYPAIR::t_quad8>;
 template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>;
+template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs9>;

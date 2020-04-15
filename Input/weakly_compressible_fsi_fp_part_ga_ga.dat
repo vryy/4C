@@ -72,7 +72,7 @@ SEARCH_ALGORITHM      Binarytree
 SEARCH_PARAM          0.3
 ---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST       static
-REDUNDANT_STORAGE     all
+GHOSTING_STRATEGY     redundant_all
 ------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE          consint
 INTTYPE               segments
@@ -86,9 +86,7 @@ LINEAR_SOLVER         1
 NLNSOL                fullnewton
 PREDICT               ConstDisVelAcc
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F               0.5
-BETA                  0.25
-GAMMA                 0.5
+RHO_INF               1.0
 GENAVG                TrLike
 -----------------------------------------------------------SOLVER 1
 SOLVER                UMFPACK

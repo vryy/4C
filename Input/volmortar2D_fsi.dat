@@ -25,6 +25,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+RHO_INF                         -1.0
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
@@ -92,7 +93,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 ----------------------------------------------------------VOLMORTAR COUPLING
 INTTYPE                         segments
 CUTTYPE                         tessellation

@@ -12,6 +12,8 @@ parameter cn
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_PENALTY_UPDATE_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_PENALTY_UPDATE_H_
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

@@ -14,6 +14,7 @@
 #ifndef DRT_GLOBALPROBLEM_H
 #define DRT_GLOBALPROBLEM_H
 
+#include <memory>
 #include <vector>
 
 #include <Epetra_Comm.h>

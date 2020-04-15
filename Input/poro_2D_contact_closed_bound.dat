@@ -58,11 +58,10 @@ MESH_RELOCATION                 Initial
 INTTYPE                         Segments
 NUMGP_PER_DIM                   0
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               Master
-GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 none//dynamic//Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
+GHOSTING_STRATEGY               redundant_master
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 RESTART_WITH_CONTACT            No

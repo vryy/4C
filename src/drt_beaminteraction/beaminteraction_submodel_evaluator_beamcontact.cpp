@@ -47,6 +47,9 @@
 #include <NOX_Solver_Generic.H>
 
 #include "beaminteraction_conditions.H"
+#include "beam_to_solid_surface_meshtying_params.H"
+#include "beam_to_solid_surface_vtk_output_params.H"
+#include "beam_to_solid_surface_vtk_output_writer.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
@@ -63,7 +66,9 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
       beam_interaction_conditions_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
-      assembly_managers_(Teuchos::null)
+      assembly_managers_(Teuchos::null),
+      beam_to_solid_volume_meshtying_vtk_writer_ptr_(Teuchos::null),
+      beam_to_solid_surface_vtk_writer_ptr_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -114,11 +119,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
-              "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
+  // Check if beam-to-solid volume mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_volume_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -135,6 +141,32 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
+          GState().GetTimeN());
+    }
+  }
+
+  // Check if beam-to-solid surface mesh tying is present.
+  const Teuchos::ParameterList& beam_to_solid_surface_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+
+    beam_contact_params_ptr_->BuildBeamToSolidSurfaceMeshtyingParams();
+
+    // Build the beam to solid surface output writer if desired.
+    if (beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
+            ->GetVtkOuputParamsPtr()
+            ->GetOutputFlag())
+    {
+      beam_to_solid_surface_vtk_writer_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter);
+      beam_to_solid_surface_vtk_writer_ptr_->Init();
+      beam_to_solid_surface_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
+          beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()->GetVtkOuputParamsPtr(),
           GState().GetTimeN());
     }
   }
@@ -197,6 +229,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
     elepairptr->ResetState(
         element_posdofvec_absolutevalues[0], element_posdofvec_absolutevalues[1]);
   }
+
+  // Set restart displacements in the pairs.
+  SetRestartDisplacementInPairs();
+
+  // Update the geometry pair evaluation data.
+  beam_interaction_conditions_ptr_->SetState(DiscretPtr(), BeamInteractionDataStatePtr());
 }
 
 /*----------------------------------------------------------------------*
@@ -210,9 +248,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   // Loop over the assembly manager and assemble contributions into the global force vector.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
-        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
 
   return true;
@@ -229,9 +266,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetMutableStiff());
   }
 
   return true;
@@ -248,10 +284,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   // Loop over the assembly manager and assemble contributions into the global force vector and
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
-    assembly_manager->EvaluateForceStiff(DiscretPtr(),
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
         BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff(),
-        BeamInteractionDataStatePtr()->GetDisColNp());
+        BeamInteractionDataStatePtr()->GetMutableStiff());
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
@@ -300,6 +335,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(bool 
     WriteTimeStepOutputRuntimeVtpBeamContact();
   if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
     beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntime(this);
+  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -585,6 +622,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
   if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
     beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntimeIteration(
         this, solver.getNumIterations());
+  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntimeIteration(
+        this, solver.getNumIterations());
 }
 
 /*----------------------------------------------------------------------*
@@ -808,8 +848,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   contact_elepairs_.clear();
   assembly_managers_.clear();
 
-  // reset the geometry evaluation data
-  beam_interaction_conditions_ptr_->Reset();
+  // clear the geometry evaluation data
+  beam_interaction_conditions_ptr_->Clear();
 
   std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
@@ -848,6 +888,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
     }
   }
 
+  // Setup the geometry evaluation data.
+  beam_interaction_conditions_ptr_->Setup();
+
   // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_indirect;
@@ -882,6 +925,33 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
                          << " currently monitors " << std::setw(5) << std::right
                          << contact_elepairs_.size() << " beam contact pairs" << IO::endl;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SetRestartDisplacementInPairs()
+{
+  CheckInitSetup();
+
+  if (BeamInteractionDataStatePtr()->GetRestartCouplingFlag())
+  {
+    for (auto& pair : contact_elepairs_)
+    {
+      // Element Dof values at the restart state.
+      std::vector<std::vector<double>> element_restart_dispalcement_(2);
+
+      for (unsigned int i_element = 0; i_element < 2; ++i_element)
+      {
+        // Extract the Dof values of this element from the restart vector
+        BEAMINTERACTION::UTILS::ExtractPosDofVecValues(Discret(), pair->GetElement(i_element),
+            BeamInteractionDataStatePtr()->GetDisRestartCol(),
+            element_restart_dispalcement_[i_element]);
+      }
+
+      // Set the displacement state in the pair.
+      pair->SetRestartDisplacement(element_restart_dispalcement_);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*

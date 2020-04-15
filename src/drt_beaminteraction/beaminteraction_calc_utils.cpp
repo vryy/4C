@@ -676,6 +676,39 @@ namespace BEAMINTERACTION
     /**
      *
      */
+    template <unsigned int n_centerline_dof>
+    void GetElementCenterlineGIDIndices(DRT::Discretization const& discret, const DRT::Element* ele,
+        LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid)
+    {
+      // First we need the local IDs of the centerline DOFs.
+      std::vector<unsigned int> local_centerline_dof_indices;
+      auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      if (beam_element != NULL)
+      {
+        beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
+        if (local_centerline_dof_indices.size() != n_centerline_dof)
+          dserror(
+              "GetElementCenterlineGIDIndices: The size of the local_centerline_dof_indices (%d) "
+              "does not match the number of beam dofs (%d).",
+              local_centerline_dof_indices.size(), n_centerline_dof);
+      }
+      else
+        dserror("GetElementCenterlineGIDIndices: The given element has to be a beam element.");
+
+      // Get the GIDs of the whole beam element (including rotational DOFs).
+      std::vector<int> lmrow;
+      std::vector<int> lmrowowner;
+      std::vector<int> lmstride;
+      ele->LocationVector(discret, lmrow, lmrowowner, lmstride);
+
+      // Get the GIDs of only the centerline DOFs.
+      for (unsigned int i_dof = 0; i_dof < n_centerline_dof; i_dof++)
+        centerline_gid(i_dof) = lmrow[local_centerline_dof_indices[i_dof]];
+    }
+
+    /**
+     *
+     */
     void GetElementCenterlineDOFIndices(DRT::Discretization const& discret, const DRT::Element* ele,
         std::vector<unsigned int>& ele_centerline_dof_indices, unsigned int& num_dof)
     {
@@ -843,7 +876,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
         Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
-        std::vector<double>& element_posdofvec_absolutevalues)
+        std::vector<double>& element_posdofvec_values)
     {
       std::vector<double> eledispvec;
 
@@ -855,17 +888,14 @@ namespace BEAMINTERACTION
 
       if (beam_element_ptr != NULL)
       {
-        // get the current absolute values for those Dofs relevant for centerline interpolation
-        // initial values are added by element itself
+        // get the current  values for those Dofs relevant for centerline interpolation
         beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
-            eledispvec, element_posdofvec_absolutevalues, false);
+            eledispvec, element_posdofvec_values, false);
       }
       else
       {
-        element_posdofvec_absolutevalues = eledispvec;
-        for (unsigned int dim = 0; dim < 3; ++dim)
-          for (int node = 0; node < ele->NumNode(); ++node)
-            element_posdofvec_absolutevalues[3 * node + dim] += ele->Nodes()[node]->X()[dim];
+        // for non beam elements, just return the element Dof vector
+        element_posdofvec_values = eledispvec;
       }
     }
 
@@ -1301,6 +1331,8 @@ namespace BEAMINTERACTION
         std::vector<LINALG::SerialDenseVector>&,
         std::vector<std::vector<LINALG::SerialDenseMatrix>>&);
 
+    template void GetElementCenterlineGIDIndices<12>(
+        DRT::Discretization const&, const DRT::Element*, LINALG::Matrix<12, 1, int>&);
 
   }  // namespace UTILS
 }  // namespace BEAMINTERACTION

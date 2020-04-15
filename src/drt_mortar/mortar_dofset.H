@@ -29,6 +29,7 @@ namespace MORTAR
   {
    public:
     //! @name Constructors and destructors and related methods
+    //! @{
 
     /*!
     \brief Standard Constructor
@@ -40,20 +41,32 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~MortarDofSet() { return; }
+    virtual ~MortarDofSet() = default;
 
     /// create a copy of this object
     virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MortarDofSet(*this)); }
 
-    //@}
+    //! @}
 
     //! @name Construction
+    //! @{
 
-    /// Assign dof numbers to all elements and nodes of the discretization.
+    /*!
+    \brief Assign dof numbers to all elements and nodes of the discretization
+
+    This specialized DofSet does not generate DOFs by itself, but rather extracts them from the
+    mortar nodes and sticks them into the discretization of the mortar interface.
+
+    @param[in] dis Discretization of a mortar interface
+    @param[in] dspos Position of DOfSet inside its discretization
+    @param[in] start User-defined offset for DOF numbering [currently not supported]
+
+    @return Maximum dof number of this dofset
+    */
     virtual int AssignDegreesOfFreedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start);
 
-    //@}
+    //! @}
 
    protected:
   };  // class MortarDofSet

@@ -105,6 +105,16 @@ namespace INPAR
       evaluate_nodal_area_fractions
     };
 
+    //! regularization types for plating reaction
+    enum RegularizationType
+    {
+      regularization_undefined,
+      regularization_none,
+      regularization_hein,
+      regularization_polynomial,
+      regularization_trigonometrical
+    };
+
     //! set valid parameters for scatra-scatra interface coupling
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

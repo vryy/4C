@@ -11,6 +11,8 @@ transport problems
 #ifndef SCATRA_MAT_MULTISCALE_GP_H
 #define SCATRA_MAT_MULTISCALE_GP_H
 
+#include <vector>
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

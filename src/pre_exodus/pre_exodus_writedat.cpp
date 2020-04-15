@@ -69,7 +69,7 @@ void EXODUS::WriteDatIntro(
          "                  General Data File BACI\n"
          "==================================================================\n"
          "-------------------------------------------------------------TITLE\n"
-         "created by pre_exodus \n"
+         "created by pre_exodus\n"
          "------------------------------------------------------PROBLEM SIZE\n";
   // print number of elements and nodes just as an comment instead of
   // a valid parameter (prevents possible misuse of these parameters in BACI)

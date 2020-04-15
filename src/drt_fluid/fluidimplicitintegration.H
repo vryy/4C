@@ -975,6 +975,8 @@ namespace FLD
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
 
+    void ResetExternalForces();
+
    protected:
     // don't want = operator and cctor
     // FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);

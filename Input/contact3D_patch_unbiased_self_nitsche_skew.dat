@@ -38,7 +38,7 @@ NUMGP_PER_DIM                   1
 TRIANGULATION                   center
 --------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
-REDUNDANT_STORAGE               All
+GHOSTING_STRATEGY               redundant_all
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1

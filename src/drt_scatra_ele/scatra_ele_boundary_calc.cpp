@@ -1061,11 +1061,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
           dserror("Number of permeabilities does not match number of scalars!");
 
         // core residual
-        const double N = timefacrhsfac * (*permeabilities)[k] * (slavephiint - masterphiint);
+        const double N_timefacrhsfac =
+            timefacrhsfac * (*permeabilities)[k] * (slavephiint - masterphiint);
 
         // core linearizations
-        const double dN_dc_slave = timefacfac * (*permeabilities)[k];
-        const double dN_dc_master = -dN_dc_slave;
+        const double dN_dc_slave_timefacfac = timefacfac * (*permeabilities)[k];
+        const double dN_dc_master_timefacfac = -dN_dc_slave_timefacfac;
 
         if (k_ss.M() and k_sm.M() and r_s.Length())
         {
@@ -1074,12 +1075,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
             const int fvi = vi * numscal + k;
 
             for (int ui = 0; ui < nen_; ++ui)
-              k_ss(fvi, ui * numscal + k) += test_slave(vi) * dN_dc_slave * funct_slave(ui);
+              k_ss(fvi, ui * numscal + k) +=
+                  test_slave(vi) * dN_dc_slave_timefacfac * funct_slave(ui);
 
             for (int ui = 0; ui < nen_master; ++ui)
-              k_sm(fvi, ui * numscal + k) += test_slave(vi) * dN_dc_master * funct_master(ui);
+              k_sm(fvi, ui * numscal + k) +=
+                  test_slave(vi) * dN_dc_master_timefacfac * funct_master(ui);
 
-            r_s[fvi] -= test_slave(vi) * N;
+            r_s[fvi] -= test_slave(vi) * N_timefacrhsfac;
           }
         }
         else if (k_ss.M() or k_sm.M() or r_s.Length())
@@ -1092,12 +1095,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
             const int fvi = vi * numscal + k;
 
             for (int ui = 0; ui < nen_; ++ui)
-              k_ms(fvi, ui * numscal + k) -= test_master(vi) * dN_dc_slave * funct_slave(ui);
+              k_ms(fvi, ui * numscal + k) -=
+                  test_master(vi) * dN_dc_slave_timefacfac * funct_slave(ui);
 
             for (int ui = 0; ui < nen_master; ++ui)
-              k_mm(fvi, ui * numscal + k) -= test_master(vi) * dN_dc_master * funct_master(ui);
+              k_mm(fvi, ui * numscal + k) -=
+                  test_master(vi) * dN_dc_master_timefacfac * funct_master(ui);
 
-            r_m[fvi] += test_master(vi) * N;
+            r_m[fvi] += test_master(vi) * N_timefacrhsfac;
           }
         }
         else if (k_ms.M() or k_mm.M() or r_m.Length())
@@ -1182,7 +1187,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
             dserror("Number of permeabilities does not match number of scalars!");
 
           // core linearization
-          const double dN_dd_slave =
+          const double dN_dd_slave_timefacwgt =
               timefacwgt * (*permeabilities)[k] * (slavephiint - masterphiint);
 
           // loop over matrix columns
@@ -1194,7 +1199,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
             for (int vi = 0; vi < nen_; ++vi)
             {
               const int fvi = vi * numscal_ + k;
-              const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave;
+              const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave_timefacwgt;
 
               // loop over spatial dimensions
               for (unsigned dim = 0; dim < 3; ++dim)

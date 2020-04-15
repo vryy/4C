@@ -969,7 +969,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_WEG6, 1> funct(true);
@@ -1557,7 +1558,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       LINALG::SYEV(avg_stress, lambda, locsys);
 
       // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-      double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+      double newgamma = atan2(lambda(1, 1), lambda(2, 2));
       // compression in 2nd max direction, thus fibers are alligned to max principal direction
       if (lambda(1, 1) < 0) newgamma = 0.0;
 

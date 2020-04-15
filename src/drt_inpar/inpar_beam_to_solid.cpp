@@ -46,49 +46,6 @@ void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
 /**
  *
  */
-DRT::UTILS::GaussRule1D INPAR::BEAMTOSOLID::IntToGaussRule1D(const int n_gauss_points)
-{
-  switch (n_gauss_points)
-  {
-    case 1:
-      return DRT::UTILS::GaussRule1D::intrule_line_1point;
-    case 2:
-      return DRT::UTILS::GaussRule1D::intrule_line_2point;
-    case 3:
-      return DRT::UTILS::GaussRule1D::intrule_line_3point;
-    case 4:
-      return DRT::UTILS::GaussRule1D::intrule_line_4point;
-    case 5:
-      return DRT::UTILS::GaussRule1D::intrule_line_5point;
-    case 6:
-      return DRT::UTILS::GaussRule1D::intrule_line_6point;
-    case 7:
-      return DRT::UTILS::GaussRule1D::intrule_line_7point;
-    case 8:
-      return DRT::UTILS::GaussRule1D::intrule_line_8point;
-    case 9:
-      return DRT::UTILS::GaussRule1D::intrule_line_9point;
-    case 10:
-      return DRT::UTILS::GaussRule1D::intrule_line_10point;
-    case 16:
-      return DRT::UTILS::GaussRule1D::intrule_line_16point;
-    case 20:
-      return DRT::UTILS::GaussRule1D::intrule_line_20point;
-    case 32:
-      return DRT::UTILS::GaussRule1D::intrule_line_32point;
-    case 50:
-      return DRT::UTILS::GaussRule1D::intrule_line_50point;
-    default:
-    {
-      dserror("No Gauss rule defined for %d points", n_gauss_points);
-      return DRT::UTILS::GaussRule1D::intrule1D_undefined;
-    }
-  }
-};
-
-/**
- *
- */
 void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -105,29 +62,27 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   Teuchos::ParameterList& beam_to_solid_volume_mestying =
       beaminteraction.sublist("BEAM TO SOLID VOLUME MESHTYING", false, "");
   {
-    setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
-        "none", "Type of employed contact discretization",
+    setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
+        "Type of employed contact discretization",
         tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
-        tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
-            BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
-            BeamToSolidVolumeContactDiscretization::mortar,
-            BeamToSolidVolumeContactDiscretization::gauss_point_cross_section),
+        tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
+            BeamToSolidContactDiscretization::gauss_point_to_segment,
+            BeamToSolidContactDiscretization::mortar,
+            BeamToSolidContactDiscretization::gauss_point_cross_section),
         &beam_to_solid_volume_mestying);
 
-    setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",
-        "none", "Type of employed constraint enforcement strategy",
-        tuple<std::string>("none", "penalty"),
-        tuple<BeamToSolidVolumeConstraintEnforcement>(BeamToSolidVolumeConstraintEnforcement::none,
-            BeamToSolidVolumeConstraintEnforcement::penalty),
+    setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
+        "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
+        tuple<BeamToSolidConstraintEnforcement>(
+            BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         &beam_to_solid_volume_mestying);
 
-    setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
-        "none", "Shape function for the mortar Lagrange-multiplicators",
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers",
         tuple<std::string>("none", "line2", "line3", "line4"),
-        tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
-            BeamToSolidVolumeMortarShapefunctions::line2,
-            BeamToSolidVolumeMortarShapefunctions::line3,
-            BeamToSolidVolumeMortarShapefunctions::line4),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
     DoubleParameter("PENALTY_PARAMETER", 0.0,
@@ -135,6 +90,16 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
+
+    // This option only has an effect during a restart simulation.
+    // - No:  (default) The coupling is treated the same way as during a non restart simulation,
+    //        i.e. the initial configurations (zero displacement) of the beams and solids are
+    //        coupled.
+    // - Yes: The beam and solid states at the restart configuration are coupled. This allows to
+    //        pre-deform the structures and then couple them.
+    setStringToIntegralParameter<int>("COUPLE_RESTART_STATE", "No",
+        "Enable / disable the coupling of the restart configuration.", yesnotuple, yesnovalue,
+        &beam_to_solid_volume_mestying);
   }
 
   // Beam to solid volume mesh tying output parameters.
@@ -170,6 +135,90 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+  }
+
+  // Beam to solid surface mesh tying parameters.
+  Teuchos::ParameterList& beam_to_solid_surface_mestying =
+      beaminteraction.sublist("BEAM TO SOLID SURFACE MESHTYING", false, "");
+  {
+    setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
+        "Type of employed contact discretization",
+        tuple<std::string>("none", "gauss_point_to_segment", "mortar"),
+        tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
+            BeamToSolidContactDiscretization::gauss_point_to_segment,
+            BeamToSolidContactDiscretization::mortar),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
+        "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
+        tuple<BeamToSolidConstraintEnforcement>(
+            BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidSurfaceCoupling>("COUPLING_TYPE", "none",
+        "How the coupling constraints are formulated/",
+        tuple<std::string>("none", "configurations_forced_to_zero", "displacements"),
+        tuple<BeamToSolidSurfaceCoupling>(BeamToSolidSurfaceCoupling::none,
+            BeamToSolidSurfaceCoupling::configurations_forced_to_zero,
+            BeamToSolidSurfaceCoupling::displacements),
+        &beam_to_solid_surface_mestying);
+
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers",
+        tuple<std::string>("none", "line2", "line3", "line4"),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
+        &beam_to_solid_surface_mestying);
+
+    DoubleParameter("PENALTY_PARAMETER", 0.0,
+        "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
+
+    // Add the geometry pair input parameters.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
+  }
+
+  // Beam to solid surface parameters.
+  Teuchos::ParameterList& beam_to_solid_surface =
+      beaminteraction.sublist("BEAM TO SOLID SURFACE", false, "");
+
+  // Beam to solid surface output parameters.
+  Teuchos::ParameterList& beam_to_solid_surface_vtk =
+      beam_to_solid_surface.sublist("RUNTIME VTK OUTPUT", false, "");
+  {
+    // Whether to write vtp output at all.
+    setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
+        "Enable / disable beam-to-solid volume mesh tying output.", yesnotuple, yesnovalue,
+        &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("NODAL_FORCES", "No",
+        "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
+        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("AVERAGED_NORMALS", "No",
+        "Enable / disable output of averaged nodal normals on the surface.", yesnotuple, yesnovalue,
+        &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
+        "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
+        "multiplier shape functions.",
+        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("MORTAR_LAMBDA_CONTINUOUS", "No",
+        "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
+        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+
+    DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+        "Number of segments for continuous mortar output", &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("SEGMENTATION", "No",
+        "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
+        &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
+        "Enable / disable output of used integration points. If the contact method has 'forces' at "
+        "the integration point, they will also be output.",
+        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/voigt_notation.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -128,8 +129,26 @@ void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
+    const LINALG::Matrix<3, 1>& M, LINALG::Matrix<3, 3>& result)
+{
+  result.MultiplyNT(M, M);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
+{
+  DyadicProduct(fiber_vector, structural_tensor_stress);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
 {
   DyadicProduct(fiber_vector, structural_tensor);
 }
@@ -138,7 +157,7 @@ void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_50point);
   LINALG::Matrix<numbgp, twice> rho;
@@ -160,6 +179,9 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   aux_fiber_vector(0) = sin(theta_aux);
   aux_fiber_vector(1) = 0.0;
   aux_fiber_vector(2) = gausspoints.qxg[numbgp - 1][0];  // = cos(theta_aux)
+
+  // ensure that the structural tensor is empty on input
+  structural_tensor_stress.Clear();
 
   // gauss integration over sphere
   // see Atkinson 1982
@@ -199,14 +221,14 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
       // integration fac
       double fac = (M_PI * gausspoints.qwgt[i] * rho(i, j)) / ((double)numbgp);
 
-      structural_tensor(0) += fac * x(0) * x(0);  // A_11
-      structural_tensor(1) += fac * x(1) * x(1);  // A_22
-      structural_tensor(2) += fac * x(2) * x(2);  // A_33
-      structural_tensor(3) += fac * x(0) * x(1);  // A_12
-      structural_tensor(4) += fac * x(1) * x(2);  // A_23
-      structural_tensor(5) += fac * x(0) * x(2);  // A_13
-    }                                             // loop over i
-  }                                               // loop over j
+      structural_tensor_stress(0) += fac * x(0) * x(0);  // A_11
+      structural_tensor_stress(1) += fac * x(1) * x(1);  // A_22
+      structural_tensor_stress(2) += fac * x(2) * x(2);  // A_33
+      structural_tensor_stress(3) += fac * x(0) * x(1);  // A_12
+      structural_tensor_stress(4) += fac * x(1) * x(2);  // A_23
+      structural_tensor_stress(5) += fac * x(0) * x(2);  // A_13
+    }                                                    // loop over i
+  }                                                      // loop over j
 
   // after we evaluated the structural tensor in the auxiliary direction,
   // we rotate the tensor to the desired fiber orientation.
@@ -256,12 +278,12 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
     rotation.Multiply(rotation2, rotation1);
 
     LINALG::Matrix<3, 3> tensor3x3;
-    tensor3x3(0, 0) = structural_tensor(0);
-    tensor3x3(1, 1) = structural_tensor(1);
-    tensor3x3(2, 2) = structural_tensor(2);
-    tensor3x3(0, 1) = structural_tensor(3);
-    tensor3x3(1, 2) = structural_tensor(4);
-    tensor3x3(0, 2) = structural_tensor(5);
+    tensor3x3(0, 0) = structural_tensor_stress(0);
+    tensor3x3(1, 1) = structural_tensor_stress(1);
+    tensor3x3(2, 2) = structural_tensor_stress(2);
+    tensor3x3(0, 1) = structural_tensor_stress(3);
+    tensor3x3(1, 2) = structural_tensor_stress(4);
+    tensor3x3(0, 2) = structural_tensor_stress(5);
     tensor3x3(1, 0) = tensor3x3(0, 1);
     tensor3x3(2, 0) = tensor3x3(0, 2);
     tensor3x3(2, 1) = tensor3x3(1, 2);
@@ -271,43 +293,68 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
     tensor3x3.Clear();
     tensor3x3.MultiplyNT(temp, rotation);
 
-    structural_tensor(0) = tensor3x3(0, 0);
-    structural_tensor(1) = tensor3x3(1, 1);
-    structural_tensor(2) = tensor3x3(2, 2);
-    structural_tensor(3) = tensor3x3(0, 1);
-    structural_tensor(4) = tensor3x3(1, 2);
-    structural_tensor(5) = tensor3x3(0, 2);
+    structural_tensor_stress(0) = tensor3x3(0, 0);
+    structural_tensor_stress(1) = tensor3x3(1, 1);
+    structural_tensor_stress(2) = tensor3x3(2, 2);
+    structural_tensor_stress(3) = tensor3x3(0, 1);
+    structural_tensor_stress(4) = tensor3x3(1, 2);
+    structural_tensor_stress(5) = tensor3x3(0, 2);
   }  // if distr_type_vonmisesfisher
 
   // zero out small entries
   const double tol = GetResidualTol();
-  for (unsigned i = 0; i < structural_tensor.M(); ++i)
-    if (abs(structural_tensor(i)) < tol) structural_tensor(i) = 0.0;
+  for (unsigned i = 0; i < structural_tensor_stress.M(); ++i)
+    if (abs(structural_tensor_stress(i)) < tol) structural_tensor_stress(i) = 0.0;
 
   // scale whole structural tensor with its trace, because
   // the trace might deviate slightly from the value 1 due
   // to the integration error.
-  double trace = structural_tensor(0) + structural_tensor(1) + structural_tensor(2);
-  structural_tensor.Scale(1.0 / trace);
+  double trace =
+      structural_tensor_stress(0) + structural_tensor_stress(1) + structural_tensor_stress(2);
+  structural_tensor_stress.Scale(1.0 / trace);
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
+{
+  LINALG::Matrix<6, 1> structural_tensor_stress;
+  SetupStructuralTensor(fiber_vector, structural_tensor_stress);
+  UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   // constant for dispersion around fiber_vector
   double c1 = params_->c1_;
 
-  DyadicProduct(fiber_vector, structural_tensor);
+  DyadicProduct(fiber_vector, structural_tensor_stress);
 
   LINALG::Matrix<6, 1> Identity(true);
   Identity(0) = 1.0;
   Identity(1) = 1.0;
   Identity(2) = 1.0;
 
-  structural_tensor.Update(c1, Identity, (1.0 - 3.0 * c1));
+  structural_tensor_stress.Update(c1, Identity, (1.0 - 3.0 * c1));
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
+{
+  LINALG::Matrix<6, 1> structural_tensor_stress;
+  SetupStructuralTensor(fiber_vector, structural_tensor_stress);
+  UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
 

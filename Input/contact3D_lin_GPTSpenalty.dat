@@ -48,12 +48,9 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         10
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 STRATEGY                        Penalty
 PENALTYPARAM                    1000
 NITSCHE_PENALTY_ADAPTIVE        No
@@ -65,10 +62,7 @@ TRIANGULATION                   center
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
+NAME                            Direct_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
@@ -1143,9 +1137,6 @@ NODE 251 COORD 1.999999911791123e+00 1.999999911791123e+00 1.000000000000000e+00
 127 SOLIDH8 HEX8 151 114 105 140 155 120 107 142 MAT 1 KINEM nonlinear EAS none
 128 SOLIDH8 HEX8 192 151 140 181 196 155 142 186 MAT 1 KINEM nonlinear EAS none
 129 SOLIDH8 HEX8 106 167 132 67 125 188 158 91 MAT 2 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6

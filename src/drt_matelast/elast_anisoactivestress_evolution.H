@@ -15,6 +15,7 @@
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/anisotropy.H"
+#include "../drt_mat/anisotropy_extension_default.H"
 
 namespace MAT
 {
@@ -59,10 +60,8 @@ namespace MAT
         double lambda_lower_;
         /// upper stretch threshold
         double lambda_upper_;
-        /// azimute angle of spherical coordinates
+        /// fiber angle
         double gamma_;
-        /// polar angle of spherical coordinates
-        double theta_;
         /// fiber initalization status
         int init_;
         /// adapt angle during remodeling
@@ -124,11 +123,13 @@ namespace MAT
     /// muscle (1998), Progress in Biophysics and Molecular Biology
     /// </ul>
     ///
-    class AnisoActiveStress_Evolution : public Summand, public Anisotropy
+    class AnisoActiveStress_Evolution : public Summand
     {
      public:
       /// constructor with given material parameters
       explicit AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
+
+      ~AnisoActiveStress_Evolution() override = default;
 
       ///@name Packing and Unpacking
       //@{
@@ -149,6 +150,13 @@ namespace MAT
       }
 
       //@}
+
+      /*!
+       * \brief Register the internally used AnisotropyExtension
+       *
+       * \param anisotropy Reference to the anisotropy manager
+       */
+      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       /// Setup of summand
       void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
@@ -206,23 +214,6 @@ namespace MAT
         anisoprinc = true;
       };
 
-      /// @name Derived methods for anisotropy
-      //@{
-
-      /*!
-       * This method will be called if no fiber directions are defined in the input file. Fibers
-       * are then computed such that fibers are aligned in XY-plane with gamma params_->gamma around
-       * the Z-axis
-       */
-      void DoFiberInitialization() override;
-
-      /*!
-       * Compute fiber direction given the coordinate system RAD-AXI-CIR
-       * @param locsys Local coordinate system
-       */
-      void SetupFiberByCosy(LINALG::Matrix<3, 3>& locsys) override;
-      //@}
-
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params_;
@@ -231,6 +222,9 @@ namespace MAT
       double tauc_np_;
       /// Active stress at last time step
       double tauc_n_;
+
+      /// Special anisotropic behavior
+      DefaultAnisotropyExtension anisotropyExtension_;
     };
 
   }  // namespace ELASTIC

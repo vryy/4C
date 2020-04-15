@@ -27,6 +27,7 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+RHO_INF                         -1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
@@ -80,7 +81,7 @@ TOL_VEL_RES_L2                  1e-11
 SHAPEDERIVATIVES                yes
 -------------------------------------------------------------MORTAR COUPLING
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-REDUNDANT_STORAGE               all
+GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 --------------------------------------------------------------------SOLVER 1

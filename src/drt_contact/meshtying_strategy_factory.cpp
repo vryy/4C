@@ -85,25 +85,11 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // *********************************************************************
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
-    dserror(
-        "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
-        "ghosting_redundant !");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(mortarParallelRedistParams,
+          "GHOSTING_STRATEGY") == INPAR::MORTAR::ExtendGhosting::roundrobin)
     dserror(
-        "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
-        "redundant_ghosting !");
-
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost)
-    dserror("ERROR: Round-Robin strategies not for mortar meshtying!");
+        "Extending the ghosting via a Round-Robin loop is not implemented for mortar meshtying.");
 
   // *********************************************************************
   // invalid parameter combinations
@@ -462,13 +448,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
-    INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
-            mtparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
-    //    if (redundant != INPAR::MORTAR::redundant_master)
-    //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
-    interfaces.push_back(
-        MORTAR::MortarInterface::Create(groupid1, Comm(), dim, mtparams, redundant));
+    interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), dim, mtparams));
 
     // get it again
     Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
@@ -626,16 +606,19 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
     fflush(stdout);
   }
 
-  const double alphaf = STR::TIMINT::GetTimIntFactor();
+  // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
+  // need to pass an argument as long as we want to support the same strategy contructor as the old
+  // time integration.
+  const double dummy = -1.0;
 
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
     strategy_ptr = Teuchos::rcp(new CONTACT::MtLagrangeStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ptr = Teuchos::rcp(new CONTACT::MtPenaltyStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   else
     dserror("ERROR: Unrecognized strategy");
 

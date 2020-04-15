@@ -145,7 +145,12 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
-  std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisNp());
+
+  // We have to pass the displacement column vector to the initialization of the binning strategy.
+  ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+
+  std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
   binstrategy_->Init(discret_vec, disp_vec);
   binstrategy_->SetDeformingBinningDomainHandler(
@@ -253,11 +258,14 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization>(
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") !=
-          INPAR::BEAMTOSOLID::BeamToSolidVolumeContactDiscretization::none)
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID SURFACE MESHTYING"),
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------
@@ -509,6 +517,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
+  // update restart displacement vector
+  if (ia_state_ptr_->GetRestartCouplingFlag())
+  {
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+  }
+
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -707,6 +723,21 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
   // post sub model loop
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->PostReadRestart();
+
+  // Check if we need to store the restart displacement in the data state container.
+  const Teuchos::ParameterList& beam_interaction_params =
+      DRT::Problem::Instance()->BeamInteractionParams();
+  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_beamcontact) &&
+      (bool)DRT::INPUT::IntegralValue<int>(
+          beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
+          "COUPLE_RESTART_STATE"))
+  {
+    ia_state_ptr_->SetRestartCouplingFlag(true);
+    ia_state_ptr_->GetMutableDisRestart() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -1042,6 +1073,14 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+
+  // update restart displacement vector
+  if (ia_state_ptr_->GetRestartCouplingFlag())
+  {
+    ia_state_ptr_->GetMutableDisRestartCol() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+  }
 
   // force
   ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(), true));

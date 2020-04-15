@@ -76,10 +76,7 @@ LINEAR_SOLVER                   1
 NLNSOL                          fullnewton
 PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.444444444444
-ALPHA_M                         0.333333333333
-BETA                            0.308641975309
-GAMMA                           0.611111111111
+RHO_INF                         0.8
 GENAVG                          TrLike
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

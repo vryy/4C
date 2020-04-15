@@ -10,6 +10,8 @@
 #ifndef MORTAR_INTERFACE_H
 #define MORTAR_INTERFACE_H
 
+#include <set>
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
@@ -165,10 +167,6 @@ namespace MORTAR
 
     inline const Epetra_Comm& Comm() const { return *comm_; }
 
-    inline Teuchos::RCP<Epetra_Comm>& lComm() { return lcomm_; }
-
-    inline Teuchos::RCP<const Epetra_Comm> lComm() const { return lcomm_; }
-
     inline std::map<int, int>& ProcMap() { return procmap_; }
 
     inline const std::map<int, int>& ProcMap() const { return procmap_; }
@@ -197,9 +195,15 @@ namespace MORTAR
 
     inline bool IsQuadSlave() const { return quadslave_; }
 
-    inline enum INPAR::MORTAR::RedundantStorage& RedundantStorage() { return redundant_; }
+    inline const enum INPAR::MORTAR::ExtendGhosting& GetExtendGhosting() const
+    {
+      return extendghosting_;
+    }
 
-    inline enum INPAR::MORTAR::RedundantStorage RedundantStorage() const { return redundant_; }
+    inline void SetExtendGhosting(const enum INPAR::MORTAR::ExtendGhosting& extendghosting)
+    {
+      extendghosting_ = extendghosting;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& OldNodeColMap() { return oldnodecolmap_; }
 
@@ -377,9 +381,6 @@ namespace MORTAR
     //! communicator
     Teuchos::RCP<const Epetra_Comm> comm_;
 
-    //! interface local communicator
-    Teuchos::RCP<Epetra_Comm> lcomm_;
-
     //! mapping global -> local communicator PIDs
     std::map<int, int> procmap_;
 
@@ -407,7 +408,7 @@ namespace MORTAR
     bool quadslave_;
 
     //! employed type of redundancy in storage of interface
-    INPAR::MORTAR::RedundantStorage redundant_;
+    INPAR::MORTAR::ExtendGhosting extendghosting_;
 
     //! @name Maps
     //! @{
@@ -551,12 +552,10 @@ namespace MORTAR
      *  \param comm (in) : communicator object
      *  \param spatialDim (in) : spatial dimension of the problem
      *  \param imortar (in) : global contact/mesh-tying parameter-list
-     *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<MortarInterface> Create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& imortar,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
     \brief Standard constructor creating empty mortar interface
@@ -566,11 +565,9 @@ namespace MORTAR
     \param comm (in): A communicator object
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
-    \param redundant (in): type of redundancy in interface storage
     */
     MortarInterface(const Teuchos::RCP<InterfaceDataContainer>& interfaceData_ptr, const int id,
-        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
-        INPAR::MORTAR::RedundantStorage redundant);
+        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
     \brief Destructor
@@ -607,12 +604,6 @@ namespace MORTAR
     \brief Get communicator
     */
     const Epetra_Comm& Comm() const { return *comm_; }
-
-    /*!
-    \brief Get local interface communicator (Filled()==true is prerequisite)
-           This Epetra_Comm only contains the participating processors of the interface
-    */
-    const Epetra_Comm* lComm() const { return lcomm_.get(); }
 
     /*!
     \brief Get global -> local processor map
@@ -652,13 +643,6 @@ namespace MORTAR
     \brief Get flag indicating nurbs shape functions
     */
     bool IsNurbs() { return nurbs_; };
-
-    /*!
-    \brief Get redundant storage flag
-
-    Returns status of redundancy in interface storage (nodes, elements).
-    */
-    INPAR::MORTAR::RedundantStorage Redundant() const { return redundant_; };
 
     /*!
     \brief Get type of search algorithm
@@ -991,17 +975,22 @@ namespace MORTAR
     */
     void RemoveSingleInterfaceSide(bool slaveside);
 
+    //! @name Parallel distribution and ghosting
+
     /*!
     \brief Finalize construction of mortar interface
 
     The methods completes construction phase of a mortar interface. It creates all row/column maps
-    of the mortar interface discretization.
+    of the mortar interface discretization. Therefore, we also have to extend the interface
+    ghosting.
 
-    If we have arrived at the final parallel distribution, we have to call ask the underlying
+    If we have arrived at the final parallel distribution, we have to ask the underlying
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested.
+    only if requested by the user/algorithm.
 
     \sa ExtendInterfaceGhosting()
+
+    \warning This is a legacy code path, where interface ghosting is not sufficienct in some cases.
 
     \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
@@ -1012,6 +1001,23 @@ namespace MORTAR
     */
     void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0,
         const double meanVelocity = 0.0);
+
+    /*!
+    \brief Update the parallel layout, distribution, and related data structures
+
+    1. If required by \c perform_rebalancing, let's rebalance the interface discretizations.
+    1. If required by \c enforce_ghosting_update, let's update the ghosting of the master-sided
+    interface.
+    1. FillComplete to update all relevant maps on all procs.
+    1. Re-create search tree, if ghosting has changed.
+
+    @param perform_rebalancing Flag to enforce rebalancing of interface discretizations
+    @param enforce_ghosting_update Flag to enforce an update of the interface ghosting
+    @param maxdof Largest GID of underlying solid discretization
+    @param meanVelocity Mean velocity of this interface
+    */
+    virtual void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+        const bool enforce_ghosting_update, const int maxdof, const double meanVelocity);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1035,6 +1041,8 @@ namespace MORTAR
 
     */
     virtual void Redistribute();
+
+    //! @}
 
     /*!
     \brief Create binary search tree
@@ -1345,6 +1353,9 @@ namespace MORTAR
 
     const MortarInterface* GetMaSharingRefInterfacePtr() const;
 
+    //! @name Parallel distribution and ghosting
+    //! @{
+
     /*!
     \brief Redistribute the master side of the interface
 
@@ -1358,6 +1369,20 @@ namespace MORTAR
     void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
         const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
+
+    /*!
+    \brief Setup the binning strategy for geometrically motivated extended ghosting
+
+    \note The average velocity is only important, if binning is performed in the deformed
+    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
+    coupling in the reference configuration, it suffices to set the velocity to 0.0.
+
+    @param[in] meanVelocity Current absolute value of the mean velocity of this interface
+    @return Binning strategy object ready to be used
+    */
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
+
+    //! @}
 
     /** \brief function called at the beginning of each MortarCoupling call
      *
@@ -1496,6 +1521,38 @@ namespace MORTAR
     virtual void UpdateMasterSlaveSets();
 
    private:
+    //! @name Parallel distribution and ghosting
+    //! @{
+
+    /*!
+    \brief FillComplete the mortar interface
+
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization. Extension of the interface ghosting is done
+    separately.herefore, we also have to extend the interface
+    ghosting.
+
+    If we have arrived at the final parallel distribution, we have to ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested by the user/algorithm.
+
+    \sa ExtendInterfaceGhostingSafely()
+
+    @param[in] isFinalParallelDistribution Is this the final parallel distribution?
+    @param[in] maxdof Largest GID of underlying solid discretization
+    */
+    virtual void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0);
+
+    /*!
+    \brief Extend the interface ghosting while guaranteeing sufficient extension
+
+    \note The argument \c meanVelocity is just needed for contact problems that extend the
+    master-sided interface ghosting via binning.
+
+    @param meanVelocity Mean velocity of this interface
+    */
+    virtual void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
+
     /*!
     \brief Extend interface ghosting
 
@@ -1529,6 +1586,8 @@ namespace MORTAR
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
     void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
+
+    //! @}
 
     /*!
     \brief Update master and slave interface maps for DOFs
@@ -1589,33 +1648,25 @@ namespace MORTAR
     */
     void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
 
-    /*!
-    \brief Setup the binning strategy for geometrically motivated extended ghosting
-
-    \note The average velocity is only important, if binning is performed in the deformed
-    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
-    coupling in the reference configuration, it suffices to set the velocity to 0.0.
-
-    @param[in] meanVelocity Current mean velocity of this interface
-    @return Binning strategy object ready to be used
-    */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
-
-    /*!
-    \brief Create interface local communicator
-
-    Find all procs that have business on this interface (own or ghost nodes/elements). Then, build a
-    Epetra_Comm that contains only those procs. This intra-communicator will be used to handle most
-    stuff on this interface so the interface will not block all other procs
-
-    ToDo (mayr.mt) Move this to MORTAR::UTILS::INTERFACE. This does not have to be a function in
-    this class.
-    */
-    void CreateInterfaceLocalCommunicator();
-
+   protected:
     /*!
     \brief check and initialize possible cross point modification
 
+    A typical application are so-called crosspoints within mortar meshtying, where this approach is
+    necessary to avoid over-constraint. Otherwise these crosspoints would be active with respect to
+    more than one interface and thus the Lagrange multiplier cannot sufficiently represent all
+    geometric constraints. Another typical application is mortar contact, when we want to make use
+    of symmetry boundary conditions. In this case, we deliberately modify so-called edge nodes of
+    the contact boundary and thus free them from any contact constraint.
+
+    Basically, the status of the crosspoints / edge nodes is simply changed to MASTER and
+    consequently they will NOT carry Lagrange multipliers later on. In order to sustain the
+    partition of unity property of the Lagrange multiplier shape functions on the adjacent slave
+    elements, the Lagrange multiplier shape functions of the adjacent nodes will be modified! This
+    way, the mortar operator entries of the crosspoints / edge nodes are transferred to the
+    neighboring slave nodes!
+
+    \warning Only implemented for 2D problems. Will throw for 3D.
     */
     void InitializeCrossPoints();
 
@@ -1626,11 +1677,18 @@ namespace MORTAR
     void InitializeLagMultLin();
 
     /*!
-    \brief check and initialize for constant Lagrange muliplier interpolation for 2nd order FE
+    \brief check and initialize for constant Lagrange multiplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultConst();
 
+    /*!
+    \brief Communicate the quadslave status among all processes
+
+    */
+    void CommunicateQuadSlaveStatusAmongAllProcs();
+
+   private:
     /*!
     \brief Setup interface discretization
 
@@ -1665,7 +1723,6 @@ namespace MORTAR
 
     int& id_;                                ///< ref. to unique interface id
     Teuchos::RCP<const Epetra_Comm>& comm_;  ///< ref. to communicator
-    Teuchos::RCP<Epetra_Comm>& lcomm_;       ///< ref. to interface local communicator
     std::map<int, int>& procmap_;            ///< ref. to mapping global -> local communicator PIDs
     bool& redistributed_;                    ///< ref. to redistribution for this time step?
 
@@ -1675,8 +1732,6 @@ namespace MORTAR
     Teuchos::ParameterList& imortar_;  ///< ref. to containing contact input parameters of interface
     INPAR::MORTAR::ShapeFcn& shapefcn_;  ///< ref. to employed type of shape function set
     bool& quadslave_;                    ///< ref. to flag indicating quadratic 2d/3d slave elements
-    INPAR::MORTAR::RedundantStorage&
-        redundant_;  ///< ref. to employed type of redundancy in storage of interface
 
     Teuchos::RCP<Epetra_Map>&
         oldnodecolmap_;  ///< ref. to column map of all interface nodes (overlap=1)

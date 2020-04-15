@@ -30,6 +30,10 @@
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplastichyperelast.H"
+#include "../drt_mat/robinson.H"
+#include "so_utils.H"
 
 //#define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -1589,7 +1593,8 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
+        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOTET4, 1> funct(true);
@@ -1600,6 +1605,10 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     }
 
     params.set<int>("gp", gp);
+
+
+    UTILS::GetTemperatureForStructuralMaterial<tet4>(shapefcts[gp], params);
+
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
 
     // return gp stresses
@@ -2300,7 +2309,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
         LINALG::SYEV(avg_stress, lambda, locsys);
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-        double newgamma = atan(lambda(1, 1) / lambda(2, 2));
+        double newgamma = atan2(lambda(1, 1), lambda(2, 2));
         // compression in 2nd max direction, thus fibers are alligned to max principal direction
         if (lambda(1, 1) < 0) newgamma = 0.0;
 

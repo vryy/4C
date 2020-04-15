@@ -48,8 +48,8 @@
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant, const int contactconstitutivelawid)
-    : CoInterface(interfaceData, id, comm, dim, icontact, selfcontact, redundant)
+    bool selfcontact, const int contactconstitutivelawid)
+    : CoInterface(interfaceData, id, comm, dim, icontact, selfcontact)
 {
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
       CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(contactconstitutivelawid);
@@ -62,9 +62,6 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
 void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     bool& localisincontact, bool& localactivesetchange)
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {

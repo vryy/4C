@@ -15,6 +15,9 @@
 #ifndef NOX_NLN_INTERFACE_REQUIRED_H_
 #define NOX_NLN_INTERFACE_REQUIRED_H_
 
+#include <set>
+#include <vector>
+
 #include "nox_nln_enum_lists.H"
 #include "../drt_lib/drt_dserror.H"
 

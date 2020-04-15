@@ -58,13 +58,14 @@ namespace BEAMINTERACTION
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
        * @param discret (in) Pointer to the disretization.
+       * @param data_state (in) Beam interaction data state.
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
-       * @param disp (in) Current displacement vector.
        */
       void EvaluateForceStiff(Teuchos::RCP<DRT::Discretization> discret,
-          Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat,
-          Teuchos::RCP<const Epetra_Vector> disp) override;
+          const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+          Teuchos::RCP<Epetra_FEVector> fe_sysvec,
+          Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat) override;
 
       /**
        * \brief Return a const pointer to the mortar manager.

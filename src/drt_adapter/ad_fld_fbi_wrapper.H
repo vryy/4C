@@ -51,6 +51,11 @@ namespace ADAPTER
      * need to be assembled into the overall fluid system matrix
      */
     virtual void SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix);
+
+    /**
+     * \brief Resets the external forces acting on the fluid to zero
+     */
+    virtual void ResetExternalForces();
   };
 }  // namespace ADAPTER
 

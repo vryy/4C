@@ -3,69 +3,43 @@ Provide a general summary of the issue in the Title above.
 -->
 
 <!---
-Note that anything between these delimiters is a comment that will not appear in the issue description once created.  Click on the Preview tab to see what everything will look like when you submit.
+Note that anything between these delimiters is a comment that will not appear in the issue description once created. Click on the Preview tab to see what everything will look like when you submit.
 -->
 
 <!---
-Feel free to delete anything from this template that is not applicable to the issue you are submitting.
+Feel free to delete anything from this template that is not applicable to the issue, that you are submitting.
 -->
 
 <!---
-Assignees:  If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
+Assignees: If you know anyone who should likely tackle this issue, select them from the Assignees drop-down on the right.
 -->
 
 <!---
-Labels:  Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
+Labels: Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.
 -->
 
 <!---
 Boards: Make sure your issue will show up in the "Backlog" of our issue board. Drag it to the "In Progress" list when you start working on the issue.
 -->
 
-## Expectations
+## Description
 <!---
-Tell us what you think should happen, how you think things should work, what you would like to see in the documentation, etc.
+Tell us about
+- your expectations for future code behavior or features,
+- the current behavior: What's good? What needs to be changed, added, or improved?
+- the motivation and context: What are you trying to accomplish? Why do we need to address this?
+
+Providing all this information helps all of us to come up with a solution that is most useful in the real world.
 -->
 
-## Current Behavior
-<!---
-Tell everybody how the current behavior fails to meet your expectations in some way.
--->
 
-## Motivation and Context
+## Possible Solution and Definition of Done
 <!---
-How has this expectation failure affected you?  What are you trying to accomplish?  Why do we need to address this?  What does it have to do with anything? Providing context helps us come up with a solution that is most useful in the real world.
--->
-
-## Definition of Done
-<!---
-Tell us what needs to happen.  If necessary, give us a task list along the lines of:
+Tell us what needs to happen and outline a possible solution. If possible, provide a step-by-step task list along the lines of:
 - [ ] First do this.
 - [ ] Then do that.
 - [ ] Also this other thing.
 -->
-
-## Possible Solution
-<!---
-Not obligatory, but suggest a fix for the bug or documentation, or suggest ideas on how to implement the addition or change.
--->
-
-## Steps to Reproduce
-<!---
-Provide a link to a live example, or an unambiguous set of steps to reproduce this issue.  Include code to reproduce, if relevant.
-1. Do this.
-1. Do that.
-1. Shake fist angrily at computer.
--->
-
-## Your Environment
-<!---
-Include relevant details about your environment such that we can replicate this issue.
--->
-- **Relevant repo SHA1s:**
-- **Relevant configure flags or configure script:**
-- **Operating system and version:**
-- **Compiler and TPL versions:**
 
 ## Related Issues and Merge Requests
 <!---
@@ -81,16 +55,10 @@ If applicable, let everybody know how this is related to any other open issues:
 
 ## Additional Information
 <!---
-Anything else that might be helpful to know in addressing this issue:
-* Configure log file:
-* Build log file:
-* Test log file:
-* When was the last time everything worked (date/time; SHA1s; etc.)?
-* What did you do that made the bug rear its ugly head?
-* Have you tried turning it off and on again?
+Anything else that might be helpful to know in addressing this issue.
 -->
 
 ## Interested Parties
 <!---
-If there's anyone you think should be looped in on this issue, feel free to @mention them here.
+If there's any team or developer, who you think should be looped in on this issue, feel free to @mention them here.
 -->

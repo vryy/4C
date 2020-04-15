@@ -33,6 +33,8 @@ namespace DRT
 
 namespace MAT
 {
+  class Anisotropy;
+
   namespace ELASTIC
   {
     namespace PAR
@@ -73,7 +75,7 @@ namespace MAT
       Summand() { ; }
 
       /// destructor
-      virtual ~Summand() { ; }
+      virtual ~Summand() = default;
 
       ///@name Packing and Unpacking (dummy routines)
       //@{
@@ -102,6 +104,17 @@ namespace MAT
       );
 
       /*!
+       * @brief Register anisotropy extensions that compute the structural tensors and fiber
+       * directions that are needed for the evaluation of the material
+       *
+       * @param anisotropy Global anisotropy holder
+       */
+      virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+      {
+        // do nothing
+      }
+
+      /*!
        * \brief Dummy routine for setup of summand.
        *
        * This method is called during Element input with the LineDefinition of the element.
@@ -109,10 +122,10 @@ namespace MAT
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) { return; };
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef){};
 
       /// Dummy routine for setup of patient-specific materials
-      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID) { return; };
+      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};
 
       /*!
        * Post setup routine for summands. It will be called once after everything is set up.
@@ -347,6 +360,56 @@ namespace MAT
       {
         return;  // do nothing
       }
+
+      /*!
+       * @brief Retrieve first derivative of the summand with respect to the anisotropic invariants
+       *
+       * The derivatives of the summand
+       * \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$ in which
+       * the principal/modified anisotropic invariants are the arguments (depending on the
+       * formulation) are defined as following:
+       *
+       * \f[
+       *  dPI_{0,aniso} = \frac{\partial \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       * \f[
+       *  dPI_{1,aniso} = \frac{\partial \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       *
+       * @param dPI_aniso First derivative of the summand with respect to the anisotropic invariants
+       * @param rcg Right Cauchy-Green deformation tensor
+       * @param gp Gauss-Point
+       * @param eleGID Global element id
+       */
+      virtual void EvaluateFirstDerivativesAniso(
+          LINALG::Matrix<2, 1>& dPI_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
+
+      /*!
+       * @brief Retrieve second derivative of the summand with respect to the anisotropic invariants
+       *
+       * The second derivative of the summand
+       * \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$ in which
+       * the principal/modified anisotropic invariants are the arguments (depending on the
+       * formulation) are defined as following:
+       *
+       * \f[
+       *  ddPII_{0,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+       * \f]
+       * \f[
+       *  ddPII_{1,aniso} = \frac{\partial^2 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+       * \f]
+       * \f[
+       *  ddPII_{2,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+       *  \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+       * \f]
+       *
+       * @param dPI_aniso First derivative of the summand with respect to the anisotropic invariants
+       * @param rcg Right Cauchy-Green deformation tensor
+       * @param gp Gauss-Point
+       * @param eleGID Global element id
+       */
+      virtual void EvaluateSecondDerivativesAniso(
+          LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
 
       /// retrieve coefficients of first and second derivative
       /// of summand for fiber directions with respect to principal invariants

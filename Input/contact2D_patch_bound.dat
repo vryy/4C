@@ -1,8 +1,6 @@
 //
 // Maintainer: Matthias Mayr
 //
-// necessary defines: BINIO
-//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -52,32 +50,30 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       continue
 ---------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER        2
-SYSTEM               sp
-SEMI_SMOOTH_NEWTON   No
-SEMI_SMOOTH_CN       10.0
-SEMI_SMOOTH_CT       1000.0
-STRATEGY             Lagrange
+LINEAR_SOLVER                   1
+SYSTEM                          sp
+SEMI_SMOOTH_NEWTON              No
+SEMI_SMOOTH_CN                  10.0
+SEMI_SMOOTH_CT                  1000.0
+STRATEGY                        Lagrange
 FRICTION                        None
-NONSMOOTH_GEOMETRIES no
-TOLCONTCONSTR        1e-5
-TOLLAGR              1e-5
-GP_SLIP_INCR         No
+NONSMOOTH_GEOMETRIES            no
+TOLCONTCONSTR                   1e-5
+TOLLAGR                         1e-5
+GP_SLIP_INCR                    No
 ---------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN          std
-SEARCH_ALGORITHM     Binarytree
-SEARCH_PARAM         0.2
-INTTYPE              segments
-LM_DUAL_CONSISTENT   none
-ALGORITHM            mortar
-LM_QUAD              quad
+LM_SHAPEFCN                     std
+SEARCH_ALGORITHM                Binarytree
+SEARCH_PARAM                    0.2
+INTTYPE                         segments
+LM_DUAL_CONSISTENT              none
+ALGORITHM                       mortar
+LM_QUAD                         quad
+CROSSPOINTS                     Yes
 ---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST      none
+PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
+NAME                            Direct_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         24
@@ -116,18 +112,6 @@ E 18 - 1 Master
 E 24 - 1 Master
 E 25 - 1 Master
 E 28 - 1 Slave Active
-//E 14 - 1 Slave Inactive
-//E 15 - 1 Slave Inactive
-//E 16 - 1 Slave Active
-//E 17 - 1 Slave Inactive
-//E 18 - 1 Slave Inactive
-//E 24 - 1 Slave Inactive
-//E 25 - 1 Slave Inactive
-//E 28 - 1 Master
------------------------DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D
-DPOINT 1
-// nonsmooth
-E 24 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1  DNODE 1
 NODE 10 DNODE 2

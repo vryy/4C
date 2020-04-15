@@ -1538,7 +1538,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(
 {
   // extract scatra-scatra interface coupling condition from parameter list
   const DRT::Condition* const condition = params.get<DRT::Condition*>("condition");
-  if (condition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (condition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // extract mortar integration cells associated with current condition
   const std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>, INPAR::SCATRA::ImplType>>& cells =
@@ -1646,7 +1646,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateNTS(
     // extract slave-side node
     MORTAR::MortarNode* const slavenode =
         dynamic_cast<MORTAR::MortarNode* const>(idiscret.gNode(noderowmap_slave.GID(inode)));
-    if (slavenode == NULL) dserror("Couldn't extract slave-side node from discretization!");
+    if (slavenode == nullptr) dserror("Couldn't extract slave-side node from discretization!");
 
     // extract first slave-side element associated with current slave-side node
     MORTAR::MortarElement* const slaveelement =
@@ -1799,7 +1799,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1845,7 +1845,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1903,7 +1903,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1930,7 +1930,7 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> conditions(0, NULL);
+  std::vector<DRT::Condition*> conditions(0, nullptr);
   scatratimint_->Discretization()->GetCondition("S2ICoupling", conditions);
   slaveconditions_.clear();
   std::map<const int, DRT::Condition* const> masterconditions;
@@ -2271,7 +2271,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               dserror("Couldn't extract slave-side mortar node from mortar discretization!");
 
             // find associated master-side elements
-            std::vector<MORTAR::MortarElement*> masterelements(0, NULL);
+            std::vector<MORTAR::MortarElement*> masterelements(0, nullptr);
             interface.FindMEles(*slavenode, masterelements);
 
             // loop over all master-side elements
@@ -2985,8 +2985,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
           conditionparams.set<double>("density", s2icondition.GetDouble("density"));
           conditionparams.set<double>("molar mass", s2icondition.GetDouble("molar mass"));
           conditionparams.set<double>("regpar", s2icondition.GetDouble("regularization parameter"));
-          conditionparams.set<std::string>(
-              "regtype", *(s2icondition.Get<std::string>("regularization type")));
+          conditionparams.set<int>("regtype", s2icondition.GetInt("regularization type"));
           conditionparams.set<double>("conductivity", s2icondition.GetDouble("conductivity"));
           break;
         }
@@ -3304,7 +3303,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "Monolithic evaluation of scatra-scatra interface layer growth only implemented for "
           "one-step-theta time integration scheme at the moment!");
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit and
-        (*conditions[0]->Get<std::string>("regularization type")) != "none")
+        conditions[0]->GetInt("regularization type") !=
+            INPAR::S2I::RegularizationType::regularization_none)
       dserror(
           "No regularization implemented for semi-implicit evaluation of scatra-scatra interface "
           "layer growth!");
@@ -3483,7 +3483,7 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMaps(
 
       // transform set for dof IDs into vector and then into Epetra map
       int nummyelements(0);
-      int* myglobalelements(NULL);
+      int* myglobalelements(nullptr);
       std::vector<int> dofidvec;
       if (dofids.size() > 0)
       {
@@ -3863,7 +3863,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
  *-------------------------------------------------------------------------*/
 const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
 {
-  const LINALG::Solver* solver(NULL);
+  const LINALG::Solver* solver(nullptr);
 
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
   {
@@ -4466,7 +4466,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
         instances.erase(i);
 
         // return null pointer
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -4573,7 +4573,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(
     {
       // extract condition from parameter list
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-      if (condition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+      if (condition == nullptr)
+        dserror("Cannot access scatra-scatra interface coupling condition!");
 
       // extract nodal state variables associated with slave and master elements
       ExtractNodeValues(idiscret, la_slave, la_master);

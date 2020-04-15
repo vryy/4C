@@ -133,8 +133,9 @@ namespace MAT
      * input data that has not yet been read during the Setup(int,DRT::INPUT::LineDefinition*) call.
      *
      * @param params Container for additional information passed from the element
+     * @param eleGID Global element id
      */
-    virtual void PostSetup(Teuchos::ParameterList& params)
+    virtual void PostSetup(Teuchos::ParameterList& params, const int eleGID)
     {
       // Do nothing for simple material models
     }

@@ -14,6 +14,8 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
 
+#include <fstream>
+
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"

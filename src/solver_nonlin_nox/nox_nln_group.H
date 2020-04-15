@@ -17,6 +17,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include <set>
+
 #include <NOX_Epetra_Group.H>  // base class
 #include <NOX_StatusTest_NormF.H>
 

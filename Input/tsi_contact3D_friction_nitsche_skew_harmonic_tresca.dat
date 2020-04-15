@@ -87,6 +87,7 @@ ALPHA_F                         0.0
 ALPHA_M                         0.333
 BETA                            0.444
 GAMMA                           0.833
+RHO_INF                         -1.0
 GENAVG                          TrLike
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5

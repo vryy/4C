@@ -163,6 +163,6 @@ void DRT::ELEMENTS::So_base::EnsureMaterialPostSetup(Teuchos::ParameterList& par
 void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
-  SolidMaterial()->PostSetup(params);
+  SolidMaterial()->PostSetup(params, Id());
   material_post_setup_ = true;
 }

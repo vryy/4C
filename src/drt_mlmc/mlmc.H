@@ -11,6 +11,7 @@
 #ifdef HAVE_FFTW
 #ifndef MLMC_H
 #define MLMC_H
+#include <list>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"

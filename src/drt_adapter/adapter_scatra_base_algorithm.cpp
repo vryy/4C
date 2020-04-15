@@ -44,9 +44,6 @@
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch_scheme.H"
 
-// variational diffusion specific files
-#include "../drt_scatra/scatra_timint_variational_scheme.H"
-
 // level set specific files
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
@@ -294,23 +291,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       }
       default:
         dserror("Unknown time integration scheme for electrochemistry!");
-        break;
-    }
-  }
-
-  // Variational formulation -> Chemical diffusion
-  else if (probtype == prb_var_chemdiff)
-  {
-    switch (timintscheme)
-    {
-      case INPAR::SCATRA::timeint_one_step_theta:
-      {
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntVariationalOST(
-            discret, solver, scatratimeparams, extraparams, output));
-        break;
-      }
-      default:
-        dserror("Unknown time integration scheme for variational chemical diffusion!");
         break;
     }
   }

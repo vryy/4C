@@ -11,6 +11,7 @@
 #include "beam_to_fluid_meshtying_params.H"
 #include "beam_to_fluid_meshtying_vtk_output_params.H"
 #include "../drt_inpar/inpar_fbi.H"
+#include "../drt_inpar/inpar_geometry_pair.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -56,7 +57,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
     dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
 
   // Gauss rule for integration along the beam (segments).
-  gauss_rule_ = INPAR::FBI::IntToGaussRule1D(
+  gauss_rule_ = INPAR::GEOMETRYPAIR::IntToGaussRule1D(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING")
           .get<int>("GAUSS_POINTS"));
   isinit_ = true;

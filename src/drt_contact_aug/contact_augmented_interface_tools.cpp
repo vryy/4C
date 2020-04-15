@@ -39,8 +39,6 @@ template <typename T0, typename T1, typename T2>
 void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck1stOrder(
     CONTACT::ParamsInterface& cparams)
 {
-  if (not inter_.lComm()) return;
-
   Epetra_Map& snode_row_map = *(inter_.snoderowmap_);
   Epetra_Map& mnode_row_map = *(inter_.mnoderowmap_);
 
@@ -184,8 +182,6 @@ template <typename T0, typename T1, typename T2>
 void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck2ndOrder(
     CONTACT::ParamsInterface& cparams)
 {
-  if (not inter_.lComm()) return;
-
   Epetra_Map& node_row_map = *(inter_.snoderowmap_);
 
   std::map<int, T1> ref_deriv1st;
