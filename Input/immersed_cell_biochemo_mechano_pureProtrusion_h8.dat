@@ -3391,7 +3391,6 @@ INODE      1016 COORD  8.1750000000000007e+00  8.1750000000000007e+00  1.0000000
 ------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
    2 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 2 KINEM nonlinear EAS none
    3 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 2 KINEM nonlinear EAS none

@@ -3445,32 +3445,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // acoustic material
-  {
-    auto m = Teuchos::rcp(
-        new MaterialDefinition("MAT_Acoustic", "acoustic material", INPAR::MAT::m_acousticmat));
-
-    AddNamedReal(m, "DENSITY", "mass density");
-    AddNamedReal(m, "C", "speed of sound");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // acoustic solid material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_AcousticSol", "acoustic solid material", INPAR::MAT::m_acousticsolmat));
-
-    AddNamedReal(m, "DENSITY", "mass density");
-    AddNamedReal(m, "C", "speed of sound");
-    AddNamedReal(m, "VISC", "viscosity mu");
-
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // electromagnetic material
   {
     auto m = Teuchos::rcp(new MaterialDefinition(

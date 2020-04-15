@@ -234,22 +234,6 @@ class ThermoFilter : public PostFilterBase
   std::string tempgradtype_;  ///< type of spatial temperature gradient output
 };
 
-
-/*!
- \brief Writer for acoustical problems
-
- \author schoeder
- \date 01/14
- */
-class AcouFilter : public PostFilterBase
-{
- public:
-  AcouFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
-
- protected:
-  virtual void WriteAllResults(PostField* field);
-};
-
 /*!
  \brief Writer for electromagnetic problems
 

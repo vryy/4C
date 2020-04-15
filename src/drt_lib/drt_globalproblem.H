@@ -542,10 +542,6 @@ namespace DRT
     {
       return getParameterList()->sublist("SEMI-SMOOTH PLASTICITY");
     }
-    const Teuchos::ParameterList& AcousticParams() const
-    {
-      return getParameterList()->sublist("ACOUSTIC DYNAMIC");
-    }
     const Teuchos::ParameterList& ElectromagneticParams() const
     {
       return getParameterList()->sublist("ELECTROMAGNETIC DYNAMIC");

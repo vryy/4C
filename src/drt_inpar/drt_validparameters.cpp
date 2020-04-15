@@ -62,7 +62,6 @@
 #include "inpar_wear.H"
 #include "inpar_beamcontact.H"
 #include "inpar_beampotential.H"
-#include "inpar_acou.H"
 #include "inpar_elemag.H"
 #include "inpar_bio.H"
 #include "inpar_volmortar.H"
@@ -489,7 +488,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::MOR::SetValidParameters(list);
 
-  INPAR::ACOU::SetValidParameters(list);
   INPAR::ELEMAG::SetValidParameters(list);
 
   INPAR::GEO::SetValidParameters(list);

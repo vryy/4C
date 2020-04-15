@@ -27,7 +27,6 @@
 #include "inpar_mortar.H"
 #include "inpar_elch.H"
 #include "inpar_cardiac_monodomain.H"
-#include "inpar_acou.H"
 #include "inpar_invanalysis.H"
 #include "inpar_levelset.H"
 #include "inpar_bio.H"
@@ -1124,8 +1123,6 @@ DRT::INPUT::ValidConditions()
   INPAR::PATSPEC::SetValidConditions(condlist);
 
   INPAR::LEVELSET::SetValidConditions(condlist);
-
-  INPAR::ACOU::SetValidConditions(condlist);
 
   INPAR::ELEMAG::SetValidConditions(condlist);
 

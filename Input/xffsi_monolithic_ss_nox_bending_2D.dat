@@ -8668,7 +8668,7 @@ NODE 3198 COORD 0.465 0.275 0.0
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
------------------------------------------------------------ACOUSTIC ELEMENTS
+
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS xfluid NODE 1247 QUANTITY velx VALUE 3.10741955998931763e-05 TOLERANCE 1e-6
 XFLUID DIS xfluid NODE 1247 QUANTITY pressure VALUE 4.34980680334004846e-03 TOLERANCE 1e-6

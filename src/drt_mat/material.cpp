@@ -110,8 +110,6 @@
 #include "maxwell_0d_acinus_Ogden.H"
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
-#include "acoustic.H"
-#include "acoustic_sol.H"
 #include "electromagnetic.H"
 #include "activefiber.H"
 #include "biochemo_mechano_cell_activefiber.H"
@@ -1189,20 +1187,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ParticleWallMaterialDEM(curmat));
       MAT::PAR::ParticleWallMaterialDEM* params =
           static_cast<MAT::PAR::ParticleWallMaterialDEM*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_acousticmat:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::AcousticMat(curmat));
-      MAT::PAR::AcousticMat* params = static_cast<MAT::PAR::AcousticMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_acousticsolmat:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::AcousticSolMat(curmat));
-      MAT::PAR::AcousticSolMat* params =
-          static_cast<MAT::PAR::AcousticSolMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_electromagneticmat:

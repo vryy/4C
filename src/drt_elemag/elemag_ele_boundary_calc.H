@@ -3,8 +3,8 @@
 
 \brief Routines for elemag boundary elements
 
-The routins are copied from the acoustic module and are supposed to be useful in the creation of
-boundary elements for the electromagnetic module. The correct implementation is still missing.
+The routines are used in the creation of boundary elements for the electromagnetic module. The
+correct implementation is still missing.
 
 \level 2
 

@@ -265,8 +265,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_elch_conductivity:
     case SCATRA::calc_elch_electrode_soc_and_c_rate:
     case SCATRA::calc_elch_domain_kinetics:
-    case SCATRA::calc_integr_grad_reac:
-    case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
     case SCATRA::recon_curvature_at_nodes:
     case SCATRA::calc_grad_ele_center:

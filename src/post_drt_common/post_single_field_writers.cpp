@@ -635,34 +635,6 @@ void ThermoFilter::WriteAllResults(PostField* field)
 
 }  // ThermoFilter::WriteAllResults
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void AcouFilter::WriteAllResults(PostField* field)
-{
-  writer_->WriteResult("velnp", "velocity", nodebased, 3);
-  writer_->WriteResult("pressure", "pressure", nodebased, 1);
-  writer_->WriteResult("par_vel", "par_vel", nodebased, 1);
-  writer_->WriteResult("trace_velocity", "trace_velocity", nodebased, 3);
-  writer_->WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
-  writer_->WriteResult("error", "error", elementbased, 1);
-  writer_->WriteResult("degree", "degree", elementbased, 1);
-  writer_->WriteResult("density", "density", elementbased, 1);
-  writer_->WriteResult("speedofsound", "speedofsound", elementbased, 1);
-
-  writer_->WriteResult("stress_xx", "stress_xx", nodebased, 1);
-  writer_->WriteResult("stress_xy", "stress_xy", nodebased, 1);
-  writer_->WriteResult("stress_xz", "stress_xz", nodebased, 1);
-  writer_->WriteResult("stress_yx", "stress_yx", nodebased, 1);
-  writer_->WriteResult("stress_yy", "stress_yy", nodebased, 1);
-  writer_->WriteResult("stress_yz", "stress_yz", nodebased, 1);
-  writer_->WriteResult("stress_zx", "stress_zx", nodebased, 1);
-  writer_->WriteResult("stress_zy", "stress_zy", nodebased, 1);
-  writer_->WriteResult("stress_zz", "stress_zz", nodebased, 1);
-
-  WriteElementResults(field);
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ElemagFilter::WriteAllResults(PostField* field)

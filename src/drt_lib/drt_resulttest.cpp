@@ -484,24 +484,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
-  DRT::INPUT::LineDefinition acou;
-  acou.AddTag("ACOUSTIC")
-      .AddNamedString("DIS")
-      .AddNamedInt("NODE")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
-
-  DRT::INPUT::LineDefinition invacou;
-  invacou.AddTag("ACOUSTIC_INVANA")
-      .AddNamedString("DIS")
-      .AddNamedInt("ELEMENT")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
-
   DRT::INPUT::LineDefinition elemag;
   elemag.AddTag("ELECTROMAGNETIC")
       .AddNamedString("DIS")
@@ -551,8 +533,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particle);
   lines->Add(particlewall_node);
   lines->Add(particlewall_special);
-  lines->Add(acou);
-  lines->Add(invacou);
   lines->Add(elemag);
   lines->Add(cardiovascular0d);
 

@@ -401,10 +401,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "AAA Surface";
   else if (Type() == LsContact)
     os << "level-set condition for contact points";
-  else if (Type() == Absorb)
-    os << "Absorbing boundary for acoustics";
-  else if (Type() == PressureMonitor)
-    os << "Pressure monitor boundary for acoustics";
   else if (Type() == ImmersedSearchbox)
     os << "Box for search algorithm in immersed method";
   else if (Type() == IMMERSEDCoupling)
