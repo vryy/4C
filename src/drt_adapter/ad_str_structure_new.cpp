@@ -418,7 +418,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   {
     case prb_fsi:
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     case prb_immersed_cell:
     case prb_fbi:
@@ -956,7 +955,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_immersed_membrane_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));

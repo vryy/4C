@@ -178,7 +178,6 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     case prb_thermo_fsi:
     case prb_ac_fsi:
     case prb_biofilm_fsi:
-    case prb_immersed_ale_fsi:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");

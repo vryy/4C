@@ -24,7 +24,6 @@
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 #include "immersed_partitioned_protrusion_formation.H"
 #include "immersed_partitioned_flow_cell_interaction.H"
-#include "immersed_partitioned_fsi_dirichletneumann_ale.H"
 #include "immersed_partitioned_fsi_dirichletneumann_membrane.H"
 #include "str_model_evaluator_multiphysics_cellmigration.H"
 
@@ -159,108 +158,6 @@ void immersed_problem_drt()
 
           break;
         }  // case prb_immersed_fsi
-
-        case prb_immersed_ale_fsi:
-        {
-          // fill discretizations
-          problem->GetDis("structure")->FillComplete(false, false, false);
-          problem->GetDis("fluid")->FillComplete(false, false, false);
-          problem->GetDis("ale")->FillComplete(false, false, false);
-
-          // SAFETY FIRST
-          {
-            // check if INODE is defined in input file
-            int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
-            if (gid != -1)
-            {
-              IMMERSED::ImmersedNode* inode = dynamic_cast<IMMERSED::ImmersedNode*>(
-                  (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
-
-              if (inode == NULL)
-                dserror(
-                    "dynamic cast from Node to ImmersedNode failed.\n"
-                    "Make sure you defined INODE instead of NODE in your input file.");
-            }
-          }
-
-          {
-            // check if structural predictor ConstDisVelAcc is chosen in input file
-            if (problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
-              dserror(
-                  "Invalid structural predictor for immersed fsi!\n"
-                  "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
-                  "Structural state projected onto fluid in new time step should be the same as in "
-                  "previous time step.");
-          }
-
-          // get discretizations
-          Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-          Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-
-          // create ale elements if the ale discretization is empty
-          if (aledis->NumGlobalNodes() == 0)
-          {
-            DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-            aledis->FillComplete();
-            // setup material in every ALE element
-            Teuchos::ParameterList params;
-            params.set<std::string>("action", "setup_material");
-            aledis->Evaluate(params);
-          }
-          else  // filled ale discretization
-          {
-            if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-              dserror(
-                  "Fluid and ALE nodes have the same node numbers. "
-                  "This it not allowed since it causes problems with Dirichlet BCs. "
-                  "Use either the ALE cloning functionality or ensure non-overlapping node "
-                  "numbering!");
-          }
-
-          // create algorithm
-          Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE> algo = Teuchos::null;
-          if (scheme == INPAR::IMMERSED::dirichletneumann)
-            algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE(comm));
-          else
-          {
-            algo = Teuchos::null;
-            dserror("unknown coupling scheme");
-          }
-
-          // init algo
-          algo->Init(params);
-
-          // setup algo
-          algo->Setup();
-
-          // additional setup of structural search tree, etc.
-          algo->SetupStructuralDiscretization();
-
-          // PARTITIONED FSI ALGORITHM
-          const int restart = DRT::Problem::Instance()->Restart();
-          if (restart)
-          {
-            // read the restart information, set vectors and variables
-            algo->ReadRestart(restart);
-          }
-
-          algo->Timeloop(algo);
-
-          if (immersedmethodparams.get<std::string>("TIMESTATS") == "endofsim")
-          {
-            Teuchos::TimeMonitor::summarize();
-            Teuchos::TimeMonitor::zeroOutTimers();
-          }
-
-          // create result tests for single fields
-          DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
-          DRT::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
-
-          // do the actual testing
-          DRT::Problem::Instance()->TestAll(comm);
-
-          break;
-        }  // case prb_immersed_ale_fsi
 
         case prb_immersed_membrane_fsi:
         {
