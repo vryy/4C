@@ -56,6 +56,8 @@ to pre-populate the *Description* field with some text.
 Follow the instructions in that template to give your fellow developers as much information as you can
 such that the issue can be understood and tackled as soon as it is practicable.
 
+Make sure to assign appropriate team::<teamname> label(s) according to the issue type and @mention the respective teams in order to facilitate your fellow developers to keep track of the issues that are related to their field.
+
 Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
 and then move through the board from left to right.
 If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external),
