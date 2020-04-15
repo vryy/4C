@@ -165,7 +165,8 @@ A small set of test cases can be run via `ctest -L minimal`.
 
 To merge changes into `master`, a feature branch needs to satisfy these conditions:
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
-* No build errors and passing all tests
+* No build errors and warnings
+* All tests are passing
 * Passing code inspection by one of your fellow developers
 
 #### Push your branch to GitLab
