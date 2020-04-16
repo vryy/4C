@@ -1,8 +1,5 @@
 //
 // Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
 //
 ==================================================================
 General Data File BACI
@@ -28,6 +25,7 @@ SOLVERTYPE                      nonlinear
 TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
+EQUILIBRATION                   rows_maindiag
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -50,7 +48,6 @@ LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_maindiag
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          MueLu_nonsym

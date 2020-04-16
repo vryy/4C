@@ -34,6 +34,7 @@ INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 SKIPINITDER                     no
 LINEAR_SOLVER                   2
+EQUILIBRATION                   rows_maindiag
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -46,7 +47,6 @@ EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows_maindiag
 --------------------------------------------------------STI DYNAMIC
 SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function

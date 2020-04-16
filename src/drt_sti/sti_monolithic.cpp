@@ -6,9 +6,7 @@
 \level 2
 
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
+
 */
 /*----------------------------------------------------------------------*/
 #include "sti_monolithic.H"
@@ -68,9 +66,6 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       // initialize algebraic solver for global system of equations
       solver_(Teuchos::rcp(
           new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-
-      equilibration_(DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(
-          fieldparameters_->sublist("S2I COUPLING"), "EQUILIBRATION")),
       invrowsums_(Teuchos::null),
 
       icoupscatra_(Teuchos::null),
@@ -253,16 +248,16 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   }
 
   // perform initialization associated with equilibration of global system of equations
-  switch (equilibration_)
+  switch (scatra_->EquilibrationMethod())
   {
-    case INPAR::S2I::equilibration_none:
+    case INPAR::SCATRA::EquilibrationMethod::none:
     {
       // do nothing
       break;
     }
 
-    case INPAR::S2I::equilibration_rows_full:
-    case INPAR::S2I::equilibration_rows_maindiag:
+    case INPAR::SCATRA::EquilibrationMethod::rows_full:
+    case INPAR::SCATRA::EquilibrationMethod::rows_maindiag:
     {
       // initialize vector for row sums of global system matrix if necessary
       invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), false));
@@ -2057,16 +2052,16 @@ void STI::Monolithic::EquilibrateSystem(
     const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
     ) const
 {
-  switch (equilibration_)
+  switch (scatra_->EquilibrationMethod())
   {
-    case INPAR::S2I::equilibration_none:
+    case INPAR::SCATRA::EquilibrationMethod::none:
     {
       // do nothing
       break;
     }
 
-    case INPAR::S2I::equilibration_rows_full:
-    case INPAR::S2I::equilibration_rows_maindiag:
+    case INPAR::SCATRA::EquilibrationMethod::rows_full:
+    case INPAR::SCATRA::EquilibrationMethod::rows_maindiag:
     {
       switch (matrixtype_)
       {
@@ -2086,7 +2081,7 @@ void STI::Monolithic::EquilibrateSystem(
                 Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
             // compute inverse row sums of current main diagonal matrix block
-            if (equilibration_ == INPAR::S2I::equilibration_rows_maindiag)
+            if (scatra_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag)
               ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums);
 
             // compute inverse row sums of current row block of global system matrix

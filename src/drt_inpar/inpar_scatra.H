@@ -259,6 +259,18 @@ namespace INPAR
       l2_proj_system_dual
     };
 
+    //! equilibration methods for global system of equations
+    enum class EquilibrationMethod
+    {
+      none,
+      rows_full,
+      rows_maindiag,
+      columns_full,
+      columns_maindiag,
+      rowsandcolumns_full,
+      rowsandcolumns_maindiag
+    };
+
     /// set the scatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

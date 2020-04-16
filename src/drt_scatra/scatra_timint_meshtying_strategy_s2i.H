@@ -132,9 +132,6 @@ namespace SCATRA
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;
 
-    //! return flag for equilibration of global system of equations
-    const INPAR::S2I::EquilibrationMethods& Equilibration() const { return equilibration_; };
-
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() override;
 
@@ -653,9 +650,6 @@ namespace SCATRA
 
     //! slave-side scatra-scatra interface coupling conditions
     std::map<const int, DRT::Condition* const> slaveconditions_;
-
-    //! flag for equilibration of global system of equations
-    const INPAR::S2I::EquilibrationMethods equilibration_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;

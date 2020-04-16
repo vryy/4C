@@ -47,16 +47,6 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           coupling_nts_standard),
       &s2icoupling);
 
-  // flag for equilibration of global system of equations
-  setStringToIntegralParameter<int>("EQUILIBRATION", "none",
-      "flag for equilibration of global system of equations",
-      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
-          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<int>(equilibration_none, equilibration_rows_full, equilibration_rows_maindiag,
-          equilibration_columns_full, equilibration_columns_maindiag,
-          equilibration_rowsandcolumns_full, equilibration_rowsandcolumns_maindiag),
-      &s2icoupling);
-
   // flag for interface side underlying Lagrange multiplier definition
   setStringToIntegralParameter<int>("LMSIDE", "slave",
       "flag for interface side underlying Lagrange multiplier definition",

@@ -499,16 +499,16 @@ void SSI::SSI_Mono::EquilibrateSystem(
   // input values
   if (SSIInterfaceMeshtying())
   {
-    switch (strategy_scatra_->Equilibration())
+    switch (scatra_->ScaTraField()->EquilibrationMethod())
     {
-      case INPAR::S2I::equilibration_none:
+      case INPAR::SCATRA::EquilibrationMethod::none:
       {
         // do nothing
         break;
       }
 
-      case INPAR::S2I::equilibration_rows_full:
-      case INPAR::S2I::equilibration_rows_maindiag:
+      case INPAR::SCATRA::EquilibrationMethod::rows_full:
+      case INPAR::SCATRA::EquilibrationMethod::rows_maindiag:
       {
         // initialize vector for inverse sums of absolute values of matrix row entries
         const Teuchos::RCP<Epetra_Vector> invrowsums = LINALG::CreateVector(*DofRowMap());
@@ -531,7 +531,8 @@ void SSI::SSI_Mono::EquilibrateSystem(
                   Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
               // compute inverse row sums of current main diagonal matrix block
-              if (strategy_scatra_->Equilibration() == INPAR::S2I::equilibration_rows_maindiag)
+              if (scatra_->ScaTraField()->EquilibrationMethod() ==
+                  INPAR::SCATRA::EquilibrationMethod::rows_maindiag)
                 ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums_block);
 
               // compute inverse row sums of current row block of global system matrix

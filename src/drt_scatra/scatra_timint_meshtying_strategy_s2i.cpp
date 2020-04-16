@@ -54,10 +54,7 @@
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
-    SCATRA::ScaTraTimIntImpl* scatratimint,  //!< scalar transport time integrator
-    const Teuchos::ParameterList&
-        parameters  //!< input parameters for scatra-scatra interface coupling
-    )
+    SCATRA::ScaTraTimIntImpl* scatratimint, const Teuchos::ParameterList& parameters)
     : MeshtyingStrategyBase(scatratimint),
       interfacemaps_(Teuchos::null),
       blockmaps_(Teuchos::null),
@@ -67,8 +64,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       icoupmortar_(),
       imortarcells_(),
       imortarredistribution_(
-          DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters, "COUPLINGTYPE") ==
-              INPAR::S2I::coupling_mortar_standard and
+          DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
+              "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
               DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none),
@@ -79,8 +76,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavenodeslumpedareas_(),
       islavematrix_(Teuchos::null),
       imastermatrix_(Teuchos::null),
-      couplingtype_(
-          DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters, "COUPLINGTYPE")),
+      couplingtype_(DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(
+          parameters.sublist("S2I COUPLING"), "COUPLINGTYPE")),
       D_(Teuchos::null),
       M_(Teuchos::null),
       E_(Teuchos::null),
@@ -98,14 +95,18 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       imasterphinp_(Teuchos::null),
       invrowsums_(Teuchos::null),
       invcolsums_(Teuchos::null),
-      lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(parameters, "LMSIDE")),
-      matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(parameters, "MATRIXTYPE")),
-      ntsprojtol_(parameters.get<double>("NTSPROJTOL")),
+      lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
+          parameters.sublist("S2I COUPLING"), "LMSIDE")),
+      matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(
+          parameters.sublist("S2I COUPLING"), "MATRIXTYPE")),
+      ntsprojtol_(parameters.sublist("S2I COUPLING").get<double>("NTSPROJTOL")),
       intlayergrowth_evaluation_(DRT::INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(
-          parameters, "INTLAYERGROWTH_EVALUATION")),
-      intlayergrowth_convtol_(parameters.get<double>("INTLAYERGROWTH_CONVTOL")),
-      intlayergrowth_itemax_(parameters.get<int>("INTLAYERGROWTH_ITEMAX")),
-      intlayergrowth_timestep_(parameters.get<double>("INTLAYERGROWTH_TIMESTEP")),
+          parameters.sublist("S2I COUPLING"), "INTLAYERGROWTH_EVALUATION")),
+      intlayergrowth_convtol_(
+          parameters.sublist("S2I COUPLING").get<double>("INTLAYERGROWTH_CONVTOL")),
+      intlayergrowth_itemax_(parameters.sublist("S2I COUPLING").get<int>("INTLAYERGROWTH_ITEMAX")),
+      intlayergrowth_timestep_(
+          parameters.sublist("S2I COUPLING").get<double>("INTLAYERGROWTH_TIMESTEP")),
       blockmapgrowth_(Teuchos::null),
       extendedblockmaps_(Teuchos::null),
       extendedsystemmatrix_(Teuchos::null),
@@ -121,12 +122,9 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
       slaveconditions_(),
-      equilibration_(
-          DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(parameters, "EQUILIBRATION")),
-      slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters, "SLAVEONLY"))
+      slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY"))
 {
   // empty constructor
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
 
 
@@ -2815,18 +2813,21 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
           ? *extendedmaps_->FullMap()
           : *scatratimint_->Discretization()->DofRowMap();
-  if (equilibration_ == INPAR::S2I::equilibration_rows_full or
-      equilibration_ == INPAR::S2I::equilibration_rows_maindiag or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
+      scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
     invrowsums_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, false));
-  if (equilibration_ == INPAR::S2I::equilibration_columns_full or
-      equilibration_ == INPAR::S2I::equilibration_columns_maindiag or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
     invcolsums_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, false));
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
 
 
@@ -3891,7 +3892,7 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
         blockmaps  //!< map extractor associated with blocks of global system matrix
     ) const
 {
-  if (equilibration_ != INPAR::S2I::equilibration_none)
+  if (scatratimint_->EquilibrationMethod() != INPAR::SCATRA::EquilibrationMethod::none)
   {
     // perform equilibration depending on type of global system matrix
     switch (matrixtype_)
@@ -3904,10 +3905,13 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
         if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
 
         // perform row equilibration
-        if (equilibration_ == INPAR::S2I::equilibration_rows_full or
-            equilibration_ == INPAR::S2I::equilibration_rows_maindiag or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+        if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
         {
           // compute inverse row sums of global system matrix
           ComputeInvRowSums(*sparsematrix, invrowsums_);
@@ -3917,10 +3921,14 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
         }
 
         // perform column equilibration
-        if (equilibration_ == INPAR::S2I::equilibration_columns_full or
-            equilibration_ == INPAR::S2I::equilibration_columns_maindiag or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+        if (scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::columns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
         {
           // compute inverse column sums of global system matrix
           ComputeInvColSums(*sparsematrix, invcolsums_);
@@ -3943,10 +3951,13 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
           dserror("System matrix is not a block sparse matrix!");
 
         // perform row equilibration
-        if (equilibration_ == INPAR::S2I::equilibration_rows_full or
-            equilibration_ == INPAR::S2I::equilibration_rows_maindiag or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+        if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
         {
           for (int i = 0; i < blocksparsematrix->Rows(); ++i)
           {
@@ -3955,8 +3966,10 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
                 Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
             // compute inverse row sums of current main diagonal matrix block
-            if (equilibration_ == INPAR::S2I::equilibration_rows_maindiag or
-                equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+            if (scatratimint_->EquilibrationMethod() ==
+                    INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
+                scatratimint_->EquilibrationMethod() ==
+                    INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
               ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums);
 
             // compute inverse row sums of current row block of global system matrix
@@ -3997,8 +4010,10 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
               if (invrowsums->Reciprocal(*invrowsums)) dserror("Vector could not be inverted!");
 
               // take square root of inverse row sums if matrix is scaled from left and right
-              if (equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-                  equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+              if (scatratimint_->EquilibrationMethod() ==
+                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+                  scatratimint_->EquilibrationMethod() ==
+                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
                 for (int i = 0; i < invrowsums->MyLength(); ++i)
                   (*invrowsums)[i] = sqrt((*invrowsums)[i]);
             }
@@ -4014,10 +4029,14 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
         }
 
         // perform column equilibration
-        if (equilibration_ == INPAR::S2I::equilibration_columns_full or
-            equilibration_ == INPAR::S2I::equilibration_columns_maindiag or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-            equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+        if (scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::columns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+            scatratimint_->EquilibrationMethod() ==
+                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
         {
           for (int j = 0; j < blocksparsematrix->Cols(); ++j)
           {
@@ -4026,8 +4045,10 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
                 Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(j, j).DomainMap())));
 
             // compute inverse column sums of current main diagonal matrix block
-            if (equilibration_ == INPAR::S2I::equilibration_columns_maindiag or
-                equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+            if (scatratimint_->EquilibrationMethod() ==
+                    INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
+                scatratimint_->EquilibrationMethod() ==
+                    INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
               ComputeInvColSums(blocksparsematrix->Matrix(j, j), invcolsums);
 
             // compute inverse column sums of current column block of global system matrix
@@ -4068,8 +4089,10 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
               if (invcolsums->Reciprocal(*invcolsums)) dserror("Vector could not be inverted!");
 
               // take square root of inverse column sums if matrix is scaled from left and right
-              if (equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-                  equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+              if (scatratimint_->EquilibrationMethod() ==
+                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+                  scatratimint_->EquilibrationMethod() ==
+                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
                 for (int i = 0; i < invcolsums->MyLength(); ++i)
                   (*invcolsums)[i] = sqrt((*invcolsums)[i]);
             }
@@ -4097,15 +4120,16 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
     }
 
     // perform equilibration of global residual vector
-    if (equilibration_ == INPAR::S2I::equilibration_rows_full or
-        equilibration_ == INPAR::S2I::equilibration_rows_maindiag or
-        equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-        equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+    if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
+        scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
+        scatratimint_->EquilibrationMethod() ==
+            INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+        scatratimint_->EquilibrationMethod() ==
+            INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
       if (residual->Multiply(1., *invrowsums_, *residual, 0.))
         dserror("Equilibration of global residual vector failed!");
   }
 
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::EquilibrateSystem
 
 
@@ -4323,11 +4347,11 @@ void SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums(
     dserror("Inverse row sums of matrix could not be successfully computed!");
 
   // take square root of inverse row sums if matrix is scaled from left and right
-  if (equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+  if (scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
     for (int i = 0; i < invrowsums->MyLength(); ++i) (*invrowsums)[i] = sqrt((*invrowsums)[i]);
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums
 
 
@@ -4345,11 +4369,11 @@ void SCATRA::MeshtyingStrategyS2I::ComputeInvColSums(
     dserror("Inverse column sums of matrix could not be successfully computed!");
 
   // take square root of inverse column sums if matrix is scaled from left and right
-  if (equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+  if (scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
     for (int i = 0; i < invcolsums->MyLength(); ++i) (*invcolsums)[i] = sqrt((*invcolsums)[i]);
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::ComputeInvColSums
 
 
@@ -4390,16 +4414,17 @@ void SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement(
     ) const
 {
   // unequilibrate global increment vector if necessary
-  if (equilibration_ == INPAR::S2I::equilibration_columns_full or
-      equilibration_ == INPAR::S2I::equilibration_columns_maindiag or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_full or
-      equilibration_ == INPAR::S2I::equilibration_rowsandcolumns_maindiag)
+  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
+      scatratimint_->EquilibrationMethod() ==
+          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
   {
     if (increment->Multiply(1., *invcolsums_, *increment, 0.))
       dserror("Unequilibration of global increment vector failed!");
   }
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement
 
 

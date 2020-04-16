@@ -1841,7 +1841,7 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if (IsS2IMeshtying())
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, params_->sublist("S2I COUPLING")));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, *params_));
 
   // standard case without meshtying
   else

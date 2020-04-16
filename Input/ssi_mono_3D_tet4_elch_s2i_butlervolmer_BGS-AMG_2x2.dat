@@ -1,8 +1,5 @@
 //
 // Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
@@ -41,6 +38,7 @@ INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
+EQUILIBRATION                   rows_full
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -53,7 +51,6 @@ EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_full
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         20
 TIMESTEP                        1.0

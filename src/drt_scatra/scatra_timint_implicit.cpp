@@ -118,6 +118,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       strategy_(Teuchos::null),
       additional_model_evaluator_(NULL),
       isale_(extraparams->get<bool>("isale")),
+      equilibrationmethod_(
+          Teuchos::getIntegralValue<INPAR::SCATRA::EquilibrationMethod>(*params, "EQUILIBRATION")),
       solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
@@ -2457,7 +2459,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if (IsS2IMeshtying())
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, params_->sublist("S2I COUPLING")));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, *params_));
 
   // scatra-scatra interface coupling
   else if (heteroreaccoupling_)

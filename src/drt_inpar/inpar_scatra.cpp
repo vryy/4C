@@ -185,6 +185,17 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with
   // SIMPLER)...",&scatradyn);
 
+  // flag for equilibration of global system of equations
+  setStringToIntegralParameter<EquilibrationMethod>("EQUILIBRATION", "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
+          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
+      tuple<EquilibrationMethod>(EquilibrationMethod::none, EquilibrationMethod::rows_full,
+          EquilibrationMethod::rows_maindiag, EquilibrationMethod::columns_full,
+          EquilibrationMethod::columns_maindiag, EquilibrationMethod::rowsandcolumns_full,
+          EquilibrationMethod::rowsandcolumns_maindiag),
+      &scatradyn);
+
   // flag for natural convection effects
   BoolParameter("NATURAL_CONVECTION", "No", "Include natural convection effects", &scatradyn);
 

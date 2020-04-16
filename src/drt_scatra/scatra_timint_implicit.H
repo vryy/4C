@@ -322,6 +322,12 @@ namespace SCATRA
     //! return flag for macro scale in multi-scale simulations
     bool MacroScale() const { return macro_scale_; };
 
+    //! return type of equilibration of global system of scalar transport equations
+    const INPAR::SCATRA::EquilibrationMethod& EquilibrationMethod() const
+    {
+      return equilibrationmethod_;
+    }
+
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
@@ -1027,6 +1033,9 @@ namespace SCATRA
 
     //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
     INPAR::SCATRA::SolverType solvtype_;
+
+    //! type of equilibration of global system of scalar transport equations
+    const INPAR::SCATRA::EquilibrationMethod equilibrationmethod_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
