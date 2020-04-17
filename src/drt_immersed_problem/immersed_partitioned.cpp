@@ -12,8 +12,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_inpar/inpar_cell.H"
-
 #include "../drt_fsi/fsi_nox_aitken.H"
 #include "../drt_fsi/fsi_nox_fixpoint.H"
 
@@ -21,10 +19,9 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
-    : ImmersedBase(),
-      ADAPTER::AlgorithmBase(comm, DRT::Problem::Instance()->CellMigrationParams()),
-      counter_(7)
+IMMERSED::ImmersedPartitioned::ImmersedPartitioned(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : ImmersedBase(), ADAPTER::AlgorithmBase(comm, timeparams), counter_(7)
 {
   // keep constructor empty
 }  // ImmersedPartitioned constructor
@@ -446,77 +443,6 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(
   nlParams.set("Max Iterations", immersedpart.get<int>("ITEMAX"));
 
   // sublists
-
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
-
-  //
-  // Set parameters for NOX to chose the solver direction and line
-  // search step.
-  //
-  switch (DRT::INPUT::IntegralValue<int>(immersedpart, "COUPALGO"))
-  {
-    case INPAR::CELL::cell_iter_stagg_fixed_rel_param:
-    {
-      // fixed-point solver with fixed relaxation parameter
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
-
-      nlParams.set("Jacobian", "None");
-
-      dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory", fixpointfactory);
-
-      lineSearchParams.set("Method", "Full Step");
-      lineSearchParams.sublist("Full Step").set("Full Step", immersedpart.get<double>("RELAX"));
-      break;
-    }
-    case INPAR::CELL::cell_iter_stagg_AITKEN_rel_param:
-    {
-      // fixed-point solver with Aitken relaxation parameter
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
-
-      nlParams.set("Jacobian", "None");
-
-      dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory", fixpointfactory);
-
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-          Teuchos::rcp(new NOX::FSI::AitkenFactory());
-      lineSearchParams.set("Method", "User Defined");
-      lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
-
-      lineSearchParams.sublist("Aitken").set("max step size", immersedpart.get<double>("MAXOMEGA"));
-      break;
-    }
-    case INPAR::CELL::cell_basic_sequ_stagg:
-    {
-      // sequential coupling (no iteration!)
-      SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
-
-      nlParams.set("Jacobian", "None");
-      nlParams.set("Max Iterations", 1);
-
-      dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory", fixpointfactory);
-
-      lineSearchParams.set("Method", "Full Step");
-      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-      break;
-    }
-    default:
-    {
-      dserror("coupling method type '%s' unsupported",
-          immersedpart.get<std::string>("COUPALGO").c_str());
-      break;
-    }
-  }
-
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
 

@@ -2460,15 +2460,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
 
     params.set<int>("gp", gp);
 
-    // needed for biochemo-mechano activefiber and passivefiber material.
-    // FixMe This has to vanish at latest with the elements
-    // for the new structural time integration.
-    // todo temporary hack ! (rauch 12/2016)
-    if (IsParamsInterface())
-    {
-      params.set<double>("total time", ParamsInterface().GetTotalTime());
-      params.set<double>("delta time", ParamsInterface().GetDeltaTime());
-    }  // if prb_immersed_cell
     // if output is requested only active stresses are written.
     params.set<int>("iostress", iostress);
 

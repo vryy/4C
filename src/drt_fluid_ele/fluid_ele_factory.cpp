@@ -20,7 +20,6 @@
 #include "fluid_ele_calc_immersed.H"
 #include "fluid_ele_calc_poro.H"
 #include "fluid_ele_calc_poro_p1.H"
-#include "fluid_ele_calc_poro_p1_immersed.H"
 #include "fluid_ele_calc_xfem.H"
 #include "fluid_ele_calc_xwall.H"
 #include "fluid_ele_calc_hdg.H"
@@ -116,8 +115,6 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "std_immersed")
     return DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance();
-  else if (problem == "poro_p1_immersed")
-    return DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::Instance();
   else if (problem == "poro")
     return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
   else if (problem == "poro_p1")

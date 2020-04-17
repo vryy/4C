@@ -139,7 +139,6 @@ STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
   switch (probtype)
   {
     case prb_struct_ale:
-    case prb_immersed_cell:
     {
       structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::StructAle());
       break;

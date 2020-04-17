@@ -2645,8 +2645,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
   // evaluate solution depending additional models
   // this point is unequal NULL only if a scatra
   // adapter has been constructed.
-  // see class AdapterScatraWrapperCellMigration for
-  // an example implementation.
   if (additional_model_evaluator_ != NULL)
     additional_model_evaluator_->EvaluateAdditionalSolutionDependingModels(systemmatrix, rhs);
 

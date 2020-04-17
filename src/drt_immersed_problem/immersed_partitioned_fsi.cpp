@@ -12,7 +12,8 @@
 #include "immersed_partitioned.H"
 #include "../drt_lib/drt_discret.H"
 
-IMMERSED::ImmersedPartitionedFSI::ImmersedPartitionedFSI(const Epetra_Comm& comm)
-    : ImmersedPartitioned(comm)
+IMMERSED::ImmersedPartitionedFSI::ImmersedPartitionedFSI(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : ImmersedPartitioned(comm, timeparams)
 {
 }

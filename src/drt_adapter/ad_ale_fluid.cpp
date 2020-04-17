@@ -72,10 +72,3 @@ void ADAPTER::AleFluidWrapper::ApplyInterfaceDisplacements(Teuchos::RCP<const Ep
 {
   interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
 }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ADAPTER::AleFluidWrapper::AddInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
-{
-  interface_->AddFSICondVector(idisp, WriteAccessDispnp());
-}

@@ -199,11 +199,6 @@ namespace SCATRA
         impltypestring = "Reactive scalar transport in porous media";
         break;
       }
-      case INPAR::SCATRA::impltype_bondreac:
-      {
-        impltypestring = "Advanced reactions with bond dynamics";
-        break;
-      }
       case INPAR::SCATRA::impltype_one_d_artery:
       {
         impltypestring = "Scalar Transport in 1D artery";

@@ -21,7 +21,6 @@
 #include "inpar_ale.H"
 #include "inpar_fsi.H"
 #include "inpar_immersed.H"
-#include "inpar_cell.H"
 #include "inpar_fpsi.H"
 #include "inpar_xfem.H"
 #include "inpar_mortar.H"
@@ -1098,8 +1097,6 @@ DRT::INPUT::ValidConditions()
   INPAR::FPSI::SetValidConditions(condlist);
 
   INPAR::IMMERSED::SetValidConditions(condlist);
-
-  INPAR::CELL::SetValidConditions(condlist);
 
   INPAR::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
 

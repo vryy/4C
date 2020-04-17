@@ -30,7 +30,7 @@ namespace IMMERSED
   {
    public:
     /// constructor
-    explicit ImmersedPartitioned(const Epetra_Comm& comm);
+    explicit ImmersedPartitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// loop over time steps of partitioned scheme
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);

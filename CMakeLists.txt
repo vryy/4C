@@ -536,7 +536,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matlist_reactions.cpp
-  src/drt_mat/matlist_bondreacs.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp
   src/drt_mat/matpar_parameter.cpp
@@ -574,7 +573,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_multiporo.cpp
   src/drt_mat/scatra_multiscale.cpp
   src/drt_mat/scatra_reaction_mat.cpp
-  src/drt_mat/scatra_bondreac_mat.cpp
   src/drt_mat/scatra_reaction_coupling.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
   src/drt_mat/matlist_reactions.cpp
@@ -656,8 +654,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
-  src/drt_mat/biochemo_mechano_cell_activefiber.cpp
-  src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
   src/drt_mat/mixture_elasthyper.cpp
   src/drt_mat/anisotropy_utils.cpp
@@ -734,10 +730,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
   src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
-  src/drt_adapter/ad_str_multiphysicswrapper_cellmigration.cpp
   src/drt_adapter/ad_scatra_wrapper.cpp
-  src/drt_adapter/ad_scatra_wrapper_cellmigration.cpp
-  
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
@@ -783,7 +776,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_pasi.cpp
-  src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
   src/drt_inpar/inpar_cut.cpp
   src/drt_inpar/inpar_ehl.cpp
@@ -1405,7 +1397,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
   src/drt_scatra_ele/scatra_ele_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
-  src/drt_scatra_ele/scatra_ele_calc_bondreac.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
@@ -1826,8 +1817,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
-  src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
-  src/drt_immersed_problem/str_model_evaluator_partitioned_ssi_adhesiondynamics.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -2179,7 +2168,6 @@ set(OBJS_DRT_B3_LIB
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
   src/drt_fluid_ele/fluid_ele_immersed.cpp
-  src/drt_fluid_ele/fluid_ele_poro_immersed.cpp
   src/drt_fluid_ele/fluid_ele_immersed_base.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
@@ -2205,7 +2193,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_topopt_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
-  src/drt_fluid_ele/fluid_ele_calc_poro_p1_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
@@ -2603,10 +2590,7 @@ src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 set(OBJS_DRT_IMMERSED_LIB
 src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
-src/drt_immersed_problem/immersed_discretization.cpp
-src/drt_immersed_problem/str_timint_ost_immersed.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
-src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM
@@ -2614,18 +2598,8 @@ src/drt_immersed_problem/immersed_base.cpp
 src/drt_immersed_problem/immersed_problem_dyn.cpp
 src/drt_immersed_problem/immersed_partitioned.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi.cpp
-src/drt_immersed_problem/immersed_partitioned_multiphysics.cpp
-src/drt_immersed_problem/immersed_partitioned_confine_cell.cpp
-src/drt_immersed_problem/immersed_partitioned_cellmigration.cpp
-src/drt_immersed_problem/immersed_partitioned_cellcontraction.cpp
-src/drt_immersed_problem/immersed_partitioned_adhesion_traction.cpp
-src/drt_immersed_problem/immersed_partitioned_protrusion_formation.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
-src/drt_immersed_problem/immersed_partitioned_flow_cell_interaction.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_membrane.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_adhesiondynamics.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 

@@ -155,14 +155,6 @@ namespace DRT
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra);
 
-
-      /*! \brief Update information about overlapping immersed and background domains
-       *
-       *  \author rauch \date 12/2015
-       */
-      int UpdateImmersedInformation(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm);
-
       /*! \brief Interpolate velocity to given point
        *
        *  \author rauch \date 05/2014
@@ -195,14 +187,6 @@ namespace DRT
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra);
-
-      /*! \brief Integrate the divergence of the velocity field for immersed cell migration
-       *
-       *  \author rauch \date 05/2014
-       */
-      int CalcArtificialVelocityDivergence(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra);
 
       /*---------------------------------------------------------------------*
        | Action type: interpolate_velocity_to_given_point                    |

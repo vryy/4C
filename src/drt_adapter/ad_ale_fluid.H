@@ -69,9 +69,6 @@ namespace ADAPTER
     //! apply FSI interface displacements (required for staggered FSI)
     void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
-    //! add additional FSI interface displacements (required for cell migration)
-    void AddInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
-
    private:
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 

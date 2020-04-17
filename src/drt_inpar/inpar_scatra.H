@@ -206,7 +206,6 @@ namespace INPAR
       impltype_chemoreac,
       impltype_std_hdg,
       impltype_cardiac_monodomain_hdg,
-      impltype_bondreac,
       impltype_one_d_artery,
       impltype_no_physics
     };

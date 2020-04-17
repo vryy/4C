@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
 
 #include "../pss_full/pss_cpp.h"  // access to legacy parser module
 
@@ -1333,10 +1333,6 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
               ->VisIsImmersed(names);
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))
               ->VisIsBoundaryImmersed(names);
-
-          DRT::ELEMENTS::FluidPoroImmersed* poroimmersedele =
-              dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed*>(dis_->lRowElement(i));
-          if (poroimmersedele != NULL) poroimmersedele->VisIsImmersedFirstRow(names);
         }
       }
     }  // end immersed method specific output

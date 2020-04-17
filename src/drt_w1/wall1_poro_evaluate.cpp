@@ -1964,7 +1964,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
   scatracoupling_ = false;
 
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if (probtype == prb_poroscatra or probtype == prb_immersed_cell) scatracoupling_ = true;
+  if (probtype == prb_poroscatra) scatracoupling_ = true;
 
   init_ = true;
 
