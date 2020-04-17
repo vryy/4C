@@ -558,36 +558,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_integr_pat_rhsvec:
-    {
-      // extract local values from the global vectors w and phi
-      Teuchos::RCP<const Epetra_Vector> rhsvec = discretization.GetState("rhsnodebasedvals");
-      if (rhsvec == Teuchos::null) dserror("Cannot get state vector 'rhsnodebasedvals' ");
-      Epetra_SerialDenseVector rhs(nen_);
-      DRT::UTILS::ExtractMyValues(*rhsvec, rhs, lm);
-
-      Epetra_SerialDenseMatrix mass(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        for (unsigned vi = 0; vi < nen_; ++vi)
-        {
-          const double v = fac * funct_(vi);  // no density required here
-
-          for (unsigned ui = 0; ui < nen_; ++ui)
-          {
-            mass(vi, ui) += v * funct_(ui);
-          }
-        }
-      }
-
-      elevec1_epetra.Multiply('N', 'N', 1.0, mass, rhs, 0.0);
-
-      break;
-    }
-
     case SCATRA::calc_error:
     {
       // check if length suffices

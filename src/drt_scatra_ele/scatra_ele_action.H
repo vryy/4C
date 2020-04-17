@@ -42,7 +42,6 @@ namespace SCATRA
     calc_immersed_phi_at_given_point,  // calculate concentration at a given point during immersed
                                        // cell migration
     calc_initial_time_deriv,           // calc_initial_time_deriv,
-    calc_integr_pat_rhsvec,            // integrate rhs vec for adjoint pat
     calc_integr_reaction,              // calculate integral reaction
     calc_mass_center_smoothingfunct,   // calculate mass center of minus domain, using the smoothing
                                        // function. (Interface thickness required)

@@ -273,7 +273,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_material_internal_state:
     case SCATRA::get_material_ionic_currents:
     case SCATRA::time_update_material:
-    case SCATRA::calc_integr_pat_rhsvec:
     case SCATRA::calc_immersed_element_source:
     case SCATRA::calc_elch_boundary_kinetics_point:
     case SCATRA::micro_scale_initialize:
