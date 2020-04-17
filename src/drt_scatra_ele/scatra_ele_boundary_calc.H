@@ -200,11 +200,6 @@ namespace DRT
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
 
-      //! computes mechanoresponsive scalar transport
-      void CalcMechanotransduction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra);
-
      private:
       // add nodal displacements to point coordinates
       void UpdateNodeCoordinates()
@@ -283,22 +278,6 @@ namespace DRT
       void CalcMatMass(const DRT::FaceElement* const element,  //!< boundary element
           Epetra_SerialDenseMatrix& massmatrix                 //!< element mass matrix
       );
-
-      /*!
-      \brief Integrate scalar over conditioned surface with all prefactors for rhs and additional
-      prefactor provided as input.
-
-      \note These prefactors are : TimeFacRhs * gp_weight * drs * Userdefined *testfunct
-
-      \param params (in)  : parameter list
-      \param ele    (in)  : element that is evaluated
-      \param scalar (out) : result vector containing integrated scalar values
-
-      */
-      void IntegrateWeightedScalar(Teuchos::ParameterList& params, const DRT::FaceElement* ele,
-          Epetra_SerialDenseVector& result);
-
-
 
       //! evaluate Kedem-Katchalsky interface condition
       void EvaluateKedemKatchalsky(const DRT::FaceElement* ele,  ///< current boundary element

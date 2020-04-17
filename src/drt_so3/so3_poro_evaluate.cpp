@@ -1361,7 +1361,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
   scatracoupling_ = false;
 
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if (probtype == prb_poroscatra or probtype == prb_immersed_cell) scatracoupling_ = true;
+  if (probtype == prb_poroscatra) scatracoupling_ = true;
 
   return;
 }

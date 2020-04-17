@@ -87,27 +87,6 @@ namespace POROELAST
     };  // class PoroScatraCloneStrategy
 
 
-    //! \brief implementation of special clone strategy for automatic generation
-    //!        of immersed fluid discretization from a given structure discretization for porous
-    //!        media
-    class PoroelastImmersedCloneStrategy : public POROELAST::UTILS::PoroelastCloneStrategy
-    {
-     public:
-      /// constructor
-      explicit PoroelastImmersedCloneStrategy() {}
-      /// destructor
-      virtual ~PoroelastImmersedCloneStrategy() {}
-
-     protected:
-      /// determine element type string and whether element is copied or not
-      virtual bool DetermineEleType(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
-
-      /// set element-specific data (material etc.)
-      virtual void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
-          const int matid, const bool isnurbs);
-
-    };  // class PoroElastImmersedCloneStrategy
 
   }  // namespace UTILS
 }  // namespace POROELAST

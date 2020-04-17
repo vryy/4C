@@ -76,10 +76,8 @@
 #include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
 #include "scatra_reaction_mat.H"
-#include "scatra_bondreac_mat.H"
 #include "scatra_chemotaxis_mat.H"
 #include "matlist_reactions.H"
-#include "matlist_bondreacs.H"
 #include "matlist_chemotaxis.H"
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
@@ -112,8 +110,6 @@
 #include "air_0d_O2_saturation.H"
 #include "electromagnetic.H"
 #include "activefiber.H"
-#include "biochemo_mechano_cell_activefiber.H"
-#include "biochemo_mechano_cell_passivefiber.H"
 #include "growth.H"
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
@@ -394,14 +390,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroTemperature(curmat));
       MAT::PAR::ScatraMatMultiPoroTemperature* params =
           static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_scatra_bondreac:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraBondReacMat(curmat));
-      MAT::PAR::ScatraBondReacMat* params =
-          static_cast<MAT::PAR::ScatraBondReacMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_scatra_multiscale:
@@ -728,14 +716,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::MatListReactions(curmat));
       MAT::PAR::MatListReactions* params =
           dynamic_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_matlist_bondreacs:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::MatListBondReacs(curmat));
-      MAT::PAR::MatListBondReacs* params =
-          dynamic_cast<MAT::PAR::MatListBondReacs*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_matlist_chemotaxis:
@@ -1201,22 +1181,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ActiveFiber(curmat));
       MAT::PAR::ActiveFiber* params = static_cast<MAT::PAR::ActiveFiber*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_biochemomechano_active:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellActiveFiber(curmat));
-      MAT::PAR::BioChemoMechanoCellActiveFiber* params =
-          static_cast<MAT::PAR::BioChemoMechanoCellActiveFiber*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_biochemomechano_passive:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellPassiveFiber(curmat));
-      MAT::PAR::BioChemoMechanoCellPassiveFiber* params =
-          static_cast<MAT::PAR::BioChemoMechanoCellPassiveFiber*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_superelast:

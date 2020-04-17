@@ -596,7 +596,6 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
   {
     // ToDo OutputPatspec()
-    // ToDo OutputCell()
   }
 
   // what's next?

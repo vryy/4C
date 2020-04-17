@@ -20,7 +20,8 @@ namespace IMMERSED
   {
    public:
     /// setup partitioned ImmersedFSI algorithm
-    explicit ImmersedPartitionedFSI(const Epetra_Comm& comm);
+    explicit ImmersedPartitionedFSI(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
   };  // class ImmersedFSI
 }  // namespace IMMERSED

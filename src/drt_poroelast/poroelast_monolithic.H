@@ -451,9 +451,6 @@ namespace POROELAST
     bool rowequilibration_;
     //@}
 
-   private:
-    //! cell migration specific modifications of previously evaluated fields
-    void EvalCellMigrationSpecific();
     //@}
 
   };  // Monolithic

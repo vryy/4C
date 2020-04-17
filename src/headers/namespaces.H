@@ -714,13 +714,6 @@ namespace INPAR
   {
   }  // namespace CARDIOVASCULAR0D
 
-  /*! \brief Input parameters for cell migration
-   *
-   */
-  namespace CELL
-  {
-  }  // namespace CELL
-
   /*! \brief Input parameters for contact mechanics
    *
    */

@@ -50,7 +50,6 @@
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_porofluidmultiphase.H"
 #include "inpar_immersed.H"
-#include "inpar_cell.H"
 #include "inpar_fbi.H"
 #include "inpar_fpsi.H"
 #include "inpar_ehl.H"
@@ -480,7 +479,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::REDAIRWAYS::SetValidParameters(list);
   INPAR::CARDIOVASCULAR0D::SetValidParameters(list);
   INPAR::IMMERSED::SetValidParameters(list);
-  INPAR::CELL::SetValidParameters(list);
   INPAR::FPSI::SetValidParameters(list);
   INPAR::FBI::SetValidParameters(list);
 

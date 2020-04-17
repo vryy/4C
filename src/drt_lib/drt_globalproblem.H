@@ -424,10 +424,6 @@ namespace DRT
     {
       return getParameterList()->sublist("IMMERSED METHOD");
     }
-    const Teuchos::ParameterList& CellMigrationParams() const
-    {
-      return getParameterList()->sublist("CELL DYNAMIC");
-    }
     const Teuchos::ParameterList& CutGeneralParams() const
     {
       return getParameterList()->sublist("CUT GENERAL");

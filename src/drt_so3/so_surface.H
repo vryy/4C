@@ -231,12 +231,9 @@ namespace DRT
         calc_cur_nodal_normals,
         calc_struct_area_poro,
         calc_fluid_traction,
-        calc_ecm_traction,
         calc_cur_normal_at_point,
         mark_immersed_elements,
-        calc_struct_robinforcestiff,
-        calc_cell_growth,
-        calc_cell_adhesion_forces
+        calc_struct_robinforcestiff
       };
 
      protected:

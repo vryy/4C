@@ -201,7 +201,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case INPAR::SCATRA::impltype_poro:
     case INPAR::SCATRA::impltype_pororeac:
     case INPAR::SCATRA::impltype_pororeacECM:
-    case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
     case INPAR::SCATRA::impltype_one_d_artery:
     case INPAR::SCATRA::impltype_no_physics:
@@ -246,7 +245,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
-    case SCATRA::integrate_weighted_scalar:
     case SCATRA::calc_flux_domain:
     case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_mean_scalar_time_derivatives:
@@ -281,8 +279,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::micro_scale_update:
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
-    case SCATRA::calc_cell_mechanotransduction:
-    case SCATRA::calc_cell_growth_sourcesandsinks:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     case SCATRA::calc_mass_matrix:
     case SCATRA::transform_real_to_reference_point:

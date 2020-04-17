@@ -729,7 +729,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     case FLD::interpolate_velocity_to_given_point_immersed:
     case FLD::search_immersed_boundary_elements:
     case FLD::least_squares_matrix_rhs_immersed_boundary:
-    case FLD::calc_artificial_velocity_divergence:
     case FLD::interpolate_velocity_to_given_point:
     case FLD::interpolate_pressure_to_given_point:
     case FLD::correct_immersed_fluid_bound_vel:

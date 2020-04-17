@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief global algorithm control class for all immersed and cell migration algorithms
+\brief global algorithm control class for all immersed algorithms
 
 \level 2
 
@@ -13,9 +13,6 @@
 
 //! global immersed fsi algorithm.
 void immersed_problem_drt();
-
-//! global immersed cell migration algorithm.
-void CellMigrationControlAlgorithm();
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef IMMERSED_PROBLEM_DYN_H*/

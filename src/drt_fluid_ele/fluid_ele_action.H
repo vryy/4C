@@ -62,7 +62,6 @@ namespace FLD
     least_squares_matrix_rhs_immersed_boundary,
     update_immersed_information,
     interpolate_velgrad_to_given_point,
-    calc_artificial_velocity_divergence,
     interpolate_pressure_to_given_point,
     correct_immersed_fluid_bound_vel,
     interpolate_velocity_to_given_point,

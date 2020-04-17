@@ -131,16 +131,6 @@ void StructureFilter::WriteAllResults(PostField* field)
   // additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
 
-  // additional output for cell migration simulation
-  writer_->WriteResult(
-      "cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_adhesion_force", "cell_adhesion_force", dofbased, field->problem()->num_dim());
-
   // monolithic scalar-structure interaction involving scatra-scatra interface coupling outputs
   // nodal Cauchy stresses instead of Gauss-point ones
   writer_->WriteResult("nodal_stresses_xyz", "nodal_stresses_xyz", nodebased, 6);

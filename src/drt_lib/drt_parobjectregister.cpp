@@ -35,7 +35,6 @@
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
-#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 #include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
@@ -169,8 +168,6 @@
 #include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
 #include "../drt_beaminteraction/beam_link_truss.H"
 #include "../drt_mat/activefiber.H"
-#include "../drt_mat/biochemo_mechano_cell_activefiber.H"
-#include "../drt_mat/biochemo_mechano_cell_passivefiber.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_mat/maxwell_0d_acinus_NeoHookean.H"
@@ -228,7 +225,6 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::FluidXWallType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidXWallBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidTypeImmersed::Instance().Name() << " "
-    << DRT::ELEMENTS::FluidTypePoroImmersed::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroEleType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidHDGType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidHDGWeakCompType::Instance().Name() << " "
@@ -376,8 +372,6 @@ std::string DRT::ParObjectList()
     << MORTAR::MortarElementType::Instance().Name() << " " << CONTACT::CoNodeType::Instance().Name()
     << " " << CONTACT::FriNodeType::Instance().Name() << " "
     << CONTACT::CoElementType::Instance().Name() << " " << MAT::ActiveFiberType::Instance().Name()
-    << " " << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
-    << MAT::BioChemoMechanoCellPassiveFiberType::Instance().Name() << " "
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "

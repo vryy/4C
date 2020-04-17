@@ -130,8 +130,6 @@ bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_undefined;
   else if (impltype == "AdvReac")
     impltype_ = INPAR::SCATRA::impltype_advreac;
-  else if (impltype == "BondReac")
-    impltype_ = INPAR::SCATRA::impltype_bondreac;
   else if (impltype == "CardMono")
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
   else if (impltype == "Chemo")
