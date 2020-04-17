@@ -33,16 +33,16 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 THETA                           1
 NUMSTEP                         5
 ITEMAX                          10
-MAXTIME                         1.0//1.0/(0.005*200)
+MAXTIME                         1.0
 --------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
-TOL_VEL_RES	  1.0E-12
-TOL_VEL_INC	  1.0E-12
-TOL_PRES_RES	  1.0E-12
-TOL_PRES_INC	  1.0E-12
+TOL_VEL_RES	                    1.0E-12
+TOL_VEL_INC	                    1.0E-12
+TOL_PRES_RES	                  1.0E-12
+TOL_PRES_INC	                  1.0E-12
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
@@ -51,17 +51,10 @@ PSPG                            Yes
 SUPG                            Yes
 GRAD_DIV                        Yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        none
-EOS_CONV_STREAM                 none
-EOS_CONV_CROSS                  none
-EOS_DIV                         none
-EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------FSI DYNAMIC
 NUMSTEP                         5
-MAXTIME                         5.0 // T=1.0/(0.005) for Str=0.005, U=1cm/s, b=1cm
-TIMESTEP                        0.1 // dt=T/175 or dt=T/200
+MAXTIME                         5.0
+TIMESTEP                        0.1
 RESTARTEVRY                     20
 MATCHGRID_FLUIDALE              no
 --------------------------------------------------------ALE DYNAMIC
