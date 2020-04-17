@@ -271,6 +271,16 @@ namespace INPAR
       rowsandcolumns_maindiag
     };
 
+    /// type of global system matrix in global system of equations
+    enum class MatrixType
+    {
+      undefined,
+      sparse,
+      block_geometry,
+      block_condition,
+      block_condition_dof
+    };
+
     /// set the scatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

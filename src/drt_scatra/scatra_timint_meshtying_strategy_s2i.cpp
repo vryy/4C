@@ -97,8 +97,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       invcolsums_(Teuchos::null),
       lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
-      matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(
-          parameters.sublist("S2I COUPLING"), "MATRIXTYPE")),
+      matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(parameters, "MATRIXTYPE")),
       ntsprojtol_(parameters.sublist("S2I COUPLING").get<double>("NTSPROJTOL")),
       intlayergrowth_evaluation_(DRT::INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(
           parameters.sublist("S2I COUPLING"), "INTLAYERGROWTH_EVALUATION")),
@@ -356,7 +355,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       // assemble global system matrix depending on matrix type
       switch (matrixtype_)
       {
-        case INPAR::S2I::matrix_sparse:
+        case INPAR::SCATRA::MatrixType::sparse:
         {
           // check matrix
           Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
@@ -449,7 +448,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::S2I::matrix_block_geometry:
+        case INPAR::SCATRA::MatrixType::block_geometry:
         {
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -488,8 +487,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::S2I::matrix_block_condition:
-        case INPAR::S2I::matrix_block_condition_dof:
+        case INPAR::SCATRA::MatrixType::block_condition:
+        case INPAR::SCATRA::MatrixType::block_condition_dof:
         {
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -706,7 +705,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       // assemble global system of equations depending on matrix type
       switch (matrixtype_)
       {
-        case INPAR::S2I::matrix_sparse:
+        case INPAR::SCATRA::MatrixType::sparse:
         {
           // extract global system matrix from time integrator
           const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
@@ -844,7 +843,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::S2I::matrix_block_condition:
+        case INPAR::SCATRA::MatrixType::block_condition:
         {
           // extract global system matrix from time integrator
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -951,7 +950,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         // assemble interface matrices into global system matrix depending on matrix type
         switch (matrixtype_)
         {
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             // check matrix
             const Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix = scatratimint_->SystemMatrix();
@@ -976,8 +975,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             break;
           }
 
-          case INPAR::S2I::matrix_block_condition:
-          case INPAR::S2I::matrix_block_condition_dof:
+          case INPAR::SCATRA::MatrixType::block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition_dof:
           {
             // check matrix
             Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -1058,7 +1057,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // system matrix
           switch (matrixtype_)
           {
-            case INPAR::S2I::matrix_sparse:
+            case INPAR::SCATRA::MatrixType::sparse:
             {
               // assemble off-diagonal scatra-growth block of global system matrix, containing
               // derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface
@@ -1186,8 +1185,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
               break;
             }
 
-            case INPAR::S2I::matrix_block_condition:
-            case INPAR::S2I::matrix_block_condition_dof:
+            case INPAR::SCATRA::MatrixType::block_condition:
+            case INPAR::SCATRA::MatrixType::block_condition_dof:
             {
               // assemble off-diagonal scatra-growth block of global system matrix, containing
               // derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface
@@ -2619,13 +2618,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   // further initializations depending on type of global system matrix
   switch (matrixtype_)
   {
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
       // nothing needs to be done in this case
       break;
 
-    case INPAR::S2I::matrix_block_condition:
-    case INPAR::S2I::matrix_block_condition_dof:
-    case INPAR::S2I::matrix_block_geometry:
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    case INPAR::SCATRA::MatrixType::block_geometry:
     {
       // safety check
       if (!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -2683,7 +2682,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           growthgrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_growth, 81));
           switch (matrixtype_)
           {
-            case INPAR::S2I::matrix_sparse:
+            case INPAR::SCATRA::MatrixType::sparse:
             {
               // initialize extended map extractor associated with blocks of global system matrix
               extendedblockmaps_ = extendedmaps_;
@@ -2699,8 +2698,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               break;
             }
 
-            case INPAR::S2I::matrix_block_condition:
-            case INPAR::S2I::matrix_block_condition_dof:
+            case INPAR::SCATRA::MatrixType::block_condition:
+            case INPAR::SCATRA::MatrixType::block_condition_dof:
             {
               // initialize map extractor associated with all degrees of freedom for scatra-scatra
               // interface layer growth
@@ -3380,13 +3379,12 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
  *----------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
 {
-  if (matrixtype_ == INPAR::S2I::matrix_block_condition or
-      matrixtype_ == INPAR::S2I::matrix_block_condition_dof)
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition or
+      matrixtype_ == INPAR::SCATRA::MatrixType::block_condition_dof)
   {
     // extract domain partitioning conditions from discretization
     std::vector<Teuchos::RCP<DRT::Condition>> partitioningconditions;
-    scatratimint_->Discretization()->GetCondition(
-        "S2ICouplingPartitioning", partitioningconditions);
+    scatratimint_->Discretization()->GetCondition("ScatraPartitioning", partitioningconditions);
 
     // safety check
     if (!partitioningconditions.size())
@@ -3428,7 +3426,7 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
     blockmaps_master_->CheckForValidMapExtractor();
   }
 
-  else if (matrixtype_ == INPAR::S2I::matrix_block_geometry)
+  else if (matrixtype_ == INPAR::SCATRA::MatrixType::block_geometry)
     // matrix block map extractor equals interface map extractor in this case
     blockmaps_ = interfacemaps_;
 
@@ -3445,7 +3443,7 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMaps(
     std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps  //!< empty vector for maps to be built
     ) const
 {
-  if (matrixtype_ == INPAR::S2I::matrix_block_condition)
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition)
   {
     // extract number of domain partitioning conditions
     const unsigned ncond = partitioningconditions.size();
@@ -3582,7 +3580,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
 
   switch (matrixtype_)
   {
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // initialize system matrix
       systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(
@@ -3590,7 +3588,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
       break;
     }
 
-    case INPAR::S2I::matrix_block_geometry:
+    case INPAR::SCATRA::MatrixType::block_geometry:
     {
       // initialize system matrix and associated strategy
       systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -3598,8 +3596,8 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
       break;
     }
 
-    case INPAR::S2I::matrix_block_condition:
-    case INPAR::S2I::matrix_block_condition_dof:
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
     {
       // initialize system matrix and associated strategy
       systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -3735,7 +3733,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
         {
           switch (matrixtype_)
           {
-            case INPAR::S2I::matrix_sparse:
+            case INPAR::SCATRA::MatrixType::sparse:
             {
               // check scalar transport system matrix
               const Teuchos::RCP<const LINALG::SparseMatrix> sparsematrix =
@@ -3754,8 +3752,8 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
               break;
             }
 
-            case INPAR::S2I::matrix_block_condition:
-            case INPAR::S2I::matrix_block_condition_dof:
+            case INPAR::SCATRA::MatrixType::block_condition:
+            case INPAR::SCATRA::MatrixType::block_condition_dof:
             {
               // check scalar transport system matrix
               const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocksparsematrix =
@@ -3886,18 +3884,15 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
  | equilibrate global system of equations if necessary       fang 05/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-    const LINALG::MultiMapExtractor&
-        blockmaps  //!< map extractor associated with blocks of global system matrix
-    ) const
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<Epetra_Vector>& residual, const LINALG::MultiMapExtractor& blockmaps) const
 {
   if (scatratimint_->EquilibrationMethod() != INPAR::SCATRA::EquilibrationMethod::none)
   {
     // perform equilibration depending on type of global system matrix
     switch (matrixtype_)
     {
-      case INPAR::S2I::matrix_sparse:
+      case INPAR::SCATRA::MatrixType::sparse:
       {
         // check matrix
         Teuchos::RCP<LINALG::SparseMatrix> sparsematrix =
@@ -3940,9 +3935,9 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
         break;
       }
 
-      case INPAR::S2I::matrix_block_condition:
-      case INPAR::S2I::matrix_block_condition_dof:
-      case INPAR::S2I::matrix_block_geometry:
+      case INPAR::SCATRA::MatrixType::block_condition:
+      case INPAR::SCATRA::MatrixType::block_condition_dof:
+      case INPAR::SCATRA::MatrixType::block_geometry:
       {
         // check matrix
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =

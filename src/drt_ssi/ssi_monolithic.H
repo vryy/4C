@@ -174,9 +174,6 @@ namespace SSI
     //! type of global system matrix in global system of equations
     const INPAR::SSI::MatrixType matrixtype_;
 
-    //! type of scalar transport system matrix
-    INPAR::S2I::MatrixType matrixtype_scatra_;
-
     //! global residual vector on right-hand side of global system of equations
     Teuchos::RCP<Epetra_Vector> residual_;
 

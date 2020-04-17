@@ -328,6 +328,9 @@ namespace SCATRA
       return equilibrationmethod_;
     }
 
+    //! return type of global system matrix in global system of equations
+    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; }
+
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
@@ -1036,6 +1039,9 @@ namespace SCATRA
 
     //! type of equilibration of global system of scalar transport equations
     const INPAR::SCATRA::EquilibrationMethod equilibrationmethod_;
+
+    //! type of global system matrix in global system of equations
+    const INPAR::SCATRA::MatrixType matrixtype_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;

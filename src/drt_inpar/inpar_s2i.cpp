@@ -28,14 +28,6 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           .sublist(
               "S2I COUPLING", false, "control parameters for scatra-scatra interface coupling");
 
-  // type of global system matrix in global system of equations
-  setStringToIntegralParameter<int>("MATRIXTYPE", "sparse",
-      "type of global system matrix in global system of equations",
-      tuple<std::string>("sparse", "block_geometry", "block_condition", "block_condition_dof"),
-      tuple<int>(
-          matrix_sparse, matrix_block_geometry, matrix_block_condition, matrix_block_condition_dof),
-      &s2icoupling);
-
   // type of mortar meshtying
   setStringToIntegralParameter<int>("COUPLINGTYPE", "Undefined", "type of mortar meshtying",
       tuple<std::string>("Undefined", "MatchingNodes", "StandardMortar", "SaddlePointMortar_Petrov",
@@ -552,28 +544,6 @@ void INPAR::S2I::SetValidConditions(
     // insert condition definitions into global list of valid condition definitions
     condlist.push_back(s2igrowthline);
     condlist.push_back(s2igrowthsurf);
-  }
-
-
-  /*--------------------------------------------------------------------*/
-  // scatra-scatra interface coupling (domain partitioning for block preconditioning of global
-  // system matrix)
-  {
-    // partitioning of 2D domain into 2D subdomains
-    Teuchos::RCP<ConditionDefinition> s2ilinepartitioning = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING", "S2ICouplingPartitioning",
-        "Scatra-scatra line interface coupling (domain partitioning)",
-        DRT::Condition::S2ICouplingPartitioning, false, DRT::Condition::Surface));
-
-    // partitioning of 3D domain into 3D subdomains
-    Teuchos::RCP<ConditionDefinition> s2isurfpartitioning = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING", "S2ICouplingPartitioning",
-        "Scatra-scatra surface interface coupling (domain partitioning)",
-        DRT::Condition::S2ICouplingPartitioning, false, DRT::Condition::Volume));
-
-    // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(s2ilinepartitioning);
-    condlist.push_back(s2isurfpartitioning);
   }
 
   return;

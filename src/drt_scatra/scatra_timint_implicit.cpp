@@ -120,6 +120,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       isale_(extraparams->get<bool>("isale")),
       equilibrationmethod_(
           Teuchos::getIntegralValue<INPAR::SCATRA::EquilibrationMethod>(*params, "EQUILIBRATION")),
+      matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(*params, "MATRIXTYPE")),
       solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
@@ -240,7 +241,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
 

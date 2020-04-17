@@ -181,7 +181,7 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
   if (scatra_->S2ICoupling())
   {
     // set flag for matrix type associated with thermo field
-    fieldparameters_->sublist("S2I COUPLING").set<std::string>("MATRIXTYPE", "sparse");
+    fieldparameters_->set<std::string>("MATRIXTYPE", "sparse");
 
     // set flag in thermo meshtying strategy for evaluation of interface linearizations and
     // residuals on slave side only

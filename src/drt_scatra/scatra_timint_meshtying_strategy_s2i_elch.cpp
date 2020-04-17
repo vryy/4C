@@ -34,16 +34,12 @@
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
-    SCATRA::ScaTraTimIntElch* elchtimint,  //!< elch time integrator
-    const Teuchos::ParameterList&
-        parameters  //!< input parameters for scatra-scatra interface coupling
-    )
+    SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
     : MeshtyingStrategyS2I(elchtimint, parameters),
       etagrowthmin_(0.),
       intlayergrowth_startstep_(-1),
       intlayergrowth_timestep_active_(false)
 {
-  return;
 }  // SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch
 
 
@@ -160,12 +156,10 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
  | build maps associated with blocks of global system matrix       fang 06/15 |
  *----------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2IElch::BuildBlockMaps(
-    const std::vector<Teuchos::RCP<DRT::Condition>>&
-        partitioningconditions,                             //!< domain partitioning conditions
-    std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps  //!< empty vector for maps to be built
-    ) const
+    const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+    std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
 {
-  if (matrixtype_ == INPAR::S2I::matrix_block_condition_dof)
+  if (scatratimint_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
   {
     // safety check
     if (DRT::INPUT::IntegralValue<int>(
@@ -190,11 +184,9 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockMaps(
       const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
 
       // loop over all nodes associated with current domain partitioning condition
-      for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+      for (int nodegid : *nodegids)
       {
         // extract global ID of current node
-        const int nodegid = (*nodegids)[inode];
-
         // consider current node only if node is owned by current processor
         // need to make sure that node is stored on current processor, otherwise cannot resolve
         // "->Owner()"
@@ -218,9 +210,9 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockMaps(
       for (unsigned iset = 0; iset < 2; ++iset)
       {
         int nummyelements(0);
-        int* myglobalelements(NULL);
+        int* myglobalelements(nullptr);
         std::vector<int> dofidvec;
-        if (dofids[iset].size() > 0)
+        if (!dofids[iset].empty())
         {
           dofidvec.reserve(dofids[iset].size());
           dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
@@ -237,8 +229,6 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockMaps(
   // call base class routine for other types of global system matrix
   else
     SCATRA::MeshtyingStrategyS2I::BuildBlockMaps(partitioningconditions, blockmaps);
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2I::BuildBlockMaps
 
 
@@ -250,7 +240,7 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
   // call base class routine
   SCATRA::MeshtyingStrategyS2I::BuildBlockNullSpaces();
 
-  if (matrixtype_ == INPAR::S2I::matrix_block_condition_dof)
+  if (scatratimint_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
   {
     // loop over blocks of global system matrix
     for (int iblock = 0; iblock < blockmaps_->NumMaps(); ++iblock)
@@ -293,8 +283,6 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
       --mueluparams.get<int>("PDE equations");
     }
   }
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces
 
 

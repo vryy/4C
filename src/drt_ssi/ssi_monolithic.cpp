@@ -59,10 +59,9 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
           globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
       matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      matrixtype_scatra_(INPAR::S2I::matrix_sparse),
-      residual_(Teuchos::null),
-      scatrastructuredomain_(Teuchos::null),
-      scatrastructureinterface_(Teuchos::null),
+      residual_(nullptr),
+      scatrastructuredomain_(nullptr),
+      scatrastructureinterface_(nullptr),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
@@ -74,9 +73,7 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
       systemmatrix_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | assemble global system of equations                           fang 08/17 |
@@ -203,15 +200,15 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureDomain()
   scatra_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
 
   // finalize scatra-structure matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       scatrastructuredomain_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       scatrastructuredomain_->Complete(*maps_->Map(1), *maps_->Map(0));
       break;
@@ -226,10 +223,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureDomain()
 
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble interface contributions of off-diagonal scatra-structure                 |
@@ -278,15 +272,15 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
 
 
   // finalize scatra-structure matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       scatrastructureinterface_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // finalize auxiliary system matrix
       scatrastructureinterface_->Complete(*maps_->Map(1), *maps_->Map(0));
@@ -302,10 +296,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
 
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble off-diagonal structure-scatra block of global system matrix   fang 08/17 |
@@ -350,15 +341,15 @@ void SSI::SSI_Mono::EvaluateODBlockStructureScatraDomain() const
   structurescatradomain_->Scale(1.0 - timeintparam);
 
   // finalize structure-scatra matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       structurescatradomain_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       structurescatradomain_->Complete(*maps_->Map(0), *maps_->Map(1));
       break;
@@ -370,19 +361,16 @@ void SSI::SSI_Mono::EvaluateODBlockStructureScatraDomain() const
       break;
     }
   }
-
-  return;
 }
-
 
 /*-------------------------------------------------------------------------------*
  | build null spaces associated with blocks of global system matrix   fang 01/18 |
  *-------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::BuildNullSpaces() const
 {
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
       for (int iblock = 0; iblock < meshtying_strategy_s2i_->BlockMaps().NumMaps(); ++iblock)
@@ -412,7 +400,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null
       // space computation
@@ -448,10 +436,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
   structure_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
-
-  return;
 }  // SSI::SSI_Mono::BuildNullSpaces
-
 
 /*----------------------------------------------------------------------------*
  | compute inverse sums of absolute values of matrix row entries   fang 01/18 |
@@ -1024,9 +1009,6 @@ void SSI::SSI_Mono::SetupSystem()
     maps[1] = structure_->GetDBCMapExtractor()->CondMap();
     if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
-
-    // overwrite type of scalar transport system matrix
-    matrixtype_scatra_ = strategy_scatra_->MatrixType();
   }
 
   // initialize global map extractor
@@ -1044,17 +1026,17 @@ void SSI::SSI_Mono::SetupSystem()
   residual_ = LINALG::CreateVector(*DofRowMap(), true);
 
   // initialize map extractors associated with blocks of global system matrix
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       maps_systemmatrix_ = maps_;
       break;
     }
 
     // several main-diagonal matrix blocks associated with scalar transport field
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport
       // field
@@ -1136,9 +1118,9 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize scatra-structure block and structure-scatra block of global system matrix
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ =
@@ -1159,7 +1141,7 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ = Teuchos::rcp(
@@ -1191,15 +1173,15 @@ void SSI::SSI_Mono::SetupSystem()
   {
     case INPAR::SSI::matrix_block:
     {
-      switch (matrixtype_scatra_)
+      switch (scatra_->ScaTraField()->MatrixType())
       {
-        case INPAR::S2I::matrix_block_condition:
+        case INPAR::SCATRA::MatrixType::block_condition:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockBlock(Teuchos::rcp(this, false), converter));
           break;
         }
-        case INPAR::S2I::matrix_sparse:
+        case INPAR::SCATRA::MatrixType::sparse:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockSparse(Teuchos::rcp(this, false), converter));

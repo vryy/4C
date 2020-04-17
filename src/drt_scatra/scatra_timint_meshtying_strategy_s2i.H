@@ -197,7 +197,7 @@ namespace SCATRA
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
 
     //! return type of global system matrix in global system of equations
-    const INPAR::S2I::MatrixType& MatrixType() const { return matrixtype_; };
+    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;
@@ -372,7 +372,7 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::S2I::MatrixType matrixtype_;
+    const INPAR::SCATRA::MatrixType matrixtype_;
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;
