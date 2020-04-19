@@ -1,5 +1,10 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
+- removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
+- reasons: The framework was not fully implemented due to methodological reasons and thus was also not tested.
+- removed by Sebastian Fuchs
+
 cell migration module (by Andreas Rauch)
 - includes prb_immersed_cell and prb_scatra_endoexocytosis
 - prb_immersed_cell is comprised by a structural problem (cell) embedded in a porous medium (extrcellular matrix)
