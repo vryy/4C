@@ -71,10 +71,10 @@ namespace SSI
       return map_structure_;
     };
 
-    //! return meshtying strategy
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> S2IMeshtyingStrategy() const
+    //! return the scatra-scatra interface meshtying strategy
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
     {
-      return strategy_scatra_;
+      return meshtying_strategy_s2i_;
     };
 
     //! setup monolithic algorithm
@@ -198,7 +198,7 @@ namespace SSI
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy_scatra_;
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! structure-scatra block of global system matrix (derivatives of structural residuals w.r.t.
     //! scalar transport degrees of freedom)

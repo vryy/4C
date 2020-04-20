@@ -69,7 +69,7 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       strategy_convcheck_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
-      strategy_scatra_(Teuchos::null),
+      meshtying_strategy_s2i_(nullptr),
       structurescatradomain_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
@@ -270,7 +270,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       // collect condition specific data and store to scatra boundary parameter class
-      strategy_scatra_->SetConditionSpecificScaTraParameters(*condition);
+      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*condition);
       // evaluate the condition now
       scatra_->ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
@@ -385,7 +385,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
     case INPAR::S2I::matrix_block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < strategy_scatra_->BlockMaps().NumMaps(); ++iblock)
+      for (int iblock = 0; iblock < meshtying_strategy_s2i_->BlockMaps().NumMaps(); ++iblock)
       {
         // store number of current block as string, starting from 1
         std::stringstream iblockstr;
@@ -406,7 +406,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
         // block
         LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
             *scatra_->ScaTraField()->Discretization()->DofRowMap(),
-            *strategy_scatra_->BlockMaps().Map(iblock), blocksmootherparams);
+            *meshtying_strategy_s2i_->BlockMaps().Map(iblock), blocksmootherparams);
       }
 
       break;
@@ -456,10 +456,8 @@ void SSI::SSI_Mono::BuildNullSpaces() const
 /*----------------------------------------------------------------------------*
  | compute inverse sums of absolute values of matrix row entries   fang 01/18 |
  *----------------------------------------------------------------------------*/
-void SSI::SSI_Mono::ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< inverse sums of absolute values of row entries in matrix
-    ) const
+void SSI::SSI_Mono::ComputeInvRowSums(
+    const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   // compute inverse row sums of matrix
   if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
@@ -996,13 +994,13 @@ void SSI::SSI_Mono::Setup()
   if (SSIInterfaceMeshtying())
   {
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
+    meshtying_strategy_s2i_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
         scatra_->ScaTraField()->Strategy());
 
     // safety checks
-    if (strategy_scatra_ == Teuchos::null)
+    if (meshtying_strategy_s2i_ == Teuchos::null)
       dserror("Invalid scatra-scatra interface coupling strategy!");
-    if (strategy_scatra_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+    if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror(
           "Monolithic scalar-structure interaction only implemented for scatra-scatra "
           "interface "
@@ -1060,10 +1058,10 @@ void SSI::SSI_Mono::SetupSystem()
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport
       // field
-      const unsigned maps_systemmatrix_scatra = strategy_scatra_->BlockMaps().NumMaps();
+      const unsigned maps_systemmatrix_scatra = meshtying_strategy_s2i_->BlockMaps().NumMaps();
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(maps_systemmatrix_scatra + 1);
       for (unsigned imap = 0; imap < maps_systemmatrix_scatra; ++imap)
-        maps_systemmatrix[imap] = strategy_scatra_->BlockMaps().Map(imap);
+        maps_systemmatrix[imap] = meshtying_strategy_s2i_->BlockMaps().Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
@@ -1145,18 +1143,18 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize scatra-structure block
       scatrastructuredomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *map_structure_, strategy_scatra_->BlockMaps(), 81, false, true));
+              *map_structure_, meshtying_strategy_s2i_->BlockMaps(), 81, false, true));
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ =
             Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *map_structure_, strategy_scatra_->BlockMapsSlave(), 81, false, true));
+                *map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              strategy_scatra_->BlockMaps(), *map_structure_, 81, false, true));
+              meshtying_strategy_s2i_->BlockMaps(), *map_structure_, 81, false, true));
 
       break;
     }
@@ -1170,7 +1168,7 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ = Teuchos::rcp(new LINALG::SparseMatrix(
-            *strategy_scatra_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
+            *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
