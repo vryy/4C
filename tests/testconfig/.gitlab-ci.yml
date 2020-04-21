@@ -21,7 +21,7 @@ variables:
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
-    CTEST_CONFIGURE_POSTFIX: "--useDEAL"
+    CTEST_CONFIGURE_POSTFIX: ""
 
     # Select specific test by regular expressen (".": all)
     TEST_TAG: "."
@@ -381,7 +381,6 @@ checkcode:
 imcs-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -394,7 +393,6 @@ imcs-buildtest_minimal:
 imcs-buildtest_full:
     <<: *buildtest_full
     variables:
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -407,7 +405,6 @@ imcs-buildtest_full:
 imcs-buildtest_daily:
     <<: *buildtest_daily
     variables:
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -420,7 +417,6 @@ imcs-buildtest_daily:
 imcs-buildtest_daily_debug:
     <<: *buildtest_daily_debug
     variables:
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -434,7 +430,6 @@ imcs-buildtest_daily_debug:
     <<: *doxygen
     variables:
         CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -539,7 +534,6 @@ lnm-buildtest_daily_bruteforce:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"

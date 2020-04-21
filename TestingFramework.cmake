@@ -234,7 +234,6 @@ endmacro(vtk_test)
 
 ###------------------------------------------------------------------ List of tests
 baci_test(aaa_mat_input 2 "")
-baci_test(acou_pat_1d_impleuler 2 "" minimal)
 baci_test(ale2d_laplace_material 2 1)
 baci_test(ale2d_laplace_spatial 2 "")
 baci_test(ale2d_solid_lin 1 "")
@@ -2141,19 +2140,6 @@ baci_test(sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standar
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard_BGS-AMG_4x4 3 15)
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_4x4 3 15)
 endif (HAVE_MueLu)
-
-if (HAVE_DEAL_II)
-baci_test(acou_ader_conv10 2 "")
-baci_test(acou_aderlts_conv10 1 "")
-if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-baci_test(acou_sol_conv10 1 "")
-endif(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-baci_test(acou_2d_lsrk33reg2 2 "")
-baci_test(acou_2d_ssprk 2 "")
-baci_test(acou_pat_2d_classrk4 2 "")
-baci_test(acou_pat_trac_pml 2 "")
-baci_test(acou_pat_1d_expleuler_inv 2 "")
-endif (HAVE_DEAL_II)
 
 # brownian dynamic test cases using random numbers from Boost Random libraries
 if (${Boost_MINOR_VERSION} GREATER 56)

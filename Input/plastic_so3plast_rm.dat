@@ -285,7 +285,6 @@ NODE 45    COORD  0.0000000000000000e+00  5.6568542494923797e+00  -1.33335000000
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
--------------------------------------------------ACOUSTIC ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 29 QUANTITY dispx VALUE -3.30009767672049303e+00 TOLERANCE 1.0e-8
 STRUCTURE DIS structure NODE 29 QUANTITY dispy VALUE -3.30009767672053922e+00 TOLERANCE 1.0e-8

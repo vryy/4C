@@ -2620,7 +2620,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
     Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
 )
 {
-  // evaluate Robin type boundary condition (needed for photoacoustic simulations)
+  // evaluate Robin type boundary condition
   EvaluateRobinBoundaryConditions(systemmatrix, rhs);
 
   // evaluate meshtying

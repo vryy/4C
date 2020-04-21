@@ -77,7 +77,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
   if (string2prbtype.size() == 0)
   {
     // problem types in alphabetical order
-    string2prbtype["Acoustics"] = prb_acou;
     string2prbtype["Ale"] = prb_ale;
     string2prbtype["ArterialNetwork"] = prb_art_net;
     string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = prb_ac_fsi;

@@ -863,28 +863,6 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_acou:
-    {
-      for (int i = 0; i < problem.num_discr(); i++)
-      {
-        std::string disname = problem.get_discretization(i)->discretization()->Name();
-        if (disname.compare("acou") == 0)  // 0=true
-        {
-          PostField* field = problem.get_discretization(i);
-          AcouFilter writer(field, problem.outname());
-          writer.WriteFiles();
-        }
-        else if (disname.compare("scatra") == 0)
-        {
-          PostField* field1 = problem.get_discretization(i);
-          ScaTraFilter writer1(field1, problem.outname());
-          writer1.WriteFiles();
-        }
-        else
-          dserror("unknown discretization for postprocessing of acoustical problem!");
-      }
-      break;
-    }
     case prb_elemag:
     {
       PostField* field = problem.get_discretization(0);

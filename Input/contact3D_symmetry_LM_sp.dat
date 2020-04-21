@@ -318,7 +318,6 @@ NODE        74 COORD  8.0000000000000000e+00 -5.0000000000000000e+00  2.00000000
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 35 QUANTITY dispx VALUE 3.52828011713420195e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 35 QUANTITY dispy VALUE -1.46524265614282512e+00 TOLERANCE 1e-8

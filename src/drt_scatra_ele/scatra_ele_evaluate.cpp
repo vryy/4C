@@ -263,8 +263,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_elch_conductivity:
     case SCATRA::calc_elch_electrode_soc_and_c_rate:
     case SCATRA::calc_elch_domain_kinetics:
-    case SCATRA::calc_integr_grad_reac:
-    case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
     case SCATRA::recon_curvature_at_nodes:
     case SCATRA::calc_grad_ele_center:
@@ -273,7 +271,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_material_internal_state:
     case SCATRA::get_material_ionic_currents:
     case SCATRA::time_update_material:
-    case SCATRA::calc_integr_pat_rhsvec:
     case SCATRA::calc_immersed_element_source:
     case SCATRA::calc_elch_boundary_kinetics_point:
     case SCATRA::micro_scale_initialize:
