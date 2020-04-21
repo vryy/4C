@@ -141,7 +141,7 @@ variables:
         # combine the baseline coverage with the coverage from the tests
         - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info --output-file baci_coverage.info  > baci_coverage.log
         # generate the html version of the coverage report
-        - genhtml baci_coverage.info --output-directory coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
+        - genhtml baci_coverage.info --legend --output-directory coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
         # add repo link to the commit that the report is based on
         - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g" {} \;
         # Write Selection of the output into the terminal and therefore to GITLAB
