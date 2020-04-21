@@ -155,7 +155,6 @@ void ntacal()
       break;
 
     case prb_immersed_fsi:
-    case prb_immersed_membrane_fsi:
       immersed_problem_drt();
       break;
 

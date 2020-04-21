@@ -1,5 +1,10 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
+- removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
+- reasons: The framework was not fully implemented due to methodological reasons and thus was also not tested.
+- removed by Sebastian Fuchs
+
 Acoustics module (by Svenja Schoeder)
 - removed in commit a263275e53ec5f4cbed966188fbade1981490800 on 2020-04-15
 - reasons: We are not actively developing acoustics applications at this point. Removing it reduces the amount of code that needs to be maintainer. Furthermore, the high-performance part of the module (explicit time integrator) is available as open-source software on https://github.com/kronbichler/exwave including basic documentation and several examples

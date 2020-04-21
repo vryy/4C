@@ -57,7 +57,6 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_membrane_fsi:
     {
       fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn, condname));
       break;

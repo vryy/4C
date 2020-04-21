@@ -2535,7 +2535,6 @@ src/drt_immersed_problem/immersed_problem_dyn.cpp
 src/drt_immersed_problem/immersed_partitioned.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
-src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_membrane.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 
