@@ -89,14 +89,14 @@ SOLVER                          Superlu
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 7850e-9
 MAT 10 ELAST_CoupNeoHooke YOUNG 210000.0 NUE 0.3
 MAT 2 MAT_lubrication LUBRICATIONLAWID 30 DENSITY 1.0
-MAT 30 MAT_lubrication_law_barus ABSViscosity 5.7e-9 PreVisCoeff 1.12e-2 
+MAT 30 MAT_lubrication_law_barus ABSViscosity 5.7e-9 PreVisCoeff 1.12e-2
 ------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION x*cos(250*t)-y*sin(250*t)-x  
+COMPONENT 0 FUNCTION x*cos(250*t)-y*sin(250*t)-x
 COMPONENT 1 FUNCTION x*sin(250*t)+y*cos(250*t)-y
 COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION -y*250
-COMPONENT 1 FUNCTION x*250 
+COMPONENT 1 FUNCTION x*250
 COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
@@ -108,13 +108,13 @@ DPOINT 1
 E 1 - NUMDOF 1 ONOFF 1 VAL 0 FUNCT 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1 1 0 FUNCT 1 1 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
-E 1 - Velocity 2 2 2 
+E 1 - Velocity 2 2 2
 ---------------------DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 E 2 - 1 Slave
@@ -1483,13 +1483,12 @@ NODE       500 COORD -1.9153345426655513e+01 -2.4729544136740323e+01 -1.50000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------TRANSPORT2 ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------ELECTROMAGNETIC ELEMENTS
 -------------------------------------------------------ARTERY ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 125 QUANTITY dispx VALUE -1.11566649270006406e-04 TOLERANCE 1e-10      
+STRUCTURE DIS structure NODE 125 QUANTITY dispx VALUE -1.11566649270006406e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 125 QUANTITY dispy VALUE -1.65321197196352304e-03 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 125 QUANTITY dispz VALUE 7.27746822945453246e-04 TOLERANCE 1e-10
 LUBRICATION DIS lubrication NODE 492 QUANTITY pre VALUE 5.17260658753633322e+01 TOLERANCE 1e-10

@@ -433,66 +433,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_integr_grad_reac:
-    {
-      Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
-      Teuchos::RCP<const Epetra_Vector> psi = discretization.GetState("psi");
-      if (dualphi == Teuchos::null || psi == Teuchos::null)
-        dserror("Cannot get state vector 'dual phi' or 'psi' in action calc_integr_grad_reac");
-      Epetra_SerialDenseVector mydualphi(nen_);
-      Epetra_SerialDenseVector mypsi(nen_);
-      DRT::UTILS::ExtractMyValues(*dualphi, mydualphi, lm);
-      DRT::UTILS::ExtractMyValues(*psi, mypsi, lm);
-
-      // compute mass matrix
-      Epetra_SerialDenseMatrix massmat;
-      massmat.Shape(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      double area = 0.0;
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        area += fac;
-        CalcMatMass(massmat, 0, fac, 1.0);
-      }
-
-      elevec1_epetra.Multiply('N', 'N', 1.0, massmat, mydualphi, 0.0);
-      elevec1_epetra.Multiply('N', 'N', 1.0, massmat, mypsi, 1.0);
-
-      break;
-    }
-
-    case SCATRA::calc_integr_grad_diff:
-    {
-      Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
-      if (dualphi == Teuchos::null)
-        dserror("Cannot get state vector 'dual phi' in action calc_integr_grad_reac");
-      Epetra_SerialDenseVector mydualphi(nen_);
-      DRT::UTILS::ExtractMyValues(*dualphi, mydualphi, lm);
-
-      // compute stiffness matrix
-      Epetra_SerialDenseMatrix stiffmat;
-      stiffmat.Shape(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      double area = 0.0;
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        area += fac;
-        CalcMatDiff(stiffmat, 0, fac);
-      }
-
-      if (diffmanager_->GetIsotropicDiff(0) == 0.0)
-        elevec1_epetra.Scale(0.0);
-      else
-        elevec1_epetra.Multiply(
-            'N', 'N', 1.0 / (diffmanager_->GetIsotropicDiff(0)), stiffmat, mydualphi, 0.0);
-
-      break;
-    }
-
     case SCATRA::recon_gradients_at_nodes:
     {
       const INPAR::SCATRA::L2ProjectionSystemType systemtype =
@@ -605,36 +545,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // calculate momentum vector and volume for element.
         CalculateMomentumAndVolume(ele, elevec1_epetra, interface_thickness);
       }
-      break;
-    }
-
-    case SCATRA::calc_integr_pat_rhsvec:
-    {
-      // extract local values from the global vectors w and phi
-      Teuchos::RCP<const Epetra_Vector> rhsvec = discretization.GetState("rhsnodebasedvals");
-      if (rhsvec == Teuchos::null) dserror("Cannot get state vector 'rhsnodebasedvals' ");
-      Epetra_SerialDenseVector rhs(nen_);
-      DRT::UTILS::ExtractMyValues(*rhsvec, rhs, lm);
-
-      Epetra_SerialDenseMatrix mass(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        for (unsigned vi = 0; vi < nen_; ++vi)
-        {
-          const double v = fac * funct_(vi);  // no density required here
-
-          for (unsigned ui = 0; ui < nen_; ++ui)
-          {
-            mass(vi, ui) += v * funct_(ui);
-          }
-        }
-      }
-
-      elevec1_epetra.Multiply('N', 'N', 1.0, mass, rhs, 0.0);
-
       break;
     }
 

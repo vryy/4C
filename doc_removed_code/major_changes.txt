@@ -1,5 +1,12 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Acoustics module (by Svenja Schoeder)
+- removed in commit a263275e53ec5f4cbed966188fbade1981490800 on 2020-04-15
+- reasons: We are not actively developing acoustics applications at this point. Removing it reduces the amount of code that needs to be maintainer. Furthermore, the high-performance part of the module (explicit time integrator) is available as open-source software on https://github.com/kronbichler/exwave including basic documentation and several examples
+- if you need it: Check the exwave code on github and adapt to your needs; in case you need implicit time integration with HDG, checkout commit xxx
+- mainly deleted src/drt_acou
+- removed by Luca Berardocco
+
 cell migration module (by Andreas Rauch)
 - includes prb_immersed_cell and prb_scatra_endoexocytosis
 - prb_immersed_cell is comprised by a structural problem (cell) embedded in a porous medium (extrcellular matrix)

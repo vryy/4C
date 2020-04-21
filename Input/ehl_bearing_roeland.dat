@@ -91,12 +91,12 @@ MAT 10 ELAST_CoupNeoHooke YOUNG 210000.0 NUE 0.3
 MAT 2 MAT_lubrication LUBRICATIONLAWID 30 DENSITY 1.0
 MAT 30 MAT_lubrication_law_roeland ABSViscosity 5.7e-9 PreVisCoeff 1.12e-2 RefVisc 6.315e-11 RefPress 1.98e2
 ------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION x*cos(250*t)-y*sin(250*t)-x  
+COMPONENT 0 FUNCTION x*cos(250*t)-y*sin(250*t)-x
 COMPONENT 1 FUNCTION x*sin(250*t)+y*cos(250*t)-y
 COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION -y*250
-COMPONENT 1 FUNCTION x*250 
+COMPONENT 1 FUNCTION x*250
 COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
@@ -108,13 +108,13 @@ DPOINT 1
 E 1 - NUMDOF 1 ONOFF 1 VAL 0 FUNCT 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1 1 0 FUNCT 1 1 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
-E 1 - Velocity 2 2 2 
+E 1 - Velocity 2 2 2
 ---------------------DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 E 2 - 1 Slave
@@ -1483,7 +1483,6 @@ NODE       500 COORD -1.9153345426655513e+01 -2.4729544136740323e+01 -1.50000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------TRANSPORT2 ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------ELECTROMAGNETIC ELEMENTS

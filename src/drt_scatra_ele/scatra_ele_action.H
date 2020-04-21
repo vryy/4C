@@ -35,11 +35,9 @@ namespace SCATRA
     calc_flux_domain,                    // calc_condif_flux,
     calc_immersed_element_source,  // calculate sink/source term due to segregation from an immersed
                                    // discretizaton
-    calc_initial_time_deriv,       // calc_initial_time_deriv,
-    calc_integr_grad_diff,         // calculate diffusion coefficient gradient for photoacoustics
-    calc_integr_grad_reac,         // calculate reaction coefficient gradient for photoacoustics
-    calc_integr_pat_rhsvec,        // integrate rhs vec for adjoint pat
-    calc_integr_reaction,          // calculate integral reaction
+
+    calc_initial_time_deriv,          // calc_initial_time_deriv,
+    calc_integr_reaction,             // calculate integral reaction
     calc_mass_center_smoothingfunct,  // calculate mass center of minus domain, using the smoothing
                                       // function. (Interface thickness required)
     calc_mass_matrix,                 // calculate mass matrix

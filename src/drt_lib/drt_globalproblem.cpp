@@ -351,8 +351,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM POTENTIAL", *list);
   reader.ReadGidSection("--BEAM POTENTIAL/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
-  reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
-  reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
   reader.ReadGidSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
@@ -1076,7 +1074,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> airwaydis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> optidis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
-  Teuchos::RCP<DRT::Discretization> acoudis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
@@ -2199,30 +2196,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_np_support:
     {
       // no discretizations and nodes needed for supporting procs
-      break;
-    }
-    case prb_acou:
-    {
-      // create empty discretizations
-      acoudis = Teuchos::rcp(new DRT::DiscretizationHDG("acou", reader.Comm()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      acoudis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(acoudis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-
-      AddDis("acou", acoudis);
-      AddDis("scatra", scatradis);
-
-      std::set<std::string> acouelementtypes;
-      acouelementtypes.insert("ACOUSTIC");
-      acouelementtypes.insert("ACOUSTICSOL");
-
-      nodereader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(acoudis, reader, "--ACOUSTIC ELEMENTS", acouelementtypes)));
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-
       break;
     }
     case prb_elemag:

@@ -109,7 +109,6 @@ Some further third party libraries (TPLs) are mandatory, e.g.
 
 and some are optional, e.g.
 - FFTW
-- [deal.II](www.dealii.org)
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
 Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.

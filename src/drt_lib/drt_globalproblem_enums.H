@@ -24,7 +24,6 @@ typedef enum _PROBLEM_TYP
   // problem types in alphabetical order
   prb_none,                // not a problem at all
   prb_ac_fsi,              // atherosclerosis growth/multiscale problem
-  prb_acou,                // acoustic problem
   prb_ale,                 // pure ale problem
   prb_art_net,             // arterial network problem _1D_ARTERY_
   prb_biofilm_fsi,         // biofilm growth problem

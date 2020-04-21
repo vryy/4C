@@ -83,16 +83,15 @@ void INVANA::MatParManager::InitParams()
       case INPAR::MAT::m_scatra:
       case INPAR::MAT::m_growth_const:
         // case INPAR::MAT::m_growth_linsimple:
-      case INPAR::MAT::m_acousticmat:
-      {
-        std::vector<int>::const_iterator jt;
-        for (jt = it->second.begin(); jt != it->second.end(); jt++)
         {
-          double val = metaparams_.Material2Meta(actmat->Parameter()->GetParameter(*jt, 0));
-          InitParameters(parapos_.at(it->first).at(jt - it->second.begin()), val);
+          std::vector<int>::const_iterator jt;
+          for (jt = it->second.begin(); jt != it->second.end(); jt++)
+          {
+            double val = metaparams_.Material2Meta(actmat->Parameter()->GetParameter(*jt, 0));
+            InitParameters(parapos_.at(it->first).at(jt - it->second.begin()), val);
+          }
+          break;
         }
-        break;
-      }
       // elasthyper materials
       case INPAR::MAT::m_elasthyper:
       {
