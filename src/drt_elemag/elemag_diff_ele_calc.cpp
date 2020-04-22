@@ -575,19 +575,6 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
           }
     }
 
-  // The integration is made by computing the matrix product
-  massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
-  {
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
-  }
-
-  for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
-    for (unsigned int d = 0; d < nsd_; ++d)
-      ele->eleinteriorElectricnm1_(d * shapes_.ndofs_ + r) = localMat(r, d);
-
   return 0;
 }
 
@@ -1272,7 +1259,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
     invert.Invert();  //  [(E + G) - FA^{-1}B]^{-1}
   }
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     tempVec2.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_,
         -1.0);  // (1/3)EE^{n}
@@ -1321,7 +1308,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
 
   // Updateresidual
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     //  = -1/3EE^{n+2} - I_s
     xVec.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, -1.0);
@@ -1648,7 +1635,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
         Emat(d * ndofs_ + i, d * ndofs_ + j) = sigma * pow(mu, alpha) * tmpMat(i, j);
       }
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     Emat.Scale(3.0 / (2.0 * dt));  // BDF2
     Dmat.Scale(2.0 / (dt * dt));   // BDF2
@@ -1721,7 +1708,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
   // The ComputeSource is necesessary to include the forcing terms
   ComputeSource(params, tempVec1, tempVec2);
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     // The last -1.0 in the following function has not been removed such that once
     // the ComputeSource() has been created there will be no need to change it

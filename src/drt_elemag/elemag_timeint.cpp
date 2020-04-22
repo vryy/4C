@@ -448,11 +448,11 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
 void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
 {
   // In case We don't have BDF1 we initialize the method with BDF1 and then go back
-  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf && restart_ == 0)
+  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf2 && restart_ == 0)
   {
     INPAR::ELEMAG::DynamicType temp_dyna = elemagdyna_;
     // First step with a BDF1
-    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_implicit_euler;
+    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_bdf1;
 
     // call elements to calculate system matrix/rhs and assemble
     AssembleMatAndRHS();
@@ -883,7 +883,7 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
     //  std::cout << "=========== Only one time step was found. Switch to BDF1." << std::endl;
     //}
     // eleparams.set<INPAR::ELEMAG::DynamicType>(
-    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_implicit_euler);
+    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_bdf1);
     dserror(
         "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");

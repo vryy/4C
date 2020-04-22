@@ -303,7 +303,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::ReadGlobalVectors(
   // read vectors from element storage
   reshapeMatrixIfNecessary(interiorElectricnp_, elemagele->eleinteriorElectric_.M(), 1);
   reshapeMatrixIfNecessary(interiorMagneticnp_, elemagele->eleinteriorMagnetic_.M(), 1);
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm1_.M(), 1);
     reshapeMatrixIfNecessary(interiorMagneticnm_, elemagele->eleinteriorMagneticnm1_.M(), 1);
@@ -1233,7 +1233,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   localSolver_->ComputeSource(params, tempVec2, xVec);
 
-  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     tempVec1.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_,
         0.0);  //  4/3AH^{n−1} - 1/3AH^{n−2}
@@ -1304,7 +1304,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   // Updateresidual
 
-  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     xVec.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_,
         -1.0);  //  = 4/3EE^{n} - I_s
@@ -1613,7 +1613,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeInteriorMatrices
         Gmat(d * ndofs_ + i, d * ndofs_ + j) = sigma * tmpMat(i, j);
       }
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     Amat.Scale(3.0 / (2.0 * dt));
     Emat.Scale(3.0 / (2.0 * dt));
@@ -1700,7 +1700,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
   // The ComputeSource is necesessary to include the forcing terms
   ComputeSource(params, tempVec2, tempVec3);
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     tempVec1.Multiply('N', 'N', 4.0 / 3.0, Amat, ele.eleinteriorMagnetic_, 0.0);  // 4/3AH^{n-1}
     tempVec1.Multiply('N', 'N', -1.0 / 3.0, Amat, ele.eleinteriorMagneticnm1_,

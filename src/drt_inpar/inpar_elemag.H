@@ -35,9 +35,9 @@ namespace INPAR
       /// explicit euler method
       elemag_explicit_euler,
       /// implicit euler method
-      elemag_implicit_euler,
+      elemag_bdf1,
       /// BDF2
-      elemag_bdf,
+      elemag_bdf2,
       /// BDF4
       elemag_bdf4,
       /// Generalized-Alpha method

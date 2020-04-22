@@ -94,10 +94,10 @@ namespace ELEMAG
     {
       switch (elemagdyna_)
       {
-        case INPAR::ELEMAG::DynamicType::elemag_implicit_euler:
-          return "Implicit Euler";
+        case INPAR::ELEMAG::DynamicType::elemag_bdf1:
+          return "BDF1";
         // break;
-        case INPAR::ELEMAG::DynamicType::elemag_bdf:
+        case INPAR::ELEMAG::DynamicType::elemag_bdf2:
           return "BDF2";
         case INPAR::ELEMAG::DynamicType::elemag_bdf4:
           return "BDF4";

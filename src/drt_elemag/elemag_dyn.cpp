@@ -117,8 +117,8 @@ void electromagnetics_drt()
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimIntOST(elemagdishdg,solver,params,output));
       break;
     }
-    case INPAR::ELEMAG::elemag_implicit_euler:
-    case INPAR::ELEMAG::elemag_bdf:
+    case INPAR::ELEMAG::elemag_bdf1:
+    case INPAR::ELEMAG::elemag_bdf2:
     case INPAR::ELEMAG::elemag_bdf4:
     {
       elemagalgo = Teuchos::rcp(new ELEMAG::ElemagTimeInt(elemagdishdg, solver, params, output));
