@@ -424,10 +424,6 @@ namespace DRT
     {
       return getParameterList()->sublist("IMMERSED METHOD");
     }
-    const Teuchos::ParameterList& CellMigrationParams() const
-    {
-      return getParameterList()->sublist("CELL DYNAMIC");
-    }
     const Teuchos::ParameterList& CutGeneralParams() const
     {
       return getParameterList()->sublist("CUT GENERAL");
@@ -541,10 +537,6 @@ namespace DRT
     const Teuchos::ParameterList& SemiSmoothPlastParams() const
     {
       return getParameterList()->sublist("SEMI-SMOOTH PLASTICITY");
-    }
-    const Teuchos::ParameterList& AcousticParams() const
-    {
-      return getParameterList()->sublist("ACOUSTIC DYNAMIC");
     }
     const Teuchos::ParameterList& ElectromagneticParams() const
     {

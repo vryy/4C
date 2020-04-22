@@ -201,7 +201,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case INPAR::SCATRA::impltype_poro:
     case INPAR::SCATRA::impltype_pororeac:
     case INPAR::SCATRA::impltype_pororeacECM:
-    case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
     case INPAR::SCATRA::impltype_one_d_artery:
     case INPAR::SCATRA::impltype_no_physics:
@@ -246,7 +245,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
-    case SCATRA::integrate_weighted_scalar:
     case SCATRA::calc_flux_domain:
     case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_mean_scalar_time_derivatives:
@@ -265,8 +263,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_elch_conductivity:
     case SCATRA::calc_elch_electrode_soc_and_c_rate:
     case SCATRA::calc_elch_domain_kinetics:
-    case SCATRA::calc_integr_grad_reac:
-    case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
     case SCATRA::recon_curvature_at_nodes:
     case SCATRA::calc_grad_ele_center:
@@ -275,7 +271,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_material_internal_state:
     case SCATRA::get_material_ionic_currents:
     case SCATRA::time_update_material:
-    case SCATRA::calc_integr_pat_rhsvec:
     case SCATRA::calc_immersed_element_source:
     case SCATRA::calc_elch_boundary_kinetics_point:
     case SCATRA::micro_scale_initialize:
@@ -284,8 +279,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::micro_scale_update:
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
-    case SCATRA::calc_cell_mechanotransduction:
-    case SCATRA::calc_cell_growth_sourcesandsinks:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     case SCATRA::calc_mass_matrix:
     case SCATRA::transform_real_to_reference_point:

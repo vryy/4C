@@ -52,7 +52,6 @@
 #include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_comm/comm_utils.H"
-#include "../drt_immersed_problem/immersed_discretization.H"
 #include "../drt_inpar/drt_validcontactconstitutivelaw.H"
 #include "../drt_inpar/inpar_problemtype.H"
 #include "../drt_io/io.H"
@@ -321,20 +320,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
       "--FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
-  reader.ReadGidSection("--CELL DYNAMIC", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT DOF IDS", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT/NONLINEAR", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT/STABILIZATION", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/PROTEOLYSIS MODULE", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/CONFINEMENT MODULE", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/ADHESION MODULE", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/PROTRUSION MODULE", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/FLOW INTERACTION MODULE", *list);
-  reader.ReadGidSection("--CELL DYNAMIC/ENDOEXOCYTOSIS MODULE", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
@@ -366,8 +351,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM POTENTIAL", *list);
   reader.ReadGidSection("--BEAM POTENTIAL/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
-  reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
-  reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
   reader.ReadGidSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
@@ -1091,7 +1074,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> airwaydis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> optidis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
-  Teuchos::RCP<DRT::Discretization> acoudis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
@@ -1428,7 +1410,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
     {
@@ -2059,7 +2040,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_membrane_fsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2076,40 +2056,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-
-      break;
-    }
-    case prb_immersed_cell:
-    {
-      // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::DiscretizationImmersed("structure", reader.Comm()));
-      porofluiddis = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
-      celldis = Teuchos::rcp(new DRT::Discretization("cell", reader.Comm()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-      cellscatradis = Teuchos::rcp(new DRT::Discretization("cellscatra", reader.Comm()));
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      celldis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(celldis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      cellscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cellscatradis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
-      AddDis("structure", structdis);
-      AddDis("porofluid", porofluiddis);
-      AddDis("cell", celldis);
-      AddDis("scatra", scatradis);
-      AddDis("cellscatra", cellscatradis);
-      AddDis("ale", aledis);
-
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(celldis, reader, "--CELL ELEMENTS")));
-      nodereader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(cellscatradis, reader, "--CELLSCATRA ELEMENTS")));
 
       break;
     }
@@ -2249,30 +2195,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_np_support:
     {
       // no discretizations and nodes needed for supporting procs
-      break;
-    }
-    case prb_acou:
-    {
-      // create empty discretizations
-      acoudis = Teuchos::rcp(new DRT::DiscretizationHDG("acou", reader.Comm()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      acoudis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(acoudis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-
-      AddDis("acou", acoudis);
-      AddDis("scatra", scatradis);
-
-      std::set<std::string> acouelementtypes;
-      acouelementtypes.insert("ACOUSTIC");
-      acouelementtypes.insert("ACOUSTICSOL");
-
-      nodereader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(acoudis, reader, "--ACOUSTIC ELEMENTS", acouelementtypes)));
-      nodereader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-
       break;
     }
     case prb_elemag:

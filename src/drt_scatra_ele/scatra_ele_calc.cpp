@@ -1236,17 +1236,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
     const int iquad                                    //!< id of current gauss point (default = -1)
 )
 {
-  int geleid = -1;
-  if (DRT::Problem::Instance()->GetProblemType() == prb_acou) geleid = eid_;
-
   const Teuchos::RCP<const MAT::ScatraMat>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
   // get constant diffusivity
-  diffmanager_->SetIsotropicDiff(actmat->Diffusivity(geleid), k);
+  diffmanager_->SetIsotropicDiff(actmat->Diffusivity(), k);
 
   // get reaction coefficient
-  reamanager_->SetReaCoeff(actmat->ReaCoeff(geleid), k);
+  reamanager_->SetReaCoeff(actmat->ReaCoeff(), k);
 
   // in case of multifractal subgrid-scales, read Schmidt number
   if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or

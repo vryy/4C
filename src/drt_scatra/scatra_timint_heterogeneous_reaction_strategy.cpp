@@ -127,8 +127,6 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
       if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_reactions)
         element->SetImplType(INPAR::SCATRA::impltype_advreac);
-      else if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_bondreacs)
-        element->SetImplType(INPAR::SCATRA::impltype_bondreac);
       else
         dserror("Invalid material type for HeterogeneousReactionStrategy!");
     }  // loop over all column elements
@@ -167,8 +165,6 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*discret_);
   }
-
-  DRT::ImmersedFieldExchangeManager::Instance()->SetPointerToAuxDis(discret_);
 
   SetIsSetup(true);
   return;

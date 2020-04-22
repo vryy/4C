@@ -12,6 +12,8 @@ multiplicatively into elastic and inelastic parts
 /* headers */
 #include "multiplicative_split_defgrad_elasthyper.H"
 
+#include "multiplicative_split_defgrad_elasthyper_service.H"
+
 #include "material_service.H"
 #include "matpar_bundle.H"
 #include "inelastic_defgrad_factors.H"
@@ -369,14 +371,12 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // C_{in}^{-1} * C * C_{in}^{-1}
   static LINALG::Matrix<3, 3> tmp(true);
   static LINALG::Matrix<3, 3> iCinCiCinM;
-  tmp.MultiplyNN(1.0, iCinM, CM, 0.0);
-  iCinCiCinM.MultiplyNN(1.0, tmp, iCinM, 0.0);
+  MAT::EvaluateiCinCiCin(CM, iCinM, iCinCiCinM);
   UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
-  tmp.MultiplyNN(1.0, *defgrad, iFinM, 0.0);
   static LINALG::Matrix<3, 3> CeM(true);
-  CeM.MultiplyTN(1.0, tmp, tmp, 0.0);
+  MAT::EvaluateCe(*defgrad, iFinM, CeM);
   static LINALG::Matrix<6, 1> CeV_strain(true);
   UTILS::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
 

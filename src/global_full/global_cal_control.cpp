@@ -11,7 +11,6 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_acou/acou_dyn.H"
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_contact_xcontact/xcontact_dyn.H"
@@ -77,7 +76,6 @@ void ntacal()
     case prb_ehl:
       ehl_dyn();
       break;
-    case prb_scatra_endoexocytosis:
     case prb_scatra:
       scatra_dyn(restart);
       break;
@@ -157,8 +155,6 @@ void ntacal()
       break;
 
     case prb_immersed_fsi:
-    case prb_immersed_cell:
-    case prb_immersed_membrane_fsi:
       immersed_problem_drt();
       break;
 
@@ -201,10 +197,6 @@ void ntacal()
 
     case prb_np_support:
       STRUMULTI::np_support_drt();
-      break;
-
-    case prb_acou:
-      acoustics_drt();
       break;
 
     case prb_elemag:

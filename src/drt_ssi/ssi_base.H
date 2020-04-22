@@ -79,8 +79,6 @@ namespace SSI
      *  In case of multiphysics it is not always possible to make a problem type
      *  based unique decision for a special structure wrapper. The wrapper is
      *  constructed in \ref ADAPTER::StructureBaseAlgorithmNew::CreateWrapper .
-     *  In case of e.g. cell migration (prb_immersed_cell), we need more than
-     *  one type of wrapper
      *
     \date 11/16
     \author rauch  */

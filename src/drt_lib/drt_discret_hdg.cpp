@@ -22,8 +22,7 @@
 #include "../drt_fluid_ele/fluid_ele_calc_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_acou/acou_ele.H"
-#include "../drt_acou/acou_ele_action.H"
+#include "../drt_elemag/elemag_ele.H"
 #include "../drt_elemag/elemag_ele_action.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
@@ -282,9 +281,9 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
     {
       iter->second->SetId(gid);
       // TODO visc eles, fluid hdg eles
-      Teuchos::RCP<DRT::ELEMENTS::AcouIntFace> acouele =
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::AcouIntFace>(iter->second);
-      if (acouele != Teuchos::null) acouele->SetDegree(degree);
+      Teuchos::RCP<DRT::ELEMENTS::ElemagIntFace> elemagele =
+          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ElemagIntFace>(iter->second);
+      if (elemagele != Teuchos::null) elemagele->SetDegree(degree);
 
       finalelements[gid] = iter->second;
     }
@@ -292,7 +291,6 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
     gid += 1;
   }
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -580,9 +578,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     Epetra_SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (DRT::Problem::Instance(0)->GetProblemType() == prb_acou)
-      initParams.set<int>("action", ACOU::project_dirich_field);
-    else if (DRT::Problem::Instance(0)->GetProblemType() == prb_elemag)
+    if (DRT::Problem::Instance(0)->GetProblemType() == prb_elemag)
       initParams.set<int>("action", ELEMAG::project_dirich_field);
     else if (DRT::Problem::Instance(0)->GetProblemType() == prb_scatra)
       initParams.set<int>("action", SCATRA::project_dirich_field);

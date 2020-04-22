@@ -28,8 +28,6 @@
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"  // for cell migration
-
 #include "../drt_mat/scatra_mat_multiscale.H"
 
 #include "../drt_volmortar/volmortar_shape.H"
@@ -84,14 +82,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       // calculate integral of shape functions
       const Epetra_IntSerialDenseVector& dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
       IntegrateShapeFunctions(ele, elevec1_epetra, dofids);
-
-      break;
-    }
-
-    case SCATRA::integrate_weighted_scalar:
-    {
-      // calculate integral of scalar
-      IntegrateWeightedScalar(params, ele, elevec1_epetra);
 
       break;
     }
@@ -443,66 +433,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_integr_grad_reac:
-    {
-      Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
-      Teuchos::RCP<const Epetra_Vector> psi = discretization.GetState("psi");
-      if (dualphi == Teuchos::null || psi == Teuchos::null)
-        dserror("Cannot get state vector 'dual phi' or 'psi' in action calc_integr_grad_reac");
-      Epetra_SerialDenseVector mydualphi(nen_);
-      Epetra_SerialDenseVector mypsi(nen_);
-      DRT::UTILS::ExtractMyValues(*dualphi, mydualphi, lm);
-      DRT::UTILS::ExtractMyValues(*psi, mypsi, lm);
-
-      // compute mass matrix
-      Epetra_SerialDenseMatrix massmat;
-      massmat.Shape(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      double area = 0.0;
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        area += fac;
-        CalcMatMass(massmat, 0, fac, 1.0);
-      }
-
-      elevec1_epetra.Multiply('N', 'N', 1.0, massmat, mydualphi, 0.0);
-      elevec1_epetra.Multiply('N', 'N', 1.0, massmat, mypsi, 1.0);
-
-      break;
-    }
-
-    case SCATRA::calc_integr_grad_diff:
-    {
-      Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
-      if (dualphi == Teuchos::null)
-        dserror("Cannot get state vector 'dual phi' in action calc_integr_grad_reac");
-      Epetra_SerialDenseVector mydualphi(nen_);
-      DRT::UTILS::ExtractMyValues(*dualphi, mydualphi, lm);
-
-      // compute stiffness matrix
-      Epetra_SerialDenseMatrix stiffmat;
-      stiffmat.Shape(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      double area = 0.0;
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        area += fac;
-        CalcMatDiff(stiffmat, 0, fac);
-      }
-
-      if (diffmanager_->GetIsotropicDiff(0) == 0.0)
-        elevec1_epetra.Scale(0.0);
-      else
-        elevec1_epetra.Multiply(
-            'N', 'N', 1.0 / (diffmanager_->GetIsotropicDiff(0)), stiffmat, mydualphi, 0.0);
-
-      break;
-    }
-
     case SCATRA::recon_gradients_at_nodes:
     {
       const INPAR::SCATRA::L2ProjectionSystemType systemtype =
@@ -618,36 +548,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_integr_pat_rhsvec:
-    {
-      // extract local values from the global vectors w and phi
-      Teuchos::RCP<const Epetra_Vector> rhsvec = discretization.GetState("rhsnodebasedvals");
-      if (rhsvec == Teuchos::null) dserror("Cannot get state vector 'rhsnodebasedvals' ");
-      Epetra_SerialDenseVector rhs(nen_);
-      DRT::UTILS::ExtractMyValues(*rhsvec, rhs, lm);
-
-      Epetra_SerialDenseMatrix mass(nen_, nen_);
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-      {
-        double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-        for (unsigned vi = 0; vi < nen_; ++vi)
-        {
-          const double v = fac * funct_(vi);  // no density required here
-
-          for (unsigned ui = 0; ui < nen_; ++ui)
-          {
-            mass(vi, ui) += v * funct_(ui);
-          }
-        }
-      }
-
-      elevec1_epetra.Multiply('N', 'N', 1.0, mass, rhs, 0.0);
-
-      break;
-    }
-
     case SCATRA::calc_error:
     {
       // check if length suffices
@@ -674,18 +574,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         const int fvi = inode * numdofpernode_ + scalartoprovidwithsource;
         elevec1_epetra[fvi] += segregationconst;
       }
-
-      break;
-    }
-    case SCATRA::calc_immersed_phi_at_given_point:
-    {
-      // need current solution
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null)
-        dserror("failed to get state phinp for action 'calc_immersed_phi_at_given_point'");
-
-      // extract local values from the global vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       break;
     }
@@ -790,282 +678,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           // read restart on micro scale
           Teuchos::rcp_dynamic_cast<MAT::ScatraMatMultiScale>(ele->Material())->ReadRestart(iquad);
       }
-
-      break;
-    }
-    /*----------------------------------------------------------------------*
-     | computes sources and sinks due to stress fiber assembly / disassembly|
-     |                                                          rauch 08/16 |
-     *----------------------------------------------------------------------*/
-    case SCATRA::calc_cell_mechanotransduction:
-    {
-      const int NumPhiROCK = DRT::Problem::Instance()
-                                 ->CellMigrationParams()
-                                 .sublist("SCALAR TRANSPORT DOF IDS")
-                                 .get<int>("ROCK");
-      const int NumPhiActin = DRT::Problem::Instance()
-                                  ->CellMigrationParams()
-                                  .sublist("SCALAR TRANSPORT DOF IDS")
-                                  .get<int>("ACTIN_MONOMER");
-      ;
-
-      if (NumPhiROCK > -1 and NumPhiActin > -1)
-      {
-        // get immersed manager and pointers to rates
-        DRT::ImmersedFieldExchangeManager* immersedmanager =
-            DRT::ImmersedFieldExchangeManager::Instance();
-        Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
-        Teuchos::RCP<Epetra_MultiVector> ratesActin = immersedmanager->GetPointerToRatesActin();
-
-        if (rates == Teuchos::null) dserror("rates = Teuchos::null");
-        if (ratesActin == Teuchos::null) dserror("ratesActin = Teuchos::null");
-
-        double timefacrhs = scatraparatimint_->TimeFacRhs();
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-        // gp loop
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-        {
-          double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-
-          // loop over nodes
-          for (unsigned inode = 0; inode < nen_; inode++)
-          {
-            const int fvi = inode * numdofpernode_ + NumPhiROCK;
-            const int fviActin = inode * numdofpernode_ + NumPhiActin;
-            int mylid = discretization.ElementColMap()->LID(ele->Id());
-
-            if (mylid == -1) dserror("no corresponding LID found for EleGID %i", ele->Id());
-
-            elevec1_epetra[fvi] +=
-                funct_(inode) * (((rates->Pointers())[iquad][mylid])) * fac * timefacrhs;
-            elevec1_epetra[fviActin] +=
-                funct_(inode) * (((ratesActin->Pointers())[iquad][mylid])) * fac * timefacrhs;
-
-          }  // Node loop
-        }    // gp loop
-      }      // if valid dof ids are provided
-      break;
-    }
-    /*----------------------------------------------------------------------*
-     | computes sources and sinks due to cell protrusion        rauch 08/16 |
-     *----------------------------------------------------------------------*/
-    case SCATRA::calc_cell_growth_sourcesandsinks:
-    {
-      // get general stuff
-      DRT::Problem* globalproblem = DRT::Problem::Instance();    //< global problem instance
-      int numNode = ele->NumNode();                              //< number of nodes of FaceElement
-      int numdofpernode = ele->NumDofPerNode(*ele->Nodes()[0]);  //< number of dofs at each node
-      if (numNode != 4)
-        dserror(
-            "Error! numofnodes is not equal 4 !\n"
-            "So far, this method is only tested for quad4 surface elements.\n"
-            "Review this implementation if you want to use other element types !");
-
-      // get one-step-theta parameter from input file
-      static const double theta =
-          globalproblem->StructuralDynamicParams().sublist("ONESTEPTHETA").get<double>("THETA");
-      if (theta != 1.0)
-        dserror(
-            "THETA for OST-Time integration not equal 1. This case is not implemented, yet.\n"
-            "(1-\theta) part of equations must be implemented. ");
-
-      // get branching limit parameter, i.e. spatial reference lenght(2D)/area(3D) parameter,
-      // determining if branching is possible or not
-      static const double aBr =
-          globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("aBr");
-      if (aBr < 0.0) dserror("Invalid Parameter a_Br.");
-      // get number of filaments per spatial reference lenght(2D)/area(3D) aBr
-      static const int num_fil_on_aBr = globalproblem->CellMigrationParams()
-                                            .sublist("PROTRUSION MODULE")
-                                            .get<int>("NUM_FIL_ON_aBr");
-      if (num_fil_on_aBr < 0) dserror("Invalid Parameter NUM_FIL_ON_aBr.");
-
-      // define limit concentration clim for branching (branching if c_barbedends < clim)
-      static const double clim = (const double)num_fil_on_aBr / aBr;
-
-      // frequently used parameters
-      static const double k_on = globalproblem->CellMigrationParams()
-                                     .sublist("PROTRUSION MODULE")
-                                     .get<double>("K_ON");  //< actin polymerisation base rate
-      static const double k_br =
-          globalproblem->CellMigrationParams()
-              .sublist("PROTRUSION MODULE")
-              .get<double>("K_BR");  //< branching base rate (assumed to be half as fast as filament
-                                     // polymerization)
-      if (k_on <= 0.0 or k_br <= 0.0)
-        dserror("Invalid Parameters K_ON = %f or K_BR = %f in --CELL DYNAMIC/PROTRUSION MODULE !",
-            k_on, k_br);
-
-      // get phi position of concentration from input file
-      static const int offset = globalproblem->CellMigrationParams()
-                                    .sublist("PROTRUSION MODULE")
-                                    .get<int>("NUM_SURF_SCALARS");
-      static const int numofcape = globalproblem->CellMigrationParams()
-                                       .sublist("PROTRUSION MODULE")
-                                       .get<int>("NUMDOF_BARBEDENDS") +
-                                   offset;
-      static const int numofcam = globalproblem->CellMigrationParams()
-                                      .sublist("PROTRUSION MODULE")
-                                      .get<int>("NUMDOF_ACTIN") +
-                                  offset;
-      static const int numofcbr = globalproblem->CellMigrationParams()
-                                      .sublist("PROTRUSION MODULE")
-                                      .get<int>("NUMDOF_BRANCHES") +
-                                  offset;
-      if (numofcape == -1 or numofcam == -1 or numofcbr == -1 or offset == -1)
-        dserror(
-            "Define input parameters NUMDOF_BARBEDENDS , NUMDOF_ACTIN, NUMDOF_BRANCHES, and "
-            "NUM_SURF_SCALARS in ---CELL DYNAMIC/PROTRUSION MODULE");
-
-      // get the timefac for the right-hand side
-      const double timefacrhs = scatraparatimint_->TimeFacRhs();
-
-      // integration points and weights
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-      Teuchos::RCP<const Epetra_MultiVector> phinp = discretization.GetState(0, "phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      Teuchos::RCP<const Epetra_MultiVector> phin = discretization.GetState(0, "phin");
-      if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-
-
-      /////////////////////////////////////////////////////////////////////////////////
-      // loop over all integration points
-      ////////////////////////////////////////////////////////////////////////////////
-      for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
-      {
-        // get coordinates of current integration point in face element coordinate system --> quad4
-        // returns fac := gp_weight * jacobian determinant
-        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
-
-        // concentrations at n+1
-        std::vector<double> myphinp(lm.size());
-        DRT::UTILS::ExtractMyValues(*phinp, myphinp, lm);
-        // concentrations at n
-        std::vector<double> myphin(lm.size());
-        DRT::UTILS::ExtractMyValues(*phin, myphin, lm);
-
-        // PHI CONCENTRATION CALCULATIONS
-        // phinp concentrations at nodes
-        LINALG::Matrix<4, 1> camnp_nd(true);  //< nodal actin monomer concentration at n+1
-        LINALG::Matrix<4, 1> cbrn_nd(
-            true);  //< nodal branching point (related to Arp2/3) concentration at n
-
-        // phin concentrations at nodes
-        LINALG::Matrix<4, 1> capen_nd(true);  //< nodal actin filament pointed end concentration
-        LINALG::Matrix<4, 1> camn_nd(true);   //< nodal actin monomer concentration
-
-        // write molecule concentrations from phinp in separate Vectors
-        // camnp_nd := actin monomer concentration at surface at element nodes (at time n+1)
-        // camn_nd  := actin monomer concentratino at surface at element nodes (at time n)
-        // cbrnp_nd := Arp2/3 concentration at surfce at element nodes (at time n+1)
-        // capen_nd := pointed end (actin filament) concentration at surface at element nodes (at
-        // time n)
-
-        for (int node = 0; node < numNode; node++)
-        {
-          camnp_nd(node) =
-              myphinp[node * numdofpernode + numofcam];  //< nodal actin monomer concentation at n+1
-
-          cbrn_nd(node) =
-              myphin[node * numdofpernode + numofcbr];  //< nodal branching point concentration at n
-          capen_nd(node) = myphin[node * numdofpernode +
-                                  numofcape];  //< nodal filament barbed end concentration at n
-          camn_nd(node) =
-              myphin[node * numdofpernode + numofcam];  //< nodal actin monomer concentration at n
-        }                                               // end element node loop
-
-        // interpolate node values to gp
-        // concentration at gauss points
-        // camnp_phi := actin monomer concentration at surface at gp from phinp (time n+1)
-        // camn_phi  := actin monomer concentration at surface at gp from phin (time n)
-        // cbrnp_phi := Arp2/3 concentration at surface at gp from phinp (time n+1)
-        // capen_phi := pointed end (actin filament) concentration at surface at gp from phin (time
-        // n)
-
-        double camnp_gp = 0.0;
-        double cbrn_gp = 0.0;
-        double capen_gp = 0.0;
-        double camn_gp = 0.0;
-
-        for (int i = 0; i < numNode; i++)
-        {
-          camnp_gp += funct_(i) * camnp_nd(i);
-
-          cbrn_gp += funct_(i) * cbrn_nd(i);
-          capen_gp += funct_(i) * capen_nd(i);
-          camn_gp += funct_(i) * camn_nd(i);
-        }  // end element node loop to calc gp values
-
-        // actin monomer polymerisation possibility
-        // double k_poly = k_on * exp(-traction * delta/ k_bT);
-        // NOTE: currently no use of traction dependency -> k_poly = k_on
-        double k_poly = k_on;
-
-        // branching probability
-        // 0 or 1
-        // we evaluate the probability with variables from the last time step
-        // this is more stable since this way, we can exclude, that we jump
-        // between branching and no branching in the current time step
-        double p_br = 0.0;
-        if (abs(capen_gp) <= 1e-16)
-        {
-          p_br = 0.0;
-        }
-        if (capen_gp < 0.0)
-        {
-          p_br = 0.0;
-        }
-        if (capen_gp > 0.0 and abs(capen_gp) > 1e-16 and capen_gp < clim)
-        {
-          p_br = 1.0;
-        }
-
-        //      // DEBUG output
-        //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  capen_gp = "<<capen_gp<<std::endl;
-        //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  camnp_gp = "<<camnp_gp<<std::endl;
-        //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  cbrn_gp  = "<<cbrn_gp<<std::endl;
-        //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  p_br     = "<<p_br<<std::endl;
-
-        // polymerized actin monomers (1. part to actin filaments and 2. part to branches)
-        // NOTE !!!!! implemented for case THETA == 1 !!!
-        double branching_part = p_br * k_br * cbrn_gp * camnp_gp;
-        double cams_dot = (-1.0) * (k_poly * capen_gp * camnp_gp + branching_part * 2.0);
-
-        if (capen_gp < 0.0) cams_dot = 0.0;
-
-        double conc_barbed_ends_gp_dot = 0.0;  //< rate of change of barbed end concentration
-        if (abs(p_br) > 1e-14)
-        {
-          conc_barbed_ends_gp_dot = branching_part;
-        }
-        // concentration of used arp2/3 complexes for nucleation
-        double cbr_dot = (-1.0) * conc_barbed_ends_gp_dot;
-
-        // fill elevec1 for assembly
-        for (int node = 0; node < numNode; node++)
-        {
-          elevec1_epetra[node * numdofpernode + numofcam] +=
-              funct_(node) * cams_dot * fac * timefacrhs;
-
-          // no actin filament aging and severing included, yet
-          if (conc_barbed_ends_gp_dot < 0.0)
-          {
-            elevec1_epetra[node * numdofpernode + numofcape] += 0.0;
-          }
-          else
-          {
-            elevec1_epetra[node * numdofpernode + numofcape] +=
-                funct_(node) * conc_barbed_ends_gp_dot * fac * timefacrhs;
-          }
-          elevec1_epetra[node * numdofpernode + numofcbr] +=
-              funct_(node) * cbr_dot * fac * timefacrhs;
-        }  // loop node
-
-      }  // end gp loop
 
       break;
     }
@@ -1851,45 +1463,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
   return;
 
 }  // ScaTraEleCalc::IntegrateShapeFunction
-
-/*----------------------------------------------------------------------*
- |  Integrate weighted scalar                               rauch 09/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateWeightedScalar(
-    Teuchos::ParameterList& params, const DRT::Element* ele, Epetra_SerialDenseVector& elevec1)
-{
-  // extract values from parameter list.
-  // these values are set in scatra_timint_ost_endoexocytosis.
-  const int scalarid =
-      params.get<int>("ScalarID");  //!< dof id of integrated scalar (position in result vector)
-  const double scalar = params.get<double>("scalar");  //!< scalar value to be integrated
-  const double prefac =
-      params.get<double>("user defined prefac");  //!< user defined factor to integral
-
-  // get integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  //////////////////////////////////////
-  // loop over integration points
-  //////////////////////////////////////
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
-  {
-    // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
-
-    // evaluate element right-hand side vector
-    for (unsigned vi = 0; vi < nen_; ++vi)
-    {
-      const int fvi = vi * numscal_ + scalarid;
-      elevec1[fvi] -= fac * prefac * funct_(vi) * scalar;
-    }  // loop over nodes
-
-  }  // loop over integration points
-
-  return;
-}  // ScatraEleCalc::IntegrateWeightedScalar
 
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|

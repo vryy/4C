@@ -44,7 +44,6 @@
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_cell.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/springdashpot_manager.H"
@@ -383,10 +382,7 @@ void STR::TimInt::createAllEpetraVectors()
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   if ((DRT::Problem::Instance()->GetProblemType() == prb_struct_ale and
-          (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0) or
-      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
-          DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
-              "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
+          (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -2193,7 +2189,6 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
   {
     OutputPatspec();
-    OutputCell();
   }
 
   // what's next?
@@ -3190,33 +3185,6 @@ void STR::TimInt::OutputPatspec()
   if (DRT::INPUT::IntegralValue<int>(patspec, "PATSPEC"))
   {
     PATSPEC::PatspecOutput(output_, discret_, pslist_);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* output cell specific stuff */
-void STR::TimInt::OutputCell()
-{
-  if (porositysplitter_ == Teuchos::null and
-      DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell)
-  {
-    if (DRT::ImmersedFieldExchangeManager::Instance()->IsPureConfinementSimulation())
-    {
-      output_->WriteVector("cell_penalty_gap",
-          Teuchos::rcp_static_cast<Epetra_MultiVector>(
-              DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToGap()));
-      output_->WriteVector("cell_nodal_normals",
-          Teuchos::rcp_static_cast<Epetra_MultiVector>(
-              DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToCurrentNodalNormals()));
-      output_->WriteVector("cell_penalty_traction",
-          Teuchos::rcp_static_cast<Epetra_MultiVector>(
-              DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToECMPenaltyTraction()));
-    }
-    else if (DRT::ImmersedFieldExchangeManager::Instance()->IsPureAdhesionSimulation())
-    {
-      output_->WriteVector("cell_adhesion_force", Freact());
-    }
   }
   return;
 }

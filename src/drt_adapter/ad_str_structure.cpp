@@ -20,7 +20,6 @@
 #include "ad_str_ssiwrapper.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
-#include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -79,7 +78,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterLi
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
     case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_onesteptheta_immersed:
     case INPAR::STR::dyna_gemm:
     case INPAR::STR::dyna_expleuler:
     case INPAR::STR::dyna_centrdiff:
@@ -444,7 +442,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       }
       break;
       case prb_immersed_fsi:
-      case prb_immersed_membrane_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }
@@ -465,7 +462,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       case prb_fps3i:
       case prb_fpsi_xfem:
       case prb_fsi_xfem:
-      case prb_immersed_cell:
       {
         const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =

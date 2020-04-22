@@ -54,9 +54,6 @@
 // cardiac monodomain specific files
 #include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
 
-// cell migration specific files
-#include "../drt_immersed_problem/scatra_timint_ost_endoexocytosis.H"
-
 // poro multiphase files
 #include "../drt_scatra/scatra_timint_poromulti.H"
 
@@ -450,25 +447,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
           dserror("Unknown time integration scheme for cardiac monodomain problem!");
           break;
       }  // switch(timintscheme)
-    }
-  }
-  // cell migration endo-/exocytosis
-  else if (probtype == prb_scatra_endoexocytosis)
-  {
-    switch (timintscheme)
-    {
-      case INPAR::SCATRA::timeint_one_step_theta:
-      {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepThetaEndoExocytosis(
-            discret, solver, scatratimeparams, extraparams, output, 0));
-        break;
-      }
-      default:
-        dserror(
-            "Unknown time integration scheme for cell migration problem! Use One-Step-Theta "
-            "Scheme!");
-        break;
     }
   }
   else if (probtype == prb_poromultiphasescatra)

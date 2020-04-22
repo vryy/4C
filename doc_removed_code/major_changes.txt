@@ -1,5 +1,27 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
+- removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
+- reasons: The framework was not fully implemented due to methodological reasons and thus was also not tested.
+- removed by Sebastian Fuchs
+
+Acoustics module (by Svenja Schoeder)
+- removed in commit a263275e53ec5f4cbed966188fbade1981490800 on 2020-04-15
+- reasons: We are not actively developing acoustics applications at this point. Removing it reduces the amount of code that needs to be maintainer. Furthermore, the high-performance part of the module (explicit time integrator) is available as open-source software on https://github.com/kronbichler/exwave including basic documentation and several examples
+- if you need it: Check the exwave code on github and adapt to your needs; in case you need implicit time integration with HDG, checkout commit xxx
+- mainly deleted src/drt_acou
+- removed by Luca Berardocco
+
+cell migration module (by Andreas Rauch)
+- includes prb_immersed_cell and prb_scatra_endoexocytosis
+- prb_immersed_cell is comprised by a structural problem (cell) embedded in a porous medium (extrcellular matrix)
+  This problem was solved using a immersed boundary method
+- prb_scatra_endoexocytosis mainly modells inter-cellular signalling processes
+- related/used in both problems were passive and active fiber material models for the mechanical cell behaviour
+- removed in commit 05505bb75e860b9f798e41c6c8b59aa6757d721c on 2020-04-13
+- reasons: This module is currently unused and not subject to ongoing research. This will thus reduce dependencies and ease maintenance work.
+- removed by Anh-Tu Vuong
+
 FSI using IBM on deformable fluid meshes (by Andreas Rauch)
 - removed in commit 57d21c7794a44f4ce15824d5aae50f3a0b161602 on 2020-04-09
 - reasons: Implementation does not work and thus has not been tested a

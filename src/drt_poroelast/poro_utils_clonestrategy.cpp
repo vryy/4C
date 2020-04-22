@@ -22,7 +22,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_poro.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/fluidporo.H"
@@ -323,59 +323,4 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
       std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
 
   return conditions_to_copy;
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                         rauch 03/15  |
- *----------------------------------------------------------------------*/
-bool POROELAST::UTILS::PoroelastImmersedCloneStrategy::DetermineEleType(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
-{
-  // clone the element only if it is a poro element (we support submeshes here)
-  if (CheckPoro(actele))
-  {
-    // we only support transport elements here
-    eletype.push_back("FLUIDPOROIMMERSED");
-    return true;
-  }
-
-  return false;
-}
-
-/*----------------------------------------------------------------------*
- |                                                         rauch 03/15  |
- *----------------------------------------------------------------------*/
-void POROELAST::UTILS::PoroelastImmersedCloneStrategy::SetElementData(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
-{
-  // We need to set material and possibly other things to complete element setup.
-  // This is again really ugly as we have to extract the actual
-  // element type in order to access the material property
-
-  Teuchos::RCP<DRT::ELEMENTS::FluidPoroImmersed> fluid =
-      Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed>(newele);
-  if (fluid != Teuchos::null)
-  {
-    fluid->SetMaterial(matid);
-    // Copy Initial Porosity from StructPoro Material to FluidPoro Material
-    static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())
-        ->SetInitialPorosity(
-            Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity());
-    fluid->SetDisType(oldele->Shape());  // set distype as well!
-    fluid->SetIsAle(true);
-    DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
-    if (so_base)
-    {
-      fluid->SetKinematicType(so_base->KinematicType());
-      if (so_base->KinematicType() == INPAR::STR::kinem_vague) dserror("undefined kinematic type");
-    }
-    else
-      dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
-  }
-  else
-  {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
-  }
-  return;
 }

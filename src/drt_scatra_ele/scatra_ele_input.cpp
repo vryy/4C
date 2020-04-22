@@ -67,8 +67,6 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_std_hdg;
   else if (impltype == "HdgCardMono")
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain_hdg;
-  else if (impltype == "BondReac")
-    impltype_ = INPAR::SCATRA::impltype_bondreac;
   else
     dserror("Transport element received invalid implementation type!");
 

@@ -102,7 +102,6 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     case INPAR::SCATRA::impltype_levelset:
     case INPAR::SCATRA::impltype_std:
     case INPAR::SCATRA::impltype_thermo_elch_diffcond:
-    case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
     {
       return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(

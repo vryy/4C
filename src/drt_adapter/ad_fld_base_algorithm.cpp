@@ -371,7 +371,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for Thermo-fluid-structure interaction!");
   if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or
-          probtype == prb_fps3i or probtype == prb_fpsi_xfem or probtype == prb_immersed_cell) and
+          probtype == prb_fps3i or probtype == prb_fpsi_xfem) and
       disname == "porofluid")
   {
     const Teuchos::ParameterList& pedyn = DRT::Problem::Instance()->PoroelastDynamicParams();
@@ -395,7 +395,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // for poro problems, use POROUS-FLOW STABILIZATION
   if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or
-          probtype == prb_fps3i or probtype == prb_fpsi_xfem or probtype == prb_immersed_cell) and
+          probtype == prb_fps3i or probtype == prb_fpsi_xfem) and
       disname == "porofluid")
   {
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION") =
@@ -562,7 +562,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         "interface second order", DRT::INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
   }
 
-  if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_immersed_cell or
+  if (probtype == prb_poroelast or probtype == prb_poroscatra or
       (probtype == prb_fpsi and disname == "porofluid") or
       (probtype == prb_fps3i and disname == "porofluid") or
       (probtype == prb_fpsi_xfem and disname == "porofluid"))
@@ -682,8 +682,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
 
     if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or
-        probtype == prb_fps3i or (probtype == prb_fpsi_xfem and disname == "porofluid") or
-        probtype == prb_immersed_cell)
+        probtype == prb_fps3i or (probtype == prb_fpsi_xfem and disname == "porofluid"))
       dirichletcond = false;
 
     //------------------------------------------------------------------
@@ -967,7 +966,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       case prb_fsi:
       case prb_immersed_fsi:
-      case prb_immersed_membrane_fsi:
       case prb_gas_fsi:
       case prb_biofilm_fsi:
       case prb_fbi:
@@ -1138,7 +1136,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case prb_fpsi:
       case prb_fps3i:
       case prb_fpsi_xfem:
-      case prb_immersed_cell:
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (disname == "porofluid")

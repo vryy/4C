@@ -131,16 +131,6 @@ void StructureFilter::WriteAllResults(PostField* field)
   // additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
 
-  // additional output for cell migration simulation
-  writer_->WriteResult(
-      "cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
-  writer_->WriteResult(
-      "cell_adhesion_force", "cell_adhesion_force", dofbased, field->problem()->num_dim());
-
   // monolithic scalar-structure interaction involving scatra-scatra interface coupling outputs
   // nodal Cauchy stresses instead of Gauss-point ones
   writer_->WriteResult("nodal_stresses_xyz", "nodal_stresses_xyz", nodebased, 6);
@@ -634,34 +624,6 @@ void ThermoFilter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 
 }  // ThermoFilter::WriteAllResults
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void AcouFilter::WriteAllResults(PostField* field)
-{
-  writer_->WriteResult("velnp", "velocity", nodebased, 3);
-  writer_->WriteResult("pressure", "pressure", nodebased, 1);
-  writer_->WriteResult("par_vel", "par_vel", nodebased, 1);
-  writer_->WriteResult("trace_velocity", "trace_velocity", nodebased, 3);
-  writer_->WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
-  writer_->WriteResult("error", "error", elementbased, 1);
-  writer_->WriteResult("degree", "degree", elementbased, 1);
-  writer_->WriteResult("density", "density", elementbased, 1);
-  writer_->WriteResult("speedofsound", "speedofsound", elementbased, 1);
-
-  writer_->WriteResult("stress_xx", "stress_xx", nodebased, 1);
-  writer_->WriteResult("stress_xy", "stress_xy", nodebased, 1);
-  writer_->WriteResult("stress_xz", "stress_xz", nodebased, 1);
-  writer_->WriteResult("stress_yx", "stress_yx", nodebased, 1);
-  writer_->WriteResult("stress_yy", "stress_yy", nodebased, 1);
-  writer_->WriteResult("stress_yz", "stress_yz", nodebased, 1);
-  writer_->WriteResult("stress_zx", "stress_zx", nodebased, 1);
-  writer_->WriteResult("stress_zy", "stress_zy", nodebased, 1);
-  writer_->WriteResult("stress_zz", "stress_zz", nodebased, 1);
-
-  WriteElementResults(field);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

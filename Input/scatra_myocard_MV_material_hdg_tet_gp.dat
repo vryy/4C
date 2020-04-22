@@ -90,7 +90,6 @@ NODE         5 COORD  1.0000000000000000e-01  0.0000000000000000e-01  1.00000000
 1 TRANSPHDG TET4  1 2 3 4    MAT 1 TYPE HdgCardMono DEG 3 SPC 1 FIBER1 1.0 0.0 0.0
 2 TRANSPHDG TET4  1 2 4 5    MAT 1 TYPE HdgCardMono DEG 3 SPC 1 FIBER1 1.0 0.0 0.0
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION

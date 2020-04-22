@@ -77,7 +77,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
   if (string2prbtype.size() == 0)
   {
     // problem types in alphabetical order
-    string2prbtype["Acoustics"] = prb_acou;
     string2prbtype["Ale"] = prb_ale;
     string2prbtype["ArterialNetwork"] = prb_art_net;
     string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = prb_ac_fsi;
@@ -102,9 +101,7 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Fluid_XFEM"] = prb_fluid_xfem;
     string2prbtype["Fluid_XFEM_LevelSet"] = prb_fluid_xfem_ls;
     string2prbtype["Gas_Fluid_Structure_Interaction"] = prb_gas_fsi;
-    string2prbtype["Immersed_CellMigration"] = prb_immersed_cell;
     string2prbtype["Immersed_FSI"] = prb_immersed_fsi;
-    string2prbtype["Immersed_Membrane_FSI"] = prb_immersed_membrane_fsi;
     string2prbtype["Inverse_Analysis"] = prb_invana;
     string2prbtype["Level_Set"] = prb_level_set;
     string2prbtype["Low_Mach_Number_Flow"] = prb_loma;
@@ -122,7 +119,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["ReducedDimensionalAirWays"] = prb_red_airways;
     string2prbtype["Scalar_Thermo_Interaction"] = prb_sti;
     string2prbtype["Scalar_Transport"] = prb_scatra;
-    string2prbtype["Scalar_Transport_EndoExocytosis"] = prb_scatra_endoexocytosis;
     string2prbtype["Structure"] = prb_structure;
     string2prbtype["Structure_Ale"] = prb_struct_ale;
     string2prbtype["Structure_Scalar_Interaction"] = prb_ssi;

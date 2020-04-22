@@ -236,8 +236,6 @@ namespace DRT
       DomainIntegral,
       BoundaryIntegral,
       ScaTraFluxCalc,
-      ScaTraCellIntCalc,
-      ScaTraCellExtCalc,
       TotalAndMeanScalar,
       ScaTraCoupling,
       RobinSpringDashpot,

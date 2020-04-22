@@ -17,7 +17,7 @@ Every time something changes in the repository (commit, merge, etc.), GitLab che
 
 ### LNM and IMCS
 
-Since Baci is used in different environments and configurations, there are some environment variables defined in `.gitlab-ci.yml` that are passed to the gitlab-runner (for example, the variable `CTEST_CONFIGURE_POSTFIX` is used to pass the option `--useDEAL` to the `do-configure` script).
+Since Baci is used in different environments and configurations, there are some environment variables defined in `.gitlab-ci.yml` that are passed to the gitlab-runner (for example, the variable `CTEST_CONFIGURE_POSTFIX` is used to pass options to the `do-configure` script).
 
 ### Daily tests
 

@@ -36,9 +36,6 @@ namespace DRT
   This means reactions between volume-bound scalars and surface-bound scalars in the
   context of scalar transport simulations.
   It is also used in solid-scatra interaction \ref SSI::SSI_Base::SSI_Base .
-  One main application is the Cell Migration Model \ref CellMigrationControlAlgorithm() .
-  For further information see also the documentation of the class :
-  \ref SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION .
 
 
   <h3>AssignDegreesOfFreedom</h3>

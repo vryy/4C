@@ -325,40 +325,6 @@ if (NETCDF_FOUND)
     )
 endif(NETCDF_FOUND)
 
-# deal.II package for deal.II support
-CMAKE_POLICY(SET CMP0015 OLD)
-find_package(deal.II 8.3 QUIET
-    HINTS ${DEAL_II_DIR} ${deal.II_DIR} $ENV{DEAL_II_DIR}
-  )
-if (deal.II_FOUND)
-  MESSAGE("\nFound deal.II!  Here are the details: ")
-  MESSAGE("   deal.II_VERSION = ${DEAL_II_VERSION}")
-  MESSAGE("   deal.II_DIR = ${DEAL_II_DIR}")
-  include_directories(${DEAL_II_INCLUDE_DIRS})
-  if (${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-    MESSAGE("   deal.II_LIBRARIES = ${DEAL_II_LIBRARIES_DEBUG}")
-    link_directories(${DEAL_II_LIBRARIES_DEBUG})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${DEAL_II_LIBRARIES_DEBUG}
-      )
-  else()
-    MESSAGE("   deal.II_LIBRARIES = ${DEAL_II_LIBRARIES_RELEASE}")
-    link_directories(${DEAL_II_LIBRARIES_RELEASE})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${DEAL_II_LIBRARIES_RELEASE}
-      )
-  endif()
-  MESSAGE("End of deal.II details\n")
-  add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
-else()
-  message("WW *************************************************************")
-  message("WW Warning: DEAL.II not found. No DEAL.II support in BACI.")
-  message("WW Warning: You cannot run simulations that need DEAL.II.")
-  message("WW *************************************************************")
-endif()
-
 # FFTW
 find_package(FFTW)
 if (FFTW_FOUND)
@@ -508,7 +474,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/electrode.cpp
   src/drt_mat/electromagnetic.cpp
   src/drt_mat/ferech_pv.cpp
-  src/drt_mat/fluid_linear_density_viscosity.cpp 
+  src/drt_mat/fluid_linear_density_viscosity.cpp
   src/drt_mat/fluid_murnaghantait.cpp
   src/drt_mat/fluid_weakly_compressible.cpp
   src/drt_mat/fluidporo.cpp
@@ -536,7 +502,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matlist_reactions.cpp
-  src/drt_mat/matlist_bondreacs.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp
   src/drt_mat/matpar_parameter.cpp
@@ -574,7 +539,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_multiporo.cpp
   src/drt_mat/scatra_multiscale.cpp
   src/drt_mat/scatra_reaction_mat.cpp
-  src/drt_mat/scatra_bondreac_mat.cpp
   src/drt_mat/scatra_reaction_coupling.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
   src/drt_mat/matlist_reactions.cpp
@@ -653,11 +617,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_material_sph_boundary.cpp
   src/drt_mat/particle_material_dem.cpp
   src/drt_mat/particle_wall_material_dem.cpp
-  src/drt_mat/acoustic.cpp
-  src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
-  src/drt_mat/biochemo_mechano_cell_activefiber.cpp
-  src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
   src/drt_mat/mixture_elasthyper.cpp
   src/drt_mat/anisotropy_utils.cpp
@@ -734,10 +694,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
   src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
-  src/drt_adapter/ad_str_multiphysicswrapper_cellmigration.cpp
   src/drt_adapter/ad_scatra_wrapper.cpp
-  src/drt_adapter/ad_scatra_wrapper_cellmigration.cpp
-  
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
@@ -771,7 +728,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
   src/drt_inpar/inpar_cardiovascular0d.cpp
-  src/drt_inpar/inpar_acou.cpp
   src/drt_inpar/inpar_ale.cpp
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beaminteraction.cpp
@@ -783,7 +739,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_pasi.cpp
-  src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
   src/drt_inpar/inpar_cut.cpp
   src/drt_inpar/inpar_ehl.cpp
@@ -1405,7 +1360,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
   src/drt_scatra_ele/scatra_ele_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
-  src/drt_scatra_ele/scatra_ele_calc_bondreac.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
@@ -1826,8 +1780,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
-  src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
-  src/drt_immersed_problem/str_model_evaluator_partitioned_ssi_adhesiondynamics.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -1932,33 +1884,6 @@ set(OBJS_DRT_PARTICLE_WALL
   src/drt_particle_wall/particle_wall_datastate.cpp
   src/drt_particle_wall/particle_wall_discretization_runtime_vtu_writer.cpp
   src/drt_particle_wall/particle_wall_result_test.cpp
-)
-set(OBJS_DRT_ACOU
-  src/drt_acou/acou_dyn.cpp
-  src/drt_acou/acou_impl_euler.cpp
-  src/drt_acou/acou_impl.cpp
-  src/drt_acou/acou_timeint.cpp
-  src/drt_acou/acou_inv_resulttest.cpp
-  src/drt_acou/acou_resulttest.cpp
-  src/drt_acou/acou_expl.cpp
-  src/drt_acou/acou_expl_worker.cpp
-  src/drt_acou/acou_expl_worker_ader.cpp
-  src/drt_acou/acou_expl_worker_ader_lts.cpp
-  src/drt_acou/acou_expl_worker_sol.cpp
-  src/drt_acou/acou_pml.cpp
-  src/drt_acou/deal_tria_wrapper.cpp
-  src/drt_acou/pat_imagereconstruction.cpp
-  src/drt_acou/pat_utils.cpp
-)
-set(OBJS_DRT_ACOU_LIB
-  src/drt_acou/acou_ele_boundary_calc.cpp
-  src/drt_acou/acou_ele_calc.cpp
-  src/drt_acou/acou_ele.cpp
-  src/drt_acou/acou_ele_evaluate.cpp
-  src/drt_acou/acou_ele_factory.cpp
-  src/drt_acou/acou_ele_intfaces_calc.cpp
-  src/drt_acou/acou_sol_ele_calc.cpp
-  src/drt_acou/acou_sol_ele.cpp
 )
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
@@ -2179,7 +2104,6 @@ set(OBJS_DRT_B3_LIB
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
   src/drt_fluid_ele/fluid_ele_immersed.cpp
-  src/drt_fluid_ele/fluid_ele_poro_immersed.cpp
   src/drt_fluid_ele/fluid_ele_immersed_base.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
@@ -2205,7 +2129,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_topopt_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
-  src/drt_fluid_ele/fluid_ele_calc_poro_p1_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
@@ -2296,7 +2219,7 @@ set(OBJS_DRT_ROUGH_CONTACT
   src/drt_contact_constitutivelaw/power_contactconstitutivelaw.cpp
   src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
   )
-  
+
 set(OBJS_DRT_CONTACT
   src/drt_contact_constitutivelaw/contact_constitutivelaw_interface.cpp
   src/drt_contact/contact_abstract_strategy.cpp
@@ -2481,23 +2404,23 @@ set(OBJS_CUT_TEST
   tests/cut_test/drt_singletondestruction.cpp
   tests/cut_test/cut_test_bacigenerated_1890.cpp
   tests/cut_test/cut_test_bacigenerated_6890.cpp
-  tests/cut_test/cut_test_bacigenerated_1858.cpp 
+  tests/cut_test/cut_test_bacigenerated_1858.cpp
   tests/cut_test/cut_test_bacigenerated_1970.cpp
   tests/cut_test/cut_test_bacigenerated_1910.cpp
   tests/cut_test/cut_test_bacigenerated_2010.cpp
   tests/cut_test/cut_test_bacigenerated_1860.cpp
   tests/cut_test/cut_test_facet_failed_cln.cpp
-  tests/cut_test/cut_test_bacigenerated_6920.cpp 
-  tests/cut_test/cut_test_bacigenerated_7019.cpp 
+  tests/cut_test/cut_test_bacigenerated_6920.cpp
+  tests/cut_test/cut_test_bacigenerated_7019.cpp
   tests/cut_test/cut_test_bacigenerated_6923.cpp
-  tests/cut_test/cut_test_bacigenerated_41534.cpp 
-  tests/cut_test/cut_test_bacigenerated_43244.cpp 
-  tests/cut_test/cut_test_bacigenerated_463638.cpp 
-  tests/cut_test/cut_test_bacigenerated_622320.cpp 
+  tests/cut_test/cut_test_bacigenerated_41534.cpp
+  tests/cut_test/cut_test_bacigenerated_43244.cpp
+  tests/cut_test/cut_test_bacigenerated_463638.cpp
+  tests/cut_test/cut_test_bacigenerated_622320.cpp
   tests/cut_test/cut_test_bacigenerated_227469.cpp
   tests/cut_test/cut_test_bacigenerated_622829.cpp
   tests/cut_test/cut_test_bacigenerated_627558.cpp
-  tests/cut_test/cut_test_bacigenerated_7022.cpp 
+  tests/cut_test/cut_test_bacigenerated_7022.cpp
   tests/cut_test/cut_test_bacigenerated_238425.cpp
   tests/cut_test/cut_test_bacigenerated_197489.cpp
   tests/cut_test/cut_test_bacigenerated_79216.cpp
@@ -2508,7 +2431,7 @@ set(OBJS_CUT_TEST
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
   src/drt_cut/cut_clnwrapper.cpp
-  src/drt_cut/cut_memory_manager.cpp 
+  src/drt_cut/cut_memory_manager.cpp
 )
 set(OBJS_GRAPH_TEST
   tests/graph_test/graph_test_main.cpp
@@ -2603,10 +2526,7 @@ src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 set(OBJS_DRT_IMMERSED_LIB
 src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
-src/drt_immersed_problem/immersed_discretization.cpp
-src/drt_immersed_problem/str_timint_ost_immersed.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
-src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM
@@ -2614,18 +2534,7 @@ src/drt_immersed_problem/immersed_base.cpp
 src/drt_immersed_problem/immersed_problem_dyn.cpp
 src/drt_immersed_problem/immersed_partitioned.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi.cpp
-src/drt_immersed_problem/immersed_partitioned_multiphysics.cpp
-src/drt_immersed_problem/immersed_partitioned_confine_cell.cpp
-src/drt_immersed_problem/immersed_partitioned_cellmigration.cpp
-src/drt_immersed_problem/immersed_partitioned_cellcontraction.cpp
-src/drt_immersed_problem/immersed_partitioned_adhesion_traction.cpp
-src/drt_immersed_problem/immersed_partitioned_protrusion_formation.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
-src/drt_immersed_problem/immersed_partitioned_flow_cell_interaction.cpp
-src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_membrane.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp
-src/drt_immersed_problem/ssi_partitioned_2wc_adhesiondynamics.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 
@@ -2749,7 +2658,6 @@ add_library(ele_t3cl ${OBJS_DRT_T3CL_LIB})
 add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
-add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 add_library(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 set(ELEMENT_LIBRARIES
@@ -2772,7 +2680,6 @@ set(ELEMENT_LIBRARIES
   ele_thermo
   ele_to3
   ele_w1
-  ele_acou
   ele_elemag
   )
 
@@ -2847,7 +2754,6 @@ add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
 add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
 add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
-add_library(alg_acou ${OBJS_DRT_ACOU})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
@@ -2876,7 +2782,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_particle_interaction
   alg_particle_engine
   alg_particle_wall
-  alg_acou
   alg_elemag
   alg_tutorial
   )

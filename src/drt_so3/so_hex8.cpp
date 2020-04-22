@@ -13,7 +13,6 @@
 #include "so_hex8fbar.H"
 #include "so_surface.H"
 #include "so_line.H"
-#include "../drt_inpar/inpar_cell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
@@ -140,10 +139,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (pstype_ == INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale or
-      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
-          DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
-              "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
+  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
   {
     if (kintype_ == INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
@@ -187,10 +183,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   if (pstype_ == INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
-  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale or
-      (DRT::Problem::Instance()->GetProblemType() == prb_immersed_cell and
-          DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),
-              "SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation))
+  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
   {
     if (kintype_ == INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");

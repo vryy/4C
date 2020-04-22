@@ -401,10 +401,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "AAA Surface";
   else if (Type() == LsContact)
     os << "level-set condition for contact points";
-  else if (Type() == Absorb)
-    os << "Absorbing boundary for acoustics";
-  else if (Type() == PressureMonitor)
-    os << "Pressure monitor boundary for acoustics";
   else if (Type() == ImmersedSearchbox)
     os << "Box for search algorithm in immersed method";
   else if (Type() == IMMERSEDCoupling)
@@ -431,10 +427,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure interaction interface meshtying condition: ";
   else if (Type() == CellFocalAdhesion)
     os << "Scalar transport boundary condition depending on structural surface stress";
-  else if (Type() == ScaTraCellIntCalc)
-    os << "Scalar transport biochemo internalization boundary condition for cell migration";
-  else if (Type() == ScaTraCellExtCalc)
-    os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type() == S2ICoupling)
     os << "Scatra-scatra interface coupling: ";
   else if (Type() == SilverMueller)

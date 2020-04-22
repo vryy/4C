@@ -319,31 +319,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // scalar transport bond material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_scatra_bondreac", "bond dynamics material", INPAR::MAT::m_scatra_bondreac));
-
-    AddNamedInt(m, "NUMSCAL", "number of reactions for these elements");
-    AddNamedIntVector(m, "STOICH", "advanced reaction list", "NUMSCAL");
-    AddNamedReal(m, "REACCOEFF", "reaction coefficient");
-    AddNamedInt(m, "DISTRFUNCT", "spatial distribution of reaction coefficient", 0, true);
-    AddNamedString(m, "COUPLING", "type of coupling", "no_coupling", false);
-    AddNamedRealVector(
-        m, "ROLE", "role in michaelis-menten like reactions", "NUMSCAL", -1.0, false);
-    AddNamedRealVector(m, "REACSTART", "starting point of reaction", "NUMSCAL", 0.0, true);
-    AddNamedString(m, "BONDTYPE", "type of bond", "no_bondtype", false);
-    AddNamedReal(m, "SLIPCOEFF", "slip bond coefficient", -1.0, true);
-    AddNamedReal(m, "CATCHCOEFF1", "catch bond coefficient 1", -123.0, true);
-    AddNamedReal(m, "CATCHCOEFF2", "catch bond coefficient 2", -123.0, true);
-    AddNamedReal(m, "CATCHCOEFF3", "catch bond coefficient 3", -123.0, true);
-    AddNamedReal(m, "CATCHCOEFF4", "catch bond coefficient 4", -123.0, true);
-    AddNamedReal(m, "BINDING_RADIUS", "binding radius of cell-ECM binding", -1.0, true);
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in fluid)
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_fluid",
@@ -784,24 +759,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
-
-  /*----------------------------------------------------------------------*/
-  // material collection with bond reactions
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_matlist_bondreacs",
-        "list/collection of materials, i.e. material IDs and list of bond reactions",
-        INPAR::MAT::m_matlist_bondreacs));
-
-    AddNamedBool(m, "LOCAL", "individual materials allocated per element or only at global scope");
-    AddNamedInt(m, "NUMMAT", "number of materials in list");
-    AddNamedIntVector(m, "MATIDS", "the list material IDs", "NUMMAT");
-    AddNamedInt(m, "NUMREAC", "number of reactions for these elements", 0);
-    AddNamedIntVector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
-    AddNamedSeparator(m, "END", "indicating end of line");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
   /*----------------------------------------------------------------------*/
   // material collection with chemotaxis (thon 06/15)
   {
@@ -3445,32 +3402,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // acoustic material
-  {
-    auto m = Teuchos::rcp(
-        new MaterialDefinition("MAT_Acoustic", "acoustic material", INPAR::MAT::m_acousticmat));
-
-    AddNamedReal(m, "DENSITY", "mass density");
-    AddNamedReal(m, "C", "speed of sound");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // acoustic solid material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_AcousticSol", "acoustic solid material", INPAR::MAT::m_acousticsolmat));
-
-    AddNamedReal(m, "DENSITY", "mass density");
-    AddNamedReal(m, "C", "speed of sound");
-    AddNamedReal(m, "VISC", "viscosity mu");
-
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // electromagnetic material
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -3500,43 +3431,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "SIGMAX", "maximum tension exerted by stress fibres");
     AddNamedReal(m, "EPSNULL", "reference strain rate of cross-bridge dynamics law");
 
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // biochemo-mechano coupled active stress fiber formation for cells
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_ACTIVE",
-        "biochemo-mechano coupled active stress fiber formation for cells",
-        INPAR::MAT::m_biochemomechano_active));
-
-    AddNamedReal(m, "DENS", "Density");
-    AddNamedInt(
-        m, "IDMATPASSIVE", "number of passive material in input file: MAT IDMATPASSIVE ...");
-    AddNamedReal(m, "KFOR", "formation rate parameter kforwards");
-    AddNamedReal(m, "KBACK", "dissociation rate parameter kbackwards");
-    AddNamedReal(m, "KROCKETA", "rate constant for Nfil to ROCK");
-    AddNamedReal(m, "KACTIN", "rate constant for Nfil to actin");
-    AddNamedReal(m, "RATEMAX", "maximum rate");
-    AddNamedReal(m, "NMAX", "maximum filament concentration");
-    AddNamedReal(
-        m, "KSTRESS", "proportionality constant between Acto-Mysion-Activation and stress");
-    AddNamedReal(
-        m, "SOURCE", "Constant for the Source for Stress-dependent Surface Scatra Condition");
-    AddNamedString(m, "METHOD", "Method for evaluating the material specific integral", "2DGauss");
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // biochemo-mechano coupled passive fiber formation for cells
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_PASSIVE",
-        "biochemo-mechano coupled cytoskeleton formation for cells",
-        INPAR::MAT::m_biochemomechano_passive));
-
-    AddNamedInt(m, "IDMATELAST", "number of elastic material in input file");
-    AddNamedReal(m, "VISC", "Viscosity mu of isotropic viscous part 2*mu*I");
 
     AppendMaterialDefinition(matlist, m);
   }
