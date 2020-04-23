@@ -47,10 +47,8 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
-  INPAR::STR::DynamicType dyntype =
-      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  auto pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
+  auto dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
   if (pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics)
   {
@@ -453,11 +451,7 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
 
   // This restart output is needed in case of a static pre-simulation has to be restartet with
   // dynamic time integration
-  Teuchos::RCP<Epetra_Vector> finert =
-      LINALG::CreateVector(*DofRowMapView(), true);  //!< inertia force at \f$t_{n}\f$
-  finert->PutScalar(0.0);
-  output->WriteVector("finert", finert);
-  return;
+  output->WriteVector("finert", zeros_);
 }
 
 /*---------------------------------------------------------------*/
