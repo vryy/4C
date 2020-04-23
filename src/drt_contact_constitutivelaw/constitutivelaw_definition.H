@@ -176,58 +176,6 @@ namespace CONTACT
       std::string name_;
     };
 
-    /**
-     * \brief This is a string component within a contact constitutive law definition
-     *
-     */
-    class StringContactConstitutiveLawComponent : public ContactConstitutiveLawComponent
-    {
-     public:
-      /**
-       * \brief default constructor
-       *
-       * \param[in] name name of contact constitutive law
-       * \param[in] description of contact constitutive law type
-       * \param[in] type of contact constitutive law to be built
-       */
-      StringContactConstitutiveLawComponent(
-          std::string name, std::string defaultvalue, bool optional = false);
-
-      /**
-       * \brief write my part of the default line of the contact constitutive law
-       * definition
-       */
-      void DefaultLine(std::ostream& stream) override;
-
-      /**
-       * \brief write my part of the actual line of the contact constitutive law
-       * definition
-       */
-      void Print(std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond) override;
-
-      /**
-       * \brief describe my part of the default (comment) line of the contact constitutive law
-       * definition
-       */
-      void Describe(std::ostream& stream) override;
-
-      /**
-       * \brief read my part of the the contact constitutive law
-       * definition
-       *
-       *\param[in] def Contact Constitutive Law definition
-       *\param[in] condline read input line
-       *\params[inout] container container to add the read parameter to
-       */
-      Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container) override;
-
-     private:
-      /// default value
-      std::string defaultvalue_;
-    };
-
 
     /**
      * \brief This is a seperator component within a contact constitutive law definition
@@ -356,27 +304,6 @@ namespace CONTACT
           Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
       def->AddComponent(
           Teuchos::rcp(new RealContactConstitutiveLawComponent(name, defaultvalue, optional)));
-    }
-
-    /** Add a separator followed by a single string
-     *
-     * The name on the input line becomes the name used to put the value into the contact
-     * constitutive law container container
-     *
-     * \params[inout] def contact constitutive law definition to which the double should be added
-     * \param[in] name name of the double parameter
-     * \param[in] description of the parameter
-     * \param[in] defaultvalue default value to be used when parameter is optional and not given
-     * \param[in] optional true if parameter is optional
-     *
-     */
-    inline void AddNamedString(Teuchos::RCP<LawDefinition> def, const std::string name,
-        const std::string description, const std::string defaultvalue, const bool optional = false)
-    {
-      def->AddComponent(
-          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
-      def->AddComponent(
-          Teuchos::rcp(new StringContactConstitutiveLawComponent(name, defaultvalue, optional)));
     }
 
     /** Add a separator
