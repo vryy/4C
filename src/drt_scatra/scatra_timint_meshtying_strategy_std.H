@@ -72,8 +72,17 @@ namespace SCATRA
       return Teuchos::null;
     }
 
-    //! initialize system matrix
-    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+    bool SystemMatrixInitializationNeeded() const override { return false; }
+
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    {
+      dserror(
+          "This meshtying strategy does not need to initialize the system matrix, but relies "
+          "instead on the initialization of the field. If this changes, you also need to change "
+          "'SystemMatrixInitializationNeeded()' to return true");
+      // dummy return
+      return Teuchos::null;
+    }
 
     //! setup meshtying objects
     void SetupMeshtying();

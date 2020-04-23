@@ -3442,53 +3442,6 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
   }
 }  // SCATRA::MeshtyingStrategyS2I::BuildBlockNullSpaces
 
-
-/*----------------------------------------------------------------------------*
- | initialize system matrix for scatra-scatra interface coupling   fang 10/14 |
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMatrix() const
-{
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix(Teuchos::null);
-
-  switch (matrixtype_)
-  {
-    case INPAR::SCATRA::MatrixType::sparse:
-    {
-      // initialize system matrix
-      systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(
-          *(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
-      break;
-    }
-
-    case INPAR::SCATRA::MatrixType::block_geometry:
-    {
-      // initialize system matrix and associated strategy
-      systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *interfacemaps_, *interfacemaps_, 81, false, true));
-      break;
-    }
-
-    case INPAR::SCATRA::MatrixType::block_condition:
-    case INPAR::SCATRA::MatrixType::block_condition_dof:
-    {
-      // initialize system matrix and associated strategy
-      systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          scatratimint_->BlockMaps(), scatratimint_->BlockMaps(), 81, false, true));
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
-      break;
-    }
-  }
-
-  return systemmatrix;
-}  // SCATRA::MeshtyingStrategyS2I::InitSystemMatrix
-
-
 /*------------------------------------------------------------------------------------*
  | solve linear system of equations for scatra-scatra interface coupling   fang 12/14 |
  *------------------------------------------------------------------------------------*/

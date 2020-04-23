@@ -178,6 +178,9 @@ namespace SCATRA
     //! add global state vectors specific for time-integration scheme
     virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
+    //! initialize system matrix
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
     //! prepare time loop
     virtual void PrepareTimeLoop();
 

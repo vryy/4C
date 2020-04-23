@@ -55,7 +55,11 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
   }
 
   else
-    systemmatrix = SCATRA::MeshtyingStrategyStd::InitSystemMatrix();
+  {
+    // initialize standard (stabilized) system matrix (and save its graph)
+    systemmatrix = Teuchos::rcp(
+        new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
+  }
 
   return systemmatrix;
 }  // SCATRA::MeshtyingStrategyStdElch::InitSystemMatrix

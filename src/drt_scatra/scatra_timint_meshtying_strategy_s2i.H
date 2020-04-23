@@ -165,8 +165,17 @@ namespace SCATRA
     //! perform initialization of scatra-scatra interface coupling
     void InitMeshtying() override;
 
-    //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
+    bool SystemMatrixInitializationNeeded() const override { return false; }
+
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    {
+      dserror(
+          "This meshtying strategy does not need to initialize the system matrix, but relies "
+          "instead on the initialization of the field. If this changes, you also need to change "
+          "'SystemMatrixInitializationNeeded()' to return true");
+      // dummy return
+      return Teuchos::null;
+    }
 
     //! return interface map extractor
     const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override

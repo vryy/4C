@@ -168,6 +168,10 @@ namespace SCATRA
     //! init meshtying objects
     virtual void InitMeshtying() = 0;
 
+    // flag returning whether this meshtying strategy needs to initialize the system matrix due to
+    // special requirements
+    virtual bool SystemMatrixInitializationNeeded() const = 0;
+
     //! initialize system matrix
     virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
 

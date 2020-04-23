@@ -38,10 +38,11 @@ namespace SCATRA
     explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
     // destructor
-    virtual ~MeshtyingStrategyStdElch() { return; };
+    ~MeshtyingStrategyStdElch() override = default;
 
-    //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+    bool SystemMatrixInitializationNeeded() const override { return true; }
+
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
     //@}
 
    private:
@@ -55,7 +56,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
   };  // class MeshtyingStrategyStdElch
 }  // namespace SCATRA
 

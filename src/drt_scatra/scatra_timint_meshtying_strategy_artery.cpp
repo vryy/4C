@@ -139,17 +139,6 @@ void SCATRA::MeshtyingStrategyArtery::EvaluateMeshtying()
   return;
 }
 
-
-/*----------------------------------------------------------------------------------*
- | initialize system matrix for scatra-artery interface coupling   kremheller 04/18 |
- *------------------------------------------------------------------------------    */
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyArtery::InitSystemMatrix() const
-{
-  return Teuchos::rcp(
-      new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
-  ;
-}
-
 /*-------------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   kremheller 04/18 |
  *-------------------------------------------------------------------------------*/

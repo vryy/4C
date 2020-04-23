@@ -41,13 +41,9 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
   SCATRA::MeshtyingStrategyFluid::InitMeshtying();
 
   return;
-}  // SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying
+}
 
-
-/*------------------------------------------------------------------------------------*
- | initialize system matrix for fluid-fluid meshtying (electrochemistry)   fang 12/14 |
- *------------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluidElch::InitSystemMatrix() const
+void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
 {
   // safety check
   if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
@@ -61,9 +57,8 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluidElch::InitSys
   if (DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "ONLYPOTENTIAL"))
     for (int i = 0; i < scatratimint_->NumScal(); ++i) coupleddof[i] = 0;
 
-  return meshtying_->Setup(coupleddof);
-}  // SCATRA::MeshtyingStrategyFluidElch::InitSystemMatrix
-
+  meshtying_->SetupMeshtying(coupleddof);
+}
 
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |

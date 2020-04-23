@@ -6394,7 +6394,8 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
     for (int xdof = 0; xdof < 4; xdof++) coupleddof.push_back(0);
 
   meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, numdim_, surfacesplitter_));
-  sysmat_ = meshtying_->Setup(coupleddof);
+  meshtying_->SetupMeshtying(coupleddof);
+  sysmat_ = meshtying_->InitSystemMatrix();
 
   // Check if there are DC defined on the master side of the internal interface
   meshtying_->DirichletOnMaster(dbcmaps_->CondMap());

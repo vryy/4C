@@ -76,7 +76,9 @@ namespace FLD
     virtual ~Meshtying() { return; };
 
     //! Set up mesh-tying framework
-    Teuchos::RCP<LINALG::SparseOperator> Setup(std::vector<int> coupleddof);
+    void SetupMeshtying(std::vector<int> coupleddof);
+
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
 
     //! Applied Dirichlet values are adapted on the slave side of the internal interface
     //! in order to avoid an over-constraint problem setup

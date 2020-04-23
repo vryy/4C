@@ -369,7 +369,11 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     // special case)
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
   else
-    sysmat_ = strategy_->InitSystemMatrix();
+    sysmat_ = InitSystemMatrix();
+
+  // for some special meshtying cases we need to override the information with the information from
+  // the meshtying strategy, in such a case the meshtying strategy implements the method below
+  if (strategy_->SystemMatrixInitializationNeeded()) sysmat_ = strategy_->InitSystemMatrix();
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -3955,4 +3959,56 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
       break;
     }
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix() const
+{
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix(Teuchos::null);
+
+  switch (matrixtype_)
+  {
+    case INPAR::SCATRA::MatrixType::sparse:
+    {
+      // initialize system matrix
+      systemmatrix =
+          Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 27, false, true));
+      break;
+    }
+
+    case INPAR::SCATRA::MatrixType::block_geometry:
+    {
+      if (S2ICoupling())
+      {
+        // initialize system matrix and associated strategy
+        systemmatrix =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *strategy_->InterfaceMaps(), *strategy_->InterfaceMaps(), 81, false, true));
+      }
+      else
+        dserror("Scatra Matrixtype %i is only possible in combination with S2ICoupling!",
+            static_cast<int>(matrixtype_));
+
+      break;
+    }
+
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    {
+      // initialize system matrix and associated strategy
+      systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          BlockMaps(), BlockMaps(), 81, false, true));
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
+      break;
+    }
+  }
+
+  return systemmatrix;
 }
