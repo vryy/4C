@@ -511,11 +511,11 @@ namespace INPAR
     //!@}
 
     /// type of prestressing algorithm
-    enum PreStress
+    enum class PreStress : char
     {
-      prestress_none,  ///<  none
-      prestress_mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010))
-      prestress_id     ///<  Inverse Design
+      none,  ///<  none
+      mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010))
+      id     ///<  Inverse Design
     };
 
     /// STC scaling for thin shell structures

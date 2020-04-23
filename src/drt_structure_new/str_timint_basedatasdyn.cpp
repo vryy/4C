@@ -47,7 +47,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       itermin_(-1),
       itermax_(-1),
       loadlin_(false),
-      prestresstype_(INPAR::STR::prestress_none),
+      prestresstype_(INPAR::STR::PreStress::none),
       predtype_(INPAR::STR::pred_vague),
       nlnsolvertype_(INPAR::STR::soltech_vague),
       divergenceaction_(INPAR::STR::divcont_stop),

@@ -56,7 +56,7 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
       disdualp_(Teuchos::null),
       timestep_(0.0),
       msteps_(0),
-      pstype_(INPAR::STR::prestress_none),
+      pstype_(INPAR::STR::PreStress::none),
       pstime_(0.0),
       itertopc_(10)
 {
@@ -69,10 +69,10 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
 
   // prestress stuff
   pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
-  if (pstype_ == INPAR::STR::prestress_mulf) pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  if (pstype_ == INPAR::STR::PreStress::mulf) pstime_ = sdyn.get<double>("PRESTRESSTIME");
 
-  if (pstype_ == INPAR::STR::prestress_id)
-    dserror("prestress_id is not implemented yet for the adjoint formulation");
+  if (pstype_ == INPAR::STR::PreStress::id)
+    dserror("id is not implemented yet for the adjoint formulation");
 
   // initialize the vector of time steps according to the structural dynamic params
   time_.resize(msteps_, 0.0);
@@ -259,9 +259,9 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
 
   // initialize adjoint time integration with RHS as input
   Teuchos::RCP<STR::TimIntAdjoint> timintadj;
-  if (pstype_ == INPAR::STR::prestress_none)
+  if (pstype_ == INPAR::STR::PreStress::none)
     timintadj = Teuchos::rcp(new STR::TimIntAdjoint(Discret()));
-  else if (pstype_ == INPAR::STR::prestress_mulf)
+  else if (pstype_ == INPAR::STR::PreStress::mulf)
     timintadj = Teuchos::rcp(new STR::TimIntAdjointPrestress(Discret()));
 
   timintadj->SetupAdjoint(adjrhs, mtime, dis_, time_);
@@ -272,7 +272,7 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
   // get the solution
   disdual_->Update(1.0, *timintadj->ExtractSolution(), 0.0);
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     disdualp_->Update(1.0, *timintadj->ExtractPrestressSolution(), 0.0);
   }
@@ -338,7 +338,7 @@ void INVANA::InvanaAugLagr::EvaluateGradient(
 
     Discret()->ClearState();
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       int stepps = (int)(pstime_ / (timestep_));
       Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(stepps - 1), false));

@@ -50,7 +50,7 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   auto pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
   auto dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
-  if (pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics)
+  if (pstype != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
   {
     dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
@@ -59,9 +59,9 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pstype == INPAR::STR::prestress_mulf)
+    if (pstype == INPAR::STR::PreStress::mulf)
       IO::cout << "with static MULF prestress" << IO::endl;
-    else if (pstype == INPAR::STR::prestress_id)
+    else if (pstype == INPAR::STR::PreStress::id)
       IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
     else
       IO::cout << "with statics" << IO::endl;

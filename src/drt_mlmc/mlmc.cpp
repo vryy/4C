@@ -924,7 +924,7 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
     INPAR::STR::PreStress pstype =
         DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
 
-    if (pstype == INPAR::STR::prestress_mulf)
+    if (pstype == INPAR::STR::PreStress::mulf)
     {
       // get prestress time
       double pstime = sdyn.get<double>("PRESTRESSTIME");
@@ -1063,12 +1063,12 @@ void UQ::MLMC::ResetPrestress()
       DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   switch (pstype)
   {
-    case INPAR::STR::prestress_none:
+    case INPAR::STR::PreStress::none:
     {
       IO::cout << "nothing to do no prestressing used " << IO::endl;
     }
     break;
-    case INPAR::STR::prestress_mulf:
+    case INPAR::STR::PreStress::mulf:
     {
       Teuchos::ParameterList p;
       // action for elements
@@ -1077,7 +1077,7 @@ void UQ::MLMC::ResetPrestress()
           p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     }
     break;
-    case INPAR::STR::prestress_id:
+    case INPAR::STR::PreStress::id:
     {
       dserror("MLMC and pressstressing with ID do not go great together");
     }

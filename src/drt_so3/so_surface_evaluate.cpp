@@ -154,7 +154,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // BACI
       // no exection here for mulf because displacements are reset after each load step, hence last
       // converged state is always the material configuration
-      if (pstype == INPAR::STR::prestress_id && time <= pstime)
+      if (pstype == INPAR::STR::PreStress::id && time <= pstime)
       {
         // no linearization needed for inverse analysis
         loadlin = false;
@@ -187,7 +187,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // which we want equilibrium. This true spatial configuration is the material configuration in
       // BACI
       // same holds for mulf
-      if ((pstype == INPAR::STR::prestress_id || pstype == INPAR::STR::prestress_mulf) &&
+      if ((pstype == INPAR::STR::PreStress::id || pstype == INPAR::STR::PreStress::mulf) &&
           time <= pstime)
       {
         // no linearization needed for inverse design analysis and mulf

@@ -97,11 +97,13 @@ namespace INPAR
               dyna_gemm, dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_euma, dyna_euimsto),
           &sdyn);
 
-      setStringToIntegralParameter<int>("PRESTRESS", "none",
+      setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
           "prestressing takes values none mulf id",
           tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID"),
-          tuple<int>(prestress_none, prestress_none, prestress_none, prestress_mulf, prestress_mulf,
-              prestress_mulf, prestress_id, prestress_id, prestress_id),
+          tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
+              INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
+              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::id, INPAR::STR::PreStress::id,
+              INPAR::STR::PreStress::id),
           &sdyn);
 
       DoubleParameter("PRESTRESSTIME", 0.0, "time to switch from pre to post stressing", &sdyn);

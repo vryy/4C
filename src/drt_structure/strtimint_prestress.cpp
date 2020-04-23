@@ -48,7 +48,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // MULF
-  if (pstype == INPAR::STR::prestress_mulf)
+  if (pstype == INPAR::STR::PreStress::mulf)
   {
     if ((*time_)[0] <= pstime)
     {
@@ -67,7 +67,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   }
 
   // INVERSE DESIGN
-  else if (pstype == INPAR::STR::prestress_id)
+  else if (pstype == INPAR::STR::PreStress::id)
   {
     if ((*time_)[0] <= pstime)
     {
@@ -92,7 +92,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (pstype == INPAR::STR::prestress_id && (*time_)[0] <= pstime && timen_ > pstime)
+  if (pstype == INPAR::STR::PreStress::id && (*time_)[0] <= pstime && timen_ > pstime)
   {
     // switch in id mode:
     dis_->UpdateSteps(*zeros_);
@@ -106,7 +106,7 @@ void STR::TimIntPrestress::UpdateStepElement()
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
-  if (pstype == INPAR::STR::prestress_mulf && (*time_)[0] <= pstime)
+  if (pstype == INPAR::STR::PreStress::mulf && (*time_)[0] <= pstime)
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient in
     // material law (mhv 12/2015) pass current displacement state to spring at end of MULF step

@@ -259,7 +259,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
       DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(structdynparams, "DYNAMICTYP") !=
-          INPAR::STR::prestress_mulf)
+          INPAR::STR::PreStress::mulf)
     dserror(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");

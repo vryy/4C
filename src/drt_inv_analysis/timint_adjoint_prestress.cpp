@@ -54,7 +54,7 @@ void STR::TimIntAdjointPrestress::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> 
   if ((int)time_.size() != msteps_)
     dserror("setup of the timesteps for the adjoint problem messed up");
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     // get prestress time
     stepn_ = (int)(pstime_ / dt_);

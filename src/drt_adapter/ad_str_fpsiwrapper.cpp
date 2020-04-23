@@ -38,13 +38,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     INPAR::STR::PreStress pstype =
         DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::prestress_none)
+    if (pstype != INPAR::STR::PreStress::none)
     {
       time = TimeOld();
       pstime = sdyn.get<double>("PRESTRESSTIME");
     }
 
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    if (pstype != INPAR::STR::PreStress::none && time <= pstime)
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
@@ -72,13 +72,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     INPAR::STR::PreStress pstype =
         DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::prestress_none)
+    if (pstype != INPAR::STR::PreStress::none)
     {
       time = Time();
       pstime = sdyn.get<double>("PRESTRESSTIME");
     }
 
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    if (pstype != INPAR::STR::PreStress::none && time <= pstime)
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
