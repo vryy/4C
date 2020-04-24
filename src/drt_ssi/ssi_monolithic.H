@@ -63,19 +63,25 @@ namespace SSI
     const unsigned& Iter() const { return iter_; };
 
     //! return global map extractor (0: scalar transport, 1: structure)
-    const Teuchos::RCP<LINALG::MapExtractor>& Maps() const { return maps_; };
+    const Teuchos::RCP<LINALG::MapExtractor>& Maps() const { return maps_; }
 
-    //! retrun map extractor associated with all degrees of freedom inside structural field
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const
+    //! return map extractor associated with all degrees of freedom inside scatra field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; }
+
+    //! return map extractor associated with all degrees of freedom inside structural field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const { return map_structure_; }
+
+    //! return map extractor associated with blocks of global system matrix
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrix() const
     {
-      return map_structure_;
-    };
+      return maps_systemmatrix_;
+    }
 
     //! return the scatra-scatra interface meshtying strategy
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
     {
       return meshtying_strategy_s2i_;
-    };
+    }
 
     //! setup monolithic algorithm
     void Setup();
@@ -158,6 +164,9 @@ namespace SSI
 
     //! global increment vector for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Vector> increment_;
+
+    //! map extractor associated with all degrees of freedom inside scatra field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;

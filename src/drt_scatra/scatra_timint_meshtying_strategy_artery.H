@@ -71,6 +71,12 @@ namespace SCATRA
     //! init system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
 
+    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    {
+      dserror("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
+      return Teuchos::null;
+    }
+
     //! setup
     void SetupMeshtying();
 

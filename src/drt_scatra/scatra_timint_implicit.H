@@ -352,6 +352,9 @@ namespace SCATRA
     //! return system matrix downcasted as block sparse matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
+    //! return map extractor associated with blocks of global system matrix
+    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; }
+
     //! return residual vector
     Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
 
@@ -495,6 +498,29 @@ namespace SCATRA
     /*========================================================================*/
 
     virtual void SetupSplitter() { return; };
+
+    //! set up the (block) maps of the scatra system matrix and the meshtying object
+    void SetupMatrixBlockMapsAndMeshtying();
+
+    //! set up the (block) maps of the scatra system matrix
+    void SetupMatrixBlockMaps();
+
+    //! some of the set up of the (block) maps of the scatra system matrix has to be done after
+    //! SetupMeshtying() has been called
+    void PostSetupMatrixBlockMaps();
+
+    /*!
+     * @brief build maps associated with blocks of global system matrix
+     *
+     * @param[in]  partitioningconditions  domain partitioning conditions
+     * @param[out] blockmaps               empty vector for maps to be built
+     */
+    virtual void BuildBlockMaps(
+        const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+        std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
+
+    //! build null spaces associated with blocks of global system matrix
+    virtual void BuildBlockNullSpaces() const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -1257,6 +1283,9 @@ namespace SCATRA
 
     //! system matrix (either sparse matrix or block sparse matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+
+    //! map extractor associated with blocks of global system matrix
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;

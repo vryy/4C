@@ -86,7 +86,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraDomain(
       Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(scatradomain);
   if (scatradomain_block == Teuchos::null) dserror("Scatra block is not a block matrix!");
 
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
@@ -150,7 +150,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureDomain(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // add entire block or assemble slave side to master side
   if (!ssi_mono_->SSIInterfaceMeshtying())
@@ -248,7 +248,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
@@ -348,16 +348,16 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
 {
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // cast systemmatrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
   // master and slave side of scatrastructureinterface
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block = Teuchos::rcp(
-      new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*ssi_mono_->MapStructure(),
-          ssi_mono_->MeshtyingStrategyS2I()->BlockMaps(), 81, false, true));
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra(), 81, false, true));
 
   // copy slave side to master side and scale with -1.0. Add slave side
   CopyScatraStructureInterfaceS2Iblock(
@@ -436,7 +436,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
@@ -539,7 +539,7 @@ void SSI::AssembleStrategyBlockBlock::ApplyMeshtyingSystemMatrix(
 {
   if (ssi_mono_->SSIInterfaceMeshtying())
   {
-    const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+    const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
     // cast systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
@@ -813,7 +813,7 @@ void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Iblock(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase>& scatrastructureinterface_block,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
 {
-  const int numberscatrablocks = ssi_mono_->MeshtyingStrategyS2I()->BlockMaps().NumMaps();
+  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
   // cast scatrastructureinterfaceslaveside
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterfaceslaveside_block =
@@ -841,7 +841,7 @@ void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Iblock(
   // split auxiliary system matrix and assemble into scatra-structure matrix block
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix =
       mastermatrix.Split<LINALG::DefaultBlockMatrixStrategy>(
-          *ssi_mono_->MapStructure(), ssi_mono_->MeshtyingStrategyS2I()->BlockMaps());
+          *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra());
   blockmastermatrix->Complete();
 
   // build block matrix with master and slave side contributions

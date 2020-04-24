@@ -104,9 +104,6 @@ namespace SCATRA
     //! compute time step size
     void ComputeTimeStepSize(double& dt) override;
 
-    //! return map extractor associated with blocks of global system matrix
-    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; };
-
     //! return map extractor associated with blocks of auxiliary system matrix for master side
     const LINALG::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
 
@@ -172,7 +169,10 @@ namespace SCATRA
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
 
     //! return interface map extractor
-    const Teuchos::RCP<LINALG::MultiMapExtractor>& InterfaceMaps() const { return interfacemaps_; };
+    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    {
+      return interfacemaps_;
+    }
 
     //! return flag for evaluation of scatra-scatra interface coupling involving interface layer
     //! growth
@@ -259,15 +259,7 @@ namespace SCATRA
     void Update() const override;
 
    protected:
-    //! build maps associated with blocks of global system matrix
-    virtual void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>&
-                                    partitioningconditions,  //!< domain partitioning conditions
-        std::vector<Teuchos::RCP<const Epetra_Map>>&
-            blockmaps  //!< empty vector for maps to be built
-        ) const;
-
-    //! build null spaces associated with blocks of global system matrix
-    virtual void BuildBlockNullSpaces() const;
+    void EquipExtendedSolverWithNullSpaceInfo() const override;
 
     //! instantiate strategy for Newton-Raphson convergence check
     void InitConvCheckStrategy() override;
@@ -275,9 +267,11 @@ namespace SCATRA
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
 
-    //! map extractors associated with blocks of global system matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    //! map extractor associated with scatra-scatra interface slave-side blocks of global system
+    //! matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_slave_;
+    //! map extractor associated with scatra-scatra interface master-side blocks of global system
+    //! matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter

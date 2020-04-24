@@ -52,6 +52,7 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
     : SSI_Base(comm, globaltimeparams),
       dtele_(0.),
       dtsolve_(0.),
+      maps_scatra_(nullptr),
       map_structure_(Teuchos::null),
       maps_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
@@ -373,7 +374,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
     case INPAR::SCATRA::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < meshtying_strategy_s2i_->BlockMaps().NumMaps(); ++iblock)
+      for (int iblock = 0; iblock < scatra_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
       {
         // store number of current block as string, starting from 1
         std::stringstream iblockstr;
@@ -394,7 +395,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
         // block
         LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
             *scatra_->ScaTraField()->Discretization()->DofRowMap(),
-            *meshtying_strategy_s2i_->BlockMaps().Map(iblock), blocksmootherparams);
+            *scatra_->ScaTraField()->BlockMaps().Map(iblock), blocksmootherparams);
       }
 
       break;
@@ -461,10 +462,8 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const { return 
 /*----------------------------------------------------------------------*
  | equilibrate matrix rows                                   fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Mono::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< sums of absolute values of row entries in matrix
-    ) const
+void SSI::SSI_Mono::EquilibrateMatrixRows(
+    LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
 
@@ -1038,12 +1037,17 @@ void SSI::SSI_Mono::SetupSystem()
     // several main-diagonal matrix blocks associated with scalar transport field
     case INPAR::SCATRA::MatrixType::block_condition:
     {
-      // extract maps underlying main-diagonal matrix blocks associated with scalar transport
-      // field
-      const unsigned maps_systemmatrix_scatra = meshtying_strategy_s2i_->BlockMaps().NumMaps();
+      // copy maps of scatra field
+      maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
+
+      // safety check
+      maps_scatra_->CheckForValidMapExtractor();
+
+      // extract maps underlying main-diagonal matrix blocks associated with scalar transport  field
+      const int maps_systemmatrix_scatra = maps_scatra_->NumMaps();
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(maps_systemmatrix_scatra + 1);
-      for (unsigned imap = 0; imap < maps_systemmatrix_scatra; ++imap)
-        maps_systemmatrix[imap] = meshtying_strategy_s2i_->BlockMaps().Map(imap);
+      for (int imap = 0; imap < maps_systemmatrix_scatra; ++imap)
+        maps_systemmatrix[imap] = maps_scatra_->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
@@ -1125,7 +1129,7 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize scatra-structure block
       scatrastructuredomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *map_structure_, meshtying_strategy_s2i_->BlockMaps(), 81, false, true));
+              *map_structure_, scatra_->ScaTraField()->BlockMaps(), 81, false, true));
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
@@ -1136,7 +1140,7 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize structure-scatra block
       structurescatradomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              meshtying_strategy_s2i_->BlockMaps(), *map_structure_, 81, false, true));
+              scatra_->ScaTraField()->BlockMaps(), *map_structure_, 81, false, true));
 
       break;
     }

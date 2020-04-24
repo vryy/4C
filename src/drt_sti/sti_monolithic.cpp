@@ -133,10 +133,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     case INPAR::SCATRA::MatrixType::block_condition:
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport field
-      const unsigned nblockmapsscatra = strategyscatra_->BlockMaps().NumMaps();
+      const unsigned nblockmapsscatra = scatra_->BlockMaps().NumMaps();
       std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps(nblockmapsscatra + 1);
       for (unsigned iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
-        blockmaps[iblockmap] = strategyscatra_->BlockMaps().Map(iblockmap);
+        blockmaps[iblockmap] = scatra_->BlockMaps().Map(iblockmap);
 
       // extract map underlying single main-diagonal matrix block associated with temperature field
       blockmaps[nblockmapsscatra] = mapthermo;
@@ -217,12 +217,12 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       // initialize scatra-thermo block
       scatrathermoblock_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *blockmapthermo_, strategyscatra_->BlockMaps(), 81, false, true));
+              *blockmapthermo_, scatra_->BlockMaps(), 81, false, true));
 
       // initialize thermo-scatra block
       thermoscatrablock_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              strategyscatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
+              scatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
 
       break;
     }
@@ -724,7 +724,7 @@ void STI::Monolithic::AssembleMatAndRHS()
         case INPAR::SCATRA::MatrixType::block_condition:
         {
           // extract number of matrix row or column blocks associated with scalar transport field
-          const unsigned nblockmapsscatra = strategyscatra_->BlockMaps().NumMaps();
+          const unsigned nblockmapsscatra = scatra_->BlockMaps().NumMaps();
 
           // construct global system matrix by assigning matrix blocks
           for (unsigned iblock = 0; iblock < nblockmapsscatra; ++iblock)
@@ -1190,7 +1190,7 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             // split auxiliary system matrix and assemble into scatra-thermo matrix block
             const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix =
                 mastermatrix.Split<LINALG::DefaultBlockMatrixStrategy>(
-                    *blockmapthermo_, strategyscatra_->BlockMaps());
+                    *blockmapthermo_, scatra_->BlockMaps());
             blockmastermatrix->Complete();
             scatrathermoblock_->Add(*blockmastermatrix, false, 1., 1.);
 
@@ -1523,7 +1523,7 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             // split temporary matrix and assemble into thermo-scatra matrix block
             const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockksm(
                 ksm.Split<LINALG::DefaultBlockMatrixStrategy>(
-                    strategyscatra_->BlockMaps(), *blockmapthermo_));
+                    scatra_->BlockMaps(), *blockmapthermo_));
             blockksm->Complete();
             thermoscatrablock_->Add(*blockksm, false, 1., 1.);
 
@@ -1658,7 +1658,7 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
           {
             slavematrix =
                 Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                    strategyscatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
+                    scatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
             break;
           }
 
@@ -1853,7 +1853,7 @@ void STI::Monolithic::BuildBlockNullSpaces() const
     case INPAR::SCATRA::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < strategyscatra_->BlockMaps().NumMaps(); ++iblock)
+      for (int iblock = 0; iblock < scatra_->BlockMaps().NumMaps(); ++iblock)
       {
         // store number of current block as string, starting from 1
         std::stringstream iblockstr;
@@ -1872,7 +1872,7 @@ void STI::Monolithic::BuildBlockNullSpaces() const
 
         // reduce full null space to match degrees of freedom associated with current matrix block
         LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
-            *scatra_->Discretization()->DofRowMap(), *strategyscatra_->BlockMaps().Map(iblock),
+            *scatra_->Discretization()->DofRowMap(), *scatra_->BlockMaps().Map(iblock),
             blocksmootherparams);
       }
 

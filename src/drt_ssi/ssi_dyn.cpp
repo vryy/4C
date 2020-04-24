@@ -157,7 +157,6 @@ void ssi_drt()
   }
 
   // 4.- Run of the actual problem.
-
   // 4.1.- Some setup needed for the subproblems.
   ssi->SetupSystem();
 

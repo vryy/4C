@@ -31,6 +31,7 @@ namespace LINALG
   class KrylovProjector;
   class Solver;
   class SparseOperator;
+  class MultiMapExtractor;
 }  // namespace LINALG
 
 namespace SCATRA
@@ -92,6 +93,13 @@ namespace SCATRA
 
     //! provide global state vectors for element evaluation
     virtual void AddTimeIntegrationSpecificVectors() const { return; };
+
+
+    virtual void EquipExtendedSolverWithNullSpaceInfo() const
+    {
+      dserror(
+          "EquipExtendedSolverWithNullSpaceInfo() is not implemented in MeshtyingStrategyBase.");
+    }
 
     //! compute time step size
     virtual void ComputeTimeStepSize(double& dt) { return; };
@@ -162,6 +170,9 @@ namespace SCATRA
 
     //! initialize system matrix
     virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
+
+    //! return interface map extractor
+    virtual const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
     virtual void Output() const { return; };
