@@ -38,6 +38,7 @@
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
 #include "str_discretization_runtime_vtu_output_params.H"
+#include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
 
@@ -660,9 +661,173 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputElementGID())
     vtu_writer_ptr_->AppendElementGID("element_gid");
 
+  // append stress if desired
+  if (structure_vtu_output_params.OutputStressStrain() and
+      not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
+  {
+    std::string name_nodal = "";
+    std::string name_element = "";
+
+    if (GInOutput().GetStressOutputType() == INPAR::STR::stress_2pk)
+    {
+      name_nodal = "nodal_2PK_stresses_xyz";
+      name_element = "element_2PK_stresses_xyz";
+    }
+    else if (GInOutput().GetStressOutputType() == INPAR::STR::stress_cauchy)
+    {
+      name_nodal = "nodal_cauchy_stresses_xyz";
+      name_element = "element_cauchy_stresses_xyz";
+    }
+
+    // Write nodal stress data.
+    vtu_writer_ptr_->AppendNodeBasedResultDataVector(
+        EvalData().GetStressDataNodePostprocessed(), 6, name_nodal);
+
+    // Write element stress data.
+    vtu_writer_ptr_->AppendElementBasedResultDataVector(
+        EvalData().GetStressDataElementPostprocessed(), 6, name_element);
+  }
+
+  // append strain if desired.
+  if (structure_vtu_output_params.OutputStressStrain() and
+      not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
+  {
+    std::string name_nodal = "";
+    std::string name_element = "";
+
+    if (GInOutput().GetStrainOutputType() == INPAR::STR::strain_gl)
+    {
+      name_nodal = "nodal_GL_strains_xyz";
+      name_element = "element_GL_strains_xyz";
+    }
+    else if (GInOutput().GetStrainOutputType() == INPAR::STR::strain_ea)
+    {
+      name_nodal = "nodal_EA_strains_xyz";
+      name_element = "element_EA_strains_xyz";
+    }
+    else if (GInOutput().GetStrainOutputType() == INPAR::STR::strain_log)
+    {
+      name_nodal = "nodal_LOG_strains_xyz";
+      name_element = "element_LOG_strains_xyz";
+    }
+
+    // Write nodal strain data.
+    vtu_writer_ptr_->AppendNodeBasedResultDataVector(
+        EvalData().GetStrainDataNodePostprocessed(), 6, name_nodal);
+
+    // Write element strain data.
+    vtu_writer_ptr_->AppendElementBasedResultDataVector(
+        EvalData().GetStrainDataElementPostprocessed(), 6, name_element);
+  }
+
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
   vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressStrain()
+{
+  CheckInitSetup();
+
+  if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none and
+          GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
+  {
+    // Set all parameters in the evaluation data container.
+    EvalData().SetActionType(DRT::ELEMENTS::struct_calc_stress);
+    EvalData().SetTotalTime(GState().GetTimeNp());
+    EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+    EvalData().SetStressData(Teuchos::rcp(new std::vector<char>()));
+    EvalData().SetCouplingStressData(Teuchos::rcp(new std::vector<char>()));
+    EvalData().SetStrainData(Teuchos::rcp(new std::vector<char>()));
+    EvalData().SetPlasticStrainData(Teuchos::rcp(new std::vector<char>()));
+
+    // Set vector values needed by elements.
+    Discret().ClearState();
+    Discret().SetState(0, "displacement", GState().GetDisNp());
+    Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+
+    // GState().GetDisNp()->Print(std::cout);
+
+    // Set dummy evaluation vectors and matrices.
+    Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
+    Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
+
+    EvaluateInternal(eval_mat, eval_vec);
+
+    // Define a helper function to extract the element / nodal stress / strains from the gauss point
+    // data.
+    auto DetermineStressStrainRuntimeOutput =
+        [this](const Teuchos::RCP<std::vector<char>>& data, const Epetra_Map* result_map,
+            Teuchos::RCP<Epetra_MultiVector>& postprocessed_data, const std::string& stress_type) {
+          // Get the values at the Gauss-points.
+          Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
+              Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+          std::vector<char>::size_type position = 0;
+          for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
+          {
+            // Skip beam elements.
+            const DRT::ELEMENTS::Beam3Base* beam_element =
+                dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(i));
+            if (beam_element == nullptr)
+            {
+              Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
+                  Teuchos::rcp(new Epetra_SerialDenseMatrix);
+              DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
+              (*mapdata)[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
+            }
+          }
+
+          // Export to element column map.
+          const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+          DRT::Exporter ex(
+              *(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+          ex.Export(*mapdata);
+
+          // Set up everything for the postprocess call
+          Teuchos::ParameterList p;
+          p.set("action", "postprocess_stress");
+          p.set("stresstype", stress_type);
+          p.set("gpstressmap", mapdata);
+
+          postprocessed_data = Teuchos::rcp(new Epetra_MultiVector(*result_map, 6, true));
+          p.set("poststress", postprocessed_data);
+
+          // Perform the postprocess call.
+          DiscretPtr()->Evaluate(
+              p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+        };
+
+    // Postprocess the result vectors.
+    const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+    if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
+    {
+      Teuchos::RCP<Epetra_MultiVector> row_nodal_data;
+      DetermineStressStrainRuntimeOutput(
+          EvalData().GetStressData(), discret->NodeRowMap(), row_nodal_data, "ndxyz");
+      DetermineStressStrainRuntimeOutput(EvalData().GetStressData(), discret->ElementRowMap(),
+          EvalData().GetStressDataElementPostprocessedMutable(), "cxyz");
+
+      // Export the row data to the column map.
+      EvalData().GetStressDataNodePostprocessedMutable() =
+          Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 6, true));
+      LINALG::Export(*row_nodal_data, *EvalData().GetStressDataNodePostprocessedMutable());
+    }
+    if (not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
+    {
+      Teuchos::RCP<Epetra_MultiVector> row_nodal_data;
+      DetermineStressStrainRuntimeOutput(
+          EvalData().GetStrainData(), discret->NodeRowMap(), row_nodal_data, "ndxyz");
+      DetermineStressStrainRuntimeOutput(EvalData().GetStrainData(), discret->ElementRowMap(),
+          EvalData().GetStrainDataElementPostprocessedMutable(), "cxyz");
+
+      // Export the row data to the column map.
+      EvalData().GetStrainDataNodePostprocessedMutable() =
+          Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 6, true));
+      LINALG::Export(*row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -968,7 +1133,10 @@ void STR::MODELEVALUATOR::Structure::RunPostIterate(const NOX::Solver::Generic& 
 
   if (vtu_writer_ptr_ != Teuchos::null and
       GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
+  {
+    OutputRuntimeVtkStructurePostprocessStressStrain();
     WriteIterationOutputRuntimeVtkStructure();
+  }
 
   // write special output for beams if desired
   if (beam_vtu_writer_ptr_ != Teuchos::null and
@@ -1355,7 +1523,12 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::RuntimePreOutputStepState() { CheckInitSetup(); }
+void STR::MODELEVALUATOR::Structure::RuntimePreOutputStepState()
+{
+  CheckInitSetup();
+
+  if (vtu_writer_ptr_ != Teuchos::null) OutputRuntimeVtkStructurePostprocessStressStrain();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
