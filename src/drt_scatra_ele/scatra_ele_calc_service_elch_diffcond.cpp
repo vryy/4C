@@ -268,7 +268,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
   // access parameters of the condition
   const int kinetics = cond->GetInt("kinetic model");
   double pot0 = cond->GetDouble("pot");
-  const int curvenum = cond->GetInt("curve");
+  const int curvenum = cond->GetInt("funct");
   const int nume = cond->GetInt("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
@@ -302,10 +302,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
           "Only one educt and no product is allowed in the implemented version");
   }
 
-  // access input parameter
-  const double frt = VarManager()->FRT();
-  if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
-
   // get control parameter from parameter list
   const bool is_stationary = my::scatraparatimint_->IsStationary();
   const double time = my::scatraparatimint_->Time();
@@ -336,7 +332,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
     if (zerocur == 0)
     {
       EvaluateElchDomainKinetics(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist, timefac, cond,
-          nume, *stoich, kinetics, pot0, frt);
+          nume, *stoich, kinetics, pot0);
     }
 
     // realize correct scaling of rhs contribution for gen.alpha case
@@ -365,7 +361,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
     }
 
     EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics, *stoich,
-        nume, pot0, frt, timefac);
+        nume, pot0, timefac);
   }
 
   return;
@@ -453,8 +449,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
     const int nume,                                         ///< number of transferred electrons
     const std::vector<int> stoich,                          ///< stoichiometry of the reaction
     const int kinetics,                                     ///< desired electrode kinetics model
-    const double pot0,  ///< actual electrode potential on metal side
-    const double frt    ///< factor F/RT
+    const double pot0  ///< actual electrode potential on metal side
 )
 {
   // for pre-multiplication of i0 with 1/(F z_k)
@@ -486,6 +481,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
      *----------------------------------------------------------------------*/
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
+      SetInternalVariablesForMatAndRHS();
+
+      // access input parameter
+      const double frt = VarManager()->FRT();
+      if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
+
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
 
       // extract specific electrode surface area A_s from condition
@@ -554,7 +555,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus(
     const std::vector<int> stoich,                             ///< stoichiometry of the reaction
     const int nume,                                            ///<  number of transferred electrons
     const double pot0,    ///< actual electrode potential on metal side at t_{n+1}
-    const double frt,     ///< factor F/RT
     const double timefac  ///< factor due to time discretization
 )
 {
@@ -594,6 +594,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus(
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
+
+      SetInternalVariablesForMatAndRHS();
+
+      // access input parameter
+      const double frt = VarManager()->FRT();
+      if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
       Utils()->EvaluateElectrodeStatusAtIntegrationPoint(ele, scalars, params, cond, ephinp,

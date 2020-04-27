@@ -601,6 +601,7 @@ baci_test(elch_1D_line2_multiscale_butlervolmer_electrolyte_partitioned_microtom
 baci_test(elch_1D_5ele_line3_3ions_stab_genalpha_fdcheck 2 "" minimal)
 baci_test(elch_1D_binaryNewman_twoEqu_divi_2iter 3 "")
 baci_test(elch_1D_DLcap_linearKinetics_galvanostat 3 10)
+baci_test(elch_1D_electrodes_galvanostat 3 "")
 baci_test(elch_1D_galvanostat_line2 3 10)
 baci_test(elch_1D_galvanostat_line3 3 10)
 baci_test(elch_1D_porousMediumHomo_DC 2 10)

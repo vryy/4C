@@ -374,7 +374,7 @@ namespace DRT
         //    entry was filled)
         for (int k = 0; k < my::numscal_; ++k)
           // calculate 1/concentration at GP at t_(n+1) or t_(n+alpha_F)
-          conintinv_[k] = 1 / my::phinp_[k];
+          if (my::phinp_[k] > 1e-16) conintinv_[k] = 1 / my::phinp_[k];
 
         // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
         gradpot_.Multiply(derxy, ephinp[my::numscal_]);
