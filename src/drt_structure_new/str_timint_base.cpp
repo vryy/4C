@@ -656,6 +656,7 @@ void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool wri
 void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
+  int_ptr_->RuntimePreOutputStepState();
   int_ptr_->RuntimeOutputStepState();
 }
 

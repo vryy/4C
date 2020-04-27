@@ -359,6 +359,11 @@ namespace STR
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+    /**
+     * \brief Do stuff that has to be done before the runtime output is written.
+     */
+    void RuntimePreOutputStepState();
+
     //! Write the current step state during runtime
     void RuntimeOutputStepState() const;
 

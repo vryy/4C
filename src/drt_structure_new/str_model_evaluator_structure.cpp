@@ -1355,6 +1355,10 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RuntimePreOutputStepState() { CheckInitSetup(); }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::RuntimeOutputStepState() const
 {
   CheckInitSetup();

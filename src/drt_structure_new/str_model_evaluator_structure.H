@@ -146,7 +146,10 @@ namespace STR
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void RuntimeOutputStepState() const;
+      void RuntimePreOutputStepState() override;
+
+      //! derived
+      void RuntimeOutputStepState() const override;
 
       //! derived
       Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
