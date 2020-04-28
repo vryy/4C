@@ -129,7 +129,8 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    // pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }

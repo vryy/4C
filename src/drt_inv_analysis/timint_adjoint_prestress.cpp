@@ -35,7 +35,7 @@ STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretiza
   rhsnp_ = LINALG::CreateVector(*(dofrowmap_), true);
 
   // prestress stuff
-  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   pstime_ = sdyn.get<double>("PRESTRESSTIME");
 }
 

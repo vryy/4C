@@ -434,8 +434,11 @@ void UTILS::SpringDashpotNew::ResetNewton()
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpotNew::ResetPrestress(Teuchos::RCP<Epetra_Vector> dis)
+void UTILS::SpringDashpotNew::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
 {
+  // this should be sufficient, no need to loop over nodes anymore
+  offset_prestr_new_->Update(1.0, *dis, 1.0);
+
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
   for (int j = 0; j < (int)nds.size(); ++j)

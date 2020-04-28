@@ -47,7 +47,7 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
+  auto pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
   auto dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
   if (pstype != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)

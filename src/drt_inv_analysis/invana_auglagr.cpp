@@ -68,7 +68,7 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
   timestep_ = sdyn.get<double>("TIMESTEP");
 
   // prestress stuff
-  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
+  pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
   if (pstype_ == INPAR::STR::PreStress::mulf) pstime_ = sdyn.get<double>("PRESTRESSTIME");
 
   if (pstype_ == INPAR::STR::PreStress::id)

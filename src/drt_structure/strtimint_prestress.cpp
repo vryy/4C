@@ -44,7 +44,7 @@ void STR::TimIntPrestress::UpdateStepElement()
 
   // which prestress type?
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  auto pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  auto pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // MULF
@@ -75,7 +75,7 @@ void STR::TimIntPrestress::UpdateStepElement()
       // action for elements
       p.set("action", "calc_struct_inversedesign_update");
     }
-    else if ((*time_)[0] > pstime)
+    else
     {
       // action for elements
       p.set("action", "calc_struct_update_istep");

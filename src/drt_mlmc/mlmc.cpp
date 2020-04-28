@@ -922,7 +922,7 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
     // if we have prestress we need possibly a two step process
     // get prestress type
     INPAR::STR::PreStress pstype =
-        DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
 
     if (pstype == INPAR::STR::PreStress::mulf)
     {
@@ -1060,7 +1060,7 @@ void UQ::MLMC::ResetPrestress()
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // get prestress type
   INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   switch (pstype)
   {
     case INPAR::STR::PreStress::none:

@@ -35,6 +35,7 @@
 #include "../drt_lib/drt_utils_discret.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
 #include "str_discretization_runtime_vtu_output_params.H"
@@ -1036,8 +1037,45 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   // other parameters that might be needed by the elements
   EvalData().SetTotalTime(GState().GetTimeNp());
   EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
-  // action for elements
-  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_update_istep);
+
+  const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
+  bool isDuringPrestressing =
+      prestress_type != INPAR::STR::PreStress::none and
+      GState().GetTimeN() <= TimInt().GetDataSDyn().GetPreStressTime() +
+                                 1e-9;  // Add here some tolerance to avoid early stopping of
+                                        // prestressing because of floating point comparisons
+
+  if (isDuringPrestressing)
+  {
+    switch (prestress_type)
+    {
+      case INPAR::STR::PreStress::mulf:
+        IO::cout << "====== Entering MULF update" << IO::endl;
+
+        // Choose special update action for elements in case of MULF
+        EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
+
+        // Clear residual displacements -> Don't know for now why this was added by pfaller
+        // Discret().SetState(0, "residual displacement", Int().GetDbc().GetZerosPtr());
+        break;
+      case INPAR::STR::PreStress::id:
+        dserror(
+            "Inverse design prestressing is only implemented in the old time integration scheme.");
+        break;
+      default:
+        dserror(
+            "The type of prestressing algorithm is unknown in the new time "
+            "integration scheme!");
+        break;
+    }
+  }
+  else
+  {
+    // Call the normal element  update routine
+    EvalData().SetActionType(DRT::ELEMENTS::struct_calc_update_istep);
+  }
+
+
   // go to elements
   Discret().ClearState();
   Discret().SetState("displacement", GState().GetDisN());
@@ -1046,6 +1084,23 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
   EvaluateInternal(eval_mat, eval_vec);
+
+  // Check for prestressing
+  if (isDuringPrestressing)
+  {
+    switch (prestress_type)
+    {
+      case INPAR::STR::PreStress::mulf:
+        // This is a MULF step, hence we do not update the displacements at the end of the timestep.
+        // This is achieved by resetting the displacements, velocities and accelerations.
+        GState().GetMutableDisN()->PutScalar(0.0);
+        GState().GetMutableVelN()->PutScalar(0.0);
+        GState().GetMutableAccN()->PutScalar(0.0);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*

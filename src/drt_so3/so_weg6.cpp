@@ -113,7 +113,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
 

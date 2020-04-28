@@ -517,7 +517,7 @@ void FSI::Monolithic::PrepareTimeloop()
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     INPAR::STR::PreStress pstype =
-        DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     if (pstype != INPAR::STR::PreStress::none)
     {
       const double pstime = sdyn.get<double>("PRESTRESSTIME");

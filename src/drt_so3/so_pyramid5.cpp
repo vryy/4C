@@ -109,7 +109,7 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
   if (pstype_ == INPAR::STR::PreStress::mulf)

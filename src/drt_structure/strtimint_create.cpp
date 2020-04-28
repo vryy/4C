@@ -68,7 +68,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 
   // check if we have a problem that needs to be prestressed
   INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   if (pstype == INPAR::STR::PreStress::mulf || pstype == INPAR::STR::PreStress::id)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(

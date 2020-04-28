@@ -486,6 +486,11 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
   src/drt_mat/anisotropy.cpp
+  src/drt_mat/anisotropy_cylinder_coordinate_system_manager.cpp
+  src/drt_mat/anisotropy_extension.cpp
+  src/drt_mat/anisotropy_extension_cylinder_cosy.cpp
+  src/drt_mat/anisotropy_extension_default.cpp
+  src/drt_mat/anisotropy_utils.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
@@ -643,6 +648,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/maxwell_0d_acinus_Exponential.cpp
   src/drt_mat/maxwell_0d_acinus_DoubleExponential.cpp
   src/drt_mat/maxwell_0d_acinus_Ogden.cpp
+  src/drt_mat/mixture_elasthyper.cpp
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_material_base.cpp
@@ -654,13 +660,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
-  src/drt_matelast/visco_generalizedgenmax.cpp
-  src/drt_mat/mixture_elasthyper.cpp
-  src/drt_mat/anisotropy_utils.cpp
-  src/drt_mat/anisotropy_cylinder_coordinate_system_manager.cpp
-  src/drt_mat/anisotropy_extension_cylinder_cosy.cpp
-  src/drt_mat/anisotropy_extension_default.cpp
-  src/drt_mat/anisotropy_extension.cpp)
+  src/drt_matelast/visco_generalizedgenmax.cpp)
 
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
@@ -1800,6 +1800,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_impl_genalpha_liegroup.cpp
   src/drt_structure_new/str_impl_gemm.cpp
   src/drt_structure_new/str_impl_ost.cpp
+  src/drt_structure_new/str_impl_prestress.cpp
   src/drt_structure_new/str_integrator.cpp
   src/drt_structure_new/str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_data.cpp

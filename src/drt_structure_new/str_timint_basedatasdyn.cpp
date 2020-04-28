@@ -178,7 +178,8 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     itermin_ = sdynparams.get<int>("MINITER");
     itermax_ = sdynparams.get<int>("MAXITER");
     loadlin_ = (DRT::INPUT::IntegralValue<int>(sdynparams, "LOADLIN") == 1);
-    prestresstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
+    prestresstime_ = sdynparams.get<double>("PRESTRESSTIME");
+    prestresstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
     predtype_ = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");
     nlnsolvertype_ = DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ = DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT");

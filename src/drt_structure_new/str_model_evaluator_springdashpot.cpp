@@ -287,6 +287,20 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
   // add the old time factor scaled contributions to the residual
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
+
+  // check for prestressing and reset if necessary
+  const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
+  if (prestress_type != INPAR::STR::PreStress::none and
+      GState().GetTimeN() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
+  {
+    switch (prestress_type)
+    {
+      case INPAR::STR::PreStress::mulf:
+        for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetPrestress(GState().GetDisNp());
+      default:
+        break;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*

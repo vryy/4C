@@ -132,7 +132,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
 
   // get the prestress type
   const enum INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   // get the dynamic type
   const enum INPAR::STR::DynamicType dyntype =
       DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");

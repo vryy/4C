@@ -45,7 +45,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   ParentElement()->SetParamsInterfacePtr(params);
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
