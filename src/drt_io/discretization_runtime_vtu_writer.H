@@ -105,6 +105,13 @@ class DiscretizationRuntimeVtuWriter
    */
   void AppendElementOwner(const std::string resultname);
 
+  /**
+   * \brief Write the BACI internal element id for each element.
+   *
+   * @param resultname (in) Name of the owner field in the VTK file.
+   */
+  void AppendElementId(const std::string resultname);
+
   /** \brief write all required VTU files to filesystem
    *
    *  \author grill

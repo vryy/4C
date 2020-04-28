@@ -53,6 +53,10 @@ namespace INPAR
         // whether to write element owner
         setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
             yesnovalue, &sublist_IO_VTK_structure);
+
+        // whether to write element id
+        setStringToIntegralParameter<int>("ELEMENT_ID", "No", "write element id", yesnotuple,
+            yesnovalue, &sublist_IO_VTK_structure);
       }
 
 

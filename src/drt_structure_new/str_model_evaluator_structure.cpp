@@ -654,6 +654,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputElementOwner())
     vtu_writer_ptr_->AppendElementOwner("element_owner");
 
+  // append element id if desired
+  if (structure_vtu_output_params.OutputElementId()) vtu_writer_ptr_->AppendElementId("element_id");
+
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
   vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();

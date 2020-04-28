@@ -58,6 +58,13 @@ namespace DRT
         return output_element_owner_;
       };
 
+      /// whether to write the id of elements
+      bool OutputElementId() const
+      {
+        CheckInitSetup();
+        return output_element_id_;
+      };
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -86,6 +93,9 @@ namespace DRT
 
       /// whether to write the owner of elements
       bool output_element_owner_;
+
+      /// whether to write the element IDs
+      bool output_element_id_;
 
       //@}
     };
