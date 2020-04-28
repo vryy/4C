@@ -1050,7 +1050,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
     switch (prestress_type)
     {
       case INPAR::STR::PreStress::mulf:
-        IO::cout << "====== Entering MULF update" << IO::endl;
+        if (Discret().Comm().MyPID() == 0) IO::cout << "====== Entering MULF update" << IO::endl;
 
         // Choose special update action for elements in case of MULF
         EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
