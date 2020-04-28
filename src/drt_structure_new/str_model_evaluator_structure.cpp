@@ -1054,18 +1054,16 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 
         // Choose special update action for elements in case of MULF
         EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
-
-        // Clear residual displacements -> Don't know for now why this was added by pfaller
-        // Discret().SetState(0, "residual displacement", Int().GetDbc().GetZerosPtr());
         break;
       case INPAR::STR::PreStress::id:
         dserror(
-            "Inverse design prestressing is only implemented in the old time integration scheme.");
+            "Inverse design prestressing is only implemented in the old time integration "
+            "framework.");
         break;
       default:
         dserror(
             "The type of prestressing algorithm is unknown in the new time "
-            "integration scheme!");
+            "integration framework!");
         break;
     }
   }
