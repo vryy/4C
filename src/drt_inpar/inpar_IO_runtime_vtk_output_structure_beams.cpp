@@ -101,6 +101,10 @@ namespace INPAR
         // write crossection forces of periodic RVE
         setStringToIntegralParameter<int>("RVE_CROSSSECTION_FORCES", "No",
             " get sum of all internal forces of  ", yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+        // write element IDs
+        setStringToIntegralParameter<int>("ELEMENT_ID", "No", "write the BACI internal element IDs",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
       }
 
     }  // namespace BEAMS

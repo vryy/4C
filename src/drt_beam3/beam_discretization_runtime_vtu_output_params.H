@@ -123,6 +123,13 @@ namespace DRT
         return write_rve_crosssection_forces_;
       };
 
+      /// whether to write beam element IDs.
+      bool IsWriteId() const
+      {
+        CheckInitSetup();
+        return write_id_;
+      };
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -179,6 +186,9 @@ namespace DRT
 
       /// whether to write crosssection forces of periodic rve in x, y, and z direction
       bool write_rve_crosssection_forces_;
+
+      /// whether to write the element IDs.
+      bool write_id_;
 
       //@}
     };

@@ -795,6 +795,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   if (beam_vtu_output_params.IsWriteRVECrosssectionForces())
     beam_vtu_writer_ptr_->AppendRVECrosssectionForces(displacement_state_vector);
 
+  // export beam element IDs
+  if (beam_vtu_output_params.IsWriteId()) beam_vtu_writer_ptr_->AppendElementId();
+
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();
 
