@@ -326,13 +326,10 @@ namespace SCATRA
     bool MacroScale() const { return macro_scale_; };
 
     //! return type of equilibration of global system of scalar transport equations
-    const INPAR::SCATRA::EquilibrationMethod& EquilibrationMethod() const
-    {
-      return equilibrationmethod_;
-    }
+    INPAR::SCATRA::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
 
     //! return type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; }
+    INPAR::SCATRA::MatrixType MatrixType() const { return matrixtype_; }
 
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
