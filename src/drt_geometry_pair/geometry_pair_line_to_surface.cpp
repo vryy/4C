@@ -93,8 +93,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Invert the jacobian and check if the system is solvable.
-      if (LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(
-              J_J_inv, CONSTANTS::local_newton_det_tol))
+      if (LINALG::InverseDoNotThrowErrorOnZeroDeterminant(J_J_inv, CONSTANTS::local_newton_det_tol))
       {
         // Solve the linearized system.
         delta_xi.Multiply(J_J_inv, residuum);
@@ -306,8 +305,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Invert the jacobian and check if the determinant is not 0.
-      if (LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(
-              J_J_inv, CONSTANTS::local_newton_det_tol))
+      if (LINALG::InverseDoNotThrowErrorOnZeroDeterminant(J_J_inv, CONSTANTS::local_newton_det_tol))
       {
         // Solve the linearized system.
         delta_x.Multiply(J_J_inv, residuum);

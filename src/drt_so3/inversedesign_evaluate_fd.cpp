@@ -25,7 +25,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(
   // non-permuted original
   LINALG::SerialDenseMatrix F(f);
   LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-  LINALG::Inverse3x3(F_tmatrix);
+  LINALG::Inverse(F_tmatrix);
 
   double Lambda4[3][3][3][3];
   const double eps = 1.0e-8;
@@ -38,7 +38,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(
           LINALG::SerialDenseMatrix fperm(f);
           fperm(p, q) += eps;
           LINALG::Matrix<3, 3, double> fperm_tmatrix(fperm, true);
-          LINALG::Inverse3x3(fperm_tmatrix);
+          LINALG::Inverse(fperm_tmatrix);
           Lambda4[k][m][p][q] = (fperm(k, m) - F(k, m)) / eps;
         }
     }
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(
   // non-permuted original function
   LINALG::SerialDenseMatrix F(f);
   LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-  LINALG::Inverse3x3(F_tmatrix);
+  LINALG::Inverse(F_tmatrix);
   LINALG::SerialDenseMatrix FT(3, 3);
   FT(0, 0) = F(0, 0);
   FT(0, 1) = F(1, 0);
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(
           fperm(p, q) += eps;
           // evaluate the function, which is inverse followed by transpose
           LINALG::Matrix<3, 3, double> fperm_tmatrix(fperm, true);
-          LINALG::Inverse3x3(fperm_tmatrix);
+          LINALG::Inverse(fperm_tmatrix);
           LINALG::SerialDenseMatrix fpermT(3, 3);
           fpermT(0, 0) = fperm(0, 0);
           fpermT(0, 1) = fperm(1, 0);
@@ -544,8 +544,8 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
     LINALG::SerialDenseMatrix F(f);
     LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-    const double detf = LINALG::Determinant3x3(F_tmatrix);
-    LINALG::Inverse3x3(F_tmatrix);
+    const double detf = LINALG::Determinant(F_tmatrix);
+    LINALG::Inverse(F_tmatrix);
     const double detF = 1.0 / detf;
 
     LINALG::SerialDenseMatrix IF(6, 6);
@@ -602,8 +602,8 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
       LINALG::SerialDenseMatrix F(f);
       LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-      const double detf = LINALG::Determinant3x3(F_tmatrix);
-      LINALG::Inverse3x3(F_tmatrix);
+      const double detf = LINALG::Determinant(F_tmatrix);
+      LINALG::Inverse(F_tmatrix);
       const double detF = 1.0 / detf;
 
       LINALG::SerialDenseMatrix IF(6, 6);
@@ -683,8 +683,8 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
     LINALG::SerialDenseMatrix F(f);
     LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-    double detf = LINALG::Determinant3x3(F_tmatrix);
-    LINALG::Inverse3x3(F_tmatrix);
+    double detf = LINALG::Determinant(F_tmatrix);
+    LINALG::Inverse(F_tmatrix);
   }
 
   const double eps = 1.0e-8;
@@ -714,8 +714,8 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
     LINALG::SerialDenseMatrix F(f);
     LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-    const double detfperm = LINALG::Determinant3x3(F_tmatrix);
-    LINALG::Inverse3x3(F_tmatrix);
+    const double detfperm = LINALG::Determinant(F_tmatrix);
+    LINALG::Inverse(F_tmatrix);
 
     // do the finite differencing
     djdX(0, j) = (detfperm - detf) / eps;
@@ -770,8 +770,8 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
     LINALG::SerialDenseMatrix F(f);
     LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-    detf = LINALG::Determinant3x3(F_tmatrix);
-    LINALG::Inverse3x3(F_tmatrix);
+    detf = LINALG::Determinant(F_tmatrix);
+    LINALG::Inverse(F_tmatrix);
     // const double detF = 1.0/detf;
 
     LINALG::SerialDenseMatrix IF(6, 6);
@@ -827,7 +827,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
       LINALG::SerialDenseMatrix F(f);
       LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-      LINALG::Inverse3x3(F_tmatrix);
+      LINALG::Inverse(F_tmatrix);
       // const double detF = 1.0/detf;
 
       LINALG::SerialDenseMatrix IF(6, 6);
@@ -865,8 +865,8 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
   {
     LINALG::SerialDenseMatrix F(f);
     LINALG::Matrix<3, 3, double> F_tmatrix(F, true);
-    detf = LINALG::Determinant3x3(F_tmatrix);
-    LINALG::Inverse3x3(F_tmatrix);
+    detf = LINALG::Determinant(F_tmatrix);
+    LINALG::Inverse(F_tmatrix);
 
     LINALG::SerialDenseMatrix IF(6, 6);
     BuildIF(IF, F);
@@ -907,7 +907,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
 
       LINALG::SerialDenseMatrix Fperm(fperm);
       LINALG::Matrix<3, 3, double> fperm_tmatrix(fperm, true);
-      LINALG::Inverse3x3(fperm_tmatrix);
+      LINALG::Inverse(fperm_tmatrix);
 
       LINALG::SerialDenseMatrix IFperm(6, 6);
       BuildIF(IFperm, Fperm);

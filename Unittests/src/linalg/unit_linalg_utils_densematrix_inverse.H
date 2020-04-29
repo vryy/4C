@@ -44,7 +44,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
 
     LINALG::Matrix<2, 2, double> B(A);
 
-    LINALG::Inverse2x2ReorderMatrixEntries(A);
+    LINALG::InverseReorderMatrixEntries(A);
 
     TS_ASSERT_DELTA(A(0, 0), B(1, 1), 1e-14);
     TS_ASSERT_DELTA(A(1, 1), B(0, 0), 1e-14);
@@ -60,7 +60,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    LINALG::Inverse2x2(A);
+    LINALG::Inverse(A);
 
     TS_ASSERT_DELTA(A(0, 0), -0.019983345434747187407, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), 3.1019534900872646712, 1e-14);
@@ -72,7 +72,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<2, 2, double> A_singular(true);
     A_singular(0, 0) = 1.0;
-    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse2x2(A_singular));
+    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse(A_singular));
   }
 
   void test_Inverse2x2DoNotThrowErrorOnZeroDeterminant()
@@ -83,7 +83,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    TS_ASSERT(LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A, 1e-12));
+    TS_ASSERT(LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A, 1e-12));
 
     TS_ASSERT_DELTA(A(0, 0), -0.019983345434747187407, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), 3.1019534900872646712, 1e-14);
@@ -95,7 +95,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
   {
     LINALG::Matrix<2, 2, double> A_singular(true);
     A_singular(0, 0) = 1.0;
-    TS_ASSERT(not LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
+    TS_ASSERT(not LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 
   void test_Inverse3x3ReorderMatrixEntries()
@@ -113,7 +113,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
 
     LINALG::Matrix<3, 3, double> B(A);
 
-    LINALG::Inverse3x3ReorderMatrixEntries(A);
+    LINALG::InverseReorderMatrixEntries(A);
 
     TS_ASSERT_DELTA(A(0, 0), B(1, 1) * B(2, 2) - B(2, 1) * B(1, 2), 1e-14);
     TS_ASSERT_DELTA(A(1, 0), -B(1, 0) * B(2, 2) + B(2, 0) * B(1, 2), 1e-14);
@@ -139,7 +139,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    LINALG::Inverse3x3(A);
+    LINALG::Inverse(A);
 
     TS_ASSERT_DELTA(A(0, 0), -1.1432496777455423383, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), -2.3032334349351217883, 1e-14);
@@ -157,7 +157,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     LINALG::Matrix<3, 3, double> A_singular(true);
     A_singular(0, 0) = 1.0;
     A_singular(1, 1) = 1.0;
-    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse3x3(A_singular));
+    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse(A_singular));
   }
 
   void test_Inverse3x3DoNotThrowErrorOnZeroDeterminant()
@@ -173,7 +173,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    TS_ASSERT(LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A, 1e-12));
+    TS_ASSERT(LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A, 1e-12));
 
     TS_ASSERT_DELTA(A(0, 0), -1.1432496777455423383, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), -2.3032334349351217883, 1e-14);
@@ -191,7 +191,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     LINALG::Matrix<3, 3, double> A_singular(true);
     A_singular(0, 0) = 1.0;
     A_singular(1, 1) = 1.0;
-    TS_ASSERT(not LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
+    TS_ASSERT(not LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 
   void test_Inverse4x4ReorderMatrixEntries()
@@ -214,7 +214,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    LINALG::Inverse4x4ReorderMatrixEntries(A);
+    LINALG::InverseReorderMatrixEntries(A);
 
     TS_ASSERT_DELTA(A(0, 0), 0.0071277916600247445689, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), -0.01928098922790522779, 1e-14);
@@ -254,7 +254,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    LINALG::Inverse4x4(A);
+    LINALG::Inverse(A);
 
     TS_ASSERT_DELTA(A(0, 0), -0.43977637337572104289, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), 1.1896143886050492292, 1e-14);
@@ -280,7 +280,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A_singular(0, 0) = 1.0;
     A_singular(1, 1) = 1.0;
     A_singular(2, 2) = 1.0;
-    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse4x4(A_singular));
+    TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse(A_singular));
   }
 
   void test_Inverse4x4DoNotThrowErrorOnZeroDeterminant()
@@ -303,7 +303,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    TS_ASSERT(LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A, 1e-12));
+    TS_ASSERT(LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A, 1e-12));
 
     TS_ASSERT_DELTA(A(0, 0), -0.43977637337572104289, 1e-14);
     TS_ASSERT_DELTA(A(1, 0), 1.1896143886050492292, 1e-14);
@@ -329,7 +329,7 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A_singular(0, 0) = 1.0;
     A_singular(1, 1) = 1.0;
     A_singular(2, 2) = 1.0;
-    TS_ASSERT(not LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
+    TS_ASSERT(not LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 };
 

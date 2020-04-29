@@ -4414,7 +4414,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse3x3(melin);
+      LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
@@ -4429,7 +4429,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse4x4(melin);
+      LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)

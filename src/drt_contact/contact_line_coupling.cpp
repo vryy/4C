@@ -382,7 +382,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   //  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
   LINALG::Matrix<4, 4, double> me_tmatrix(me, true);
-  LINALG::Inverse4x4(me_tmatrix);
+  LINALG::Inverse(me_tmatrix);
   LINALG::SerialDenseMatrix meinv = me;
 
   // build linearization of ae and store in derivdual

@@ -986,7 +986,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
 
     // build F and det(F) of this element
     LINALG::Matrix<3, 3, FAD> Fele = adjele[i]->BuildF<FAD>(eledispmat, adjele[i]->nxyz_);
-    FAD Jele = LINALG::Determinant3x3<FAD>(Fele);
+    FAD Jele = LINALG::Determinant<FAD>(Fele);
 
     fad_Jnode += V * Jele;
 
