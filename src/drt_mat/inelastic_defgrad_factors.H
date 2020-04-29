@@ -29,7 +29,7 @@ namespace MAT
       InelasticDeformationDirection(std::vector<double> growthdirection);
 
       /// destructor
-      virtual ~InelasticDeformationDirection() { ; }
+      virtual ~InelasticDeformationDirection() = default;
 
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdirmat_; };
@@ -43,15 +43,7 @@ namespace MAT
      *----------------------------------------------------------------------*/
     /*! \class InelasticDefgradScalar
      This is a parameter class holding parameters for evaluation of inelastic deformation (incl.
-     linearization) induced by a scalar.
-     It's inheritance hierarchy is as follows
-     InelasticDefgradScalar
-       -InelasticDefGradLinScalar
-         --InelasticDefGradLinScalarIso
-         --InelasticDefGradLinScalarAniso
-       -InelasticDefGradPolyScalar
-         --InelasticDefGradPolyScalarIso
-         --InelasticDefGradPolyScalarAniso
+     linearization) induced by a scalar. Special quantities are hold in derived classes
      */
     class InelasticDefgradScalar : public MAT::PAR::Parameter
     {
@@ -60,7 +52,7 @@ namespace MAT
       InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradScalar() { ; }
+      virtual ~InelasticDefgradScalar() = default;
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
@@ -72,7 +64,7 @@ namespace MAT
       /// return saturation concentration of material
       double Cmax() { return Cmax_; };
 
-     protected:
+     private:
       /// scalar that causes growth
       const int Scalar1_;
       /// value of scalar 1 for that there is no growth
@@ -92,12 +84,12 @@ namespace MAT
       InelasticDefgradLinScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradLinScalar() { ; }
+      virtual ~InelasticDefgradLinScalar() override = default;
 
       /// return growth factor for scalar 1
       double Scalar1growthfac() { return Scalar1growthfac_; };
 
-     protected:
+     private:
       /// growth factor for scalar 1
       const double Scalar1growthfac_;
     };
@@ -110,6 +102,8 @@ namespace MAT
       InelasticDefgradLinScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
           : InelasticDefgradLinScalar(matdata){};
 
+      virtual ~InelasticDefgradLinScalarIso() override = default;
+
     };  // end of class InelasticDefgradLinScalarIso
 
     /*----------------------------------------------------------------------
@@ -121,7 +115,7 @@ namespace MAT
       InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradLinScalarAniso() { ; }
+      virtual ~InelasticDefgradLinScalarAniso() override = default;
 
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
@@ -140,7 +134,7 @@ namespace MAT
       /// standard constructor
       InelasticDefgradPolyScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
       /// destructor
-      virtual ~InelasticDefgradPolyScalar() { ; }
+      virtual ~InelasticDefgradPolyScalar() override = default;
 
       /// return number of polynomial coefficients
       unsigned Polyparanum() { return Polyparanum_; };
@@ -154,7 +148,7 @@ namespace MAT
       /// /// return value of polynomial at reference intercalation fraction
       double MATPolynomReference() { return MATPolynomReference_; };
 
-     protected:
+     private:
       /// number of parameters of the polynomial describing volume change
       const unsigned Polyparanum_;
       /// coefficients of polynomial
@@ -165,7 +159,7 @@ namespace MAT
       const double Xmax_;
       /// /// value of polynomial at reference intercalation fraction
       double MATPolynomReference_;
-    };
+    };  // namespace PAR
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
@@ -177,7 +171,7 @@ namespace MAT
           : InelasticDefgradPolyScalar(matdata){};
 
       /// destructor
-      virtual ~InelasticDefgradPolyScalarIso() { ; }
+      virtual ~InelasticDefgradPolyScalarIso() override = default;
     };  // end of class InelasticDefgradPolyScalarIso
 
     /*----------------------------------------------------------------------
@@ -189,7 +183,7 @@ namespace MAT
       InelasticDefgradPolyScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradPolyScalarAniso() { ; }
+      virtual ~InelasticDefgradPolyScalarAniso() override = default;
 
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
@@ -225,7 +219,7 @@ namespace MAT
     explicit InelasticDefgradFactors(MAT::PAR::Parameter* params);
 
     /// destructor
-    virtual ~InelasticDefgradFactors() { ; }
+    virtual ~InelasticDefgradFactors() = default;
 
     /// create object by input parameter ID
     static Teuchos::RCP<InelasticDefgradFactors> Factory(int matnum);  ///< material ID
@@ -291,7 +285,7 @@ namespace MAT
     explicit InelasticDefgradLinear(MAT::PAR::Parameter* params);
 
     /// destructor
-    ~InelasticDefgradLinear() { ; }
+    ~InelasticDefgradLinear() override = default;
 
     /// evaluate scaling factor
     double EvaluateDeltaGrowth(const double Growthfac, const double DetJacobian,
@@ -366,7 +360,7 @@ namespace MAT
     explicit InelasticDefgradPolynomial(MAT::PAR::Parameter* params);
 
     /// destructor
-    ~InelasticDefgradPolynomial() { ; }
+    ~InelasticDefgradPolynomial() override = default;
 
     /// evaluate polynomial describing growth of material with regard to concentration
     double EvaluateMatPolynomial(const double Scalar, const int NumberPolyparams,
@@ -448,7 +442,7 @@ namespace MAT
     explicit InelasticDefgradLinScalarIso(MAT::PAR::Parameter* params);
 
     /// destructor
-    virtual ~InelasticDefgradLinScalarIso() { ; }
+    virtual ~InelasticDefgradLinScalarIso() override = default;
 
     /// material type
     INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_lin_scalar_iso; }
@@ -524,7 +518,7 @@ namespace MAT
     explicit InelasticDefgradLinScalarAniso(MAT::PAR::Parameter* params);
 
     /// destructor
-    virtual ~InelasticDefgradLinScalarAniso() { ; }
+    virtual ~InelasticDefgradLinScalarAniso() override = default;
 
     /// material type
     INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_lin_scalar_aniso; }
@@ -595,7 +589,7 @@ namespace MAT
     explicit InelasticDefgradPolyScalarIso(MAT::PAR::Parameter* params);
 
     /// destructor
-    virtual ~InelasticDefgradPolyScalarIso() { ; }
+    virtual ~InelasticDefgradPolyScalarIso() override = default;
 
     /// material type
     INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_poly_scalar_iso; }
@@ -669,7 +663,7 @@ namespace MAT
     explicit InelasticDefgradPolyScalarAniso(MAT::PAR::Parameter* params);
 
     /// destructor
-    virtual ~InelasticDefgradPolyScalarAniso() { ; }
+    virtual ~InelasticDefgradPolyScalarAniso() override = default;
 
     /// material type
     INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_poly_scalar_aniso; }

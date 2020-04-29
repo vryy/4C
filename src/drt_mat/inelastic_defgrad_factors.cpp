@@ -116,7 +116,7 @@ MAT::PAR::InelasticDefgradPolyScalar::InelasticDefgradPolyScalar(
   // evaluate polynomial at reference X
   MAT::InelasticDefgradPolynomial Polynomial;
   MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
-      Scalar1_, Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc_, Cmax_, 1.0);
+      Scalar1(), Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc(), Cmax(), 1.0);
   return;
 }
 
@@ -158,9 +158,9 @@ MAT::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
   const double invquadrgrowthdirvecnorm = 1.0 / (growthdirvecnorm * growthdirvecnorm);
 
   // loop over all rows and colomns to fill the matrix and scale it correctly on the fly
-  for (unsigned i = 0; i < 3; ++i)
+  for (unsigned i = 0; i < growthdirection.size(); ++i)
   {
-    for (unsigned j = 0; j < 3; ++j)
+    for (unsigned j = 0; j < growthdirection.size(); ++j)
     {
       growthdirmat_(i, j) = invquadrgrowthdirvecnorm * growthdirection[i] * growthdirection[j];
     }
