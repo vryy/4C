@@ -414,7 +414,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
 
     // Since we do not output beam elements we filter them here.
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-    if (beamele != NULL) continue;
+    if (beamele != nullptr) continue;
 
     owner_of_row_elements.push_back(my_pid);
   }
@@ -431,14 +431,13 @@ void DiscretizationRuntimeVtuWriter::AppendElementId(const std::string resultnam
   std::vector<double> id_of_row_elements;
   id_of_row_elements.reserve(discretization_->NumMyRowElements());
 
-  const int my_pid = discretization_->Comm().MyPID();
   for (int iele = 0; iele < discretization_->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
     // Since we do not output beam elements we filter them here.
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-    if (beamele != NULL) continue;
+    if (beamele != nullptr) continue;
 
     id_of_row_elements.push_back(ele->Id());
   }
