@@ -118,10 +118,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       strategy_(Teuchos::null),
       additional_model_evaluator_(NULL),
       isale_(extraparams->get<bool>("isale")),
+      solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       equilibrationmethod_(
           Teuchos::getIntegralValue<INPAR::SCATRA::EquilibrationMethod>(*params, "EQUILIBRATION")),
       matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(*params, "MATRIXTYPE")),
-      solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(INPAR::FLUID::no_model),

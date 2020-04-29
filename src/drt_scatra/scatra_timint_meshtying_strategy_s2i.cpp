@@ -2619,9 +2619,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   switch (matrixtype_)
   {
     case INPAR::SCATRA::MatrixType::sparse:
+    {
       // nothing needs to be done in this case
       break;
-
+    }
     case INPAR::SCATRA::MatrixType::block_condition:
     case INPAR::SCATRA::MatrixType::block_condition_dof:
     case INPAR::SCATRA::MatrixType::block_geometry:
@@ -2633,6 +2634,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // initialize map extractors associated with blocks of global system matrix
       BuildBlockMapExtractors();
 
+      break;
+    }
+    default:
+    {
+      dserror(
+          "%i is not a valid 'SCATRA::MatrixType'. Set a valid 'SCATRA::MatrixType' in your input "
+          "file!",
+          static_cast<int>(matrixtype_));
       break;
     }
   }
