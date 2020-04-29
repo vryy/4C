@@ -3298,14 +3298,16 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     // extract number of domain partitioning conditions
     const unsigned ncond = partitioningconditions.size();
 
-    // prepare vector for maps to be built
-    blockmaps.resize(ncond * 2, Teuchos::null);
+    // each domain block specified by the domain partitioning conditions is again subdivided into
+    // the specific dofs, therefore (ncond * NumDofPerNode()) block maps are set up below
+    blockmaps.resize(ncond * NumDofPerNode(), Teuchos::null);
 
     // loop over all domain partitioning conditions
     for (unsigned icond = 0; icond < ncond; ++icond)
     {
-      // initialize sets for dof IDs associated with current partitioning condition
-      std::vector<std::set<int>> dofids(2);
+      // we need to initialize as many sets as number of dofs per node, since all ids corresponding
+      // to a specific dof shall be grouped into a separate set
+      std::vector<std::set<int>> dofids(NumDofPerNode());
 
       // extract nodes associated with current domain partitioning condition
       const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
@@ -3314,25 +3316,21 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
       for (int nodegid : *nodegids)
       {
         // extract global ID of current node
-        // consider current node only if node is owned by current processor
-        // need to make sure that node is stored on current processor, otherwise cannot resolve
-        // "->Owner()"
+        // consider current node only if node is owned by current processor need to make sure that
+        // node is stored on current processor, otherwise cannot resolve "->Owner()"
         if (discret_->HaveGlobalNode(nodegid) and
             discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())
         {
           // extract dof IDs associated with current node
           const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(nodegid));
 
-          // add concentration dof IDs to associated set
-          std::copy(nodedofs.begin(), --nodedofs.end(), std::inserter(dofids[0], dofids[0].end()));
-
-          // add electric potential dof ID to associated set
-          dofids[1].insert(nodedofs.back());
+          // for each dof we add the id of the current node to its corresponding set
+          for (unsigned dof = 0; dof < dofids.size(); ++dof) dofids[dof].insert(nodedofs[dof]);
         }
       }
 
       // transform sets for dof IDs into vectors and then into Epetra maps
-      for (unsigned iset = 0; iset < 2; ++iset)
+      for (int iset = 0; iset < NumDofPerNode(); ++iset)
       {
         int nummyelements(0);
         int* myglobalelements(nullptr);
@@ -3344,7 +3342,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
           nummyelements = dofidvec.size();
           myglobalelements = &(dofidvec[0]);
         }
-        blockmaps[2 * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
+        blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
             myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
       }
     }
