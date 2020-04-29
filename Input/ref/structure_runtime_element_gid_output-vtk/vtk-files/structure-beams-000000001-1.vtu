@@ -41,7 +41,7 @@
         </DataArray>
         <DataArray type="Float64" Name="curvature_3_GPs" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="element_id" format="ascii">
+        <DataArray type="Float64" Name="element_gid" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="element_owner" format="ascii">
         </DataArray>

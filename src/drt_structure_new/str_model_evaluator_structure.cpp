@@ -654,8 +654,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputElementOwner())
     vtu_writer_ptr_->AppendElementOwner("element_owner");
 
-  // append element id if desired
-  if (structure_vtu_output_params.OutputElementId()) vtu_writer_ptr_->AppendElementId("element_id");
+  // append element GIDs if desired
+  if (structure_vtu_output_params.OutputElementGID())
+    vtu_writer_ptr_->AppendElementGID("element_gid");
 
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
@@ -799,7 +800,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
     beam_vtu_writer_ptr_->AppendRVECrosssectionForces(displacement_state_vector);
 
   // export beam element IDs
-  if (beam_vtu_output_params.IsWriteId()) beam_vtu_writer_ptr_->AppendElementId();
+  if (beam_vtu_output_params.IsWriteElementGID()) beam_vtu_writer_ptr_->AppendElementGID();
 
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();

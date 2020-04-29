@@ -23,7 +23,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
       issetup_(false),
       output_displacement_state_(false),
       output_element_owner_(false),
-      output_element_id_(false)
+      output_element_gid_(false)
 {
   // empty constructor
 }
@@ -44,8 +44,8 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
   output_element_owner_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
 
-  output_element_id_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_ID");
+  output_element_gid_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
 
   isinit_ = true;
 }

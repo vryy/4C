@@ -15,13 +15,13 @@
       <PDataArray type="Float64" Name="cross_section_radius" format="ascii"/>
       <PDataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="3" format="ascii"/>
-      <PDataArray type="Float64" Name="element_id" format="ascii"/>
+      <PDataArray type="Float64" Name="element_gid" format="ascii"/>
       <PDataArray type="Float64" Name="element_owner" format="ascii"/>
       <PDataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="twist_GPs" NumberOfComponents="3" format="ascii"/>
     </PCellData>
-    <Piece Source="structure-beams-000000001-0.vtu"/>
-    <Piece Source="structure-beams-000000001-1.vtu"/>
+    <Piece Source="structure-beams-000040000-0.vtu"/>
+    <Piece Source="structure-beams-000040000-1.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>

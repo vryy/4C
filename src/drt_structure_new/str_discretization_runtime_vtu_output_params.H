@@ -59,10 +59,10 @@ namespace DRT
       };
 
       /// whether to write the id of elements
-      bool OutputElementId() const
+      bool OutputElementGID() const
       {
         CheckInitSetup();
-        return output_element_id_;
+        return output_element_gid_;
       };
 
      private:
@@ -94,8 +94,8 @@ namespace DRT
       /// whether to write the owner of elements
       bool output_element_owner_;
 
-      /// whether to write the element IDs
-      bool output_element_id_;
+      /// whether to write the element GIDs
+      bool output_element_gid_;
 
       //@}
     };

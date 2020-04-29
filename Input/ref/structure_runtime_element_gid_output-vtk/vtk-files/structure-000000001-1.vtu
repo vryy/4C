@@ -353,7 +353,7 @@
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="element_id" format="ascii">
+        <DataArray type="Float64" Name="element_gid" format="ascii">
 2.000000000000000e+01
 2.100000000000000e+01
 2.200000000000000e+01

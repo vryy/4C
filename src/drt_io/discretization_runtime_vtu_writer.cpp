@@ -425,11 +425,11 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::AppendElementId(const std::string resultname)
+void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultname)
 {
   // Vector with element IDs for elements in the row map.
-  std::vector<double> id_of_row_elements;
-  id_of_row_elements.reserve(discretization_->NumMyRowElements());
+  std::vector<double> gid_of_row_elements;
+  gid_of_row_elements.reserve(discretization_->NumMyRowElements());
 
   for (int iele = 0; iele < discretization_->NumMyRowElements(); ++iele)
   {
@@ -439,11 +439,11 @@ void DiscretizationRuntimeVtuWriter::AppendElementId(const std::string resultnam
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele != nullptr) continue;
 
-    id_of_row_elements.push_back(ele->Id());
+    gid_of_row_elements.push_back(ele->Id());
   }
 
   // Pass data to the output writer.
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(id_of_row_elements, 1, resultname);
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(gid_of_row_elements, 1, resultname);
 }
 
 /*-----------------------------------------------------------------------------------------------*

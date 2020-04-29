@@ -477,8 +477,6 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
 #ifdef DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-    // Todo safety check for now, may be removed when better tested
     if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
@@ -491,15 +489,15 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementId()
+void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
 
   // vector with the IDs of the beams on this processor.
-  std::vector<double> id;
-  id.reserve(num_beam_row_elements);
+  std::vector<double> gid;
+  gid.reserve(num_beam_row_elements);
 
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
@@ -510,16 +508,14 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementId()
 #ifdef DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-    // Todo safety check for now, may be removed when better tested
     if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
-    for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) id.push_back(ele->Id());
+    for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) gid.push_back(ele->Id());
   }
 
   // append the solution vector to the visualization data of the vtu writer object
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(id, 1, "element_id");
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(gid, 1, "element_gid");
 }
 
 /*-----------------------------------------------------------------------------------------------*

@@ -2,7 +2,7 @@
 // Maintainer: Ivo Steinbrecher
 //
 // Simulate a cantilever beam with solid elements and with beam elements. Then check
-// if the element IDs are output correctly.
+// if the element GIDs are output correctly.
 //
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
@@ -14,14 +14,14 @@ EVERY_ITERATION                       yes
 OUTPUT_STRUCTURE                      yes
 DISPLACEMENT                          yes
 ELEMENT_OWNER                         yes
-ELEMENT_ID                            yes
+ELEMENT_GID                            yes
 -----------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
 OUTPUT_BEAMS                          yes
 DISPLACEMENT                          yes
 USE_ABSOLUTE_POSITIONS                yes
 TRIAD_VISUALIZATIONPOINT              no
 STRAINS_GAUSSPOINT                    yes
-ELEMENT_ID                            yes
+ELEMENT_GID                            yes
 -----------------------BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
@@ -61,7 +61,7 @@ Linear Solver Details               = Yes
 Test Details                        = Yes
 Debug                               = No
 ----------------------------------------------------------STRUCT NOX/Status Test
-XML File                            = structure_runtime_element_id_output.xml
+XML File                            = structure_runtime_element_gid_output.xml
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 10.0 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.0915291232863769 SHEARCORR 1 MOMINPOL 0.0013333333333333335 MOMIN2 0.0006666666666666668 MOMIN3 0.0006666666666666668

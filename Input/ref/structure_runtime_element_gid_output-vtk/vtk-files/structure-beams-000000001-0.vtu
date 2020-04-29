@@ -89,7 +89,7 @@
 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="element_id" format="ascii">
+        <DataArray type="Float64" Name="element_gid" format="ascii">
 4.000000000000000e+01
 4.100000000000000e+01
 4.200000000000000e+01
