@@ -84,7 +84,7 @@ namespace MAT
       InelasticDefgradLinScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradLinScalar() override = default;
+      ~InelasticDefgradLinScalar() override = default;
 
       /// return growth factor for scalar 1
       double Scalar1growthfac() { return Scalar1growthfac_; };
@@ -102,7 +102,7 @@ namespace MAT
       InelasticDefgradLinScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
           : InelasticDefgradLinScalar(matdata){};
 
-      virtual ~InelasticDefgradLinScalarIso() override = default;
+      ~InelasticDefgradLinScalarIso() override = default;
 
     };  // end of class InelasticDefgradLinScalarIso
 
@@ -115,7 +115,7 @@ namespace MAT
       InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradLinScalarAniso() override = default;
+      ~InelasticDefgradLinScalarAniso() override = default;
 
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
@@ -134,7 +134,7 @@ namespace MAT
       /// standard constructor
       InelasticDefgradPolyScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
       /// destructor
-      virtual ~InelasticDefgradPolyScalar() override = default;
+      ~InelasticDefgradPolyScalar() override = default;
 
       /// return number of polynomial coefficients
       unsigned Polyparanum() { return Polyparanum_; };
@@ -171,7 +171,7 @@ namespace MAT
           : InelasticDefgradPolyScalar(matdata){};
 
       /// destructor
-      virtual ~InelasticDefgradPolyScalarIso() override = default;
+      ~InelasticDefgradPolyScalarIso() override = default;
     };  // end of class InelasticDefgradPolyScalarIso
 
     /*----------------------------------------------------------------------
@@ -183,7 +183,7 @@ namespace MAT
       InelasticDefgradPolyScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~InelasticDefgradPolyScalarAniso() override = default;
+      ~InelasticDefgradPolyScalarAniso() override = default;
 
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
