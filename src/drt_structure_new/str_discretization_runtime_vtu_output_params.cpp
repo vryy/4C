@@ -13,6 +13,8 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -22,7 +24,8 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
       issetup_(false),
       output_displacement_state_(false),
       output_element_owner_(false),
-      output_element_gid_(false)
+      output_element_gid_(false),
+      output_stress_strain_(false)
 {
   // empty constructor
 }
@@ -45,6 +48,23 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
 
   output_element_gid_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+
+  output_stress_strain_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+  if (output_stress_strain_)
+  {
+    // If stress / strain data should be output, check that the relevant parameters in the --IO
+    // section are set.
+    const Teuchos::ParameterList& io_parameter_list = DRT::Problem::Instance()->IOParams();
+    INPAR::STR::StressType io_stress =
+        DRT::INPUT::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
+    INPAR::STR::StrainType io_strain =
+        DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+    if (io_stress == INPAR::STR::stress_none and io_strain == INPAR::STR::strain_none)
+      dserror(
+          "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "
+          "STRUCT_STRESS in the --IO section has to be set.");
+  }
 
   isinit_ = true;
 }

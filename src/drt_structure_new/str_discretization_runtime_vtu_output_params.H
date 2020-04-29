@@ -64,6 +64,13 @@ namespace DRT
         return output_element_gid_;
       };
 
+      /// whether to write stress and / or strain data
+      bool OutputStressStrain() const
+      {
+        CheckInitSetup();
+        return output_stress_strain_;
+      };
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -96,6 +103,8 @@ namespace DRT
       /// whether to write the element GIDs
       bool output_element_gid_;
 
+      /// whether to write stress and / or strain data
+      bool output_stress_strain_;
       //@}
     };
 
