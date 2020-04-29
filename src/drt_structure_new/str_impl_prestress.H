@@ -20,18 +20,11 @@ namespace STR
   namespace IMPLICIT
   {
     /*!
-     * \brief The time integrator
-     *
+     * \brief The time integrator that also writes dynamic forces to allow a dynamic restart
      */
     class PreStress : public Statics
     {
      public:
-      //! constructor
-      PreStress() = default;
-
-      //! destructor
-      ~PreStress() override = default;
-
       void WriteRestart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
     };
