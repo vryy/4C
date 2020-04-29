@@ -50,7 +50,6 @@
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_patspec/patspec.H"
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_stru_multi/microstatic.H"
 #include "../drt_mor/mor_pod.H"
 

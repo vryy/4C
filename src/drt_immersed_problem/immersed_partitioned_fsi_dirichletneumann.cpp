@@ -9,7 +9,6 @@
 
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi_dirichletneumann.H"
-#include "immersed_partitioned_fsi.H"
 #include "fsi_partitioned_immersed.H"
 
 #include "../drt_lib/drt_globalproblem.H"
