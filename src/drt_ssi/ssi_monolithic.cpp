@@ -19,11 +19,9 @@
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_io/io_control.H"
 
@@ -50,9 +48,9 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
     const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     )
     : SSI_Base(comm, globaltimeparams),
-      dtele_(0.),
-      dtsolve_(0.),
-      maps_scatra_(nullptr),
+      dtele_(0.0),
+      dtsolve_(0.0),
+      maps_scatra_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
@@ -60,16 +58,16 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
           globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
       matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      residual_(nullptr),
-      scatrastructuredomain_(nullptr),
-      scatrastructureinterface_(nullptr),
+      residual_(Teuchos::null),
+      scatrastructuredomain_(Teuchos::null),
+      scatrastructureinterface_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       strategy_convcheck_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
-      meshtying_strategy_s2i_(nullptr),
+      meshtying_strategy_s2i_(Teuchos::null),
       structurescatradomain_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
@@ -155,10 +153,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, scatra_->ScaTraField()->Residual(), structure_->RHS());
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble domain contributions of off-diagonal scatra-structure                    |
@@ -448,10 +443,7 @@ void SSI::SSI_Mono::ComputeInvRowSums(
   // compute inverse row sums of matrix
   if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
     dserror("Inverse row sums of matrix could not be successfully computed!");
-
-  return;
 }  // SSI::SSI_Mono::ComputeInvRowSums
-
 
 /*--------------------------------------------------------------------------*
  | return global map of degrees of freedom                       fang 08/17 |
@@ -466,10 +458,7 @@ void SSI::SSI_Mono::EquilibrateMatrixRows(
     LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
 }  // SSI::SSI_Mono::EquilibrateMatrixRows
-
 
 /*----------------------------------------------------------------------*
  | equilibrate global system of equations if necessary       fang 01/18 |
@@ -489,14 +478,14 @@ void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>
     case INPAR::SSI::EquilibrationMethod::rows_maindiag:
     {
       // initialize vector for inverse sums of absolute values of matrix row entries
-      const Teuchos::RCP<Epetra_Vector> invrowsums = LINALG::CreateVector(*DofRowMap());
+      const auto invrowsums = LINALG::CreateVector(*DofRowMap());
 
       switch (matrixtype_)
       {
         case INPAR::SSI::matrix_block:
         {
           // check matrix
-          const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
+          const auto blocksparsematrix =
               Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
           if (blocksparsematrix == Teuchos::null)
             dserror("System matrix is not a block sparse matrix!");
@@ -505,7 +494,7 @@ void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>
           for (int i = 0; i < blocksparsematrix->Rows(); ++i)
           {
             // initialize vector for inverse row sums
-            const Teuchos::RCP<Epetra_Vector> invrowsums_block(
+            const auto invrowsums_block(
                 Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
             // compute inverse row sums of current main diagonal matrix block
@@ -519,7 +508,7 @@ void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>
               for (int j = 0; j < blocksparsematrix->Cols(); ++j)
               {
                 // extract current block of global system matrix
-                const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
+                const auto& matrix = blocksparsematrix->Matrix(i, j);
 
                 // loop over all rows of current matrix block
                 for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
@@ -551,13 +540,12 @@ void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>
                 dserror("Vector could not be inverted!");
             }
 
-            // perform row equilibration of matrix blocks in current row block of global
-            // system matrix
+            // perform row equilibration of matrix blocks in current row block of global system
+            // matrix
             for (int j = 0; j < blocksparsematrix->Cols(); ++j)
               EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums_block);
 
-            // insert inverse row sums of current main diagonal matrix block into global
-            // vector
+            // insert inverse row sums of current main diagonal matrix block into global vector
             maps_systemmatrix_->InsertVector(invrowsums_block, i, invrowsums);
           }
 
@@ -567,8 +555,7 @@ void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>
         case INPAR::SSI::matrix_sparse:
         {
           // check matrix
-          const Teuchos::RCP<LINALG::SparseMatrix> sparsematrix =
-              Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
+          const auto sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
           if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
 
           // compute inverse row sums of global system matrix
@@ -852,10 +839,7 @@ void SSI::SSI_Mono::FDCheck()
 
   // restore system increment vector if necessary
   if (increment_original != Teuchos::null) increment_ = increment_original;
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | initialize monolithic algorithm                               fang 08/17 |
@@ -914,10 +898,7 @@ void SSI::SSI_Mono::Output()
 
   // output structure field
   structure_->Output();
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | prepare time step                                             fang 08/17 |
@@ -943,10 +924,7 @@ void SSI::SSI_Mono::PrepareTimeStep()
 
   // print time step information to screen
   scatra_->ScaTraField()->PrintTimeStepInfo();
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | setup monolithic algorithm                                    fang 08/17 |
@@ -990,10 +968,7 @@ void SSI::SSI_Mono::Setup()
           "interface "
           "coupling with matching interface nodes!");
   }
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | setup global system of equations                              fang 08/17 |
@@ -1037,7 +1012,7 @@ void SSI::SSI_Mono::SetupSystem()
     // several main-diagonal matrix blocks associated with scalar transport field
     case INPAR::SCATRA::MatrixType::block_condition:
     {
-      // copy maps of scatra field
+      // store an RCP to the block maps of the scatra field
       maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
 
       // safety check
@@ -1212,11 +1187,7 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
   }
-
-
-  return;
 }
-
 
 /*---------------------------------------------------------------------------------*
  | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
@@ -1229,10 +1200,7 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
       SSIInterfaceMeshtying())
     struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | evaluate time step using Newton-Raphson iteration             fang 08/17 |
@@ -1304,10 +1272,7 @@ void SSI::SSI_Mono::Solve()
 
     // structure field is updated during the next Newton-Raphson iteration step
   }  // Newton-Raphson iteration
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | time loop                                                     fang 08/17 |
@@ -1353,10 +1318,7 @@ void SSI::SSI_Mono::Timeloop()
     // output solution to screen and files
     Output();
   }  // while(NotFinished())
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------------------*
  | update scalar transport and structure fields after time step evaluation   fang 08/17 |
@@ -1368,6 +1330,4 @@ void SSI::SSI_Mono::Update()
 
   // update structure field
   structure_->Update();
-
-  return;
 }
