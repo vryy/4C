@@ -18,6 +18,7 @@ rule)
 #include "../drt_mat/anisotropy_extension.H"
 #include "growth_evolution_linear_cauchy.H"
 #include "../drt_matelast/elast_summand.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_matelast/elast_activesummand.H"
 
 
@@ -27,8 +28,15 @@ MIXTURE::PAR::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
       matid_(matdata->GetInt("MATID")),
       poisson_decay_time_(matdata->GetDouble("DECAY_TIME")),
       growth_constant_(matdata->GetDouble("GROWTH_CONSTANT")),
-      deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH"))
+      deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH")),
+      deposition_stretch_funct_(matdata->GetInt("DEPOSITION_STRETCH_TIMEFUNCT"))
 {
+  if (deposition_stretch_funct_ > 0 && deposition_stretch_ > 0)
+  {
+    dserror(
+        "You have to specify the deposition stretch either via DEPOSITION_STRETCH or via "
+        "DEPOSITION_STRETCH_TIMEFUNCT. At least one of the two has to be 0.");
+  }
 }
 
 MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
@@ -134,7 +142,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::ReadElement(
   iFr_.resize(numgp);
   cur_rho_.resize(numgp, params_->RefMassFraction() * InitialRefDensity());
   cur_lambdar_.resize(numgp, 1.0);
-  lambda_pre_.resize(numgp, params_->deposition_stretch_);
+  lambda_pre_.resize(numgp, 0.0);
   sig_h_.resize(numgp, 0.0);
 }
 
@@ -189,6 +197,18 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Setup(
 {
   MixtureConstituent::Setup(params, eleGID);
 
+  // Update deposition stretch / prestretch of fiber depending on time function
+  double time = params.get<double>("total time", -1.0);
+  if (time < 0)
+  {
+    dserror("The current total time is not set in the ParameterList");
+  }
+
+  for (double& lambda_pre : lambda_pre_)
+  {
+    lambda_pre = EvaluateCurrentDepositionStretch(time);
+  }
+
   UpdateSigH(eleGID);
 }
 
@@ -196,6 +216,18 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Update(LINALG::Matrix<3, 3> const
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::Update(defgrd, params, gp, eleGID);
+
+  // Compute new prestretch
+  double time = params.get<double>("total time", -1.0);
+  if (time < 0)
+  {
+    dserror("The current total time is not set in the ParameterList");
+  }
+
+  lambda_pre_[gp] = EvaluateCurrentDepositionStretch(time);
+
+
+  UpdateSigH(eleGID);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matrix<3, 3>& F,
@@ -384,6 +416,19 @@ void MIXTURE::MixtureConstituent_RemodelFiber::EvaluatedsigdCe(
       2.0 * (ddPIIe_aniso(0) * Ce.Dot(fiberAnisotropyExtension_->GetStructuralTensor(gp, 0)) +
                 dPIe_aniso(0)),
       fiberAnisotropyExtension_->GetStructuralTensor(gp, 0));
+}
+
+double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateCurrentDepositionStretch(
+    double current_time) const
+{
+  if (params_->deposition_stretch_funct_ == 0)
+  {
+    return params_->deposition_stretch_;
+  }
+
+  return DRT::Problem::Instance()
+      ->Funct(params_->deposition_stretch_funct_ - 1)
+      .EvaluateTime(current_time);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigH(const int eleGID)

@@ -3491,8 +3491,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Mixture constituent for ElastHyper toolbox with a damage process
   {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ElastHyper_Damage",
+        "ElastHyper toolbox with damage", INPAR::MAT::mix_elasthyper_damage));
+
+    AddNamedInt(m, "NUMMAT", "number of summands");
+    AddNamedIntVector(m, "MATIDS", "list material IDs of the membrane summands", "NUMMAT");
+    AddNamedInt(m, "PRESTRESS_STRATEGY",
+        "Material id of the prestress strategy (optional, by default no prestretch)", 0, true);
+    AddNamedInt(m, "DAMAGE_FUNCT",
+        "Reference to the function that is a gain for the increase/decrease of the reference mass "
+        "density.");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for ElastHyper toolbox with a damage process and a membrane constituent
+  {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ElastHyper_ElastinMembrane",
-        "ElastHyper toolbox with damage", INPAR::MAT::mix_elasthyper_elastin_membrane));
+        "ElastHyper toolbox with damage and 2D membrane material",
+        INPAR::MAT::mix_elasthyper_elastin_membrane));
 
     AddNamedInt(m, "NUMMAT", "number of summands");
     AddNamedIntVector(m, "MATIDS", "list material IDs of the membrane summands", "NUMMAT");
@@ -3524,6 +3542,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Iterative prestress strategy for any geometry
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Iterative",
+        "Simple iterative prestress strategy for any geometry. Needed to be used with "
+        "...",  // ToDO:
+        INPAR::MAT::mix_prestress_strategy_iterative));
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Mixture constituent for a remodel fiber
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ExplicitRemodelFiber",
@@ -3533,6 +3562,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
     AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
     AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
+    AddNamedInt(m, "DEPOSITION_STRETCH_TIMEFUNCT",
+        "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

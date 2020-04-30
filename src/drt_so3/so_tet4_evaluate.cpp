@@ -361,29 +361,56 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      // build incremental def gradient for every gauss point
-      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET4, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
-
-      // update deformation gradient and put back to storage
-      LINALG::Matrix<3, 3> deltaF;
-      LINALG::Matrix<3, 3> Fhist;
-      LINALG::Matrix<3, 3> Fnew;
-      for (int gp = 0; gp < NUMGPT_SOTET4; ++gp)
+      switch (pstype_)
       {
-        prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
-        prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-        Fnew.Multiply(deltaF, Fhist);
-        prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
-      }
+        case INPAR::STR::PreStress::material_iterative:
+        {
+          // get current displacements
+          LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> xdispT(mydisp.data());
 
-      // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+          for (unsigned gp = 0; gp < NUMGPT_SOTET4; ++gp)
+          {
+            // Compute deformation gradient
+            LINALG::Matrix<3, 3> defgrd;
+            ComputeDeformationGradient(defgrd, xdispT, gp);
 
-      // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        SolidMaterial()->Update();
+            SolidMaterial()->UpdatePrestress(defgrd, gp, params, Id());
+          }
+        }
+        break;
+
+        case INPAR::STR::PreStress::mulf:
+        {
+          // build incremental def gradient for every gauss point
+          LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET4, 9);
+          DefGradient(mydisp, gpdefgrd, *prestress_);
+
+          // update deformation gradient and put back to storage
+          LINALG::Matrix<3, 3> deltaF;
+          LINALG::Matrix<3, 3> Fhist;
+          LINALG::Matrix<3, 3> Fnew;
+          for (int gp = 0; gp < NUMGPT_SOTET4; ++gp)
+          {
+            prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
+            prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+            Fnew.Multiply(deltaF, Fhist);
+            prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
+          }
+
+          // push-forward invJ for every gaussian point
+          UpdateJacobianMapping(mydisp, *prestress_);
+
+          // Update constraintmixture material
+          if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+          {
+            SolidMaterial()->Update();
+          }
+          break;
+        }
+        default:
+          dserror(
+              "You should either not be here, or the prestressing method you are using is not "
+              "implemented for TET4 elements!");
       }
     }
     break;
@@ -636,18 +663,40 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec, "REMODEL");
       if (remodel)
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         so_tet4_remodel(lm, mydisp, params, Material());
       }
+
+      if (SolidMaterial()->UsesExtendedUpdate())
+      {
+        LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> xdispT(mydisp.data());
+
+        // build deformation gradient wrt to material configuration
+        LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> defgrd(false);
+        for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
+        {
+          // Compute deformation gradient
+          ComputeDeformationGradient(defgrd, xdispT, gp);
+
+          // call material update if material = m_growthremodel_elasthyper (calculate and update
+          // inelastic deformation gradient)
+          if (SolidMaterial()->UsesExtendedUpdate())
+          {
+            SolidMaterial()->Update(defgrd, gp, params, Id());
+          }
+        }
+      }
+
       // Update of history for materials
       SolidMaterial()->Update();
     }
@@ -1159,7 +1208,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     for (int col = 0; col < 4; col++) jac(row + 1, col) = xrefe(col, row);
   // volume of the element
   V_ = jac.Determinant() / 6.0;
-  if (V_ <= 0.0) dserror("Element volume %10.5e <= 0.0", V_);
+  if (V_ <= 0.0) dserror("Element volume %10.5e <= 0.0 (Id: %i)", V_, Id());
 
   // nxyz_.resize(NUMGPT_SOTET4);
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs =
@@ -1275,7 +1324,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
    */
   // current  displacements of element
   LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
-  LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
@@ -1283,11 +1331,8 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
-
-    xdisp(i, 0) = disp[i * NODDOF_SOTET4 + 0];
-    xdisp(i, 1) = disp[i * NODDOF_SOTET4 + 1];
-    xdisp(i, 2) = disp[i * NODDOF_SOTET4 + 2];
   }
+  LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> xdispT(disp.data());
 
 
   // volume of a tetrahedra
@@ -1321,42 +1366,8 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     **             [    dZ       dZ       dZ    ]
     */
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
-    {
-      // get derivatives wrt to last spatial configuration
-      LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
-      prestress_->StoragetoMatrix(gp, N_xyz, prestress_->JHistory());
-
-      // build multiplicative incremental defgrd
-      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-      {
-        // defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-        defgrd.MultiplyTN(xdisp, N_xyz);
-      }
-      defgrd(0, 0) += 1.0;
-      defgrd(1, 1) += 1.0;
-      defgrd(2, 2) += 1.0;
-
-      // get stored old incremental F
-      LINALG::Matrix<3, 3> Fhist;
-      prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-
-      // build total defgrd = delta F * F_old
-      LINALG::Matrix<3, 3> Fnew;
-      Fnew.Multiply(defgrd, Fhist);
-      defgrd = Fnew;
-    }
-    else
-    {
-      // in kinematically linear analysis the deformation gradient is equal to identity
-      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-      {
-        defgrd.MultiplyTN(xdisp, nxyz);
-      }
-      defgrd(0, 0) += 1.0;
-      defgrd(1, 1) += 1.0;
-      defgrd(2, 2) += 1.0;
-    }
+    // Evaluate deformation gradient
+    ComputeDeformationGradient(defgrd, xdispT, gp);
 
     if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
         !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
@@ -1448,9 +1459,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       LINALG::Matrix<NUMDOF_SOTET4, 1> nodaldisp;
       for (int i = 0; i < NUMNOD_SOTET4; ++i)
       {
-        nodaldisp(3 * i, 0) = xdisp(i, 0);
-        nodaldisp(3 * i + 1, 0) = xdisp(i, 1);
-        nodaldisp(3 * i + 2, 0) = xdisp(i, 2);
+        nodaldisp(3 * i, 0) = xdispT(0, i);
+        nodaldisp(3 * i + 1, 0) = xdispT(1, i);
+        nodaldisp(3 * i + 2, 0) = xdispT(2, i);
       }
 
       // build the linearised strain epsilon = B_L . d
@@ -1850,9 +1861,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
           LINALG::Matrix<NUMDOF_SOTET4, 1> nodaldisp;
           for (int i = 0; i < NUMNOD_SOTET4; ++i)
           {
-            nodaldisp(3 * i, 0) = xdisp(i, 0);
-            nodaldisp(3 * i + 1, 0) = xdisp(i, 1);
-            nodaldisp(3 * i + 2, 0) = xdisp(i, 2);
+            nodaldisp(3 * i, 0) = xdispT(0, i);
+            nodaldisp(3 * i + 1, 0) = xdispT(1, i);
+            nodaldisp(3 * i + 2, 0) = xdispT(2, i);
           }
 
           // build the linearised strain epsilon = B_L . d
@@ -2127,6 +2138,54 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
     prestress.MatrixtoStorage(gp, defgrd, gpdefgrd);
   }
   return;
+}
+
+void DRT::ELEMENTS::So_tet4::ComputeDeformationGradient(
+    LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
+    const LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const
+{
+  if (kintype_ == INPAR::STR::kinem_linear)
+  {
+    // in the linear case, the deformation gradient is the identity matrix
+    defgrd.Clear();
+    defgrd(0, 0) += 1.0;
+    defgrd(1, 1) += 1.0;
+    defgrd(2, 2) += 1.0;
+
+    return;
+  }
+
+  if (pstype_ == INPAR::STR::PreStress::mulf)
+  {
+    // get derivatives wrt to last spatial configuration
+    LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
+    prestress_->StoragetoMatrix(gp, N_xyz, prestress_->JHistory());
+
+    // build multiplicative incremental defgrd
+    LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> Finc;
+
+    Finc.MultiplyNN(xdisp, N_xyz);
+
+    // build multiplicative incremental defgrd
+    Finc(0, 0) += 1.0;
+    Finc(1, 1) += 1.0;
+    Finc(2, 2) += 1.0;
+
+    // get stored old incremental F
+    LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> Fhist;
+    prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+
+    // build total defgrd = delta F * F_old
+    defgrd.Multiply(Finc, Fhist);
+  }
+  else
+  {
+    // (material) deformation gradient F = d xcurr / d xrefe = I + xdisp * N_XYZ^T
+    defgrd.MultiplyNN(xdisp, nxyz_);
+    defgrd(0, 0) += 1.0;
+    defgrd(1, 1) += 1.0;
+    defgrd(2, 2) += 1.0;
+  }
 }
 
 /*----------------------------------------------------------------------*

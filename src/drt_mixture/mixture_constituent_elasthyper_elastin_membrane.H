@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_H
-#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_H
+#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H
+#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H
 
 #include "mixture_constituent_elasthyperbase.H"
 #include "../drt_mat/anisotropy_extension.H"
@@ -347,4 +347,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_H
+#endif  // BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H

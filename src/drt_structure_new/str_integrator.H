@@ -140,6 +140,14 @@ namespace STR
     virtual double GetIntParam() const = 0;
     virtual double GetAccIntParam() const { return GetIntParam(); }
 
+    /*!
+     * \brief Allows to stop the simulation before the max. time or max timestep is reached
+     *
+     * \return true In case of an early stop is desired
+     * \return false In case of no early stop (default)
+     */
+    virtual bool EarlyStopping() const { return false; }
+
     //! @name Restart and output related functions
     //!@{
 

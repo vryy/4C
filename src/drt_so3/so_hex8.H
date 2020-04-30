@@ -629,6 +629,14 @@ namespace DRT
       const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
       const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
+
+      /*!
+       * \brief Evaluate the first derivatives of the shape functions at the Gauss point gp
+       *
+       * \param derivs first derivatives of the shape functions
+       * \param gp Gauss point
+       */
+      void soh8_derivs(LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
       //! Evaluate Hex8 Weights to keep them static
       const std::vector<double> soh8_weights() const;
 
@@ -656,6 +664,9 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
+
+      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& xdisp, int gp);
 
       /*! \brief Calculate the deformation gradient that is consistent
        *         with modified (e.g. EAS) GL strain tensor.

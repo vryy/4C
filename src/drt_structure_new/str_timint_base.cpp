@@ -160,6 +160,15 @@ void STR::TIMINT::Base::ResetStep()
 bool STR::TIMINT::Base::NotFinished() const
 {
   CheckInitSetup();
+
+  // check for early stopping
+  const bool early_stop = int_ptr_->EarlyStopping();
+  if (early_stop)
+  {
+    // Simulation is finished regardless of the simulation time or the time step.
+    return false;
+  }
+
   // check the current time
   const double& timenp = dataglobalstate_->GetTimeNp();
   const double& timemax = datasdyn_->GetTimeMax();

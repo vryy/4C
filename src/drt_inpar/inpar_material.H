@@ -276,10 +276,13 @@ namespace INPAR
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
       mix_rule_base,       ///< Base rule for the mixture model
-      mix_rule_growthremodel,           ///< Homogenized constrained mixture
-      mix_prestress_strategy_cylinder,  ///< Prestress strategy for a cylinder
-      mix_elasthyper,                   ///< Elast Hyper toolbox for Constituents
-      mix_elasthyper_elastin_membrane,  ///< Elast Hyper toolbox with temporal damage
+      mix_rule_growthremodel,            ///< Homogenized constrained mixture
+      mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
+      mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry
+      mix_elasthyper,                    ///< Elast Hyper toolbox for Constituents
+      mix_elasthyper_damage,             ///< Elast hyper toolbox with temporal damage
+      mix_elasthyper_elastin_membrane,   ///< Elast Hyper toolbox with temporal damage and 2D
+                                         ///< membrane material
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model

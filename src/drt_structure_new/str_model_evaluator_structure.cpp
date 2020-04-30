@@ -1224,7 +1224,9 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
     switch (prestress_type)
     {
       case INPAR::STR::PreStress::mulf:
-        if (Discret().Comm().MyPID() == 0) IO::cout << "====== Entering MULF update" << IO::endl;
+      case INPAR::STR::PreStress::material_iterative:
+        if (Discret().Comm().MyPID() == 0)
+          IO::cout << "====== Entering PRESTRESSING update" << IO::endl;
 
         // Choose special update action for elements in case of MULF
         EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
@@ -1256,23 +1258,6 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
   EvaluateInternal(eval_mat, eval_vec);
-
-  // Check for prestressing
-  if (isDuringPrestressing)
-  {
-    switch (prestress_type)
-    {
-      case INPAR::STR::PreStress::mulf:
-        // This is a MULF step, hence we do not update the displacements at the end of the timestep.
-        // This is achieved by resetting the displacements, velocities and accelerations.
-        GState().GetMutableDisN()->PutScalar(0.0);
-        GState().GetMutableVelN()->PutScalar(0.0);
-        GState().GetMutableAccN()->PutScalar(0.0);
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 /*----------------------------------------------------------------------------*

@@ -189,6 +189,21 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::Update(LINALG::Matrix<3, 3> con
   for (auto& summand : potsum_) summand->Update();
 }
 
+// Updates all summands
+void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
+{
+  MixtureConstituent::UpdatePrestress(defgrd, params, gp, eleGID);
+
+  // do nothing in the default case
+  if (params_->GetPrestressingMatId() > 0)
+  {
+    params_->PrestressStrategy()->UpdatePrestress(
+        cosyAnisotropyExtension_.GetCylinderCoordinateSystem(gp), *this, defgrd, prestretch_[gp],
+        params, gp, eleGID);
+  }
+}
+
 // Add names for each summand for the quantities for post processing
 void MIXTURE::MixtureConstituent_ElastHyperBase::VisNames(std::map<std::string, int>& names)
 {
@@ -227,9 +242,10 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    LINALG::Matrix<3, 3> prestretch;
-    params_->PrestressStrategy()->EvaluatePrestress(
-        cosyAnisotropyExtension_.GetCylinderCoordinateSystem(gp), *this, prestretch_[gp], params,
-        gp, eleGID);
+    // params_->PrestressStrategy()->EvaluatePrestress(
+    //    cosyAnisotropyExtension_.GetCylinderCoordinateSystem(gp), *this, prestretch_[gp], params,
+    //    gp, eleGID);
+
+    MAT::IdentityMatrix(prestretch_[gp]);
   }
 }

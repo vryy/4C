@@ -15,6 +15,7 @@
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_constituent_elasthyper.H"
+#include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
 #include "mixture_constituent_remodelfiber_expl.H"
 
@@ -63,6 +64,15 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
       {
         curmat->SetParameter(
             new MIXTURE::PAR::MixtureConstituent_ElastHyper(curmat, ref_mass_fraction));
+      }
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+    }
+    case INPAR::MAT::mix_elasthyper_damage:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_ElastHyperDamage(curmat, ref_mass_fraction));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }

@@ -165,6 +165,12 @@ namespace MAT
         Teuchos::ParameterList& params,
         int const eleGID){/* Do nothing for simple material models*/};
 
+    virtual void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, int const gp,
+        Teuchos::ParameterList& params, int const eleGID){
+        // only have to be implemented by those materials that have their own prestressing
+        // implementation
+    };
+
     /// Reset time step (for time adaptivity)
     virtual void ResetStep(){/* do nothing for simple material models */};
 

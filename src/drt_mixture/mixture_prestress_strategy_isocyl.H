@@ -91,6 +91,10 @@ namespace MIXTURE
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
+    void UpdatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+        MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
+        LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
+
    private:
     /// Holder for internal parameters
     const PAR::IsotropicCylinderPrestressStrategy* params_;

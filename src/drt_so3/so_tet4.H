@@ -449,6 +449,16 @@ namespace DRT
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
+      /*!
+       * \brief Compute the deformation gradient
+       *
+       * \param defgrd Deformation gradient
+       * \param xdisp Displacement vectir for each node (3x4)
+       * \param gp Gauss point
+       */
+      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
+          const LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const;
+
       friend class DRT::ELEMENTS::InvDesign;
       Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
@@ -523,6 +533,13 @@ namespace DRT
 
       //@}
 
+      /*!
+       * Executes the post setup call for all materials. This method will be called once per element
+       * at the first Evaluate call.
+       *
+       * @param params ParameterList to be passed to the materials
+       */
+      void MaterialPostSetup(Teuchos::ParameterList& params) override;
     };  // class So_tet4
 
 

@@ -16,6 +16,8 @@
 
 #include "so_base.H"
 
+#include "../drt_fem_general/drt_utils_integration.H"
+
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10 10       ///< number of nodes
 #define NODDOF_SOTET10 3        ///< number of dofs per node
@@ -375,6 +377,16 @@ namespace DRT
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
+      /*!
+       * \brief Evaluate the deformation gradient at a specific Gauss point
+       *
+       * \param defgrd Deformation gradient
+       * \param xdisp Matrix with the nodal displacements (3x10)
+       * \param gp Gauss point
+       */
+      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>& defgrd,
+          const LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& xdisp, int gp);
+
       friend class DRT::ELEMENTS::InvDesign;
       Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
@@ -422,6 +434,17 @@ namespace DRT
       const std::vector<LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
       //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
       const std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>& so_tet10_4gp_derivs();
+
+      /*!
+       * \brief Evaluate the first derivative of the shape functions at the Gauss point with the
+       * 4 Gauss-point integration rule
+       *
+       * \param derivs First derivatives of the shape functions
+       * \param gp Gauss point
+       */
+      template <DRT::UTILS::GaussRule3D intrule>
+      void so_tet10_derivs(LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, int gp) const;
+
       //! Evaluate Tet10 Weights at 4 gausspoints to keep them static
       const std::vector<double>& so_tet10_4gp_weights();
 

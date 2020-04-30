@@ -26,6 +26,9 @@
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
+#include "../drt_fiber/drt_fiber_node.H"
+#include "so_utils.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
 
 
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
@@ -440,4 +443,47 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
   if (DRT::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4, this->Id());
+}
+
+/*----------------------------------------------------------------------*
+ |  Call post setup routine of the materials                            |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
+{
+  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(Nodes()[0]);
+  if (fnode != nullptr)
+  {
+    // This element has fiber nodes.
+    // Interpolate fibers to the Gauss points and pass them to the material
+
+    // Get shape functions
+    const static std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts = so_tet4_1gp_shapefcts();
+
+    // initialize fiber vectors
+    std::vector<LINALG::Matrix<NUMDIM_SOTET4, 1>> gpfiber1(
+        NUMNOD_SOTET4, LINALG::Matrix<NUMDIM_SOTET4, 1>(true));
+    std::vector<LINALG::Matrix<NUMDIM_SOTET4, 1>> gpfiber2(
+        NUMNOD_SOTET4, LINALG::Matrix<NUMDIM_SOTET4, 1>(true));
+
+    // interpolate fibers
+    DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet4>(Nodes(), shapefcts, gpfiber1, gpfiber2);
+
+    // add fibers to the ParameterList
+    // ParameterList does not allow to store a std::vector, so we have to add every gp fiber
+    // with a separate key. To keep it clean, It is added to a sublist.
+    DRT::FIBER::NodalFiberHolder fiberHolder;
+    fiberHolder.SetFiber(DRT::FIBER::FiberType::Fiber1, gpfiber1);
+    fiberHolder.SetFiber(DRT::FIBER::FiberType::Fiber2, gpfiber2);
+
+    params.set("fiberholder", fiberHolder);
+    // params.set("gpfiberlist2", gpfiber2);
+  }
+
+  // Call super post setup
+  So_base::MaterialPostSetup(params);
+
+  // Cleanup ParameterList to not carry all fibers the whole simulation
+  // do not throw an error if key does not exist.
+  params.remove("fiberholder", false);
+  // params.remove("gpfiber2", false);
 }

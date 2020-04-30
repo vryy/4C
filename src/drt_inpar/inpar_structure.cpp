@@ -98,14 +98,19 @@ namespace INPAR
 
       setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
           "prestressing takes values none mulf id",
-          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID"),
+          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID",
+              "Material_Iterative", "MATERIAL_ITERATIVE", "material_iterative"),
           tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
               INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
               INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::id, INPAR::STR::PreStress::id,
-              INPAR::STR::PreStress::id),
+              INPAR::STR::PreStress::id, INPAR::STR::PreStress::material_iterative,
+              INPAR::STR::PreStress::material_iterative, INPAR::STR::PreStress::material_iterative),
           &sdyn);
 
       DoubleParameter("PRESTRESSTIME", 0.0, "time to switch from pre to post stressing", &sdyn);
+
+      DoubleParameter("PRESTRESSTOLDISP", 1e-9,
+          "tolerance in the displacement norm during prestressing", &sdyn);
 
       // Output type
       IntParameter(
