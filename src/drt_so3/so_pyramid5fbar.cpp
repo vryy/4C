@@ -94,7 +94,7 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
 DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
     : DRT::ELEMENTS::So_pyramid5(id, owner)
 {
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }

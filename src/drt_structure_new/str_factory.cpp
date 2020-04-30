@@ -54,7 +54,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
   const enum INPAR::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
 
   // check if we have a problem that needs to be prestressed
-  if (prestresstype == INPAR::STR::prestress_mulf or prestresstype == INPAR::STR::prestress_id)
+  if (prestresstype == INPAR::STR::PreStress::mulf or prestresstype == INPAR::STR::PreStress::id)
   {
     impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::PreStress());
     return impl_int_ptr;

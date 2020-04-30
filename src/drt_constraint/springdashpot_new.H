@@ -93,7 +93,7 @@ namespace UTILS
     void ResetNewton();
 
     //! reset after prestressing with MULF
-    void ResetPrestress(Teuchos::RCP<Epetra_Vector> dis);
+    void ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis);
 
     //! set reset after prestressing with MULF
     void SetRestart(Teuchos::RCP<Epetra_Vector> vec);

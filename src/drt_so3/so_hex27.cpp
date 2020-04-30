@@ -97,7 +97,7 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
-    : So_base(id, owner), data_(), pstype_(INPAR::STR::prestress_none), pstime_(0.0), time_(0.0)
+    : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOH27, LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
@@ -106,10 +106,10 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));
 
   return;
@@ -134,7 +134,7 @@ DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
@@ -179,10 +179,10 @@ void DRT::ELEMENTS::So_hex27::Pack(DRT::PackBuffer& data) const
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
   // prestress_
-  AddtoPack(data, pstype_);
+  AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);

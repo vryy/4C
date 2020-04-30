@@ -842,12 +842,12 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_)
+    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
 
   return;
 }
@@ -1235,7 +1235,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH27 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH27 + 2];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH27 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH27 + 1];
@@ -1262,7 +1262,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;

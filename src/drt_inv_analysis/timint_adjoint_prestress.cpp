@@ -35,7 +35,7 @@ STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretiza
   rhsnp_ = LINALG::CreateVector(*(dofrowmap_), true);
 
   // prestress stuff
-  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   pstime_ = sdyn.get<double>("PRESTRESSTIME");
 }
 
@@ -54,7 +54,7 @@ void STR::TimIntAdjointPrestress::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> 
   if ((int)time_.size() != msteps_)
     dserror("setup of the timesteps for the adjoint problem messed up");
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     // get prestress time
     stepn_ = (int)(pstime_ / dt_);

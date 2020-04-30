@@ -165,6 +165,13 @@ namespace STR
         return loadlin_;
       }
 
+      // Return time until the prestressing algorthm should be applied
+      double GetPreStressTime() const
+      {
+        CheckInitSetup();
+        return prestresstime_;
+      }
+
       /// Returns prestress type
       const enum INPAR::STR::PreStress& GetPreStressType() const
       {
@@ -444,6 +451,12 @@ namespace STR
         return itermax_;
       };
 
+      double& GetMutablePreStressTime()
+      {
+        CheckInitSetup();
+        return prestresstime_;
+      }
+
       /// Returns prestress type
       enum INPAR::STR::PreStress& GetMutablePreStressType()
       {
@@ -708,6 +721,9 @@ namespace STR
 
       /// linearization of external follower load in Newton
       bool loadlin_;
+
+      /// Time until the prestressing algorithm should be applied
+      double prestresstime_;
 
       /// type of pre-stressing
       enum INPAR::STR::PreStress prestresstype_;
