@@ -73,6 +73,7 @@ class CONTACT::CONSTITUTIVELAW::BrokenrationalConstitutiveLaw_TestSuite : public
   void test_EvaluateDeriv()
   {
     TS_ASSERT_DELTA(coconstlaw_->EvaluateDeriv(-2.5), 0.5, 1.e-15);
+    TS_ASSERT_THROWS_ANYTHING(coconstlaw_->EvaluateDeriv(-0.25));
     return;
   }
 

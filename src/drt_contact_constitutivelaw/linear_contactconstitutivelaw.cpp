@@ -56,7 +56,7 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::EvaluateDeriv(double gap
 {
   if (gap + params_->GetOffset() > 0)
   {
-    printf("You should not be here. The Evaluate function is only tested for active nodes.");
+    dserror("You should not be here. The Evaluate function is only tested for active nodes.");
   }
   return params_->GetA();
 }
