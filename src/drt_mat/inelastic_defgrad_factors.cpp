@@ -16,6 +16,156 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/voigt_notation.H"
 
+/*--------------------------------------------------------------------*
+ | constructors of parameter classes                    schmidt 03/18 |
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradScalar::InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      Scalar1_(matdata->GetInt("SCALAR1")),
+      Scalar1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
+      Matid_(matdata->GetInt("MATID")),
+      Cmax_(-1.0)
+{
+  // safety checks
+  // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
+  // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
+  // PreEvaluate method!
+  if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
+  if (Scalar1refconc_ < 0.0) dserror("The reference concentration of SCALAR1 can't be negative");
+
+  // check correct masslin type
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
+    dserror(
+        "If you use the material 'InelasticDefgradLinScalarIso' please set 'MASSLIN' in the "
+        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
+
+  // Check if the material specified by user with MATID is one of allowed materials which are
+  // currently electrode, elchmat and scatra
+  if (Matid_ > 0)
+  {
+    // retrieve problem instance to read from
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    // retrieve validated input line of material ID in question
+    Teuchos::RCP<MAT::PAR::Material> curmat =
+        DRT::Problem::Instance(probinst)->Materials()->ById(Matid_);
+    switch (curmat->Type())
+    {
+      case INPAR::MAT::m_electrode:
+      {
+        // Get C_max of electrode material
+        Cmax_ = curmat->GetDouble("C_MAX");
+        break;
+      }
+      case INPAR::MAT::m_elchmat:
+      {
+        Cmax_ = 1.0;
+        break;
+      }
+      case INPAR::MAT::m_scatra:
+      {
+        Cmax_ = 1.0;
+        break;
+      }
+      default:
+        dserror(
+            "The material you have specified by MATID has to be an electrode, "
+            "elchmat or scatra material!");
+    }
+  }
+  else
+  {
+    dserror("You have to enter a valid MATID for the corresponding scatra material!");
+  }
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradLinScalar::InelasticDefgradLinScalar(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : InelasticDefgradScalar(matdata), Scalar1growthfac_(matdata->GetDouble("SCALAR1_GrowthFac"))
+{
+  if (Scalar1growthfac_ < 0.0)
+    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradPolyScalar::InelasticDefgradPolyScalar(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : InelasticDefgradScalar(matdata),
+      Polyparanum_(matdata->GetInt("POLY_PARA_NUM")),
+      Polyparams_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
+      Xmin_(matdata->GetDouble("X_min")),
+      Xmax_(matdata->GetDouble("X_max")),
+      MATPolynomReference_(0.0)
+{
+  // safety checks
+  // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
+  // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
+  // PreEvaluate method!
+  if (Polyparams_.size() != Polyparanum_)
+    dserror(
+        "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size of "
+        "coefficient vector POLY_PARAMS");
+
+  // evaluate polynomial at reference X
+  MAT::InelasticDefgradPolynomial Polynomial;
+  MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
+      Scalar1(), Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc(), Cmax(), 1.0);
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : InelasticDefgradLinScalar(matdata),
+      growthdir_(*matdata->Get<std::vector<double>>("GrowthDirection"))
+{
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : InelasticDefgradPolyScalar(matdata),
+      growthdir_(*matdata->Get<std::vector<double>>("GrowthDirection"))
+{
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ | constructors of Growth direction                                   |
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
+    std::vector<double> growthdirection)
+    : growthdirmat_(true)
+{
+  if (growthdirection.size() != 3)
+    dserror(
+        "Since we have a 3D problem here, vector that defines the growth direction also needs to "
+        "have the size 3!");
+
+  // fill matrix that determines the growth direction
+  const double growthdirvecnorm = std::sqrt(
+      pow(growthdirection[0], 2.0) + pow(growthdirection[1], 2.0) + pow(growthdirection[2], 2.0));
+  const double invquadrgrowthdirvecnorm = 1.0 / (growthdirvecnorm * growthdirvecnorm);
+
+  // loop over all rows and colomns to fill the matrix and scale it correctly on the fly
+  for (unsigned i = 0; i < growthdirection.size(); ++i)
+  {
+    for (unsigned j = 0; j < growthdirection.size(); ++j)
+    {
+      growthdirmat_(i, j) = invquadrgrowthdirvecnorm * growthdirection[i] * growthdirection[j];
+    }
+  }
+}
 
 /*--------------------------------------------------------------------*
  | construct empty material                             schmidt 03/18 |
@@ -182,76 +332,6 @@ double MAT::InelasticDefgradPolynomial::EvaluateMatPolynomialDerivative(const do
 
 
 /*--------------------------------------------------------------------*
- | constructor                                          schmidt 03/18 |
- *--------------------------------------------------------------------*/
-MAT::PAR::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata),
-      Scalar1_(matdata->GetInt("SCALAR1")),
-      Scalar1growthfac_(matdata->GetDouble("SCALAR1_GrowthFac")),
-      Scalar1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
-      Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0)
-{
-  // safety checks
-  // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
-  // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
-  // PreEvaluate method!
-  if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
-  if (Scalar1growthfac_ < 0.0)
-    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
-  if (Scalar1refconc_ < 0.0) dserror("The reference concentration of SCALAR1 can't be negative");
-
-  // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
-    dserror(
-        "If you use the material 'InelasticDefgradLinScalarIso' please set 'MASSLIN' in the "
-        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
-
-  // Check if the material specified by user with MATID is one of allowed materials which are
-  // currently electrode, elchmat and scatra
-  if (Matid_ > 0)
-  {
-    // retrieve problem instance to read from
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    // retrieve validated input line of material ID in question
-    Teuchos::RCP<MAT::PAR::Material> curmat =
-        DRT::Problem::Instance(probinst)->Materials()->ById(Matid_);
-    switch (curmat->Type())
-    {
-      case INPAR::MAT::m_electrode:
-      {
-        // Get C_max of electrode material
-        Cmax_ = curmat->GetDouble("C_MAX");
-        break;
-      }
-      case INPAR::MAT::m_elchmat:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      case INPAR::MAT::m_scatra:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      default:
-        dserror(
-            "The material you have specified by MATID has to be an electrode, "
-            "elchmat or scatra material!");
-    }
-  }
-  else
-  {
-    dserror("You have to enter a valid MATID for the corresponding scatra material!");
-  }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
  | construct empty material                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso()
@@ -382,98 +462,6 @@ void MAT::InelasticDefgradLinScalarIso::PreEvaluate(Teuchos::ParameterList& para
   if (gp_ == 0)
     concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
         Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
- | constructor                                          schmidt 03/18 |
- *--------------------------------------------------------------------*/
-MAT::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata),
-      Scalar1_(matdata->GetInt("SCALAR1")),
-      Scalar1growthfac_(matdata->GetDouble("SCALAR1_GrowthFac")),
-      Scalar1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
-      growthdirmat_(true),
-      Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0)
-{
-  // safety checks
-  // in the case when not all scatra dofs are transported scalars, the last scatra dof is a
-  // potential and can not be treated as a concentration but it is treated like that in
-  // so3_scatra_evaluate.cpp in the PreEvaluate!
-  if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
-  if (Scalar1growthfac_ < 0.0)
-    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
-  if (Scalar1refconc_ < 0.0) dserror("The reference concentration of SCALAR1 can't be negative");
-
-  // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
-    dserror(
-        "If you use the material 'InelasticDefgradLinScalarAniso' please set 'MASSLIN' in the "
-        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
-
-  // get the growth direction vector from the input file and check length
-  std::vector<double> growthdirvec = *(matdata->Get<std::vector<double>>("GrowthDirection"));
-  if (growthdirvec.size() != 3)
-    dserror(
-        "Since we have a 3D problem here, vector that defines the growth direction also needs to "
-        "have the size 3!");
-
-  // fill matrix that determines the growth direction
-  const double growthdirvecnorm =
-      std::sqrt(pow(growthdirvec[0], 2.0) + pow(growthdirvec[1], 2.0) + pow(growthdirvec[2], 2.0));
-  const double invquadrgrowthdirvecnorm = 1.0 / (growthdirvecnorm * growthdirvecnorm);
-
-  // loop over all rows and colomns to fill the matrix and scale it correctly on the fly
-  for (unsigned i = 0; i < 3; ++i)
-  {
-    for (unsigned j = 0; j < 3; ++j)
-    {
-      growthdirmat_(i, j) = invquadrgrowthdirvecnorm * growthdirvec[i] * growthdirvec[j];
-    }
-  }
-
-  // Check if the material specified by user with MATID is one of allowed materials which are
-  // currently electrode, elchmat and scatra
-  if (Matid_ > 0)
-  {
-    // retrieve problem instance to read from
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    // retrieve validated input line of material ID in question
-    Teuchos::RCP<MAT::PAR::Material> curmat =
-        DRT::Problem::Instance(probinst)->Materials()->ById(Matid_);
-    switch (curmat->Type())
-    {
-      case INPAR::MAT::m_electrode:
-      {
-        // Get C_max of electrode material
-        Cmax_ = curmat->GetDouble("C_MAX");
-        break;
-      }
-      case INPAR::MAT::m_elchmat:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      case INPAR::MAT::m_scatra:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      default:
-        dserror(
-            "The material you have specified by MATID has to be an electrode, "
-            "elchmat or scatra material!");
-    }
-  }
-  else
-  {
-    dserror("You have to enter a valid MATID for the corresponding scatra material!");
-  }
 
   return;
 }
@@ -622,85 +610,6 @@ void MAT::InelasticDefgradLinScalarAniso::PreEvaluate(Teuchos::ParameterList& pa
     concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
         Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
 
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
- | constructor                                          civaner 03/19 |
- *--------------------------------------------------------------------*/
-MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata),
-      Scalar1_(matdata->GetInt("SCALAR1")),
-      Scalar1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
-      Polyparanum_(matdata->GetInt("POLY_PARA_NUM")),
-      Polyparams_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      Xmin_(matdata->GetDouble("X_min")),
-      Xmax_(matdata->GetDouble("X_max")),
-      Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0),
-      MATPolynomReference_(0.0)
-{
-  // safety checks
-  // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
-  // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
-  // PreEvaluate method!
-  if (Polyparams_.size() != Polyparanum_)
-    dserror(
-        "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size of "
-        "coefficient vector POLY_PARAMS");
-  if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
-  if (Scalar1refconc_ < 0.0) dserror("The reference concentration of SCALAR1 can't be negative");
-
-  // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
-    dserror(
-        "If you use the material 'InelasticDefgradPolyScalarIso' please set 'MASSLIN' in the "
-        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
-
-  // Check if the material specified by user with MATID is one of allowed materials which are
-  // currently electrode, elchmat and scatra
-  if (Matid_ > 0)
-  {
-    // retrieve problem instance to read from
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    // retrieve validated input line of material ID in question
-    Teuchos::RCP<MAT::PAR::Material> curmat =
-        DRT::Problem::Instance(probinst)->Materials()->ById(Matid_);
-    switch (curmat->Type())
-    {
-      case INPAR::MAT::m_electrode:
-      {
-        // Get C_max of electrode material
-        Cmax_ = curmat->GetDouble("C_MAX");
-        break;
-      }
-      case INPAR::MAT::m_elchmat:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      case INPAR::MAT::m_scatra:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      default:
-        dserror(
-            "The material you have specified by MATID has to be an electrode, "
-            "elchmat or scatra material!");
-    }
-  }
-  else
-  {
-    dserror("You have to enter a valid MATID for the corresponding scatra material!");
-  }
-  // evaluate polynomial at reference X
-  MAT::InelasticDefgradPolynomial Polynomial;
-  MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
-      Scalar1_, Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc_, Cmax_, 1.0);
   return;
 }
 
@@ -853,106 +762,6 @@ void MAT::InelasticDefgradPolyScalarIso::PreEvaluate(Teuchos::ParameterList& par
   return;
 }
 
-/*--------------------------------------------------------------------*
- | constructor                                          civaner 03/19 |
- *--------------------------------------------------------------------*/
-MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata),
-      Scalar1_(matdata->GetInt("SCALAR1")),
-      Scalar1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
-      growthdirmat_(true),
-      Polyparanum_(matdata->GetInt("POLY_PARA_NUM")),
-      Polyparams_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      Xmin_(matdata->GetDouble("X_min")),
-      Xmax_(matdata->GetDouble("X_max")),
-      Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0),
-      MATPolynomReference_(0.0)
-{
-  // safety checks
-  // in the case when not all scatra dofs are transported scalars, the last scatra dof is a
-  // potential and can not be treated as a concentration but it is treated like that in
-  // so3_scatra_evaluate.cpp in the PreEvaluate!
-  if (Polyparams_.size() != Polyparanum_)
-    dserror(
-        "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size of "
-        "coefficient vector POLY_PARAMS");
-  if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
-  if (Scalar1refconc_ < 0.0) dserror("The reference concentration of SCALAR1 can't be negative");
-
-  // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
-    dserror(
-        "If you use the material 'InelasticDefgradPolyScalarAniso' please set 'MASSLIN' in the "
-        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
-
-  // get the growth direction vector from the input file and check length
-  std::vector<double> growthdirvec = *(matdata->Get<std::vector<double>>("GrowthDirection"));
-  if (growthdirvec.size() != 3)
-    dserror(
-        "Since we have a 3D problem here, vector that defines the growth direction also needs to "
-        "have the size 3!");
-
-  // fill matrix that determines the growth direction
-  const double growthdirvecnorm =
-      std::sqrt(pow(growthdirvec[0], 2.0) + pow(growthdirvec[1], 2.0) + pow(growthdirvec[2], 2.0));
-  const double invquadrgrowthdirvecnorm = 1.0 / (growthdirvecnorm * growthdirvecnorm);
-
-  // loop over all rows and colomns to fill the matrix and scale it correctly on the fly
-  for (unsigned i = 0; i < 3; ++i)
-  {
-    for (unsigned j = 0; j < 3; ++j)
-    {
-      growthdirmat_(i, j) = invquadrgrowthdirvecnorm * growthdirvec[i] * growthdirvec[j];
-    }
-  }
-
-  // Check if the material specified by user with MATID is one of allowed materials which are
-  // currently electrode, elchmat and scatra
-  if (Matid_ > 0)
-  {
-    // retrieve problem instance to read from
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    // retrieve validated input line of material ID in question
-    Teuchos::RCP<MAT::PAR::Material> curmat =
-        DRT::Problem::Instance(probinst)->Materials()->ById(Matid_);
-    switch (curmat->Type())
-    {
-      case INPAR::MAT::m_electrode:
-      {
-        // Get C_max of electrode material
-        Cmax_ = curmat->GetDouble("C_MAX");
-        break;
-      }
-      case INPAR::MAT::m_elchmat:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      case INPAR::MAT::m_scatra:
-      {
-        Cmax_ = 1.0;
-        break;
-      }
-      default:
-        dserror(
-            "The material you have specified by MATID has to be an electrode, "
-            "elchmat or scatra material!");
-    }
-  }
-  else
-  {
-    dserror("You have to enter a valid MATID for the corresponding scatra material!");
-  }
-  // evaluate polynomial at reference X
-  MAT::InelasticDefgradPolynomial Polynomial;
-  MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
-      Scalar1_, Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc_, Cmax_, 1.0);
-
-  return;
-}
 
 
 /*--------------------------------------------------------------------*
