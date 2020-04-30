@@ -2524,16 +2524,12 @@ src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 )
 
 set(OBJS_DRT_IMMERSED_LIB
-src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
-src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM
 src/drt_immersed_problem/immersed_base.cpp
 src/drt_immersed_problem/immersed_problem_dyn.cpp
-src/drt_immersed_problem/immersed_partitioned.cpp
-src/drt_immersed_problem/immersed_partitioned_fsi.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )

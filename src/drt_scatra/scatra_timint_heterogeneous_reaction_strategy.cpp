@@ -26,8 +26,6 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/

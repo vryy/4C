@@ -2,6 +2,7 @@ List of major features that were removed from BACI, including date and revision 
 
 Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
 - removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
 - reasons: The framework was not fully implemented due to methodological reasons and thus was also not tested.
 - removed by Sebastian Fuchs
 
@@ -19,11 +20,13 @@ cell migration module (by Andreas Rauch)
 - prb_scatra_endoexocytosis mainly modells inter-cellular signalling processes
 - related/used in both problems were passive and active fiber material models for the mechanical cell behaviour
 - removed in commit 05505bb75e860b9f798e41c6c8b59aa6757d721c on 2020-04-13
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
 - reasons: This module is currently unused and not subject to ongoing research. This will thus reduce dependencies and ease maintenance work.
 - removed by Anh-Tu Vuong
 
 FSI using IBM on deformable fluid meshes (by Andreas Rauch)
-- removed in commit 57d21c7794a44f4ce15824d5aae50f3a0b161602 on 2020-04-09
+- removed in commits 57d21c7794a44f4ce15824d5aae50f3a0b161602 on 2020-04-09
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
 - reasons: Implementation does not work and thus has not been tested a
 few years at this point. This research topic is not actively developed
 at this time and code removal will lead to lower code complexity.

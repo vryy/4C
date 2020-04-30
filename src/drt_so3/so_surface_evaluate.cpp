@@ -29,7 +29,6 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_immersed_problem/immersed_base.H"
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 using UTILS::SurfStressManager;

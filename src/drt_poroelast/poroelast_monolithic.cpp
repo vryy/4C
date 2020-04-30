@@ -62,9 +62,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
 
-// immersed
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-
 #include "../drt_lib/drt_elements_paramsminimal.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
