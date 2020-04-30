@@ -36,13 +36,7 @@ namespace CONTACT
     {
      public:
       /// return type of this constitutive law
-      virtual INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const
-      {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_none;
-      };
-
-      /// return copy of this Contact ConstitutiveLaw object
-      virtual Teuchos::RCP<ConstitutiveLaw> Clone() const = 0;
+      virtual INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const = 0;
 
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const = 0;

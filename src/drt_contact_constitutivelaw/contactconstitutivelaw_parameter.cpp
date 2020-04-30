@@ -20,10 +20,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container>
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
-    : id_(coconstlawdata->Id()),
-      offset_(coconstlawdata->GetDouble("Offset")),
-      type_(coconstlawdata->Type()),
-      name_(coconstlawdata->Name()){};
+    : offset_(coconstlawdata->GetDouble("Offset")){};
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::ConstitutiveLawType
     CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::instance_;
@@ -34,29 +31,6 @@ CONTACT::CONSTITUTIVELAW::Container::Container(
     : DRT::Container(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
   return;
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::Container::Container()
-    : DRT::Container(),
-      id_(-1),
-      type_(INPAR::CONTACT::ConstitutiveLawType::colaw_none),
-      name_(""),
-      params_(Teuchos::null)
-{
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::Container::Container(const CONTACT::CONSTITUTIVELAW::Container& old)
-    : DRT::Container(old), id_(old.id_), type_(old.type_), params_(old.params_)
-{
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CONTACT::CONSTITUTIVELAW::Container& cond)
-{
-  cond.Print(os);
-  return os;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

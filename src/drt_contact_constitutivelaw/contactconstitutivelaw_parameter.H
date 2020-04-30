@@ -71,24 +71,11 @@ namespace CONTACT
       /// destructor
       virtual ~Parameter() = default;
 
-      /// (unique) contact constitutive law ID
-      int Id() const { return id_; }
-
-      /// Get contact constitutive law type
-      virtual INPAR::CONTACT::ConstitutiveLawType Type() const { return type_; }
-
-      /// Get contact constitutive law name
-      virtual std::string Name() const { return name_; }
-
       /// create CoConstLaw instance of matching type with my parameters
       virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() = 0;
 
       // Access offset of the function
       double GetOffset() { return offset_; }
-
-     private:
-      /// contact constitutive law ID, as defined in input file
-      int id_;
 
       /**
        * \brief Offset from the edge (gap==0) from where the constitutive law will be used
@@ -98,11 +85,6 @@ namespace CONTACT
        * constitutive laws
        */
       const double offset_;
-
-      /// CoConstLaw type
-      INPAR::CONTACT::ConstitutiveLawType type_;
-      /// contact constitutive law name
-      std::string name_;
     };  // class Parameter
 
     /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
@@ -132,17 +114,6 @@ namespace CONTACT
           const INPAR::CONTACT::ConstitutiveLawType type,  ///< type of contact constitutivelaw
           const std::string name                           ///< name of contact constitutivelaw
       );
-
-
-      /// Empty Constructor
-      Container();
-
-      /**
-       * \brief Copy Constructor
-       *
-       * Makes a deep copy of a condition
-       */
-      Container(const Container& old);
 
       /// Destructor
       virtual ~Container() = default;

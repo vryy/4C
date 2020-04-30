@@ -44,27 +44,11 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType
     CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType::instance_;
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // matid
-  int CONSTITUTIVELAWid = -1;
-  if (params_ != NULL) CONSTITUTIVELAWid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, CONSTITUTIVELAWid);
-}
+void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Pack(DRT::PackBuffer& data) const {}
 
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-
-  // matid
-  int CONSTITUTIVELAWid = -1;
-  ExtractfromPack(position, data, CONSTITUTIVELAWid);
-}
+void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Unpack(const std::vector<char>& data) {}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/

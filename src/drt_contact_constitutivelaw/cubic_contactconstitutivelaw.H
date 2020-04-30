@@ -134,12 +134,6 @@ namespace CONTACT
         return INPAR::CONTACT::ConstitutiveLawType::colaw_cubic;
       }
 
-      /// return copy of this ConstitutiveLaw object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new CubicConstitutiveLaw(*this));
-      }
-
       double GetA() { return params_->GetA(); }
       double GetB() { return params_->GetB(); }
       double GetC() { return params_->GetC(); }

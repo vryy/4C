@@ -49,26 +49,11 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawType
     CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawType::instance_;
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // matid
-  int CONSTITUTIVELAWid = -1;
-  if (params_ != NULL) CONSTITUTIVELAWid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, CONSTITUTIVELAWid);
-}
+void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Pack(DRT::PackBuffer& data) const {}
 
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-
-  int CONSTITUTIVELAWid;
-  ExtractfromPack(position, data, CONSTITUTIVELAWid);
-}
+void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Unpack(const std::vector<char>& data) {}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/

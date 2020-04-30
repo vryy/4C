@@ -132,12 +132,6 @@ namespace CONTACT
         return INPAR::CONTACT::ConstitutiveLawType::colaw_power;
       }
 
-      /// return copy of this contact constitutive law object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new PowerConstitutiveLaw(*this));
-      }
-
       /// Get scaling factor of power law
       double GetA() { return params_->GetA(); }
       /// Get power coefficient of power law

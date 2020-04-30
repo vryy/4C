@@ -121,12 +121,6 @@ namespace CONTACT
         return INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational;
       }
 
-      /// return copy of this contact constitutive law object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new BrokenRationalConstitutiveLaw(*this));
-      }
-
       /// Get scaling factor of the broken rational function
       double GetA() { return params_->GetA(); }
       /// Get asymptote of the broken rational function

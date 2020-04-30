@@ -130,12 +130,6 @@ namespace CONTACT
         return INPAR::CONTACT::ConstitutiveLawType::colaw_linear;
       }
 
-      /// return copy of this contact constitutive law object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new LinearConstitutiveLaw(*this));
-      }
-
       /// Get slope of linear polynomial
       double GetA() { return params_->GetA(); }
       /// Get y intercept of linear polynomial
