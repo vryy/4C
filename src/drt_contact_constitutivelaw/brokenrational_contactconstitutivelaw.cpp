@@ -40,19 +40,6 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
     : params_(params)
 {
 }
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Pack(DRT::PackBuffer& data) const {}
-
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Unpack(const std::vector<char>& data)
-{
-}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/

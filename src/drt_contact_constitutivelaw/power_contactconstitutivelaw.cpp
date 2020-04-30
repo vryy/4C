@@ -43,17 +43,6 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
     : params_(params)
 {
 }
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Pack(DRT::PackBuffer& data) const {}
-
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Unpack(const std::vector<char>& data) {}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/

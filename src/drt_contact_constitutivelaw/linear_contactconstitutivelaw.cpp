@@ -38,17 +38,6 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
     : params_(params)
 {
 }
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Pack(DRT::PackBuffer& data) const {}
-
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Unpack(const std::vector<char>& data) {}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/

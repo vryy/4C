@@ -22,9 +22,6 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
     )
     : offset_(coconstlawdata->GetDouble("Offset")){};
 /*----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::ConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(
     const int id, const INPAR::CONTACT::ConstitutiveLawType type, const std::string name)
@@ -40,49 +37,5 @@ void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
 
   DRT::Container::Print(os);
 
-  return;
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Container::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-  // add base class container
-  DRT::Container::Pack(data);
-  // id_
-  AddtoPack(data, id_);
-  // type_
-  AddtoPack(data, static_cast<int>(type_));
-  // name_
-  AddtoPack(data, name_);
-
-  return;
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Container::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class Container
-  std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
-  DRT::Container::Unpack(basedata);
-  // id_
-  ExtractfromPack(position, data, id_);
-  // type_
-  type_ = static_cast<INPAR::CONTACT::ConstitutiveLawType>(ExtractInt(position, data));
-  // name_
-  ExtractfromPack(position, data, name_);
-
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   return;
 }

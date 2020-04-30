@@ -87,18 +87,6 @@ namespace CONTACT
       const double offset_;
     };  // class Parameter
 
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
-    class ConstitutiveLawType : public DRT::ParObjectType
-    {
-     public:
-      virtual std::string Name() const { return "ParConstitutiveLawType"; }
-
-      static ConstitutiveLawType& Instance() { return instance_; };
-
-     private:
-      static ConstitutiveLawType instance_;
-    };
-
     /**
      * \brief Container to pass Contact Constitutive Law parameters around
      */
@@ -117,32 +105,6 @@ namespace CONTACT
 
       /// Destructor
       virtual ~Container() = default;
-
-      /**
-       * \brief Return unique ParObject id
-       *
-       * every class implementing ParObject needs a unique id defined at the
-       * top of this file.
-       *
-       */
-      int UniqueParObjectId() const override
-      {
-        return ConstitutiveLawType::Instance().UniqueParObjectId();
-      }
-
-      /**
-       * \brief Pack this class so it can be communicated
-       *
-       * \ref Pack and \ref Unpack are used to communicate this class
-       *
-       */
-      void Pack(DRT::PackBuffer& data) const override;
-
-      /** \brief Unpack data from a char vector into this class
-       *
-       * \ref Pack and \ref Unpack are used to communicate this class
-       */
-      void Unpack(const std::vector<char>& data) override;
 
       //@}
 

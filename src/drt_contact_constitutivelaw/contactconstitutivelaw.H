@@ -32,7 +32,7 @@ namespace CONTACT
      * In order to support storage of material data (for restart, post
      * processing, ...) this class implements DRT::ParObject.
      */
-    class ConstitutiveLaw : public DRT::ParObject
+    class ConstitutiveLaw
     {
      public:
       /// return type of this constitutive law
