@@ -34,7 +34,7 @@ INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   1
 EQUILIBRATION                   rowsandcolumns_maindiag
-MATRIXTYPE                      block_geometry
+MATRIXTYPE                      block_meshtying
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

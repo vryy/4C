@@ -447,7 +447,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::SCATRA::MatrixType::block_geometry:
+        case INPAR::SCATRA::MatrixType::block_meshtying:
         {
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -2625,7 +2625,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     }
     case INPAR::SCATRA::MatrixType::block_condition:
     case INPAR::SCATRA::MatrixType::block_condition_dof:
-    case INPAR::SCATRA::MatrixType::block_geometry:
+    case INPAR::SCATRA::MatrixType::block_meshtying:
     {
       // safety check
       if (!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -3771,7 +3771,7 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
 
       case INPAR::SCATRA::MatrixType::block_condition:
       case INPAR::SCATRA::MatrixType::block_condition_dof:
-      case INPAR::SCATRA::MatrixType::block_geometry:
+      case INPAR::SCATRA::MatrixType::block_meshtying:
       {
         // check matrix
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =

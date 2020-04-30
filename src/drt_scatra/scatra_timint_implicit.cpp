@@ -3880,7 +3880,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
 void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 {
   // matrix block map extractor equals interface map extractor in this case
-  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_geometry)
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_meshtying)
     blockmaps_ = strategy_->InterfaceMaps();
 
   // now build the null spaces
@@ -3935,7 +3935,7 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
     }
     case INPAR::SCATRA::MatrixType::block_condition:
     case INPAR::SCATRA::MatrixType::block_condition_dof:
-    case INPAR::SCATRA::MatrixType::block_geometry:
+    case INPAR::SCATRA::MatrixType::block_meshtying:
     {
       // safety check
       if (!Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -3977,7 +3977,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::block_geometry:
+    case INPAR::SCATRA::MatrixType::block_meshtying:
     {
       if (S2ICoupling())
       {
