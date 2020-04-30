@@ -169,6 +169,52 @@ namespace LINALG
     return true;
   }
 
+  /**
+   * \brief Solve a linear system of equations \f$Ab=x\f$.
+   *
+   * If the system is not solvable this function will return false. The matrix \f$A\f$ is scaled so
+   * that the largest entry in each row is 1. By doing so we can perform a sensible comparison of
+   * the absolute value of the determinant with the given tolerance.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse of the scaled matrix will be stored in
+   * this variable.
+   * @param b (in/out) Right hand side vector of the linear system. Will be returned in the scaled
+   * version.
+   * @param x (out) Solution of the linear system.
+   * @param eps (in) If the absolute value of the scaled determinant is smaller than this value, the
+   * matrix is considered to be singular.
+   * @return True if the system could be solved, false if not.
+   *
+   * @tparam T Scalar type of matrix.
+   * @tparam dim Dimension of matrix.
+   */
+  template <typename T, unsigned int dim>
+  bool SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(LINALG::Matrix<dim, dim, T>& A,
+      LINALG::Matrix<dim, 1, T>& b, LINALG::Matrix<dim, 1, T>& x, double eps)
+  {
+    T max_value;
+    for (unsigned int i_row = 0; i_row < dim; i_row++)
+    {
+      max_value = 0.0;
+      for (unsigned int i_col = 0; i_col < dim; i_col++)
+      {
+        if (abs(A(i_row, i_col)) > max_value) max_value = abs(A(i_row, i_col));
+      }
+      if (max_value < 1e-12) continue;
+      for (unsigned int i_col = 0; i_col < dim; i_col++)
+        A(i_row, i_col) = A(i_row, i_col) / max_value;
+      b(i_row) = b(i_row) / max_value;
+    }
+
+    T det = Determinant(A);
+    if (abs(det) < eps) return false;
+    InverseReorderMatrixEntries(A);
+    A.Scale(1. / det);
+    x.Multiply(A, b);
+    return true;
+  }
+
+
   /*!
     \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape
     functions) farah 07/14
