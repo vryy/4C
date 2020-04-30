@@ -3491,8 +3491,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Mixture constituent for ElastHyper toolbox with a damage process
   {
-    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ElastHyper_Elastin",
-        "ElastHyper toolbox with damage", INPAR::MAT::mix_elasthyper_elastin));
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ElastHyper_ElastinMembrane",
+        "ElastHyper toolbox with damage", INPAR::MAT::mix_elasthyper_elastin_membrane));
 
     AddNamedInt(m, "NUMMAT", "number of summands");
     AddNamedIntVector(m, "MATIDS", "list material IDs of the membrane summands", "NUMMAT");

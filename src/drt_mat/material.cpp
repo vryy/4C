@@ -901,7 +901,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_rule_base:
     case INPAR::MAT::mix_rule_growthremodel:
     case INPAR::MAT::mix_elasthyper:
-    case INPAR::MAT::mix_elasthyper_elastin:
+    case INPAR::MAT::mix_elasthyper_elastin_membrane:
     case INPAR::MAT::mix_prestress_strategy_cylinder:
     case INPAR::MAT::mix_remodelfiber_expl:
     case INPAR::MAT::mix_remodelfiber_impl:

@@ -28,7 +28,7 @@ namespace MAT
 
 namespace MIXTURE
 {
-  class MixtureConstituent_ElastHyperElastin;
+  class MixtureConstituent_ElastHyperElastinMembrane;
 
   /*!
    * \brief Anisotropy extension for elastin material.
@@ -36,7 +36,7 @@ namespace MIXTURE
    * The anisotropy extension provides the structural tensor of the plane of the membrane, which is
    * orthogonal to the radial direction
    */
-  class ElastinAnisotropyExtension : public MAT::FiberAnisotropyExtension<1>
+  class ElastinMembraneAnisotropyExtension : public MAT::FiberAnisotropyExtension<1>
   {
    public:
     /*!
@@ -44,7 +44,7 @@ namespace MIXTURE
      *
      * \param structuralTensorStrategy Structural tensor strategy to compute the structural tensors
      */
-    explicit ElastinAnisotropyExtension(
+    explicit ElastinMembraneAnisotropyExtension(
         const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy);
 
     /*!
@@ -68,7 +68,7 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent_ElastHyperElastin
+    class MixtureConstituent_ElastHyperElastinMembrane
         : public MIXTURE::PAR::MixtureConstituent_ElastHyperBase
     {
      public:
@@ -78,11 +78,11 @@ namespace MIXTURE
        * \param matdata Material parameters
        * \param ref_mass_fraction reference mass fraction
        */
-      explicit MixtureConstituent_ElastHyperElastin(
+      explicit MixtureConstituent_ElastHyperElastinMembrane(
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
 
       /// default destructor
-      ~MixtureConstituent_ElastHyperElastin() override = default;
+      ~MixtureConstituent_ElastHyperElastinMembrane() override = default;
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() override;
@@ -106,8 +106,9 @@ namespace MIXTURE
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
    * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
    */
-  class MixtureConstituent_ElastHyperElastin : public MIXTURE::MixtureConstituent_ElastHyperBase,
-                                               public ElastinMembraneEvaluation
+  class MixtureConstituent_ElastHyperElastinMembrane
+      : public MIXTURE::MixtureConstituent_ElastHyperBase,
+        public ElastinMembraneEvaluation
   {
    public:
     /*!
@@ -115,8 +116,8 @@ namespace MIXTURE
      *
      * \param params Material parameters
      */
-    explicit MixtureConstituent_ElastHyperElastin(
-        MIXTURE::PAR::MixtureConstituent_ElastHyperElastin* params);
+    explicit MixtureConstituent_ElastHyperElastinMembrane(
+        MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane* params);
 
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;
@@ -329,7 +330,7 @@ namespace MIXTURE
 
    private:
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent_ElastHyperElastin* params_;
+    MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane* params_;
 
     /// Current reference mass density
     std::vector<double> current_reference_density_;
@@ -341,7 +342,7 @@ namespace MIXTURE
     std::vector<Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke>> potsum_membrane_;
 
     /// Anisotropy extension holding the structural tensor of the anisotropy
-    ElastinAnisotropyExtension anisotropyExtension_;
+    ElastinMembraneAnisotropyExtension anisotropyExtension_;
   };
 
 }  // namespace MIXTURE

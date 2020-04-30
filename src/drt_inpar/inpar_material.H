@@ -279,7 +279,7 @@ namespace INPAR
       mix_rule_growthremodel,           ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,  ///< Prestress strategy for a cylinder
       mix_elasthyper,                   ///< Elast Hyper toolbox for Constituents
-      mix_elasthyper_elastin,           ///< Elast Hyper toolbox with temporal damage
+      mix_elasthyper_elastin_membrane,  ///< Elast Hyper toolbox with temporal damage
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
