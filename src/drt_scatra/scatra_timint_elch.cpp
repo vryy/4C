@@ -30,7 +30,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
 
 #include "scatra_timint_elch.H"
 
@@ -1841,16 +1840,13 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluidElch(this));
 
   // scatra-scatra interface coupling
-  else if (s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, params_->sublist("S2I COUPLING")));
+  else if (IsS2IMeshtying())
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, *params_));
 
   // standard case without meshtying
   else
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStdElch(this));
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
-
 
 /*----------------------------------------------------------------------*
  | calculate initial electric potential field                fang 03/15 |
@@ -3282,4 +3278,127 @@ int SCATRA::ScalarHandlerElch::NumScalInCondition(
         "Elch!");
 
   return NumScal();
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
+    const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+    std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
+{
+  if (MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
+  {
+    // safety check
+    if (DRT::INPUT::IntegralValue<int>(
+            ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
+      dserror(
+          "For chosen type of global block system matrix, current must not constitute solution "
+          "variable!");
+
+    // extract number of domain partitioning conditions
+    const unsigned ncond = partitioningconditions.size();
+
+    // each domain block specified by the domain partitioning conditions is again subdivided into
+    // the specific dofs, therefore (ncond * NumDofPerNode()) block maps are set up below
+    blockmaps.resize(ncond * NumDofPerNode(), Teuchos::null);
+
+    // loop over all domain partitioning conditions
+    for (unsigned icond = 0; icond < ncond; ++icond)
+    {
+      // we need to initialize as many sets as number of dofs per node, since all ids corresponding
+      // to a specific dof shall be grouped into a separate set
+      std::vector<std::set<int>> dofids(NumDofPerNode());
+
+      // extract nodes associated with current domain partitioning condition
+      const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
+
+      // loop over all nodes associated with current domain partitioning condition
+      for (int nodegid : *nodegids)
+      {
+        // extract global ID of current node
+        // consider current node only if node is owned by current processor need to make sure that
+        // node is stored on current processor, otherwise cannot resolve "->Owner()"
+        if (discret_->HaveGlobalNode(nodegid) and
+            discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())
+        {
+          // extract dof IDs associated with current node
+          const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(nodegid));
+
+          // for each dof we add the id of the current node to its corresponding set
+          for (unsigned dof = 0; dof < dofids.size(); ++dof) dofids[dof].insert(nodedofs[dof]);
+        }
+      }
+
+      // transform sets for dof IDs into vectors and then into Epetra maps
+      for (int iset = 0; iset < NumDofPerNode(); ++iset)
+      {
+        int nummyelements(0);
+        int* myglobalelements(nullptr);
+        std::vector<int> dofidvec;
+        if (!dofids[iset].empty())
+        {
+          dofidvec.reserve(dofids[iset].size());
+          dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
+          nummyelements = dofidvec.size();
+          myglobalelements = &(dofidvec[0]);
+        }
+        blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
+            myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
+      }
+    }
+  }
+
+  // call base class routine for other types of global system matrix
+  else
+    SCATRA::ScaTraTimIntImpl::BuildBlockMaps(partitioningconditions, blockmaps);
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces() const
+{
+  // call base class routine
+  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces();
+
+  if (MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
+  {
+    // loop over blocks of global system matrix
+    for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+    {
+      // store number of current block as string, starting from 1
+      std::ostringstream iblockstr;
+      iblockstr << iblock + 1;
+
+      // access parameter sublist associated with smoother for current matrix block
+      Teuchos::ParameterList& mueluparams =
+          Solver()->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
+
+      // extract already reduced null space associated with current matrix block
+      std::vector<double>& nullspace =
+          *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
+
+      // Each matrix block is associated with either concentration dofs or electric potential dofs
+      // only. However, since the original full null space was computed for all degrees of freedom
+      // on the discretization, the reduced null spaces still have the full dimension, i.e., the
+      // full number of null space vectors equaling the total number of primary variables. Hence, we
+      // need to decrease the dimension of each null space by one and remove the corresponding zero
+      // null space vector from the null space.
+      if (iblock % 2 == 0)
+        // null space associated with concentration dofs
+        // remove zero null space vector associated with electric potential dofs by truncating null
+        // space
+        nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
+
+      else
+        // null space associated with electric potential dofs
+        // remove zero null space vector(s) associated with concentration dofs and retain only the
+        // last null space vector associated with electric potential dofs
+        nullspace.erase(
+            nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
+
+      // decrease null space dimension and number of partial differential equations by one
+      --mueluparams.get<int>("null space: dimension");
+      --mueluparams.get<int>("PDE equations");
+    }
+  }
 }

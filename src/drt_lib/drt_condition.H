@@ -228,7 +228,6 @@ namespace DRT
       TransportThermoConvections,
       S2ICoupling,
       S2ICouplingGrowth,
-      S2ICouplingPartitioning,
       ElectrodeSOC,
       CCCVCycling,
       CCCVHalfCycle,
@@ -281,6 +280,7 @@ namespace DRT
       CellFocalAdhesion,
       ScatraHeteroReactionCondMaster,
       ScatraHeteroReactionCondSlave,
+      ScatraPartitioning,
       SilverMueller,
       ElementTag,
       NodeTag

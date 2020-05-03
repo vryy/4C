@@ -1,8 +1,5 @@
 //
 // Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
@@ -33,6 +30,7 @@ RESULTSEVRY                     2
 RESTARTEVRY                     5
 CALCERROR                       error_by_condition
 COMPUTEINTEGRALS                repeated
+EQUILIBRATION                   rowsandcolumns_maindiag
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -44,7 +42,6 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rowsandcolumns_maindiag
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
@@ -129,7 +126,7 @@ E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4
 E 3 - 0 Master
 E 4 - 1 Master
 E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
----------------------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+---------------------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL                            3
 E 1 -
 E 2 -

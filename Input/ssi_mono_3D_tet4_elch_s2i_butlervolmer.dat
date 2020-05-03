@@ -1,5 +1,6 @@
 //
 // Maintainer: Christoph Schmidt
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -49,7 +50,6 @@ EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_maindiag
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         20
 TIMESTEP                        1.0
@@ -58,6 +58,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
+EQUILIBRATION                   rows_maindiag
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS

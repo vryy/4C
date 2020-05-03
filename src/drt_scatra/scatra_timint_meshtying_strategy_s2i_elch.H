@@ -63,16 +63,6 @@ namespace SCATRA
       return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
     };
 
-    //! build maps associated with blocks of global system matrix
-    void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>&
-                            partitioningconditions,  //!< domain partitioning conditions
-        std::vector<Teuchos::RCP<const Epetra_Map>>&
-            blockmaps  //!< empty vector for maps to be built
-        ) const;
-
-    //! build null spaces associated with blocks of global system matrix
-    void BuildBlockNullSpaces() const;
-
     //! instantiate strategy for Newton-Raphson convergence check
     void InitConvCheckStrategy();
 

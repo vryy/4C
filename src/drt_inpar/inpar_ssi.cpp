@@ -10,13 +10,9 @@
 
 /*----------------------------------------------------------------------*/
 
-
-
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
 #include "../drt_lib/drt_conditiondefinition.H"
-
-
 
 void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -124,6 +120,13 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "type of global system matrix in global system of equations",
       tuple<std::string>("undefined", "block", "sparse"),
       tuple<int>(INPAR::SSI::matrix_undefined, INPAR::SSI::matrix_block, INPAR::SSI::matrix_sparse),
+      &ssidynmono);
+
+  setStringToIntegralParameter<EquilibrationMethod>("EQUILIBRATION", "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>("none", "rows_full", "rows_maindiag"),
+      tuple<EquilibrationMethod>(EquilibrationMethod::none, EquilibrationMethod::rows_full,
+          EquilibrationMethod::rows_maindiag),
       &ssidynmono);
 }
 

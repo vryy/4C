@@ -63,6 +63,14 @@ namespace INPAR
       matrix_sparse
     };
 
+    //! equilibration methods for global system of equations
+    enum class EquilibrationMethod
+    {
+      none,
+      rows_full,
+      rows_maindiag
+    };
+
     //! type of scalar transport time integration
     enum ScaTraTimIntType
     {

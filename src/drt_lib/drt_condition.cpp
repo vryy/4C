@@ -417,6 +417,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar transport reaction coupling condition (Master)";
   else if (Type() == ScatraHeteroReactionCondSlave)
     os << "Scalar transport reaction coupling condition (Slave)";
+  else if (Type() == ScatraPartitioning)
+    os << "Scalar transport partitioning condition for block preconditioning";
   else if (Type() == SSICoupling)
     os << "Scalar-Structure coupling condition";
   else if (Type() == SSICouplingSolidToScatra)

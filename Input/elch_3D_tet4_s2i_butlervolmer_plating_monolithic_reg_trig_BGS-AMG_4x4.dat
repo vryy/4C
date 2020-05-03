@@ -1,8 +1,5 @@
 //
 // Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
@@ -33,6 +30,8 @@ THETA                           0.5
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
 OUTPUTSCALARS                   entire_domain_and_by_condition
+EQUILIBRATION                   rows_maindiag
+MATRIXTYPE                      block_condition
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0.0
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -47,8 +46,6 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows_maindiag
 INTLAYERGROWTH_EVALUATION       monolithic
 INTLAYERGROWTH_LINEAR_SOLVER    1
 --------------------------------------------------------------------SOLVER 1
@@ -121,7 +118,7 @@ E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 7
 ----------------------------------DESIGN S2I COUPLING GROWTH SURF CONDITIONS
 DSURF  1
 E 2 - 0 KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 1.2e-7 alpha_a 0.5 alpha_c 0.5 molmass 6.941e-9 density 5.34e-7 conductivity 10.6e9 regtype trigonometrical regpar 0.0 initthickness 0.0
----------------------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+---------------------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL                            3
 E 1 -
 E 2 -
