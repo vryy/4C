@@ -58,7 +58,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
   LINALG::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Increment of xi.
-  LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  LINALG::Matrix<3, 1, scalar_type> delta_xi(1.0);
 
   // Residuum.
   LINALG::Matrix<3, 1, scalar_type> residuum;
@@ -79,7 +79,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       residuum -= point;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
+          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
       {
         if (ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
@@ -144,7 +145,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
   // Residuum.
   LINALG::Matrix<4, 1, scalar_type> residuum;
-  LINALG::Matrix<4, 1, scalar_type> delta_x;
+  LINALG::Matrix<4, 1, scalar_type> delta_x(1.0);
 
   // Jacobian / inverse.
   LINALG::Matrix<4, 4, scalar_type> J_J_inv;
@@ -184,7 +185,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
+          delta_x.Norm2() < CONSTANTS::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameter3D<volume>(xi))
