@@ -13,7 +13,6 @@
 #include "matpar_parameter.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-/* forward declarations */
 namespace MAT
 {
   namespace PAR
@@ -27,14 +26,17 @@ namespace MAT
     class InelasticDeformationDirection
     {
      public:
-      /// standard constructor
-      InelasticDeformationDirection(std::vector<double> growthdirection);
+      /*!
+       * @brief standard constructor
+       * @param[in] growthdirection  direction of anisotropic growth
+       */
+      explicit InelasticDeformationDirection(std::vector<double> growthdirection);
 
       /// destructor
       virtual ~InelasticDeformationDirection() = default;
 
       /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() { return growthdirmat_; };
+      LINALG::Matrix<3, 3> Growthdirmat() const { return growthdirmat_; }
 
      private:
       /// matrix that determines growth direction
@@ -51,20 +53,18 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~InelasticDefgradScalar() = default;
+      ~InelasticDefgradScalar() override = default;
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
 
       /// return scalar that causes growth
-      int Scalar1() { return Scalar1_; };
+      int Scalar1() const { return Scalar1_; }
       /// return value of scalar 1 for that there is no growth
-      double Scalar1refconc() { return Scalar1refconc_; };
+      double Scalar1refconc() const { return Scalar1refconc_; }
       /// return saturation concentration of material
-      double Cmax() { return Cmax_; };
+      double Cmax() const { return Cmax_; }
 
      private:
       /// scalar that causes growth
@@ -83,13 +83,12 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradLinScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit InelasticDefgradLinScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
       ~InelasticDefgradLinScalar() override = default;
 
       /// return growth factor for scalar 1
-      double Scalar1growthfac() { return Scalar1growthfac_; };
+      double Scalar1growthfac() const { return Scalar1growthfac_; }
 
      private:
       /// growth factor for scalar 1
@@ -101,11 +100,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradLinScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
+      explicit InelasticDefgradLinScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
           : InelasticDefgradLinScalar(matdata){};
 
       ~InelasticDefgradLinScalarIso() override = default;
-
     };  // end of class InelasticDefgradLinScalarIso
 
     /*----------------------------------------------------------------------
@@ -114,18 +112,16 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
       ~InelasticDefgradLinScalarAniso() override = default;
 
       /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
+      LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); }
 
      private:
       /// object, that calculates and holds direction of inelastic deformation
       InelasticDeformationDirection growthdir_;
-
     };  // end of class InelasticDefgradLinScalarAniso
 
     /*----------------------------------------------------------------------
@@ -134,27 +130,22 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradPolyScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
-      /// destructor
+      explicit InelasticDefgradPolyScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
+
       ~InelasticDefgradPolyScalar() override = default;
 
-      /// return number of polynomial coefficients
-      unsigned Polyparanum() { return Polyparanum_; };
       /// return vector containing polynomial coefficients
-      std::vector<double> Polyparams() { return Polyparams_; };
+      std::vector<double> Polycoeffs() const { return Polycoeffs_; }
       /// return lower bound of validity of polynomial
-      double Xmin() { return Xmin_; };
+      double Xmin() const { return Xmin_; }
       /// return upper bound of validity of polynomial
-      double Xmax() { return Xmax_; };
-      /// return saturation concentration of material
-      /// /// return value of polynomial at reference intercalation fraction
-      double MATPolynomReference() { return MATPolynomReference_; };
+      double Xmax() const { return Xmax_; }
+      /// return value of polynomial at reference intercalation fraction
+      double MATPolynomReference() const { return MATPolynomReference_; }
 
      private:
-      /// number of parameters of the polynomial describing volume change
-      const unsigned Polyparanum_;
       /// coefficients of polynomial
-      const std::vector<double> Polyparams_;
+      const std::vector<double> Polycoeffs_;
       /// lower bound of validity of polynomial
       const double Xmin_;
       /// upper bound of validity of polynomial
@@ -169,10 +160,9 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradPolyScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
+      explicit InelasticDefgradPolyScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
           : InelasticDefgradPolyScalar(matdata){};
 
-      /// destructor
       ~InelasticDefgradPolyScalarIso() override = default;
     };  // end of class InelasticDefgradPolyScalarIso
 
@@ -182,13 +172,12 @@ namespace MAT
     {
      public:
       /// standard constructor
-      InelasticDefgradPolyScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit InelasticDefgradPolyScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
       ~InelasticDefgradPolyScalarAniso() override = default;
 
       /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); };
+      LINALG::Matrix<3, 3> Growthdirmat() const { return growthdir_.Growthdirmat(); }
 
      private:
       /// object, that calculates and holds direction of inelastic deformation
@@ -223,46 +212,68 @@ namespace MAT
     /// destructor
     virtual ~InelasticDefgradFactors() = default;
 
-    /// create object by input parameter ID
-    static Teuchos::RCP<InelasticDefgradFactors> Factory(int matnum);  ///< material ID
+    /*!
+     * @brief create object by input parameter ID
+     *
+     * @param[in] matnum  material ID
+     * @return pointer to material that is defined by material ID
+     */
+    static Teuchos::RCP<InelasticDefgradFactors> Factory(int matnum);
 
     /// provide material type
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
-    /// evaluate the deformation gradient and its inverse
+    /*!
+     * @brief evaluate the deformation gradient and its inverse
+     *
+     * @param[in] defgrad  Deformation gradient
+     * @param[out] iFinM   Inverse inelastic deformation gradient
+     */
     virtual void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) = 0;     ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) = 0;
 
-    /// evaluate additional terms for the elasticity tensor
-    virtual void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) = 0;  ///< Additional elasticity tensor
+    /*!
+     * @brief evaluate additional terms for the elasticity tensor
+     *
+     * @param[in] defgrad  Deformation gradient
+     * @param[in] iFinjM   Inverse inelastic deformation gradient of current inelastic contribution
+     *                     as 3x3 matrix
+     * @param[in] iCV      Inverse right Cauchy-Green tensor
+     * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
+     *                     deformation gradient of current inelastic contribution
+     * @param[in/out] cmatadd  Additional elasticity tensor
+     */
+    virtual void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) = 0;
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    virtual void EvaluateODStiffMat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdx) = 0;  ///< Derivative of 2nd Piola Kirchhoff stresses
-                                               ///< w.r.t. primary variable of different field
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    virtual void PreEvaluate(
-        Teuchos::ParameterList& params) = 0;  ///< parameter list as handed in from the element
+    /*!
+     * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
+     *        cross-linearizations
+     *
+     * @param[in] defgrad Deformation gradient
+     * @param[in] iFinjM  Inverse inelastic deformation gradient of current inelastic contribution
+     *                    as 3x3 matrix
+     * @param[in] dSdiFinj  Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
+     *                      deformation gradient of current inelastic contribution
+     * @param[in/out] dstressdx Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable
+     *                          of different field
+     */
+    virtual void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+        LINALG::Matrix<6, 1>& dstressdx) = 0;
+
+    /*!
+     * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
+     *        Evaluate()
+     *
+     * @param[in] params parameter list as handed in from the element
+     */
+    virtual void PreEvaluate(Teuchos::ParameterList& params) = 0;
 
     /// return material parameters
-    MAT::PAR::Parameter* Parameter() { return params_; }
+    virtual MAT::PAR::Parameter* Parameter() { return params_; }
 
     /// Get type of scalar, that leads to deformation
     virtual PAR::InelasticSource GetInelasticSource() = 0;
@@ -289,66 +300,50 @@ namespace MAT
     /// construct material with specific material params
     explicit InelasticDefgradLinear(MAT::PAR::Parameter* params);
 
-    /// destructor
     ~InelasticDefgradLinear() override = default;
 
-    /// evaluate scaling factor
-    double EvaluateDeltaGrowth(const double Growthfac, const double DetJacobian,
-        const double Referenceconc, const double concentration, const double Cmax);
+    /*!
+     * @brief evaluate the growth scaling factor
+     *
+     * @param[in] Growthfac      growth factor
+     * @param[in] DetJacobian    determinant of the deformation gradient
+     * @param[in] Referenceconc  reference concentration (has to equal the inital concentration)
+     * @param[in] concentration  current concentration
+     * @param[in] Cmax           maximum concentration
+     * @return  growth scaling factor
+     */
+    static double EvaluateDeltaGrowth(double Growthfac, double DetJacobian, double Referenceconc,
+        double concentration, double Cmax);
 
-    /// provide material type
     INPAR::MAT::MaterialType MaterialType() const override
     {
       dserror("not implemented here");
       return INPAR::MAT::m_none;
     }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,   ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) override  ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override
     {
       dserror("not implemented here");
     }
 
-    /// evaluate additional terms for the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) override  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override
     {
       dserror("not implemented here");
     }
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdx) override  ///< Derivative of 2nd Piola Kirchhoff stresses
-                                                   ///< w.r.t. primary variable of different field
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+        LINALG::Matrix<6, 1>& dstressdx) override
     {
       dserror("not implemented here");
     }
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) override  ///< parameter list as handed in from the element
-    {
-      dserror("not implemented here");
-    }
+    void PreEvaluate(Teuchos::ParameterList& params) override { dserror("not implemented here"); }
 
-    /// Get type of scalar, that leads to deformation
     MAT::PAR::InelasticSource GetInelasticSource() override;
-
   };  // end of class InelasticDefgradLinear
 
   /*--------------------------------------------------------------------*/
@@ -363,75 +358,69 @@ namespace MAT
   {
    public:
     /// constructor
-    InelasticDefgradPolynomial();
+    InelasticDefgradPolynomial() = default;
 
     /// construct material with specific material params
     explicit InelasticDefgradPolynomial(MAT::PAR::Parameter* params);
 
-    /// destructor
     ~InelasticDefgradPolynomial() override = default;
 
-    /// evaluate polynomial describing growth of material with regard to concentration
-    double EvaluateMatPolynomial(const double Scalar, const int NumberPolyparams,
-        const std::vector<double> ParamsPoly, const double X_min, const double X_max,
-        double concentration, const double Cmax, double DetJacobian);
+    /*!
+     * @brief evaluate polynomial describing growth of material with regard to concentration
+     *
+     * @param[in] PolyCoeff     coefficients of the polynomial
+     * @param[in] X_min         lower bound for lithiation
+     * @param[in] X_max         upper bound for lithiation
+     * @param[in] concentration current concentration
+     * @param[in] Cmax          maximum concentration
+     * @param[in] DetJacobian   determinant of the deformation gradient
+     * @return value of polynomial describing the growth for current concentration
+     */
+    double EvaluateMatPolynomial(const std::vector<double>& PolyCoeff, double X_min, double X_max,
+        double concentration, double Cmax, double DetJacobian);
 
-    /// evaluate the first derivative of polynomial
-    double EvaluateMatPolynomialDerivative(const double Scalar, const int NumberPolyparams,
-        const std::vector<double> ParamsPoly, double concentration, const double Cmax,
-        double DetJacobian);
+    ///
+    /*!
+     * @brief evaluate the first derivative of the polynomial describing the growth
+     *
+     * @param[in] PolyCoeff     coefficients of the polynomial
+     * @param[in] concentration current concentration
+     * @param[in] Cmax          maximum concentration
+     * @param[in] DetJacobian   determinant of the deformation gradient
+     * @return value of the first derivative of the polynomial describing the growth for current
+     *         concentration w.r.t. current lithiation
+     */
+    static double EvaluateMatPolynomialDerivative(const std::vector<double>& PolyCoeff,
+        double concentration, double Cmax, double DetJacobian);
 
-    /// provide material type
     INPAR::MAT::MaterialType MaterialType() const override
     {
       dserror("not implemented here");
       return INPAR::MAT::m_none;
     }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,   ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) override  ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override
     {
       dserror("not implemented here");
     }
 
-    /// evaluate additional terms for the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) override  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override
     {
       dserror("not implemented here");
     }
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdx) override  ///< Derivative of 2nd Piola Kirchhoff stresses
-                                                   ///< w.r.t. primary variable of different field
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+        LINALG::Matrix<6, 1>& dstressdx) override
     {
       dserror("not implemented here");
     }
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) override  ///< parameter list as handed in from the element
-    {
-      dserror("not implemented here");
-    }
+    void PreEvaluate(Teuchos::ParameterList& params) override { dserror("not implemented here"); }
 
-    /// Get type of scalar, that leads to deformation
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
   };  // end of class InelasticDefgradPolynomial
@@ -453,45 +442,26 @@ namespace MAT
     /// construct material with specific material params
     explicit InelasticDefgradLinScalarIso(MAT::PAR::Parameter* params);
 
-    /// destructor
-    virtual ~InelasticDefgradLinScalarIso() override = default;
+    ~InelasticDefgradLinScalarIso() override = default;
 
-    /// material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_lin_scalar_iso; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::mfi_lin_scalar_iso;
+    }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
-    /// evaluate additional terms of the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdc)
-        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) final;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    /// return the material parameters
-    MAT::PAR::InelasticDefgradLinScalarIso* Parameter()
+    MAT::PAR::InelasticDefgradLinScalarIso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarIso*>(
           MAT::InelasticDefgradFactors::Parameter());
@@ -529,45 +499,26 @@ namespace MAT
     /// construct material with specific material params
     explicit InelasticDefgradLinScalarAniso(MAT::PAR::Parameter* params);
 
-    /// destructor
-    virtual ~InelasticDefgradLinScalarAniso() override = default;
+    ~InelasticDefgradLinScalarAniso() override = default;
 
-    /// material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_lin_scalar_aniso; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::mfi_lin_scalar_aniso;
+    }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
-    /// evaluate additional terms for the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdc)
-        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) final;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    /// return the material parameters
-    MAT::PAR::InelasticDefgradLinScalarAniso* Parameter()
+    MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(
           MAT::InelasticDefgradFactors::Parameter());
@@ -600,45 +551,26 @@ namespace MAT
     /// construct material with specific material params
     explicit InelasticDefgradPolyScalarIso(MAT::PAR::Parameter* params);
 
-    /// destructor
-    virtual ~InelasticDefgradPolyScalarIso() override = default;
+    ~InelasticDefgradPolyScalarIso() override = default;
 
-    /// material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_poly_scalar_iso; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::mfi_poly_scalar_iso;
+    }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
-    /// evaluate additional terms of the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdc)
-        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) final;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    /// return the material parameters
-    MAT::PAR::InelasticDefgradPolyScalarIso* Parameter()
+    MAT::PAR::InelasticDefgradPolyScalarIso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyScalarIso*>(
           MAT::InelasticDefgradFactors::Parameter());
@@ -674,45 +606,26 @@ namespace MAT
     /// construct material with specific material params
     explicit InelasticDefgradPolyScalarAniso(MAT::PAR::Parameter* params);
 
-    /// destructor
-    virtual ~InelasticDefgradPolyScalarAniso() override = default;
+    ~InelasticDefgradPolyScalarAniso() override = default;
 
-    /// material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mfi_poly_scalar_aniso; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::mfi_poly_scalar_aniso;
+    }
 
-    /// evaluate the deformation gradient and its inverse
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
-    /// evaluate additional terms for the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdc)
-        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(
-        Teuchos::ParameterList& params) final;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    /// return the material parameters
-    MAT::PAR::InelasticDefgradPolyScalarAniso* Parameter()
+    MAT::PAR::InelasticDefgradPolyScalarAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyScalarAniso*>(
           MAT::InelasticDefgradFactors::Parameter());
