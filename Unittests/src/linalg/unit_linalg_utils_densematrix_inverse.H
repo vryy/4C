@@ -331,6 +331,29 @@ class LINALG::Linalg_Inverse_TestSuite : public CxxTest::TestSuite
     A_singular(2, 2) = 1.0;
     TS_ASSERT(not LINALG::InverseDoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
+
+  void test_SolveLinearSystem4x4DoNotThrowErrorOnZeroDeterminantScaled()
+  {
+    LINALG::Matrix<4, 4, double> A(true);
+    LINALG::Matrix<4, 1, double> b(true);
+    LINALG::Matrix<4, 1, double> x(true);
+    const double eps_det = 1e-10;
+    const double eps_result = 1e-12;
+
+    // Create an invertible diagonal matrix with an unscaled determinant of about 2e-11.
+    for (unsigned int i = 0; i < 4; i++)
+    {
+      A(i, i) = 0.001 * (i + 1);
+      b(i) = 0.1 * (i + 1);
+    }
+
+    // Solve the system by scaling the system matrix and compare the results.
+    TS_ASSERT(LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(A, b, x, eps_det));
+    TS_ASSERT_DELTA(x(0), 100.0, eps_result);
+    TS_ASSERT_DELTA(x(1), 100.0, eps_result);
+    TS_ASSERT_DELTA(x(2), 100.0, eps_result);
+    TS_ASSERT_DELTA(x(3), 100.0, eps_result);
+  }
 };
 
 #endif
