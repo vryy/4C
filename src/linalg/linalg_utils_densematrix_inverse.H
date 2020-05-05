@@ -148,7 +148,7 @@ namespace LINALG
   }
 
   /*!
-   * \brief Explicit inverse of a nonsymmetric 2x2 matrix. If the matrix is singular no error will
+   * \brief Explicit inverse of a nonsymmetric matrix. If the matrix is singular no error will
    * be thrown, and the original matrix will remain untouched.
    *
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
@@ -170,7 +170,7 @@ namespace LINALG
   }
 
   /**
-   * \brief Solve a linear system of equations \f$Ab=x\f$.
+   * \brief Solve a linear system of equations \f$Ax=b\f$.
    *
    * If the system is not solvable this function will return false. The matrix \f$A\f$ is scaled so
    * that the largest entry in each row is 1. By doing so we can perform a sensible comparison of
@@ -192,7 +192,7 @@ namespace LINALG
   bool SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(LINALG::Matrix<dim, dim, T>& A,
       LINALG::Matrix<dim, 1, T>& b, LINALG::Matrix<dim, 1, T>& x, double eps)
   {
-    T max_value;
+    T max_value = 0.0;
     for (unsigned int i_row = 0; i_row < dim; i_row++)
     {
       max_value = 0.0;
