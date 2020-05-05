@@ -92,12 +92,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       // Check if residuum is in a sensible range where we still expect to find a solution.
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
-      // Invert the jacobian and check if the system is solvable.
-      if (LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(
-              J_J_inv, CONSTANTS::local_newton_det_tol))
+      // Solve the linearized system.
+      if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
       {
-        // Solve the linearized system.
-        delta_xi.Multiply(J_J_inv, residuum);
+        // Set the new parameter coordinates.
         xi -= delta_xi;
 
         // Advance Newton iteration counter.
@@ -305,13 +304,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         J_J_inv(i, 3) = -dr_line(i);
       }
 
-      // Invert the jacobian and check if the determinant is not 0.
-      if (LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(
-              J_J_inv, CONSTANTS::local_newton_det_tol))
+      // Solve the linearized system.
+      if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_x, CONSTANTS::local_newton_det_tol))
       {
-        // Solve the linearized system.
-        delta_x.Multiply(J_J_inv, residuum);
-
         // Set the new parameter coordinates.
         eta -= delta_x(3);
         for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_x(i);

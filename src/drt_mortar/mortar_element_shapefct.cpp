@@ -1143,7 +1143,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse2x2(melin);
+        LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
         LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1460,7 +1460,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse3x3(melin);
+        LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
         LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1551,7 +1551,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse4x4(melin);
+        LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
         LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1641,7 +1641,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse4x4(melin);
+        LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
         LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -3016,7 +3016,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse2x2(melin);
+          LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4115,7 +4115,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse3x3(melin);
+          LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4255,7 +4255,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse4x4(melin);
+          LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)

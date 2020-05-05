@@ -1462,9 +1462,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
         gl(2, 1) = gl(1, 2);
         gl(2, 2) = glstrain(2);
 
-        // inverse of deformation gradient
-        // Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is
-        // destroyed! LINALG::NonsymInverse3x3(invdefgrd);
+        // Inverse of deformation gradient (make a copy here otherwise defgrd is destroyed).
         LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invdefgrd;
         invdefgrd.Invert(defgrd);
 
