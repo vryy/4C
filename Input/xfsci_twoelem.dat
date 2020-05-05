@@ -73,21 +73,21 @@ SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          100
 INFNORMSCALING                  No                            //is used by xfsi!!!
-NORM_INC                        Rel                           // Abs // Mix
+NORM_INC                        Abs                           // Abs // Mix
 NORM_RESF                       Rel                           // Abs // Mix
-TOL_DIS_INC_INF                 1e5
+TOL_DIS_INC_INF                 1e-5
 TOL_DIS_INC_L2                  1e5
 TOL_DIS_RES_INF                 1e5
 TOL_DIS_RES_L2                  1e-6
-TOL_FSI_INC_INF                 1e5
+TOL_FSI_INC_INF                 1e-5
 TOL_FSI_INC_L2                  1e5
 TOL_FSI_RES_INF                 1e5
 TOL_FSI_RES_L2                  1e5
-TOL_PRE_INC_INF                 1e5
+TOL_PRE_INC_INF                 1e-6
 TOL_PRE_INC_L2                  1e5
 TOL_PRE_RES_INF                 1e5
 TOL_PRE_RES_L2                  1e-6
-TOL_VEL_INC_INF                 1e5
+TOL_VEL_INC_INF                 1e-5
 TOL_VEL_INC_L2                  1e5
 TOL_VEL_RES_INF                 1e5
 TOL_VEL_RES_L2                  1e-6
@@ -123,7 +123,7 @@ NIT_STAB_FAC_TANG               35
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none 
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.5
 GHOST_PENALTY_TRANSIENT_STAB    yes
@@ -354,12 +354,12 @@ NODE 38    COORD  1.9000000000000000e+00  1.9000000000000000e+00  2.100000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 7.11581762001583878e-04 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 2.64407538753673241e-11 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.74267258647946219e-02 TOLERANCE 1e-5
-XFLUID DIS fluid NODE 39 QUANTITY velx VALUE -3.05532749819702621e-03 TOLERANCE 1e-5
-XFLUID DIS fluid NODE 39 QUANTITY vely VALUE -3.05532263008058110e-03 TOLERANCE 1e-5
-XFLUID DIS fluid NODE 39 QUANTITY velz VALUE -1.14633235484425701e-02 TOLERANCE 1e-5
-XFLUID DIS fluid NODE 39 QUANTITY pressure VALUE  7.53629445955234564e-04 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 7.11581769036179331e-04 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 0 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.74267258360664978e-02 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY velx VALUE -3.05527604220445434e-03 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY vely VALUE -3.05527113438764123e-03 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY velz VALUE -1.14629400865969670e-02 TOLERANCE 1e-5
+XFLUID DIS fluid NODE 39 QUANTITY pressure VALUE  7.53210754997754670e-04 TOLERANCE 1e-5
 ---------------------------------------------------------------END
 // END
