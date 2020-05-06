@@ -58,7 +58,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
 
   // Vectors in 3D.
   LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  LINALG::Matrix<3, 1, scalar_type> delta_xi(1.0);
   LINALG::Matrix<3, 1, scalar_type> residuum;
 
   // Jacobian / inverse.
@@ -80,7 +80,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       residuum -= point;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
+          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
       {
         if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
@@ -239,7 +240,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
   // Residuum.
   LINALG::Matrix<4, 1, scalar_type> residuum;
-  LINALG::Matrix<4, 1, scalar_type> delta_x;
+  LINALG::Matrix<4, 1, scalar_type> delta_x(1.0);
 
   // Jacobian / inverse.
   LINALG::Matrix<4, 4, scalar_type> J_J_inv;
@@ -281,7 +282,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
+          delta_x.Norm2() < CONSTANTS::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
