@@ -114,6 +114,100 @@ namespace GEOMETRYPAIR
   }
 
   /**
+   * \brief Create the geometry for two solid elements and a line between them.
+   */
+  void xtest_line_in_small_elements_geometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
+      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,
+      std::vector<LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<LINALG::Matrix<24, 1, double>>& q_volume_elements)
+  {
+    // Create the elements.
+    const int dummy_node_ids[2] = {0, 1};
+    line_elements.push_back(Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0)));
+    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    volume_elements.push_back(Teuchos::rcp(new DRT::ELEMENTS::So_hex8(1, 0)));
+    volume_elements.push_back(Teuchos::rcp(new DRT::ELEMENTS::So_hex8(2, 0)));
+
+    // Positional and tangent DOFs of the line(s).
+    q_line_elements.push_back(LINALG::Matrix<12, 1, double>());
+    q_line_elements.back()(0) = -0.042544945846900002;
+    q_line_elements.back()(1) = 0.0107761505991;
+    q_line_elements.back()(2) = -0.079418958671100007;
+    q_line_elements.back()(3) = -0.50707031399068514;
+    q_line_elements.back()(4) = 0.86012099777576989;
+    q_line_elements.back()(5) = 0.055421709235663169;
+    q_line_elements.back()(6) = -0.047353734337799998;
+    q_line_elements.back()(7) = 0.0189330863154;
+    q_line_elements.back()(8) = -0.0788933682941;
+    q_line_elements.back()(9) = -0.50707031399068514;
+    q_line_elements.back()(10) = 0.86012099777576989;
+    q_line_elements.back()(11) = 0.055421709235663169;
+    q_rot_line_elements.push_back(LINALG::Matrix<9, 1, double>());
+    q_rot_line_elements.back()(0) = -1.5472887101499999;
+    q_rot_line_elements.back()(1) = -2.7041308685100001;
+    q_rot_line_elements.back()(2) = -0.108137074507;
+    q_rot_line_elements.back()(3) = -1.5472887101499999;
+    q_rot_line_elements.back()(4) = -2.7041308685100001;
+    q_rot_line_elements.back()(5) = -0.108137074507;
+    q_rot_line_elements.back()(6) = -1.5472887101499999;
+    q_rot_line_elements.back()(7) = -2.7041308685100001;
+    q_rot_line_elements.back()(8) = -0.108137074507;
+
+    // Positional DOFs of the solid(s).
+    q_volume_elements.push_back(LINALG::Matrix<24, 1, double>());
+    q_volume_elements.back()(0) = -0.059010802172665688;
+    q_volume_elements.back()(1) = -4.0342241261323264e-05;
+    q_volume_elements.back()(2) = -0.066666666666666652;
+    q_volume_elements.back()(3) = -0.056622864988174502;
+    q_volume_elements.back()(4) = 0.015639754881976043;
+    q_volume_elements.back()(5) = -0.066666666666666652;
+    q_volume_elements.back()(6) = -0.040709644689084147;
+    q_volume_elements.back()(7) = 0.016677096446779945;
+    q_volume_elements.back()(8) = -0.066666666666666666;
+    q_volume_elements.back()(9) = -0.041287025540519016;
+    q_volume_elements.back()(10) = -0.0036547536928699174;
+    q_volume_elements.back()(11) = -0.066666666666666666;
+    q_volume_elements.back()(12) = -0.059019184401410199;
+    q_volume_elements.back()(13) = -4.8643836701577456e-05;
+    q_volume_elements.back()(14) = -0.083333333333333273;
+    q_volume_elements.back()(15) = -0.05663155442052388;
+    q_volume_elements.back()(16) = 0.015632134107931933;
+    q_volume_elements.back()(17) = -0.083333333333333287;
+    q_volume_elements.back()(18) = -0.040733363534936125;
+    q_volume_elements.back()(19) = 0.016660438882450789;
+    q_volume_elements.back()(20) = -0.083333333333333301;
+    q_volume_elements.back()(21) = -0.04130006471411609;
+    q_volume_elements.back()(22) = -0.0036684247948681049;
+    q_volume_elements.back()(23) = -0.083333333333333301;
+    q_volume_elements.push_back(LINALG::Matrix<24, 1, double>());
+    q_volume_elements.back()(0) = -0.056622864988174502;
+    q_volume_elements.back()(1) = 0.015639754881976043;
+    q_volume_elements.back()(2) = -0.066666666666666652;
+    q_volume_elements.back()(3) = -0.053802653656544963;
+    q_volume_elements.back()(4) = 0.030093324120797998;
+    q_volume_elements.back()(5) = -0.066666666666666652;
+    q_volume_elements.back()(6) = -0.040779423818941965;
+    q_volume_elements.back()(7) = 0.032105257644590407;
+    q_volume_elements.back()(8) = -0.066666666666666666;
+    q_volume_elements.back()(9) = -0.040709644689084147;
+    q_volume_elements.back()(10) = 0.016677096446779945;
+    q_volume_elements.back()(11) = -0.066666666666666666;
+    q_volume_elements.back()(12) = -0.05663155442052388;
+    q_volume_elements.back()(13) = 0.015632134107931933;
+    q_volume_elements.back()(14) = -0.083333333333333287;
+    q_volume_elements.back()(15) = -0.053807767110452855;
+    q_volume_elements.back()(16) = 0.030086120994904451;
+    q_volume_elements.back()(17) = -0.083333333333333287;
+    q_volume_elements.back()(18) = -0.040791092460926263;
+    q_volume_elements.back()(19) = 0.032092609002086644;
+    q_volume_elements.back()(20) = -0.083333333333333301;
+    q_volume_elements.back()(21) = -0.040733363534936125;
+    q_volume_elements.back()(22) = 0.016660438882450789;
+    q_volume_elements.back()(23) = -0.083333333333333301;
+  }
+
+  /**
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.
    */
