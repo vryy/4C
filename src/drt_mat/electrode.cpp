@@ -23,6 +23,7 @@
 MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ElchSingleMat(matdata),
       cmax_(matdata->GetDouble("C_MAX")),
+      chimax_(matdata->GetDouble("CHI_MAX")),
       ocpmodel_(StringToOCPModel(*matdata->Get<std::string>("OCP_MODEL"))),
       ocpparanum_(matdata->GetInt("OCP_PARA_NUM")),
       ocppara_(*matdata->Get<std::vector<double>>("OCP_PARA")),
@@ -172,8 +173,6 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       break;
     }
   }
-
-  return;
 }
 
 
@@ -221,7 +220,7 @@ MAT::ElectrodeType MAT::ElectrodeType::instance_;
 
 DRT::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
 {
-  MAT::Electrode* electrode = new MAT::Electrode();
+  auto* electrode = new MAT::Electrode();
   electrode->Unpack(data);
   return electrode;
 }
@@ -230,13 +229,13 @@ DRT::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | construct empty electrode material                        fang 02/15 |
  *----------------------------------------------------------------------*/
-MAT::Electrode::Electrode() : params_(NULL) { return; }
+MAT::Electrode::Electrode() : params_(nullptr) {}
 
 
 /*-----------------------------------------------------------------------------*
  | construct electrode material with specific material parameters   fang 02/15 |
  *-----------------------------------------------------------------------------*/
-MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) { return; }
+MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
@@ -252,10 +251,8 @@ void MAT::Electrode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
 
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
-
-  return;
 }
 
 
@@ -274,7 +271,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -289,23 +286,20 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
     }
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  | compute half cell open circuit potential                  fang 08/15 |
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeOpenCircuitPotential(const double concentration,  //!< concentration
-    const double faraday,  //!< Faraday constant
-    const double frt       //!< factor F/RT
-    ) const
+double MAT::Electrode::ComputeOpenCircuitPotential(
+    const double concentration, const double faraday, const double frt) const
 {
-  double ocp(0.);
+  double ocp(0.0);
 
   // intercalation fraction
-  const double X = concentration / params_->cmax_;
+  // TODO: Check whether we should hand in the determinant of the deformation gradient
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
 
   // print warning to screen if prescribed interval of validity for ocp calculation model is given
   // but not satisfied
@@ -422,15 +416,13 @@ double MAT::Electrode::ComputeOpenCircuitPotential(const double concentration,  
  08/15 |
  *---------------------------------------------------------------------------------------------------------*/
 double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
-    const double concentration,  //!< concentration
-    const double faraday,        //!< Faraday constant
-    const double frt             //!< factor F/RT
-    ) const
+    const double concentration, const double faraday, const double frt) const
 {
-  double ocpderiv(0.);
+  double ocpderiv(0.0);
 
   // intercalation fraction
-  const double X = concentration / params_->cmax_;
+  // TODO: Check whether we should hand in the determinant of the deformation gradient
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)
@@ -539,15 +531,13 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
  08/15 |
  *----------------------------------------------------------------------------------------------------------*/
 double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
-    const double concentration,  //!< concentration
-    const double faraday,        //!< Faraday constant
-    const double frt             //!< factor F/RT
-    ) const
+    const double concentration, const double faraday, const double frt) const
 {
-  double ocpderiv2(0.);
+  double ocpderiv2(0.0);
 
   // intercalation fraction
-  const double X = concentration / params_->cmax_;
+  // TODO: Check whether we should hand in the determinant of the deformation gradient
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)

@@ -6,9 +6,7 @@
 \level 2
 
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef UNIT_ELECTRODE_H
@@ -51,6 +49,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // add cathode parameters to container according to master thesis by Alexander Rupp (2017)
     container->Add("C_MAX", 4793.3);
+    container->Add("CHI_MAX", 1.0);
     container->Add("OCP_PARA_NUM", 0);
     container->Add("OCP_PARA", std::vector<double>(0, 0.));
     std::string ocpcsv(__FILE__);

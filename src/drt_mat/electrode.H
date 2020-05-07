@@ -33,18 +33,22 @@ namespace MAT
     {
      public:
       //! constructor
-      Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~Electrode() { return; };
+      ~Electrode() override = default;
 
       //! create instance of electrode material
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! @name parameters for electrode material
       //! @{
       //! saturation value of intercalated Lithium concentration
       const double cmax_;
+
+      //! lithiation value corresponding to saturation value of intercalated Lithium concentration
+      //! #cmax_
+      const double chimax_;
 
       //! model for half cell open circuit potential
       const OCPModels ocpmodel_;
@@ -87,11 +91,11 @@ namespace MAT
   class ElectrodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ElectrodeType"; };
+    std::string Name() const override { return "ElectrodeType"; };
 
     static ElectrodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElectrodeType instance_;
@@ -116,7 +120,10 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ElectrodeType::Instance().UniqueParObjectId(); };
+    int UniqueParObjectId() const override
+    {
+      return ElectrodeType::Instance().UniqueParObjectId();
+    };
 
     /*!
       \brief Pack this class so it can be communicated
@@ -128,7 +135,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -141,39 +148,59 @@ namespace MAT
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     //! return material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_electrode; };
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_electrode; };
 
     //! clone electrode material
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Electrode(*this)); };
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Electrode(*this)); };
 
     //! return saturation value of intercalated Lithium concentration
     double CMax() const { return params_->cmax_; };
 
+    //! return lithiation value corresponding to saturation value of intercalated Lithium
+    //! concentration
+    double ChiMax() const { return params_->chimax_; };
+
+    /*!
+     * @brief compute the current lithiation
+     *
+     * @param[in] concentration  concentration
+     * @param[in] Chimax         lithiation value of saturation value of intercalated lithium
+     *                           concentration
+     * @param[in] Cmax           saturation value of intercalated lithium concentration
+     * @param[in] DetJacobian    determinant of the deformation gradient
+     * @return the current lithiation
+     */
+    static double ComputeIntercalationFraction(const double concentration, const double Chimax,
+        const double Cmax, const double DetJacobian)
+    {
+      return (concentration * Chimax * DetJacobian) / Cmax;
+    };
+
     //! compute half cell open circuit potential
-    double ComputeOpenCircuitPotential(const double concentration,  //!< concentration
-        const double faraday,                                       //!< Faraday constant
-        const double frt                                            //!< factor F/RT
+    double ComputeOpenCircuitPotential(double concentration,  //!< concentration
+        double faraday,                                       //!< Faraday constant
+        double frt                                            //!< factor F/RT
         ) const;
 
     //! compute first derivative of half cell open circuit potential with respect to concentration
-    double ComputeFirstDerivOpenCircuitPotential(const double concentration,  //!< concentration
-        const double faraday,                                                 //!< Faraday constant
-        const double frt                                                      //!< factor F/RT
+    double ComputeFirstDerivOpenCircuitPotential(double concentration,  //!< concentration
+        double faraday,                                                 //!< Faraday constant
+        double frt                                                      //!< factor F/RT
         ) const;
 
     //! compute second derivative of half cell open circuit potential with respect to concentration
-    double ComputeSecondDerivOpenCircuitPotential(const double concentration,  //!< concentration
-        const double faraday,                                                  //!< Faraday constant
-        const double frt                                                       //!< factor F/RT
+    double ComputeSecondDerivOpenCircuitPotential(double concentration,  //!< concentration
+        double faraday,                                                  //!< Faraday constant
+        double frt                                                       //!< factor F/RT
         ) const;
 
    protected:
     //! return material parameters
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters

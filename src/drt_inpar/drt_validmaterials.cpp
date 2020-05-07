@@ -695,6 +695,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     // saturation value of intercalated Lithium concentration
     AddNamedReal(matelectrode, "C_MAX", "saturation value of intercalated Lithium concentration");
 
+    // lithiation value corresponding to saturation value of intercalated Lithium concentration
+    AddNamedReal(matelectrode, "CHI_MAX",
+        "lithiation value corresponding to saturation value of intercalated Lithium concentration "
+        "'C_MAX'");
+
     // model for half cell open circuit potential of electrode
     AddNamedString(matelectrode, "OCP_MODEL",
         "model for half cell open circuit potential of electrode", "none");
