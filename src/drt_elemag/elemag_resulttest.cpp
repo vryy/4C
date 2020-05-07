@@ -77,7 +77,40 @@ void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       {
         result = sqrt((*error_)[2]);
       }
-
+      else if (variable == "L2electric-rel")
+      {
+        if ((*error_)[1] != 0)
+          result = sqrt((*error_)[0]) / sqrt((*error_)[1]);
+        else
+          dserror(
+              "Impossible to compute the electric relative error. The L2-norm of the "
+              "analytical solution is zero, resulting in a division by zero.");
+      }
+      else if (variable == "L2magnetic-rel")
+      {
+        if ((*error_)[3] != 0)
+          result = sqrt((*error_)[2]) / sqrt((*error_)[3]);
+        else
+          dserror(
+              "Impossible to compute the magnetic relative error. The L2-norm of the "
+              "analytical solution is zero, resulting in a division by zero.");
+      }
+      else if (variable == "Hdiv-electric")
+      {
+        result = sqrt((*error_)[4]);
+      }
+      else if (variable == "Hdiv-magnetic")
+      {
+        result = sqrt((*error_)[5]);
+      }
+      else if (variable == "Hcurl-electric")
+      {
+        result = sqrt((*error_)[6]);
+      }
+      else if (variable == "Hcurl-magnetic")
+      {
+        result = sqrt((*error_)[7]);
+      }
       else
       {
         dserror("Quantity '%s' not supported in result-test of elemagstic transport problems",
