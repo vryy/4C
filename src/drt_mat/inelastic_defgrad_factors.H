@@ -21,7 +21,8 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     /*! \class InelasticDeformationDirection
-     Calculates and holds growth direction in matrix format for anisotropic growth
+     *
+     * Calculates and holds growth direction in matrix format for anisotropic growth
      */
     class InelasticDeformationDirection
     {
@@ -35,8 +36,8 @@ namespace MAT
       /// destructor
       virtual ~InelasticDeformationDirection() = default;
 
-      /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() const { return growthdirmat_; }
+      /// return reference to matrix that determines growth direction
+      const LINALG::Matrix<3, 3>& Growthdirmat() const { return growthdirmat_; }
 
      private:
       /// matrix that determines growth direction
@@ -46,8 +47,9 @@ namespace MAT
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
     /*! \class InelasticDefgradScalar
-     This is a parameter class holding parameters for evaluation of inelastic deformation (incl.
-     linearization) induced by a scalar. Special quantities are hold in derived classes
+     *
+     * This is a parameter class holding parameters for evaluation of inelastic deformation (incl.
+     * linearization) induced by a scalar. Special quantities are hold in derived classes
      */
     class InelasticDefgradScalar : public MAT::PAR::Parameter
     {
@@ -61,54 +63,20 @@ namespace MAT
 
       /// return scalar that causes growth
       int Scalar1() const { return Scalar1_; }
-      /// return value of scalar 1 for that there is no growth
-      double Scalar1refconc() const { return Scalar1refconc_; }
-      /// return saturation concentration of material
-      double Cmax() const { return Cmax_; }
 
      private:
       /// scalar that causes growth
       const int Scalar1_;
-      /// value of scalar 1 for that there is no growth
-      const double Scalar1refconc_;
-      /// material ID of corresponding scatra material
-      const int Matid_;
-      /// saturation concentration of material
-      double Cmax_;
     };
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
-    class InelasticDefgradLinScalar : public InelasticDefgradScalar
-    {
-     public:
-      /// standard constructor
-      explicit InelasticDefgradLinScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradLinScalar() override = default;
-
-      /// return growth factor for scalar 1
-      double Scalar1growthfac() const { return Scalar1growthfac_; }
-
-     private:
-      /// growth factor for scalar 1
-      const double Scalar1growthfac_;
-    };
-    /*----------------------------------------------------------------------
-     *----------------------------------------------------------------------*/
-    class InelasticDefgradLinScalarIso : public InelasticDefgradLinScalar
-    {
-     public:
-      /// standard constructor
-      explicit InelasticDefgradLinScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
-          : InelasticDefgradLinScalar(matdata){};
-
-      ~InelasticDefgradLinScalarIso() override = default;
-    };  // end of class InelasticDefgradLinScalarIso
-
-    /*----------------------------------------------------------------------
-     *----------------------------------------------------------------------*/
-    class InelasticDefgradLinScalarAniso : public InelasticDefgradLinScalar
+    /*! \class InelasticDefgradLinScalarAniso
+     *
+     * This is a specialized parameter class that can return the anisotropic growth direction
+     * represented as a growth matrix
+     */
+    class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
     {
      public:
       /// standard constructor
@@ -116,75 +84,185 @@ namespace MAT
 
       ~InelasticDefgradLinScalarAniso() override = default;
 
-      /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() { return growthdir_.Growthdirmat(); }
+      /// return reference to matrix that determines growth direction
+      const LINALG::Matrix<3, 3>& Growthdirmat() { return growthdir_->Growthdirmat(); }
 
      private:
-      /// object, that calculates and holds direction of inelastic deformation
-      InelasticDeformationDirection growthdir_;
-    };  // end of class InelasticDefgradLinScalarAniso
+      /// pointer to object, that calculates and holds direction of inelastic deformation
+      Teuchos::RCP<InelasticDeformationDirection> growthdir_;
+    };
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
-    class InelasticDefgradPolyScalar : public InelasticDefgradScalar
+    /*! \class InelasticDefgradIntercalFrac
+     *
+     * This parameter class provides all electrochemical quantities that are needed to calculate the
+     * intercalation fraction from a given species concentration
+     */
+    class InelasticDefgradIntercalFrac : public InelasticDefgradScalar
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradPolyScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit InelasticDefgradIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      ~InelasticDefgradPolyScalar() override = default;
+      ~InelasticDefgradIntercalFrac() override = default;
 
-      /// return vector containing polynomial coefficients
-      std::vector<double> Polycoeffs() const { return Polycoeffs_; }
-      /// return lower bound of validity of polynomial
-      double Xmin() const { return Xmin_; }
-      /// return upper bound of validity of polynomial
-      double Xmax() const { return Xmax_; }
+      /// return saturation concentration of material
+      double Cmax() const { return Cmax_; }
+      /// return intercalation fraction at saturation concentration of material
+      double Chimax() const { return Chimax_; }
+
+     private:
+      /// saturation concentration of material
+      double Cmax_;
+      /// intercalation fraction at saturation concentration of material
+      double Chimax_;
+    };
+
+    /*----------------------------------------------------------------------
+     *----------------------------------------------------------------------*/
+    /*! \class InelasticDefgradPolyIntercalFrac
+     *
+     * This parameter class provides the value of the polynomial that models the growth evaluated in
+     * the reference configuration
+     */
+    class InelasticDefgradPolyIntercalFrac : public InelasticDefgradIntercalFrac
+    {
+     public:
+      /// standard constructor
+      explicit InelasticDefgradPolyIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+      ~InelasticDefgradPolyIntercalFrac() override = default;
+
       /// return value of polynomial at reference intercalation fraction
-      double MATPolynomReference() const { return MATPolynomReference_; }
+      double GetPolynomReferenceValue() const { return PolynomReferenceValue_; }
+
+      // set value of polynomial at reference intercalation fraction
+      void SetPolynomReferenceValue(double PolynomReferenceValue)
+      {
+        PolynomReferenceValue_ = PolynomReferenceValue;
+      }
 
      private:
-      /// coefficients of polynomial
-      const std::vector<double> Polycoeffs_;
-      /// lower bound of validity of polynomial
-      const double Xmin_;
-      /// upper bound of validity of polynomial
-      const double Xmax_;
-      /// /// value of polynomial at reference intercalation fraction
-      double MATPolynomReference_;
-    };  // namespace PAR
+      /// value of polynomial at reference intercalation fraction
+      double PolynomReferenceValue_;
+    };
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
-    class InelasticDefgradPolyScalarIso : public InelasticDefgradPolyScalar
+    /*! \class InelasticDefgradPolyIntercalFracAniso
+     *
+     * This is a specialized parameter class that can return the anisotropic growth direction
+     * represented as a growth matrix
+     */
+    class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradPolyScalarIso(Teuchos::RCP<MAT::PAR::Material> matdata)
-          : InelasticDefgradPolyScalar(matdata){};
+      explicit InelasticDefgradPolyIntercalFracAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      ~InelasticDefgradPolyScalarIso() override = default;
-    };  // end of class InelasticDefgradPolyScalarIso
+      ~InelasticDefgradPolyIntercalFracAniso() override = default;
 
-    /*----------------------------------------------------------------------
-     *----------------------------------------------------------------------*/
-    class InelasticDefgradPolyScalarAniso : public InelasticDefgradPolyScalar
-    {
-     public:
-      /// standard constructor
-      explicit InelasticDefgradPolyScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradPolyScalarAniso() override = default;
-
-      /// return matrix that determines growth direction
-      LINALG::Matrix<3, 3> Growthdirmat() const { return growthdir_.Growthdirmat(); }
+      /// return reference to matrix that determines growth direction
+      const LINALG::Matrix<3, 3>& Growthdirmat() const { return growthdir_->Growthdirmat(); };
 
      private:
-      /// object, that calculates and holds direction of inelastic deformation
-      InelasticDeformationDirection growthdir_;
-    };  // end of class InelasticDefgradPolyScalarAniso
-
+      /// pointer to object, that calculates and holds direction of inelastic deformation
+      Teuchos::RCP<InelasticDeformationDirection> growthdir_;
+    };
   }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
+  /*! \class InelasticDefgradLinearShape
+   *
+   * This class provides the functionality to be used if the growth law obeys a linear relation
+   */
+  class InelasticDefgradLinearShape
+  {
+   public:
+    /*!
+     * @brief constructor with required parameters
+     *
+     * @param[in] GrowthFac       linear growth factor (slope of linear function)
+     * @param[in] ReferenceValue  reference value
+     */
+    explicit InelasticDefgradLinearShape(double GrowthFac, double ReferenceValue);
+
+    /// destructor
+    ~InelasticDefgradLinearShape() = default;
+
+    /*!
+     * @brief evaluation of the linear growth law
+     *
+     * @param[in] Value           value the linear relation shall be evaluated for
+     * @return growth factor
+     */
+    double EvaluateLinearGrowth(double Value) const;
+
+    // return the growth factor (needed for linearizations)
+    double GrowthFac() const { return GrowthFac_; }
+
+   private:
+    /// growth factor
+    const double GrowthFac_;
+    /// reference value
+    const double ReferenceValue_;
+  };  // namespace MAT
+
+  /*----------------------------------------------------------------------*/
+  /*! \class InelasticDefgradPolynomialShape
+   *
+   * This class provides the functionality to be used if the growth law obeys a polynomial relation
+   */
+  class InelasticDefgradPolynomialShape
+  {
+   public:
+    /*!
+     * @brief  constructor with required parameters
+     *
+     * @param[in] PolyCoeffs  coefficients describing the polynomial to be evaluated
+     * @param[in] X_min       lower bound of validity of the polynomial
+     * @param[in] X_max       upper bound of validity of the polynomial
+     */
+    explicit InelasticDefgradPolynomialShape(
+        std::vector<double> PolyCoeffs, double Xmin, double Xmax);
+
+    /// destructor
+    ~InelasticDefgradPolynomialShape() = default;
+
+    /*!
+     * @brief checks the bounds of validity of the polynomial and writes a warning to screen if
+     * bounds are violated
+     *
+     * @param[in] X  value the polynomial is evaluated at
+     */
+    void CheckPolynomialBounds(double X) const;
+
+    /*!
+     * @brief Evaluate the polynomial defined by #PolyCoeffs_ at the current position X
+     *
+     * @param[in] X  value the polynomial is evaluated at
+     * @return value of the polynomial evaluated at X
+     */
+    double ComputePolynomial(double X);
+
+    /*!
+     * @brief Evaluate the first derivative of the polynomial defined by #PolyCoeffs_ at the current
+     * position X
+     *
+     * @param[in] X  value the polynomial is evaluated at
+     * @return value the first derivative of the polynomial evaluated at X
+     */
+    double ComputePolynomialDerivative(double X);
+
+   private:
+    /// coefficients of the polynomial to be evaluated
+    const std::vector<double> PolyCoeffs_;
+    /// lower bound of validity of polynomial
+    const double Xmin_;
+    /// upper bound of validity of polynomial
+    const double Xmax_;
+  };
 
   /*----------------------------------------------------------------------*/
   /*! \class InelasticDefgradFactors
@@ -224,7 +302,7 @@ namespace MAT
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
     /*!
-     * @brief evaluate the deformation gradient and its inverse
+     * @brief evaluate the inelastic deformation gradient and its inverse
      *
      * @param[in] defgrad  Deformation gradient
      * @param[out] iFinM   Inverse inelastic deformation gradient
@@ -241,12 +319,11 @@ namespace MAT
      * @param[in] iCV      Inverse right Cauchy-Green tensor
      * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution
-     * @param[in/out] cmatadd  Additional elasticity tensor
+     * @param[in,out] cmatadd  Additional elasticity tensor
      */
     virtual void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) = 0;
-
 
     /*!
      * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
@@ -257,7 +334,7 @@ namespace MAT
      *                    as 3x3 matrix
      * @param[in] dSdiFinj  Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                      deformation gradient of current inelastic contribution
-     * @param[in/out] dstressdx Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable
+     * @param[in,out] dstressdx Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable
      *                          of different field
      */
     virtual void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad,
@@ -268,7 +345,7 @@ namespace MAT
      * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
      *        Evaluate()
      *
-     * @param[in] params parameter list as handed in from the element
+     * @param[in] params  parameter list as handed in from the element
      */
     virtual void PreEvaluate(Teuchos::ParameterList& params) = 0;
 
@@ -281,166 +358,106 @@ namespace MAT
    private:
     /// material parameters
     MAT::PAR::Parameter* params_;
-
-  };  // end of InelasticDefgradFactors
-
-  /*--------------------------------------------------------------------*/
-  /*! \class InelasticDefgradLinear
-
-   This class evaluates delta growth which is required in various routines of subclasses for
-   isotropic and anisotropic case. Delta growth is used to calculate the scaling factor which gives
-   the magnitude of material growth.
-   */
-  class InelasticDefgradLinear : public InelasticDefgradFactors
-  {
-   public:
-    /// constructor
-    InelasticDefgradLinear();
-
-    /// construct material with specific material params
-    explicit InelasticDefgradLinear(MAT::PAR::Parameter* params);
-
-    ~InelasticDefgradLinear() override = default;
-
-    /*!
-     * @brief evaluate the growth scaling factor
-     *
-     * @param[in] Growthfac      growth factor
-     * @param[in] DetJacobian    determinant of the deformation gradient
-     * @param[in] Referenceconc  reference concentration (has to equal the inital concentration)
-     * @param[in] concentration  current concentration
-     * @param[in] Cmax           maximum concentration
-     * @return  growth scaling factor
-     */
-    static double EvaluateDeltaGrowth(double Growthfac, double DetJacobian, double Referenceconc,
-        double concentration, double Cmax);
-
-    INPAR::MAT::MaterialType MaterialType() const override
-    {
-      dserror("not implemented here");
-      return INPAR::MAT::m_none;
-    }
-
-    void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override
-    {
-      dserror("not implemented here");
-    }
-
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override
-    {
-      dserror("not implemented here");
-    }
-
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdx) override
-    {
-      dserror("not implemented here");
-    }
-
-    void PreEvaluate(Teuchos::ParameterList& params) override { dserror("not implemented here"); }
-
-    MAT::PAR::InelasticSource GetInelasticSource() override;
-  };  // end of class InelasticDefgradLinear
+  };
 
   /*--------------------------------------------------------------------*/
-  /*! \class InelasticDefgradPolynomial
+  /*! \class InelasticDefgradPolyIntercalFrac
 
    This class evaluates polynomial and its first derivative w.r.t. intercalation fraction which is
    required in various routines of subclasses for isotropic and anisotropic case. This polynomial
    describes the growth of material with respect to intercalation fraction and it is prescribed by
    user in input file by defining it coefficients.
    */
-  class InelasticDefgradPolynomial : public InelasticDefgradFactors
+  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradFactors
   {
    public:
     /// constructor
-    InelasticDefgradPolynomial() = default;
-
-    /// construct material with specific material params
-    explicit InelasticDefgradPolynomial(MAT::PAR::Parameter* params);
-
-    ~InelasticDefgradPolynomial() override = default;
+    InelasticDefgradPolyIntercalFrac() = default;
 
     /*!
-     * @brief evaluate polynomial describing growth of material with regard to concentration
+     * @brief construct material with reqired inputs
      *
-     * @param[in] PolyCoeff     coefficients of the polynomial
-     * @param[in] X_min         lower bound for lithiation
-     * @param[in] X_max         upper bound for lithiation
-     * @param[in] concentration current concentration
-     * @param[in] Cmax          maximum concentration
-     * @param[in] DetJacobian   determinant of the deformation gradient
-     * @return value of polynomial describing the growth for current concentration
+     * @param[in] params           pointer to material specific parameters
+     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
+     *            the input file
      */
-    double EvaluateMatPolynomial(const std::vector<double>& PolyCoeff, double X_min, double X_max,
-        double concentration, double Cmax, double DetJacobian);
+    explicit InelasticDefgradPolyIntercalFrac(MAT::PAR::Parameter* params,
+        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
 
-    ///
+    ~InelasticDefgradPolyIntercalFrac() override = default;
+
+    /*!
+     * @brief evaluate polynomial describing growth of material with regard to intercalation
+     * fraction based on the current concentration
+     *
+     * @param[in] concentration current concentration
+     * @param[in] DetJacobian   determinant of the deformation gradient
+     * @return value of polynomial describing the growth according to current intercalation fraction
+     */
+    double EvaluatePolynomial(double concentration, double DetJacobian);
+
     /*!
      * @brief evaluate the first derivative of the polynomial describing the growth
      *
-     * @param[in] PolyCoeff     coefficients of the polynomial
      * @param[in] concentration current concentration
-     * @param[in] Cmax          maximum concentration
      * @param[in] DetJacobian   determinant of the deformation gradient
-     * @return value of the first derivative of the polynomial describing the growth for current
-     *         concentration w.r.t. current lithiation
+     * @return first derivative of the polynomial describing the growth
      */
-    static double EvaluateMatPolynomialDerivative(const std::vector<double>& PolyCoeff,
-        double concentration, double Cmax, double DetJacobian);
+    double EvaluatePolynomialDerivative(double concentration, double DetJacobian);
 
-    INPAR::MAT::MaterialType MaterialType() const override
-    {
-      dserror("not implemented here");
-      return INPAR::MAT::m_none;
-    }
+    INPAR::MAT::MaterialType MaterialType() const override = 0;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override
-    {
-      dserror("not implemented here");
-    }
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
 
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override
-    {
-      dserror("not implemented here");
-    }
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdx) override
-    {
-      dserror("not implemented here");
-    }
+        LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override { dserror("not implemented here"); }
+    void PreEvaluate(Teuchos::ParameterList& params) override = 0;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
-  };  // end of class InelasticDefgradPolynomial
+    MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
+
+   private:
+    /// pointer to class that evaluates the polynomial growth law
+    Teuchos::RCP<InelasticDefgradPolynomialShape> polynomial_growth_;
+  };
 
   /*----------------------------------------------------------------------*/
   /*! \class InelasticDefgradLinScalarIso
-
-      This inelastic deformation gradient provides an isotropic growth law.
-      Volumetric change due to this law is linearly dependent on a
-      concentration mapped to the reference frame as follows:
-      F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (c - Scalar1refconc_) / C_MAX]^(1/3) * I
-     */
-  class InelasticDefgradLinScalarIso : public InelasticDefgradLinear
+        This inelastic deformation gradient provides an isotropic growth law. Volumetric change due
+        to this law is dependent on the current concentration \f$ c \f$ as follows :
+      \f[
+      \boldsymbol{F} _\text{in} = \left[1 + \text { Scalar1MolarGrowthFac }
+      \left(c \det \boldsymbol{F} - \text { Scalar1refconc } \right) \right] ^ { 1 / 3 }
+      \boldsymbol{I}
+      \f]
+      */
+  class InelasticDefgradLinScalarIso : public InelasticDefgradFactors
   {
    public:
     /// construct empty material
     InelasticDefgradLinScalarIso();
 
-    /// construct material with specific material params
-    explicit InelasticDefgradLinScalarIso(MAT::PAR::Parameter* params);
+    /*!
+     * @brief construct material with required inputs
+     *
+     * @param[in] params          pointer to material specific parameters
+     * @param[in] LinearGrowth    pointer to object that evaluates the linear relation as prescribed
+     *                            in the input file
+     */
+    explicit InelasticDefgradLinScalarIso(
+        MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth);
 
     ~InelasticDefgradLinScalarIso() override = default;
 
@@ -461,9 +478,11 @@ namespace MAT
 
     void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    MAT::PAR::InelasticDefgradLinScalarIso* Parameter() override
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
+    MAT::PAR::InelasticDefgradScalar* Parameter() override
     {
-      return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarIso*>(
+      return dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(
           MAT::InelasticDefgradFactors::Parameter());
     }
 
@@ -473,31 +492,42 @@ namespace MAT
     /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
-
-  };  // end of class InelasticDefgradLinScalarIso
+    /// pointer to class that evaluates the linear growth law
+    Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
+  };  // namespace MAT
 
   /*----------------------------------------------------------------------*/
   /*! \class InelasticDefgradLinScalarAniso
 
-      This inelastic deformation gradient provides an anisotropic growth law.
-      Volumetric change due to this law is linearly dependent on a
-      concentration mapped to the reference frame as follows:
-      F_{in} = I + [Scalar1growthfac_ * det(F) * (c - Scalar1refconc_) / C_MAX] * G,
-      where G (growthdirmat_) is a matrix providing the information of the growth
-      direction, that is constructed as follows:
-
-      G = g \otimes g, where g is the growth direction vector given in the input file.
-
-      g is normalized to length 1 before calculation of G.
+     This inelastic deformation gradient provides an anisotropic growth law.
+     Volumetric change due to this law is dependent on the current concentration \f$ c \f$ as
+     follows:
+     \f[
+     \bold{F}_\text{in} = \bold{I} + \left[ \text{Scalar1MolarGrowthFac}
+     \left( c \det\bold{F}  - \text{Scalar1refconc} \right) \right] \bold{G},
+     \f]
+     where \f$ \bold{G} \f$ (#growthdirmat_) is a matrix providing the information of the
+     growth direction, that is constructed as follows:
+     \f$ \bold{G} = \bold{g} \otimes \bold{g} \f$,
+     where \f$ \bold{g} \f$ is the growth direction vector given in the input file.
+     \f$ \bold{g} \f$ is normalized to length 1 before calculation of \f$ \bold{G} \f$.
+     \f$ f(\chi) \f$ is defined by the user in the input file.
      */
-  class InelasticDefgradLinScalarAniso : public InelasticDefgradLinear
+  class InelasticDefgradLinScalarAniso : public InelasticDefgradFactors
   {
    public:
     /// construct empty material
     InelasticDefgradLinScalarAniso();
 
-    /// construct material with specific material params
-    explicit InelasticDefgradLinScalarAniso(MAT::PAR::Parameter* params);
+    /*!
+     * @brief construct material with required inputs
+     *
+     * @param[in] params          pointer to material specific parameters
+     * @param[in] LinearGrowth    pointer to object that evaluates the linear relation as prescribed
+     *                            in the input file
+     */
+    explicit InelasticDefgradLinScalarAniso(
+        MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth);
 
     ~InelasticDefgradLinScalarAniso() override = default;
 
@@ -518,6 +548,8 @@ namespace MAT
 
     void PreEvaluate(Teuchos::ParameterList& params) override;
 
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
     MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(
@@ -530,32 +562,44 @@ namespace MAT
     /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
-
+    /// store pointer to class that evaluates the linear growth law
+    Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
   };  // end of InelasticDefgradLinScalarAniso
 
   /*--------------------------------------------------------------------*/
-  /*! \class InelasticDefgradPolyScalarIso
+  /*! \class InelasticDefgradPolyIntercalFracIso
 
    This inelastic deformation gradient provides an isotropic growth law.
-   Volumetric change due to this law is non-linearly dependent on a
-   concentration mapped to the reference frame as follows:
-   F_{in} = [(1.0 + f(X)) / (1 + f(X_ref))]^(1/3) * I
-   where f(X) is prescribed by user in input file.
+   Volumetric change due to this law is non-linearly dependent on the intercalation fraction
+   \f$ \chi \f$ as follows:
+   \f[
+   \boldsymbol{F}_\text{in} =
+   \left[ \frac{f(\chi) + 1 }{f(\chi^0) + 1} \right]^{1/3} \boldsymbol{I},
+   \f]
+   where \f$ f(\chi) \f$ is defined by the user in the input file.
    */
-  class InelasticDefgradPolyScalarIso : public InelasticDefgradPolynomial
+  class InelasticDefgradPolyIntercalFracIso : public InelasticDefgradPolyIntercalFrac
   {
    public:
     /// construct empty material
-    InelasticDefgradPolyScalarIso();
+    InelasticDefgradPolyIntercalFracIso();
 
-    /// construct material with specific material params
-    explicit InelasticDefgradPolyScalarIso(MAT::PAR::Parameter* params);
+    /*!
+     * @brief construct material with reqired inputs
+     *
+     * @param[in] params           pointer to material specific parameters
+     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
+     *                             the input file
+     */
+    explicit InelasticDefgradPolyIntercalFracIso(MAT::PAR::Parameter* params,
+        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
 
-    ~InelasticDefgradPolyScalarIso() override = default;
+
+    ~InelasticDefgradPolyIntercalFracIso() override = default;
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_poly_scalar_iso;
+      return INPAR::MAT::mfi_poly_intercal_frac_iso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -570,10 +614,10 @@ namespace MAT
 
     void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    MAT::PAR::InelasticDefgradPolyScalarIso* Parameter() override
+    MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
-      return dynamic_cast<MAT::PAR::InelasticDefgradPolyScalarIso*>(
-          MAT::InelasticDefgradFactors::Parameter());
+      return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
+          MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
 
    private:
@@ -582,35 +626,46 @@ namespace MAT
     /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
-  };  // end of class InelasticDefgradPolyScalarIso
+  };
 
   /*----------------------------------------------------------------------*/
-  /*! \class InelasticDefgradPolyScalarAniso
+  /*! \class InelasticDefgradPolyIntercalFracAniso
 
    This inelastic deformation gradient provides an anisotropic growth law.
-   Volumetric change due to this law is nonlinearly dependent on a
-   concentration mapped to the reference frame as follows:
-   F_{in} = I + [(f(X) - f(X_ref)) / (f(X_ref) + 1)] * G,
-   where G (growthdirmat_) is a matrix providing the information of the growth
+   Volumetric change due to this law is nonlinearly dependent on the intercalation fraction
+   \f$ \chi \f$ as follows:
+   \f[
+   \boldsymbol{F}_\text{in} =
+   \boldsymbol{I} + \left[ \frac{f(\chi) - f(\chi^0)}{f(\chi^0) + 1} \right] \boldsymbol{G},
+   \f]
+   where \f$ \boldsymbol{G} \f$ (#growthdirmat_) is a matrix providing the information of the growth
    direction, that is constructed as follows:
-
-   G = g \otimes g, where g is the growth direction vector given in the input file.
-   g is normalized to length 1 before calculation of G. f(X) is defined by user in input file.
+   \f$ \boldsymbol{G} = \boldsymbol{g} \otimes \boldsymbol{g} \f$, where \f$ \boldsymbol{g} \f$ is
+   the growth direction vector given in the input file.
+   \f$ \boldsymbol{g} \f$ is normalized to length 1 before calculation of \f$ \boldsymbol{G} \f$.
+   \f$ f(\chi) \f$ is defined by the user in the input file.
    */
-  class InelasticDefgradPolyScalarAniso : public InelasticDefgradPolynomial
+  class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
   {
    public:
     /// construct empty material
-    InelasticDefgradPolyScalarAniso();
+    InelasticDefgradPolyIntercalFracAniso();
 
-    /// construct material with specific material params
-    explicit InelasticDefgradPolyScalarAniso(MAT::PAR::Parameter* params);
+    /*!
+     * @brief construct material with reqired inputs
+     *
+     * @param[in] params           pointer to material specific parameters
+     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
+     *                             the input file
+     */
+    explicit InelasticDefgradPolyIntercalFracAniso(MAT::PAR::Parameter* params,
+        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
 
-    ~InelasticDefgradPolyScalarAniso() override = default;
+    ~InelasticDefgradPolyIntercalFracAniso() override = default;
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_poly_scalar_aniso;
+      return INPAR::MAT::mfi_poly_intercal_frac_aniso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -625,10 +680,10 @@ namespace MAT
 
     void PreEvaluate(Teuchos::ParameterList& params) override;
 
-    MAT::PAR::InelasticDefgradPolyScalarAniso* Parameter() override
+    MAT::PAR::InelasticDefgradPolyIntercalFracAniso* Parameter() override
     {
-      return dynamic_cast<MAT::PAR::InelasticDefgradPolyScalarAniso*>(
-          MAT::InelasticDefgradFactors::Parameter());
+      return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFracAniso*>(
+          MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
 
    private:
@@ -637,8 +692,7 @@ namespace MAT
     /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
-  };  // end of class InelasticDefgradPolyScalarAniso
-
+  };
 }  // namespace MAT
 
 #endif

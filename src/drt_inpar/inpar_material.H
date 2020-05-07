@@ -283,12 +283,12 @@ namespace INPAR
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with implicit solution of the growth and remodel equations
-      mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
-                              ///< is a polynomial function of the scalar (in material
-                              ///< configuration) that causes the volume change
-      mfi_poly_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
-                           ///< is a polynomial function of the scalar (in material configuration)
-                           ///< that causes the volume change
+      mfi_poly_intercal_frac_aniso,  ///< volume change due to (anisotropic) inelastic deformation
+                                     ///< gradient is a polynomial function of the intercalation
+                                     ///< fraction that causes the volume change
+      mfi_poly_intercal_frac_iso     ///< volume change due to (isotropic) inelastic deformation
+                                     ///< gradient is a polynomial function of the intercalation
+                                     ///< fraction that causes the volume change
     };
 
     /*----------------------------------------------------------------------*

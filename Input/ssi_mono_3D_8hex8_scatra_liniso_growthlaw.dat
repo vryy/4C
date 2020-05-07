@@ -51,7 +51,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_scatra DIFFUSIVITY 1.0
 MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-3
 MAT 3 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
-MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 MATID 1
+MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 0.1 SCALAR1_RefConc 0.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
