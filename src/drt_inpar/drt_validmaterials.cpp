@@ -1718,6 +1718,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "STR_TENS_ID", "MAT ID for definition of Structural Tensor");
     AddNamedInt(m, "INIT", "initialization modus for fiber alignment", 1, true);
     AddNamedBool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
+    AddNamedInt(m, "FIBER_ID", "Id of the fiber to be used (1 for first fiber, default)", 1, true);
 
     AppendMaterialDefinition(matlist, m);
   }

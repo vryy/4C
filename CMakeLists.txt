@@ -567,8 +567,9 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
-  src/drt_matelast/elast_coupanisoexpoactive.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
+  src/drt_matelast/elast_coupanisoexpoactive.cpp
+  src/drt_matelast/elast_coupanisoexpobase.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp
   src/drt_matelast/elast_coupanisoneohooke.cpp
   src/drt_matelast/elast_coupanisoneohooke_VarProp.cpp

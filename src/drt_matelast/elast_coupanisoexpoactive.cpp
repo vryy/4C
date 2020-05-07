@@ -46,13 +46,13 @@ MAT::ELASTIC::CoupAnisoExpoActive::CoupAnisoExpoActive(
     MAT::ELASTIC::PAR::CoupAnisoExpoActive* params)
     : params_(params),
       anisotropyExtension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
-          params_->StructuralTensorStrategy())
+          params_->StructuralTensorStrategy(), {0})
 {
   dPIact_ = 0.0;
   lambdaact_ = 1.0;
-  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension::FIBER_VECTORS |
-                                             FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS |
-                                             FiberAnisotropyExtension::STRUCTURAL_TENSOR);
+  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<1>::FIBER_VECTORS |
+                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
+                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoActive::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)

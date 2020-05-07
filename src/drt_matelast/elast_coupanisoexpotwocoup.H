@@ -86,7 +86,7 @@ namespace MAT
      * \brief Anisotropy manager for two fibers and the structural tensor of the combination of
      * those two
      */
-    class CoupAnisoExpoTwoCoupAnisoExtension : public DefaultAnisotropyExtension
+    class CoupAnisoExpoTwoCoupAnisoExtension : public DefaultAnisotropyExtension<2>
     {
      public:
       /*!

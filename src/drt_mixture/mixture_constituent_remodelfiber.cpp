@@ -60,7 +60,7 @@ MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
 
   // Get anisotropy extension from CoupAnisoExpo
   auto anisotropyExtensionProvider =
-      Teuchos::rcp_dynamic_cast<MAT::FiberAnisotropyExtensionProvider>(summand_);
+      Teuchos::rcp_dynamic_cast<MAT::FiberAnisotropyExtensionProvider<1>>(summand_);
   if (coupAnisoExpo == Teuchos::null and coupAnisoExpoActive == Teuchos::null)
   {
     dserror(
@@ -72,8 +72,8 @@ MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
       Teuchos::rcpFromRef(anisotropyExtensionProvider->GetFiberAnisotropyExtension());
 
   fiberAnisotropyExtension_->RegisterNeededTensors(
-      MAT::FiberAnisotropyExtension::STRUCTURAL_TENSOR |
-      MAT::FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
   orthogonalAnisotropyExtension_.SetAnisotropyExtension(fiberAnisotropyExtension_);
 
   auto growthEvolution = Teuchos::rcp<CauchyLinearGrowthEvolution>(
@@ -404,7 +404,7 @@ MIXTURE::OrthogonalAnisotropyExtension::OrthogonalAnisotropyExtension()
 }
 
 void MIXTURE::OrthogonalAnisotropyExtension::SetAnisotropyExtension(
-    Teuchos::RCP<MAT::FiberAnisotropyExtension>& other)
+    Teuchos::RCP<MAT::FiberAnisotropyExtension<1>>& other)
 {
   other_ = other;
   other_->RegisterNeededTensors(STRUCTURAL_TENSOR);

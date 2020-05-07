@@ -14,38 +14,42 @@
 #include "anisotropy_utils.H"
 #include "../drt_lib/drt_parobject.H"
 
-MAT::FiberAnisotropyExtension::FiberAnisotropyExtension(
+template <unsigned int numfib>
+MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy)
-    : tensor_flags_(0),
-      fibers_(0),
+    : fibers_(0),
       fiberStructuralTensors_stress_(0),
       fiberStructuralTensors_(0),
       structuralTensorStrategy_(stucturalTensorStrategy)
 {
 }
 
-MAT::FiberAnisotropyExtension::FiberAnisotropyExtension()
-    : tensor_flags_(0),
-      fibers_(0),
+template <unsigned int numfib>
+MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension()
+    : fibers_(0),
       fiberStructuralTensors_stress_(0),
       fiberStructuralTensors_(0),
       structuralTensorStrategy_(Teuchos::null)
 {
 }
 
-void MAT::FiberAnisotropyExtension::ComputeStructuralTensors_stress()
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::ComputeStructuralTensors_stress()
 {
-  MAT::ComputeStructuralTensors<>(
+  MAT::ComputeStructuralTensors<LINALG::Matrix<6, 1>, numfib>(
       fibers_, fiberStructuralTensors_stress_, structuralTensorStrategy_);
 }
 
-void MAT::FiberAnisotropyExtension::ComputeStructuralTensors()
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::ComputeStructuralTensors()
 {
-  MAT::ComputeStructuralTensors<>(fibers_, fiberStructuralTensors_, structuralTensorStrategy_);
+  MAT::ComputeStructuralTensors<LINALG::Matrix<3, 3>, numfib>(
+      fibers_, fiberStructuralTensors_, structuralTensorStrategy_);
 }
 
-void MAT::FiberAnisotropyExtension::SetFibers(
-    int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers)
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
+    int gp, const std::array<LINALG::Matrix<3, 1>, numfib>& fibers)
 {
   if (gp >= GetAnisotropy()->GetNumberOfGaussPoints())
   {
@@ -61,12 +65,7 @@ void MAT::FiberAnisotropyExtension::SetFibers(
   // Store fibers
   for (std::vector<LINALG::Matrix<3, 1>>::size_type i = 0; i < fibers.size(); ++i)
   {
-    if (fibers_[gp].empty())
-    {
-      fibers_[gp].resize(fibers.size());
-    }
-
-    fibers_[gp][i].Update(fibers[i]);
+    fibers_[gp].at(i).Update(fibers.at(i));
   }
 
   // Compute needed structural tensors
@@ -76,8 +75,9 @@ void MAT::FiberAnisotropyExtension::SetFibers(
   OnFibersInitialized();
 }
 
-void MAT::FiberAnisotropyExtension::SetFibers(
-    const std::vector<std::vector<LINALG::Matrix<3, 1>>>& fibers)
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
+    const std::vector<std::array<LINALG::Matrix<3, 1>, numfib>>& fibers)
 {
   fibers_ = fibers;
 
@@ -88,7 +88,8 @@ void MAT::FiberAnisotropyExtension::SetFibers(
   OnFibersInitialized();
 }
 
-void MAT::FiberAnisotropyExtension::ComputeNeededStructuralTensors()
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::ComputeNeededStructuralTensors()
 {
   if (static_cast<bool>(tensor_flags_ & STRUCTURAL_TENSOR))
   {
@@ -100,24 +101,25 @@ void MAT::FiberAnisotropyExtension::ComputeNeededStructuralTensors()
   }
 }
 
-const LINALG::Matrix<3, 1>& MAT::FiberAnisotropyExtension::GetFiber(int gp, int i) const
+template <unsigned int numfib>
+const LINALG::Matrix<3, 1>& MAT::FiberAnisotropyExtension<numfib>::GetFiber(int gp, int i) const
 {
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fibers_[GPDEFAULT][i];
+      return fibers_[GPDEFAULT].at(i);
     case FiberLocation::GPFibers:
-      return fibers_[gp][i];
+      return fibers_[gp].at(i);
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // This return statement should never be reached. However, the compiler enforces me to have it
-  // here
-  return fibers_[0][0];
+  // just for compilation reasons. We will never land here because of the dserror() above
+  std::abort();
 }
 
-const LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension::GetStructuralTensor_stress(
+template <unsigned int numfib>
+const LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension<numfib>::GetStructuralTensor_stress(
     int gp, int i) const
 {
   if (not static_cast<bool>(tensor_flags_ & STRUCTURAL_TENSOR_STRESS))
@@ -127,17 +129,20 @@ const LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension::GetStructuralTensor_s
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fiberStructuralTensors_stress_[GPDEFAULT][i];
+      return fiberStructuralTensors_stress_[GPDEFAULT].at(i);
     case FiberLocation::GPFibers:
-      return fiberStructuralTensors_stress_[gp][i];
+      return fiberStructuralTensors_stress_[gp].at(i);
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  return fiberStructuralTensors_stress_[0][0];
+  // just for compilation reasons. We will never land here because of the dserror() above
+  std::abort();
 }
 
-const LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension::GetStructuralTensor(int gp, int i) const
+template <unsigned int numfib>
+const LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension<numfib>::GetStructuralTensor(
+    int gp, int i) const
 {
   if (not static_cast<bool>(tensor_flags_ & STRUCTURAL_TENSOR))
   {
@@ -146,41 +151,47 @@ const LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension::GetStructuralTensor(i
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fiberStructuralTensors_[GPDEFAULT][i];
+      return fiberStructuralTensors_[GPDEFAULT].at(i);
     case FiberLocation::GPFibers:
-      return fiberStructuralTensors_[gp][i];
+      return fiberStructuralTensors_[gp].at(i);
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  return fiberStructuralTensors_[0][0];
+  // just for compilation reasons. We will never land here because of the dserror() above
+  std::abort();
 }
 
-void MAT::FiberAnisotropyExtension::PackAnisotropy(DRT::PackBuffer& data) const
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::PackAnisotropy(DRT::PackBuffer& data) const
 {
-  PackFiberVector(data, fibers_);
-  PackFiberVector(data, fiberStructuralTensors_stress_);
-  PackFiberVector(data, fiberStructuralTensors_);
+  PackFiberArray<LINALG::Matrix<3, 1>, numfib>(data, fibers_);
+  PackFiberArray<LINALG::Matrix<6, 1>, numfib>(data, fiberStructuralTensors_stress_);
+  PackFiberArray<LINALG::Matrix<3, 3>, numfib>(data, fiberStructuralTensors_);
   DRT::ParObject::AddtoPack(data, static_cast<int>(tensor_flags_));
   DRT::ParObject::AddtoPack(data, static_cast<int>(fiberLocation_));
 }
 
-void MAT::FiberAnisotropyExtension::UnpackAnisotropy(
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  UnpackFiberVector<LINALG::Matrix<3, 1>>(position, data, fibers_);
-  UnpackFiberVector<LINALG::Matrix<6, 1>>(position, data, fiberStructuralTensors_stress_);
-  UnpackFiberVector<LINALG::Matrix<3, 3>>(position, data, fiberStructuralTensors_);
+  UnpackFiberArray<LINALG::Matrix<3, 1>, numfib>(position, data, fibers_);
+  UnpackFiberArray<LINALG::Matrix<6, 1>, numfib>(position, data, fiberStructuralTensors_stress_);
+  UnpackFiberArray<LINALG::Matrix<3, 3>, numfib>(position, data, fiberStructuralTensors_);
   tensor_flags_ = static_cast<uint_fast8_t>(DRT::ParObject::ExtractInt(position, data));
   fiberLocation_ = static_cast<FiberLocation>(DRT::ParObject::ExtractInt(position, data));
 }
 
-void MAT::FiberAnisotropyExtension::SetFiberLocation(FiberLocation location)
+template <unsigned int numfib>
+void MAT::FiberAnisotropyExtension<numfib>::SetFiberLocation(FiberLocation location)
 {
   fiberLocation_ = location;
 }
 
-int MAT::FiberAnisotropyExtension::GetVirtualGaussPoint(const Teuchos::ParameterList& params) const
+template <unsigned int numfib>
+int MAT::FiberAnisotropyExtension<numfib>::GetVirtualGaussPoint(
+    const Teuchos::ParameterList& params) const
 {
   if (fiberLocation_ == FiberLocation::ElementFibers)
   {
@@ -190,7 +201,8 @@ int MAT::FiberAnisotropyExtension::GetVirtualGaussPoint(const Teuchos::Parameter
   return params.get<int>("gp");
 }
 
-int MAT::FiberAnisotropyExtension::GetVirtualGaussPoint(const int gp) const
+template <unsigned int numfib>
+int MAT::FiberAnisotropyExtension<numfib>::GetVirtualGaussPoint(const int gp) const
 {
   if (fiberLocation_ == FiberLocation::ElementFibers)
   {
@@ -200,7 +212,8 @@ int MAT::FiberAnisotropyExtension::GetVirtualGaussPoint(const int gp) const
   return gp;
 }
 
-int MAT::FiberAnisotropyExtension::GetFibersPerElement() const
+template <unsigned int numfib>
+int MAT::FiberAnisotropyExtension<numfib>::GetFibersPerElement() const
 {
   if (fiberLocation_ == FiberLocation::ElementFibers)
   {
@@ -209,3 +222,7 @@ int MAT::FiberAnisotropyExtension::GetFibersPerElement() const
 
   return GetAnisotropy()->GetNumberOfGaussPoints();
 }
+
+// explicit instatiations of template classes
+template class MAT::FiberAnisotropyExtension<1u>;
+template class MAT::FiberAnisotropyExtension<2u>;

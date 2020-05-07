@@ -110,7 +110,7 @@ namespace MAT
     /// \author braeu
     /// \date 07/16
 
-    class CoupAnisoExpoActive : public ActiveSummand, public FiberAnisotropyExtensionProvider
+    class CoupAnisoExpoActive : public ActiveSummand, public FiberAnisotropyExtensionProvider<1>
     {
      public:
       /// constructor with given material parameters
@@ -250,7 +250,7 @@ namespace MAT
        *
        * \return FiberAnisotropyExtension& Reference to the used MAT::AnisotropyExtension
        */
-      FiberAnisotropyExtension& GetFiberAnisotropyExtension() override
+      FiberAnisotropyExtension<1>& GetFiberAnisotropyExtension() override
       {
         return anisotropyExtension_;
       }
@@ -266,7 +266,7 @@ namespace MAT
       double lambdaact_;
 
       /// Anisotropy extension that manages fibers and structural tensors
-      DefaultAnisotropyExtension anisotropyExtension_;
+      DefaultAnisotropyExtension<1> anisotropyExtension_;
     };
 
   }  // namespace ELASTIC
