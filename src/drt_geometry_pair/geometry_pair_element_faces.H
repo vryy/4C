@@ -223,10 +223,7 @@ namespace GEOMETRYPAIR
      */
     const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const
     {
-      if (surface::discretization_ == DRT::Element::nurbs9)
-        return nullptr;
-      else
-        return &reference_normals_;
+      return &reference_normals_;
     }
 
     /**
@@ -234,10 +231,7 @@ namespace GEOMETRYPAIR
      */
     const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetCurrentNormals() const
     {
-      if (surface::discretization_ == DRT::Element::nurbs9)
-        return nullptr;
-      else
-        return &current_normals_;
+      return &current_normals_;
     }
 
     /**
@@ -293,6 +287,33 @@ namespace GEOMETRYPAIR
 
     //! Global DOF IDs of this face element.
     std::vector<int> face_dof_gid_;
+  };
+
+
+  /**
+   * A few methods of the FaceElementTemplate class have to be specialized for nurbs9 faces, since
+   * they do not need averaged nodal normals due to their C1-continuous discretization.
+   *
+   * Full explicit template specializations have to be inline.
+   * https://stackoverflow.com/questions/4445654/multiple-definition-of-template-specialization-when-using-different-objects/4445772
+   *
+   * Due to a gcc bug we have to perform the template specialization inside the namespace.
+   * (https://stackoverflow.com/questions/25594644/warning-specialization-of-template-in-different-namespace)
+   */
+  template <>
+  inline void FaceElementTemplate<t_nurbs9>::CalculateAveragedNormals(
+      const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
+  template <>
+  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>*
+  FaceElementTemplate<t_nurbs9>::GetReferenceNormals() const
+  {
+    return nullptr;
+  };
+  template <>
+  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>*
+  FaceElementTemplate<t_nurbs9>::GetCurrentNormals() const
+  {
+    return nullptr;
   };
 
 
