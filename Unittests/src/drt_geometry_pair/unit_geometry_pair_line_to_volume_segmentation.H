@@ -104,6 +104,49 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   }
 
   /**
+   * Test a non straight beam that lies between two volume elements. The elements are relatively
+   * small. This is to check that the parameter coordinates are converged in the local Newton
+   * iterations.
+   */
+  void test_line_in_small_elements()
+  {
+    // Definition of variables for this test case.
+    std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
+        geometry_pairs;
+
+    // Get the geometry.
+    xtest_line_in_small_elements_geometry(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+
+    // Vector with vector of segments for Evaluate.
+    std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
+
+    // Create and evaluate the geometry pairs.
+    CreateEvaluatePairs(
+        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+
+    // Check results.
+    {
+      TS_ASSERT_EQUALS(segments_vector[0].size(), 1);
+      TS_ASSERT_EQUALS(segments_vector[1].size(), 1);
+
+      // Check the parameter coordinates.
+      TS_ASSERT_DELTA(
+          -1., segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      TS_ASSERT_DELTA(0.36285977578126655, segments_vector[0][0].GetEtaB(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      TS_ASSERT_DELTA(0.36285977578126744, segments_vector[1][0].GetEtaA(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      TS_ASSERT_DELTA(
+          1.0, segments_vector[1][0].GetEtaB(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
    * Test a beam that has multiple intersections with a HEX27 element.
    */
   void test_multiple_intersections_hex27()

@@ -565,8 +565,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (pstype_ == INPAR::STR::prestress_mulf)
-    dserror("prestress_mulf is unsupported for the So_sh8 element!");
+  if (pstype_ == INPAR::STR::PreStress::mulf)
+    dserror("mulf is unsupported for the So_sh8 element!");
 
   if (kintype_ != INPAR::STR::kinem_nonlinearTotLag)
     dserror("Unsupported kinematic type for the So_sh8 element!");

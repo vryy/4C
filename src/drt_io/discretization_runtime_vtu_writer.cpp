@@ -414,13 +414,36 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
 
     // Since we do not output beam elements we filter them here.
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-    if (beamele != NULL) continue;
+    if (beamele != nullptr) continue;
 
     owner_of_row_elements.push_back(my_pid);
   }
 
   // Pass data to the output writer.
   runtime_vtuwriter_->AppendVisualizationCellDataVector(owner_of_row_elements, 1, resultname);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultname)
+{
+  // Vector with element IDs for elements in the row map.
+  std::vector<double> gid_of_row_elements;
+  gid_of_row_elements.reserve(discretization_->NumMyRowElements());
+
+  for (int iele = 0; iele < discretization_->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // Since we do not output beam elements we filter them here.
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    if (beamele != nullptr) continue;
+
+    gid_of_row_elements.push_back(ele->Id());
+  }
+
+  // Pass data to the output writer.
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(gid_of_row_elements, 1, resultname);
 }
 
 /*-----------------------------------------------------------------------------------------------*

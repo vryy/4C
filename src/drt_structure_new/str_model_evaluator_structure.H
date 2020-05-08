@@ -476,8 +476,6 @@ namespace STR
       //! mass linearization type
       enum INPAR::STR::MassLin masslin_type_;
 
-      //! @}
-
       //! @name class only variables
       //! @{
 

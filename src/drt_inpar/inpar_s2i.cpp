@@ -28,14 +28,6 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           .sublist(
               "S2I COUPLING", false, "control parameters for scatra-scatra interface coupling");
 
-  // type of global system matrix in global system of equations
-  setStringToIntegralParameter<int>("MATRIXTYPE", "sparse",
-      "type of global system matrix in global system of equations",
-      tuple<std::string>("sparse", "block_geometry", "block_condition", "block_condition_dof"),
-      tuple<int>(
-          matrix_sparse, matrix_block_geometry, matrix_block_condition, matrix_block_condition_dof),
-      &s2icoupling);
-
   // type of mortar meshtying
   setStringToIntegralParameter<int>("COUPLINGTYPE", "Undefined", "type of mortar meshtying",
       tuple<std::string>("Undefined", "MatchingNodes", "StandardMortar", "SaddlePointMortar_Petrov",
@@ -45,16 +37,6 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           coupling_mortar_saddlepoint_petrov, coupling_mortar_saddlepoint_bubnov,
           coupling_mortar_condensed_petrov, coupling_mortar_condensed_bubnov,
           coupling_nts_standard),
-      &s2icoupling);
-
-  // flag for equilibration of global system of equations
-  setStringToIntegralParameter<int>("EQUILIBRATION", "none",
-      "flag for equilibration of global system of equations",
-      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
-          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<int>(equilibration_none, equilibration_rows_full, equilibration_rows_maindiag,
-          equilibration_columns_full, equilibration_columns_maindiag,
-          equilibration_rowsandcolumns_full, equilibration_rowsandcolumns_maindiag),
       &s2icoupling);
 
   // flag for interface side underlying Lagrange multiplier definition
@@ -562,28 +544,6 @@ void INPAR::S2I::SetValidConditions(
     // insert condition definitions into global list of valid condition definitions
     condlist.push_back(s2igrowthline);
     condlist.push_back(s2igrowthsurf);
-  }
-
-
-  /*--------------------------------------------------------------------*/
-  // scatra-scatra interface coupling (domain partitioning for block preconditioning of global
-  // system matrix)
-  {
-    // partitioning of 2D domain into 2D subdomains
-    Teuchos::RCP<ConditionDefinition> s2ilinepartitioning = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING", "S2ICouplingPartitioning",
-        "Scatra-scatra line interface coupling (domain partitioning)",
-        DRT::Condition::S2ICouplingPartitioning, false, DRT::Condition::Surface));
-
-    // partitioning of 3D domain into 3D subdomains
-    Teuchos::RCP<ConditionDefinition> s2isurfpartitioning = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING", "S2ICouplingPartitioning",
-        "Scatra-scatra surface interface coupling (domain partitioning)",
-        DRT::Condition::S2ICouplingPartitioning, false, DRT::Condition::Volume));
-
-    // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(s2ilinepartitioning);
-    condlist.push_back(s2isurfpartitioning);
   }
 
   return;

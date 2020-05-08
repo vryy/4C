@@ -54,8 +54,9 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
   // scatra-scatra interface coupling conditions
   conditions_to_copy.insert(std::pair<std::string, std::string>("S2ICoupling", "S2ICoupling"));
+  // copy partitioning of the scatra field
   conditions_to_copy.insert(
-      std::pair<std::string, std::string>("S2ICouplingPartitioning", "S2ICouplingPartitioning"));
+      std::pair<std::string, std::string>("ScatraPartitioning", "ScatraPartitioning"));
   // electrode state of charge conditions
   conditions_to_copy.insert(std::pair<std::string, std::string>("ElectrodeSOC", "ElectrodeSOC"));
   // cell voltage conditions

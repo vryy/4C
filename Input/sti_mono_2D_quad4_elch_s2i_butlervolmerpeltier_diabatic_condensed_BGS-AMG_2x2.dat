@@ -26,6 +26,7 @@ TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   2
+EQUILIBRATION                   rows_maindiag
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -48,7 +49,6 @@ COUPLINGTYPE                    Monolithic
 LINEAR_SOLVER                   1
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_maindiag
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn

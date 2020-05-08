@@ -804,7 +804,7 @@ namespace MORTAR
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse2x2(melin);
+          LINALG::Inverse(melin);
 
           // re-inflate inverse of melin to full size
           LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1717,7 +1717,7 @@ namespace MORTAR
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse3x3(melin);
+          LINALG::Inverse(melin);
 
           // re-inflate inverse of melin to full size
           LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1787,7 +1787,7 @@ namespace MORTAR
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse4x4(melin);
+          LINALG::Inverse(melin);
 
           // re-inflate inverse of melin to full size
           LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1855,7 +1855,7 @@ namespace MORTAR
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse4x4(melin);
+          LINALG::Inverse(melin);
           // re-inflate inverse of melin to full size
           LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
           for (int j = 0; j < nnodeslin; ++j)

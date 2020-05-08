@@ -430,8 +430,6 @@ void runEnsightVtuFilter(PostProblem& problem)
         dserror("wrong number of discretizations");
       break;
     }
-    case prb_var_chemdiff:
-    case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
     {
@@ -760,8 +758,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
-    case prb_immersed_membrane_fsi:
     case prb_fbi:
     {
       std::string basename = problem.outname();
@@ -774,43 +770,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       PostField* fluidfield = problem.get_discretization(1);
       FluidFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
-
-      break;
-    }
-    case prb_immersed_cell:
-    {
-      std::string basename = problem.outname();
-
-      for (int field = 0; field < problem.num_discr(); field++)
-      {
-        PostField* postfield = problem.get_discretization(field);
-        std::cout << "Write Field " << field << ": " << postfield->name() << std::endl;
-        if (postfield->name() == "cell" or postfield->name() == "structure")
-        {
-          StructureFilter cellwriter(
-              postfield, basename, problem.stresstype(), problem.straintype());
-          cellwriter.WriteFiles();
-        }
-        else if (postfield->name() == "cellscatra" or postfield->name() == "scatra")
-        {
-          ScaTraFilter scatrawriter(postfield, basename);
-          scatrawriter.WriteFiles();
-        }
-        else if (postfield->name() == "ale")
-        {
-          AleFilter alewriter(postfield, basename);
-          alewriter.WriteFiles();
-        }
-        else if (postfield->name() == "porofluid" or postfield->name() == "fluid")
-        {
-          FluidFilter fluidwriter(postfield, basename);
-          fluidwriter.WriteFiles();
-        }
-        else
-        {
-          dserror("unknown field name");
-        }
-      }
 
       break;
     }
@@ -902,28 +861,6 @@ void runEnsightVtuFilter(PostProblem& problem)
           dserror("unknown discretization for postprocessing of topopt problem!");
       }
 
-      break;
-    }
-    case prb_acou:
-    {
-      for (int i = 0; i < problem.num_discr(); i++)
-      {
-        std::string disname = problem.get_discretization(i)->discretization()->Name();
-        if (disname.compare("acou") == 0)  // 0=true
-        {
-          PostField* field = problem.get_discretization(i);
-          AcouFilter writer(field, problem.outname());
-          writer.WriteFiles();
-        }
-        else if (disname.compare("scatra") == 0)
-        {
-          PostField* field1 = problem.get_discretization(i);
-          ScaTraFilter writer1(field1, problem.outname());
-          writer1.WriteFiles();
-        }
-        else
-          dserror("unknown discretization for postprocessing of acoustical problem!");
-      }
       break;
     }
     case prb_elemag:

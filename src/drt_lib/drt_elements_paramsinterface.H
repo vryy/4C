@@ -84,8 +84,6 @@ namespace DRT
                                         //!< within porous medium problem
       struct_poro_calc_prescoupling,    //!< calculate stiffness matrix related to pressure coupling
                                         //!< within porous medium problem
-      struct_calc_fluid_traction,       //!< calculate fluid traction on immersed boundary
-      struct_calc_cur_normal_at_point,  //!< calculate normal on immersed boundary surface
       struct_calc_addjacPTC,            //!< calculate elment based PTC contributions
       struct_create_backup,  //!< create a backup state of the internally store state quantities
                              //!< (e.g. EAS, material history, etc.)
@@ -244,10 +242,6 @@ namespace DRT
           return "struct_calc_brownianforce";
         case struct_calc_brownianstiff:
           return "struct_calc_brownianstiff";
-        case struct_calc_fluid_traction:
-          return "struct_calc_fluid_traction";
-        case struct_calc_cur_normal_at_point:
-          return "struct_calc_cur_normal_at_point";
         case struct_create_backup:
           return "struct_create_backup";
         case struct_recover_from_backup:

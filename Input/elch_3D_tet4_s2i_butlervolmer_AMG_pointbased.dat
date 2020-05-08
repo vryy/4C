@@ -25,6 +25,7 @@ TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
 NULLSPACE_POINTBASED            Yes
+EQUILIBRATION                   rows_maindiag
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -36,7 +37,6 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_maindiag
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          MueLu_sym

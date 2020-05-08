@@ -108,7 +108,7 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
       // material_(0),
       // data_(),
       V_(-1.0),
-      pstype_(INPAR::STR::prestress_none),
+      pstype_(INPAR::STR::PreStress::none),
       pstime_(0.0),
       time_(0.0)
 {
@@ -116,14 +116,14 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
 
-  if (pstype_ == INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::PreStress::id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
 
   return;
@@ -142,10 +142,10 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old)
       pstime_(old.pstime_),
       time_(old.time_)
 {
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
-  if (pstype_ == INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::PreStress::id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   return;
@@ -194,16 +194,16 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, V_);
 
   // prestress_
-  AddtoPack(data, pstype_);
+  AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
 
   // invdesign_
-  if (pstype_ == INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::PreStress::id)
   {
     DRT::ParObject::AddtoPack(data, *invdesign_);
   }
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   }
 
   // invdesign_
-  if (pstype_ == INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::PreStress::id)
   {
     std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position, data, tmpinvdesign);

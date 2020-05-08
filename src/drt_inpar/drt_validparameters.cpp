@@ -50,7 +50,6 @@
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_porofluidmultiphase.H"
 #include "inpar_immersed.H"
-#include "inpar_cell.H"
 #include "inpar_fbi.H"
 #include "inpar_fpsi.H"
 #include "inpar_ehl.H"
@@ -62,7 +61,6 @@
 #include "inpar_wear.H"
 #include "inpar_beamcontact.H"
 #include "inpar_beampotential.H"
-#include "inpar_acou.H"
 #include "inpar_elemag.H"
 #include "inpar_bio.H"
 #include "inpar_volmortar.H"
@@ -481,7 +479,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::REDAIRWAYS::SetValidParameters(list);
   INPAR::CARDIOVASCULAR0D::SetValidParameters(list);
   INPAR::IMMERSED::SetValidParameters(list);
-  INPAR::CELL::SetValidParameters(list);
   INPAR::FPSI::SetValidParameters(list);
   INPAR::FBI::SetValidParameters(list);
 
@@ -489,7 +486,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::MOR::SetValidParameters(list);
 
-  INPAR::ACOU::SetValidParameters(list);
   INPAR::ELEMAG::SetValidParameters(list);
 
   INPAR::GEO::SetValidParameters(list);

@@ -19,11 +19,9 @@
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_io/io_control.H"
 
@@ -50,14 +48,16 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
     const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     )
     : SSI_Base(comm, globaltimeparams),
-      dtele_(0.),
-      dtsolve_(0.),
+      dtele_(0.0),
+      dtsolve_(0.0),
+      maps_scatra_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
+      equilibration_method_(Teuchos::getIntegralValue<INPAR::SSI::EquilibrationMethod>(
+          globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
       matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      matrixtype_scatra_(INPAR::S2I::matrix_sparse),
       residual_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
       scatrastructureinterface_(Teuchos::null),
@@ -67,14 +67,12 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       strategy_convcheck_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
-      strategy_scatra_(Teuchos::null),
+      meshtying_strategy_s2i_(Teuchos::null),
       structurescatradomain_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | assemble global system of equations                           fang 08/17 |
@@ -155,10 +153,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, scatra_->ScaTraField()->Residual(), structure_->RHS());
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble domain contributions of off-diagonal scatra-structure                    |
@@ -201,15 +196,15 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureDomain()
   scatra_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
 
   // finalize scatra-structure matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       scatrastructuredomain_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       scatrastructuredomain_->Complete(*maps_->Map(1), *maps_->Map(0));
       break;
@@ -224,10 +219,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureDomain()
 
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble interface contributions of off-diagonal scatra-structure                 |
@@ -268,7 +260,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       // collect condition specific data and store to scatra boundary parameter class
-      strategy_scatra_->SetConditionSpecificScaTraParameters(*condition);
+      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*condition);
       // evaluate the condition now
       scatra_->ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
@@ -276,15 +268,15 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
 
 
   // finalize scatra-structure matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       scatrastructureinterface_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // finalize auxiliary system matrix
       scatrastructureinterface_->Complete(*maps_->Map(1), *maps_->Map(0));
@@ -300,10 +292,7 @@ void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
 
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
-
 
 /*-----------------------------------------------------------------------------------*
  | assemble off-diagonal structure-scatra block of global system matrix   fang 08/17 |
@@ -348,15 +337,15 @@ void SSI::SSI_Mono::EvaluateODBlockStructureScatraDomain() const
   structurescatradomain_->Scale(1.0 - timeintparam);
 
   // finalize structure-scatra matrix block
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       structurescatradomain_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       structurescatradomain_->Complete(*maps_->Map(0), *maps_->Map(1));
       break;
@@ -368,22 +357,19 @@ void SSI::SSI_Mono::EvaluateODBlockStructureScatraDomain() const
       break;
     }
   }
-
-  return;
 }
-
 
 /*-------------------------------------------------------------------------------*
  | build null spaces associated with blocks of global system matrix   fang 01/18 |
  *-------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::BuildNullSpaces() const
 {
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < strategy_scatra_->BlockMaps().NumMaps(); ++iblock)
+      for (int iblock = 0; iblock < scatra_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
       {
         // store number of current block as string, starting from 1
         std::stringstream iblockstr;
@@ -404,13 +390,13 @@ void SSI::SSI_Mono::BuildNullSpaces() const
         // block
         LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
             *scatra_->ScaTraField()->Discretization()->DofRowMap(),
-            *strategy_scatra_->BlockMaps().Map(iblock), blocksmootherparams);
+            *scatra_->ScaTraField()->BlockMaps().Map(iblock), blocksmootherparams);
       }
 
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null
       // space computation
@@ -446,26 +432,18 @@ void SSI::SSI_Mono::BuildNullSpaces() const
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
   structure_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
-
-  return;
 }  // SSI::SSI_Mono::BuildNullSpaces
-
 
 /*----------------------------------------------------------------------------*
  | compute inverse sums of absolute values of matrix row entries   fang 01/18 |
  *----------------------------------------------------------------------------*/
-void SSI::SSI_Mono::ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< inverse sums of absolute values of row entries in matrix
-    ) const
+void SSI::SSI_Mono::ComputeInvRowSums(
+    const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   // compute inverse row sums of matrix
   if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
     dserror("Inverse row sums of matrix could not be successfully computed!");
-
-  return;
 }  // SSI::SSI_Mono::ComputeInvRowSums
-
 
 /*--------------------------------------------------------------------------*
  | return global map of degrees of freedom                       fang 08/17 |
@@ -476,157 +454,141 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const { return 
 /*----------------------------------------------------------------------*
  | equilibrate matrix rows                                   fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Mono::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< sums of absolute values of row entries in matrix
-    ) const
+void SSI::SSI_Mono::EquilibrateMatrixRows(
+    LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
 }  // SSI::SSI_Mono::EquilibrateMatrixRows
-
 
 /*----------------------------------------------------------------------*
  | equilibrate global system of equations if necessary       fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Mono::EquilibrateSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
-    ) const
+void SSI::SSI_Mono::EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<Epetra_Vector>& residual) const
 {
-  // for equilibration, S2ICoupling needs to be activated, as it uses the S2I equilibration
-  // input values
-  if (SSIInterfaceMeshtying())
+  switch (equilibration_method_)
   {
-    switch (strategy_scatra_->Equilibration())
+    case INPAR::SSI::EquilibrationMethod::none:
     {
-      case INPAR::S2I::equilibration_none:
-      {
-        // do nothing
-        break;
-      }
+      // do nothing
+      break;
+    }
 
-      case INPAR::S2I::equilibration_rows_full:
-      case INPAR::S2I::equilibration_rows_maindiag:
-      {
-        // initialize vector for inverse sums of absolute values of matrix row entries
-        const Teuchos::RCP<Epetra_Vector> invrowsums = LINALG::CreateVector(*DofRowMap());
+    case INPAR::SSI::EquilibrationMethod::rows_full:
+    case INPAR::SSI::EquilibrationMethod::rows_maindiag:
+    {
+      // initialize vector for inverse sums of absolute values of matrix row entries
+      const auto invrowsums = LINALG::CreateVector(*DofRowMap());
 
-        switch (matrixtype_)
+      switch (matrixtype_)
+      {
+        case INPAR::SSI::matrix_block:
         {
-          case INPAR::SSI::matrix_block:
+          // check matrix
+          const auto blocksparsematrix =
+              Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
+          if (blocksparsematrix == Teuchos::null)
+            dserror("System matrix is not a block sparse matrix!");
+
+          // perform row equilibration
+          for (int i = 0; i < blocksparsematrix->Rows(); ++i)
           {
-            // check matrix
-            const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
-                Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
-            if (blocksparsematrix == Teuchos::null)
-              dserror("System matrix is not a block sparse matrix!");
+            // initialize vector for inverse row sums
+            const auto invrowsums_block(
+                Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
-            // perform row equilibration
-            for (int i = 0; i < blocksparsematrix->Rows(); ++i)
+            // compute inverse row sums of current main diagonal matrix block
+            if (equilibration_method_ == INPAR::SSI::EquilibrationMethod::rows_maindiag)
+              ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums_block);
+
+            // compute inverse row sums of current row block of global system matrix
+            else
             {
-              // initialize vector for inverse row sums
-              const Teuchos::RCP<Epetra_Vector> invrowsums_block(
-                  Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
-
-              // compute inverse row sums of current main diagonal matrix block
-              if (strategy_scatra_->Equilibration() == INPAR::S2I::equilibration_rows_maindiag)
-                ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums_block);
-
-              // compute inverse row sums of current row block of global system matrix
-              else
+              // loop over all column blocks of global system matrix
+              for (int j = 0; j < blocksparsematrix->Cols(); ++j)
               {
-                // loop over all column blocks of global system matrix
-                for (int j = 0; j < blocksparsematrix->Cols(); ++j)
+                // extract current block of global system matrix
+                const auto& matrix = blocksparsematrix->Matrix(i, j);
+
+                // loop over all rows of current matrix block
+                for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
                 {
-                  // extract current block of global system matrix
-                  const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
+                  // determine length of current matrix row
+                  const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
 
-                  // loop over all rows of current matrix block
-                  for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
+                  if (length > 0)
                   {
-                    // determine length of current matrix row
-                    const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
+                    // extract current matrix row from matrix block
+                    int numentries(0);
+                    std::vector<double> values(length, 0.0);
+                    if (matrix.EpetraMatrix()->ExtractMyRowCopy(
+                            irow, length, numentries, &values[0]))
+                      dserror(
+                          "Cannot extract matrix row with local ID %d from matrix block!", irow);
 
-                    if (length > 0)
-                    {
-                      // extract current matrix row from matrix block
-                      int numentries(0);
-                      std::vector<double> values(length, 0.);
-                      if (matrix.EpetraMatrix()->ExtractMyRowCopy(
-                              irow, length, numentries, &values[0]))
-                        dserror(
-                            "Cannot extract matrix row with local ID %d from matrix block!", irow);
-
-                      // compute and store current row sum
-                      double rowsum(0.);
-                      for (int ientry = 0; ientry < numentries; ++ientry)
-                        rowsum += std::abs(values[ientry]);
-                      (*invrowsums_block)[irow] += rowsum;
-                    }
+                    // compute and store current row sum
+                    double rowsum(0.0);
+                    for (int ientry = 0; ientry < numentries; ++ientry)
+                      rowsum += std::abs(values[ientry]);
+                    (*invrowsums_block)[irow] += rowsum;
                   }
                 }
-
-                // invert row sums of current matrix row block
-                if (invrowsums_block->Reciprocal(*invrowsums_block))
-                  dserror("Vector could not be inverted!");
               }
 
-              // perform row equilibration of matrix blocks in current row block of global
-              // system matrix
-              for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-                EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums_block);
-
-              // insert inverse row sums of current main diagonal matrix block into global
-              // vector
-              maps_systemmatrix_->InsertVector(invrowsums_block, i, invrowsums);
+              // invert row sums of current matrix row block
+              if (invrowsums_block->Reciprocal(*invrowsums_block))
+                dserror("Vector could not be inverted!");
             }
 
-            break;
+            // perform row equilibration of matrix blocks in current row block of global system
+            // matrix
+            for (int j = 0; j < blocksparsematrix->Cols(); ++j)
+              EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums_block);
+
+            // insert inverse row sums of current main diagonal matrix block into global vector
+            maps_systemmatrix_->InsertVector(invrowsums_block, i, invrowsums);
           }
 
-          case INPAR::SSI::matrix_sparse:
-          {
-            // check matrix
-            const Teuchos::RCP<LINALG::SparseMatrix> sparsematrix =
-                Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
-            if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
-
-            // compute inverse row sums of global system matrix
-            ComputeInvRowSums(*sparsematrix, invrowsums);
-
-            // perform row equilibration of global system matrix
-            EquilibrateMatrixRows(*sparsematrix, invrowsums);
-
-            break;
-          }
-
-          default:
-          {
-            dserror(
-                "Type of global system matrix for scalar-structure interaction not "
-                "recognized!");
-            break;
-          }
+          break;
         }
 
-        // perform equilibration of global residual vector
-        if (residual->Multiply(1., *invrowsums, *residual, 0.))
-          dserror("Equilibration of global residual vector failed!");
+        case INPAR::SSI::matrix_sparse:
+        {
+          // check matrix
+          const auto sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
+          if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
 
-        break;
+          // compute inverse row sums of global system matrix
+          ComputeInvRowSums(*sparsematrix, invrowsums);
+
+          // perform row equilibration of global system matrix
+          EquilibrateMatrixRows(*sparsematrix, invrowsums);
+
+          break;
+        }
+
+        default:
+        {
+          dserror(
+              "Type of global system matrix for scalar-structure interaction not "
+              "recognized!");
+          break;
+        }
       }
 
-      default:
-      {
-        dserror("Equilibration method not yet implemented!");
-        break;
-      }
+      // perform equilibration of global residual vector
+      if (residual->Multiply(1.0, *invrowsums, *residual, 0.0))
+        dserror("Equilibration of global residual vector failed!");
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Equilibration method not yet implemented!");
+      break;
     }
   }
-
-  return;
 }  // SSI::SSI_Mono::EquilibrateSystem
 
 
@@ -877,10 +839,7 @@ void SSI::SSI_Mono::FDCheck()
 
   // restore system increment vector if necessary
   if (increment_original != Teuchos::null) increment_ = increment_original;
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | initialize monolithic algorithm                               fang 08/17 |
@@ -939,10 +898,7 @@ void SSI::SSI_Mono::Output()
 
   // output structure field
   structure_->Output();
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | prepare time step                                             fang 08/17 |
@@ -968,10 +924,7 @@ void SSI::SSI_Mono::PrepareTimeStep()
 
   // print time step information to screen
   scatra_->ScaTraField()->PrintTimeStepInfo();
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | setup monolithic algorithm                                    fang 08/17 |
@@ -987,9 +940,14 @@ void SSI::SSI_Mono::Setup()
         "Since the ssi_monolithic framework is only implemented for usage in combination with "
         "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
         "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only "
-        "one "
-        "transported scalar at the moment it is not reasonable to use them with more than one "
+        "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
+
+  if (scatra_->ScaTraField()->EquilibrationMethod() != INPAR::SCATRA::EquilibrationMethod::none)
+    dserror(
+        "You are within the monolithic solid scatra interaction framework but activated a pure "
+        "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
+        "it in 'SSI CONTROL/MONOLITHIC' instead.");
 
   if (!scatra_->ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
@@ -998,22 +956,19 @@ void SSI::SSI_Mono::Setup()
   if (SSIInterfaceMeshtying())
   {
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
+    meshtying_strategy_s2i_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
         scatra_->ScaTraField()->Strategy());
 
     // safety checks
-    if (strategy_scatra_ == Teuchos::null)
+    if (meshtying_strategy_s2i_ == Teuchos::null)
       dserror("Invalid scatra-scatra interface coupling strategy!");
-    if (strategy_scatra_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+    if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror(
           "Monolithic scalar-structure interaction only implemented for scatra-scatra "
           "interface "
           "coupling with matching interface nodes!");
   }
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | setup global system of equations                              fang 08/17 |
@@ -1028,9 +983,6 @@ void SSI::SSI_Mono::SetupSystem()
     maps[1] = structure_->GetDBCMapExtractor()->CondMap();
     if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
-
-    // overwrite type of scalar transport system matrix
-    matrixtype_scatra_ = strategy_scatra_->MatrixType();
   }
 
   // initialize global map extractor
@@ -1048,24 +1000,29 @@ void SSI::SSI_Mono::SetupSystem()
   residual_ = LINALG::CreateVector(*DofRowMap(), true);
 
   // initialize map extractors associated with blocks of global system matrix
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       maps_systemmatrix_ = maps_;
       break;
     }
 
     // several main-diagonal matrix blocks associated with scalar transport field
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
-      // extract maps underlying main-diagonal matrix blocks associated with scalar transport
-      // field
-      const unsigned maps_systemmatrix_scatra = strategy_scatra_->BlockMaps().NumMaps();
+      // store an RCP to the block maps of the scatra field
+      maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
+
+      // safety check
+      maps_scatra_->CheckForValidMapExtractor();
+
+      // extract maps underlying main-diagonal matrix blocks associated with scalar transport  field
+      const int maps_systemmatrix_scatra = maps_scatra_->NumMaps();
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(maps_systemmatrix_scatra + 1);
-      for (unsigned imap = 0; imap < maps_systemmatrix_scatra; ++imap)
-        maps_systemmatrix[imap] = strategy_scatra_->BlockMaps().Map(imap);
+      for (int imap = 0; imap < maps_systemmatrix_scatra; ++imap)
+        maps_systemmatrix[imap] = maps_scatra_->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
@@ -1140,30 +1097,30 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize scatra-structure block and structure-scatra block of global system matrix
-  switch (matrixtype_scatra_)
+  switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *map_structure_, strategy_scatra_->BlockMaps(), 81, false, true));
+              *map_structure_, scatra_->ScaTraField()->BlockMaps(), 81, false, true));
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ =
             Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *map_structure_, strategy_scatra_->BlockMapsSlave(), 81, false, true));
+                *map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              strategy_scatra_->BlockMaps(), *map_structure_, 81, false, true));
+              scatra_->ScaTraField()->BlockMaps(), *map_structure_, 81, false, true));
 
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ = Teuchos::rcp(
@@ -1172,7 +1129,7 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ = Teuchos::rcp(new LINALG::SparseMatrix(
-            *strategy_scatra_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
+            *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
@@ -1195,15 +1152,15 @@ void SSI::SSI_Mono::SetupSystem()
   {
     case INPAR::SSI::matrix_block:
     {
-      switch (matrixtype_scatra_)
+      switch (scatra_->ScaTraField()->MatrixType())
       {
-        case INPAR::S2I::matrix_block_condition:
+        case INPAR::SCATRA::MatrixType::block_condition:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockBlock(Teuchos::rcp(this, false), converter));
           break;
         }
-        case INPAR::S2I::matrix_sparse:
+        case INPAR::SCATRA::MatrixType::sparse:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockSparse(Teuchos::rcp(this, false), converter));
@@ -1230,11 +1187,7 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
   }
-
-
-  return;
 }
-
 
 /*---------------------------------------------------------------------------------*
  | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
@@ -1247,10 +1200,7 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
       SSIInterfaceMeshtying())
     struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | evaluate time step using Newton-Raphson iteration             fang 08/17 |
@@ -1322,10 +1272,7 @@ void SSI::SSI_Mono::Solve()
 
     // structure field is updated during the next Newton-Raphson iteration step
   }  // Newton-Raphson iteration
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------*
  | time loop                                                     fang 08/17 |
@@ -1371,10 +1318,7 @@ void SSI::SSI_Mono::Timeloop()
     // output solution to screen and files
     Output();
   }  // while(NotFinished())
-
-  return;
 }
-
 
 /*--------------------------------------------------------------------------------------*
  | update scalar transport and structure fields after time step evaluation   fang 08/17 |
@@ -1386,6 +1330,4 @@ void SSI::SSI_Mono::Update()
 
   // update structure field
   structure_->Update();
-
-  return;
 }

@@ -18,12 +18,13 @@
 namespace LINALG
 {
   /**
-   * \brief Reorder the matrix entries for the inverse of a nonsymmetric 2x2 matrix.
+   * \brief Reorder the matrix entries for the inverse of a nonsymmetric NxN matrix.
    *
    * @param A (in/out) Matrix A.
+   * @tparam T Scalar Type of matrix.
    */
   template <typename T>
-  void Inverse2x2ReorderMatrixEntries(LINALG::Matrix<2, 2, T>& A)
+  void InverseReorderMatrixEntries(LINALG::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -35,47 +36,13 @@ namespace LINALG
     A(1, 1) = b00;
   }
 
-  /*!
-   * \brief Explicit inverse of a nonsymmetric 2x2 matrix. If the matrix is singular an error will
-   * be thrown.
-   *
-   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
-   */
-  template <typename T>
-  void Inverse2x2(LINALG::Matrix<2, 2, T>& A)
-  {
-    T det = Determinant2x2(A);
-    if (det == 0.0) dserror("Determinant of 2x2 matrix is exactly zero");
-    Inverse2x2ReorderMatrixEntries(A);
-    A.Scale(1. / det);
-  }
-
-  /*!
-   * \brief Explicit inverse of a nonsymmetric 2x2 matrix. If the matrix is singular no error will
-   * be thrown, and the original matrix will remain untouched.
-   *
-   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
-   * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
-   * is considered to be singular.
-   * @return True if matrix could be inverted, false if matrix is singular.
-   */
-  template <typename T>
-  bool Inverse2x2DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<2, 2, T>& A, double eps)
-  {
-    T det = Determinant2x2(A);
-    if (abs(det) < eps) return false;
-    Inverse2x2ReorderMatrixEntries(A);
-    A.Scale(1. / det);
-    return true;
-  }
-
   /**
    * \brief Reorder the matrix entries for the inverse of a nonsymmetric 3x3 matrix.
    *
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void Inverse3x3ReorderMatrixEntries(LINALG::Matrix<3, 3, T>& A)
+  void InverseReorderMatrixEntries(LINALG::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -97,47 +64,13 @@ namespace LINALG
     A(2, 2) = b00 * b11 - b10 * b01;
   }
 
-  /*!
-   * \brief Explicit inverse of a nonsymmetric 3x3 matrix. If the matrix is singular an error will
-   * be thrown.
-   *
-   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
-   */
-  template <typename T>
-  void Inverse3x3(LINALG::Matrix<3, 3, T>& A)
-  {
-    T det = Determinant3x3(A);
-    if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
-    Inverse3x3ReorderMatrixEntries(A);
-    A.Scale(1. / det);
-  }
-
-  /*!
-   * \brief Explicit inverse of a nonsymmetric 3x3 matrix. If the matrix is singular no error will
-   * be thrown, and the original matrix will remain untouched.
-   *
-   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
-   * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
-   * is considered to be singular.
-   * @return True if matrix could be inverted, false if matrix is singular.
-   */
-  template <typename T>
-  bool Inverse3x3DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<3, 3, T>& A, double eps)
-  {
-    T det = Determinant3x3(A);
-    if (abs(det) < eps) return false;
-    Inverse3x3ReorderMatrixEntries(A);
-    A.Scale(1. / det);
-    return true;
-  }
-
   /**
    * \brief Reorder the matrix entries for the inverse of a nonsymmetric 4x4 matrix.
    *
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void Inverse4x4ReorderMatrixEntries(LINALG::Matrix<4, 4, T>& A)
+  void InverseReorderMatrixEntries(LINALG::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -197,38 +130,90 @@ namespace LINALG
   }
 
   /*!
-   * \brief Explicit inverse of a nonsymmetric 4x4 matrix. If the matrix is singular an error will
+   * \brief Explicit inverse of a nonsymmetric NxN matrix. If the matrix is singular an error will
    * be thrown.
    *
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   *
+   * @tparam T Scalar type of matrix.
+   * @tparam dim Dimension of matrix.
    */
-  template <typename T>
-  void Inverse4x4(LINALG::Matrix<4, 4, T>& A)
+  template <typename T, unsigned int dim>
+  void Inverse(LINALG::Matrix<dim, dim, T>& A)
   {
-    T det = Determinant4x4(A);
-    if (det == 0.0) dserror("Determinant of 4x4 matrix is exactly zero");
-    Inverse4x4ReorderMatrixEntries(A);
+    T det = Determinant(A);
+    if (det == 0.0) dserror("Determinant of %dx%d matrix is exactly zero", dim, dim);
+    InverseReorderMatrixEntries(A);
     A.Scale(1. / det);
   }
 
   /*!
-   * \brief Explicit inverse of a nonsymmetric 4x4 matrix. If the matrix is singular no error will
+   * \brief Explicit inverse of a nonsymmetric matrix. If the matrix is singular no error will
    * be thrown, and the original matrix will remain untouched.
    *
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
    * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
    * is considered to be singular.
    * @return True if matrix could be inverted, false if matrix is singular.
+   *
+   * @tparam T Scalar type of matrix.
+   * @tparam dim Dimension of matrix.
    */
-  template <typename T>
-  bool Inverse4x4DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<4, 4, T>& A, double eps)
+  template <typename T, unsigned int dim>
+  bool InverseDoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<dim, dim, T>& A, double eps)
   {
-    T det = Determinant4x4(A);
+    T det = Determinant(A);
     if (abs(det) < eps) return false;
-    Inverse4x4ReorderMatrixEntries(A);
+    InverseReorderMatrixEntries(A);
     A.Scale(1. / det);
     return true;
   }
+
+  /**
+   * \brief Solve a linear system of equations \f$Ax=b\f$.
+   *
+   * If the system is not solvable this function will return false. The matrix \f$A\f$ is scaled so
+   * that the largest entry in each row is 1. By doing so we can perform a sensible comparison of
+   * the absolute value of the determinant with the given tolerance.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse of the scaled matrix will be stored in
+   * this variable.
+   * @param b (in/out) Right hand side vector of the linear system. Will be returned in the scaled
+   * version.
+   * @param x (out) Solution of the linear system.
+   * @param eps (in) If the absolute value of the scaled determinant is smaller than this value, the
+   * matrix is considered to be singular.
+   * @return True if the system could be solved, false if not.
+   *
+   * @tparam T Scalar type of matrix.
+   * @tparam dim Dimension of matrix.
+   */
+  template <typename T, unsigned int dim>
+  bool SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(LINALG::Matrix<dim, dim, T>& A,
+      LINALG::Matrix<dim, 1, T>& b, LINALG::Matrix<dim, 1, T>& x, double eps)
+  {
+    T max_value = 0.0;
+    for (unsigned int i_row = 0; i_row < dim; i_row++)
+    {
+      max_value = 0.0;
+      for (unsigned int i_col = 0; i_col < dim; i_col++)
+      {
+        if (abs(A(i_row, i_col)) > max_value) max_value = abs(A(i_row, i_col));
+      }
+      if (max_value < 1e-12) continue;
+      for (unsigned int i_col = 0; i_col < dim; i_col++)
+        A(i_row, i_col) = A(i_row, i_col) / max_value;
+      b(i_row) = b(i_row) / max_value;
+    }
+
+    T det = Determinant(A);
+    if (abs(det) < eps) return false;
+    InverseReorderMatrixEntries(A);
+    A.Scale(1. / det);
+    x.Multiply(A, b);
+    return true;
+  }
+
 
   /*!
     \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape

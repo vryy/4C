@@ -289,7 +289,6 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
       initParams.set<double>("time", 0.0);
       initParams.set<bool>("padaptivity", false);
       initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
-      // initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
       // Cycling through the entire set of elements to fill them with zeros
       for (int el = 0; el < discret_->NumMyColElements(); ++el)

@@ -185,6 +185,25 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with
   // SIMPLER)...",&scatradyn);
 
+  // flag for equilibration of global system of equations
+  setStringToIntegralParameter<EquilibrationMethod>("EQUILIBRATION", "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
+          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
+      tuple<EquilibrationMethod>(EquilibrationMethod::none, EquilibrationMethod::rows_full,
+          EquilibrationMethod::rows_maindiag, EquilibrationMethod::columns_full,
+          EquilibrationMethod::columns_maindiag, EquilibrationMethod::rowsandcolumns_full,
+          EquilibrationMethod::rowsandcolumns_maindiag),
+      &scatradyn);
+
+  // type of global system matrix in global system of equations
+  setStringToIntegralParameter<MatrixType>("MATRIXTYPE", "sparse",
+      "type of global system matrix in global system of equations",
+      tuple<std::string>("sparse", "block_meshtying", "block_condition", "block_condition_dof"),
+      tuple<MatrixType>(MatrixType::sparse, MatrixType::block_meshtying,
+          MatrixType::block_condition, MatrixType::block_condition_dof),
+      &scatradyn);
+
   // flag for natural convection effects
   BoolParameter("NATURAL_CONVECTION", "No", "Include natural convection effects", &scatradyn);
 
@@ -241,19 +260,6 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // flag for adaptive time stepping
   BoolParameter("ADAPTIVE_TIMESTEPPING", "No", "flag for adaptive time stepping", &scatradyn);
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scatra_variational = scatradyn.sublist("VARIATIONAL", false,
-      "control parameters for solving problems under a VARIATIONAL setting\n");
-
-  BoolParameter("SEMIMPLICITFUNCTIONAL", "no",
-      "Flag to evaluate concentration implicitly or explicitly on the functional",
-      &scatra_variational);
-  BoolParameter("BLOCKPRECOND", "NO",
-      "Switch to block-preconditioned family of solvers, only works with block preconditioners "
-      "like CheapSIMPLE!",
-      &scatra_variational);
-  BoolParameter("ANALYTIC2PARAVIEW", "NO",
-      "Flag to send the analytic solution to Paraview, if provided!", &scatra_variational);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
@@ -794,5 +800,27 @@ void INPAR::SCATRA::SetValidConditions(
   condlist.push_back(scatraheteroreactionslaveline);
   condlist.push_back(scatraheteroreactionslavesurf);
 
-  return;
+
+  /*--------------------------------------------------------------------*/
+  // scatra domain partitioning for block preconditioning of global system matrix
+  // please note: this is currently only used in combination with scatra-scatra interface coupling
+  // however the complete scatra matrix is subdivided into blocks which is not related to the
+  // interface coupling at all
+  {
+    // partitioning of 2D domain into 2D subdomains
+    auto scatrasurfpartitioning =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA SURF CONDITIONS / PARTITIONING",
+            "ScatraPartitioning", "Domain partitioning of scatra field",
+            DRT::Condition::ScatraPartitioning, false, DRT::Condition::Surface));
+
+    // partitioning of 3D domain into 3D subdomains
+    auto scatravolpartitioning =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA VOL CONDITIONS / PARTITIONING",
+            "ScatraPartitioning", "Domain partitioning of scatra field",
+            DRT::Condition::ScatraPartitioning, false, DRT::Condition::Volume));
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(scatrasurfpartitioning);
+    condlist.push_back(scatravolpartitioning);
+  }
 }

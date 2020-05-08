@@ -63,28 +63,8 @@ TIMESTEP                        0.1
 NUMSTEP                         200
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-COUPALGO                        iter_stagg_fixed_rel_param //iter_monolithicstructuresplit
+COUPALGO                        iter_stagg_fixed_rel_param
 MATCHGRID_FLUIDALE              no
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-ADAPTIVEDIST                    0.001
-BASETOL                         1.0E-5
-ITEMAX                          100
-TOL_DIS_INC_INF                 1e-11
-TOL_DIS_INC_L2                  1e-11
-TOL_DIS_RES_INF                 1e-11
-TOL_DIS_RES_L2                  1e-11
-TOL_FSI_INC_INF                 1e-11
-TOL_FSI_INC_L2                  1e-11
-TOL_FSI_RES_INF                 1e-11
-TOL_FSI_RES_L2                  1e-11
-TOL_PRE_INC_INF                 1e-11
-TOL_PRE_INC_L2                  1e-11
-TOL_PRE_RES_INF                 1e-11
-TOL_PRE_RES_L2                  1e-11
-TOL_VEL_INC_INF                 1e-11
-TOL_VEL_INC_L2                  1e-11
-TOL_VEL_RES_INF                 1e-11
-TOL_VEL_RES_L2                  1e-11
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 -------------------------------------------------------------MORTAR COUPLING

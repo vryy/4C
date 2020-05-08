@@ -66,7 +66,7 @@ def main(argv=None):
 
   # initialize dictionary for spatial coordinates of nodes associated with single matrix blocks
   blockids2nodecoords = {}
-  for iblock in sections['DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING']:
+  for iblock in sections['DESIGN SCATRA VOL CONDITIONS / PARTITIONING']:
     if iblock[0] == 'E':
       blockids2nodecoords[int(iblock[1])] = {}
 

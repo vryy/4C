@@ -206,8 +206,6 @@ namespace INPAR
       impltype_chemoreac,
       impltype_std_hdg,
       impltype_cardiac_monodomain_hdg,
-      impltype_bondreac,
-      impltype_variational_diffusion,
       impltype_one_d_artery,
       impltype_no_physics
     };
@@ -259,6 +257,38 @@ namespace INPAR
       l2_proj_system_std,
       l2_proj_system_lumped,
       l2_proj_system_dual
+    };
+
+    //! equilibration methods for global system of equations
+    enum class EquilibrationMethod
+    {
+      none,
+      rows_full,
+      rows_maindiag,
+      columns_full,
+      columns_maindiag,
+      rowsandcolumns_full,
+      rowsandcolumns_maindiag
+    };
+
+    //! type of global system matrix in global system of equations
+    enum class MatrixType
+    {
+      undefined,       /*!< Type of system matrix is undefined. */
+      sparse,          /*!< System matrix is a sparse matrix. */
+      block_condition, /*!< System matrix is a block matrix that consists of NxN sparse matrices.
+                          How the system matrix is divided is defined by the condition \link
+                          DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink. */
+      block_condition_dof, /*!< System matrix is a block matrix that consists of NxN sparse
+                              matrices. Each of the blocks as created by \link
+                              INPAR::SCATRA::MatriType::block_condition block_condition \endlink is
+                              further subdivided by the dofs, meaning e.g. for two dofs per node
+                              each 'original' block is divided into 2 blocks. */
+      block_meshtying      /*!< System matrix is a block matrix that consists of 3x3 sparse
+                              matrices. The system matrix is divided into interior dofs, slave-side and
+                              master-side dofs, based on its definition according to the scatra-scatra
+                              interface coupling condition \link DRT::Condition::S2ICoupling S2ICoupling
+                              \endlink. */
     };
 
     /// set the scatra parameters

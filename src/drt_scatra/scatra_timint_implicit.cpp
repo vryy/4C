@@ -119,6 +119,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       additional_model_evaluator_(NULL),
       isale_(extraparams->get<bool>("isale")),
       solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
+      equilibrationmethod_(
+          Teuchos::getIntegralValue<INPAR::SCATRA::EquilibrationMethod>(*params, "EQUILIBRATION")),
+      matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(*params, "MATRIXTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(INPAR::FLUID::no_model),
@@ -238,7 +241,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
 
@@ -356,8 +358,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // setup splitter (needed to solve initialization problems before SetupMeshtying())
   SetupSplitter();
 
-  // setup strategy
-  strategy_->SetupMeshtying();
+  // setup the matrix block maps and the meshtying strategy
+  SetupMatrixBlockMapsAndMeshtying();
 
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
@@ -367,7 +369,11 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     // special case)
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
   else
-    sysmat_ = strategy_->InitSystemMatrix();
+    sysmat_ = InitSystemMatrix();
+
+  // for some special meshtying cases we need to override the information with the information from
+  // the meshtying strategy, in such a case the meshtying strategy implements the method below
+  if (strategy_->SystemMatrixInitializationNeeded()) sysmat_ = strategy_->InitSystemMatrix();
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -2456,8 +2462,8 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluid(this));
 
   // scatra-scatra interface coupling
-  else if (s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, params_->sublist("S2I COUPLING")));
+  else if (IsS2IMeshtying())
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, *params_));
 
   // scatra-scatra interface coupling
   else if (heteroreaccoupling_)
@@ -2620,7 +2626,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
     Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
 )
 {
-  // evaluate Robin type boundary condition (needed for photoacoustic simulations)
+  // evaluate Robin type boundary condition
   EvaluateRobinBoundaryConditions(systemmatrix, rhs);
 
   // evaluate meshtying
@@ -2645,8 +2651,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
   // evaluate solution depending additional models
   // this point is unequal NULL only if a scatra
   // adapter has been constructed.
-  // see class AdapterScatraWrapperCellMigration for
-  // an example implementation.
   if (additional_model_evaluator_ != NULL)
     additional_model_evaluator_->EvaluateAdditionalSolutionDependingModels(systemmatrix, rhs);
 
@@ -3743,4 +3747,268 @@ void SCATRA::ScaTraTimIntImpl::CheckIsInit() const
 void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
 {
   if (not IsSetup()) dserror("ScaTraTimIntImpl is not set up. Call Setup() first.");
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
+{
+  auto problem = DRT::Problem::Instance();
+  bool IsS2IMeshtying(false);
+  // decide depending on the problem type
+  switch (problem->GetProblemType())
+  {
+    case prb_elch:
+    case prb_scatra:
+    case prb_sti:
+    {
+      if (s2icoupling_) IsS2IMeshtying = true;
+      break;
+    }
+    case prb_ssi:
+    {
+      // get structure discretization
+      auto structdis = problem->GetDis("structure");
+
+      // get ssi meshtying conditions
+      std::vector<DRT::Condition*> ssiconditions;
+      structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
+
+      // do mesh tying if there is at least one mesh tying condition
+      if (!ssiconditions.empty()) IsS2IMeshtying = true;
+      break;
+    }
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return IsS2IMeshtying;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMaps()
+{
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition or
+      matrixtype_ == INPAR::SCATRA::MatrixType::block_condition_dof)
+  {
+    // extract domain partitioning conditions from discretization
+    std::vector<Teuchos::RCP<DRT::Condition>> partitioningconditions;
+    discret_->GetCondition("ScatraPartitioning", partitioningconditions);
+
+    // safety check
+    if (partitioningconditions.empty())
+      dserror(
+          "For block preconditioning based on domain partitioning, at least one associated "
+          "condition needs to be specified in the input file!");
+
+    // build maps associated with blocks of global system matrix
+    std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps;
+    BuildBlockMaps(partitioningconditions, blockmaps);
+
+    // initialize full map extractor associated with blocks of global system matrix
+    blockmaps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(discret_->DofRowMap()), blockmaps));
+    // safety check
+    blockmaps_->CheckForValidMapExtractor();
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
+    const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+    std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
+{
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition)
+  {
+    // extract number of domain partitioning conditions
+    const unsigned ncond = partitioningconditions.size();
+
+    // prepare vector for maps to be built
+    blockmaps.resize(ncond, Teuchos::null);
+
+    // loop over all domain partitioning conditions
+    for (unsigned icond = 0; icond < ncond; ++icond)
+    {
+      // initialize set for dof IDs associated with current partitioning condition
+      std::set<int> dofids;
+
+      // extract nodes associated with current domain partitioning condition
+      const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
+
+      // loop over all nodes associated with current domain partitioning condition
+      for (int nodegid : *nodegids)
+      {
+        // extract global ID of current node
+        // consider current node only if node is owned by current processor
+        // need to make sure that node is stored on current processor, otherwise cannot resolve
+        // "->Owner()"
+        if (discret_->HaveGlobalNode(nodegid) and
+            discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())
+        {
+          // add dof IDs associated with current node to corresponding set
+          const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(nodegid));
+          std::copy(nodedofs.begin(), nodedofs.end(), std::inserter(dofids, dofids.end()));
+        }
+      }
+
+      // transform set for dof IDs into vector and then into Epetra map
+      int nummyelements(0);
+      int* myglobalelements(nullptr);
+      std::vector<int> dofidvec;
+      if (!dofids.empty())
+      {
+        dofidvec.reserve(dofids.size());
+        dofidvec.assign(dofids.begin(), dofids.end());
+        nummyelements = dofidvec.size();
+        myglobalelements = &(dofidvec[0]);
+      }
+      blockmaps[icond] = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
+          discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
+    }
+  }
+  // safety check
+  else
+    dserror("Invalid type of global system matrix!");
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
+{
+  // matrix block map extractor equals interface map extractor in this case
+  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_meshtying)
+    blockmaps_ = strategy_->InterfaceMaps();
+
+  // now build the null spaces
+  BuildBlockNullSpaces();
+
+  // in case of an extended solver for scatra-scatra interface meshtying including interface growth
+  // we need to equip it with the null space information generated above
+  if (IsS2IMeshtying()) strategy_->EquipExtendedSolverWithNullSpaceInfo();
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces() const
+{
+  // loop over blocks of global system matrix
+  for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+  {
+    // store number of current block as string, starting from 1
+    std::ostringstream iblockstr;
+    iblockstr << iblock + 1;
+
+    // equip smoother for current matrix block with empty parameter sublists to trigger null space
+    // computation
+    Teuchos::ParameterList& blocksmootherparams =
+        Solver()->Params().sublist("Inverse" + iblockstr.str());
+    blocksmootherparams.sublist("Aztec Parameters");
+    blocksmootherparams.sublist("MueLu Parameters");
+
+    // equip smoother for current matrix block with null space associated with all degrees of
+    // freedom on discretization
+    discret_->ComputeNullSpaceIfNecessary(blocksmootherparams);
+
+    // reduce full null space to match degrees of freedom associated with current matrix block
+    LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(), *discret_->DofRowMap(),
+        *BlockMaps().Map(iblock), blocksmootherparams);
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
+{
+  switch (MatrixType())
+  {
+    // case INPAR::SCATRA::MatrixType::undefined:
+    case INPAR::SCATRA::MatrixType::sparse:
+    {
+      // only setup the meshtying in this case, as matrix has no block structure
+      strategy_->SetupMeshtying();
+
+      break;
+    }
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    case INPAR::SCATRA::MatrixType::block_meshtying:
+    {
+      // safety check
+      if (!Solver()->Params().isSublist("AMGnxn Parameters"))
+        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+
+      // setup the matrix block maps
+      SetupMatrixBlockMaps();
+
+      // setup the meshtying
+      strategy_->SetupMeshtying();
+
+      // do some post setup matrix block map operations after the call to SetupMeshtying, as they
+      // rely on the fact that the interface maps have already been built
+      PostSetupMatrixBlockMaps();
+
+      break;
+    }
+    default:
+    {
+      dserror("ScaTra Matrixtype %i not recognised", static_cast<int>(MatrixType()));
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix() const
+{
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix(Teuchos::null);
+
+  switch (matrixtype_)
+  {
+    case INPAR::SCATRA::MatrixType::sparse:
+    {
+      // initialize system matrix
+      systemmatrix =
+          Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 27, false, true));
+      break;
+    }
+
+    case INPAR::SCATRA::MatrixType::block_meshtying:
+    {
+      if (S2ICoupling())
+      {
+        // initialize system matrix and associated strategy
+        systemmatrix =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *strategy_->InterfaceMaps(), *strategy_->InterfaceMaps(), 81, false, true));
+      }
+      else
+        dserror("Scatra Matrixtype %i is only possible in combination with S2ICoupling!",
+            static_cast<int>(matrixtype_));
+
+      break;
+    }
+
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    {
+      // initialize system matrix and associated strategy
+      systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          BlockMaps(), BlockMaps(), 81, false, true));
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
+      break;
+    }
+  }
+
+  return systemmatrix;
 }

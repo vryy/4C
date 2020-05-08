@@ -26,8 +26,6 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/
@@ -127,8 +125,6 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
       if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_reactions)
         element->SetImplType(INPAR::SCATRA::impltype_advreac);
-      else if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_bondreacs)
-        element->SetImplType(INPAR::SCATRA::impltype_bondreac);
       else
         dserror("Invalid material type for HeterogeneousReactionStrategy!");
     }  // loop over all column elements
@@ -167,8 +163,6 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*discret_);
   }
-
-  DRT::ImmersedFieldExchangeManager::Instance()->SetPointerToAuxDis(discret_);
 
   SetIsSetup(true);
   return;

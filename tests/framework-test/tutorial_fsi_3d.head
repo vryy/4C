@@ -20,8 +20,6 @@ NUMTHERMDIS                     1
 NUMAIRWAYSDIS                   1
 //
 --------------------------------------------------------PROBLEM TYP
-//
-//     Acoustics
 //     AeroCode_Thermo_Fluid_Structure_Interaction
 //     Ale
 //     ArterialNetwork
@@ -46,9 +44,6 @@ NUMAIRWAYSDIS                   1
 //     Fluid_Top_Opt
 //     Fluid_XFEM
 //     Fluid_XFEM_LevelSet
-//     Gas_Fluid_Structure_Interaction
-//     Immersed_ALE_FSI
-//     Immersed_CellMigration
 //     Immersed_FSI
 //     Inverse_Analysis
 //     Level_Set

@@ -56,6 +56,11 @@ namespace SCATRA
 
     void SetupSplitter();
 
+    void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+        std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
+
+    void BuildBlockNullSpaces() const override;
+
     /*========================================================================*/
     //! @name general framework
     /*========================================================================*/

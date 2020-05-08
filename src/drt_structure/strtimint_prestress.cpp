@@ -20,9 +20,9 @@
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<LINALG::Solver>& contactsolver,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output)
     : TimIntStatics(
           timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -31,30 +31,6 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
   // is called during Setup() in a base class.
-  return;
-}
-
-/*----------------------------------------------------------------------------------------------*
- * Initialize this class                                                            rauch 09/16 |
- *----------------------------------------------------------------------------------------------*/
-void STR::TimIntPrestress::Init(const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
-{
-  // call Init() in base class
-  STR::TimIntStatics::Init(timeparams, sdynparams, xparams, actdis, solver);
-
-  return;
-}
-
-/*----------------------------------------------------------------------------------------------*
- * Setup this class                                                                 rauch 09/16 |
- *----------------------------------------------------------------------------------------------*/
-void STR::TimIntPrestress::Setup()
-{
-  // call Setup() in base class
-  STR::TimIntStatics::Setup();
-
   return;
 }
 
@@ -68,12 +44,11 @@ void STR::TimIntPrestress::UpdateStepElement()
 
   // which prestress type?
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  auto pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // MULF
-  if (pstype == INPAR::STR::prestress_mulf)
+  if (pstype == INPAR::STR::PreStress::mulf)
   {
     if ((*time_)[0] <= pstime)
     {
@@ -92,7 +67,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   }
 
   // INVERSE DESIGN
-  else if (pstype == INPAR::STR::prestress_id)
+  else if (pstype == INPAR::STR::PreStress::id)
   {
     if ((*time_)[0] <= pstime)
     {
@@ -100,7 +75,7 @@ void STR::TimIntPrestress::UpdateStepElement()
       // action for elements
       p.set("action", "calc_struct_inversedesign_update");
     }
-    else if ((*time_)[0] > pstime)
+    else
     {
       // action for elements
       p.set("action", "calc_struct_update_istep");
@@ -117,7 +92,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (pstype == INPAR::STR::prestress_id && (*time_)[0] <= pstime && timen_ > pstime)
+  if (pstype == INPAR::STR::PreStress::id && (*time_)[0] <= pstime && timen_ > pstime)
   {
     // switch in id mode:
     dis_->UpdateSteps(*zeros_);
@@ -131,7 +106,7 @@ void STR::TimIntPrestress::UpdateStepElement()
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
-  if (pstype == INPAR::STR::prestress_mulf && (*time_)[0] <= pstime)
+  if (pstype == INPAR::STR::PreStress::mulf && (*time_)[0] <= pstime)
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient in
     // material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
@@ -144,17 +119,6 @@ void STR::TimIntPrestress::UpdateStepElement()
     vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* write internal and external forces for restart */
-/* only necessary for dynamic restart! */
-void STR::TimIntPrestress::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
-{
-  output->WriteVector("fexternal", fextn_);
-  output->WriteVector("fint", fintn_);
-  output->WriteVector("finert", zeros_);
-  return;
 }
 
 /*----------------------------------------------------------------------*/

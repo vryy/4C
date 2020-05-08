@@ -202,7 +202,7 @@ NODE 50 COORD 3.6000000000000000e+01 3.8750000000000000e+01 0.0000000000000000e+
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
------------------------------------------------------------ACOUSTIC ELEMENTS
+
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE  -4.49210507457942931e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 5.83995393405929963e+00 TOLERANCE 1e-10

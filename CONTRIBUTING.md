@@ -56,6 +56,8 @@ to pre-populate the *Description* field with some text.
 Follow the instructions in that template to give your fellow developers as much information as you can
 such that the issue can be understood and tackled as soon as it is practicable.
 
+Make sure to assign appropriate team::<teamname> label(s) according to the issue type and @mention the respective teams in order to facilitate your fellow developers to keep track of the issues that are related to their field.
+
 Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
 and then move through the board from left to right.
 If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external),
@@ -163,7 +165,8 @@ A small set of test cases can be run via `ctest -L minimal`.
 
 To merge changes into `master`, a feature branch needs to satisfy these conditions:
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
-* No build errors and passing all tests
+* No build errors and warnings
+* All tests are passing
 * Passing code inspection by one of your fellow developers
 
 #### Push your branch to GitLab
@@ -188,7 +191,7 @@ move the issue card from **In Progress** to **Under Review** on our
       * source branch: `<branchName>`
       * target branch: `master`
    * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and accepted as soon as it is practicable.
-   * To notify interested parties and possible reviewers about your merge request, @mention possible reviewers for this merge request as well as the maintainers of all the files you've touched in the *Interested Parties / Possible Reviewers* section of the *Description* field.
+   * To notify others about your merge request, @mention possible reviewers, affected teams, and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field.
    * Assign an available reviewer from the @baci/baci_maintainer group who will take care of the reviewing/merging process (Members of the @baci/baci_maintainer group do not assign themselves).
    > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
 * Trigger the execution of the test suite manually:

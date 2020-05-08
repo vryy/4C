@@ -15,13 +15,6 @@
  * - Use alphabetical ordering
  */
 
-/*! \brief Acoustics problems
- *
- */
-namespace ACOU
-{
-}  // namespace ACOU
-
 /*! \brief Algorithm adapter classes for use in multi-field problems
  *
  * Adapters wrap single fields such that a field can be queried for its internal data by
@@ -644,13 +637,6 @@ namespace IMMERSED
  */
 namespace INPAR
 {
-  /*! \brief Input parameters for ACOU
-   *
-   */
-  namespace ACOU
-  {
-  }  // namespace ACOU
-
   /*! \brief Input parameters for ALE
    *
    */
@@ -727,13 +713,6 @@ namespace INPAR
   namespace CARDIOVASCULAR0D
   {
   }  // namespace CARDIOVASCULAR0D
-
-  /*! \brief Input parameters for cell migration
-   *
-   */
-  namespace CELL
-  {
-  }  // namespace CELL
 
   /*! \brief Input parameters for contact mechanics
    *

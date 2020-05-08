@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief
+\brief Common functionalities for materials that base on a multiplicative split of the deformation
+gradient.
 
 \level 3
 
-\maintainer Amadeus Gebauer
+\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------*/

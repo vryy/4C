@@ -120,7 +120,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (pstype_ == INPAR::STR::prestress_id && time_ <= pstime_)  // inverse design analysis
+      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, matptr, NULL, &elevec1, NULL, NULL,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none);
 
@@ -196,7 +196,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (pstype_ == INPAR::STR::prestress_id && time_ <= pstime_)  // inverse design analysis
+      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL,
             NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else  // standard analysis
@@ -511,7 +511,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
-        if (pstype_ == INPAR::STR::prestress_id && time_ <= pstime_)  // inverse design analysis
+        if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
               params, iostress, iostrain);
 
@@ -655,7 +655,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (pstype_ != INPAR::STR::prestress_none)
+      if (pstype_ != INPAR::STR::PreStress::none)
       {
       }
 
@@ -676,7 +676,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (pstype_ != INPAR::STR::prestress_none)
+      if (pstype_ != INPAR::STR::PreStress::none)
       {
       }
 
@@ -691,7 +691,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->ResetAll(NUMGPT_SOH8);
 
       // Reset prestress
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         time_ = 0.0;
         LINALG::Matrix<3, 3> Id(true);
@@ -702,7 +702,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (pstype_ == INPAR::STR::prestress_id)
+      if (pstype_ == INPAR::STR::PreStress::id)
         dserror("Reset of Inverse Design not yet implemented");
 
       // reset EAS parameters:
@@ -746,7 +746,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -796,7 +796,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
 
-        if (pstype_ == INPAR::STR::prestress_id && pstime_ < time_)
+        if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
         {
           dserror("Calc Energy not implemented for prestress id");
         }
@@ -805,7 +805,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           // get Jacobian mapping wrt to the stored configuration
           LINALG::Matrix<3, 3> invJdef;
@@ -1155,156 +1155,125 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       //==================================================================================
     case ELEMENTS::struct_interpolate_velocity_to_point:
     {
-      static bool is_immersed_ale_fsi =
-          (DRT::Problem::Instance()->GetProblemType() == prb_immersed_ale_fsi);
-      static DRT::Condition* porocondition = discretization.GetCondition("PoroCoupling");
-      bool is_ale_structure = false;
-      if (is_immersed_ale_fsi)
+      // get displacements and extract values of this element (set in PrepareFluidOp())
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
+
+#ifdef DEBUG
+      if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
+#endif
+
+      std::vector<double> mydispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+
+      std::vector<double> myvelnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+
+      // update element geometry
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
+      DRT::Node** nodes = Nodes();
+      for (int i = 0; i < NUMNOD_SOH8; ++i)
       {
-        if (porocondition->Geometry().find(Id()) != porocondition->Geometry().end())
+        const double* X = nodes[i]->X();
+        xrefe(i, 0) = X[0];
+        xrefe(i, 1) = X[1];
+        xrefe(i, 2) = X[2];
+
+        xcurr(i, 0) = xrefe(i, 0) + mydispnp[i * NODDOF_SOH8 + 0];
+        xcurr(i, 1) = xrefe(i, 1) + mydispnp[i * NODDOF_SOH8 + 1];
+        xcurr(i, 2) = xrefe(i, 2) + mydispnp[i * NODDOF_SOH8 + 2];
+      }
+
+      // shape functions and derivatives w.r.t. r,s,t
+      LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
+      LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv1;
+      // coordinates of given point in reference coordinates
+      LINALG::Matrix<NUMDIM_SOH8, 1> xsi;
+      xsi(0) = elevec2_epetra(0);
+      xsi(1) = elevec2_epetra(1);
+      xsi(2) = elevec2_epetra(2);
+      // evaluate shape functions and derivatives at given point w.r.t r,s,t
+      DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
+      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
+
+      LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
+      for (int node = 0; node < NUMNOD_SOH8; ++node)
+      {
+        for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
         {
-          is_ale_structure = true;
+          myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
         }
       }
 
-      if (is_ale_structure == false)
+      if (params.get("calculate_velocity", 1))
       {
-        // get displacements and extract values of this element (set in PrepareFluidOp())
-        Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
+        //************************************************************************
+        // 1.) interpolation of velocity at n+1 to given point
+        //************************************************************************
 
-#ifdef DEBUG
-        if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
-        if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
-#endif
-
-        std::vector<double> mydispnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
-
-        std::vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
-
-        //    /////////////
-        //    // DEBUG
-        //    /////////////
-        //    for(int i=0; i<(int)mydispnp.size() ;++i)
-        //    {
-        //      std::cout<<mydispnp[i]<<" ";
-        //    }
-        //    std::cout<<""<<std::endl;
-
-        // update element geometry
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-        DRT::Node** nodes = Nodes();
-        for (int i = 0; i < NUMNOD_SOH8; ++i)
-        {
-          const double* X = nodes[i]->X();
-          xrefe(i, 0) = X[0];
-          xrefe(i, 1) = X[1];
-          xrefe(i, 2) = X[2];
-
-          xcurr(i, 0) = xrefe(i, 0) + mydispnp[i * NODDOF_SOH8 + 0];
-          xcurr(i, 1) = xrefe(i, 1) + mydispnp[i * NODDOF_SOH8 + 1];
-          xcurr(i, 2) = xrefe(i, 2) + mydispnp[i * NODDOF_SOH8 + 2];
-        }
-
-        // shape functions and derivatives w.r.t. r,s,t
-        LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-        LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv1;
-        // coordinates of given point in reference coordinates
-        LINALG::Matrix<NUMDIM_SOH8, 1> xsi;
-        xsi(0) = elevec2_epetra(0);
-        xsi(1) = elevec2_epetra(1);
-        xsi(2) = elevec2_epetra(2);
-        // evaluate shape functions and derivatives at given point w.r.t r,s,t
-        DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
-        DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
-
-        LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
-        for (int node = 0; node < NUMNOD_SOH8; ++node)
-        {
-          for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
-          {
-            myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
-          }
-        }
-
-        if (params.get("calculate_velocity", 1))
-        {
-          //************************************************************************
-          // 1.) interpolation of velocity at n+1 to given point
-          //************************************************************************
-
-          // give back velocity at given point
-          LINALG::Matrix<3, 1> result;
-          result.MultiplyTN(myvelocitynp, shapefcts);
-          for (int i = 0; i < 3; ++i) elevec1_epetra(i) = result(i, 0);
-        }
-        else
-        {
-          //************************************************************************
-          // 2.) calculation of divergence of structural velocity
-          //************************************************************************
-
-          // get Jacobian matrix
-          // actually compute its transpose....
-          /*
-                   +-            -+ -1
-                   | dx   dy   dz |
-                   | --   --   -- |
-                   | dr   dr   dr |
-                   |              |
-                   | dx   dy   dz |
-          J^{-T} = | --   --   -- |
-                   | ds   ds   ds |
-                   |              |
-                   | dx   dy   dz |
-                   | --   --   -- |
-                   | dt   dt   dt |
-                   +-            -+
-          */
-
-          // global first derivatives of shape functions w.r.t x,y,z (by derxy1 = J^-T * deriv1)
-          LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> derxy1;
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> transJ;
-          transJ.Multiply(deriv1, xrefe);
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(transJ);
-          invJ.Invert();
-          derxy1.Multiply(invJ, deriv1);
-
-          // build (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * derxy1^T
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp(true);
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp_inv(true);
-          defgrdnp.MultiplyTT(xcurr, derxy1);
-          defgrdnp_inv.Invert(defgrdnp);
-
-          // evaluate divergence of structural velocity
-          double velocitydivergence = 0.0;
-
-          // div(v) = derxy1_A,I (dX_I/dx_i) v_Ai
-          for (int I = 0; I < NUMDIM_SOH8; ++I)
-          {
-            for (int A = 0; A < NUMNOD_SOH8; ++A)
-            {
-              for (int i = 0; i < NUMDIM_SOH8; ++i)
-              {
-                velocitydivergence += derxy1(I, A) * (defgrdnp_inv(I, i) * myvelocitynp(A, i));
-              }
-            }
-          }
-
-          // vector to fill
-          elevec1_epetra(3) = velocitydivergence;
-        }
-      }  // if immersed structure
+        // give back velocity at given point
+        LINALG::Matrix<3, 1> result;
+        result.MultiplyTN(myvelocitynp, shapefcts);
+        for (int i = 0; i < 3; ++i) elevec1_epetra(i) = result(i, 0);
+      }
       else
       {
-        for (int i = 0; i < 3; ++i) elevec1_epetra(i) = -12345.0;
+        //************************************************************************
+        // 2.) calculation of divergence of structural velocity
+        //************************************************************************
 
-        elevec1_epetra(3) = -12345.0;
+        // get Jacobian matrix
+        // actually compute its transpose....
+        /*
+                 +-            -+ -1
+                 | dx   dy   dz |
+                 | --   --   -- |
+                 | dr   dr   dr |
+                 |              |
+                 | dx   dy   dz |
+        J^{-T} = | --   --   -- |
+                 | ds   ds   ds |
+                 |              |
+                 | dx   dy   dz |
+                 | --   --   -- |
+                 | dt   dt   dt |
+                 +-            -+
+        */
 
-      }  // fsi structure
+        // global first derivatives of shape functions w.r.t x,y,z (by derxy1 = J^-T * deriv1)
+        LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> derxy1;
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> transJ;
+        transJ.Multiply(deriv1, xrefe);
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(transJ);
+        invJ.Invert();
+        derxy1.Multiply(invJ, deriv1);
+
+        // build (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * derxy1^T
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp(true);
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrdnp_inv(true);
+        defgrdnp.MultiplyTT(xcurr, derxy1);
+        defgrdnp_inv.Invert(defgrdnp);
+
+        // evaluate divergence of structural velocity
+        double velocitydivergence = 0.0;
+
+        // div(v) = derxy1_A,I (dX_I/dx_i) v_Ai
+        for (int I = 0; I < NUMDIM_SOH8; ++I)
+        {
+          for (int A = 0; A < NUMNOD_SOH8; ++A)
+          {
+            for (int i = 0; i < NUMDIM_SOH8; ++i)
+            {
+              velocitydivergence += derxy1(I, A) * (defgrdnp_inv(I, i) * myvelocitynp(A, i));
+            }
+          }
+        }
+
+        // vector to fill
+        elevec1_epetra(3) = velocitydivergence;
+      }
     }
     break;
     //==================================================================================
@@ -1446,7 +1415,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType ioplstrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
-        if (pstype_ == INPAR::STR::prestress_id && time_ <= pstime_)  // inverse design analysis
+        if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
               params, iostress, iostrain);
 
@@ -1710,11 +1679,11 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_)
+    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
-    if (pstype_ == INPAR::STR::prestress_id && pstime_ < time_)
+    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
       if (!(invdesign_->IsInit()))
       {
         // printf("Ele %d id use InitJacobianMapping pstime < time %10.5e <
@@ -1724,9 +1693,9 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
       }
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
 
-  if (pstype_ == INPAR::STR::prestress_id && pstime_ < time_) invdesign_->IsInit() = true;
+  if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_) invdesign_->IsInit() = true;
 
   return;
 }
@@ -1930,7 +1899,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
   /* ============================================================================*/
 
   // check for prestressing
-  if (pstype_ != INPAR::STR::prestress_none && eastype_ != soh8_easnone)
+  if (pstype_ != INPAR::STR::PreStress::none && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
@@ -1950,7 +1919,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -2122,7 +2091,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;
@@ -2176,7 +2145,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       }  // if (det_defgrd<0.0)
     }
 
-    if (pstype_ == INPAR::STR::prestress_id && pstime_ < time_)
+    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
     {
       // printf("Ele %d entering id poststress\n",Id());
       // make the multiplicative update so that defgrd refers to
@@ -2491,15 +2460,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
 
     params.set<int>("gp", gp);
 
-    // needed for biochemo-mechano activefiber and passivefiber material.
-    // FixMe This has to vanish at latest with the elements
-    // for the new structural time integration.
-    // todo temporary hack ! (rauch 12/2016)
-    if (IsParamsInterface())
-    {
-      params.set<double>("total time", ParamsInterface().GetTotalTime());
-      params.set<double>("delta time", ParamsInterface().GetDeltaTime());
-    }  // if prb_immersed_cell
     // if output is requested only active stresses are written.
     params.set<int>("iostress", iostress);
 
@@ -2897,7 +2857,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   /* ============================================================================*/
 
   // check for prestressing or EAS
-  if (pstype_ != INPAR::STR::prestress_none || eastype_ != soh8_easnone)
+  if (pstype_ != INPAR::STR::PreStress::none || eastype_ != soh8_easnone)
     dserror("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
 
   // GEMM coefficients
@@ -3512,7 +3472,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOH8 + 2];
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -3552,7 +3512,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         // get Jacobian mapping wrt to the stored configuration
         LINALG::Matrix<3, 3> invJdef;

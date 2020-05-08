@@ -42,7 +42,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    TS_ASSERT_DELTA(LINALG::Determinant2x2(A), -0.2639054076334587, 1e-14);
+    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.2639054076334587, 1e-14);
   }
 
   void test_Determinant3x3()
@@ -58,7 +58,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    TS_ASSERT_DELTA(LINALG::Determinant3x3(A), -0.1008304741716571, 1e-14);
+    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.1008304741716571, 1e-14);
   }
 
   void test_Determinant4x4()
@@ -81,7 +81,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    TS_ASSERT_DELTA(LINALG::Determinant4x4(A), -0.01620776397174742, 1e-14);
+    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.01620776397174742, 1e-14);
   }
 
   void test_DeterminantLU_2x2()

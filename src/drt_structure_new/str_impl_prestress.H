@@ -1,11 +1,11 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\maintainer Anh-Tu Vuong
-
-\date Sep 2, 2015
+\brief This file contains the declaration of a time integrator for prestressing
 
 \level 3
+
+\maintainer Amadeus Gebauer
 
 */
 /*-----------------------------------------------------------*/
@@ -19,14 +19,14 @@ namespace STR
 {
   namespace IMPLICIT
   {
+    /*!
+     * \brief The time integrator that also writes dynamic forces to allow a dynamic restart
+     */
     class PreStress : public Statics
     {
      public:
-      //! constructor
-      PreStress(){};
-
-      //! destructor
-      virtual ~PreStress(){};
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
     };
   }  // namespace IMPLICIT
 }  // namespace STR

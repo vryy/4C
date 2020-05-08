@@ -209,11 +209,13 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "ITERTOPC", 10, "iterations before parameter continuation in the forward problem", &statinvp);
 
   // give prestressing method to be used for the adjoint formulation
-  setStringToIntegralParameter<int>("PRESTRESS", "none", "prestressing takes values none mulf id",
+  setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
+      "prestressing takes values none mulf id",
       tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID"),
-      tuple<int>(INPAR::STR::prestress_none, INPAR::STR::prestress_none, INPAR::STR::prestress_none,
-          INPAR::STR::prestress_mulf, INPAR::STR::prestress_mulf, INPAR::STR::prestress_mulf,
-          INPAR::STR::prestress_id, INPAR::STR::prestress_id, INPAR::STR::prestress_id),
+      tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
+          INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
+          INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::id, INPAR::STR::PreStress::id,
+          INPAR::STR::PreStress::id),
       &statinvp);
 
   // stepsize for deterministic gradient based schemes

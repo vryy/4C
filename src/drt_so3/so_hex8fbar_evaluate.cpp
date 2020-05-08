@@ -362,7 +362,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->ResetAll(NUMGPT_SOH8);
 
       // Reset prestress
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         time_ = 0.0;
         LINALG::Matrix<3, 3> Id(true);
@@ -387,7 +387,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         invJ_0.Invert();
         prestress_->MatrixtoStorage(NUMGPT_SOH8, invJ_0, prestress_->JHistory());
       }
-      if (pstype_ == INPAR::STR::prestress_id)
+      if (pstype_ == INPAR::STR::PreStress::id)
         dserror("Reset of Inverse Design not yet implemented");
     }
     break;
@@ -495,7 +495,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -521,7 +521,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         N_XYZ_0.Multiply(invJ_0, N_rst_0);
       }
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         // get Jacobian mapping wrt to the stored configuration
         // centroid is 9th Gaussian point in storage
@@ -581,7 +581,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
 
-        if (pstype_ == INPAR::STR::prestress_id && pstime_ < time_)
+        if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
         {
           dserror("Calc Energy not implemented for prestress id");
         }
@@ -590,7 +590,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           // get Jacobian mapping wrt to the stored configuration
           LINALG::Matrix<3, 3> invJdef;
@@ -713,13 +713,13 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_)
+    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
   // init the centroid invJ
-  if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_)
+  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
     if (!(prestress_->IsInit()))
     {
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
@@ -731,7 +731,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     }
 
 
-  if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
 
   return;
 }
@@ -885,7 +885,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -911,7 +911,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ_0.Multiply(invJ_0, N_rst_0);
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::PreStress::mulf)
   {
     // get Jacobian mapping wrt to the stored configuration
     // centroid is 9th Gaussian point in storage
@@ -968,7 +968,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;
@@ -1734,7 +1734,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(
       xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -1761,7 +1761,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(
       N_XYZ_0.Multiply(invJ_0, N_rst_0);
     }
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       // centroid is 9th Gaussian point in storage
@@ -1829,7 +1829,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         // get Jacobian mapping wrt to the stored configuration
         LINALG::Matrix<3, 3> invJdef;

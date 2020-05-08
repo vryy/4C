@@ -39,7 +39,6 @@
 #include "scatra_mat_multiporo.H"
 #include "scatra_mat_multiscale.H"
 #include "scatra_mat_aniso.H"
-#include "scatra_mat_var_chemdiffusion.H"
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
@@ -77,10 +76,8 @@
 #include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
 #include "scatra_reaction_mat.H"
-#include "scatra_bondreac_mat.H"
 #include "scatra_chemotaxis_mat.H"
 #include "matlist_reactions.H"
-#include "matlist_bondreacs.H"
 #include "matlist_chemotaxis.H"
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
@@ -111,12 +108,8 @@
 #include "maxwell_0d_acinus_Ogden.H"
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
-#include "acoustic.H"
-#include "acoustic_sol.H"
 #include "electromagnetic.H"
 #include "activefiber.H"
-#include "biochemo_mechano_cell_activefiber.H"
-#include "biochemo_mechano_cell_passivefiber.H"
 #include "growth.H"
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
@@ -399,14 +392,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_bondreac:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraBondReacMat(curmat));
-      MAT::PAR::ScatraBondReacMat* params =
-          static_cast<MAT::PAR::ScatraBondReacMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
     case INPAR::MAT::m_scatra_multiscale:
     {
       if (curmat->Parameter() == nullptr)
@@ -429,14 +414,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       MAT::PAR::ScatraMatAniso* params =
           static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_var_chemdiffusion:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraMatVarChemDiffusion(curmat));
-      MAT::PAR::ScatraMatVarChemDiffusion* params =
-          static_cast<MAT::PAR::ScatraMatVarChemDiffusion*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:
@@ -739,14 +716,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::MatListReactions(curmat));
       MAT::PAR::MatListReactions* params =
           dynamic_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_matlist_bondreacs:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::MatListBondReacs(curmat));
-      MAT::PAR::MatListBondReacs* params =
-          dynamic_cast<MAT::PAR::MatListBondReacs*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_matlist_chemotaxis:
@@ -1200,20 +1169,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ParticleWallMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_acousticmat:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::AcousticMat(curmat));
-      MAT::PAR::AcousticMat* params = static_cast<MAT::PAR::AcousticMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_acousticsolmat:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::AcousticSolMat(curmat));
-      MAT::PAR::AcousticSolMat* params =
-          static_cast<MAT::PAR::AcousticSolMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
     case INPAR::MAT::m_electromagneticmat:
     {
       if (curmat->Parameter() == nullptr)
@@ -1226,22 +1181,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ActiveFiber(curmat));
       MAT::PAR::ActiveFiber* params = static_cast<MAT::PAR::ActiveFiber*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_biochemomechano_active:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellActiveFiber(curmat));
-      MAT::PAR::BioChemoMechanoCellActiveFiber* params =
-          static_cast<MAT::PAR::BioChemoMechanoCellActiveFiber*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_biochemomechano_passive:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellPassiveFiber(curmat));
-      MAT::PAR::BioChemoMechanoCellPassiveFiber* params =
-          static_cast<MAT::PAR::BioChemoMechanoCellPassiveFiber*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_superelast:

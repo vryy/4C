@@ -23,7 +23,6 @@
 #include "strtimint_expleuler.H"
 #include "strtimint_centrdiff.H"
 #include "strtimint_ab2.H"
-#include "../drt_immersed_problem/str_timint_ost_immersed.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -69,8 +68,8 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 
   // check if we have a problem that needs to be prestressed
   INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype == INPAR::STR::prestress_mulf || pstype == INPAR::STR::prestress_id)
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  if (pstype == INPAR::STR::PreStress::mulf || pstype == INPAR::STR::PreStress::id)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
@@ -108,14 +107,6 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
     case INPAR::STR::dyna_gemm:
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(
-          timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
-      break;
-    }
-
-    // One-step-theta (OST) time integration
-    case INPAR::STR::dyna_onesteptheta_immersed:
-    {
-      sti = Teuchos::rcp(new STR::TimIntOneStepThetaImmersed(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }

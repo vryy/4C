@@ -492,8 +492,8 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
 
   // prestress time
   INPAR::STR::PreStress pstype =
-      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(timeintegr, "PRESTRESS");
-  if (pstype == INPAR::STR::prestress_mulf)
+      Teuchos::getIntegralValue<INPAR::STR::PreStress>(timeintegr, "PRESTRESS");
+  if (pstype == INPAR::STR::PreStress::mulf)
   {
     double pstime = timeintegr.get<double>("PRESTRESSTIME");
     if (pstime > params_->starttime_ + dt)
@@ -1313,8 +1313,8 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const LINALG::Matrix<NUM_STRESS
   // prestress time
   //  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   //  INPAR::STR::PreStress pstype =
-  //  DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS"); double pstime = -1.0 *
-  //  params_->lifetime_ - dt; if (pstype == INPAR::STR::prestress_mulf)
+  //  Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS"); double pstime = -1.0 *
+  //  params_->lifetime_ - dt; if (pstype == INPAR::STR::PreStress::mulf)
   //    pstime = pslist.get<double>("PRESTRESSTIME");
 
   //--------------------------------------------------------------------------------------

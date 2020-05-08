@@ -102,7 +102,6 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     case INPAR::SCATRA::impltype_levelset:
     case INPAR::SCATRA::impltype_std:
     case INPAR::SCATRA::impltype_thermo_elch_diffcond:
-    case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
     {
       return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(
@@ -127,8 +126,6 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_variational_diffusion:  // todo: Check if it can be put on the
-                                                         // general case
     case INPAR::SCATRA::impltype_elch_diffcond:
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
     {

@@ -170,9 +170,6 @@ namespace STI
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
 
-    //! flag for equilibration of global system of equations
-    const INPAR::S2I::EquilibrationMethods equilibration_;
-
     //! inverse sums of absolute values of row entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invrowsums_;
 

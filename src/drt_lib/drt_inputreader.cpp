@@ -980,9 +980,7 @@ namespace DRT
       exclude.push_back("--TRANSPORT DOMAIN");
       exclude.push_back("--THERMO ELEMENTS");
       exclude.push_back("--THERMO DOMAIN");
-      exclude.push_back("--ACOUSTIC ELEMENTS");
       exclude.push_back("--ELECTROMAGNETIC ELEMENTS");
-      exclude.push_back("--ACOUSTIC DOMAIN");
       exclude.push_back("--PERIODIC BOUNDINGBOX ELEMENTS");
       exclude.push_back("--CELL ELEMENTS");
       exclude.push_back("--CELL DOMAIN");

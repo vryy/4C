@@ -18393,7 +18393,6 @@ NODE 8733    COORD  -9.0000000000000000e+00  -5.0000000000000000e-01  0.00000000
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 62 QUANTITY velx VALUE -2.39322757365636796e-01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 62 QUANTITY vely VALUE -2.98169706859164612e-11 TOLERANCE 1e-10

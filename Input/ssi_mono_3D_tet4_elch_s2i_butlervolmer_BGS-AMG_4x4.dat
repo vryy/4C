@@ -1,5 +1,6 @@
 //
 // Maintainer: Christoph Schmidt
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -37,6 +38,7 @@ INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
+MATRIXTYPE                      block_condition
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -49,8 +51,6 @@ EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows_maindiag
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         20
 TIMESTEP                        1.0
@@ -59,6 +59,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
+EQUILIBRATION                   rows_maindiag
 ----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
@@ -175,7 +176,7 @@ E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4
 E 3 - 0 Master
 E 4 - 1 Master
 E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
------------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+-----------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL   3
 E 1 -
 E 2 -

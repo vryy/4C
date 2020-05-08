@@ -488,9 +488,6 @@ namespace STR
     //! Patient Specific Output
     void OutputPatspec();
 
-    //! Cell Migration Specific Output
-    void OutputCell();
-
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 

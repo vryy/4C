@@ -6,9 +6,7 @@
 \level 2
 
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
+
 */
 /*----------------------------------------------------------------------*/
 #include "sti_monolithic.H"
@@ -68,9 +66,6 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       // initialize algebraic solver for global system of equations
       solver_(Teuchos::rcp(
           new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-
-      equilibration_(DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(
-          fieldparameters_->sublist("S2I COUPLING"), "EQUILIBRATION")),
       invrowsums_(Teuchos::null),
 
       icoupscatra_(Teuchos::null),
@@ -125,23 +120,23 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   islavetomasterrowtransformthermood_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
   // initialize map extractors associated with blocks of global system matrix
-  switch (strategyscatra_->MatrixType())
+  switch (scatra_->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       blockmaps_ = maps_;
       break;
     }
 
     // several main-diagonal matrix blocks associated with scalar transport field
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport field
-      const unsigned nblockmapsscatra = strategyscatra_->BlockMaps().NumMaps();
+      const unsigned nblockmapsscatra = scatra_->BlockMaps().NumMaps();
       std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps(nblockmapsscatra + 1);
       for (unsigned iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
-        blockmaps[iblockmap] = strategyscatra_->BlockMaps().Map(iblockmap);
+        blockmaps[iblockmap] = scatra_->BlockMaps().Map(iblockmap);
 
       // extract map underlying single main-diagonal matrix block associated with temperature field
       blockmaps[nblockmapsscatra] = mapthermo;
@@ -194,7 +189,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     case INPAR::STI::matrix_sparse:
     {
       // safety check
-      if (strategyscatra_->MatrixType() != INPAR::S2I::matrix_sparse)
+      if (scatra_->MatrixType() != INPAR::SCATRA::MatrixType::sparse)
         dserror("Incompatible matrix type associated with scalar transport field!");
 
       // initialize global system matrix
@@ -215,24 +210,24 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   }
 
   // initialize scatra-thermo block and thermo-scatra block of global system matrix
-  switch (strategyscatra_->MatrixType())
+  switch (scatra_->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // initialize scatra-thermo block
       scatrathermoblock_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *blockmapthermo_, strategyscatra_->BlockMaps(), 81, false, true));
+              *blockmapthermo_, scatra_->BlockMaps(), 81, false, true));
 
       // initialize thermo-scatra block
       thermoscatrablock_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              strategyscatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
+              scatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
 
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // initialize scatra-thermo block
       scatrathermoblock_ = Teuchos::rcp(
@@ -253,16 +248,16 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   }
 
   // perform initialization associated with equilibration of global system of equations
-  switch (equilibration_)
+  switch (scatra_->EquilibrationMethod())
   {
-    case INPAR::S2I::equilibration_none:
+    case INPAR::SCATRA::EquilibrationMethod::none:
     {
       // do nothing
       break;
     }
 
-    case INPAR::S2I::equilibration_rows_full:
-    case INPAR::S2I::equilibration_rows_maindiag:
+    case INPAR::SCATRA::EquilibrationMethod::rows_full:
+    case INPAR::SCATRA::EquilibrationMethod::rows_maindiag:
     {
       // initialize vector for row sums of global system matrix if necessary
       invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), false));
@@ -275,10 +270,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       break;
     }
   }
-
-  return;
 }
-
 
 /*---------------------------------------------------------------------------------------------*
  | finite difference check for global system matrix (for debugging only)            fang 07/15 |
@@ -727,12 +719,12 @@ void STI::Monolithic::AssembleMatAndRHS()
           Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_);
       if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
 
-      switch (strategyscatra_->MatrixType())
+      switch (scatra_->MatrixType())
       {
-        case INPAR::S2I::matrix_block_condition:
+        case INPAR::SCATRA::MatrixType::block_condition:
         {
           // extract number of matrix row or column blocks associated with scalar transport field
-          const unsigned nblockmapsscatra = strategyscatra_->BlockMaps().NumMaps();
+          const unsigned nblockmapsscatra = scatra_->BlockMaps().NumMaps();
 
           // construct global system matrix by assigning matrix blocks
           for (unsigned iblock = 0; iblock < nblockmapsscatra; ++iblock)
@@ -867,7 +859,7 @@ void STI::Monolithic::AssembleMatAndRHS()
           break;
         }
 
-        case INPAR::S2I::matrix_sparse:
+        case INPAR::SCATRA::MatrixType::sparse:
         {
           // construct global system matrix by assigning matrix blocks
           blocksystemmatrix->Assign(0, 0, LINALG::View, *scatra_->SystemMatrix());
@@ -1142,9 +1134,9 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
         // action for elements
         condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
 
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes
             // w.r.t. slave-side thermo dofs
@@ -1198,7 +1190,7 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             // split auxiliary system matrix and assemble into scatra-thermo matrix block
             const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix =
                 mastermatrix.Split<LINALG::DefaultBlockMatrixStrategy>(
-                    *blockmapthermo_, strategyscatra_->BlockMaps());
+                    *blockmapthermo_, scatra_->BlockMaps());
             blockmastermatrix->Complete();
             scatrathermoblock_->Add(*blockmastermatrix, false, 1., 1.);
 
@@ -1208,7 +1200,7 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes
             // w.r.t. slave-side thermo dofs
@@ -1272,9 +1264,9 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
         // initialize auxiliary system matrices for linearizations of slave-side and master-side
         // scatra fluxes w.r.t. slave-side thermo dofs
         Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             slavematrix =
                 Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -1282,7 +1274,7 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             slavematrix = strategyscatra_->SlaveMatrix();
             slavematrix->Zero();
@@ -1340,9 +1332,9 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
         strategyscatra_->MasterMatrix()->Complete(
             *thermo_->Discretization()->DofRowMap(), *maps_->Map(0));
         Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             slavematrix->Complete();
             mastermatrix =
@@ -1353,7 +1345,7 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             slavematrix->Complete(*thermo_->Discretization()->DofRowMap(), *maps_->Map(0));
             mastermatrix = strategyscatra_->MasterMatrix();
@@ -1388,15 +1380,15 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
   }
 
   // finalize scatra-thermo matrix block
-  switch (strategyscatra_->MatrixType())
+  switch (scatra_->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       scatrathermoblock_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       scatrathermoblock_->Complete(*thermo_->Discretization()->DofRowMap(), *maps_->Map(0));
       break;
@@ -1474,9 +1466,9 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
         // action for elements
         condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
 
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes
             // w.r.t. slave-side scatra dofs
@@ -1531,14 +1523,14 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             // split temporary matrix and assemble into thermo-scatra matrix block
             const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockksm(
                 ksm.Split<LINALG::DefaultBlockMatrixStrategy>(
-                    strategyscatra_->BlockMaps(), *blockmapthermo_));
+                    scatra_->BlockMaps(), *blockmapthermo_));
             blockksm->Complete();
             thermoscatrablock_->Add(*blockksm, false, 1., 1.);
 
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes
             // w.r.t. slave-side scatra dofs
@@ -1612,7 +1604,7 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
           // columns during the second run of the following code, with the thermo-scatra block now
           // being Complete() to circumvent this problem, we call Complete() on the thermo-scatra
           // block before the very first run of the following code
-          if (strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and
+          if (scatra_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition and
               Step() == 1 and iter_ == 1)
             thermoscatrablock_->Complete();
 
@@ -1625,7 +1617,7 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
 
             // extract current thermo-scatra matrix block
             LINALG::SparseMatrix& thermoscatrablock =
-                strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition
+                scatra_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition
                     ? Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(thermoscatrablock_)
                           ->Matrix(0, iblock)
                     : *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(thermoscatrablock_);
@@ -1638,13 +1630,13 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             thermoscatrarowsslave.Complete(*maps_->Map(0), *icoupthermo_->SlaveDofMap());
 
             // undo Complete() from above before performing subsequent matrix row transformation
-            if (strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and
+            if (scatra_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition and
                 Step() == 1 and iter_ == 1)
               thermoscatrablock.UnComplete();
 
             // add slave-side rows of thermo-scatra matrix block to corresponding slave-side rows
             const Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood =
-                strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition
+                scatra_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition
                     ? Teuchos::rcp(new LINALG::MatrixRowTransform())
                     : islavetomasterrowtransformthermood_;
             (*islavetomasterrowtransformthermood)(thermoscatrarowsslave, 1.,
@@ -1660,17 +1652,17 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
         // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t.
         // slave-side and master-side scatra dofs
         Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             slavematrix =
                 Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                    strategyscatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
+                    scatra_->BlockMaps(), *blockmapthermo_, 81, false, true));
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             slavematrix = strategythermo_->SlaveMatrix();
             slavematrix->Zero();
@@ -1724,15 +1716,15 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
         }
 
         // finalize auxiliary system matrix
-        switch (strategyscatra_->MatrixType())
+        switch (scatra_->MatrixType())
         {
-          case INPAR::S2I::matrix_block_condition:
+          case INPAR::SCATRA::MatrixType::block_condition:
           {
             slavematrix->Complete();
             break;
           }
 
-          case INPAR::S2I::matrix_sparse:
+          case INPAR::SCATRA::MatrixType::sparse:
           {
             slavematrix->Complete(*maps_->Map(0), *maps_->Map(1));
             break;
@@ -1762,7 +1754,7 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
 
           // extract current thermo-scatra matrix block
           LINALG::SparseMatrix& thermoscatrablock =
-              strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition
+              scatra_->MatrixType() == INPAR::SCATRA::MatrixType::block_condition
                   ? Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(thermoscatrablock_)
                         ->Matrix(0, iblock)
                   : *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(thermoscatrablock_);
@@ -1793,15 +1785,15 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
   }
 
   // finalize thermo-scatra matrix block
-  switch (strategyscatra_->MatrixType())
+  switch (scatra_->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       thermoscatrablock_->Complete();
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       thermoscatrablock_->Complete(*maps_->Map(0), *maps_->Map(1));
       break;
@@ -1856,12 +1848,12 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
  *-------------------------------------------------------------------------------*/
 void STI::Monolithic::BuildBlockNullSpaces() const
 {
-  switch (strategyscatra_->MatrixType())
+  switch (scatra_->MatrixType())
   {
-    case INPAR::S2I::matrix_block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < strategyscatra_->BlockMaps().NumMaps(); ++iblock)
+      for (int iblock = 0; iblock < scatra_->BlockMaps().NumMaps(); ++iblock)
       {
         // store number of current block as string, starting from 1
         std::stringstream iblockstr;
@@ -1880,14 +1872,14 @@ void STI::Monolithic::BuildBlockNullSpaces() const
 
         // reduce full null space to match degrees of freedom associated with current matrix block
         LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
-            *scatra_->Discretization()->DofRowMap(), *strategyscatra_->BlockMaps().Map(iblock),
+            *scatra_->Discretization()->DofRowMap(), *scatra_->BlockMaps().Map(iblock),
             blocksmootherparams);
       }
 
       break;
     }
 
-    case INPAR::S2I::matrix_sparse:
+    case INPAR::SCATRA::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null space
       // computation
@@ -2057,16 +2049,16 @@ void STI::Monolithic::EquilibrateSystem(
     const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
     ) const
 {
-  switch (equilibration_)
+  switch (scatra_->EquilibrationMethod())
   {
-    case INPAR::S2I::equilibration_none:
+    case INPAR::SCATRA::EquilibrationMethod::none:
     {
       // do nothing
       break;
     }
 
-    case INPAR::S2I::equilibration_rows_full:
-    case INPAR::S2I::equilibration_rows_maindiag:
+    case INPAR::SCATRA::EquilibrationMethod::rows_full:
+    case INPAR::SCATRA::EquilibrationMethod::rows_maindiag:
     {
       switch (matrixtype_)
       {
@@ -2086,7 +2078,7 @@ void STI::Monolithic::EquilibrateSystem(
                 Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
 
             // compute inverse row sums of current main diagonal matrix block
-            if (equilibration_ == INPAR::S2I::equilibration_rows_maindiag)
+            if (scatra_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag)
               ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums);
 
             // compute inverse row sums of current row block of global system matrix

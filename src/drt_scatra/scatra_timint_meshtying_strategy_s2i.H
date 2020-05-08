@@ -104,9 +104,6 @@ namespace SCATRA
     //! compute time step size
     void ComputeTimeStepSize(double& dt) override;
 
-    //! return map extractor associated with blocks of global system matrix
-    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; };
-
     //! return map extractor associated with blocks of auxiliary system matrix for master side
     const LINALG::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
 
@@ -131,9 +128,6 @@ namespace SCATRA
 
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;
-
-    //! return flag for equilibration of global system of equations
-    const INPAR::S2I::EquilibrationMethods& Equilibration() const { return equilibration_; };
 
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() override;
@@ -171,11 +165,23 @@ namespace SCATRA
     //! perform initialization of scatra-scatra interface coupling
     void InitMeshtying() override;
 
-    //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
+    bool SystemMatrixInitializationNeeded() const override { return false; }
+
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    {
+      dserror(
+          "This meshtying strategy does not need to initialize the system matrix, but relies "
+          "instead on the initialization of the field. If this changes, you also need to change "
+          "'SystemMatrixInitializationNeeded()' to return true");
+      // dummy return
+      return Teuchos::null;
+    }
 
     //! return interface map extractor
-    const Teuchos::RCP<LINALG::MultiMapExtractor>& InterfaceMaps() const { return interfacemaps_; };
+    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    {
+      return interfacemaps_;
+    }
 
     //! return flag for evaluation of scatra-scatra interface coupling involving interface layer
     //! growth
@@ -200,7 +206,7 @@ namespace SCATRA
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
 
     //! return type of global system matrix in global system of equations
-    const INPAR::S2I::MatrixType& MatrixType() const { return matrixtype_; };
+    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;
@@ -262,15 +268,7 @@ namespace SCATRA
     void Update() const override;
 
    protected:
-    //! build maps associated with blocks of global system matrix
-    virtual void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>&
-                                    partitioningconditions,  //!< domain partitioning conditions
-        std::vector<Teuchos::RCP<const Epetra_Map>>&
-            blockmaps  //!< empty vector for maps to be built
-        ) const;
-
-    //! build null spaces associated with blocks of global system matrix
-    virtual void BuildBlockNullSpaces() const;
+    void EquipExtendedSolverWithNullSpaceInfo() const override;
 
     //! instantiate strategy for Newton-Raphson convergence check
     void InitConvCheckStrategy() override;
@@ -278,9 +276,11 @@ namespace SCATRA
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
 
-    //! map extractors associated with blocks of global system matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    //! map extractor associated with scatra-scatra interface slave-side blocks of global system
+    //! matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_slave_;
+    //! map extractor associated with scatra-scatra interface master-side blocks of global system
+    //! matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
@@ -375,7 +375,7 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::S2I::MatrixType matrixtype_;
+    const INPAR::SCATRA::MatrixType matrixtype_;
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;
@@ -653,9 +653,6 @@ namespace SCATRA
 
     //! slave-side scatra-scatra interface coupling conditions
     std::map<const int, DRT::Condition* const> slaveconditions_;
-
-    //! flag for equilibration of global system of equations
-    const INPAR::S2I::EquilibrationMethods equilibration_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;

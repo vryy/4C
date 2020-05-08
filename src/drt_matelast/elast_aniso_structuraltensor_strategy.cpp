@@ -364,10 +364,7 @@ double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 {
   double restol = -1.0;
   DRT::Problem* gprob = DRT::Problem::Instance();
-  if (gprob->GetProblemType() == prb_immersed_cell)
-    restol = gprob->CellMigrationParams().sublist("STRUCTURAL DYNAMIC").get<double>("TOLRES");
-  else
-    restol = gprob->StructuralDynamicParams().get<double>("TOLRES");
+  restol = gprob->StructuralDynamicParams().get<double>("TOLRES");
 
   return restol;
 }

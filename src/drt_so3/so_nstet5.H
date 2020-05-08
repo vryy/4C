@@ -170,7 +170,7 @@ namespace DRT
 
       //! build and return determinant of a 3x3 matrix
       template <typename T>
-      T Determinant3x3(LINALG::Matrix<3, 3, T>& A)
+      T Determinant(LINALG::Matrix<3, 3, T>& A)
       {
         T b00 = A(0, 0);
         T b01 = A(0, 1);

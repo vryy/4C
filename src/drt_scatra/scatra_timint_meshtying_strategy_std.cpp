@@ -62,18 +62,6 @@ void SCATRA::MeshtyingStrategyStd::InitMeshtying()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | initialize system matrix for standard scalar transport    fang 12/14 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStd::InitSystemMatrix() const
-{
-  // initialize standard (stabilized) system matrix (and save its graph)
-  return Teuchos::rcp(
-      new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
-}  // SCATRA::MeshtyingStrategyStd::InitSystemMatrix
-
-
 /*-----------------------------------------------------------------------------*
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/

@@ -114,6 +114,11 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \date 03/17 */
   void AppendElementOwningProcessor();
 
+  /**
+   * \brief Append the baci interal GIDs to all beam elements.
+   */
+  void AppendElementGID();
+
   /** \brief append internal (elastic) energy of element
    *
    *  \author eichinger

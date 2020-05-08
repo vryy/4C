@@ -77,10 +77,6 @@ std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsT
   // for level-set problems
   conditions_to_copy.insert(std::pair<std::string, std::string>("LsContact", "LsContact"));
 
-  // for cell migration ( rauch 08/16 )
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("CellFocalAdhesion", "CellFocalAdhesion"));
-
   // for super convergent patch recovery
   conditions_to_copy.insert(std::pair<std::string, std::string>("SPRboundary", "SPRboundary"));
 
@@ -107,8 +103,7 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
       (mtype != INPAR::MAT::m_ion) && (mtype != INPAR::MAT::m_th_fourier_iso) &&
       (mtype != INPAR::MAT::m_thermostvenant) && (mtype != INPAR::MAT::m_yoghurt) &&
       (mtype != INPAR::MAT::m_matlist) && (mtype != INPAR::MAT::m_matlist_reactions) &&
-      (mtype != INPAR::MAT::m_matlist_bondreacs) && (mtype != INPAR::MAT::m_myocard) &&
-      (mtype != INPAR::MAT::m_scatra_multiporo_fluid) &&
+      (mtype != INPAR::MAT::m_myocard) && (mtype != INPAR::MAT::m_scatra_multiporo_fluid) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_volfrac) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_solid) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_temperature))
@@ -204,7 +199,7 @@ void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist) &&
-      (mtype != INPAR::MAT::m_matlist_reactions) && (mtype != INPAR::MAT::m_matlist_bondreacs))
+      (mtype != INPAR::MAT::m_matlist_reactions))
     dserror("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 

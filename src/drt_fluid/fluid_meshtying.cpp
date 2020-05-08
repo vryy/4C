@@ -62,7 +62,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
+void FLD::Meshtying::SetupMeshtying(std::vector<int> coupleddof)
 {
   // get pointer to dof row map
   dofrowmap_ = discret_->DofRowMap();
@@ -156,35 +156,6 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
       // std::cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << std::endl;
       // std::cout << "number of s dof   " << gsdofrowmap_->NumGlobalElements() << std::endl;
 
-      // generate map for blockmatrix
-      std::vector<Teuchos::RCP<const Epetra_Map>> fluidmaps;
-      fluidmaps.push_back(gndofrowmap_);
-      fluidmaps.push_back(gmdofrowmap_);
-      fluidmaps.push_back(gsdofrowmap_);
-
-      LINALG::MultiMapExtractor extractor;
-
-      extractor.Setup(*dofrowmap_, fluidmaps);
-
-      // check, if extractor maps are valid
-      extractor.CheckForValidMapExtractor();
-
-      // allocate 3x3 block sparse matrix with the interface split strategy
-      // the interface split strategy speeds up the assembling process,
-      // since the information, which nodes are part of the interface, is available
-      // -------------------
-      // | knn | knm | kns |
-      // | kmn | kmm | kms |
-      // | ksn | ksm | kss |
-      // -------------------
-
-      Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
-          extractor, extractor, 108, false, true));
-      // nodes on the interface
-      Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->ConditionedElementMap(*discret_);
-      mat->SetCondElements(condelements);
-
       // Important: right way to do it (Tobias W.)
       // allocate 2x2 solution matrix with the default block matrix strategy in order to solve the
       // reduced system memory is not allocated(1), since the matrix gets a Teuchos::RCP on the
@@ -228,8 +199,6 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
           std::cout << std::endl;
         }
       }
-
-      return mat;
     }
     break;
     case INPAR::FLUID::condensed_smat:
@@ -268,13 +237,63 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
 #endif
 #endif
       }
-
-      return Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 108, false, true));
     }
     break;
     default:
       dserror("Choose a correct mesh-tying option");
       break;
+  }
+}
+
+Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::InitSystemMatrix() const
+{
+  switch (msht_)
+  {
+    case INPAR::FLUID::condensed_bmat:
+    case INPAR::FLUID::condensed_bmat_merged:
+    {
+      // generate map for blockmatrix
+      std::vector<Teuchos::RCP<const Epetra_Map>> fluidmaps;
+      fluidmaps.push_back(gndofrowmap_);
+      fluidmaps.push_back(gmdofrowmap_);
+      fluidmaps.push_back(gsdofrowmap_);
+
+      LINALG::MultiMapExtractor extractor;
+
+      extractor.Setup(*dofrowmap_, fluidmaps);
+
+      // check, if extractor maps are valid
+      extractor.CheckForValidMapExtractor();
+
+      // allocate 3x3 block sparse matrix with the interface split strategy
+      // the interface split strategy speeds up the assembling process,
+      // since the information, which nodes are part of the interface, is available
+      // -------------------
+      // | knn | knm | kns |
+      // | kmn | kmm | kms |
+      // | ksn | ksm | kss |
+      // -------------------
+
+      Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+          extractor, extractor, 108, false, true));
+      // nodes on the interface
+      Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->ConditionedElementMap(*discret_);
+      mat->SetCondElements(condelements);
+
+      return mat;
+      break;
+    }
+    case INPAR::FLUID::condensed_smat:
+    {
+      return Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 108, false, true));
+      break;
+    }
+    default:
+    {
+      dserror("Choose a correct mesh-tying option");
+      break;
+    }
   }
   return Teuchos::null;
 }

@@ -140,10 +140,6 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream, "RED_ACINUS");
   PrintElementLines(stream, "RED_ACINAR_INTER_DEP");
 
-  PrintSectionHeader(stream, "ACOUSTIC ELEMENTS");
-  PrintElementLines(stream, "ACOUSTIC");
-  PrintElementLines(stream, "ACOUSTICSOL");
-
   PrintSectionHeader(stream, "ELECTROMAGNETIC ELEMENTS");
   PrintElementLines(stream, "ELECTROMAGNETIC");
   PrintElementLines(stream, "ELECTROMAGNETICDIFF");

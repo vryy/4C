@@ -1,5 +1,42 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
+- removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
+- reasons: The framework was not fully implemented due to methodological reasons and thus was also not tested.
+- removed by Sebastian Fuchs
+
+Acoustics module (by Svenja Schoeder)
+- removed in commit a263275e53ec5f4cbed966188fbade1981490800 on 2020-04-15
+- reasons: We are not actively developing acoustics applications at this point. Removing it reduces the amount of code that needs to be maintainer. Furthermore, the high-performance part of the module (explicit time integrator) is available as open-source software on https://github.com/kronbichler/exwave including basic documentation and several examples
+- if you need it: Check the exwave code on github and adapt to your needs; in case you need implicit time integration with HDG, checkout commit xxx
+- mainly deleted src/drt_acou
+- removed by Luca Berardocco
+
+cell migration module (by Andreas Rauch)
+- includes prb_immersed_cell and prb_scatra_endoexocytosis
+- prb_immersed_cell is comprised by a structural problem (cell) embedded in a porous medium (extrcellular matrix)
+  This problem was solved using a immersed boundary method
+- prb_scatra_endoexocytosis mainly modells inter-cellular signalling processes
+- related/used in both problems were passive and active fiber material models for the mechanical cell behaviour
+- removed in commit 05505bb75e860b9f798e41c6c8b59aa6757d721c on 2020-04-13
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
+- reasons: This module is currently unused and not subject to ongoing research. This will thus reduce dependencies and ease maintenance work.
+- removed by Anh-Tu Vuong
+
+FSI using IBM on deformable fluid meshes (by Andreas Rauch)
+- removed in commits 57d21c7794a44f4ce15824d5aae50f3a0b161602 on 2020-04-09
+  and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30
+- reasons: Implementation does not work and thus has not been tested a
+few years at this point. This research topic is not actively developed
+at this time and code removal will lead to lower code complexity.
+- removed by Nora Hagmeyer
+
+chemical diffusion module in variational formulation (by Jorge de Anda Salazar)
+- removed in commit 18ab8339e1223bf87e991e24e5e1a3f3d811e48a on 2020-04-08
+- reasons: This part of the ScaTra framework is currently unused and not subject to ongoing research. This will thus reduce dependencies and ease maintenance work.
+- removed by Christoph Schmidt
+
 old particle framework including dependent modules (by Georg Hammerl)
 - removed in the following commits on 2019-09-09:
   8b80cd4eeada94e912b49cd4d7650b0c10926ad3 (old particle framework including MD interaction)

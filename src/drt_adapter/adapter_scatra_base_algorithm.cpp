@@ -44,9 +44,6 @@
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch_scheme.H"
 
-// variational diffusion specific files
-#include "../drt_scatra/scatra_timint_variational_scheme.H"
-
 // level set specific files
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
@@ -56,9 +53,6 @@
 
 // cardiac monodomain specific files
 #include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
-
-// cell migration specific files
-#include "../drt_immersed_problem/scatra_timint_ost_endoexocytosis.H"
 
 // poro multiphase files
 #include "../drt_scatra/scatra_timint_poromulti.H"
@@ -298,23 +292,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     }
   }
 
-  // Variational formulation -> Chemical diffusion
-  else if (probtype == prb_var_chemdiff)
-  {
-    switch (timintscheme)
-    {
-      case INPAR::SCATRA::timeint_one_step_theta:
-      {
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntVariationalOST(
-            discret, solver, scatratimeparams, extraparams, output));
-        break;
-      }
-      default:
-        dserror("Unknown time integration scheme for variational chemical diffusion!");
-        break;
-    }
-  }
-
   // levelset and two phase flow
   else if (probtype == prb_level_set or probtype == prb_two_phase_flow or
            probtype == prb_fluid_xfem_ls or probtype == prb_xcontact)
@@ -470,25 +447,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
           dserror("Unknown time integration scheme for cardiac monodomain problem!");
           break;
       }  // switch(timintscheme)
-    }
-  }
-  // cell migration endo-/exocytosis
-  else if (probtype == prb_scatra_endoexocytosis)
-  {
-    switch (timintscheme)
-    {
-      case INPAR::SCATRA::timeint_one_step_theta:
-      {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepThetaEndoExocytosis(
-            discret, solver, scatratimeparams, extraparams, output, 0));
-        break;
-      }
-      default:
-        dserror(
-            "Unknown time integration scheme for cell migration problem! Use One-Step-Theta "
-            "Scheme!");
-        break;
     }
   }
   else if (probtype == prb_poromultiphasescatra)

@@ -310,8 +310,7 @@ namespace DRT
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int kinetics,             ///< desired electrode kinetics model
-          const double pot0,              ///< actual electrode potential on metal side
-          const double frt                ///< factor F/RT
+          const double pot0               ///< actual electrode potential on metal side
       );
 
       //! validity check for all elements with respect to
@@ -381,7 +380,6 @@ namespace DRT
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int nume,                 ///<  number of transferred electrons
           const double pot0,              ///< actual electrode potential on metal side at t_{n+1}
-          const double frt,               ///< factor F/RT
           const double timefac            ///< factor due to time discretization
       );
 

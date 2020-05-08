@@ -45,7 +45,6 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
   // perform additional operations specific to implementation type
   switch (ParentElement()->ImplType())
   {
-    case INPAR::SCATRA::impltype_variational_diffusion:
     case INPAR::SCATRA::impltype_elch_diffcond:
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
     case INPAR::SCATRA::impltype_elch_electrode:
@@ -79,7 +78,6 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
     case INPAR::SCATRA::impltype_pororeac:
     case INPAR::SCATRA::impltype_thermo_elch_diffcond:
     case INPAR::SCATRA::impltype_thermo_elch_electrode:
-    case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
       // do nothing in these cases
       break;

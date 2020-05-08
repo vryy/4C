@@ -21,7 +21,6 @@
 #include "ad_str_fbiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_structalewrapper.H"
-#include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
 #include "ad_str_xcontact.H"
 #include "ad_str_ssiwrapper.H"
@@ -418,9 +417,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   {
     case prb_fsi:
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
-    case prb_immersed_membrane_fsi:
-    case prb_immersed_cell:
     case prb_fbi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
@@ -956,8 +952,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       break;
     }
     case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
-    case prb_immersed_membrane_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
@@ -1001,13 +995,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       {
         str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
       }
-      break;
-    }
-    case prb_immersed_cell:
-    {
-      str_wrapper_ = Teuchos::rcp(new MultiphysicsStructureWrapperCellMigration(ti_strategy));
-      Teuchos::rcp_dynamic_cast<MultiphysicsStructureWrapperCellMigration>(str_wrapper_, true)
-          ->Init(ti_strategy);
       break;
     }
     case prb_struct_ale:

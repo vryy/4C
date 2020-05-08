@@ -393,7 +393,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->ResetAll(NUMGPT_SOTET10);
 
       // Reset prestress
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         time_ = 0.0;
         LINALG::Matrix<3, 3> Id(true);
@@ -404,7 +404,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (pstype_ == INPAR::STR::prestress_id)
+      if (pstype_ == INPAR::STR::PreStress::id)
         dserror("Reset of Inverse Design not yet implemented");
     }
     break;
@@ -447,7 +447,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOTET10 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOTET10 + 2];
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOTET10 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOTET10 + 1];
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights_4gp[gp];
 
-        if (pstype_ == INPAR::STR::prestress_mulf)
+        if (pstype_ == INPAR::STR::PreStress::mulf)
         {
           // get Jacobian mapping wrt to the stored configuration
           LINALG::Matrix<3, 3> invJdef;
@@ -774,7 +774,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         else
         {
-          if (pstype_ == INPAR::STR::prestress_id && time_ <= pstime_)  // inverse design analysis
+          if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
             dserror("Inverse Design not implemented for SOTET10");
           // invdesign_->so_tet10_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
@@ -979,12 +979,12 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_)
+    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (pstype_ == INPAR::STR::prestress_mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
 
   // Initialize for mass integration with 10 GPs
 
@@ -1048,7 +1048,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOTET10 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOTET10 + 2];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
@@ -1075,7 +1075,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     N_XYZ.Multiply(invJ_[gp], derivs_4gp[gp]);
     double detJ = detJ_[gp];
 
-    if (pstype_ == INPAR::STR::prestress_mulf)
+    if (pstype_ == INPAR::STR::PreStress::mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;
@@ -1795,7 +1795,7 @@ void DRT::ELEMENTS::So_tet10::Update_element(
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOTET10 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOTET10 + 2];
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
@@ -1828,7 +1828,7 @@ void DRT::ELEMENTS::So_tet10::Update_element(
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (pstype_ == INPAR::STR::prestress_mulf)
+      if (pstype_ == INPAR::STR::PreStress::mulf)
       {
         // get Jacobian mapping wrt to the stored configuration
         LINALG::Matrix<3, 3> invJdef;

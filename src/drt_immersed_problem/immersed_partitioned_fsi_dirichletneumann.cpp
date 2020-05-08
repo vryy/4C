@@ -9,14 +9,12 @@
 
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi_dirichletneumann.H"
-#include "immersed_partitioned_fsi.H"
 #include "fsi_partitioned_immersed.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_adapter/ad_fld_fluid_immersed.H"
-#include "../drt_adapter/ad_fld_fluid_ale_immersed.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
@@ -50,7 +48,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
       multibodysimulation_(false),
       output_evry_nlniter_(false),
       is_relaxation_(false),
-      isALE_(false),
       correct_boundary_velocities_(0),
       degree_gp_fluid_bound_(0),
       artificial_velocity_isvalid_(false),
@@ -334,8 +331,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
   if (output_evry_nlniter_)
   {
     int iter = ((FSI::Partitioned::IterationCounter())[0]);
-    Teuchos::rcp_dynamic_cast<ADAPTER::FluidAleImmersed>(MBFluidField())
-        ->Output((Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
     StructureField()->PrepareOutput();
     Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField())
         ->Output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
@@ -694,8 +689,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     std::cout << "Dis Structure NumColEles: " << structdis_->NumMyColElements() << " on PROC "
               << myrank_ << std::endl;
 #endif
-
-    if (isALE_) UpdateCurrentPositionsFluidNodes();
 
     SearchPotentiallyCoveredBackgrdElements(&curr_subset_of_fluiddis_, fluid_SearchTree_,
         *fluiddis_, currpositions_fluid_, boundingboxcenter, structsearchradiusfac * max_radius, 0);

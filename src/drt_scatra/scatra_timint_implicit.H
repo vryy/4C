@@ -178,6 +178,9 @@ namespace SCATRA
     //! add global state vectors specific for time-integration scheme
     virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
+    //! initialize system matrix
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
     //! prepare time loop
     virtual void PrepareTimeLoop();
 
@@ -322,6 +325,12 @@ namespace SCATRA
     //! return flag for macro scale in multi-scale simulations
     bool MacroScale() const { return macro_scale_; };
 
+    //! return type of equilibration of global system of scalar transport equations
+    INPAR::SCATRA::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
+
+    //! return type of global system matrix in global system of equations
+    INPAR::SCATRA::MatrixType MatrixType() const { return matrixtype_; }
+
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
@@ -342,6 +351,9 @@ namespace SCATRA
 
     //! return system matrix downcasted as block sparse matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+    //! return map extractor associated with blocks of global system matrix
+    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; }
 
     //! return residual vector
     Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
@@ -486,6 +498,29 @@ namespace SCATRA
     /*========================================================================*/
 
     virtual void SetupSplitter() { return; };
+
+    //! set up the (block) maps of the scatra system matrix and the meshtying object
+    void SetupMatrixBlockMapsAndMeshtying();
+
+    //! set up the (block) maps of the scatra system matrix
+    void SetupMatrixBlockMaps();
+
+    //! some of the set up of the (block) maps of the scatra system matrix has to be done after
+    //! SetupMeshtying() has been called
+    void PostSetupMatrixBlockMaps();
+
+    /*!
+     * @brief build maps associated with blocks of global system matrix
+     *
+     * @param[in]  partitioningconditions  domain partitioning conditions
+     * @param[out] blockmaps               empty vector for maps to be built
+     */
+    virtual void BuildBlockMaps(
+        const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+        std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
+
+    //! build null spaces associated with blocks of global system matrix
+    virtual void BuildBlockNullSpaces() const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -878,6 +913,9 @@ namespace SCATRA
     //! is output needed for the current time step?
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
+    //! return whether a scatra-scatra interface mesh tying condition is defined
+    bool IsS2IMeshtying() const;
+
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
@@ -1024,6 +1062,12 @@ namespace SCATRA
 
     //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
     INPAR::SCATRA::SolverType solvtype_;
+
+    //! type of equilibration of global system of scalar transport equations
+    const INPAR::SCATRA::EquilibrationMethod equilibrationmethod_;
+
+    //! type of global system matrix in global system of equations
+    const INPAR::SCATRA::MatrixType matrixtype_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
@@ -1239,6 +1283,9 @@ namespace SCATRA
 
     //! system matrix (either sparse matrix or block sparse matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+
+    //! map extractor associated with blocks of global system matrix
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;

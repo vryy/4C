@@ -71,7 +71,13 @@ void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
 {
-  return;
+  // safety check
+  if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+
+  // define coupling and initialize system matrix
+  std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
+
+  meshtying_->SetupMeshtying(coupleddof);
 }  // SCATRA::MeshtyingStrategyFluid::SetupMeshtying
 
 
@@ -107,13 +113,7 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemMatrix() const
 {
-  // safety check
-  if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
-
-  // define coupling and initialize system matrix
-  std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
-
-  return meshtying_->Setup(coupleddof);
+  return meshtying_->InitSystemMatrix();
 }  // SCATRA::MeshtyingStrategyFluid::InitSystemMatrix
 
 

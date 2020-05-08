@@ -11,7 +11,6 @@ TRILINOS_BUILD_TYPE="release"
 COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
-USE_DEAL=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
@@ -31,17 +30,17 @@ USE_TRILINOS_Q1_2019=OFF
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-# Info about debug builds: 
+# Info about debug builds:
 # We support two types of debug build: The actual (non-optimized) debug build is
 # enabled via the option '--debug'. An optimized debug build used for nightly
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--additionaltests=testfile] [--forceBuild]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--additionaltests=testfile] [--forceBuild]"
 
 eval set -- $OPTIONS
 
@@ -77,9 +76,6 @@ while true; do
       ;;
     -e|--experimental)
       TRILINOS_EXPERIMENTAL=1
-      ;;
-    --useDEAL)
-      USE_DEAL=1
       ;;
     -a|--useACML)
       USE_ACML=1
@@ -213,7 +209,6 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
   -D BUILD_SHARED_LIBS:BOOL="$SHARED_LIBS" \
   -D CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH="./src" \
-  -D HAVE_DEAL_II:BOOL="$BUILD_Deal" \
   -D HAVE_TEKO:BOOL=$BUILD_Teko \
   -D HAVE_MueLu:BOOL=$BUILD_MueLu \
   -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
@@ -222,7 +217,6 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D TRILINOS_DEV:BOOL=OFF \
   -D TRILINOS_Q1_2015:BOOL=$USE_TRILINOS_Q1_2015 \
   -D TRILINOS_Q1_2019:BOOL=$USE_TRILINOS_Q1_2019 \
-  -D DEAL_II_DIR:PATH="$DEAL_II_DIR" \
   -D TRAP_FE:BOOL=ON \
   -D PARMETIS:BOOL=ON \
   -D COLOROUTPUT:BOOL=OFF \

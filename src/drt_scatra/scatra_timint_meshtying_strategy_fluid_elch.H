@@ -43,8 +43,8 @@ namespace SCATRA
     //! initialize meshtying objects
     void InitMeshtying();
 
-    //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+    //! setup meshtying objects
+    void SetupMeshtying() override;
 
    private:
     //! copy constructor

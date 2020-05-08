@@ -183,14 +183,12 @@ namespace INPAR
       dyna_genalpha_liegroup,  ///< generalised-alpha time integrator for Lie groups (e.g. SO3 group
                                ///< of rotation matrices) (implicit)
       dyna_onesteptheta,       ///< one-step-theta time integrator (implicit)
-      dyna_onesteptheta_immersed,  ///< specialized one-step-theta time integrator (implicit) for
-                                   ///< immersed problems with artificial solid domains
-      dyna_gemm,                   ///< generalised energy-momementum method (implicit)
-      dyna_expleuler,              ///< forward Euler (explicit)
-      dyna_centrdiff,              ///< central differences (explicit)
-      dyna_ab2,                    ///< Adams-Bashforth 2nd order (explicit)
-      dyna_euma,                   ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto                 ///< Euler implicit scheme for SDE's (stochastic, implicit)
+      dyna_gemm,               ///< generalised energy-momementum method (implicit)
+      dyna_expleuler,          ///< forward Euler (explicit)
+      dyna_centrdiff,          ///< central differences (explicit)
+      dyna_ab2,                ///< Adams-Bashforth 2nd order (explicit)
+      dyna_euma,               ///< Euler-Maruyama scheme (stochastic, explicit)
+      dyna_euimsto             ///< Euler implicit scheme for SDE's (stochastic, implicit)
     };
 
     /// Map time integrator to std::string
@@ -513,11 +511,11 @@ namespace INPAR
     //!@}
 
     /// type of prestressing algorithm
-    enum PreStress
+    enum class PreStress : char
     {
-      prestress_none,  ///<  none
-      prestress_mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010))
-      prestress_id     ///<  Inverse Design
+      none,  ///<  none
+      mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010))
+      id     ///<  Inverse Design
     };
 
     /// STC scaling for thin shell structures
