@@ -1168,8 +1168,8 @@ void ADAPTER::CouplingMortar::CreateP()
   {
     if (abs((*diag)[i]) < 1e-12)
     {
-      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!"
-                << std::endl;
+      std::cout << "WARNING: Diagonal entry of D matrix (value = " << (*diag)[i]
+                << ") is skipped because it is less than 1e-12!!!" << std::endl;
       (*diag)[i] = 1.0;
     }
   }
