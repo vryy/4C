@@ -224,3 +224,24 @@ template class BEAMINTERACTION::BeamToSolidPairBase<
 template class BEAMINTERACTION::BeamToSolidPairBase<
     Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
+
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tri3>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tri6>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad4>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad8>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad9>;
+template class BEAMINTERACTION::BeamToSolidPairBase<
+    Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double,
+                              GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
+        GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
