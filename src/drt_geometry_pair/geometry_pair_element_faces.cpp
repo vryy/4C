@@ -60,8 +60,8 @@ void GEOMETRYPAIR::FaceElement::GetPatchLocalToGlobalIndices(
 /**
  *
  */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::Setup()
+template <typename surface, typename scalar_type>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup()
 {
   // Set the reference position from the nodes.
   face_reference_position_.Clear();
@@ -74,8 +74,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::Setup()
 /**
  *
  */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::SetState(
+template <typename surface, typename scalar_type>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& displacement)
 {
@@ -85,14 +85,17 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::SetState(
   drt_face_element_->LocationVector(*discret, face_dof_gid_, lmowner, lmstride);
   DRT::UTILS::ExtractMyValues(*displacement, element_displacement, face_dof_gid_);
   for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
-    face_position_(i_dof) = face_reference_position_(i_dof) + element_displacement[i_dof];
+    face_position_(i_dof) =
+        face_reference_position_(i_dof) +
+        FADUTILS::HigherOrderFad<scalar_type>::apply(
+            surface::n_dof_ + n_beam_dof_, i_dof + n_beam_dof_, element_displacement[i_dof]);
 };
 
 /**
  *
  */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
+template <typename surface, typename scalar_type>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::CalculateAveragedNormals(
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get the connected face elements.
@@ -106,9 +109,9 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
   LINALG::Matrix<surface::n_nodes_, 1, int> normal_ids(true);
   LINALG::Matrix<surface::n_nodes_, 1, int> normal_count(true);
   LINALG::Matrix<3, 1, double> reference_normal(true);
-  LINALG::Matrix<3, 1, double> current_normal(true);
+  LINALG::Matrix<3, 1, scalar_type> current_normal(true);
   LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, double>> reference_normals(true);
-  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, double>> current_normals(true);
+  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, scalar_type>> current_normals(true);
 
   // Fill in the global node IDs.
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
@@ -117,9 +120,11 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
   // Calculate the normals on the nodes from all connected (including this one) faces.
   for (const auto& connected_face : connected_faces)
   {
+    const auto connected_face_template = dynamic_cast<const my_type*>(connected_face.get());
     for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     {
-      if (connected_face->EvaluateNodalNormal(normal_ids(i_node), reference_normal, current_normal))
+      if (connected_face_template->EvaluateNodalNormal(
+              normal_ids(i_node), reference_normal, current_normal))
       {
         normal_count(i_node) += 1;
         reference_normals(i_node) += reference_normal;
@@ -152,10 +157,10 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::CalculateAveragedNormals(
 /**
  *
  */
-template <typename surface>
-bool GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateNodalNormal(const int node_gid,
-    LINALG::Matrix<3, 1, double>& reference_normal,
-    LINALG::Matrix<3, 1, double>& current_normal) const
+template <typename surface, typename scalar_type>
+bool GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateNodalNormal(
+    const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
+    LINALG::Matrix<3, 1, scalar_type>& current_normal) const
 {
   // Check if the desired node is part of this face.
   int node_lid = -1;
@@ -194,8 +199,8 @@ bool GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateNodalNormal(const int n
 /**
  *
  */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFacePositionDouble(
+template <typename surface, typename scalar_type>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositionDouble(
     const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& r, bool reference) const
 {
   LINALG::Matrix<surface::n_dof_, 1, double> position_double;
@@ -210,52 +215,43 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFacePositionDouble(
 /**
  *
  */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFaceNormalDouble(
-    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, bool reference) const
+template <typename surface, typename scalar_type>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormalDouble(
+    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, const bool reference,
+    const bool averaged_normal) const
 {
-  LINALG::Matrix<surface::n_dof_, 1, double> position_double;
-  if (reference)
-    position_double = FADUTILS::CastToDouble(face_reference_position_);
-  else
-    position_double = FADUTILS::CastToDouble(face_position_);
+  LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
+  LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
+  bool valid_pointer = false;
 
-  EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get());
-}
-
-/**
- *
- */
-template <typename surface>
-void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFaceAveragedNormalDouble(
-    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, bool reference) const
-{
-  const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double;
-
-  if (reference)
-    normals_double = this->GetReferenceNormals();
-  else
-    normals_double = this->GetCurrentNormals();
-
-  if (normals_double == nullptr)
+  if (averaged_normal)
   {
-    // There are no averaged normals, so the normal on the element has to be calculated.
+    if (reference)
+      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+    else
+      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+  }
 
-    LINALG::Matrix<surface::n_dof_, 1, double> position_double;
+  if (valid_pointer && averaged_normal)
+  {
+    // Return the normal calculated with the averaged normal field.
+    EvaluateSurfaceNormal<surface>(
+        xi, position_double, n, drt_face_element_.get(), &normals_double);
+  }
+  else if ((not valid_pointer) && averaged_normal)
+  {
+    // Averaged normals are desired, but there is no valid pointer to them -> return a zero vector.
+    n.PutScalar(0.);
+  }
+  else
+  {
+    // Calculate the normals on the face geometry.
     if (reference)
       position_double = FADUTILS::CastToDouble(face_reference_position_);
     else
       position_double = FADUTILS::CastToDouble(face_position_);
 
-    EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get(), normals_double);
-  }
-  else
-  {
-    // Return the normal calculated with the averaged normal field.
-
-    LINALG::Matrix<surface::n_dof_, 1, double> position_double_dummy(true);
-    EvaluateSurfaceNormal<surface>(
-        xi, position_double_dummy, n, drt_face_element_.get(), normals_double);
+    EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get());
   }
 }
 
@@ -264,30 +260,66 @@ void GEOMETRYPAIR::FaceElementTemplate<surface>::EvaluateFaceAveragedNormalDoubl
  *
  */
 Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
-    const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    const Teuchos::RCP<const DRT::FaceElement>& face_element, const bool is_fad)
 {
-  switch (face_element->Shape())
+  if (not is_fad)
   {
-    case DRT::Element::tri3:
-      return Teuchos::rcp<FaceElementTemplate<t_tri3>>(
-          new FaceElementTemplate<t_tri3>(face_element));
-    case DRT::Element::tri6:
-      return Teuchos::rcp<FaceElementTemplate<t_tri6>>(
-          new FaceElementTemplate<t_tri6>(face_element));
-    case DRT::Element::quad4:
-      return Teuchos::rcp<FaceElementTemplate<t_quad4>>(
-          new FaceElementTemplate<t_quad4>(face_element));
-    case DRT::Element::quad8:
-      return Teuchos::rcp<FaceElementTemplate<t_quad8>>(
-          new FaceElementTemplate<t_quad8>(face_element));
-    case DRT::Element::quad9:
-      return Teuchos::rcp<FaceElementTemplate<t_quad9>>(
-          new FaceElementTemplate<t_quad9>(face_element));
-    case DRT::Element::nurbs9:
-      return Teuchos::rcp<FaceElementTemplate<t_nurbs9>>(
-          new FaceElementTemplate<t_nurbs9>(face_element));
-    default:
-      dserror("Wrong discretization type given.");
+    switch (face_element->Shape())
+    {
+      case DRT::Element::tri3:
+        return Teuchos::rcp(new FaceElementTemplate<t_tri3,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri3::n_dof_>>(face_element));
+      case DRT::Element::tri6:
+        return Teuchos::rcp(new FaceElementTemplate<t_tri6,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri6::n_dof_>>(face_element));
+      case DRT::Element::quad4:
+        return Teuchos::rcp(new FaceElementTemplate<t_quad4,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad4::n_dof_>>(face_element));
+      case DRT::Element::quad8:
+        return Teuchos::rcp(new FaceElementTemplate<t_quad8,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad8::n_dof_>>(face_element));
+      case DRT::Element::quad9:
+        return Teuchos::rcp(new FaceElementTemplate<t_quad9,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad9::n_dof_>>(face_element));
+      case DRT::Element::nurbs9:
+        return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>(face_element));
+      default:
+        dserror("Wrong discretization type given.");
+    }
+  }
+  else
+  {
+    switch (face_element->Shape())
+    {
+      case DRT::Element::tri3:
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_tri3, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
+                face_element));
+      case DRT::Element::tri6:
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_tri6, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
+                face_element));
+      case DRT::Element::quad4:
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_quad4, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
+                face_element));
+      case DRT::Element::quad8:
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_quad8, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
+                face_element));
+      case DRT::Element::quad9:
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_quad9, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
+                face_element));
+      case DRT::Element::nurbs9:
+        return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
+            Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ +
+                                                                    GEOMETRYPAIR::t_nurbs9::n_dof_>,
+                GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>>(face_element));
+      default:
+        dserror("Wrong discretization type given.");
+    }
   }
 
   return Teuchos::null;

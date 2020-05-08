@@ -69,25 +69,20 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
       INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero)
   {
     // Couple the positions -> this will result in an initial stress of the system.
-
     beam_dof_fad = this->ele1pos_;
-
-    for (unsigned int i = 0; i < surface::n_dof_; i++)
-      surface_dof_fad(i) = scalar_type(beam::n_dof_ + surface::n_dof_, beam::n_dof_ + i,
-          this->face_element_->GetFacePosition()(i));
+    surface_dof_fad = this->face_element_->GetFacePosition();
   }
   else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements)
   {
     // Couple the displacements -> this will result in a non-fulfilment of the conservation of
     // angular momentum.
-
-    for (unsigned int i = 0; i < beam::n_dof_; i++)
-      beam_dof_fad(i) = this->ele1pos_(i) - this->ele1posref_(i);
-
-    for (unsigned int i = 0; i < surface::n_dof_; i++)
-      surface_dof_fad(i) = scalar_type(beam::n_dof_ + surface::n_dof_, beam::n_dof_ + i,
-                               this->face_element_->GetFacePosition()(i)) -
-                           this->face_element_->GetFaceReferencePosition()(i);
+    beam_dof_fad = this->ele1pos_;
+    for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+      beam_dof_fad(i_dof_beam) -= this->ele1posref_(i_dof_beam);
+    surface_dof_fad = this->face_element_->GetFacePosition();
+    for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+      surface_dof_fad(i_dof_surface) -=
+          this->face_element_->GetFaceReferencePosition()(i_dof_surface);
   }
   else
     dserror(

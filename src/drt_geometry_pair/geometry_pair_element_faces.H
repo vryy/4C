@@ -72,19 +72,6 @@ namespace GEOMETRYPAIR
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
-     * \brief Calculate the nodal normal at the node with GID node_gid. If this node is not part of
-     * this face, false is returned. (Has to be implemented in derived class)
-     *
-     * @param node_gid (in) GID of the node at which the normals should be calculated.
-     * @param reference_normal (out) Normal at the node in the reference configuration.
-     * @param current_normal (out) Normal at the node in the current configuration.
-     * @return True if node if part of this face, false otherwise.
-     */
-    virtual bool EvaluateNodalNormal(const int node_gid,
-        LINALG::Matrix<3, 1, double>& reference_normal,
-        LINALG::Matrix<3, 1, double>& current_normal) const = 0;
-
-    /**
      * \brief Return the position on this face as a double.
      *
      * @param xi (in) Parameter coordinate on the face.
@@ -95,24 +82,20 @@ namespace GEOMETRYPAIR
         LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
 
     /**
-     * \brief Return a normal on this face as a double.
+     * \brief Return a normal on the element.
+     *
+     * If an averaged normal is requested and the element does not have averaged normals (e.g.
+     * nurbs) a zero vector is returned.
      *
      * @param xi (in) Parameter coordinate on the face.
      * @param n (out) Normal on the face.
      * @param reference (in) If the reference position or the current position should be returned.
+     * @param averaged_normal (in) If an averaged normal or an geometrical normal should be
+     * returned.
      */
     virtual void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, bool reference = false) const = 0;
-
-    /**
-     * \brief Return a normal of the averaged normal field on this face as a double.
-     *
-     * @param xi (in) Parameter coordinate on the face.
-     * @param n (out) Normal on the face.
-     * @param reference (in) If the reference position or the current position should be returned.
-     */
-    virtual void EvaluateFaceAveragedNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, bool reference = false) const = 0;
+        LINALG::Matrix<3, 1, double>& n, const bool reference,
+        const bool averaged_normal) const = 0;
 
     /**
      * \brief Return if the face is part of a pair.
@@ -161,10 +144,15 @@ namespace GEOMETRYPAIR
    * well as position information of the face.
    *
    * @tparam surface Type of surface element.
+   * @tparam scalar_type Scalar type for FAD evaluations.
    */
-  template <typename surface>
+  template <typename surface, typename scalar_type>
   class FaceElementTemplate : public FaceElement
   {
+   public:
+    //! Shortcut to the type of this templated object.
+    using my_type = FaceElementTemplate<surface, scalar_type>;
+
    public:
     /**
      * \brief Constructor (derived).
@@ -213,7 +201,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current position of this face.
      */
-    const LINALG::Matrix<surface::n_dof_, 1, double>& GetFacePosition() const
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
     {
       return face_position_;
     }
@@ -229,64 +217,55 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetCurrentNormals() const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const
     {
       return &current_normals_;
     }
 
     /**
-     * \brief Return the position on this face as a double.
-     *
-     * @param xi (in) Parameter coordinate on the face.
-     * @param r (out) Position on the face.
-     * @param reference (in) If the reference position or the current position should be returned.
+     * \brief Return the position on this face as a double. (derived)
      */
     void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
         LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
 
     /**
-     * \brief Return a normal on this face as a double.
-     *
-     * @param xi (in) Parameter coordinate on the face.
-     * @param n (out) Normal on the face.
-     * @param reference (in) If the reference position or the current position should be returned.
+     * \brief Return a normal on the element. (derived)
      */
     void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, bool reference = false) const override;
-
-    /**
-     * \brief Return a normal of the averaged normal field on this face as a double.
-     *
-     * @param xi (in) Parameter coordinate on the face.
-     * @param n (out) Normal on the face.
-     * @param reference (in) If the reference position or the current position should be returned.
-     */
-    void EvaluateFaceAveragedNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, bool reference = false) const override;
+        LINALG::Matrix<3, 1, double>& n, const bool reference,
+        const bool averaged_normal) const override;
 
    private:
     /**
      * \brief Calculate the nodal normal at the node with GID node_gid. If this node is not part of
-     * this face, false is returned. (derived)
+     * this face, false is returned.
+     *
+     * @param node_gid (in) GID of the node at which the normals should be calculated.
+     * @param reference_normal (out) Normal at the node in the reference configuration.
+     * @param current_normal (out) Normal at the node in the current configuration.
+     * @return True if node if part of this face, false otherwise.
      */
     bool EvaluateNodalNormal(const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
-        LINALG::Matrix<3, 1, double>& current_normal) const override;
+        LINALG::Matrix<3, 1, scalar_type>& current_normal) const;
 
    private:
     //! Reference position.
     LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
 
     //! Current position.
-    LINALG::Matrix<surface::n_dof_, 1, double> face_position_;
+    LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
 
     //! Reference normals.
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
 
     //! Current normals.
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double> current_normals_;
+    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
 
     //! Global DOF IDs of this face element.
     std::vector<int> face_dof_gid_;
+
+    //! Number of DOFs used for a beam element.
+    static const unsigned int n_beam_dof_ = 12;
   };
 
 
@@ -301,17 +280,23 @@ namespace GEOMETRYPAIR
    * (https://stackoverflow.com/questions/25594644/warning-specialization-of-template-in-different-namespace)
    */
   template <>
-  inline void FaceElementTemplate<t_nurbs9>::CalculateAveragedNormals(
-      const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
+  inline void FaceElementTemplate<t_nurbs9,
+      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::
+      CalculateAveragedNormals(
+          const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
   template <>
-  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>*
-  FaceElementTemplate<t_nurbs9>::GetReferenceNormals() const
+  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>* FaceElementTemplate<t_nurbs9,
+      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::GetReferenceNormals()
+      const
   {
     return nullptr;
   };
   template <>
-  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>*
-  FaceElementTemplate<t_nurbs9>::GetCurrentNormals() const
+  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1,
+      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>*
+  FaceElementTemplate<t_nurbs9,
+      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::GetCurrentNormals()
+      const
   {
     return nullptr;
   };
@@ -320,10 +305,11 @@ namespace GEOMETRYPAIR
   /**
    * \brief Create the templated version of the face element.
    * @param drt_face_element (in) Pointer to the DRT face element.
+   * @param is_fad (in) If the created face element should consist of fad types.
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
   Teuchos::RCP<FaceElement> FaceElementFactory(
-      const Teuchos::RCP<const DRT::FaceElement>& drt_face_element);
+      const Teuchos::RCP<const DRT::FaceElement>& drt_face_element, const bool is_fad);
 
 }  // namespace GEOMETRYPAIR
 

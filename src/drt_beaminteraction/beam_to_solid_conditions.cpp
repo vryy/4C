@@ -372,6 +372,13 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup()
   // Call the parent method.
   BeamToSolidCondition::Setup();
 
+  // Pointer to the beam contact parameters.
+  Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
+      beal_to_solid_surface_params = Teuchos::null;
+  if (condition_contact_pairs_.size() > 0)
+    beal_to_solid_surface_params =
+        condition_contact_pairs_[0]->Params()->BeamToSolidSurfaceMeshtyingParams();
+
   // Loop over all pairs and add the needed face elements.
   std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> pair_face_elemets;
   pair_face_elemets.clear();
@@ -386,8 +393,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup()
       if (find_in_pair == pair_face_elemets.end())
       {
         // The face element has to be created and added to the contact pair.
-        Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element =
-            GEOMETRYPAIR::FaceElementFactory(find_in_condition->second);
+        Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element = GEOMETRYPAIR::FaceElementFactory(
+            find_in_condition->second, beal_to_solid_surface_params->GetIsFAD());
         new_face_element->SetPartOfPair(true);
         pair_face_elemets[solid_id] = new_face_element;
         pair->SetFaceElement(new_face_element);
@@ -429,8 +436,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup()
           if (find_in_needed == face_elements_needed.end())
           {
             // It is not already in the needed faces -> add it.
-            face_elements_needed[element_id] =
-                GEOMETRYPAIR::FaceElementFactory(find_in_condition->second);
+            face_elements_needed[element_id] = GEOMETRYPAIR::FaceElementFactory(
+                find_in_condition->second, beal_to_solid_surface_params->GetIsFAD());
           }
         }
         else

@@ -104,6 +104,28 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns true if the coupling should be evaluated with FAD.
+     */
+    inline bool GetIsFAD() const
+    {
+      switch (coupling_type_)
+      {
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements:
+          return false;
+          break;
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad:
+          return true;
+          break;
+        default:
+          dserror("Wrong coupling type.");
+          break;
+      }
+      return false;
+    }
+
+    /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
     inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionType() const

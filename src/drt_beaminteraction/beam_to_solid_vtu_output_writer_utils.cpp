@@ -99,8 +99,8 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
       face_element_iterator.second->EvaluateFacePositionDouble(xi, r);
       face_element_iterator.second->EvaluateFacePositionDouble(xi, X, true);
-      face_element_iterator.second->EvaluateFaceNormalDouble(xi, n);
-      face_element_iterator.second->EvaluateFaceAveragedNormalDouble(xi, n_averaged);
+      face_element_iterator.second->EvaluateFaceNormalDouble(xi, n, false, false);
+      face_element_iterator.second->EvaluateFaceNormalDouble(xi, n_averaged, false, true);
 
       u = r;
       u -= X;
