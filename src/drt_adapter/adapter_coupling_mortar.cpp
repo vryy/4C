@@ -1217,26 +1217,35 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 void ADAPTER::CouplingMortar::Evaluate(
     Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl)
 {
-  // safety check
+  // safety checks
   CheckSetup();
+  dsassert(idispma->Map().PointSameAs(*pmasterdofrowmap_),
+      "Map of incoming master vector does not match the stored master dof row map.");
+  dsassert(idispsl->Map().PointSameAs(*pslavedofrowmap_),
+      "Map of incoming slave vector does not match the stored slave dof row map.");
 
   const Epetra_BlockMap stdmap = idispsl->Map();
   idispsl->ReplaceMap(*slavedofrowmap_);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
       LINALG::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Import> msimpo =
+  Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *pmasterdofrowmap_));
-  Teuchos::RCP<Epetra_Import> slimpo =
+  Teuchos::RCP<Epetra_Import> slaveImporter =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *pslavedofrowmap_));
 
-  Teuchos::RCP<Epetra_Vector> idispms = LINALG::CreateVector(*dofrowmap, true);
-
-  idispms->Import(*idispma, *msimpo, Add);
-  idispms->Import(*idispsl, *slimpo, Add);
+  // Import master and slave displacements into a single vector
+  int err = 0;
+  Teuchos::RCP<Epetra_Vector> idisp_master_slave = LINALG::CreateVector(*dofrowmap, true);
+  err = idisp_master_slave->Import(*idispma, *master_importer, Add);
+  if (err != 0)
+    dserror("Import failed with error code %d. See Epetra source code for details.", err);
+  err = idisp_master_slave->Import(*idispsl, *slaveImporter, Add);
+  if (err != 0)
+    dserror("Import failed with error code %d. See Epetra source code for details.", err);
 
   // set new displacement state in mortar interface
-  interface_->SetState(MORTAR::state_new_displacement, *idispms);
+  interface_->SetState(MORTAR::state_new_displacement, *idisp_master_slave);
 
   Evaluate();
   MatrixRowColTransform();
