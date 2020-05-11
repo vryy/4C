@@ -71,8 +71,10 @@ void FSI::DirichletNeumannSlideale::Remeshing()
   slideale_->Remeshing(*StructureField(), MBFluidField()->Discretization(), idisptotal, islave_,
       StructureFluidCouplingMortar(), Comm());
 
+  // Evaluate solid/fluid Mortar coupling
   slideale_->EvaluateMortar(
       StructureField()->ExtractInterfaceDispnp(), islave_, StructureFluidCouplingMortar());
+  // Evaluate solid/ale Mortar coupling
   slideale_->EvaluateFluidMortar(idisptotal, islave_);
 
   Teuchos::RCP<Epetra_Vector> unew =
