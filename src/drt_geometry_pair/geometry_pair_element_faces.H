@@ -20,6 +20,14 @@
 #include <unordered_map>
 
 
+// Forward declarations.
+namespace GEOMETRYPAIR
+{
+  struct ConnectedFace;
+  class GeometryPairLineToSurfacePatch_TestSuite;
+}  // namespace GEOMETRYPAIR
+
+
 namespace GEOMETRYPAIR
 {
   /**
@@ -42,6 +50,8 @@ namespace GEOMETRYPAIR
    */
   class FaceElement
   {
+    friend GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite;
+
    public:
     /**
      * \brief Constructor.
@@ -174,6 +184,8 @@ namespace GEOMETRYPAIR
   template <typename surface, typename scalar_type>
   class FaceElementTemplate : public FaceElement
   {
+    friend GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite;
+
    public:
     //! Shortcut to the type of this templated object.
     using my_type = FaceElementTemplate<surface, scalar_type>;
