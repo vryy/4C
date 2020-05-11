@@ -650,10 +650,12 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
       // if no close elements could be found, try with a much larger radius and print a warning
       if (closeeles.empty())
       {
+        const double enlarge_factor = 100;
         std::cout << "WARNING: no elements found in radius r=" << maxmindist_
-                  << ". Will try once with a bigger radius!" << std::endl;
+                  << ". Will try once with a " << static_cast<int>(enlarge_factor)
+                  << "-times bigger radius!" << std::endl;
         closeeles = searchTree->searchElementsInRadius(
-            interfacedis, currentpositions, alenodecurr, 100.0 * maxmindist_, 0);
+            interfacedis, currentpositions, alenodecurr, enlarge_factor * maxmindist_, 0);
         maxmindist_ *= 10.0;
 
         // if still no element is found, complain about it!
