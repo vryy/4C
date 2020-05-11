@@ -382,13 +382,13 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   idispms_->Scale(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Import> msimpo =
+  Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
-  Teuchos::RCP<Epetra_Import> slimpo =
+  Teuchos::RCP<Epetra_Import> slave_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
-  idispms_->Import(*idisptotal, *msimpo, Add);
-  idispms_->Import(*ifluid, *slimpo, Add);
+  if (idispms_->Import(*idisptotal, *master_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*ifluid, *slave_importer, Add)) dserror("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);
