@@ -104,49 +104,12 @@ void GEOMETRYPAIR::FaceElement::Setup(const Teuchos::RCP<const DRT::Discretizati
       }
     }
   }
-}
 
-/**
- *
- */
-void GEOMETRYPAIR::FaceElement::GetConnectedFaces(
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& connected_faces) const
-{
-  // First we have to find the global IDs of the volume elements connected to the face.
-  std::set<int> connected_elements_id;
-  for (int i_node = 0; i_node < drt_face_element_->NumNode(); i_node++)
-  {
-    const DRT::Node* node = drt_face_element_->Nodes()[i_node];
-    for (int i_element = 0; i_element < node->NumElement(); i_element++)
-    {
-      const DRT::Element* node_element = node->Elements()[i_element];
-      connected_elements_id.insert(node_element->Id());
-    }
-  }
-
-  // Check that the global IDs are in the face_element map, i.e. they are in the surface condition.
-  connected_faces.clear();
-  for (const auto& volume_id : connected_elements_id)
-  {
-    // This element does not count as a connected face.
-    if (volume_id == drt_face_element_->ParentElementId()) continue;
-
-    auto find_in_faces = face_elements.find(volume_id);
-    if (find_in_faces != face_elements.end()) connected_faces.push_back(find_in_faces->second);
-  }
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::FaceElement::GetPatchLocalToGlobalIndices(
-    const std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& connected_faces,
-    std::vector<int>& ltg) const
-{
-  dserror("Has to be implemented!");
-  // The fist DOFs will be the ones from this face element.
-  ltg.clear();
+  // If we only want to calculate dependencies on the face DOF and not the patch, we do not need the
+  // GID of the connected faces in the GID vector of this face. The connectivity to the other patch
+  // faces is still required for the calculation of the averaged reference normals.
+  if (not evaluate_current_normals_)
+    this->patch_dof_gid_.resize(3 * this->drt_face_element_->NumNode());
 }
 
 
@@ -174,81 +137,69 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
-    const Teuchos::RCP<const Epetra_Vector>& displacement)
-{
-  // Set the displacement at the current configuration for this element.
-  std::vector<int> lmowner, lmstride, face_dof_gid;
-  std::vector<double> element_displacement;
-  drt_face_element_->LocationVector(*discret, face_dof_gid, lmowner, lmstride);
-  DRT::UTILS::ExtractMyValues(*displacement, element_displacement, face_dof_gid);
-  for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
-    face_position_(i_dof) =
-        face_reference_position_(i_dof) +
-        FADUTILS::HigherOrderFad<scalar_type>::apply(
-            surface::n_dof_ + n_beam_dof_, i_dof + n_beam_dof_, element_displacement[i_dof]);
-};
-
-/**
- *
- */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::CalculateAveragedNormals(
+    const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
-  // Get the connected face elements.
-  std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>> connected_faces;
-  GetConnectedFaces(face_elements, connected_faces);
+  // Get all displacements for the current patch.
+  std::vector<int> lmowner, lmstride;
+  std::vector<double> patch_displacement;
+  DRT::UTILS::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
 
-  // From here on we need this face element in the connected_faces vector.
-  connected_faces.push_back(face_elements.at(drt_face_element_->ParentElementId()));
-
-  // Set up nodal averaged normal vectors (in reference and current configuration).
-  LINALG::Matrix<surface::n_nodes_, 1, int> normal_ids(true);
-  LINALG::Matrix<surface::n_nodes_, 1, int> normal_count(true);
-  LINALG::Matrix<3, 1, double> reference_normal(true);
-  LINALG::Matrix<3, 1, scalar_type> current_normal(true);
-  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, double>> reference_normals(true);
-  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, scalar_type>> current_normals(true);
-
-  // Fill in the global node IDs.
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
-    normal_ids(i_node) = drt_face_element_->Nodes()[i_node]->Id();
-
-  // Calculate the normals on the nodes from all connected (including this one) faces.
-  for (const auto& connected_face : connected_faces)
+  // Create the full length FAD types.
+  const unsigned int n_patch_dof = patch_dof_gid_.size();
+  std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
+  for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
-    const auto connected_face_template = dynamic_cast<const my_type*>(connected_face.get());
+    patch_displacement_fad[i_dof] = FADUTILS::HigherOrderFad<scalar_type>::apply(
+        n_patch_dof + n_beam_dof_, n_beam_dof_ + i_dof, patch_displacement[i_dof]);
+    if (i_dof < surface::n_dof_)
+      face_position_(i_dof) = face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
+  }
+
+  if (evaluate_current_normals_)
+  {
+    // Parameter coordinates corresponding to LIDs of nodes.
+    LINALG::Matrix<3, 1, double> xi(true);
+    LINALG::SerialDenseMatrix nodal_coordinates =
+        DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+
+    // Loop over the connected faces and evaluate their nodal normals.
+    LINALG::Matrix<surface::n_dof_, 1, scalar_type> q_other_face;
+    LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, scalar_type>> normals;
+    LINALG::Matrix<3, 1, scalar_type> temp_normal;
     for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     {
-      if (connected_face_template->EvaluateNodalNormal(
-              normal_ids(i_node), reference_normal, current_normal))
+      for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
+      EvaluateSurfaceNormal<surface>(xi, face_position_, normals(i_node), drt_face_element_.get());
+    }
+    for (const auto& value : connected_faces_)
+    {
+      // Get the connected face element.
+      const Teuchos::RCP<const my_type>& face_element =
+          Teuchos::rcp_dynamic_cast<const my_type>(face_elements.at(value.first));
+
+      // Get the vector with the dof values for this element.
+      for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+        for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        {
+          // We need to add the reference position of the other element.
+          q_other_face(i_dim + 3 * i_node) =
+              face_element->GetFaceReferencePosition()(i_dim + 3 * i_node) +
+              patch_displacement_fad[i_dim + 3 * value.second.my_node_patch_lid_[i_node]];
+        }
+
+      // Evaluate the normals at the shared nodes.
+      for (const auto& node_map_iterator : value.second.node_lid_map_)
       {
-        normal_count(i_node) += 1;
-        reference_normals(i_node) += reference_normal;
-        current_normals(i_node) += current_normal;
+        for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+          xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
+        EvaluateSurfaceNormal<surface>(
+            xi, q_other_face, temp_normal, face_element->GetDrtFaceElement());
+        for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+          normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
       }
     }
-  }
-
-  // Average the normals.
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
-  {
-    if (normal_count(i_node) == 0)
-      dserror(
-          "No normals calculated for node %d in volume element %d. There has to be at least one.",
-          i_node, drt_face_element_->ParentElementId());
-
-    reference_normals(i_node).Scale(1.0 / FADUTILS::VectorNorm(reference_normals(i_node)));
-    current_normals(i_node).Scale(1.0 / FADUTILS::VectorNorm(current_normals(i_node)));
-  }
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
-  {
-    for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-    {
-      reference_normals_(3 * i_node + i_dir) = reference_normals(i_node)(i_dir);
-      current_normals_(3 * i_node + i_dir) = current_normals(i_node)(i_dir);
-    }
+    AverageNodalNormals(normals, this->current_normals_);
   }
 }
 
@@ -256,42 +207,41 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::CalculateAveragedN
  *
  */
 template <typename surface, typename scalar_type>
-bool GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateNodalNormal(
-    const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
-    LINALG::Matrix<3, 1, scalar_type>& current_normal) const
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::CalculateAveragedReferenceNormals(
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
-  // Check if the desired node is part of this face.
-  int node_lid = -1;
+  // Parameter coordinates corresponding to LIDs of nodes.
+  LINALG::Matrix<3, 1, double> xi(true);
+  LINALG::SerialDenseMatrix nodal_coordinates =
+      DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+
+  // Loop over the connected faces and evaluate their nodal normals.
+  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, double>> normals;
+  LINALG::Matrix<3, 1, double> temp_normal;
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
-    if (drt_face_element_->NodeIds()[i_node] == node_gid)
+    for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
+    EvaluateSurfaceNormal<surface>(
+        xi, face_reference_position_, normals(i_node), drt_face_element_.get());
+  }
+  for (const auto& value : connected_faces_)
+  {
+    // Get the connected face element.
+    const Teuchos::RCP<const my_type>& face_element =
+        Teuchos::rcp_dynamic_cast<const my_type>(face_elements.at(value.first));
+
+    // Evaluate the normals at the shared nodes.
+    for (const auto& node_map_iterator : value.second.node_lid_map_)
     {
-      node_lid = i_node;
-      break;
+      for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+        xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
+      EvaluateSurfaceNormal<surface>(xi, face_element->face_reference_position_, temp_normal,
+          face_element->GetDrtFaceElement());
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
     }
   }
-  if (node_lid < 0)
-    // The desired node is not in this face.
-    return false;
-
-  // Evaluate this the normal at the desired node.
-  {
-    reference_normal.Clear();
-    current_normal.Clear();
-
-    // Set the parameter coordinate.
-    LINALG::Matrix<3, 1, double> xi(true);
-    LINALG::SerialDenseMatrix nodal_coordinates =
-        DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
-    for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, node_lid);
-
-    // Calculate the normal on the surface.
-    EvaluateSurfaceNormal<surface>(
-        xi, face_reference_position_, reference_normal, drt_face_element_.get());
-    EvaluateSurfaceNormal<surface>(xi, face_position_, current_normal, drt_face_element_.get());
-
-    return true;
-  }
+  AverageNodalNormals(normals, this->reference_normals_);
 }
 
 /**
@@ -353,6 +303,24 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormal
   }
 }
 
+/**
+ *
+ */
+template <typename surface, typename scalar_type>
+template <typename T>
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::AverageNodalNormals(
+    LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, T>>& normals,
+    LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
+{
+  averaged_normals.PutScalar(0.0);
+  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  {
+    normals(i_node).Scale(1.0 / FADUTILS::VectorNorm(normals(i_node)));
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      averaged_normals(i_dim + 3 * i_node) = normals(i_node)(i_dim);
+  }
+}
+
 
 /**
  *
@@ -366,22 +334,28 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     {
       case DRT::Element::tri3:
         return Teuchos::rcp(new FaceElementTemplate<t_tri3,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri3::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri3::n_dof_>>(
+            face_element, false));
       case DRT::Element::tri6:
         return Teuchos::rcp(new FaceElementTemplate<t_tri6,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri6::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri6::n_dof_>>(
+            face_element, false));
       case DRT::Element::quad4:
         return Teuchos::rcp(new FaceElementTemplate<t_quad4,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad4::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad4::n_dof_>>(
+            face_element, false));
       case DRT::Element::quad8:
         return Teuchos::rcp(new FaceElementTemplate<t_quad8,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad8::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad8::n_dof_>>(
+            face_element, false));
       case DRT::Element::quad9:
         return Teuchos::rcp(new FaceElementTemplate<t_quad9,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad9::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad9::n_dof_>>(
+            face_element, false));
       case DRT::Element::nurbs9:
         return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>(face_element));
+            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>(
+            face_element, false));
       default:
         dserror("Wrong discretization type given.");
     }
@@ -393,28 +367,29 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
       case DRT::Element::tri3:
         return Teuchos::rcp(
             new FaceElementTemplate<t_tri3, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
-                face_element));
+                face_element, true));
       case DRT::Element::tri6:
         return Teuchos::rcp(
             new FaceElementTemplate<t_tri6, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
-                face_element));
+                face_element, true));
       case DRT::Element::quad4:
         return Teuchos::rcp(
             new FaceElementTemplate<t_quad4, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
-                face_element));
+                face_element, true));
       case DRT::Element::quad8:
         return Teuchos::rcp(
             new FaceElementTemplate<t_quad8, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
-                face_element));
+                face_element, true));
       case DRT::Element::quad9:
         return Teuchos::rcp(
             new FaceElementTemplate<t_quad9, Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(
-                face_element));
+                face_element, true));
       case DRT::Element::nurbs9:
         return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
             Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ +
                                                                     GEOMETRYPAIR::t_nurbs9::n_dof_>,
-                GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>>(face_element));
+                GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>>(
+            face_element, false));
       default:
         dserror("Wrong discretization type given.");
     }

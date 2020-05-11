@@ -69,8 +69,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
-        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+    void SetState(const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state);
 
     /**

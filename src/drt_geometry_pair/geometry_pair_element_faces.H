@@ -46,12 +46,15 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      * @param face_element (in) Pointer to the DRT face element.
+     * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element,
+        const bool evaluate_current_normals)
         : drt_face_element_(face_element),
           part_of_pair_(false),
           patch_dof_gid_(),
-          connected_faces_(){};
+          connected_faces_(),
+          evaluate_current_normals_(evaluate_current_normals){};
 
     /**
      * \brief Destructor.
@@ -67,7 +70,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the patch information of the patch connected to this face element.
      *
-     * TODO
+     * Find the connected faces of this patch. Order the nodes, starting with the nodes of the main
+     * face element and then add the nodes of the connected faces. Also create a vector with the
+     * GIDs of this face.
      *
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
@@ -79,11 +84,11 @@ namespace GEOMETRYPAIR
      * \brief Set the needed displacement vectors for this face. Has to be implemented in derived
      * class.
      *
-     * @param discret (in) Discretization.
      * @param displacement (in) Current displacement vector.
+     * @param face_elements (in) Map with all the faces in this condition.
      */
-    virtual void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
-        const Teuchos::RCP<const Epetra_Vector>& displacement) = 0;
+    virtual void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
      * \brief Calculate the averaged normals on the nodes of this face. Has to be implemented in
@@ -91,7 +96,7 @@ namespace GEOMETRYPAIR
      *
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void CalculateAveragedNormals(
+    virtual void CalculateAveragedReferenceNormals(
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
@@ -132,25 +137,11 @@ namespace GEOMETRYPAIR
      */
     void SetPartOfPair(bool part_of_pair) { part_of_pair_ = part_of_pair; }
 
-   protected:
-    /**
-     * \brief Get the face elements connected to this face element (within the surface condition).
-     * @param face_elements (in) Map with all face elements of the surface condition.
-     * @param connected_faces (out) Vector with the connected face elements, not including this
-     * face.
-     */
-    void GetConnectedFaces(
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
-        std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& connected_faces) const;
-
     /**
      * \brief Get the local to global indices for this surface patch.
-     * @param connected_faces (in) Vector with the connected face elements.
-     * @param ltg (out) Local to global indices for this surface patch.
+     * @return Local to global indices for this surface patch.
      */
-    void GetPatchLocalToGlobalIndices(
-        const std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& connected_faces,
-        std::vector<int>& ltg) const;
+    const std::vector<int>& GetPatchGID() const { return patch_dof_gid_; }
 
    protected:
     //! Pointer to the drt face element.
@@ -166,6 +157,10 @@ namespace GEOMETRYPAIR
     //! Store the relevant information of the connected faces. The key of this map is the GID of the
     //! connected face element.
     std::map<int, ConnectedFace> connected_faces_;
+
+    //! If the current normals should be evaluated. If they should not be evaluated, then no
+    //! information about the patch is required.
+    bool evaluate_current_normals_;
   };
 
 
@@ -187,8 +182,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
-        : FaceElement(face_element),
+    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element,
+        const bool evaluate_current_normals)
+        : FaceElement(face_element, evaluate_current_normals),
           face_reference_position_(true),
           face_position_(true),
           reference_normals_(true),
@@ -216,13 +212,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
-        const Teuchos::RCP<const Epetra_Vector>& displacement) override;
+    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
 
     /**
      * \brief Calculate the averaged normals on the nodes of this face (derived).
      */
-    void CalculateAveragedNormals(
+    void CalculateAveragedReferenceNormals(
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -255,7 +252,10 @@ namespace GEOMETRYPAIR
      */
     const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const
     {
-      return &current_normals_;
+      if (evaluate_current_normals_)
+        return &current_normals_;
+      else
+        return nullptr;
     }
 
     /**
@@ -273,16 +273,14 @@ namespace GEOMETRYPAIR
 
    private:
     /**
-     * \brief Calculate the nodal normal at the node with GID node_gid. If this node is not part of
-     * this face, false is returned.
-     *
-     * @param node_gid (in) GID of the node at which the normals should be calculated.
-     * @param reference_normal (out) Normal at the node in the reference configuration.
-     * @param current_normal (out) Normal at the node in the current configuration.
-     * @return True if node if part of this face, false otherwise.
+     * \brief Average normals at the face nodes.
+     * @param normals (in) Sum of all normals at a each node.
+     * @param averaged_normals (out) Averaged normals, already in the vector format needed for this
+     * element.
      */
-    bool EvaluateNodalNormal(const int node_gid, LINALG::Matrix<3, 1, double>& reference_normal,
-        LINALG::Matrix<3, 1, scalar_type>& current_normal) const;
+    template <typename T>
+    void AverageNodalNormals(LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, T>>& normals,
+        LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
 
    private:
     //! Reference position.
@@ -315,7 +313,7 @@ namespace GEOMETRYPAIR
   template <>
   inline void FaceElementTemplate<t_nurbs9,
       Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::
-      CalculateAveragedNormals(
+      CalculateAveragedReferenceNormals(
           const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
   template <>
   inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>* FaceElementTemplate<t_nurbs9,

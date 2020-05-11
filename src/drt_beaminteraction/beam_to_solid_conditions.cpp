@@ -477,7 +477,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::SetState(
     dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->SetState(discret, beaminteraction_data_state);
+  line_to_surface_evaluation_data->SetState(beaminteraction_data_state);
 }
 
 /**
