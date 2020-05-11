@@ -271,10 +271,10 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
   // get mortar coupling parameters
   const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& inputc = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& inputcontact = DRT::Problem::Instance()->ContactDynamicParams();
   Teuchos::ParameterList input;
   input.setParameters(inputmortar);
-  input.setParameters(inputc);
+  input.setParameters(inputcontact);
 
   // is this a nurbs problem?
   ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
