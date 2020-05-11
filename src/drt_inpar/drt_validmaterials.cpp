@@ -1724,6 +1724,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with one exponential shear behavior between two fibers
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoShear",
+        "Exponential shear behavior between two fibers", INPAR::MAT::mes_coupanisoexposhear));
+
+    AddNamedReal(m, "K1", "linear constant");
+    AddNamedReal(m, "K2", "exponential constant");
+    AddNamedReal(m, "GAMMA", "angle");
+    AddNamedReal(m, "K1COMP", "linear constant");
+    AddNamedReal(m, "K2COMP", "exponential constant");
+    AddNamedInt(m, "INIT", "initialization modus for fiber alignment", 1, true);
+    AddNamedIntVector(m, "FIBER_IDS",
+        "Ids of the two fibers to be used (1 for the first fiber, 2 for the second, default)", 2);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one pow-like fiber family
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoPow",

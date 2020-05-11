@@ -35,6 +35,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "elast_vologden.H"
 #include "elast_volpow.H"
 #include "elast_coupanisoexpo.H"
+#include "elast_coupanisoexposhear.H"
 #include "elast_coupanisoexpotwocoup.H"
 #include "elast_coupanisoneohooke.H"
 #include "elast_coupanisoneohooke_VarProp.H"
@@ -324,6 +325,14 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       MAT::ELASTIC::PAR::CoupAnisoExpo* params =
           static_cast<MAT::ELASTIC::PAR::CoupAnisoExpo*>(curmat->Parameter());
       return Teuchos::rcp(new CoupAnisoExpo(params));
+    }
+    case INPAR::MAT::mes_coupanisoexposhear:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpoShear(curmat));
+      MAT::ELASTIC::PAR::CoupAnisoExpoShear* params =
+          static_cast<MAT::ELASTIC::PAR::CoupAnisoExpoShear*>(curmat->Parameter());
+      return Teuchos::rcp(new CoupAnisoExpoShear(params));
     }
     case INPAR::MAT::mes_coupanisopow:
     {
