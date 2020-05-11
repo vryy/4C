@@ -150,17 +150,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
     LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
     UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
 
-    // Get the solid GIDs.
-    std::vector<int> lmrow;
-    std::vector<int> lmrowowner;
-    std::vector<int> lmstride;
-    this->face_element_->GetDrtFaceElement()->LocationVector(*discret, lmrow, lmrowowner, lmstride);
+    // Get the patch (in this case just the one face element) GIDs.
+    const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
 
     // Combine beam and solid GIDs into one vector.
     for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
       pair_gid(i_dof_beam) = beam_centerline_gid(i_dof_beam);
     for (unsigned int i_dof_solid = 0; i_dof_solid < surface::n_dof_; i_dof_solid++)
-      pair_gid(beam::n_dof_ + i_dof_solid) = lmrow[i_dof_solid];
+      pair_gid(beam::n_dof_ + i_dof_solid) = patch_gid[i_dof_solid];
   }
 
   // If given, assemble force terms into the global vector.
