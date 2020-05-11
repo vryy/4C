@@ -13,7 +13,6 @@
 #define FSI_STRUCTURE_WRAPPER_H
 
 #include "ad_str_wrapper.H"
-#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
 
 // forward declarations
 namespace STR
@@ -22,10 +21,7 @@ namespace STR
   {
     class MapExtractor;
   }
-}  // namespace STR
 
-namespace STR
-{
   namespace MODELEVALUATOR
   {
     class PartitionedFSI;
@@ -104,10 +100,7 @@ namespace ADAPTER
     int predictor_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator()
-    {
-      return fsi_model_evaluator_;
-    };
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator();
 
    private:
     /// The structural model evaluator object.
