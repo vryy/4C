@@ -367,10 +367,11 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BuildIdSets()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup()
+void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret)
 {
   // Call the parent method.
-  BeamToSolidCondition::Setup();
+  BeamToSolidCondition::Setup(discret);
 
   // Pointer to the beam contact parameters.
   Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
@@ -457,7 +458,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup()
     dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->Setup(face_elements_needed);
+  line_to_surface_evaluation_data->Setup(discret, face_elements_needed);
 }
 
 /**

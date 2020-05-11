@@ -23,6 +23,21 @@
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief Utility structure to represent the connection of faces to a patch.
+   */
+  struct ConnectedFace
+  {
+    //! This vector stores the LIDs of the nodes of this connected face corresponding to the nodes
+    //! of the patch.
+    std::vector<int> my_node_patch_lid_;
+
+    //! This map represents the link between the nodes of a connected face and the patch face. The
+    //! key is the LID of the node on the connected face and the value is the LID of the node on the
+    //! patch face.
+    std::map<int, int> node_lid_map_;
+  };
+
+  /**
    * \brief Base, non templated class for an object that represents a surface element.
    */
   class FaceElement
@@ -33,7 +48,10 @@ namespace GEOMETRYPAIR
      * @param face_element (in) Pointer to the DRT face element.
      */
     FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element)
-        : drt_face_element_(face_element), part_of_pair_(false){};
+        : drt_face_element_(face_element),
+          part_of_pair_(false),
+          patch_dof_gid_(),
+          connected_faces_(){};
 
     /**
      * \brief Destructor.
@@ -47,10 +65,15 @@ namespace GEOMETRYPAIR
     const DRT::FaceElement* GetDrtFaceElement() const { return drt_face_element_.getRawPtr(); }
 
     /**
-     * \brief Set the reference position of this element. Has to be implemented in derived class.
+     * \brief Set the patch information of the patch connected to this face element.
+     *
+     * TODO
+     *
+     * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void Setup() = 0;
+    virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
 
     /**
      * \brief Set the needed displacement vectors for this face. Has to be implemented in derived
@@ -136,6 +159,13 @@ namespace GEOMETRYPAIR
     //! Flag if this face element is part of a contact pair, i.e. if it has evaluate it's averaged
     //! normals.
     bool part_of_pair_;
+
+    //! Global DOF IDs of this face patch.
+    std::vector<int> patch_dof_gid_;
+
+    //! Store the relevant information of the connected faces. The key of this map is the GID of the
+    //! connected face element.
+    std::map<int, ConnectedFace> connected_faces_;
   };
 
 
@@ -162,8 +192,7 @@ namespace GEOMETRYPAIR
           face_reference_position_(true),
           face_position_(true),
           reference_normals_(true),
-          current_normals_(true),
-          face_dof_gid_()
+          current_normals_(true)
     {
     }
 
@@ -173,9 +202,16 @@ namespace GEOMETRYPAIR
     ~FaceElementTemplate(){};
 
     /**
-     * \brief Set the reference position of this element (derived).
+     * \brief Setup the reference position of the face element. (derived)
+     *
+     * Also call the parent method and evaluate the patch information.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup() override;
+    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
 
     /**
      * \brief Set the needed displacement vectors for this face (derived).
@@ -260,9 +296,6 @@ namespace GEOMETRYPAIR
 
     //! Current normals.
     LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
-
-    //! Global DOF IDs of this face element.
-    std::vector<int> face_dof_gid_;
 
     //! Number of DOFs used for a beam element.
     static const unsigned int n_beam_dof_ = 12;

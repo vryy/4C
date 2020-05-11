@@ -17,6 +17,98 @@
 /**
  *
  */
+void GEOMETRYPAIR::FaceElement::Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+{
+  // Initialize class variables.
+  patch_dof_gid_.clear();
+  connected_faces_.clear();
+
+  // Initialize variables for this method.
+  std::vector<int> my_node_gid, other_faces_node_gid;
+  my_node_gid.clear();
+  my_node_gid.reserve(drt_face_element_->NumNode());
+  other_faces_node_gid.clear();
+
+  // Temporary variables.
+  std::vector<int> temp_node_dof_gid(3);
+
+  // First add the node GIDs of this face.
+  for (int i_node = 0; i_node < drt_face_element_->NumNode(); i_node++)
+  {
+    const DRT::Node* my_node = drt_face_element_->Nodes()[i_node];
+    my_node_gid.push_back(my_node->Id());
+    discret->Dof(my_node, 0, temp_node_dof_gid);
+    for (const auto& value : temp_node_dof_gid) patch_dof_gid_.push_back(value);
+  }
+
+  // Add the node GIDs of the connected faces.
+  ConnectedFace temp_connected_face;
+  for (int i_node = 0; i_node < drt_face_element_->NumNode(); i_node++)
+  {
+    // Loop over all elements connected to a node of this face.
+    const DRT::Node* node = drt_face_element_->Nodes()[i_node];
+    for (int i_element = 0; i_element < node->NumElement(); i_element++)
+    {
+      const DRT::Element* element = node->Elements()[i_element];
+
+      // Do nothing for this element.
+      if (element->Id() == drt_face_element_->ParentElementId()) continue;
+
+      // Check if the element was already searched for.
+      if (connected_faces_.find(element->Id()) == connected_faces_.end())
+      {
+        temp_connected_face.node_lid_map_.clear();
+        temp_connected_face.my_node_patch_lid_.clear();
+
+        // Check if the element is part of the surface condition.
+        auto find_in_faces = face_elements.find(element->Id());
+        if (find_in_faces != face_elements.end())
+        {
+          // Add the node GIDs of this element.
+          for (int i_node_connected_element = 0;
+               i_node_connected_element < find_in_faces->second->GetDrtFaceElement()->NumNode();
+               i_node_connected_element++)
+          {
+            const DRT::Node* other_node =
+                find_in_faces->second->GetDrtFaceElement()->Nodes()[i_node_connected_element];
+            const int node_id = other_node->Id();
+
+            // Check if this node is part of this face element. If not and if it is not already in
+            // other_faces_node_gid, it is added to that vector.
+            auto it = std::find(my_node_gid.begin(), my_node_gid.end(), node_id);
+            if (it == my_node_gid.end())
+            {
+              if (std::find(other_faces_node_gid.begin(), other_faces_node_gid.end(), node_id) ==
+                  other_faces_node_gid.end())
+              {
+                other_faces_node_gid.push_back(node_id);
+                discret->Dof(other_node, 0, temp_node_dof_gid);
+                for (const auto& value : temp_node_dof_gid) patch_dof_gid_.push_back(value);
+              }
+              temp_connected_face.my_node_patch_lid_.push_back(
+                  my_node_gid.size() + other_faces_node_gid.size() - 1);
+            }
+            else
+            {
+              // The node is part of this face element, add to the map entry.
+              const int index_my_node = std::distance(my_node_gid.begin(), it);
+              temp_connected_face.node_lid_map_[i_node_connected_element] = index_my_node;
+              temp_connected_face.my_node_patch_lid_.push_back(index_my_node);
+            }
+          }
+
+          // Add this element to the already searched connected elements.
+          connected_faces_[element->Id()] = temp_connected_face;
+        }
+      }
+    }
+  }
+}
+
+/**
+ *
+ */
 void GEOMETRYPAIR::FaceElement::GetConnectedFaces(
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
     std::vector<Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& connected_faces) const
@@ -57,13 +149,19 @@ void GEOMETRYPAIR::FaceElement::GetPatchLocalToGlobalIndices(
   ltg.clear();
 }
 
+
 /**
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup()
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
-  // Set the reference position from the nodes.
+  // Call setup of base class.
+  FaceElement::Setup(discret, face_elements);
+
+  // Set the reference position from the nodes connected to this face.
   face_reference_position_.Clear();
   const DRT::Node* const* nodes = drt_face_element_->Nodes();
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
@@ -80,10 +178,10 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
     const Teuchos::RCP<const Epetra_Vector>& displacement)
 {
   // Set the displacement at the current configuration for this element.
-  std::vector<int> lmowner, lmstride;
+  std::vector<int> lmowner, lmstride, face_dof_gid;
   std::vector<double> element_displacement;
-  drt_face_element_->LocationVector(*discret, face_dof_gid_, lmowner, lmstride);
-  DRT::UTILS::ExtractMyValues(*displacement, element_displacement, face_dof_gid_);
+  drt_face_element_->LocationVector(*discret, face_dof_gid, lmowner, lmstride);
+  DRT::UTILS::ExtractMyValues(*displacement, element_displacement, face_dof_gid);
   for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
     face_position_(i_dof) =
         face_reference_position_(i_dof) +

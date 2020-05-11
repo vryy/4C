@@ -178,8 +178,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Here we get all face elements that are needed for the created pairs. This includes
      * elements which are not part of any pair, but share a node with a surface of a pair.
+     *
+     * @param discret (in) Discretization.
      */
-    void Setup() override;
+    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret) override;
 
     /**
      * \brief Set the displacement state (derived).

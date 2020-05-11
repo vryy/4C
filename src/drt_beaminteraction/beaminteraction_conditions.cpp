@@ -45,7 +45,10 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets()
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Setup() {}
+void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret)
+{
+}
 
 /**
  *
@@ -164,10 +167,11 @@ void BEAMINTERACTION::BeamInteractionConditions::SetState(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::Setup()
+void BEAMINTERACTION::BeamInteractionConditions::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->Setup();
+    for (auto const& condition : map_pair.second) condition->Setup(discret);
 }
 
 /**
