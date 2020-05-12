@@ -32,6 +32,21 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 /**
  *
  */
+template <typename scalar_type_fad, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam, solid>::ResetState(
+    const std::vector<double>& beam_centerline_dofvec,
+    const std::vector<double>& solid_nodal_dofvec)
+{
+  // Beam element.
+  const int n_patch_dof = face_element_->GetPatchGID().size();
+  for (unsigned int i = 0; i < beam::n_dof_; i++)
+    this->ele1pos_(i) = FADUTILS::HigherOrderFad<scalar_type_fad>::apply(
+        beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
+}
+
+/**
+ *
+ */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::PreEvaluate()
 {

@@ -66,6 +66,20 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
 
     /**
+     * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam
+     * element. (derived)
+     *
+     * This function has to be overwritten here, since the size of FAD variables for surface
+     * elements is not known at compile time and has to be set depending on the surface patch that
+     * the surface element is part of.
+     *
+     * @param beam_centerline_dofvec
+     * @param solid_nodal_dofvec
+     */
+    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+        const std::vector<double>& solid_nodal_dofvec) override;
+
+    /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * the contact pairs.
      */

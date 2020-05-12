@@ -103,9 +103,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::ResetSt
 {
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-  {
-    ele1pos_(i) = scalar_type_fad(beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
-  }
+    ele1pos_(i) = FADUTILS::HigherOrderFad<scalar_type_fad>::apply(
+        beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
 /**
