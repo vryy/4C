@@ -133,9 +133,6 @@ namespace MAT
     /// total number of inelastic contributions
     int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); };
 
-    /// number of inelastic contributions from one source
-    int NumInelasticDefGradPart(PAR::InelasticSource source) const;
-
     /// Assigns the different inelastic factors to different sources
     void Setup(MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params);
 

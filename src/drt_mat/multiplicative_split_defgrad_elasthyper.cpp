@@ -759,13 +759,3 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
 
   return;
 }
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-int MAT::InelasticFactorsHandler::NumInelasticDefGradPart(PAR::InelasticSource source) const
-{
-  int counter = 0;
-  for (int i = 0; i < NumInelasticDefGrad(); ++i)
-    if (facdefgradin_[i].first == source) counter++;
-  return counter;
-}
