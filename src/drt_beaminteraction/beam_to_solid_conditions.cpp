@@ -526,6 +526,7 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
 
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad:
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad:
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
     {
       switch (shape)
       {
