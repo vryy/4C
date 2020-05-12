@@ -363,7 +363,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
         {
           Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
-              ->StrainEnergy(cauchygreen_loc, psi, Id());
+              ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
         }
         else
           dserror(
@@ -802,7 +802,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
     {
       Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
-          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
+          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
     }
     // active strain with passive elasthyper component (incompressible, plane stress)
     else if (Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)

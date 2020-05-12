@@ -196,16 +196,11 @@ void MAT::PlasticElastHyperVCU::Setup(int numgp, DRT::INPUT::LineDefinition* lin
 }
 
 // MAIN
-void MAT::PlasticElastHyperVCU::Evaluate(
-    const LINALG::Matrix<3, 3>* defgrd,    ///< Deformation gradient
-    const LINALG::Matrix<6, 1>* glstrain,  ///< Green-Lagrange strain
-    Teuchos::ParameterList& params,        ///< Container for additional information
-    LINALG::Matrix<6, 1>* stress,          ///< 2nd Piola-Kirchhoff stresses
-    LINALG::Matrix<6, 6>* cmat,            ///< Constitutive matrix
-    const int eleGID)                      ///< Element GID
+void MAT::PlasticElastHyperVCU::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
+    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)  ///< Element GID
 {
-  int gp = params.get<int>("gp");
-
   double last_ai = last_alpha_isotropic_[gp];
   LINALG::Matrix<3, 3> empty;
 
@@ -220,7 +215,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(
   // get 2pk stresses
   LINALG::Matrix<6, 1> etstr;
   LINALG::Matrix<6, 6> etcmat;
-  ElastHyper::Evaluate(NULL, &ee_test, params, &etstr, &etcmat, eleGID);
+  ElastHyper::Evaluate(NULL, &ee_test, params, &etstr, &etcmat, gp, eleGID);
 
   double yf;
   double normZero = 0.0;
@@ -239,7 +234,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(
     LINALG::Matrix<6, 6> checkCmat;
     LINALG::Matrix<3, 3> emptymat;
     PlasticElastHyper::EvaluateElast(defgrd, &emptymat, stress, cmat, gp, eleGID);
-    ElastHyper::Evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, eleGID);
+    ElastHyper::Evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
 
     // push back
     LINALG::Matrix<3, 3> checkStrMat;
@@ -314,7 +309,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(
       LINALG::Matrix<6, 6> elastCmat;
       LINALG::Matrix<6, 1> elastStressDummy;
       LINALG::Matrix<6, 6> elastCmatDummy;
-      ElastHyper::Evaluate(NULL, &eeOut, params, &elastStress, &elastCmat, eleGID);
+      ElastHyper::Evaluate(NULL, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
 
       LINALG::Matrix<6, 6> d2ced2lpVoigt[6];
       Ce2ndDeriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
@@ -508,7 +503,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(
     PlasticElastHyper::EvaluateElast(defgrd, &dLp, stress, &tangent_elast, gp, eleGID);
 
     LINALG::Matrix<6, 9> dPK2dFpinvIsoprinc;
-    Dpk2dFpi(eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
+    Dpk2dFpi(gp, eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
 
     LINALG::Matrix<6, 6> mixedDeriv;
     mixedDeriv.Multiply(dPK2dFpinvIsoprinc, dFpiDdeltaDp);
@@ -955,7 +950,7 @@ void MAT::PlasticElastHyperVCU::EvaluateRHS(const int gp, const LINALG::Matrix<3
 
   LINALG::Matrix<6, 1> se;
   LINALG::Matrix<6, 6> dummy;
-  ElastHyper::Evaluate(NULL, &eeOut, params, &se, &dummy, eleGID);
+  ElastHyper::Evaluate(NULL, &eeOut, params, &se, &dummy, gp, eleGID);
 
   EvalDceDlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
       dFpiDdeltaDp);
@@ -1024,7 +1019,7 @@ void MAT::PlasticElastHyperVCU::EvaluatePlast(LINALG::Matrix<6, 9>& dPK2dFpinvIs
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2, FpiCe, 0.5 * delta(7));
 }
 
-void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
+void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int gp, const int eleGID,
     const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 3>* fpi,
     LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta, LINALG::Matrix<3, 3>& id2,
     LINALG::Matrix<6, 1>& Cpi, LINALG::Matrix<3, 3>& CpiC, LINALG::Matrix<9, 1>& CFpi,
@@ -1058,7 +1053,8 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
 
   LINALG::Matrix<3, 1> dPI;
   LINALG::Matrix<6, 1> ddPII;
-  ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum_, summandProperties_, eleGID);
+  ElastHyperEvaluateInvariantDerivatives(
+      prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
 
   // inverse plastic right Cauchy-Green
@@ -1110,8 +1106,9 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
   tmp.Multiply(RCG, tmp33);
   UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpiCei);
 }
-void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int eleGID, const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<3, 3>* fpi, LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc)
+void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int gp, const int eleGID,
+    const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 3>* fpi,
+    LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc)
 {
   LINALG::Matrix<3, 1> gamma;
   LINALG::Matrix<8, 1> delta;
@@ -1124,7 +1121,7 @@ void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int eleGID, const LINALG::Matrix<
   LINALG::Matrix<3, 3> FpiCe;
   LINALG::Matrix<9, 1> CFpiCe;
   LINALG::Matrix<6, 1> CpiCCpi;
-  EvaluateKinQuantPlast(eleGID, defgrd, fpi, gamma, delta, id2, Cpi, CpiC, CFpi, CFpiCei, ircg,
+  EvaluateKinQuantPlast(gp, eleGID, defgrd, fpi, gamma, delta, id2, Cpi, CpiC, CFpi, CFpiCei, ircg,
       FpiCe, CFpiCe, CpiCCpi);
 
   EvaluatePlast(dPK2dFpinvIsoprinc, gamma, delta, id2, Cpi, *fpi, CpiC, CFpi, CFpiCei, ircg, FpiCe,

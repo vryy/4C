@@ -1551,7 +1551,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     params.set<int>("gp", iquad);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, ele->Id());
+    so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

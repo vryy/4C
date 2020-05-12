@@ -39,7 +39,7 @@ namespace MAT
   inline void ElastHyperEvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
       const LINALG::Matrix<3, 3>& iFin, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-      MAT::SummandProperties summandProperties, const int eleGID)
+      MAT::SummandProperties summandProperties, const int gp, const int eleGID)
   {
     if (summandProperties.anisomod or summandProperties.anisoprinc)
     {
@@ -83,7 +83,7 @@ namespace MAT
     LINALG::Matrix<6, 1> ddPIIe(true);
 
     MAT::ElastHyperEvaluateInvariantDerivatives(
-        principleInvariantsCe, dPIe, ddPIIe, potsum, summandProperties, eleGID);
+        principleInvariantsCe, dPIe, ddPIIe, potsum, summandProperties, gp, eleGID);
 
     // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
     static LINALG::Matrix<3, 1> gamma(true);

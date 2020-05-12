@@ -217,7 +217,8 @@ namespace MAT
         Teuchos::ParameterList& params,                 ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,                   ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                     ///< Constitutive matrix
-        const int eleGID) final;                        ///< Element ID
+        int gp,                                         ///< Gauss point
+        int eleGID) final;                              ///< Element ID
 
     /// setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) final;
@@ -334,8 +335,9 @@ namespace MAT
     /// calculates the derivatives of the hyperelastic laws with respect to the invariants
     void EvaluateInvariantDerivatives(
         const LINALG::Matrix<3, 1>&
-            prinv,         ///< Principal invariants of the elastic right Cauchy-Green tensor
-        const int eleGID,  ///< Element ID
+            prinv,   ///< Principal invariants of the elastic right Cauchy-Green tensor
+        int gp,      ///< Gauss point
+        int eleGID,  ///< Element ID
         LINALG::Matrix<3, 1>& dPI,           ///< First derivative with respect to invariants
         LINALG::Matrix<6, 1>& ddPII) const;  ///< Second derivative with respect to invariants
 

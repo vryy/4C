@@ -48,7 +48,7 @@ void MAT::ELASTIC::Coup3Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3
  *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup3Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
   const double c = params_->c_;
   const int d = params_->d_;

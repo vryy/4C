@@ -197,7 +197,8 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int eleGID                 ///< Element GID
+        int gp,                          ///< Gauss point
+        int eleGID                       ///< Element GID
     );
 
     /// setup
@@ -216,7 +217,8 @@ namespace MAT
     void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID);
 
    private:
     /// my material parameters

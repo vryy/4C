@@ -92,7 +92,8 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
   glstraindachvec -= Id;
   glstraindachvec.Scale(0.5);
   // elastic 2 PK stress and constitutive matrix
-  matgrowth.EvaluateElastic(&defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, eleGID);
+  matgrowth.EvaluateElastic(
+      &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
   // the growth trigger (i.e. stress, strain, ...)
   double growthtrigger = 0.0;
@@ -153,7 +154,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
       cmatdach.Scale(0.0);
       Sdachvec.Scale(0.0);
       matgrowth.EvaluateElastic(
-          &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, eleGID);
+          &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
       // the growth trigger (i.e. stress, strain, ...)
       growthtrigger = 0.0;

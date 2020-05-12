@@ -229,17 +229,13 @@ namespace MAT
     virtual void Update();
 
     //! evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>*
-                              defgrd,  //!< input deformation gradient for multiplicative split
-        const LINALG::Matrix<6, 1>*
-            glstrain,  //!< input temperature> --> delete maybe for isothermal version
-        Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
-        LINALG::Matrix<6, 1>* stress,    //!< output (mandatory) second Piola-Kirchhoff stress
-        LINALG::Matrix<6, 6>* cmat,      //!< output (mandatory) material stiffness matrix
-        const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        int gp, int eleGID);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID);
 
 
     //@}

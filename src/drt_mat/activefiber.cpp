@@ -517,7 +517,7 @@ void MAT::ActiveFiber::ResetStep() { matpassive_->ResetStep(); }  // ResetStep()
  */
 void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   //
   //          C1111 C1122 C1133 C1123 C1113 C1112
@@ -531,13 +531,10 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //  std::cout<<" \n EVALUATE ACTIVE STRESS LAW FOR ELE WITH GID: "<<eleGID<<"\n"<<std::endl;
 
-  // Get gauss point number
-  const int gp = params.get<int>("gp", -1);
   // Get time algorithmic parameters
   double dt = params.get<double>("delta time", -1.0);
 
 #ifdef DEBUG
-  if (gp == -1) dserror("no Gauss point number provided in material");
   if (dt == -1.0) dserror("no time step size provided in material");
 #endif
 
@@ -551,7 +548,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   if (cmat != NULL)
   {
     // Evaluate passive PK2 stress Spassive and passive elasticity tensor cmatpassive
-    matpassive_->Evaluate(defgrd, glstrain, params, &Spassive, &cmatpassive, eleGID);
+    matpassive_->Evaluate(defgrd, glstrain, params, &Spassive, &cmatpassive, gp, eleGID);
   }
 
   //******************

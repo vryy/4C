@@ -231,6 +231,7 @@ namespace MAT
     /// evaluate strain energy function
     void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                         ///< Strain energy function
+        int gp,                                              ///< Gauss point
         int eleGID                                           ///< Element GID
         ) override;
 
@@ -240,6 +241,7 @@ namespace MAT
         Teuchos::ParameterList& params,                ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
+        int gp,                                        ///< Gauss point
         int eleGID                                     ///< Element GID
         ) override;
 
@@ -252,6 +254,7 @@ namespace MAT
         LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
         LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
         LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
+        int gp,                                      ///< Gauss point
         int eleGID) override;                        ///< Element GID
 
     /**
@@ -283,6 +286,7 @@ namespace MAT
      * \param[out]    D2sntDFDt second derivative of snt w.r.t. deformation gradient and vector n
                                 (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
                                 \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \oaram[in]     gp        Gauss point
      * \param[in]     eleGID    global ID of element
      * \param[in]     temp      temperature (if thermal dependency shall be handeled)
      * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
@@ -294,8 +298,8 @@ namespace MAT
     void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int eleGID,
-        const double* temp = nullptr, double* DsntDT = nullptr,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int gp,
+        const int eleGID, const double* temp = nullptr, double* DsntDT = nullptr,
         LINALG::Matrix<9, 1>* D2sntDFDT = nullptr) override;
 
     /**
@@ -303,6 +307,7 @@ namespace MAT
      * filled up to the third derivative, can be overloaded if temperature is given.
      *
      * \param prinv[in]       principle invariants of the tensor
+     * \param gp[in]          Gauss point
      * \param eleGID[in]      global ID of the element
      * \param dPI[in,out]     first derivative of strain energy function w.r.t. principle invariants
      * \param ddPII[in,out]   second derivative of strain energy function w.r.t. principle
@@ -310,7 +315,7 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, int eleGID,
+    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
         const double* temp);
 

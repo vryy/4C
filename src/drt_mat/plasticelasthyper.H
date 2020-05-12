@@ -310,7 +310,7 @@ namespace MAT
 
     /// evaluate the Gough Joule Effect
     virtual void EvaluateGoughJoule(
-        const double j, const int eleGID, double& he_fac, double& he_fac_deriv);
+        double j, int gp, int eleGID, double& he_fac, double& he_fac_deriv);
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
@@ -373,9 +373,10 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int eleGID)                ///< Element GID
+        int gp,                          ///< Gauss point
+        int eleGID)                      ///< Element GID
     {
-      ElastHyper::Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
+      ElastHyper::Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
       return;
     }
 
@@ -506,6 +507,7 @@ namespace MAT
      * filled up to the third derivative
      *
      * \param prinv[in]       principle invariants of the tensor
+     * \param gp[in]          Gauss point
      * \param eleGID[in]      global ID of the element
      * \param dPI[in,out]     first derivative of strain energy function w.r.t. principle invariants
      * \param ddPII[in,out]   second derivative of strain energy function w.r.t. principle
@@ -513,9 +515,9 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+    void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
-        const double* temp = NULL) override;
+        const double* temp = nullptr) override;
 
     /**
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress
@@ -551,7 +553,8 @@ namespace MAT
         LINALG::Matrix<9, 1>* D2sntDFDT) override;
 
     virtual void AddThermalExpansionDerivs(const LINALG::Matrix<3, 1>& prinv,
-        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID, const double& temp);
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int gp, int eleGID,
+        const double& temp);
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
     virtual void MatrixExponential3x3(LINALG::Matrix<3, 3>& MatrixInOut);

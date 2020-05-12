@@ -905,7 +905,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     LINALG::Matrix<6, 1> stress(true);
     params.set<int>("gp", gp);
     UTILS::GetTemperatureForStructuralMaterial<nurbs27>(funct, params);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
     double detJ_w = detJ * intpoints.qwgt[gp];
@@ -1180,7 +1180,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
     glstrain(5) = cauchygreen(2, 0);
 
     double psi = 0.0;
-    SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+    SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
     double detJ_w = detJ * intpoints.qwgt[gp];
     energy += detJ_w * psi;

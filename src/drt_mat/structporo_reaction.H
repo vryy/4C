@@ -170,7 +170,8 @@ namespace MAT
         Teuchos::ParameterList& params,                        ///< (i) parameter list
         LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
         LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
-        const int eleGID);
+        int gp,                        ///< (i) Gauss point
+        int eleGID);
 
     //@}
 

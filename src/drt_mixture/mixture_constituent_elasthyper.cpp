@@ -60,7 +60,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
   ccmat.Clear();
   // Evaluate stresses using ElastHyper service functions
   MAT::ElastHyperEvaluate(
-      F, E_strain, params, Sc_stress, ccmat, eleGID, Summands(), SummandProperties(), false);
+      F, E_strain, params, Sc_stress, ccmat, gp, eleGID, Summands(), SummandProperties(), false);
 
   S_stress.Update(CurrentRefDensity(gp), Sc_stress, 1.0);
   cmat.Update(CurrentRefDensity(gp), ccmat, 1.0);
@@ -81,7 +81,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::EvaluateElasticPart(const LINALG::M
   iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
 
   MAT::ElastHyperEvaluateElasticPart(
-      F, iFin, S_stress, cmat, Summands(), SummandProperties(), eleGID);
+      F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 
   S_stress.Scale(CurrentRefDensity(gp));
   cmat.Scale(CurrentRefDensity(gp));

@@ -177,7 +177,8 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int eleGID)                ///< Element ID
+        int gp,                          ///< Gauss point
+        int eleGID)                      ///< Element ID
     {
       dserror("This a membrane material. Calling So3 evaluate does not make sense.");
     };

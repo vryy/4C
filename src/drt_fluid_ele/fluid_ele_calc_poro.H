@@ -925,7 +925,7 @@ namespace DRT
           const LINALG::Matrix<my::nsd_, my::nsd_>& defgrd,
           const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
           const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_X, const bool computeLinOD);
+          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_X, int gp, bool computeLinOD);
 
       virtual int ComputeVolume(Teuchos::ParameterList& params,  //< paramters
           DRT::ELEMENTS::Fluid* ele,                             //< current fluid element

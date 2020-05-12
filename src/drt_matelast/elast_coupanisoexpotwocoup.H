@@ -196,6 +196,7 @@ namespace MAT
           LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
+          int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
       /// @name Access methods

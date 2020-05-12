@@ -227,7 +227,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matri
     activeCMat.Clear();
 
     activeSummand_->AddActiveStressCmatAniso(
-        C, activeCMat, activeStress, eleGID);  // FIXME: This should be Ce instead of C ???
+        C, activeCMat, activeStress, gp, eleGID);  // FIXME: This should be Ce instead of C ???
 
     S_stress.Update(CurrentRefDensity(gp), activeStress, 1.0);
     cmat.Update(CurrentRefDensity(gp), activeCMat, 1.0);

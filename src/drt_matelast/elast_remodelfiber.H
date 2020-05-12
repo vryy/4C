@@ -515,6 +515,7 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
+          int gp,                        ///< Gauss point
           ForceAnalytical const eleGID,  ///< Element Id
           LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
@@ -526,6 +527,7 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
+          int gp,            ///< Gauss point
           int const eleGID,  ///< Element Id
           LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
@@ -537,6 +539,7 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
+          int gp,                        ///< Gauss point
           ForceAnalytical const eleGID,  ///< Element Id
           LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
@@ -548,6 +551,7 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
+          int gp,            ///< Gauss point
           int const eleGID,  ///< Element Id
           LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
@@ -560,7 +564,8 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int const eleGID,                                 ///< Element Id
+          int gp,                                           ///< Gauss point
+          int eleGID,                                       ///< Element Id
           T& sig) const;                                    ///< Local Cauchy stress
 
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
@@ -574,7 +579,8 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int const eleGID,                                 ///< Element Id
+          int gp,                                           ///< Gauss point
+          int eleGID,                                       ///< Element Id
           LINALG::Matrix<3, 3, T>& dsigdCeM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy-Green tensor
 
@@ -589,6 +595,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
+          int gp,                                           ///< Gauss point
           ForceAnalytical const eleGID,                     ///< Element Id
           LINALG::Matrix<6, 6>& dsigdCedC) const;           ///< Output
 
@@ -601,9 +608,11 @@ namespace MAT
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           LINALG::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int const eleGID,                                 ///< Element Id
-          LINALG::Matrix<6, 6>& dsigdCedC) const;           ///< Output
+          Teuchos::RCP<MAT::ELASTIC::Summand> const
+              fiber,                               ///< Type of remodel fiberEvaluatedsigdCedC
+          int gp,                                  ///< Gauss point
+          int eleGID,                              ///< Element Id
+          LINALG::Matrix<6, 6>& dsigdCedC) const;  ///< Output
 
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (automatic
       /// differentiation)
@@ -614,6 +623,7 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
+          int gp,                                           ///< Gauss point
           ForceAnalytical const eleGID,                     ///< Element Id
           LINALG::Matrix<3, 3, T>& dsigdC)
           const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
@@ -627,7 +637,8 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int const eleGID,                                 ///< Element Id
+          int gp,
+          int eleGID,  ///< Element Id
           LINALG::Matrix<3, 3, T>& dsigdC)
           const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
 

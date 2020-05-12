@@ -287,13 +287,10 @@ void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const i
 // Evaluates the material
 void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // check, whether the PostSetup method was already called
   if (!setup_) dserror("The material's PostSetup() method has not been called yet.");
-
-  // read Gauß point
-  int gp = params.get<int>("gp");
 
   if (!isPreEvaluated_[gp])
   {

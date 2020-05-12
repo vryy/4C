@@ -786,7 +786,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(DRT::ELEMENTS::So_hex8* ele,  /
     params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cstress;
@@ -1146,7 +1146,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(DRT::ELEMENTS::So_weg6* ele,  /
     params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6, 1> cstress;
@@ -1509,7 +1509,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(Teuchos::ParameterList& para
     params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6, 1> cstress;

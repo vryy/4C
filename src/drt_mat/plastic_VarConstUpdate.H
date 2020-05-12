@@ -140,7 +140,8 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int eleGID);               ///< Element GID
+        int gp,                          ///< Gauss point
+        int eleGID);                     ///< Element GID
 
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -350,13 +351,13 @@ namespace MAT
         const LINALG::Matrix<6, 1>& ircg, const LINALG::Matrix<3, 3>& FpiCe,
         const LINALG::Matrix<9, 1>& CFpiCe, const LINALG::Matrix<6, 1>& CpiCCpi);
 
-    virtual void EvaluateKinQuantPlast(const int eleGID, const LINALG::Matrix<3, 3>* defgrd,
+    virtual void EvaluateKinQuantPlast(int gp, int eleGID, const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<3, 3>* fpi, LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
         LINALG::Matrix<3, 3>& id2, LINALG::Matrix<6, 1>& Cpi, LINALG::Matrix<3, 3>& CpiC,
         LINALG::Matrix<9, 1>& CFpi, LINALG::Matrix<9, 1>& CFpiCei, LINALG::Matrix<6, 1>& ircg,
         LINALG::Matrix<3, 3>& FpiCe, LINALG::Matrix<9, 1>& CFpiCe, LINALG::Matrix<6, 1>& CpiCCpi);
 
-    virtual void Dpk2dFpi(const int eleGID, const LINALG::Matrix<3, 3>* defgrd,
+    virtual void Dpk2dFpi(int gp, int eleGID, const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<3, 3>* fpi, LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc);
 
     virtual void DpsiplastDalphaiso(const double norm_dLp, const double last_alphaiso,

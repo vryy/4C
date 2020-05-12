@@ -44,7 +44,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
     Epetra_SerialDenseMatrix& C,                 ///< elasticity matrix
     const int numeps,                            ///< number of strains
     Teuchos::RCP<const MAT::Material> material,  ///< the material data
-    Teuchos::ParameterList& params               ///< element parameter list
+    Teuchos::ParameterList& params,              ///< element parameter list
+    const int gp                                 ///< Gauss point
 )
 {
   if (material->MaterialType() == INPAR::MAT::m_structporo or
@@ -423,7 +424,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
     case INPAR::MAT::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
       // case INPAR::MAT::m_stvenant:  // st.venant-kirchhoff-material
       {
-        MaterialResponse3dPlane(stress, C, strain, params);
+        MaterialResponse3dPlane(stress, C, strain, params, gp);
         break;
       }
 
@@ -441,7 +442,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,
     Epetra_SerialDenseMatrix& C, const Epetra_SerialDenseVector& strain,
-    Teuchos::ParameterList& params)
+    Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   LINALG::Matrix<6, 1> gl(false);
@@ -450,7 +451,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
   // call 3d stress response
   LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
   LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
-  MaterialResponse3d(&pk2, &cmat, &gl, params);
+  MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
 
   // dimension reduction type
   if (wtype_ == plane_strain)
@@ -505,7 +506,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
       // call for new 3d stress response
       pk2.Clear();   // must be blanked!!
       cmat.Clear();  // must be blanked!!
-      MaterialResponse3d(&pk2, &cmat, &gl, params);
+      MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
 
       // current plane stress error
       pserr = std::sqrt(pk2(2) * pk2(2) + pk2(4) * pk2(4) + pk2(5) * pk2(5));
@@ -593,9 +594,9 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
     LINALG::Matrix<6, 6>* cmat, const LINALG::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params)
+    Teuchos::ParameterList& params, const int gp)
 {
-  SolidMaterial()->Evaluate(NULL, glstrain, params, stress, cmat, Id());
+  SolidMaterial()->Evaluate(NULL, glstrain, params, stress, cmat, gp, Id());
 
   return;
 }
@@ -604,7 +605,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, const Epetra_SerialDenseVector& Ev)
+    Teuchos::ParameterList& params, const Epetra_SerialDenseVector& Ev, const int gp)
 {
   // switch material type
   switch (material->MaterialType())
@@ -613,7 +614,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
     {
       Epetra_SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
       Epetra_SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
-      w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material, params);
+      w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material, params, gp);
       Epetra_SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
       Sv(0) = Sm(0, 0);
       Sv(1) = Sm(1, 1);
@@ -638,7 +639,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
       double psi = 0.0;
 
       // call material for evaluation of strain energy function
-      SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+      SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
       return psi;
     }
@@ -655,7 +656,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
       double psi = 0.0;
 
       // call material for evaluation of strain energy function
-      SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+      SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
       return psi;
     }

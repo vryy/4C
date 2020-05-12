@@ -171,7 +171,7 @@ void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
  */
 void MAT::AAAneohooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
@@ -346,7 +346,7 @@ void MAT::AAAneohooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  |  calculate strain energy                                hemmler 02/17|
  *----------------------------------------------------------------------*/
 void MAT::AAAneohooke::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // material parameters for isochoric part
   const double youngs = params_->GetParameter(params_->young, eleGID);  // Young's modulus

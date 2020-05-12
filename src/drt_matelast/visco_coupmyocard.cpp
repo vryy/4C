@@ -36,7 +36,7 @@ MAT::ELASTIC::CoupMyocard::CoupMyocard(MAT::ELASTIC::PAR::CoupMyocard* params) :
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoPrincipal(const LINALG::Matrix<3, 1>& prinv,
     LINALG::Matrix<8, 1>& mu, LINALG::Matrix<33, 1>& xi, LINALG::Matrix<7, 1>& rateinv,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // material parameter
   const double eta = params_->n_;

@@ -1322,7 +1322,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
       LINALG::Matrix<3, 3> defgrd(true);
-      stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, eleGID);
+      stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = stvk->Density();
     }
     break;
@@ -1338,7 +1338,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, eleGID);
+      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = aaa->Density();
     }
     break;
@@ -1346,7 +1346,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     {
       MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, eleGID);
+      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = hyper->Density();
       return;
       break;

@@ -193,6 +193,7 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,
+        int gp,             ///< Gauss point
         const int eleGID);  ///< Constitutive matrix
 
     /// setup material description
@@ -215,7 +216,7 @@ namespace MAT
     virtual void EvaluateMuXi(LINALG::Matrix<3, 1>& inv, LINALG::Matrix<3, 1>& modinv,
         LINALG::Matrix<8, 1>& mu, LINALG::Matrix<8, 1>& modmu, LINALG::Matrix<33, 1>& xi,
         LINALG::Matrix<33, 1>& modxi, LINALG::Matrix<7, 1>& rateinv,
-        LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, const int eleGID);
+        LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
     virtual void EvaluateIsoViscoPrincipal(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,

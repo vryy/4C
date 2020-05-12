@@ -367,7 +367,8 @@ void MAT::Damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     Teuchos::ParameterList& params,            // parameter list for communication & HISTORY
     LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
-    const int eleGID)
+    int gp,                                              // Gauss point
+    int eleGID)
 {
   // in case kinematic hardening is ignored, use implementation according to de
   // Souza Neto, Computational Methods for Plasticity

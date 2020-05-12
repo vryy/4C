@@ -142,8 +142,9 @@ namespace MAT
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>&
-              glstrain,     ///< Green-Lagrange strain in strain like Voigt notation
-          const int eleGID  ///< element GID
+              glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
+          int gp,        ///< Gauss point
+          int eleGID     ///< element GID
       )
       {
         dserror("Summand does not support calculation of strain energy");
@@ -207,7 +208,8 @@ namespace MAT
           LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
           LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const int eleGID                    ///< element GID
+          int gp,                             ///< Gauss point
+          int eleGID                          ///< element GID
       )
       {
         return;  // do nothing
@@ -263,7 +265,8 @@ namespace MAT
       virtual void AddThirdDerivativesPrincipalIso(
           LINALG::Matrix<10, 1>& dddPIII_iso,     ///< third derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
-          const int eleGID)                       ///< element GID
+          int gp,                                 ///< Gauss point
+          int eleGID)                             ///< element GID
       {
         dserror("not implemented");
         return;  // do nothing
@@ -318,7 +321,8 @@ namespace MAT
           LINALG::Matrix<6, 1>&
               ddPmodII,  ///< second derivative with respect to modified invariants
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const int eleGID                     ///< global ID of element
+          int gp,                              ///< Gauss point
+          int eleGID                           ///< global ID of element
       )
       {
         return;  // do nothing
@@ -551,7 +555,9 @@ namespace MAT
           const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
-          Teuchos::ParameterList& params, const int eleGID)
+          Teuchos::ParameterList& params,   ///< Container for additional information
+          int gp,                           ///< Gauss point
+          int eleGID)
       {
         return;  // do nothing
       };
@@ -560,7 +566,10 @@ namespace MAT
           const LINALG::Matrix<3, 1>& inv,  ///< invariants of right Cauchy-Green tensor
           LINALG::Matrix<8, 1>& mu,         ///< see above
           LINALG::Matrix<33, 1>& xi,        ///< see above
-          LINALG::Matrix<7, 1>& rateinv, Teuchos::ParameterList& params, const int eleGID)
+          LINALG::Matrix<7, 1>& rateinv,
+          Teuchos::ParameterList& params,  ///< Container for additional information
+          int gp,                          ///< Gauss point
+          int eleGID)
       {
         return;  // do nothing
       };
@@ -569,7 +578,9 @@ namespace MAT
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           LINALG::Matrix<8, 1>& modmu,         ///< see above
           LINALG::Matrix<33, 1>& modxi,        ///< see above
-          LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, const int eleGID)
+          LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params,
+          int gp,  ///< Gauss point
+          int eleGID)
       {
         return;  // do nothing
       };
@@ -610,7 +621,8 @@ namespace MAT
           LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           double I3,                        ///< third principal invariant
-          const int eleGID                  ///< element GID
+          int gp,                           ///< Gauss point
+          int eleGID                        ///< element GID
       )
       {
         return;  // do nothing

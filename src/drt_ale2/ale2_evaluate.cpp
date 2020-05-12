@@ -673,7 +673,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     BOpLinCure(b_cure, boplin, F, numeps, nd);
 
 
-    CallMatGeoNonl(strain, stress, C, numeps, Material(), params);
+    CallMatGeoNonl(strain, stress, C, numeps, Material(), params, ip);
 
 
 
@@ -1052,8 +1052,8 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
     Epetra_SerialDenseMatrix& C,                 ///< elasticity matrix
     const int numeps,                            ///< number of strains
     Teuchos::RCP<const MAT::Material> material,  ///< the material data
-    Teuchos::ParameterList& params               ///< element parameter list
-)
+    Teuchos::ParameterList& params,              ///< element parameter list
+    const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
   switch (material->MaterialType())
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
     }
     case INPAR::MAT::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
     {
-      MaterialResponse3dPlane(stress, C, strain, params);
+      MaterialResponse3dPlane(stress, C, strain, params, gp);
       break;
     }
     default:
@@ -1137,7 +1137,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,
     Epetra_SerialDenseMatrix& C, const Epetra_SerialDenseVector& strain,
-    Teuchos::ParameterList& params)
+    Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   LINALG::Matrix<6, 1> gl(false);
@@ -1146,7 +1146,7 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stre
   // call 3d stress response
   LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
   LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
-  MaterialResponse3d(&pk2, &cmat, &gl, params);
+  MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
 
   // we have plain strain
 
@@ -1185,12 +1185,12 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stre
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
     LINALG::Matrix<6, 6>* cmat, const LINALG::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params)
+    Teuchos::ParameterList& params, const int gp)
 {
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
   if (so3mat == Teuchos::null) dserror("cast to So3Material failed!");
 
-  so3mat->Evaluate(NULL, glstrain, params, stress, cmat, Id());
+  so3mat->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
 
   return;
 }

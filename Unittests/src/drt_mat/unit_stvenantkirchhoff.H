@@ -111,7 +111,7 @@ class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
     int eleGID = 1;
 
     // Call evaluate function with test strain
-    stvenantkirchhoff_->StrainEnergy(Test_glstrain2, Result_psi, eleGID);
+    stvenantkirchhoff_->StrainEnergy(Test_glstrain2, Result_psi, 0, eleGID);
 
     // test result with respect to reference result
     TS_ASSERT_DELTA(Result_psi, Ref_StrainEnergy, tolerance_StrainEnergy_Test);

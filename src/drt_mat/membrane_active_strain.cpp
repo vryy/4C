@@ -332,7 +332,7 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   LINALG::Matrix<3, 1> S_passive_loc_voigt(true);
   Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(matpassive_, true)
       ->Evaluate(cauchygreen_passive_local, params, Q_trafo, &S_passive_loc_voigt, &cmatpassive_loc,
-          eleGID);
+          gp, eleGID);
 
   //******************
   // FULL PART

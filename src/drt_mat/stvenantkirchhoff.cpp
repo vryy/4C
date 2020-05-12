@@ -212,7 +212,7 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   SetupCmat(*cmat);
   // evaluate stresses
@@ -224,7 +224,7 @@ void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   LINALG::Matrix<6, 6> cmat(true);
   SetupCmat(cmat);
@@ -247,7 +247,7 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-    LINALG::Matrix<3, 3>* rcg_old, const int eleGID)
+    LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");
@@ -263,10 +263,10 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
 
   Teuchos::ParameterList params;
   LINALG::Matrix<3, 3> defgrd(true);
-  Evaluate(&defgrd, glstrain_m, params, stress, cmat, eleGID);
+  Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
   *density = Density();
-  StrainEnergy(*glstrain_new, psi, eleGID);
-  StrainEnergy(*glstrain_old, psio, eleGID);
+  StrainEnergy(*glstrain_new, psi, gp, eleGID);
+  StrainEnergy(*glstrain_old, psio, gp, eleGID);
 
   //**********************************************************************
   // ALGORITHMIC STRESSES AND CMAT FOR GEMM

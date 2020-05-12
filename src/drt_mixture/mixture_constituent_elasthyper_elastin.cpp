@@ -290,7 +290,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::EvaluateElasticPart(
 
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(
-      F, iFin, S_stress, cmat, Summands(), SummandProperties(), eleGID);
+      F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 
   S_stress.Scale(CurrentRefDensity(gp));
   cmat.Scale(CurrentRefDensity(gp));

@@ -75,7 +75,7 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddShearMod(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
-    const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
@@ -93,7 +93,7 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
  *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogMixNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
