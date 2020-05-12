@@ -104,7 +104,10 @@ namespace INPAR
       //! non-conserving angular momentum.
       displacements,
       //! Same as above, but evaluated with FAD types.
-      displacements_fad
+      displacements_fad,
+      //! Consistent coupling defined via the normal vector. This requires derivatives of the
+      //! averaged normals.
+      consistent_fad
     };
 
     /**
