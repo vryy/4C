@@ -57,24 +57,6 @@ namespace CONTACT
       const double c_;
       //@}
     };  // class
-
-    /*----------------------------------------------------------------------*/
-
-    /** \brief DRT::ParObjectType for the BrokenrationalConstitutiveLaw \f$ A/(x-B)+C \f$ relating
-     * the gap to the contact pressure
-     */
-    class BrokenRationalConstitutiveLawType : public ConstitutiveLawType
-    {
-     public:
-      /// return name of the contact constitutive law
-      std::string Name() const override { return "BrokenRationalConstitutiveLaw"; };
-
-      static BrokenRationalConstitutiveLawType& Instance() { return instance_; };
-
-     private:
-      static BrokenRationalConstitutiveLawType instance_;
-    };
-
     /*----------------------------------------------------------------------*/
     /**
      * \brief implements a broken rational function \f$ A/(x-B)+C \f$ as contact constitutive law
@@ -87,44 +69,12 @@ namespace CONTACT
       explicit BrokenRationalConstitutiveLaw(
           CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params);
 
-      /**
-       *  \brief Return unique ParObject id
-       *
-       * every class implementing ParObject needs a unique id defined at the
-       *  top of drt_parobject.H (this file) and should return it in this method.
-       */
-      int UniqueParObjectId() const override
-      {
-        return BrokenRationalConstitutiveLawType::Instance().UniqueParObjectId();
-      }
-
-      /**
-       *  \brief Pack this class so it can be communicated
-       *
-       *  \param data (in/out): char vector to store class information
-       */
-      void Pack(DRT::PackBuffer& data) const override;
-
-      /**
-       *  \brief Unpack data from a char vector into this class
-       *
-       *  \param data (in) : vector storing all data to be unpacked into this
-       *  instance.
-       */
-      void Unpack(const std::vector<char>& data) override;
-
       //! @name Access methods
 
       /// return contact constitutive law type
       INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational;
-      }
-
-      /// return copy of this contact constitutive law object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new BrokenRationalConstitutiveLaw(*this));
       }
 
       /// Get scaling factor of the broken rational function

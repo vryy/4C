@@ -40,14 +40,14 @@ namespace CONTACT
       ~Bundle() = default;
 
       /** \brief insert new container holding contact constitutive law parameter and ID
-       * \params[in] id ID od the contact constitutive law in the input file
+       * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
       void Insert(int id, Teuchos::RCP<Container> law);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *
-       *\params[in] id ID of the contact constitutive law in the input file
+       *\param[in] id ID of the contact constitutive law in the input file
        * \return Upon failure -1 is returned, otherwise >=0
        */
       int Find(const int id) const;
@@ -60,7 +60,7 @@ namespace CONTACT
 
       /** return contact constitutive law by ID
        *
-       * \params[in] id ID of the contact constitutive law given in the input file
+       * \param[in] id ID of the contact constitutive law given in the input file
        */
       Teuchos::RCP<Container> ById(const int id) const;
 

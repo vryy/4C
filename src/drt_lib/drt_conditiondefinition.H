@@ -192,7 +192,7 @@ namespace DRT
         \param name variable name in DRT::Condition
         \param fortranstyle whether to substract 1 from the value read
         \param noneallowed whether "none" is a legal value (meaning -1)
-        \params[in] optional true if the parameter is optional
+        \param[in] optional true if the parameter is optional
        */
       explicit IntConditionComponent(std::string name, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);

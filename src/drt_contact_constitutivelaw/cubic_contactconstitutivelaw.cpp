@@ -41,32 +41,6 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
     : params_(params)
 {
 }
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  int CONSTITUTIVELAWid = -1;
-  if (params_ != NULL) CONSTITUTIVELAWid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, CONSTITUTIVELAWid);
-}
-
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-
-  int CONSTITUTIVELAWid;
-  ExtractfromPack(position, data, CONSTITUTIVELAWid);
-}
-
 /*----------------------------------------------------------------------*
  |  Evaluate Contact Constitutive Law
  *----------------------------------------------------------------------*/
