@@ -161,6 +161,12 @@ void PARTICLEWALL::WallHandlerBase::InsertParticleStatesOfParticleTypes(
 
     if (particlestates.count(PARTICLEENGINE::ModifiedAcceleration))
       particlestates.insert(PARTICLEENGINE::LastIterModifiedAcceleration);
+
+    if (particlestates.count(PARTICLEENGINE::DensityDot))
+      particlestates.insert(PARTICLEENGINE::LastIterDensity);
+
+    if (particlestates.count(PARTICLEENGINE::TemperatureDot))
+      particlestates.insert(PARTICLEENGINE::LastIterTemperature);
   }
 }
 

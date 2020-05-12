@@ -242,7 +242,7 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
-    // reset particle position, velocity and acceleration states of all particles
+    // reset position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::Position, 1.0, PARTICLEENGINE::LastIterPosition);
     container->UpdateState(0.0, PARTICLEENGINE::Velocity, 1.0, PARTICLEENGINE::LastIterVelocity);
     container->UpdateState(
@@ -262,6 +262,15 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
     if (container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::ModifiedAcceleration, 1.0,
           PARTICLEENGINE::LastIterModifiedAcceleration);
+
+    // reset density state of all particles
+    if (container->HaveStoredState(PARTICLEENGINE::DensityDot))
+      container->UpdateState(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::LastIterDensity);
+
+    // reset temperature state of all particles
+    if (container->HaveStoredState(PARTICLEENGINE::TemperatureDot))
+      container->UpdateState(
+          0.0, PARTICLEENGINE::Temperature, 1.0, PARTICLEENGINE::LastIterTemperature);
   }
 }
 
@@ -431,26 +440,35 @@ void PASI::PASI_PartTwoWayCoup::SaveParticleStates()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
-    // reset particle position, velocity and acceleration states of all particles
+    // save position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::LastIterPosition, 1.0, PARTICLEENGINE::Position);
     container->UpdateState(0.0, PARTICLEENGINE::LastIterVelocity, 1.0, PARTICLEENGINE::Velocity);
     container->UpdateState(
         0.0, PARTICLEENGINE::LastIterAcceleration, 1.0, PARTICLEENGINE::Acceleration);
 
-    // reset angular velocity state of all particles
+    // save angular velocity state of all particles
     if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity))
       container->UpdateState(
           0.0, PARTICLEENGINE::LastIterAngularVelocity, 1.0, PARTICLEENGINE::AngularVelocity);
 
-    // reset angular acceleration state of all particles
+    // save angular acceleration state of all particles
     if (container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::LastIterAngularAcceleration, 1.0,
           PARTICLEENGINE::AngularAcceleration);
 
-    // reset modified acceleration state of all particles
+    // save modified acceleration state of all particles
     if (container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
       container->UpdateState(0.0, PARTICLEENGINE::LastIterModifiedAcceleration, 1.0,
           PARTICLEENGINE::ModifiedAcceleration);
+
+    // save density state of all particles
+    if (container->HaveStoredState(PARTICLEENGINE::DensityDot))
+      container->UpdateState(0.0, PARTICLEENGINE::LastIterDensity, 1.0, PARTICLEENGINE::Density);
+
+    // save temperature state of all particles
+    if (container->HaveStoredState(PARTICLEENGINE::TemperatureDot))
+      container->UpdateState(
+          0.0, PARTICLEENGINE::LastIterTemperature, 1.0, PARTICLEENGINE::Temperature);
   }
 }
 
