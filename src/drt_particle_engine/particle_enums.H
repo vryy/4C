@@ -75,12 +75,14 @@ namespace PARTICLEENGINE
     Moment,               //!< moment
     /*---------------------------------------------------------------------------*/
     // particle states for two way coupled partitioned PASI
-    LastIterPosition,             //!< position after last converged iteration
-    LastIterVelocity,             //!< velocity after last converged iteration
-    LastIterAcceleration,         //!< acceleration after last converged iteration
-    LastIterAngularVelocity,      //!< angular velocity after last converged iteration
-    LastIterAngularAcceleration,  //!< angular acceleration after last converged iteration
-    LastIterModifiedAcceleration  //!< modified acceleration after last converged iteration
+    LastIterPosition,              //!< position after last converged iteration
+    LastIterVelocity,              //!< velocity after last converged iteration
+    LastIterAcceleration,          //!< acceleration after last converged iteration
+    LastIterAngularVelocity,       //!< angular velocity after last converged iteration
+    LastIterAngularAcceleration,   //!< angular acceleration after last converged iteration
+    LastIterModifiedAcceleration,  //!< modified acceleration after last converged iteration
+    LastIterDensity,               //!< density after last converged iteration
+    LastIterTemperature            //!< temperature after last converged iteration
     /*---------------------------------------------------------------------------*/
   };
 

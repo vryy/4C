@@ -156,6 +156,9 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
     // no states for boundary or rigid particles
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
+    // no states for open boundary particles
+    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+
     // additional states for transport velocity formulation
     if (applytransportvelocity_)
       particlestates.insert(

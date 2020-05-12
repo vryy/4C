@@ -51,7 +51,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
       PARTICLEENGINE::WallDistance});
   blackliststates_.insert({PARTICLEENGINE::LastIterPosition, PARTICLEENGINE::LastIterVelocity,
       PARTICLEENGINE::LastIterAcceleration, PARTICLEENGINE::LastIterAngularVelocity,
-      PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration});
+      PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration,
+      PARTICLEENGINE::LastIterDensity, PARTICLEENGINE::LastIterTemperature});
 }
 
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(

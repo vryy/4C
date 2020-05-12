@@ -45,7 +45,22 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // partitioned iteration dependent parameters
   IntParameter("ITEMAX", 10, "maximum number of partitioned iterations over fields", &pasidyn);
-  DoubleParameter("CONVTOL", 1e-6, "tolerance for convergence of partitioned iterations", &pasidyn);
+
+  DoubleParameter("CONVTOLSCALEDDISP", -1.0,
+      "tolerance of dof and dt scaled interface displacement increments in partitioned iterations",
+      &pasidyn);
+
+  DoubleParameter("CONVTOLRELATIVEDISP", -1.0,
+      "tolerance of relative interface displacement increments in partitioned iterations",
+      &pasidyn);
+
+  DoubleParameter("CONVTOLSCALEDFORCE", -1.0,
+      "tolerance of dof and dt scaled interface force increments in partitioned iterations",
+      &pasidyn);
+
+  DoubleParameter("CONVTOLRELATIVEFORCE", -1.0,
+      "tolerance of relative interface force increments in partitioned iterations", &pasidyn);
+
   BoolParameter(
       "IGNORE_CONV_CHECK", "no", "ignore convergence check and proceed simulation", &pasidyn);
 

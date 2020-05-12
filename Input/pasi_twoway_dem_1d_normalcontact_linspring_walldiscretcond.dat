@@ -24,11 +24,10 @@ TIMESTEP                        5.0e-4
 NUMSTEP                         50
 MAXTIME                         0.025
 COUPLING                        partitioned_twowaycoup
-ITEMAX                          10
-CONVTOL                         1.0e-6
-STARTOMEGA                      1.0
-MAXOMEGA                        10.0
-MINOMEGA                        0.1
+CONVTOLSCALEDDISP               1.0e-6
+CONVTOLRELATIVEDISP             1.0e-6
+CONVTOLSCALEDFORCE              1.0e-6
+CONVTOLRELATIVEFORCE            1.0e-6
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     DEM
