@@ -56,15 +56,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      * @param face_element (in) Pointer to the DRT face element.
-     * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element,
-        const bool evaluate_current_normals)
-        : drt_face_element_(face_element),
-          part_of_pair_(false),
-          patch_dof_gid_(),
-          connected_faces_(),
-          evaluate_current_normals_(evaluate_current_normals){};
+    FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+        : drt_face_element_(face_element), part_of_pair_(false), patch_dof_gid_(){};
 
     /**
      * \brief Destructor.
@@ -78,17 +72,12 @@ namespace GEOMETRYPAIR
     const DRT::FaceElement* GetDrtFaceElement() const { return drt_face_element_.getRawPtr(); }
 
     /**
-     * \brief Set the patch information of the patch connected to this face element.
-     *
-     * Find the connected faces of this patch. Order the nodes, starting with the nodes of the main
-     * face element and then add the nodes of the connected faces. Also create a vector with the
-     * GIDs of this face.
-     *
+     * \brief Setup the object. Has to be implemented in derived class.
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
     virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
      * \brief Set the needed displacement vectors for this face. Has to be implemented in derived
@@ -107,7 +96,7 @@ namespace GEOMETRYPAIR
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
     virtual void CalculateAveragedReferenceNormals(
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements){};
 
     /**
      * \brief Return the position on this face as a double.
@@ -163,14 +152,106 @@ namespace GEOMETRYPAIR
 
     //! Global DOF IDs of this face patch.
     std::vector<int> patch_dof_gid_;
+  };
 
-    //! Store the relevant information of the connected faces. The key of this map is the GID of the
-    //! connected face element.
-    std::map<int, ConnectedFace> connected_faces_;
 
-    //! If the current normals should be evaluated. If they should not be evaluated, then no
-    //! information about the patch is required.
-    bool evaluate_current_normals_;
+  /**
+   * \brief An object that represents a surface element which only depends on a single face. For
+   * example nurbs faces since they are C1 continuous.
+   *
+   * @tparam surface Type of surface element.
+   * @tparam scalar_type Scalar type for FAD evaluations.
+   */
+  template <typename surface, typename scalar_type>
+  class FaceElementTemplate : public FaceElement
+  {
+   public:
+    //! Shortcut to the type of this templated object.
+    using my_type = FaceElementTemplate<surface, scalar_type>;
+
+   public:
+    /**
+     * \brief Constructor (derived).
+     */
+    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+        : FaceElement(face_element), face_reference_position_(true), face_position_(true){};
+
+    /**
+     * \brief Destructor.
+     */
+    virtual ~FaceElementTemplate(){};
+
+    /**
+     * \brief Get the face GIDs and set the reference configuration.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param face_elements (in) Vector with all face elements in the surface condition.
+     */
+    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
+
+    /**
+     * \brief Set the needed displacement vectors for this face (derived).
+     */
+    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
+
+    /**
+     * \brief Return the reference position of this face.
+     */
+    const LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
+    {
+      return face_reference_position_;
+    }
+
+    /**
+     * \brief Return the current position of this face.
+     */
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
+    {
+      return face_position_;
+    }
+
+    /**
+     * \brief Return the reference normals on this face.
+     */
+    virtual const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const
+    {
+      return nullptr;
+    }
+
+    /**
+     * \brief Return the current normals on this face.
+     */
+    virtual const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const
+    {
+      return nullptr;
+    }
+
+    /**
+     * \brief Return the position on this face as a double. (derived)
+     */
+    void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
+
+    /**
+     * \brief Return a normal on the element. (derived)
+     */
+    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, const bool reference,
+        const bool averaged_normal) const override;
+
+   protected:
+    //! Reference position.
+    LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
+
+    //! Current position.
+    LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
+
+    //! Number of DOFs used for a beam element.
+    static const unsigned int n_beam_dof_ = 12;
   };
 
 
@@ -182,23 +263,27 @@ namespace GEOMETRYPAIR
    * @tparam scalar_type Scalar type for FAD evaluations.
    */
   template <typename surface, typename scalar_type>
-  class FaceElementTemplate : public FaceElement
+  class FaceElementPatchTemplate : public FaceElementTemplate<surface, scalar_type>
   {
     friend GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite;
 
    public:
     //! Shortcut to the type of this templated object.
-    using my_type = FaceElementTemplate<surface, scalar_type>;
+    using my_type = FaceElementPatchTemplate<surface, scalar_type>;
+
+    //! Shortcut to the base class.
+    using base_class = FaceElementTemplate<surface, scalar_type>;
 
    public:
     /**
      * \brief Constructor (derived).
+     * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element,
+    FaceElementPatchTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element,
         const bool evaluate_current_normals)
-        : FaceElement(face_element, evaluate_current_normals),
-          face_reference_position_(true),
-          face_position_(true),
+        : base_class(face_element),
+          connected_faces_(),
+          evaluate_current_normals_(evaluate_current_normals),
           reference_normals_(true),
           current_normals_(true)
     {
@@ -207,12 +292,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~FaceElementTemplate(){};
+    ~FaceElementPatchTemplate(){};
 
     /**
-     * \brief Setup the reference position of the face element. (derived)
+     * \brief Set the patch information of the patch connected to this face element.
      *
-     * Also call the parent method and evaluate the patch information.
+     * Find the connected faces of this patch. Order the nodes, starting with the nodes of the main
+     * face element and then add the nodes of the connected faces. Also create a vector with the
+     * GIDs of this patch.
      *
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
@@ -236,25 +323,9 @@ namespace GEOMETRYPAIR
         override;
 
     /**
-     * \brief Return the reference position of this face.
-     */
-    const LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
-    {
-      return face_reference_position_;
-    }
-
-    /**
-     * \brief Return the current position of this face.
-     */
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
-    {
-      return face_position_;
-    }
-
-    /**
      * \brief Return the reference normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const override
     {
       return &reference_normals_;
     }
@@ -262,19 +333,13 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const override
     {
       if (evaluate_current_normals_)
         return &current_normals_;
       else
         return nullptr;
     }
-
-    /**
-     * \brief Return the position on this face as a double. (derived)
-     */
-    void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
 
     /**
      * \brief Return a normal on the element. (derived)
@@ -294,54 +359,20 @@ namespace GEOMETRYPAIR
     void AverageNodalNormals(LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, T>>& normals,
         LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
 
-   private:
-    //! Reference position.
-    LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
+   protected:
+    //! Store the relevant information of the connected faces. The key of this map is the GID of the
+    //! connected face element.
+    std::map<int, ConnectedFace> connected_faces_;
 
-    //! Current position.
-    LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
+    //! If the current normals should be evaluated. If they should not be evaluated, then no
+    //! information about the patch is required.
+    bool evaluate_current_normals_;
 
     //! Reference normals.
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
 
     //! Current normals.
     LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
-
-    //! Number of DOFs used for a beam element.
-    static const unsigned int n_beam_dof_ = 12;
-  };
-
-
-  /**
-   * A few methods of the FaceElementTemplate class have to be specialized for nurbs9 faces, since
-   * they do not need averaged nodal normals due to their C1-continuous discretization.
-   *
-   * Full explicit template specializations have to be inline.
-   * https://stackoverflow.com/questions/4445654/multiple-definition-of-template-specialization-when-using-different-objects/4445772
-   *
-   * Due to a gcc bug we have to perform the template specialization inside the namespace.
-   * (https://stackoverflow.com/questions/25594644/warning-specialization-of-template-in-different-namespace)
-   */
-  template <>
-  inline void FaceElementTemplate<t_nurbs9,
-      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::
-      CalculateAveragedReferenceNormals(
-          const std::unordered_map<int, Teuchos::RCP<FaceElement>>& face_elements){};
-  template <>
-  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1, double>* FaceElementTemplate<t_nurbs9,
-      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::GetReferenceNormals()
-      const
-  {
-    return nullptr;
-  };
-  template <>
-  inline const LINALG::Matrix<3 * t_nurbs9::n_nodes_, 1,
-      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>*
-  FaceElementTemplate<t_nurbs9,
-      Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>::GetCurrentNormals()
-      const
-  {
-    return nullptr;
   };
 
 
