@@ -162,12 +162,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
 
   // if there are inclined structural Dirichlet BC, get the structural LocSysManager
-  if (locsysconditions.size())
-  {
-    locsysman_ = StructureField()->LocsysManager();
-  }
-  else
-    locsysman_ = Teuchos::null;
+  if (locsysconditions.size()) locsysman_ = StructureField()->LocsysManager();
 
   return;
 }
