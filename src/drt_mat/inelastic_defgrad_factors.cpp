@@ -16,6 +16,8 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/voigt_notation.H"
 
+#include "multiplicative_split_defgrad_elasthyper.H"
+
 /*--------------------------------------------------------------------*
  | constructors of parameter classes                    schmidt 03/18 |
  *--------------------------------------------------------------------*/
@@ -271,6 +273,13 @@ double MAT::InelasticDefgradLinear::EvaluateDeltaGrowth(const double Growthfac,
 }
 
 /*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticSource MAT::InelasticDefgradLinear::GetInelasticSource()
+{
+  return PAR::InelasticSource::inelastic_concentration;
+};
+
+/*--------------------------------------------------------------------*
  | standard constructor                                 civaner 07/19 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolynomial::InelasticDefgradPolynomial() {}
@@ -329,6 +338,14 @@ double MAT::InelasticDefgradPolynomial::EvaluateMatPolynomialDerivative(const do
     DerivativeMATPolynom += i * ParamsPoly[i] * pow(X, i - 1);
   return DerivativeMATPolynom;
 }
+
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticSource MAT::InelasticDefgradPolynomial::GetInelasticSource()
+{
+  return PAR::InelasticSource::inelastic_concentration;
+};
 
 
 /*--------------------------------------------------------------------*

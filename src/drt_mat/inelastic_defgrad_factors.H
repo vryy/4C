@@ -18,6 +18,8 @@ namespace MAT
 {
   namespace PAR
   {
+    enum class InelasticSource;
+
     /*----------------------------------------------------------------------*/
     /*! \class InelasticDeformationDirection
      Calculates and holds growth direction in matrix format for anisotropic growth
@@ -262,6 +264,9 @@ namespace MAT
     /// return material parameters
     MAT::PAR::Parameter* Parameter() { return params_; }
 
+    /// Get type of scalar, that leads to deformation
+    virtual PAR::InelasticSource GetInelasticSource() = 0;
+
    private:
     /// material parameters
     MAT::PAR::Parameter* params_;
@@ -340,6 +345,10 @@ namespace MAT
     {
       dserror("not implemented here");
     }
+
+    /// Get type of scalar, that leads to deformation
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
   };  // end of class InelasticDefgradLinear
 
   /*--------------------------------------------------------------------*/
@@ -421,6 +430,9 @@ namespace MAT
     {
       dserror("not implemented here");
     }
+
+    /// Get type of scalar, that leads to deformation
+    MAT::PAR::InelasticSource GetInelasticSource() override;
 
   };  // end of class InelasticDefgradPolynomial
 
