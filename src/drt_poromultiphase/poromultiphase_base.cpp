@@ -62,7 +62,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
       ADAPTER::STR::BuildStructureAlgorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
-  structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::Structure>(adapterbase->StructureField());
+  structure_ = adapterbase->StructureField();
 
   // initialize zero vector for convenience
   struct_zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);

@@ -206,7 +206,7 @@ namespace POROMULTIPHASE
     void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
 
     /// underlying structure of the PoroMultiPhase problem
-    Teuchos::RCP<::ADAPTER::Structure> structure_;
+    Teuchos::RCP<ADAPTER::Structure> structure_;
 
     /// underlying fluid problem of the PoroMultiPhase problem
     Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper> fluid_;

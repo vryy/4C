@@ -94,25 +94,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
 
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
-  StructureField()->Setup();
-  StructureField()->Discretization()->ClearState(true);
-
-  // Copy from TSI
-  // StructureField: check whether we have locsys BCs, i.e. inclined structural
-  //  Dirichlet BC
-  {
-    std::vector<DRT::Condition*> locsysconditions(0);
-    (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
-
-    // if there are inclined structural Dirichlet BC, get the structural LocSysManager
-    if (locsysconditions.size())
-    {
-      locsysman_ = StructureField()->LocsysManager();
-    }
-    else
-      locsysman_ = Teuchos::null;
-  }
-
   fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
@@ -173,6 +154,20 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
       break;
     }
   }
+
+  // StructureField: check whether we have locsys BCs, i.e. inclined structural
+  //  Dirichlet BC
+
+  std::vector<DRT::Condition*> locsysconditions(0);
+  (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
+
+  // if there are inclined structural Dirichlet BC, get the structural LocSysManager
+  if (locsysconditions.size())
+  {
+    locsysman_ = StructureField()->LocsysManager();
+  }
+  else
+    locsysman_ = Teuchos::null;
 
   return;
 }
