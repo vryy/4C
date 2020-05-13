@@ -38,9 +38,9 @@ void MAT::ELASTIC::CoupAnisoExpoBase::AddStrainEnergy(double& psi,
   // right Cauchy Green
   LINALG::Matrix<3, 3> C(true);
   for (int i = 0; i < 3; ++i) C(i, i) = 2.0 * glstrain(i) + 1.0;
-  C(0, 1) = C(1, 0) = 2.0 * glstrain(3);
-  C(1, 2) = C(2, 1) = 2.0 * glstrain(4);
-  C(0, 2) = C(2, 0) = 2.0 * glstrain(5);
+  C(0, 1) = C(1, 0) = glstrain(3);
+  C(1, 2) = C(2, 1) = glstrain(4);
+  C(0, 2) = C(2, 0) = glstrain(5);
 
   EvaluateFunc<double>(psi, C, eleGID);
 }
