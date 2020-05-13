@@ -169,7 +169,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
         std::array<LINALG::Matrix<3, 1>, numfib> fibers;
         for (unsigned int i = 0; i < numfib; ++i)
         {
-          fibers.at(i) = this->GetAnisotropy()->GetElementFibers()[fiber_ids_.at(i)];
+          fibers.at(i) = this->GetAnisotropy()->GetElementFibers().at(fiber_ids_.at(i));
         }
         this->SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
       }
@@ -212,7 +212,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
           int i = 0;
           for (int id : fiber_ids_)
           {
-            fibers.at(i) = fiberList[id];
+            fibers.at(i) = fiberList.at(id);
             ++i;
           }
           this->SetFibers(gp, fibers);

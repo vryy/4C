@@ -142,8 +142,8 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
     for (int gp = 0; gp < numgp_; ++gp)
     {
       gpFibers_[gp].resize(2);
-      gpFibers_[gp][0].Update(gpfiber1[gp]);
-      gpFibers_[gp][1].Update(gpfiber2[gp]);
+      gpFibers_[gp][0].Update(gpfiber1.at(gp));
+      gpFibers_[gp][1].Update(gpfiber2.at(gp));
     }
   }
 
@@ -195,7 +195,7 @@ const LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, unsigne
         gpFibers_.size());
   }
 
-  if (i >= gpFibers_[0].size())
+  if (i >= gpFibers_[gp].size())
   {
     dserror(
         "You requested fiber %d, but only %d fibers are available", i + 1, elementFibers_.size());

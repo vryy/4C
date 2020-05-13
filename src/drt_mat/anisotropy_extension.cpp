@@ -107,9 +107,9 @@ const LINALG::Matrix<3, 1>& MAT::FiberAnisotropyExtension<numfib>::GetFiber(int 
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fibers_[GPDEFAULT].at(i);
+      return fibers_[GPDEFAULT][i];
     case FiberLocation::GPFibers:
-      return fibers_[gp].at(i);
+      return fibers_[gp][i];
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
@@ -129,9 +129,9 @@ const LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension<numfib>::GetStructural
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fiberStructuralTensors_stress_[GPDEFAULT].at(i);
+      return fiberStructuralTensors_stress_[GPDEFAULT][i];
     case FiberLocation::GPFibers:
-      return fiberStructuralTensors_stress_[gp].at(i);
+      return fiberStructuralTensors_stress_[gp][i];
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
@@ -151,9 +151,9 @@ const LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension<numfib>::GetStructural
   switch (fiberLocation_)
   {
     case FiberLocation::ElementFibers:
-      return fiberStructuralTensors_[GPDEFAULT].at(i);
+      return fiberStructuralTensors_[GPDEFAULT][i];
     case FiberLocation::GPFibers:
-      return fiberStructuralTensors_[gp].at(i);
+      return fiberStructuralTensors_[gp][i];
     default:
       dserror("You have not specified, whether you want fibers on GP level or on element level.");
   }
