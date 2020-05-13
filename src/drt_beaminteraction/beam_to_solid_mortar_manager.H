@@ -96,6 +96,16 @@ namespace BEAMINTERACTION
     BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
         Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid);
 
+    /// Standard destructor
+    virtual ~BeamToSolidMortarManager(){};
+
+    /**
+     * \brief Initialize information on the mortar discretization
+     *
+     * @params params (in) Parameters for the beam contact.
+     */
+    virtual void Init(Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params);
+
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
      * multiplier DOFs.
@@ -107,13 +117,13 @@ namespace BEAMINTERACTION
      *
      * @param discret Pointer to the discretization.
      */
-    void Setup();
+    virtual void Setup();
 
     /**
      * \brief Calculate the maps for the beam and solid dofs. The calcualted maps are used in
      * Complete of the mortar matrices.
      */
-    void SetGlobalMaps();
+    virtual void SetGlobalMaps();
 
     /**
      * \brief This method builds the local maps from the global multi vector created in Setup. The
@@ -131,7 +141,7 @@ namespace BEAMINTERACTION
      * @param discret Pointer to the discretization.
      * @param contact_pairs All contact pairs on this processor.
      */
-    void SetLocalMaps(
+    virtual void SetLocalMaps(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
@@ -147,7 +157,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
      * @param contact_pairs (in) Vector with all beam contact pairs in the model evaluator.
      */
-    void EvaluateGlobalDM(
+    virtual void EvaluateGlobalDM(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
@@ -165,7 +175,8 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> disp) const;
+    virtual Teuchos::RCP<Epetra_Vector> GetGlobalLambda(
+        Teuchos::RCP<const Epetra_Vector> disp) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -173,7 +184,8 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> disp) const;
+    virtual Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(
+        Teuchos::RCP<const Epetra_Vector> disp) const;
 
    protected:
     /**
@@ -208,7 +220,7 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<Epetra_Vector> InvertKappa() const;
 
-   private:
+   protected:
     //! Flag if setup was called.
     bool is_setup_;
 
@@ -227,9 +239,6 @@ namespace BEAMINTERACTION
     //! Number of Lagrange multiplier DOFs on an element.
     unsigned int n_lambda_element_;
 
-    //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<const DRT::Discretization> discret_;
-
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
 
@@ -241,9 +250,6 @@ namespace BEAMINTERACTION
 
     //! Row map of the beam DOFs.
     Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
-
-    //! Row map of the solid DOFs.
-    Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
@@ -281,6 +287,13 @@ namespace BEAMINTERACTION
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
     Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
+
+   private:
+    //! Pointer to the discretization containing the solid and beam elements.
+    Teuchos::RCP<const DRT::Discretization> discret_;
+
+    //! Row map of the solid DOFs.
+    Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
   };
 }  // namespace BEAMINTERACTION
 

@@ -17,6 +17,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "../drt_inpar/inpar_beaminteraction.H"
+#include "../drt_beaminteraction/beam_to_solid_mortar_manager.H"
 
 
 // Forward declarations.
@@ -85,7 +86,7 @@ namespace BEAMINTERACTION
    * For the created maps a offset can be chosen, so the new DOFs fit into a global saddle-point
    * system.
    */
-  class BeamToFluidMortarManager
+  class BeamToFluidMortarManager : public BeamToSolidMortarManager
   {
    public:
     /**
@@ -101,6 +102,13 @@ namespace BEAMINTERACTION
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid);
 
     /**
+     * \brief Initialize information on the mortar discretization
+     *
+     * @params params (in) Parameters for the beam contact.
+     */
+    void Init(Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params) override;
+
+    /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
      * multiplier DOFs.
      *
@@ -110,13 +118,13 @@ namespace BEAMINTERACTION
      * Lagrange multiplier DOF.
      *
      */
-    void Setup();
+    void Setup() override;
 
     /**
      * \brief Calculate the maps for the beam and fluid dofs. The calculated maps are used in
      * Complete of the mortar matrices.
      */
-    void SetGlobalMaps();
+    void SetGlobalMaps() override;
 
     /**
      * \brief This method builds the local maps from the global multi vector created in Setup. The
@@ -134,23 +142,14 @@ namespace BEAMINTERACTION
      * @param contact_pairs All contact pairs on this processor.
      */
     void SetLocalMaps(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
-
-    /**
-     * \brief Get the global IDs of all Lagrange multipliers for the contact pair.
-     * @param contact_pair (in) pointer to contact pair.
-     * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
-     * this pair.
-     */
-    void LocationVector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
-        std::vector<int>& lambda_row) const;
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs) override;
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
      * @param[in] contact_pairs Vector with all beam contact pairs in the model evaluator.
      */
     void EvaluateGlobalDM(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs) override;
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -174,125 +173,18 @@ namespace BEAMINTERACTION
      * @param[in] vel Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> vel) const;
-
-    /**
-     * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
-     * the Lagrange GID. on the ranks where they are used.
-     * @param disp (in) Global displacement vector.
-     * @return Global vector of Lagrange multipliers.
-     */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> vel) const;
-
-   protected:
-    /**
-     * \brief Throw an error if setup was not called on the object prior to this function call.
-     */
-    inline void CheckSetup() const
-    {
-      if (!is_setup_) dserror("Setup not called on BeamToSolidMortarManager!");
-    }
-
-    /**
-     * \brief Throw an error if the global maps were not build.
-     */
-    inline void CheckGlobalMaps() const
-    {
-      if (!is_global_maps_build_) dserror("Global maps are not build in BeamToSolidMortarManager!");
-    }
-
-    /**
-     * \brief Throw an error if the local maps were not build.
-     */
-    inline void CheckLocalMaps() const
-    {
-      if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
-    }
-
-    /**
-     * \brief Invert the scaling vector \ref global_kappa_ vector with accounting for non active
-     * Lagrange multipliers.
-     *
-     * @return Inverted global_kappa_ vector.
-     */
-    Teuchos::RCP<Epetra_Vector> InvertKappa() const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(
+        Teuchos::RCP<const Epetra_Vector> vel) const override;
 
    private:
-    //! Flag if setup was called.
-    bool is_setup_;
-
-    //! Flag if local maps were build.
-    bool is_local_maps_build_;
-
-    //! Flag if global maps were build.
-    bool is_global_maps_build_;
-
-    //! The start value for the Lagrange multiplier global IDs.
-    int start_value_lambda_gid_;
-
-    //! Number of Lagrange multiplier DOFs on a node.
-    unsigned int n_lambda_node_;
-
-    //! Number of Lagrange multiplier DOFs on an element.
-    unsigned int n_lambda_element_;
-
     //! structure discretization
     Teuchos::RCP<const DRT::Discretization> discretization1_;
 
     //! fluid discretization
     Teuchos::RCP<const DRT::Discretization> discretization2_;
 
-    //! Pointer to the beam contact parameters.
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> beam_contact_parameters_ptr_;
-
-    //! Row map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
-
-    //! Column map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
-
-    //! Row map of the beam DOFs.
-    Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
-
     //! Row map of the solid DOFs.
     Teuchos::RCP<Epetra_Map> fluid_dof_rowmap_;
-
-    //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
-    //! The global row ID of the multi vector is the global ID of the node that a Lagrange
-    //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
-    //! multipliers.
-    Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_;
-
-    //! Multivector that connects the global element IDs with the Lagrange multiplier DOF IDs.
-    //! The global row ID of the multi vector is the global ID of the element that a Lagrange
-    //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
-    //! multipliers.
-    Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_;
-
-    //! Standard map from global node ids to global Lagrange multiplier ids, for all
-    //! nodes used on this rank.
-    std::map<int, std::vector<int>> node_gid_to_lambda_gid_map_;
-
-    //! Standard map from global element ids to global Lagrange multiplier ids, for all elements
-    //! used on this rank.
-    std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
-
-    //! Global \f$D\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_D_;
-
-    //! Global \f$M\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_M_;
-
-    //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
-    //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
-    //! 37).
-    //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
-    Teuchos::RCP<Epetra_FEVector> global_kappa_;
-
-    //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
-    //! kappa vector is inverted and some entries are zero, because no active contributions act on
-    //! that Lagrange multiplier.
-    Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
   };
 }  // namespace BEAMINTERACTION
 

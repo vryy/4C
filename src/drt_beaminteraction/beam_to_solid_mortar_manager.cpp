@@ -35,20 +35,26 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       is_local_maps_build_(false),
       is_global_maps_build_(false),
       start_value_lambda_gid_(start_value_lambda_gid),
-      discret_(discret),
+      n_lambda_node_(0),
+      n_lambda_element_(0),
       beam_contact_parameters_ptr_(params),
       lambda_dof_rowmap_(Teuchos::null),
       lambda_dof_colmap_(Teuchos::null),
       beam_dof_rowmap_(Teuchos::null),
-      solid_dof_rowmap_(Teuchos::null),
       node_gid_to_lambda_gid_(Teuchos::null),
       element_gid_to_lambda_gid_(Teuchos::null),
       global_D_(Teuchos::null),
       global_M_(Teuchos::null),
       global_kappa_(Teuchos::null),
-      global_active_lambda_(Teuchos::null)
+      global_active_lambda_(Teuchos::null),
+      discret_(discret),
+      solid_dof_rowmap_(Teuchos::null)
 {
-  // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
+}
+
+void BEAMINTERACTION::BeamToSolidMortarManager::Init(
+    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params)
+{  // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
