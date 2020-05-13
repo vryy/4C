@@ -93,9 +93,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("integration-points");
-      visualization_writer->AddPointDataVector("velocity", 3);
       visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force", 3);
     }
   }
 
@@ -114,7 +112,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntime(
   // If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
-  printf("We are in the output writer\n");
   if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
 
   WriteOutputBeamToFluidMeshTying(couplingenforcer, i_step, time);
