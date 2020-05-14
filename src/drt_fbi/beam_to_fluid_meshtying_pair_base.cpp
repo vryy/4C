@@ -71,19 +71,20 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    this->ele1pos_(i) = scalar_type(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
+    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
     this->ele1poscur_(i) = beam_centerline_dofvec[i];
-    this->ele1vel_(i) =
-        scalar_type(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
+    this->ele1vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
   }
 
   // Fluid element.
   for (unsigned int i = 0; i < fluid::n_dof_; i++)
   {
-    this->ele2pos_(i) =
-        scalar_type(beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
+    this->ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
     this->ele2poscur_(i) = fluid_nodal_dofvec[i];
-    this->ele2vel_(i) = scalar_type(
+    this->ele2vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
   }
 }

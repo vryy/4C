@@ -110,8 +110,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   // Solid element.
   for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_(i) =
-        scalar_type(beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
+    ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
 
