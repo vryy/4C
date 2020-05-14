@@ -18,6 +18,7 @@
 #include <Epetra_SerialComm.h>
 #include "src/drt_geometry_pair/geometry_pair_element_faces.H"
 #include "src/drt_geometry_pair/geometry_pair_element.H"
+#include "src/drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "unit_geometry_pair_line_to_surface_patch_geometry.H"
 #include "unit_geometry_pair_line_to_surface_patch_results.H"
 
@@ -56,7 +57,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
   {
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;
-    using scalar_type = FADUTILS::HigherOrderFadType<2, Sacado::ELRFad::DFad<double>>::type;
+    using scalar_type = GEOMETRYPAIR::line_to_surface_patch_scalar_type;
     using face_element_type = GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>;
 
     // Offset in the derivatives for the beam dof.

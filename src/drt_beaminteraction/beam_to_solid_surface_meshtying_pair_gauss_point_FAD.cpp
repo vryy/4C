@@ -18,6 +18,7 @@ coupling terms are evaluated using FAD.
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 
 #include "Epetra_FEVector.h"
 
@@ -187,23 +188,20 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-    Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double,
-                              GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-        GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
+      t_hermite, t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
+      t_hermite, t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
+      t_hermite, t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
+      t_hermite, t_tri3>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
+      t_hermite, t_tri6>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+      line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+}  // namespace BEAMINTERACTION

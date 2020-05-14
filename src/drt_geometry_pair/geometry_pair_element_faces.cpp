@@ -11,6 +11,7 @@
 
 #include "geometry_pair_element_faces.H"
 
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
@@ -387,29 +388,30 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   {
     switch (face_element->Shape())
     {
-      case DRT::Element::tri3:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri3,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri3::n_dof_>>(
-            face_element, false));
-      case DRT::Element::tri6:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri6,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_tri6::n_dof_>>(
-            face_element, false));
       case DRT::Element::quad4:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad4::n_dof_>>(
-            face_element, false));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad4, line_to_surface_scalar_type<t_hermite, t_quad4>>(
+                face_element, false));
       case DRT::Element::quad8:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad8,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad8::n_dof_>>(
-            face_element, false));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad8, line_to_surface_scalar_type<t_hermite, t_quad8>>(
+                face_element, false));
       case DRT::Element::quad9:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad9,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_quad9::n_dof_>>(
-            face_element, false));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad9, line_to_surface_scalar_type<t_hermite, t_quad9>>(
+                face_element, false));
+      case DRT::Element::tri3:
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_tri3, line_to_surface_scalar_type<t_hermite, t_tri3>>(
+                face_element, false));
+      case DRT::Element::tri6:
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_tri6, line_to_surface_scalar_type<t_hermite, t_tri6>>(
+                face_element, false));
       case DRT::Element::nurbs9:
-        return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-            Sacado::ELRFad::SLFad<double, t_hermite::n_dof_ + t_nurbs9::n_dof_>>(face_element));
+        return Teuchos::rcp(
+            new FaceElementTemplate<t_nurbs9, line_to_surface_scalar_type<t_hermite, t_nurbs9>>(
+                face_element));
       default:
         dserror("Wrong discretization type given.");
     }
@@ -418,26 +420,27 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   {
     switch (face_element->Shape())
     {
-      case DRT::Element::tri3:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri3,
-            Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(face_element, true));
-      case DRT::Element::tri6:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri6,
-            Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(face_element, true));
       case DRT::Element::quad4:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
-            Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(face_element, true));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
+                face_element, true));
       case DRT::Element::quad8:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad8,
-            Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(face_element, true));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
+                face_element, true));
       case DRT::Element::quad9:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_quad9,
-            Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>>(face_element, true));
+        return Teuchos::rcp(
+            new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
+                face_element, true));
+      case DRT::Element::tri3:
+        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
+            face_element, true));
+      case DRT::Element::tri6:
+        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
+            face_element, true));
       case DRT::Element::nurbs9:
         return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-            Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ +
-                                                                    GEOMETRYPAIR::t_nurbs9::n_dof_>,
-                GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>>(face_element));
+            line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>>(face_element));
       default:
         dserror("Wrong discretization type given.");
     }

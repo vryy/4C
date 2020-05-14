@@ -53,15 +53,15 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_fluid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force2;
-  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
-  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
-  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_f(true);
+  LINALG::Matrix<3, 1, scalar_type> r_beam;
+  LINALG::Matrix<3, 1, scalar_type> r_fluid;
+  LINALG::Matrix<3, 1, scalar_type> v_beam;
+  LINALG::Matrix<3, 1, scalar_type> v_fluid;
+  LINALG::Matrix<3, 1, scalar_type> force;
+  LINALG::Matrix<3, 1, scalar_type> force2;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
+  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
   LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
   LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
@@ -217,11 +217,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::EvaluatePenaltyForce(
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
+    LINALG::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
+    LINALG::Matrix<3, 1, scalar_type> v_beam) const
 {
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
+  LINALG::Matrix<3, 1, scalar_type> v_fluid;
 
   GEOMETRYPAIR::EvaluatePosition<beam>(
       projected_gauss_point.GetEta(), this->ele1vel_, v_beam, this->Element1());

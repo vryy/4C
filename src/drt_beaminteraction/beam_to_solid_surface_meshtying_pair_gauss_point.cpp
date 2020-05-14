@@ -179,15 +179,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs9>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_tri3>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_tri6>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_nurbs9>;
+}  // namespace BEAMINTERACTION

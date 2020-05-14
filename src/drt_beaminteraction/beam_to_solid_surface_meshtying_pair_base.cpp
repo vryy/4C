@@ -16,6 +16,7 @@
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 
 
 /**
@@ -164,42 +165,33 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tri3::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tri6::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad4::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad8::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
 
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::DFad<Sacado::ELRFad::DFad<double>>, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<
-    Sacado::ELRFad::SLFad<Sacado::ELRFad::SLFad<double,
-                              GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-        GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_scalar_type<t_hermite, t_quad4>, t_hermite, t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_scalar_type<t_hermite, t_quad8>, t_hermite, t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_scalar_type<t_hermite, t_quad9>, t_hermite, t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_scalar_type<t_hermite, t_tri3>,
+      t_hermite, t_tri3>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_scalar_type<t_hermite, t_tri6>,
+      t_hermite, t_tri6>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri3>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri6>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+}  // namespace BEAMINTERACTION

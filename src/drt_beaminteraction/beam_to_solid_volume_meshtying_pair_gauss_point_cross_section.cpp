@@ -69,11 +69,11 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type_fad> r_beam;
-  LINALG::Matrix<3, 1, scalar_type_fad> r_solid;
-  LINALG::Matrix<3, 1, scalar_type_fad> force;
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type_fad> force_element_1(true);
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> force_element_2(true);
+  LINALG::Matrix<3, 1, scalar_type> r_beam;
+  LINALG::Matrix<3, 1, scalar_type> r_solid;
+  LINALG::Matrix<3, 1, scalar_type> force;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -204,7 +204,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                      integration_point,
-    LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
@@ -218,18 +218,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 /**
  * Explicit template initialization of template class.
  */
-// Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
-// Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
-// Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
-// Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
-// Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet10>;
+}  // namespace BEAMINTERACTION
