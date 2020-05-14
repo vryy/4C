@@ -40,7 +40,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam,
   // Beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_(i) = FADUTILS::HigherOrderFad<scalar_type_fad>::apply(
+    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
         beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 

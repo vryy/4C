@@ -207,10 +207,10 @@ namespace FADUTILS
    * @tparam BaseFadType Basic Fad type of this nested type.
    */
   template <int N, typename BaseFadType>
-  struct MakeHigherOrderFad
+  struct HigherOrderFadType
   {
     //! Nested type of this Fad type.
-    typedef typename MakeHigherOrderFad<N - 1, BaseFadType>::type nested_type;
+    typedef typename HigherOrderFadType<N - 1, BaseFadType>::type nested_type;
 
     //! Fad type of this object.
     typedef typename Sacado::mpl::apply<BaseFadType, nested_type>::type type;
@@ -220,7 +220,7 @@ namespace FADUTILS
    * \brief Specialization for the last nested type, i.e. first order derivatives.
    */
   template <typename BaseFadType>
-  struct MakeHigherOrderFad<1, BaseFadType>
+  struct HigherOrderFadType<1, BaseFadType>
   {
     typedef BaseFadType type;
   };
@@ -235,7 +235,7 @@ namespace FADUTILS
    * @tparam FadType Fad type of the variable to create.
    */
   template <typename FadType>
-  struct HigherOrderFad
+  struct HigherOrderFadValue
   {
     //! Type of nested value.
     typedef typename FadType::value_type nested_type;
@@ -249,7 +249,7 @@ namespace FADUTILS
      */
     static FadType apply(const int n, const int i, const double x)
     {
-      return FadType(n, i, HigherOrderFad<nested_type>::apply(n, i, x));
+      return FadType(n, i, HigherOrderFadValue<nested_type>::apply(n, i, x));
     }
   };
 
@@ -257,7 +257,7 @@ namespace FADUTILS
    * \brief Specialization for the last nested type, i.e. double.
    */
   template <>
-  struct HigherOrderFad<double>
+  struct HigherOrderFadValue<double>
   {
     static double apply(const int n, const int i, const double x) { return x; }
   };

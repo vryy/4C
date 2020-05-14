@@ -56,7 +56,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
   {
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;
-    using scalar_type = FADUTILS::MakeHigherOrderFad<2, Sacado::ELRFad::DFad<double>>::type;
+    using scalar_type = FADUTILS::HigherOrderFadType<2, Sacado::ELRFad::DFad<double>>::type;
     using face_element_type = GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>;
 
     // Offset in the derivatives for the beam dof.
