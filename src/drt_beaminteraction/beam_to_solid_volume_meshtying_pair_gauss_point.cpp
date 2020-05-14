@@ -130,10 +130,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        (*forcevec1)(i_dof) = force_element_1(i_dof).val();
+        (*forcevec1)(i_dof) = FADUTILS::CastToDouble(force_element_1(i_dof));
       // $f_2$
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        (*forcevec2)(i_dof) = force_element_2(i_dof).val();
+        (*forcevec2)(i_dof) = FADUTILS::CastToDouble(force_element_2(i_dof));
     }
 
     if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
@@ -142,22 +142,26 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       // $k_{11}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
-          (*stiffmat11)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(i_dof_2);
+          (*stiffmat11)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
       {
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
-          (*stiffmat12)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2);
-          (*stiffmat21)(i_dof_2, i_dof_1) = -force_element_2(i_dof_2).dx(i_dof_1);
+          (*stiffmat12)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+          (*stiffmat21)(i_dof_2, i_dof_1) =
+              -FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
       // $k_{22}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
-          (*stiffmat22)(i_dof_1, i_dof_2) = -force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2);
+          (*stiffmat22)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
     }
   }
 

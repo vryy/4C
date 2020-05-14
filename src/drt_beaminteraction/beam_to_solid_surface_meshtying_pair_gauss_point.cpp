@@ -172,7 +172,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_ + surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < beam::n_dof_ + surface::n_dof_; j_dof++)
-        stiffness_matrix->FEAssemble(force_pair(i_dof).dx(j_dof), pair_gid(i_dof), pair_gid(j_dof));
+        stiffness_matrix->FEAssemble(
+            FADUTILS::CastToDouble(force_pair(i_dof).dx(j_dof)), pair_gid(i_dof), pair_gid(j_dof));
 }
 
 
