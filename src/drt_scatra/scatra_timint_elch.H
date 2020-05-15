@@ -346,6 +346,9 @@ namespace SCATRA
     //! total electric currents at electrode boundaries
     Teuchos::RCP<std::vector<double>> electrodecurr_;
 
+    //! initial relaxation time of cccv condition
+    double cccv_init_relax_time_;
+
     //! cell voltage
     double cellvoltage_;
 
