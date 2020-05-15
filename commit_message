@@ -1,7 +1,0 @@
-Intoduce test and improve coverage
-
-This commit introduces tests for new functionaities and imporves code
-coverage for already existing ones.
-Implicit euler is renamed as BDF1 for naming consistency.
-
-Related to #459.
