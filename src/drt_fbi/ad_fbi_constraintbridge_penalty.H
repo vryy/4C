@@ -57,15 +57,15 @@ namespace ADAPTER
      *
      */
 
-    virtual void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
+    void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
         Teuchos::RCP<const DRT::Discretization> discretization2,
         Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel) override;
 
     /// resets the matrices and vectors to zero
-    virtual void ResetBridge() override;
+    void ResetBridge() override;
 
-    virtual void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
+    void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory

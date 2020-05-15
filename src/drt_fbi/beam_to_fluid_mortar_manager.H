@@ -55,7 +55,9 @@ namespace LINALG
 namespace BEAMINTERACTION
 {
   /**
-   * \brief In beam to fluid interactions with mortar contact discretization, we need to create a
+   * \brief Manage Lagrange mulitplier DOFs for BeamToFluid mortar coupling
+   *
+   * In beam to fluid interactions with mortar contact discretization, we need to create a
    * map with the Lagrange multiplier DOFs (in contrast to solid meshtying / mortar we do not create
    * a own discretization for the interface).
    *
@@ -130,7 +132,7 @@ namespace BEAMINTERACTION
      * \brief This method builds the local maps from the global multi vector created in Setup. The
      * global mortar matrices are also created.
      *
-     * Since some nodes of this pair, that have Lagrange multipliers may not be on this processor,
+     * Since some nodes of this pair, that have Lagrange multipliers, may not be on this processor,
      * we need to get the node ID to Lagrange multiplier ID form the processor that holds the
      * node. All relevant global node / element to global Lagrange multiplier maps for the given
      * contact pairs are stored in a standard maps in this object. The keys in those maps are the
@@ -178,12 +180,12 @@ namespace BEAMINTERACTION
 
    private:
     //! structure discretization
-    Teuchos::RCP<const DRT::Discretization> discretization1_;
+    Teuchos::RCP<const DRT::Discretization> discretization_structure_;
 
     //! fluid discretization
-    Teuchos::RCP<const DRT::Discretization> discretization2_;
+    Teuchos::RCP<const DRT::Discretization> discretization_fluid_;
 
-    //! Row map of the solid DOFs.
+    //! Row map of the fluid DOFs.
     Teuchos::RCP<Epetra_Map> fluid_dof_rowmap_;
   };
 }  // namespace BEAMINTERACTION

@@ -35,8 +35,8 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
     Teuchos::RCP<const DRT::Discretization> discretization2,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid)
     : BEAMINTERACTION::BeamToSolidMortarManager(Teuchos::null, params, start_value_lambda_gid),
-      discretization1_(discretization1),
-      discretization2_(discretization2),
+      discretization_structure_(discretization1),
+      discretization_fluid_(discretization2),
       fluid_dof_rowmap_(Teuchos::null)
 {
 }
@@ -80,18 +80,18 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
-  for (int i_node = 0; i_node < discretization1_->NodeRowMap()->NumMyElements(); i_node++)
+  for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    DRT::Node const& node = *(discretization1_->lRowNode(i_node));
+    DRT::Node const& node = *(discretization_structure_->lRowNode(i_node));
     if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.Id());
   }
 
   // Get the global ids of all beam elements on this rank.
   std::vector<int> my_elements_gid;
-  for (int i_element = 0; i_element < discretization1_->ElementRowMap()->NumMyElements();
+  for (int i_element = 0; i_element < discretization_structure_->ElementRowMap()->NumMyElements();
        i_element++)
   {
-    DRT::Element const& element = *(discretization1_->lRowElement(i_element));
+    DRT::Element const& element = *(discretization_structure_->lRowElement(i_element));
     if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.Id());
   }
 
@@ -103,13 +103,13 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
 
   // Tell all other processors how many lambda DOFs this processor has. This information is needed
   // to construct the lambda_dof_rowmap_.
-  std::vector<int> lambda_dof_per_rank(discretization1_->Comm().NumProc(), 0);
+  std::vector<int> lambda_dof_per_rank(discretization_structure_->Comm().NumProc(), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
-  discretization1_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
+  discretization_structure_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
-  for (int pid = 0; pid < discretization1_->Comm().MyPID(); pid++)
+  for (int pid = 0; pid < discretization_structure_->Comm().MyPID(); pid++)
     my_lambda_gid_start_value += lambda_dof_per_rank[pid];
 
   // Fill in all GIDs of the lambda DOFs on this processor.
@@ -118,17 +118,17 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
     my_lambda_gid[my_lid] = my_lambda_gid_start_value + my_lid;
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discretization1_->Comm()));
+  lambda_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(
+      -1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discretization_structure_->Comm()));
 
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
   // global node / element ids and the global Lagrange multiplier DOF ids.
-  Teuchos::RCP<Epetra_Map> node_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discretization1_->Comm()));
-  Teuchos::RCP<Epetra_Map> element_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discretization1_->Comm()));
+  Teuchos::RCP<Epetra_Map> node_gid_rowmap = Teuchos::rcp(
+      new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discretization_structure_->Comm()));
+  Teuchos::RCP<Epetra_Map> element_gid_rowmap = Teuchos::rcp(
+      new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discretization_structure_->Comm()));
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -196,25 +196,25 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
   // Loop over all nodes on this processor -> we assume all beam and fluid DOFs are based on nodes.
   std::vector<std::vector<int>> field_dofs(2);
 
-  for (int i_node = 0; i_node < discretization1_->NodeRowMap()->NumMyElements(); i_node++)
+  for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const DRT::Node* node = discretization1_->lRowNode(i_node);
+    const DRT::Node* node = discretization_structure_->lRowNode(i_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
-      discretization1_->Dof(node, field_dofs[0]);
+      discretization_structure_->Dof(node, field_dofs[0]);
     else
       dserror("The given structure element is not a beam element!");
   }
-  for (int i_node = 0; i_node < discretization2_->NodeRowMap()->NumMyElements(); i_node++)
+  for (int i_node = 0; i_node < discretization_fluid_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const DRT::Node* node = discretization2_->lRowNode(i_node);
-    discretization2_->Dof(node, field_dofs[1]);
+    const DRT::Node* node = discretization_fluid_->lRowNode(i_node);
+    discretization_fluid_->Dof(node, field_dofs[1]);
   }
 
   // Create the beam and fluid maps.
-  beam_dof_rowmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, field_dofs[0].size(), &(field_dofs[0])[0], 0, discretization1_->Comm()));
-  fluid_dof_rowmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, field_dofs[1].size(), &(field_dofs[1])[0], 0, discretization2_->Comm()));
+  beam_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(
+      -1, field_dofs[0].size(), &(field_dofs[0])[0], 0, discretization_structure_->Comm()));
+  fluid_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(
+      -1, field_dofs[1].size(), &(field_dofs[1])[0], 0, discretization_fluid_->Comm()));
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -247,7 +247,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
-    if (pair->Element1()->Owner() != discretization1_->Comm().MyPID())
+    if (pair->Element1()->Owner() != discretization_structure_->Comm().MyPID())
       dserror(
           "The current implementation needs the first element of a beam contact pair to be on the "
           "same processor as the pair!");
@@ -274,10 +274,10 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
   element_gid_needed.resize(std::distance(element_gid_needed.begin(), it));
 
   // Create the maps for the extraction of the values.
-  Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, node_gid_needed.size(), &node_gid_needed[0], 0, discretization1_->Comm()));
+  Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
+      -1, node_gid_needed.size(), &node_gid_needed[0], 0, discretization_structure_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, element_gid_needed.size(), &element_gid_needed[0], 0, discretization1_->Comm()));
+      -1, element_gid_needed.size(), &element_gid_needed[0], 0, discretization_structure_->Comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
@@ -326,8 +326,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
   }
 
   // Create the global lambda col map.
-  lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, lambda_gid_for_col_map.size(), &lambda_gid_for_col_map[0], 0, discretization1_->Comm()));
+  lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, lambda_gid_for_col_map.size(),
+      &lambda_gid_for_col_map[0], 0, discretization_structure_->Comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;
@@ -377,7 +377,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
 
       // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
       BEAMINTERACTION::UTILS::AssembleCenterlineDofColMatrixIntoElementColMatrix(
-          *discretization1_, elepairptr->Element1(), local_D_centerlineDOFs, local_D_elementDOFs);
+          *discretization_structure_, elepairptr->Element1(), local_D_centerlineDOFs,
+          local_D_elementDOFs);
 
       // Get the GIDs of the Lagrange multipliers.
       std::vector<int> lambda_row;
@@ -389,8 +390,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
       std::vector<int> fluid_row;
       std::vector<int> dummy_1;
       std::vector<int> dummy_2;
-      elepairptr->Element1()->LocationVector(*discretization1_, beam_row, dummy_1, dummy_2);
-      elepairptr->Element2()->LocationVector(*discretization2_, fluid_temp, dummy_1, dummy_2);
+      elepairptr->Element1()->LocationVector(
+          *discretization_structure_, beam_row, dummy_1, dummy_2);
+      elepairptr->Element2()->LocationVector(*discretization_fluid_, fluid_temp, dummy_1, dummy_2);
       for (unsigned int i = 0; i < fluid_temp.size(); i++)
       {
         if ((i + 1) % 4) fluid_row.push_back(fluid_temp[i]);
