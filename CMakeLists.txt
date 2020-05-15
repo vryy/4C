@@ -1205,18 +1205,22 @@ set(OBJS_DRT_MEMBRANE_LIB
 set(OBJS_DRT_FBI
   src/drt_fbi/fbi_calc_utils.cpp
   src/drt_fbi/constraintenforcer_fbi.cpp
+  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
   src/drt_fbi/ad_fbi_constraintbridge.cpp
+  src/drt_fbi/beam_to_fluid_assembly_manager_factory.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_base.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_factory.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_mortar.cpp
   src/drt_fbi/beam_to_fluid_meshtying_params.cpp
   src/drt_fbi/beam_to_fluid_meshtying_vtk_output_params.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
+  src/drt_fbi/beam_to_fluid_mortar_manager.cpp
   src/drt_fbi/constraintenforcer_fbi_factory.cpp
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
-  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
-  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager_indirect.cpp
   src/drt_fbi/immersed_geometry_coupler_fbi.cpp
 )
 set(OBJS_DRT_FSI

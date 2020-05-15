@@ -25,7 +25,8 @@ FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
       meshtying_discretization_(INPAR::FBI::BeamToFluidDiscretization::none),
       penalty_parameter_(-1.0),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
-      calcfluidweakdirichletforce_(false)
+      calcfluidweakdirichletforce_(false),
+      mortar_shape_function_(INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::none)
 {
   // Empty Constructor.
 }
@@ -44,6 +45,12 @@ void FBI::BeamToFluidMeshtyingParams::Init()
   constraint_enforcement_ = Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidConstraintEnforcement>(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING"),
       "CONSTRAINT_STRATEGY");
+
+  // Constraint enforcement.
+  mortar_shape_function_ =
+      Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions>(
+          beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING"),
+          "MORTAR_SHAPE_FUNCTION");
 
   // Contact discretization to be used.
   meshtying_discretization_ = Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidDiscretization>(

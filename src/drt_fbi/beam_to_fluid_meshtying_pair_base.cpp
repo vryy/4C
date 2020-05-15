@@ -169,8 +169,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
  */
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase>
-        visualization_writer,  // todo overload outputwriter nicht vergessen!
+    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
     const Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.

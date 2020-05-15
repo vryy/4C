@@ -112,7 +112,8 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   CreatePairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
-  bridge_->Evaluate(*discretizations_[0], *discretizations_[1]);
+  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
 }
 
 /*----------------------------------------------------------------------*/
