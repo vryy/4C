@@ -21,6 +21,7 @@ MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection
 GEOMETRY_PAIR_SEARCH_POINTS           5
+SEARCH_RADIUS                         0.2
 ---------------------------------------------------------------------FSI DYNAMIC
 MAXTIME                               0.002
 TIMESTEP                              0.001
@@ -28,7 +29,7 @@ NUMSTEP                               2
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
-CONVTOL                               1.0E-05
+CONVTOL                               1.0E-12
 ITEMAX                                50
 COUPVARIABLE                          Force
 PREDICTOR                             d(n)
@@ -94,7 +95,7 @@ RESULTSEVRY                           1
 LINEAR_SOLVER                         2
 --------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES                          1.e-08
-TOL_VEL_INC                          1.e-06
+TOL_VEL_INC                          1.e-12
 TOL_PRES_RES                         1.e-08
 TOL_PRES_INC                         1.e-05
 --------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -963,10 +964,10 @@ NODE 331 COORD 0.0 0 0.0
 196 BEAM3EB LINE2 329 330 MAT 2
 197 BEAM3EB LINE2 330 331 MAT 2
 --------------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 163 QUANTITY velx VALUE 3.55871463636629470e-02 TOLERANCE 1e-13
-FLUID DIS fluid NODE 163 QUANTITY vely VALUE -1.15364085794782083e-07 TOLERANCE 1e-13
-FLUID DIS fluid NODE 163 QUANTITY velz VALUE 0.0 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 331 QUANTITY dispx VALUE 2.90235359765061582e-05 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 331 QUANTITY dispy VALUE -7.13719606470448049e-10 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 331 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-13
+FLUID DIS fluid NODE 163 QUANTITY velx VALUE 3.55877954229097682e-02 TOLERANCE 1e-12
+FLUID DIS fluid NODE 163 QUANTITY vely VALUE -1.14608225553121314e-07 TOLERANCE 1e-12
+FLUID DIS fluid NODE 163 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 331 QUANTITY dispx VALUE 2.90263528635576952e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 331 QUANTITY dispy VALUE -7.13719606470448049e-10 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 331 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
 -----------------------------------------------------------------------------END

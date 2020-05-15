@@ -21,12 +21,13 @@ MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
 GAUSS_POINTS                          6
 GEOMETRY_PAIR_STRATEGY                segmentation
+SEARCH_RADIUS                         0.2
 ---------------------------------------------------------------------FSI DYNAMIC
 MAXTIME                               0.05
 TIMESTEP                              0.01
 NUMSTEP                               2
-RESULTSEVRY                           1
-RESTARTEVRY                           1
+RESULTSEVRY                           3
+RESTARTEVRY                           3
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                               1.0E-08
 ITEMAX                                50
@@ -93,8 +94,8 @@ THETA                                 0.5
 TIMEINTEGR                            One_Step_Theta
 LINEAR_SOLVER                         1
 ---------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
-TOL_VEL_RES       1e-04
-TOL_VEL_INC       1e-04
+TOL_VEL_RES       1e-08
+TOL_VEL_INC       1e-08
 TOL_PRES_RES      1e-04
 TOL_PRES_INC      1e-04
 --------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -1538,10 +1539,10 @@ NODE       732 COORD 0.0 -0.25 0.0
 --------------------------------------------------------------STRUCTURE ELEMENTS
 65 BEAM3R HERM2LINE3 730 731 732 MAT 2 TRIADS 1.20919957616 1.20919957616 1.20919957616 1.20919957616 1.20919957616 1.20919957616 1.20919957616 1.20919957616 1.20919957616
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 730 QUANTITY dispx VALUE 9.42011327986183437e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 730 QUANTITY dispx VALUE 9.42011327986183437e-04 TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 730 QUANTITY dispy VALUE 0 TOLERANCE 1e-15
 STRUCTURE DIS structure NODE 730 QUANTITY dispz VALUE 0 TOLERANCE 1e-15
-STRUCTURE DIS structure NODE 731 QUANTITY dispx VALUE 9.42011327986183437e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 731 QUANTITY dispx VALUE 9.42011327986183437e-04 TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 731 QUANTITY dispy VALUE 0 TOLERANCE 1e-15
 STRUCTURE DIS structure NODE 731 QUANTITY dispz VALUE 0 TOLERANCE 1e-15
 ---------------------------------------------------------------END

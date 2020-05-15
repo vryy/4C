@@ -19,8 +19,9 @@ COUPLING                              fluid
 PENALTY_PARAMETER                     1e13
 MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
-GEOMETRY_PAIR_STRATEGY                     segmentation
-GEOMETRY_PAIR_SEARCH_POINTS                5
+GEOMETRY_PAIR_STRATEGY                segmentation
+GEOMETRY_PAIR_SEARCH_POINTS           5
+SEARCH_RADIUS                         0.2
 ---------------------------------------------------------------------FSI DYNAMIC
 MAXTIME                               5
 TIMESTEP                              0.001
