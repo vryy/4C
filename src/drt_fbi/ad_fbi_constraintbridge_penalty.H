@@ -92,22 +92,25 @@ namespace ADAPTER
     void UnsetWeakDirichletFlag();
 
     /// Matrix containing only structure side contributions \f$C_ss\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCss() { return Css_; };
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const { return Css_; };
 
     /// Matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCff() { return Cff_; };
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const { return Cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_fs\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCfs() { return Cfs_; };
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const { return Cfs_; };
 
     /// Matrix containing mixed structure side contributions \f$C_sf\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCsf() { return Csf_; };
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const { return Csf_; };
 
     /// Force vector acting on the fluid side \f$f_f\f$
-    Teuchos::RCP<Epetra_FEVector> const GetFluidCouplingResidual() { return ff_; };
+    Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const { return ff_; };
 
     /// Force vector acting on the structure side \f$f_s\f$
-    Teuchos::RCP<Epetra_FEVector> const GetStructureCouplingResidual() { return fs_; };
+    Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const { return fs_; };
+
+    /// Scales all vectors and martrices with penalty
+    void ScalePenaltyContributions();
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$

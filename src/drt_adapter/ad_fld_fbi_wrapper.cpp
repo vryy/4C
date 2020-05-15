@@ -29,7 +29,7 @@ ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<LINALG::SparseMatrix> matrix)
+void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix)
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
       ->SetCouplingContributions(matrix);

@@ -44,6 +44,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
   assembly_manager->EvaluateForceStiff(
       *discretization1, *discretization2, ff_, fs_, Cff_, Css_, Csf_, Cfs_, fluid_vel, beam_vel);
   Cff_->Complete();
+  ScalePenaltyContributions();
 
   // Unset the dirichlet flag in case we were doing a fluid solve
   UnsetWeakDirichletFlag();
@@ -68,4 +69,14 @@ void ADAPTER::FBIConstraintBridgePenalty::SetWeakDirichletFlag()
 void ADAPTER::FBIConstraintBridgePenalty::UnsetWeakDirichletFlag()
 {
   beam_interaction_params_->UnsetWeakDirichletFlag();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyContributions()
+{
+  if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
+      ff_->Scale(GetParams()->GetPenaltyParameter()) ||
+      fs_->Scale(GetParams()->GetPenaltyParameter()))
+    dserror("Scaling of the penalty force was unsuccessful!\n");
 }

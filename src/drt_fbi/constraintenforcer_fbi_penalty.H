@@ -85,14 +85,14 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
+    Teuchos::RCP<const LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
-     * \returns couplting contributions to the fluid system matrix
+     * \returns coupling contributions to the fluid system matrix
      */
-    Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const override;
+    Teuchos::RCP<const LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the structure field.

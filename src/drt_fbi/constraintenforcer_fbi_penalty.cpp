@@ -32,7 +32,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   ADAPTER::FBIConstraintenforcer::Setup(structure, fluid);
   std::ofstream log;
   if ((GetDiscretizations()[1]->Comm().MyPID() == 0) &&
-      (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
+      (Bridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
@@ -43,22 +43,16 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   }
 }
 
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<const LINALG::SparseMatrix>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {
-  // Get coupling contributions to the fluid stiffness matrix and scale them with the penalty
-  // parameter
-  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-          ->GetCff()
-          ->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
-    dserror("Scaling of the penalty stiffness was unsuccessful!\n");
+  // Get coupling contributions to the fluid stiffness matrix
 
-  return Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-      ->GetCff();
+  return Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)->GetCff();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<const LINALG::SparseMatrix>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 {
   // For the classical partitioned algorithm we do not have any contributions to the stiffness
@@ -70,18 +64,16 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingResidual()
     const
 {
-  // Get the force acting on the fluid field, scale it with the penalty factor and -1 to get the
+  // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
               ->GetFluidCouplingResidual())
           ->Map()));
   f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
               ->GetFluidCouplingResidual()),
       0.0);
-  if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
-    dserror("Scaling of the penalty force was unsuccessful!\n");
   return f;
 }
 /*----------------------------------------------------------------------*/
@@ -92,24 +84,19 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
               ->GetStructureCouplingResidual())
           ->Map()));
   f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
               ->GetStructureCouplingResidual()),
       0.0);
-  if (f->Scale(GetBridge()->GetParams()->GetPenaltyParameter()))
-    dserror("Scaling of the penalty force was unsuccessful!\n");
 
   return f;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIPenaltyConstraintenforcer::PrepareFluidSolve()
-{
-  GetBridge()->PrepareFluidSolve();
-}
+void ADAPTER::FBIPenaltyConstraintenforcer::PrepareFluidSolve() { Bridge()->PrepareFluidSolve(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIPenaltyConstraintenforcer::Output(double time, int step)
@@ -120,18 +107,19 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Output(double time, int step)
 
 void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step)
 {
-  if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
+  if (Bridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
   {
-    double penalty_parameter = GetBridge()->GetParams()->GetPenaltyParameter();
+    double penalty_parameter = Bridge()->GetParams()->GetPenaltyParameter();
 
     Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
         Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()->Map());
 
-    int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-                  ->GetCff()
-                  ->Multiply(false,
-                      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()),
-                      *violation);
+    int err =
+        Teuchos::rcp_dynamic_cast<const ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+            ->GetCff()
+            ->Multiply(false,
+                *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()),
+                *violation);
 
     if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
 

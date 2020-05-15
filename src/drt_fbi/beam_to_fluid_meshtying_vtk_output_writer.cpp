@@ -163,7 +163,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Epetra_Vector> force_beam =
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-    LINALG::Export(*Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(
+    LINALG::Export(*Teuchos::rcp_dynamic_cast<const ADAPTER::FBIConstraintBridgePenalty>(
                        couplingenforcer->GetBridge(), true)
                         ->GetStructureCouplingResidual(),
         *force_beam);

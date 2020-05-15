@@ -125,7 +125,7 @@ namespace ADAPTER
     };
 
     /// Get function for the bridge object bridge_
-    virtual const Teuchos::RCP<ADAPTER::FBIConstraintBridge> GetBridge() const final
+    virtual Teuchos::RCP<const ADAPTER::FBIConstraintBridge> GetBridge() const final
     {
       return bridge_;
     };
@@ -169,7 +169,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -183,7 +183,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -225,6 +225,9 @@ namespace ADAPTER
     {
       return discretizations_;
     }
+
+    /// Get function for the bridge object bridge_
+    virtual Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const final { return bridge_; };
 
    private:
     FBIConstraintenforcer() = delete;
