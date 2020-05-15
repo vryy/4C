@@ -64,6 +64,8 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingResidual()
     const
 {
+  Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
+      ->ScalePenaltyFluidContributions();
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f =
@@ -76,6 +78,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluid
 Teuchos::RCP<Epetra_Vector>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
 {
+  Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
+      ->ScalePenaltyStructureContributions();
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f =

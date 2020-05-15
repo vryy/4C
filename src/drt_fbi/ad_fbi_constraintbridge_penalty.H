@@ -112,8 +112,11 @@ namespace ADAPTER
     /// Sets the flag to compute force contributions from beam and fluid
     void UnsetWeakDirichletFlag();
 
-    /// Scales all vectors and martrices with penalty
-    void ScalePenaltyContributions();
+    /// Scales all structure vectors and martrices with penalty
+    void ScalePenaltyStructureContributions();
+
+    /// Scales all fluid vectors and martrices with penalty
+    void ScalePenaltyFluidContributions();
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$
