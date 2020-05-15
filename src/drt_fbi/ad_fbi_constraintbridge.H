@@ -25,6 +25,10 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -36,6 +40,7 @@ namespace GEOMETRYPAIR
 }
 
 class Epetra_Vector;
+class Epetra_FEVector;
 
 namespace FBI
 {
@@ -120,6 +125,24 @@ namespace ADAPTER
 
     /// Sets the fluid solve flag
     virtual void PrepareFluidSolve() = 0;
+
+    /// Matrix containing only structure side contributions \f$C_ss\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
+
+    /// Matrix containing only fluid side contributions \f$C_ff\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
+
+    /// Matrix containing mixed fluid side contributions \f$C_fs\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
+
+    /// Matrix containing mixed structure side contributions \f$C_sf\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const = 0;
+
+    /// Force vector acting on the fluid side \f$f_f\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const = 0;
+
+    /// Force vector acting on the structure side \f$f_s\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory

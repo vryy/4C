@@ -48,7 +48,7 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix
 
-  return Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)->GetCff();
+  return Bridge()->GetCff();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -66,14 +66,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluid
 {
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
-  Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-              ->GetFluidCouplingResidual())
-          ->Map()));
-  f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-              ->GetFluidCouplingResidual()),
-      0.0);
+  Teuchos::RCP<Epetra_Vector> f =
+      Teuchos::rcp(new Epetra_Vector((Bridge()->GetFluidCouplingResidual())->Map()));
+  f->Update(-1.0, *(Bridge()->GetFluidCouplingResidual()), 0.0);
   return f;
 }
 /*----------------------------------------------------------------------*/
@@ -83,14 +78,9 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
 {
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
-  Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
-      (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-              ->GetStructureCouplingResidual())
-          ->Map()));
-  f->Update(-1.0,
-      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-              ->GetStructureCouplingResidual()),
-      0.0);
+  Teuchos::RCP<Epetra_Vector> f =
+      Teuchos::rcp(new Epetra_Vector(Bridge()->GetStructureCouplingResidual()->Map()));
+  f->Update(-1.0, *(Bridge()->GetStructureCouplingResidual()), 0.0);
 
   return f;
 }
