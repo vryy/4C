@@ -56,6 +56,18 @@ namespace ADAPTER
     /// empty destructor
     virtual ~FBIPenaltyConstraintenforcer(){};
 
+    /**
+     * \brief Sets up the constraint enforcer
+     *
+     *\param[in] structure wrapper for the structure solver
+     *\param[in] fluid moving boundary wrapper for the fluid solver
+     */
+    void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
+        Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid) override;
+
+    /// Handle fbi specific output
+    void Output(double time, int step) override;
+
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
@@ -73,31 +85,34 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
+    Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
      * \returns couplting contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const override;
+    Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the structure field.
      *
      * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const override;
+    Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the slave field.
      *
      * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const override;
+    Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const override;
 
     /// Interface to do preparations to solve the fluid
-    virtual void PrepareFluidSolve() override;
+    void PrepareFluidSolve() override;
+
+    /// Output the constraint violation
+    virtual void PrintViolation(double time, int step);
 
    private:
     FBIPenaltyConstraintenforcer() = delete;

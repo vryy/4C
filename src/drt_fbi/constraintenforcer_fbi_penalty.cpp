@@ -11,15 +11,37 @@ fluid-beam interaction)
 
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "beam_to_fluid_meshtying_params.H"
+#include "beam_to_fluid_meshtying_vtk_output_params.H"
 #include "constraintenforcer_fbi_penalty.H"
 #include "constraintenforcer_fbi.H"
+
+#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
-#include "../drt_adapter/ad_fld_moving_boundary.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
+    Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid)
+{
+  ADAPTER::FBIConstraintenforcer::Setup(structure, fluid);
+  std::ofstream log;
+  if ((GetDiscretizations()[1]->Comm().MyPID() == 0) &&
+      (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
+  {
+    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    s.append(".penalty");
+    log.open(s.c_str(), std::ofstream::out);
+    log << "Time \t Step \t ViolationNorm \t FluidViolationNorm \t StructureViolationNorm"
+        << std::endl;
+    log.close();
+  }
+}
 
 Teuchos::RCP<LINALG::SparseMatrix>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
@@ -87,4 +109,59 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
 void ADAPTER::FBIPenaltyConstraintenforcer::PrepareFluidSolve()
 {
   GetBridge()->PrepareFluidSolve();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIPenaltyConstraintenforcer::Output(double time, int step)
+{
+  PrintViolation(time, step);
+}
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step)
+{
+  if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
+  {
+    double penalty_parameter = GetBridge()->GetParams()->GetPenaltyParameter();
+
+    Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
+        Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()->Map());
+
+    int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
+                  ->GetCff()
+                  ->Multiply(false,
+                      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()),
+                      *violation);
+
+    if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
+
+    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
+    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+
+    double norm, normf, norms;
+    double norm_vel;
+
+    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)
+        ->Velnp()
+        ->MaxValue(&norm_vel);  // todo this uses the pressure. Fix such that only the maximum
+                                // velocity quantity is used
+
+    violation->MaxValue(&norm);
+    if (norm_vel > 1e-15) normf = norm / norm_vel;
+
+    Teuchos::rcp_dynamic_cast<const ADAPTER::FBIStructureWrapper>(GetStructure(), true)
+        ->Velnp()
+        ->MaxValue(&norm_vel);
+    if (norm_vel > 1e-15) norms = norm / norm_vel;
+
+    std::ofstream log;
+    if (GetDiscretizations()[1]->Comm().MyPID() == 0)
+    {
+      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      s.append(".penalty");
+      log.open(s.c_str(), std::ofstream::app);
+      log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"
+          << normf / penalty_parameter << "\t" << norms / penalty_parameter << std::endl;
+    }
+  }
 }

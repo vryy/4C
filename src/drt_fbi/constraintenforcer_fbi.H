@@ -118,15 +118,10 @@ namespace ADAPTER
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve(){};
 
-    /// Get function for the structure field strcuture_
+    /// Get function for the structure field structure_
     virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
     {
       return structure_;
-    };
-    /// Get function for the fluid field fluid_
-    virtual Teuchos::RCP<const ADAPTER::FluidMovingBoundary> GetFluid() const final
-    {
-      return fluid_;
     };
 
     /// Get function for the bridge object bridge_
@@ -135,13 +130,8 @@ namespace ADAPTER
       return bridge_;
     };
 
-    /// Get function for the structure and the fluid discretization in the vector discretizations_
-    virtual const std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const final
-    {
-      return discretizations_;
-    }
-
-    virtual void PrintViolation(double time, double step);
+    /// Handle fbi specific output
+    virtual void Output(double time, int step) = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
@@ -226,6 +216,15 @@ namespace ADAPTER
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
     };
+
+    /// Get function for the fluid field fluid_
+    virtual Teuchos::RCP<ADAPTER::FluidMovingBoundary> GetFluid() const final { return fluid_; };
+
+    /// Get function for the structure and the fluid discretization in the vector discretizations_
+    virtual std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const final
+    {
+      return discretizations_;
+    }
 
    private:
     FBIConstraintenforcer() = delete;
