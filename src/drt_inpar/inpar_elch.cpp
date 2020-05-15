@@ -547,6 +547,9 @@ void INPAR::ELCH::SetValidConditions(
           Teuchos::rcp(new SeparatorConditionComponent("ConditionIDForDischarge")));
       cccvcyclingcomponents.push_back(
           Teuchos::rcp(new IntConditionComponent("ConditionIDForDischarge", false, true)));
+      cccvcyclingcomponents.push_back(
+          Teuchos::rcp(new SeparatorConditionComponent("InitRelaxTime")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new RealConditionComponent("InitRelaxTime")));
     }
 
     // insert input file line components into condition definitions

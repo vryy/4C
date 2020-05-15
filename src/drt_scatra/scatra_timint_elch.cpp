@@ -56,6 +56,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       electrodeconc_(Teuchos::null),
       electrodeeta_(Teuchos::null),
       electrodecurr_(Teuchos::null),
+      cccv_init_relax_time_(-1.0),
       cellvoltage_(0.),
       cellvoltage_old_(-1.),
       cutoff_voltage_(0.),
@@ -278,6 +279,9 @@ void SCATRA::ScaTraTimIntElch::Setup()
         condid_cccv_ = cccvcyclingcondition.GetInt("ConditionIDForCharge");
       else
         condid_cccv_ = cccvcyclingcondition.GetInt("ConditionIDForDischarge");
+
+      // get initial relaxation time
+      cccv_init_relax_time_ = cccvcyclingcondition.GetDouble("InitRelaxTime");
 
       break;
     }
@@ -3071,57 +3075,63 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
       }
     }
 
-    // check whether cell is currently being operated in constant-current (CC), constant-voltage
-    // (CV), or relaxation (RX) mode
-    if (((charging_ and cellvoltage_ < cutoff_voltage_ - 1.e-14) or
-            (!charging_ and cellvoltage_ > cutoff_voltage_ + 1.e-14)) and
-        relax_endtime_ < 0.)
-      mode_cccv_ = INPAR::ELCH::cccv_cc;
-    else if (cellcrate_ > cutoff_c_rate and relax_endtime_ < 0.)
-      mode_cccv_ = INPAR::ELCH::cccv_cv;
-    else
-      mode_cccv_ = INPAR::ELCH::cccv_rx;
-
-    // set end time of relaxation phase if applicable
-    if (mode_cccv_ == INPAR::ELCH::cccv_rx and relax_time > 0. and relax_endtime_ < 0.)
-      relax_endtime_ = time_ + relax_time;
-
-    // current charge or discharge half-cycle is not yet over
-    if (mode_cccv_ != INPAR::ELCH::cccv_rx or time_ < relax_endtime_) notfinished = true;
-
-    // end of current charge or discharge half-cycle has been reached, but there are still
-    // half-cycles left simulation is not finished yet, and the operating mode must be switched from
-    // charge to discharge or vice versa
-    else if (ihalfcycle_ < nhalfcycles_)
-    {
-      // flip flag indicating whether cell is currently being charged or discharged
-      charging_ = !charging_;
-
-      // reset flag to constant-current (CC) operating mode
-      mode_cccv_ = INPAR::ELCH::cccv_cc;
-
-      // change ID of constant-current constant-voltage (CCCV) half-cycle condition in effect
-      if (charging_)
-        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForCharge");
-      else
-        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForDischarge");
-
-      // update number of current charge or discharge half-cycle
-      ++ihalfcycle_;
-
-      // store time step at the start of current charge or discharge half-cycle
-      ihalfcycle_startstep_ = step_;
-
-      // reset end time of relaxation phase
-      relax_endtime_ = -1.;
-
-      // set outcome
+    // check, if current time is within initial relaxation time
+    if (time_ <= cccv_init_relax_time_ - Dt())
       notfinished = true;
-    }
-
-    // end of last charge or discharge half-cycle has been reached, simulation is over
     else
-      notfinished = false;
+    {
+      // check whether cell is currently being operated in constant-current (CC), constant-voltage
+      // (CV), or relaxation (RX) mode
+      if (((charging_ and cellvoltage_ < cutoff_voltage_ - 1.e-14) or
+              (!charging_ and cellvoltage_ > cutoff_voltage_ + 1.e-14)) and
+          relax_endtime_ < 0.)
+        mode_cccv_ = INPAR::ELCH::cccv_cc;
+      else if (cellcrate_ > cutoff_c_rate and relax_endtime_ < 0.)
+        mode_cccv_ = INPAR::ELCH::cccv_cv;
+      else
+        mode_cccv_ = INPAR::ELCH::cccv_rx;
+
+      // set end time of relaxation phase if applicable
+      if (mode_cccv_ == INPAR::ELCH::cccv_rx and relax_time > 0. and relax_endtime_ < 0.)
+        relax_endtime_ = time_ + relax_time;
+
+      // current charge or discharge half-cycle is not yet over
+      if (mode_cccv_ != INPAR::ELCH::cccv_rx or time_ < relax_endtime_) notfinished = true;
+
+      // end of current charge or discharge half-cycle has been reached, but there are still
+      // half-cycles left simulation is not finished yet, and the operating mode must be switched
+      // from charge to discharge or vice versa
+      else if (ihalfcycle_ < nhalfcycles_)
+      {
+        // flip flag indicating whether cell is currently being charged or discharged
+        charging_ = !charging_;
+
+        // reset flag to constant-current (CC) operating mode
+        mode_cccv_ = INPAR::ELCH::cccv_cc;
+
+        // change ID of constant-current constant-voltage (CCCV) half-cycle condition in effect
+        if (charging_)
+          condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForCharge");
+        else
+          condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForDischarge");
+
+        // update number of current charge or discharge half-cycle
+        ++ihalfcycle_;
+
+        // store time step at the start of current charge or discharge half-cycle
+        ihalfcycle_startstep_ = step_;
+
+        // reset end time of relaxation phase
+        relax_endtime_ = -1.;
+
+        // set outcome
+        notfinished = true;
+      }
+
+      // end of last charge or discharge half-cycle has been reached, simulation is over
+      else
+        notfinished = false;
+    }
   }
 
   return notfinished;
@@ -3152,8 +3162,8 @@ void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
       const Teuchos::RCP<const Epetra_Vector> phinp_inc_diff_dof =
           splitter_macro_->ExtractVector(phinp_inc_diff, idof);
 
-      // compute L2 norm of difference between current and previous increments of current degree of
-      // freedom
+      // compute L2 norm of difference between current and previous increments of current degree
+      // of freedom
       double phinp_inc_diff_L2(0.);
       phinp_inc_diff_dof->Norm2(&phinp_inc_diff_L2);
 
@@ -3192,7 +3202,8 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
 
   if (fluxtype == "domain")
   {
-    // In this case, flux output can be straightforwardly performed without additional manipulation.
+    // In this case, flux output can be straightforwardly performed without additional
+    // manipulation.
   }
 
   else if (fluxtype == "boundary")
@@ -3274,7 +3285,8 @@ int SCATRA::ScalarHandlerElch::NumScalInCondition(
   // for now only equal dof numbers are supported
   if (not equalnumdof_)
     dserror(
-        "Different number of DOFs per node within ScaTra discretization! This is not supported for "
+        "Different number of DOFs per node within ScaTra discretization! This is not supported "
+        "for "
         "Elch!");
 
   return NumScal();
@@ -3305,8 +3317,8 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     // loop over all domain partitioning conditions
     for (unsigned icond = 0; icond < ncond; ++icond)
     {
-      // we need to initialize as many sets as number of dofs per node, since all ids corresponding
-      // to a specific dof shall be grouped into a separate set
+      // we need to initialize as many sets as number of dofs per node, since all ids
+      // corresponding to a specific dof shall be grouped into a separate set
       std::vector<std::set<int>> dofids(NumDofPerNode());
 
       // extract nodes associated with current domain partitioning condition
@@ -3380,13 +3392,13 @@ void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces() const
       // Each matrix block is associated with either concentration dofs or electric potential dofs
       // only. However, since the original full null space was computed for all degrees of freedom
       // on the discretization, the reduced null spaces still have the full dimension, i.e., the
-      // full number of null space vectors equaling the total number of primary variables. Hence, we
-      // need to decrease the dimension of each null space by one and remove the corresponding zero
-      // null space vector from the null space.
+      // full number of null space vectors equaling the total number of primary variables. Hence,
+      // we need to decrease the dimension of each null space by one and remove the corresponding
+      // zero null space vector from the null space.
       if (iblock % 2 == 0)
         // null space associated with concentration dofs
-        // remove zero null space vector associated with electric potential dofs by truncating null
-        // space
+        // remove zero null space vector associated with electric potential dofs by truncating
+        // null space
         nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
 
       else
