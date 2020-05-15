@@ -76,7 +76,8 @@ namespace BEAMINTERACTION
           const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
           Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseMatrix>& cff,
           Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
-          Teuchos::RCP<LINALG::SparseMatrix>& cbf)
+          Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
+          Teuchos::RCP<const Epetra_Vector> beam_vel)
       {
         dserror("Not implemented!");
       }

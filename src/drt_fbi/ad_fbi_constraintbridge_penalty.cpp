@@ -10,9 +10,13 @@ approach for Fluid-beam interaction.
 *----------------------------------------------------------------------*/
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "partitioned_penaltycoupling_assembly_manager_direct.H"
+#include "partitioned_penaltycoupling_assembly_manager_indirect.H"
+#include "beam_to_fluid_assembly_manager_factory.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include <Epetra_FEVector.h>
+#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include <Epetra_FEVector.h>
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(
     const Epetra_Map* beam_map, const Epetra_Map* fluid_map)
@@ -27,17 +31,18 @@ void ADAPTER::FBIConstraintBridgePenalty::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
-    const DRT::Discretization& discretization1, const DRT::Discretization& discretization2)
+    Teuchos::RCP<const DRT::Discretization> discretization1,
+    Teuchos::RCP<const DRT::Discretization> discretization2,
+    Teuchos::RCP<const Epetra_Vector> fluid_vel, Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
   // Create assembly manager.. todo this will have to change as soon as we add mortar pairs.. hand
   // in by dependency injection?
-  BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect
-      assembly_manager =
-          BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect(
-              *(GetPairs()));
+  Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+      assembly_manager = BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
+          discretization1, discretization2, *(GetPairs()), GetParams());
   // compute and assembly the coupling matrices and vectors
-  assembly_manager.EvaluateForceStiff(
-      discretization1, discretization2, ff_, fs_, Cff_, Css_, Csf_, Cfs_);
+  assembly_manager->EvaluateForceStiff(
+      *discretization1, *discretization2, ff_, fs_, Cff_, Css_, Csf_, Cfs_, fluid_vel, beam_vel);
   Cff_->Complete();
 
   // Unset the dirichlet flag in case we were doing a fluid solve

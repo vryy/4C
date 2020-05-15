@@ -21,6 +21,7 @@ namespace INPAR
   {
     enum class BeamToFluidConstraintEnforcement;
     enum class BeamToFluidDiscretization;
+    enum class BeamToFluidMeshtingMortarShapefunctions;
   }  // namespace FBI
 }  // namespace INPAR
 namespace FBI
@@ -128,6 +129,14 @@ namespace FBI
       return output_params_;
     }
 
+    /**
+     * \brief Returns the shape function for the mortar Lagrange-multiplicators.
+     */
+    inline INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions GetMortarShapeFunctionType() const
+    {
+      return mortar_shape_function_;
+    }
+
 
    private:
     /// Flag if Init was called.
@@ -161,6 +170,9 @@ namespace FBI
 
     /// VTK output params. For now I see no reason to overload this
     Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
+
+    //! Shape function for the mortar Lagrange-multiplicators
+    INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function_;
   };
 
 }  // namespace FBI
