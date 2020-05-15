@@ -866,6 +866,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_anisoactivestress_evolution:
     case INPAR::MAT::mes_coupanisoexpoactive:
     case INPAR::MAT::mes_coupanisoexpo:
+    case INPAR::MAT::mes_coupanisoexposhear:
     case INPAR::MAT::mes_coupanisopow:
     case INPAR::MAT::mes_couptransverselyisotropic:
     case INPAR::MAT::mes_coupanisoexpotwocoup:

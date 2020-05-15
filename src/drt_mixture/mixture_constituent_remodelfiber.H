@@ -61,9 +61,9 @@ namespace MIXTURE
 
   /*!
    * \brief Anisotropy extension that provides the structural tensor of the direction orthogonal to
-   * the fiber direction.
+   * the fiber direction: M = I - f*f^^T
    */
-  class OrthogonalAnisotropyExtension : public MAT::FiberAnisotropyExtension
+  class OrthogonalAnisotropyExtension : public MAT::FiberAnisotropyExtension<1>
   {
    public:
     /*!
@@ -76,7 +76,7 @@ namespace MIXTURE
      *
      * \param other
      */
-    void SetAnisotropyExtension(Teuchos::RCP<MAT::FiberAnisotropyExtension>& other);
+    void SetAnisotropyExtension(Teuchos::RCP<MAT::FiberAnisotropyExtension<1>>& other);
 
     ///@name Packing and Unpacking
     /// @{
@@ -97,8 +97,10 @@ namespace MIXTURE
     void OnGlobalDataInitialized() override;
 
    private:
-    Teuchos::RCP<MAT::FiberAnisotropyExtension> other_;
+    /// Anisitropy extension of the fiber summand
+    Teuchos::RCP<MAT::FiberAnisotropyExtension<1>> other_;
 
+    /// Storage for the structural tensors in orthogonal direction to the fiber direction
     std::vector<LINALG::Matrix<3, 3>> A_orth_;
   };
 
@@ -354,7 +356,7 @@ namespace MIXTURE
     std::vector<double> sig_h_;
 
     /// Anisotropy extension of the fiber direction
-    Teuchos::RCP<MAT::FiberAnisotropyExtension> fiberAnisotropyExtension_;
+    Teuchos::RCP<MAT::FiberAnisotropyExtension<1>> fiberAnisotropyExtension_;
 
     /// Extension of the external fiber anisotropy extension
     OrthogonalAnisotropyExtension orthogonalAnisotropyExtension_;

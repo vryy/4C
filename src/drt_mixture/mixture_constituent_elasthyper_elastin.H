@@ -37,7 +37,7 @@ namespace MIXTURE
    * The anisotropy extension provides the structural tensor of the plane of the membrane, which is
    * orthogonal to the radial direction
    */
-  class ElastinAnisotropyExtension : public MAT::FiberAnisotropyExtension
+  class ElastinAnisotropyExtension : public MAT::FiberAnisotropyExtension<1>
   {
    public:
     /*!

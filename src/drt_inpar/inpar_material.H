@@ -225,10 +225,12 @@ namespace INPAR
       mes_coup3pow,    ///< general power hyperelastic potential summand for invariant III
       mes_coup13apow,  ///< hyperelastic potential summand for multiplicative coupled invariants I1
                        ///< and I3
-      mes_coupanisoexpoactive,   ///< anisotropic active fiber contribution
-      mes_coupanisoexpo,         ///< anisotropic exponential single fiber summand
-      mes_coupanisoexpotwocoup,  ///< anisotropic two fiber summand with coupling between the fibers
-      mes_coupanisoneohooke,     ///< anisotropic Neo-Hooke single fiber summand
+      mes_coupanisoexpo,              ///< anisotropic exponential single fiber summand
+      mes_coupanisoexposhear,         ///< summand for exponential shear behavior between two fibers
+      mes_coupanisoexpoactive,        ///< anisotropic active fiber contribution
+      mes_coupanisoexpotwocoup,       ///< anisotropic two fiber summand with
+                                      ///< coupling between the fibers
+      mes_coupanisoneohooke,          ///< anisotropic Neo-Hooke single fiber summand
       mes_coupanisoneohooke_varprop,  ///< anisotropic Neo-Hooke single fiber summand with
                                       ///< space-time variable coefficient
       mes_coupanisopow,               ///< anisotropic pow-like single fiber summand

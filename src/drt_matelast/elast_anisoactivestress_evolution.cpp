@@ -48,10 +48,10 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
       tauc_np_(0.0),
       tauc_n_(0.0),
       anisotropyExtension_(params->init_, params_->gamma_, params_->adapt_angle_ != 0,
-          params_->StructuralTensorStrategy())
+          params_->StructuralTensorStrategy(), {0})
 {
-  anisotropyExtension_.RegisterNeededTensors(
-      FiberAnisotropyExtension::FIBER_VECTORS | FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
+  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<1>::FIBER_VECTORS |
+                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
 /*----------------------------------------------------------------------*
@@ -220,7 +220,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  if (params_->init_ == DefaultAnisotropyExtension::INIT_MODE_NODAL_FIBERS)
+  if (params_->init_ == DefaultAnisotropyExtension<1>::INIT_MODE_NODAL_FIBERS)
   {
     // This method expects constant fibers within this element but the init mode is such that
     // fibers are defined on the Gauss points

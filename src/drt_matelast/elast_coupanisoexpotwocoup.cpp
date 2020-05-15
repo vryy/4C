@@ -45,8 +45,8 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
     : params_(params), anisotropyExtension_(params_)
 {
-  anisotropyExtension_.RegisterNeededTensors(
-      FiberAnisotropyExtension::FIBER_VECTORS | FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
+  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<2>::FIBER_VECTORS |
+                                             FiberAnisotropyExtension<2>::STRUCTURAL_TENSOR_STRESS);
 }
 
 /*----------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  if (params_->init_ == DefaultAnisotropyExtension::INIT_MODE_NODAL_FIBERS)
+  if (params_->init_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS)
   {
     // This method expects constant fibers within this element but the init mode is such that
     // fibers are defined on the Gauss points
@@ -138,7 +138,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::RegisterAnisotropyExtensions(MAT::Aniso
 MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::CoupAnisoExpoTwoCoupAnisoExtension(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
     : DefaultAnisotropyExtension(params->init_, params->gamma_, params->adapt_angle_ != 0,
-          params->StructuralTensorStrategy())
+          params->StructuralTensorStrategy(), {0, 1})
 {
 }
 

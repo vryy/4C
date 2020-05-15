@@ -13,26 +13,51 @@
 #include "material_service.H"
 #include "../headers/standardtypes.h"
 #include "anisotropy_extension.H"
+#include "../drt_lib/drt_parobject.H"
+#include <algorithm>
 
-MAT::DefaultAnisotropyExtension::DefaultAnisotropyExtension(const int init_mode, const double gamma,
-    const bool adapt_angle,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy)
-    : FiberAnisotropyExtension(stucturalTensorStrategy),
+template <unsigned int numfib>
+MAT::DefaultAnisotropyExtension<numfib>::DefaultAnisotropyExtension(const int init_mode,
+    const double gamma, const bool adapt_angle,
+    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy,
+    std::array<int, numfib> fiber_ids)
+    : FiberAnisotropyExtension<numfib>(stucturalTensorStrategy),
       init_mode_(init_mode),
       gamma_(gamma),
-      adapt_angle_(adapt_angle)
+      adapt_angle_(adapt_angle),
+      fiber_ids_(fiber_ids)
 {
   if (init_mode_ == INIT_MODE_NODAL_FIBERS || init_mode_ == INIT_MODE_NODAL_EXTERNAL)
   {
-    SetFiberLocation(FiberLocation::GPFibers);
+    this->SetFiberLocation(FiberLocation::GPFibers);
   }
   else
   {
-    SetFiberLocation(FiberLocation::ElementFibers);
+    this->SetFiberLocation(FiberLocation::ElementFibers);
   }
 }
 
-void MAT::DefaultAnisotropyExtension::SetFiberVecs(
+template <unsigned int numfib>
+void MAT::DefaultAnisotropyExtension<numfib>::PackAnisotropy(DRT::PackBuffer& data) const
+{
+  // Call base packing
+  MAT::FiberAnisotropyExtension<numfib>::PackAnisotropy(data);
+
+  DRT::ParObject::AddtoPack(data, static_cast<int>(initialized_));
+}
+
+template <unsigned int numfib>
+void MAT::DefaultAnisotropyExtension<numfib>::UnpackAnisotropy(
+    const std::vector<char>& data, std::vector<char>::size_type& position)
+{
+  // Call base unpacking
+  MAT::FiberAnisotropyExtension<numfib>::UnpackAnisotropy(data, position);
+
+  initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
+}
+
+template <unsigned int numfib>
+void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
   LINALG::Matrix<3, 1> ca1(true);
@@ -79,28 +104,45 @@ void MAT::DefaultAnisotropyExtension::SetFiberVecs(
   LINALG::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
-  a1_0.Multiply(idefgrd, ca1);
-  a1_0.Scale(1.0 / a1_0.Norm2());
 
-  a2_0.Multiply(idefgrd, ca2);
-  a2_0.Scale(1.0 / a2_0.Norm2());
+  std::array<LINALG::Matrix<3, 1>, numfib> fibers;
 
-  std::vector<LINALG::Matrix<3, 1>> fibers(0);
-  fibers.emplace_back(a1_0);
-  fibers.emplace_back(a2_0);
+  if (numfib >= 1)
+  {
+    fibers[0].Multiply(idefgrd, ca1);
+    fibers[0].Scale(1.0 / fibers[0].Norm2());
+  }
+  if (numfib >= 2)
+  {
+    fibers[1].Multiply(idefgrd, ca2);
+    fibers[1].Scale(1.0 / fibers[1].Norm2());
+  }
+  if (numfib >= 3)
+  {
+    dserror(
+        "This kind of initialization method is not implemented for materials that need more than 2 "
+        "fibers.");
+  }
 
-  SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
+  this->SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 }
 
-void MAT::DefaultAnisotropyExtension::SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec)
+template <unsigned int numfib>
+void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec)
 {
-  std::vector<LINALG::Matrix<3, 1>> fibers(0);
-  fibers.emplace_back(fibervec);
+  std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+  fibers[0].Update(fibervec);
 
-  SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
+  if (numfib >= 2)
+  {
+    dserror("This method can only be called for materials with one fiber!");
+  }
+
+  this->SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 }
 
-bool MAT::DefaultAnisotropyExtension::DoElementFiberInitialization()
+template <unsigned int numfib>
+bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
 {
   switch (init_mode_)
   {
@@ -110,20 +152,26 @@ bool MAT::DefaultAnisotropyExtension::DoElementFiberInitialization()
     case INIT_MODE_ELEMENT_FIBERS:
 
       // check, whether a coordinate system is given
-      if (GetAnisotropy()->HasElementCylinderCoordinateSystem())
+      if (this->GetAnisotropy()->HasElementCylinderCoordinateSystem())
       {
         // initialize fiber vector with local coordinate system
         LINALG::Matrix<3, 3> locsys(true);
         LINALG::Matrix<3, 3> Id(true);
         MAT::IdentityMatrix(Id);
-        GetAnisotropy()->GetElementCylinderCoordinateSystem().EvaluateLocalCoordinateSystem(locsys);
+        this->GetAnisotropy()->GetElementCylinderCoordinateSystem().EvaluateLocalCoordinateSystem(
+            locsys);
 
-        SetFiberVecs(-1.0, locsys, Id);
+        this->SetFiberVecs(-1.0, locsys, Id);
       }
-      else if (GetAnisotropy()->GetNumberOfElementFibers() > 0)
+      else if (this->GetAnisotropy()->GetNumberOfElementFibers() > 0)
       {
         // initialize fibers from global given fibers
-        SetFibers(GPDEFAULT, GetAnisotropy()->GetElementFibers());
+        std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+        for (unsigned int i = 0; i < numfib; ++i)
+        {
+          fibers.at(i) = this->GetAnisotropy()->GetElementFibers().at(fiber_ids_.at(i));
+        }
+        this->SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
       }
       else
       {
@@ -136,7 +184,8 @@ bool MAT::DefaultAnisotropyExtension::DoElementFiberInitialization()
   }
 }
 
-bool MAT::DefaultAnisotropyExtension::DoGPFiberInitialization()
+template <unsigned int numfib>
+bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
 {
   switch (init_mode_)
   {
@@ -146,16 +195,29 @@ bool MAT::DefaultAnisotropyExtension::DoGPFiberInitialization()
     case INIT_MODE_NODAL_FIBERS:
 
       // check, whether a coordinate system is given
-      if (GetAnisotropy()->HasGPCylinderCoordinateSystem())
+      if (this->GetAnisotropy()->HasGPCylinderCoordinateSystem())
       {
         dserror(
             "Gauss-point fibers defined via Gauss-point cylinder coordinate systems is not yet "
             "defined");
       }
-      else if (GetAnisotropy()->GetNumberOfGPFibers() > 0)
+      else if (this->GetAnisotropy()->GetNumberOfGPFibers() > 0)
       {
         // initialize fibers from global given fibers
-        SetFibers(GetAnisotropy()->GetGPFibers());
+        int gp = 0;
+        for (const auto& fiberList : this->GetAnisotropy()->GetGPFibers())
+        {
+          std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+
+          int i = 0;
+          for (int id : fiber_ids_)
+          {
+            fibers.at(i) = fiberList.at(id);
+            ++i;
+          }
+          this->SetFibers(gp, fibers);
+          ++gp;
+        }
       }
       else
       {
@@ -168,9 +230,15 @@ bool MAT::DefaultAnisotropyExtension::DoGPFiberInitialization()
   }
 }
 
-void MAT::DefaultAnisotropyExtension::DoExternalFiberInitialization()
+template <unsigned int numfib>
+void MAT::DefaultAnisotropyExtension<numfib>::DoExternalFiberInitialization()
 {
   LINALG::Matrix<3, 3> Id(false);
   MAT::IdentityMatrix(Id);
   SetFiberVecs(-1.0, Id, Id);
 }
+
+
+// explicit instatiations of template classes
+template class MAT::DefaultAnisotropyExtension<1u>;
+template class MAT::DefaultAnisotropyExtension<2u>;
