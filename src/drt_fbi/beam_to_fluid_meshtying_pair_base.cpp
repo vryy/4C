@@ -71,19 +71,20 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    this->ele1pos_(i) = TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
+    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
     this->ele1poscur_(i) = beam_centerline_dofvec[i];
-    this->ele1vel_(i) =
-        TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
+    this->ele1vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
   }
 
   // Fluid element.
   for (unsigned int i = 0; i < fluid::n_dof_; i++)
   {
-    this->ele2pos_(i) =
-        TYPE_BTS_VMT_AD(beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
+    this->ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
     this->ele2poscur_(i) = fluid_nodal_dofvec[i];
-    this->ele2vel_(i) = TYPE_BTS_VMT_AD(
+    this->ele2vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
   }
 }
@@ -181,12 +182,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_fluid;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force_integration_point;
+    LINALG::Matrix<3, 1, scalar_type> X;
+    LINALG::Matrix<3, 1, scalar_type> u;
+    LINALG::Matrix<3, 1, scalar_type> r;
+    LINALG::Matrix<3, 1, scalar_type> r_fluid;
+    LINALG::Matrix<3, 1, scalar_type> v_beam;
+    LINALG::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -224,9 +225,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
+    LINALG::Matrix<3, 1, scalar_type> X;
+    LINALG::Matrix<3, 1, scalar_type> u;
+    LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -257,7 +258,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::EvaluateBeamPosition(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(

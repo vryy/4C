@@ -196,6 +196,72 @@ namespace FADUTILS
     return result_vector;
   }
 
+
+  /**
+   * \brief Build nested Fad type for computing derivatives up to order N.
+   *
+   * This function is a slightly modified version of MakeFad from
+   * trilinos-source/packages/sacado/example/high_order_example.cpp
+   *
+   * @tparam N Number of nested derivatives, i.e. order of derivatives to compute.
+   * @tparam BaseFadType Basic Fad type of this nested type.
+   */
+  template <int N, typename BaseFadType>
+  struct HigherOrderFadType
+  {
+    //! Nested type of this Fad type.
+    typedef typename HigherOrderFadType<N - 1, BaseFadType>::type nested_type;
+
+    //! Fad type of this object.
+    typedef typename Sacado::mpl::apply<BaseFadType, nested_type>::type type;
+  };
+
+  /**
+   * \brief Specialization for the last nested type, i.e. first order derivatives.
+   */
+  template <typename BaseFadType>
+  struct HigherOrderFadType<1, BaseFadType>
+  {
+    typedef BaseFadType type;
+  };
+
+
+  /**
+   * \brief Create a variable of a nested FAD type.
+   *
+   * This function is a slightly modified version of MakeFad from
+   * trilinos-source/packages/sacado/example/high_order_example.cpp
+   *
+   * @tparam FadType Fad type of the variable to create.
+   */
+  template <typename FadType>
+  struct HigherOrderFadValue
+  {
+    //! Type of nested value.
+    typedef typename FadType::value_type nested_type;
+
+    /**
+     * \brief Set a value of this Fad type.
+     * @param n (in) Number of dependent variables.
+     * @param i (in) Index of the current dependent variable.
+     * @param x (in) Value of the current dependent variable.
+     * @return Created Fad type variable.
+     */
+    static FadType apply(const int n, const int i, const double x)
+    {
+      return FadType(n, i, HigherOrderFadValue<nested_type>::apply(n, i, x));
+    }
+  };
+
+  /**
+   * \brief Specialization for the last nested type, i.e. double.
+   */
+  template <>
+  struct HigherOrderFadValue<double>
+  {
+    static double apply(const int n, const int i, const double x) { return x; }
+  };
+
 }  // namespace FADUTILS
 
 #endif

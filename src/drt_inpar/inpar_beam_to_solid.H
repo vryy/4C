@@ -98,9 +98,16 @@ namespace INPAR
       //! Couple the reference configurations of the beam and solid, but force the normal distance
       //! to 0. This will lead to angular momentum conservation, but initial strains.
       configurations_forced_to_zero,
+      //! Same as above, but evaluated with FAD types.
+      configurations_forced_to_zero_fad,
       //! Couple the displacements, if no mesh initialization is performed, this will lead to
       //! non-conserving angular momentum.
-      displacements
+      displacements,
+      //! Same as above, but evaluated with FAD types.
+      displacements_fad,
+      //! Consistent coupling defined via the normal vector. This requires derivatives of the
+      //! averaged normals.
+      consistent_fad
     };
 
     /**

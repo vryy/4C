@@ -34,7 +34,7 @@ namespace GEOMETRYPAIR
 
   class FaceElement;
 
-  template <typename surface>
+  template <typename surface, typename scalar_type>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
 
@@ -64,6 +64,20 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
+
+    /**
+     * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam
+     * element. (derived)
+     *
+     * This function has to be overwritten here, since the size of FAD variables for surface
+     * elements is not known at compile time and has to be set depending on the surface patch that
+     * the surface element is part of.
+     *
+     * @param beam_centerline_dofvec
+     * @param solid_nodal_dofvec
+     */
+    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+        const std::vector<double>& solid_nodal_dofvec) override;
 
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
@@ -111,7 +125,7 @@ namespace BEAMINTERACTION
 
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
-    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface>> face_element_;
+    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

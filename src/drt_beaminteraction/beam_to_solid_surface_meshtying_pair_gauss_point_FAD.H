@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Gauss point to segment mesh tying element for between a 3D beam and a surface element.
+\brief Gauss point to segment mesh tying element for between a 3D beam and a surface element. The
+coupling terms are evaluated using FAD.
 
 \level 3
 \maintainer Ivo Steinbrecher
@@ -9,31 +10,26 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_H_
-#define BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_H_
+#ifndef BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_FAD_H_
+#define BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_FAD_H_
 
 
 #include "beam_to_solid_surface_meshtying_pair_base.H"
-
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 
 
 namespace BEAMINTERACTION
 {
   /**
    * \brief Class for Gauss-point-to-segment beam to surface surface mesh tying.
+   * @tparam scalar_type Scalar type to be used for FAD evaluation.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename beam, typename surface>
-  class BeamToSolidSurfaceMeshtyingPairGaussPoint
-      : public BeamToSolidSurfaceMeshtyingPairBase<
-            GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>, beam, surface>
+  template <typename scalar_type, typename beam, typename surface>
+  class BeamToSolidSurfaceMeshtyingPairGaussPointFAD
+      : public BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
   {
    private:
-    //! Type to be used for scalar AD variables.
-    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>;
-
     //! Shortcut to the base class.
     using base_class = BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>;
 
@@ -41,12 +37,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidSurfaceMeshtyingPairGaussPoint();
+    BeamToSolidSurfaceMeshtyingPairGaussPointFAD();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceMeshtyingPairGaussPoint(){};
+    virtual ~BeamToSolidSurfaceMeshtyingPairGaussPointFAD(){};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

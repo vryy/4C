@@ -69,11 +69,11 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type_fad> r_beam;
-  LINALG::Matrix<3, 1, scalar_type_fad> r_solid;
-  LINALG::Matrix<3, 1, scalar_type_fad> force;
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type_fad> force_element_1(true);
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> force_element_2(true);
+  LINALG::Matrix<3, 1, scalar_type> r_beam;
+  LINALG::Matrix<3, 1, scalar_type> r_solid;
+  LINALG::Matrix<3, 1, scalar_type> force;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -132,10 +132,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        (*forcevec1)(i_dof) = force_element_1(i_dof).val();
+        (*forcevec1)(i_dof) = FADUTILS::CastToDouble(force_element_1(i_dof));
       // $f_2$
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        (*forcevec2)(i_dof) = force_element_2(i_dof).val();
+        (*forcevec2)(i_dof) = FADUTILS::CastToDouble(force_element_2(i_dof));
     }
 
     if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
@@ -144,22 +144,26 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
       // $k_{11}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
-          (*stiffmat11)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(i_dof_2);
+          (*stiffmat11)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
       {
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
-          (*stiffmat12)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2);
-          (*stiffmat21)(i_dof_2, i_dof_1) = -force_element_2(i_dof_2).dx(i_dof_1);
+          (*stiffmat12)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+          (*stiffmat21)(i_dof_2, i_dof_1) =
+              -FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
       // $k_{22}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
-          (*stiffmat22)(i_dof_1, i_dof_2) = -force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2);
+          (*stiffmat22)(i_dof_1, i_dof_2) =
+              -FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -204,7 +208,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                      integration_point,
-    LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
@@ -218,18 +222,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
 /**
  * Explicit template initialization of template class.
  */
-// Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
-// Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
-// Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
-// Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
-// Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet10>;
+}  // namespace BEAMINTERACTION

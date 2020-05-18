@@ -99,8 +99,9 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup geometry data.
+     * @param discret (in) Discretization.
      */
-    virtual void Setup();
+    virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data.
@@ -175,8 +176,9 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup data in the conditions.
+     * @param discret (in) Discretization.
      */
-    virtual void Setup();
+    virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data in the conditions.

@@ -30,32 +30,29 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   face_elements_ = face_elements;
 
-  // Setup each face element.
-  for (auto& face_element_map_item : face_elements) face_element_map_item.second->Setup();
+  for (const auto& face_element_iterator : face_elements_)
+    face_element_iterator.second->Setup(discret, face_elements_);
+
+  // The averaged reference normals have to be calculated after each face element is set up.
+  for (const auto& face_element_iterator : face_elements_)
+    if (face_element_iterator.second->IsPartOfPair())
+      face_element_iterator.second->CalculateAveragedReferenceNormals(face_elements_);
 }
 
 /**
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::SetState(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
   for (const auto& face_element_iterator : face_elements_)
-  {
-    // Set the configurations for all faces.
-    face_element_iterator.second->SetState(discret, beaminteraction_data_state->GetDisColNp());
-  }
-
-  for (const auto& face_element_iterator : face_elements_)
-  {
     if (face_element_iterator.second->IsPartOfPair())
-      // Calculate the averaged normals on the faces that are contained in pairs.
-      face_element_iterator.second->CalculateAveragedNormals(face_elements_);
-  }
+      face_element_iterator.second->SetState(
+          beaminteraction_data_state->GetDisColNp(), face_elements_);
 }

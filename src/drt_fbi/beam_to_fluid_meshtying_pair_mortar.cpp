@@ -163,9 +163,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
   {
     // Setup variables.
     LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> current_beamposition;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> ref_beamposition;
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> beamdisplacement;
+    LINALG::Matrix<3, 1, scalar_type> current_beamposition;
+    LINALG::Matrix<3, 1, scalar_type> ref_beamposition;
+    LINALG::Matrix<3, 1, scalar_type> beamdisplacement;
     LINALG::Matrix<3, 1, double> lambda_discret;
     LINALG::Matrix<3, 1, double> xi_mortar_node;
 
@@ -276,9 +276,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
 
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluatePenaltyForce(
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
+    LINALG::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
+    LINALG::Matrix<3, 1, scalar_type> v_beam) const
 {
   force.PutScalar(0.);
 }

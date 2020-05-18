@@ -889,7 +889,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   }
 
   // Setup the geometry evaluation data.
-  beam_interaction_conditions_ptr_->Setup();
+  beam_interaction_conditions_ptr_->Setup(DiscretPtr());
 
   // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;

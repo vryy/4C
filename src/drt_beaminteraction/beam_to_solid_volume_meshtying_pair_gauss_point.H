@@ -28,6 +28,13 @@ namespace BEAMINTERACTION
   class BeamToSolidVolumeMeshtyingPairGaussPoint
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
+   protected:
+    //! Shortcut to the base class.
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+
+    //! Type to be used for scalar AD variables.
+    using scalar_type = typename base_class::scalar_type;
+
    public:
     /**
      * \brief Standard Constructor
@@ -52,10 +59,6 @@ namespace BEAMINTERACTION
     bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
-
-   private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
   };
 }  // namespace BEAMINTERACTION
 

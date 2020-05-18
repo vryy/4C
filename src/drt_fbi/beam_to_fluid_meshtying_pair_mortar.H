@@ -29,8 +29,11 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingPairMortar : public BeamToFluidMeshtyingPairBase<beam, fluid>
   {
    private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + fluid::n_dof_> TYPE_BTS_VMT_AD;
+    //! Shortcut to base class.
+    using base_class = BeamToFluidMeshtyingPairBase<beam, fluid>;
+
+    //! Scalar type for FAD variables.
+    using scalar_type = typename base_class::scalar_type;
 
    public:
     /**
@@ -75,9 +78,9 @@ namespace BEAMINTERACTION
         const Teuchos::ParameterList& visualization_params) const override;
 
    protected:
-    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
+    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, scalar_type>& force,
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const;
+        LINALG::Matrix<3, 1, scalar_type> v_beam) const;
   };
 }  // namespace BEAMINTERACTION
 

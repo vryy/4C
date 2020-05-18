@@ -58,16 +58,18 @@ namespace GEOMETRYPAIR
     void Clear() override;
 
     /**
-     * \brief Setup the needed surface data.
+     * \brief Setup the surface data.
+     *
+     * \param discret (in) Pointer to the discretization.
+     * \param face_elements (in) Map to all face elements in this condition on this rank.
      */
-    void Setup(
+    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
 
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
-        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+    void SetState(const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state);
 
     /**
