@@ -204,7 +204,7 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
     {
       // safety check
       std::vector<double> PolyCoeffs(*curmat->Get<std::vector<double>>("POLY_PARAMS"));
-      if (PolyCoeffs.size() != curmat->GetInt("POLY_PARA_NUM"))
+      if (PolyCoeffs.size() != static_cast<unsigned int>(curmat->GetInt("POLY_PARA_NUM")))
         dserror(
             "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size "
             "of coefficient vector POLY_PARAMS");

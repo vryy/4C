@@ -410,13 +410,12 @@ namespace MAT
     void EvaluateInverseInelasticDefGrad(
         const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdx) override = 0;
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
     void PreEvaluate(Teuchos::ParameterList& params) override = 0;
 
