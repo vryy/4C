@@ -61,8 +61,6 @@ namespace MAT
         const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy,
         std::array<int, numfib> fiber_ids);
 
-    ~DefaultAnisotropyExtension() override = default;
-
     ///@name Packing and Unpacking
     /// @{
     void PackAnisotropy(DRT::PackBuffer& data) const override;

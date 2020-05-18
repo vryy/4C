@@ -180,7 +180,7 @@ MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(Teuchos::RCP<MAT::PAR:
 MAT::ELASTIC::CoupAnisoExpoShear::CoupAnisoExpoShear(MAT::ELASTIC::PAR::CoupAnisoExpoShear* params)
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),
-      anisotropyExtension_(params_->init_, {params->fiber_id_})
+      anisotropyExtension_(params_->init_, params->fiber_id_)
 {
 }
 
