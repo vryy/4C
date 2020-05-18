@@ -122,8 +122,13 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
   scalarProducts_[0] = GetAnisotropy()
                            ->GetElementFiber(fiber_ids_[0])
                            .Dot(GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
-  structuralTensors_[0].MultiplyNT(GetAnisotropy()->GetElementFiber(fiber_ids_[0]),
+
+  LINALG::Matrix<3, 3> fiber1fiber2T(false);
+  fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetElementFiber(fiber_ids_[0]),
       GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
+
+  structuralTensors_[0].Update(0.5, fiber1fiber2T);
+  structuralTensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
   UTILS::VOIGT::Stresses::MatrixToVector(structuralTensors_[0], structuralTensors_stress_[0]);
 
   isInitialized_ = true;
@@ -161,8 +166,13 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
     scalarProducts_[gp] = GetAnisotropy()
                               ->GetGPFiber(gp, fiber_ids_[0])
                               .Dot(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
-    structuralTensors_[gp].MultiplyNT(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[0]),
+
+    LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[0]),
         GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+
+    structuralTensors_[gp].Update(0.5, fiber1fiber2T);
+    structuralTensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
     UTILS::VOIGT::Stresses::MatrixToVector(structuralTensors_[gp], structuralTensors_stress_[gp]);
   }
 

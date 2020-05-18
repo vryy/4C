@@ -21,6 +21,9 @@ namespace MAT
 {
   namespace ELASTIC
   {
+    // forward declarations
+    class CoupAnisoExpoBase_TestSuite;
+
     /*!
      * \brief Pure abstract class to define the interface to the implementation of specific
      * materials
@@ -66,6 +69,9 @@ namespace MAT
       /// ADAPT_ANGLE 0
       class CoupAnisoExpoBase
       {
+        // This class is a friend of the corresponding unit test class
+        friend class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite;
+
        public:
         /// standard constructor
         explicit CoupAnisoExpoBase(Teuchos::RCP<MAT::PAR::Material> matdata);
@@ -93,6 +99,10 @@ namespace MAT
         void SetK1COMP(const double k1comp) { k1comp_ = k1comp; }
         void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
         //@}
+
+       private:
+        /// Constructor only used for unit testing
+        CoupAnisoExpoBase();
 
       };  // class CoupAnisoExpoBase
 

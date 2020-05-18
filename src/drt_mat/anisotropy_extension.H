@@ -234,6 +234,13 @@ namespace MAT
     void SetFiberLocation(FiberLocation location);
 
     /*!
+     * \brief Returns the location where the fibers are stored (elemet/node)
+     *
+     * \return FiberLocation
+     */
+    virtual FiberLocation GetFiberLocation() const { return fiberLocation_; }
+
+    /*!
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
      * available
      */

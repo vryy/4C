@@ -31,11 +31,13 @@ namespace DRT
 
 namespace MAT
 {
-  // forward declaration of structural tensor strategy
+  // forward declarations
   namespace ELASTIC
   {
     class StructuralTensorStrategyBase;
-  }
+    class CoupAnisoExpoAnisotropyExtension_TestSuite;
+    class CoupAnisoExpoShearAnisotropyExtension_TestSuite;
+  }  // namespace ELASTIC
   class BaseAnisotropyExtension;
 
   /*!
@@ -47,6 +49,8 @@ namespace MAT
   class Anisotropy
   {
    public:
+    friend class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite;
+    friend class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite;
     //! Numerical tolerance used to check for unit vectors
     static constexpr float TOLERANCE = 1e-9;
 

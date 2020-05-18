@@ -23,6 +23,11 @@ MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(Teuchos::RCP<MAT::PAR::M
 {
 }
 
+MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase()
+    : k1_(0.0), k2_(0.0), gamma_(0.0), k1comp_(0.0), k2comp_(0.0), init_(0.0)
+{
+}
+
 MAT::ELASTIC::CoupAnisoExpoBase::CoupAnisoExpoBase(MAT::ELASTIC::PAR::CoupAnisoExpoBase* params)
     : params_(params)
 {
