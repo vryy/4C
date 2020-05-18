@@ -709,12 +709,11 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
       const INPAR::MAT::MaterialType materialtype = facdefgradin_[p].second->MaterialType();
       if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
           (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
-          (materialtype != INPAR::MAT::mfi_poly_scalar_iso) and
-          (materialtype != INPAR::MAT::mfi_poly_scalar_aniso))
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
         dserror(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you "
-            "need "
-            "to use the material 'MAT_InelasticDefgradLinScalarAniso' "
+            "need to use the material 'MAT_InelasticDefgradLinScalarAniso' "
             "'MAT_InelasticDefgradLinScalarIso', 'MAT_InelasticDefgradPolyScalarIso' or "
             "'MAT_InelasticDefgradPolyScalarAniso'!"
             " If you want to use a different material, feel free to implement it! ;-)");

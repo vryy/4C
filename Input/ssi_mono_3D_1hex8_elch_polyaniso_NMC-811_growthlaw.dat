@@ -1,0 +1,125 @@
+//
+// Maintainer: Christoph Schmidt
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    1
+//NODES       8
+DIM           3
+-------------------------------------------------------------TITLE
+simple, academic test case for monolithic scalar-structure interaction:
+- three-dimensional problem involving standard scalar transport
+- cubic domain discretized by 1 hex8 elements
+- constant initial value 43584.9 of transported scalar (due to validity bound of polynomial)
+- scalar controlled via Volume Dirichlet condition (linearly ramped from 43584.9 to 7772.7)
+- structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
+- MAT_InelasticDefgradPolyIntercalFracAniso: anisotropic strain dependent on lithiation X according to the following equation:
+- polynomial from Koerver[2018] for NMC-811 using a polynomial fit of 7th order for best approximation
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure_Scalar_Interaction
+----------------------------------------------------------------IO
+STDOUTEVRY                      0
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      GenAlpha
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+VELOCITYFIELD                   Navier_Stokes
+INITIALFIELD                    field_by_condition
+CONVFORM                        conservative
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+------------------------------------------------------ELCH CONTROL
+INITPOTCALC                     yes
+DIFFCOND_FORMULATION            Yes
+EQUPOT                          divi
+COUPLE_BOUNDARY_FLUXES          No
+-----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
+COUPLINGTYPE                    MatchingNodes
+-------------------------------------------------------SSI CONTROL
+NUMSTEP                         20
+TIMESTEP                        0.05
+COUPALGO                        ssi_Monolithic
+SCATRATIMINTTYPE                Elch
+--------------------------------------------SSI CONTROL/MONOLITHIC
+LINEAR_SOLVER                   1
+MATRIXTYPE                      sparse
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.3454e-10 COND_PARA_NUM 1 COND_PARA 1.7e5 C_MAX 4.91375e4 CHI_MAX 1.0 OCP_MODEL Polynomial X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 1 OCP_PARA 0.0 END
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 7480.0
+MAT 3 ELAST_CoupNeoHooke YOUNG 1.0e4 NUE 0.3
+MAT 4 MAT_InelasticDefgradPolyIntercalFracAniso SCALAR1 1 SCALAR1_RefConc 43584.9 NUMSPACEDIM 3 GrowthDirection 1.0 0.0 0.0 POLY_PARA_NUM 8 POLY_PARAMS 0.1051717305 -3.9012322937 31.9658107225 -122.8624633232 258.6769103514 -306.7800791732 192.5096604774 -49.7490196448 X_min 0.152 X_max 0.887 MATID 1
+----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
+------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 43584.9 7772.7
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 43584.9
+COMPONENT 1 FUNCTION 3.6
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.77013488253074877e-02 TOLERANCE 1.8e-11
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.77013488253071338e-02 TOLERANCE 1.8e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE -1.77013488253076855e-02 TOLERANCE 1.8e-11
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -1.77013488253065197e-02 TOLERANCE 1.8e-11
+------------------------------------------------DESIGN DESCRIPTION
+NDVOL   2
+NDLINE  1
+NDPOINT 1
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT  1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+DVOL   1
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 3.6 FUNCT 1 none
+-------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
+DVOL   1
+E 1 - ScaTra 2
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 2 DNODE 1
+NODE 3 DNODE 1
+NODE 4 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 3 DLINE 1
+NODE 4 DLINE 1
+NODE 5 DLINE 1
+NODE 6 DLINE 1
+NODE 7 DLINE 1
+NODE 8 DLINE 1
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD -1.0000000000000000e+00 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 2 COORD -1.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -1.0000000000000000e+00  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -1.0000000000000000e+00  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 5 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 6 COORD  0.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD  0.0000000000000000e+00  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD  0.0000000000000000e+00  5.0000000000000000e-01  5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8SCATRA HEX8  1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none TYPE Std
+---------------------------------------------------------------END

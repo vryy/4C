@@ -695,6 +695,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     // saturation value of intercalated Lithium concentration
     AddNamedReal(matelectrode, "C_MAX", "saturation value of intercalated Lithium concentration");
 
+    // lithiation value corresponding to saturation value of intercalated Lithium concentration
+    AddNamedReal(matelectrode, "CHI_MAX",
+        "lithiation value corresponding to saturation value of intercalated Lithium concentration "
+        "'C_MAX'");
+
     // model for half cell open circuit potential of electrode
     AddNamedString(matelectrode, "OCP_MODEL",
         "model for half cell open circuit potential of electrode", "none");
@@ -2237,9 +2242,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         INPAR::MAT::mfi_lin_scalar_iso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
-    AddNamedReal(m, "SCALAR1_GrowthFac", "isotropic growth factor due to scalar 1");
+    AddNamedReal(m, "SCALAR1_MolarGrowthFac", "isotropic molar growth factor due to scalar 1");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
-    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2255,25 +2259,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         INPAR::MAT::mfi_lin_scalar_aniso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
-    AddNamedReal(m, "SCALAR1_GrowthFac", "anisotropic growth factor due to scalar 1");
+    AddNamedReal(m, "SCALAR1_MolarGrowthFac", "anisotropic molar growth factor due to scalar 1");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
     AddNamedInt(m, "NUMSPACEDIM", "Number of space dimension (only 3 valid)");
     AddNamedRealVector(
         m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
-    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
-  // non-linear isotropic volumetric growth; growth is dependent on
-  // scalar mapped to material configuration, constant material density, nonlinear behavior
-  // prescribed by polynomial in input file
+  // non-linear isotropic volumetric growth; growth is dependent on the degree of lithiation,
+  // constant material density, nonlinear behavior prescribed by polynomial in input file
   {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarIso",
-        "scalar dependent isotropic growth law; volume change nonlinearly dependent on scalar"
-        "(in material configuration)",
-        INPAR::MAT::mfi_poly_scalar_iso));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyIntercalFracIso",
+        "scalar dependent isotropic growth law; volume change nonlinearly dependent on the "
+        "intercalation fraction, that is calculated using the scalar concentration (in material "
+        "configuration)",
+        INPAR::MAT::mfi_poly_intercal_frac_iso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
@@ -2288,13 +2291,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   /*----------------------------------------------------------------------*/
   // non-linear anisotropic volumetric growth; growth direction prescribed in input-file;
-  // growth is dependent on a scalar mapped to material configuration, constant material
-  // density, nonlinear behavior prescribed by polynomial in input file
+  // growth is dependent on the degree of lithiation, constant material density, nonlinear behavior
+  // prescribed by polynomial in input file
   {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarAniso",
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyIntercalFracAniso",
         "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
-        "volume change linearly dependent on scalar (in material configuration)",
-        INPAR::MAT::mfi_poly_scalar_aniso));
+        "volume change nonlinearly dependent on the intercalation fraction, that is calculated "
+        "using the scalar concentration (in material configuration)",
+        INPAR::MAT::mfi_poly_intercal_frac_aniso));
 
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
