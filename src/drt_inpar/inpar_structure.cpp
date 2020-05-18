@@ -395,6 +395,11 @@ namespace INPAR
           Teuchos::rcp(new IntVectorConditionComponent("funct_disploffset", 3)));
 
       robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCTNONLINSTIFF")));
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new IntVectorConditionComponent("funct_nonlinstiff", 3)));
+
+      robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
       robinspringdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction",
           "xyz", Teuchos::tuple<std::string>("xyz", "refsurfnormal", "cursurfnormal"),

@@ -61,6 +61,21 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
   if (springtype_ == cursurfnormal && coupling_ == -1)
     dserror("Coupling id necessary for DIRECTION cursurfnormal.");
 
+  // safety checks of input
+  const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
+  const std::vector<int>* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
+  const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
+  const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+  const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
+
+  for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
+  {
+    if ((*numfuncnonlinstiff)[i] != 0 and
+        ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0 or (*disploffset)[i] != 0 or
+            (*numfuncdisploffset)[i] != 0))
+      dserror("Must not apply nonlinear stiffness and linear stiffness");
+  }
+
   // ToDo: delete rest until return statement!
   // get geometry
   std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
@@ -108,6 +123,7 @@ void UTILS::SpringDashpotNew::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> s
   const std::vector<int>* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
   const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
   const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+  const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
   const std::string* direction = spring_->Get<std::string>("direction");
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
@@ -125,6 +141,7 @@ void UTILS::SpringDashpotNew::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> s
   params.set("funct_stiff", numfuncstiff);
   params.set("funct_visco", numfuncvisco);
   params.set("funct_disploffset", numfuncdisploffset);
+  params.set("funct_nonlinstiff", numfuncnonlinstiff);
   params.set("total time", total_time);
 
   std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
@@ -235,6 +252,7 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
           const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+          const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
           for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
             if ((*numfuncstiff)[i])
               dserror(
@@ -248,6 +266,10 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
             if ((*numfuncdisploffset)[i])
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
+
+          for (int i = 0; i < static_cast<int>(numfuncnonlinstiff->size()); ++i)
+            if ((*numfuncnonlinstiff)[i])
+              dserror("Nonlinear spring not implemented for current surface evaluation");
 
           // spring displacement
           gap = gap_[gid];
@@ -344,6 +366,7 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
           const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+          const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
           for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
             if ((*numfuncstiff)[i])
               dserror(
@@ -357,6 +380,9 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
             if ((*numfuncdisploffset)[i])
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
+          for (int i = 0; i < static_cast<int>(numfuncnonlinstiff->size()); ++i)
+            if ((*numfuncnonlinstiff)[i])
+              dserror("Nonlinear spring not implemented for current surface evaluation");
 
           // spring displacement
           gap = gap_[gid];

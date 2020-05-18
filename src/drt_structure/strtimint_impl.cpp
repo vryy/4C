@@ -1049,11 +1049,13 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<LINALG::SparseOp
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln, bool predict, Teuchos::ParameterList psprdash)
 {
-  auto stiff_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
-  if (stiff_sparse == Teuchos::null) dserror("Cannot cast stiffness matrix to sparse matrix!");
   psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
+  {
+    auto stiff_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
+    if (stiff_sparse == Teuchos::null) dserror("Cannot cast stiffness matrix to sparse matrix!");
     springman_->StiffnessAndInternalForces(stiff_sparse, fint, disn, veln, psprdash);
+  }
 
   return;
 }
