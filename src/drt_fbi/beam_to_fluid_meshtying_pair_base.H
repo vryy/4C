@@ -67,23 +67,6 @@ namespace BEAMINTERACTION
     void PreEvaluate() override;
 
     /**
-     * \brief Evaluate this contact element pair.
-     * @param forcevec1 (out) Force vector on element 1.
-     * @param forcevec2 (out) Force vector on element 2.
-     * @param stiffmat11 (out) Stiffness contributions on element 1 - element 1.
-     * @param stiffmat12 (out) Stiffness contributions on element 1 - element 2.
-     * @param stiffmat21 (out) Stiffness contributions on element 2 - element 1.
-     * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
-     * @return True if pair is in contact.
-     */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
-    {
-      return false;
-    };
-
-    /**
      * \brief Update state of translational nodal DoFs (absolute positions, tangents and velocities)
      * of both elements.
      * @param beam_centerline_dofvec current nodal beam positions extracted from the element and
@@ -134,13 +117,6 @@ namespace BEAMINTERACTION
 
     void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
         LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
-
-    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, scalar_type>& force,
-        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-        LINALG::Matrix<3, 1, scalar_type> v_beam) const
-    {
-      dserror("Not implemented yet!\n");
-    };
 
     //! Current nodal velocities of the two elements.
     LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1vel_;

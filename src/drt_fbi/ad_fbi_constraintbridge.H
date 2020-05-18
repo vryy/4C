@@ -119,25 +119,13 @@ namespace ADAPTER
     virtual void ResetBridge();
 
     /// Sets the fluid solve flag
-    virtual void PrepareFluidSolve(){};
+    virtual void PrepareFluidSolve() = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
      */
     FBIConstraintBridge();
-
-    /// Provides access to data container holding all beam interaction related parameters
-    virtual void SetParams(Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params) final
-    {
-      beam_interaction_params_ = params;
-    };
-
-    /// Provides access to data container holding all geometry related evaluation data
-    virtual void SetGeometryData(Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> data) final
-    {
-      geometry_evaluation_data_ = data;
-    };
 
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
