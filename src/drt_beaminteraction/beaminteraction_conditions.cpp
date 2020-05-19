@@ -13,6 +13,8 @@
 #include "beam_to_solid_conditions.H"
 #include "beam_contact_params.H"
 #include "beam_contact_pair.H"
+#include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_lib/drt_discret.H"
@@ -64,7 +66,8 @@ BEAMINTERACTION::BeamInteractionConditions::BeamInteractionConditions() {}
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const BeamContactParams>& params_ptr)
 {
   condition_map_.clear();
 
@@ -77,7 +80,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
   {
     // Add all beam-to-solid contitions.
     if (interaction_type ==
-            INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying ||
+            INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying or
         interaction_type ==
             INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying)
     {
@@ -116,12 +119,14 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
           Teuchos::RCP<BeamInteractionConditionBase> new_condition;
           if (interaction_type ==
               INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
-            new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying(
-                map_item.second.first, map_item.second.second));
+            new_condition = Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying(map_item.second.first,
+                    map_item.second.second, params_ptr->BeamToSolidVolumeMeshtyingParams()));
           else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
-            new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying(
-                map_item.second.first, map_item.second.second));
+            new_condition = Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying(map_item.second.first,
+                    map_item.second.second, params_ptr->BeamToSolidSurfaceMeshtyingParams()));
           else
             dserror("Got unexpected interaction type.");
           interaction_vector.push_back(new_condition);
@@ -188,15 +193,14 @@ void BEAMINTERACTION::BeamInteractionConditions::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair;
   for (auto& map_pair : condition_map_)
   {
     for (auto& condition : map_pair.second)
     {
-      new_pair = condition->CreateContactPair(ele_ptrs, params_ptr);
+      new_pair = condition->CreateContactPair(ele_ptrs);
       if (new_pair != Teuchos::null) return new_pair;
     }
   }

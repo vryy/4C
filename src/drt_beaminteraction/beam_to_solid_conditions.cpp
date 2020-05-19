@@ -36,10 +36,12 @@
  */
 BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamInteractionConditionBase(condition_line),
       condition_other_(condition_other),
-      condition_contact_pairs_()
+      condition_contact_pairs_(),
+      beam_to_solid_params_(beam_to_solid_params)
 {
 }
 
@@ -68,15 +70,13 @@ void BEAMINTERACTION::BeamToSolidCondition::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
 
   // Create the beam contact pair.
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
-      CreateContactPairInternal(ele_ptrs, params_ptr);
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = CreateContactPairInternal(ele_ptrs);
 
   if (contact_pair != Teuchos::null)
   {
@@ -100,8 +100,9 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
  */
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
-    : BeamToSolidCondition(condition_line, condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
+    : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params)
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
@@ -131,16 +132,17 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   // Cast the solid element.
   const DRT::ELEMENTS::So_base* solidele = dynamic_cast<const DRT::ELEMENTS::So_base*>(ele_ptrs[1]);
   const DRT::Element::DiscretizationType shape = solidele->Shape();
 
   // Get the contact discretization method.
+  auto beam_to_volume_params = Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
+      beam_to_solid_params_, true);
   INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization =
-      params_ptr->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization();
+      beam_to_volume_params->GetContactDiscretization();
 
   // Check which contact discretization is wanted.
   if (contact_discretization ==
@@ -180,7 +182,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
   else if (contact_discretization == INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
   {
     INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function =
-        params_ptr->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
+        beam_to_volume_params->GetMortarShapeFunctionType();
 
     switch (mortar_shape_function)
     {
@@ -326,8 +328,9 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
  */
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfaceMeshtying(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
-    : BeamToSolidCondition(condition_line, condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
+    : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params)
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
@@ -486,19 +489,21 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::SetState(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   using namespace GEOMETRYPAIR;
 
   const Teuchos::RCP<const DRT::FaceElement>& face_element = surface_ids_[ele_ptrs[1]->Id()];
   const DRT::Element::DiscretizationType shape = face_element->Shape();
 
+  auto beam_to_surface_params = Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceMeshtyingParams>(
+      beam_to_solid_params_, true);
+
   INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
-      params_ptr->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
+      beam_to_surface_params->GetCouplingType();
 
   INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization coupling_discretization =
-      params_ptr->BeamToSolidSurfaceMeshtyingParams()->GetContactDiscretization();
+      beam_to_surface_params->GetContactDiscretization();
 
   switch (coupling_discretization)
   {
@@ -574,7 +579,7 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
     case INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar:
     {
       INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction =
-          params_ptr->BeamToSolidSurfaceMeshtyingParams()->GetMortarShapeFunctionType();
+          beam_to_surface_params->GetMortarShapeFunctionType();
 
       switch (coupling_type)
       {

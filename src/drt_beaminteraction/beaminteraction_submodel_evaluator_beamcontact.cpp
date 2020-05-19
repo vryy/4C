@@ -84,10 +84,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
-  // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
-  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(DiscretPtr());
-
   // build runtime vtp writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
@@ -170,6 +166,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           GState().GetTimeN());
     }
   }
+
+  // Build the container to manage beam-to-solid conditions and get all coupling conditions.
+  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
+  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(
+      DiscretPtr(), beam_contact_params_ptr_);
 
   // set flag
   issetup_ = true;
@@ -873,8 +874,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(
-              ele_ptrs, beam_contact_params_ptr_, beam_interaction_conditions_ptr_);
+          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_interaction_conditions_ptr_);
 
       if (newbeaminteractionpair == Teuchos::null)
         dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",

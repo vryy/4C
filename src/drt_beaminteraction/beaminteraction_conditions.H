@@ -72,12 +72,10 @@ namespace BEAMINTERACTION
      * \brief Create the beam contact pair needed for this condition.
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
-     * @param params_ptr (in) Pointer beam contact parameters.
      * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) = 0;
+        const std::vector<DRT::Element const*>& ele_ptrs) = 0;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
@@ -156,8 +154,12 @@ namespace BEAMINTERACTION
      * This method searches the discretization for input beam interaction conditions, finds the
      * correct line-to- line / surface / volume pairings and adds them to the class variable \ref
      * condition_map_.
+     *
+     * @param discret (in) pointer to the discretization
+     * @param params (in) Pointer beam contact parameters.
      */
-    void SetBeamInteractionConditions(const Teuchos::RCP<const DRT::Discretization>& discret);
+    void SetBeamInteractionConditions(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const BeamContactParams>& params_ptr);
 
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
@@ -193,11 +195,9 @@ namespace BEAMINTERACTION
      * creates the correct pair.
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
-     * @param params_ptr (in) Pointer beam contact parameters.
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr);
+        const std::vector<DRT::Element const*>& ele_ptrs);
 
     /**
      * \brief Return a const reference to the condition map.
