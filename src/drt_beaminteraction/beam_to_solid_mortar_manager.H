@@ -175,6 +175,15 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> disp) const;
 
+    /**
+     * \brief Return a const reference to the contact pairs in this mortar manager.
+     * @return Reference to the pair vector.
+     */
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+    {
+      return contact_pairs_;
+    }
+
    protected:
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.

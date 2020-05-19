@@ -241,9 +241,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
   std::vector<int> element_gid_needed;
 
   // Loop over the pairs and get the global node and element indices needed on this rank.
-  for (unsigned int i_pair = 0; i_pair < contact_pairs.size(); i_pair++)
+  for (unsigned int i_pair = 0; i_pair < contact_pairs_.size(); i_pair++)
   {
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs[i_pair];
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs_[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->Element1()->Owner() != discret_->Comm().MyPID())
