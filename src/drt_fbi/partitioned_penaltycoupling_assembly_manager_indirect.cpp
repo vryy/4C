@@ -41,7 +41,6 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToFluidMortarManager>(
       new BEAMINTERACTION::BeamToFluidMortarManager(discretization1, discretization2,
           beam_contact_params_ptr, discretization1->DofRowMap()->MaxAllGID()));
-  mortar_manager_->Init(beam_contact_params_ptr);
 
   // Setup the mortar manager.
   mortar_manager_->Setup();

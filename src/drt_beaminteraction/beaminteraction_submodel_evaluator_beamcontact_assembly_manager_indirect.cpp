@@ -39,7 +39,6 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
       new BEAMINTERACTION::BeamToSolidMortarManager(
           discret, beam_contact_params_ptr, discret->DofRowMap()->MaxAllGID()));
-  mortar_manager_->Init(beam_contact_params_ptr);
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
