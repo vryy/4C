@@ -40,7 +40,7 @@ namespace STR
 }  // namespace STR
 namespace BEAMINTERACTION
 {
-  class BeamContactParams;
+  class BeamToSolidParamsBase;
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
@@ -48,6 +48,7 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 
 namespace BEAMINTERACTION
 {
@@ -90,11 +91,12 @@ namespace BEAMINTERACTION
      * \brief Standard Constructor
      *
      * @params discret (in) Pointer to the discretization.
-     * @params params (in) Parameters for the beam contact.
+     * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid);
+    BeamToSolidMortarManager(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+        int start_value_lambda_gid);
 
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
@@ -145,10 +147,8 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
-     * @param contact_pairs (in) Vector with all beam contact pairs in the model evaluator.
      */
-    void EvaluateGlobalDM(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+    void EvaluateGlobalDM();
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -231,7 +231,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
 
     //! Row map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
@@ -281,6 +281,9 @@ namespace BEAMINTERACTION
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
     Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
+
+    //! Vector with all contact pairs to be evaluated by this mortar manager.
+    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
   };
 }  // namespace BEAMINTERACTION
 

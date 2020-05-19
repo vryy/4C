@@ -81,6 +81,13 @@ namespace BEAMINTERACTION
      */
     const Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
 
+    /**
+     * \brief Create the indirect assembly manager for this condition.
+     * @param discret (in) Discretization.
+     */
+    Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> CreateIndirectAssemblyManager(
+        const Teuchos::RCP<const DRT::Discretization>& discret) override;
+
    protected:
     /**
      * \brief Check if a solid ID is in this condition.

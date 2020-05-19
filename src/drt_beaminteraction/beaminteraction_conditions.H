@@ -34,6 +34,10 @@ namespace BEAMINTERACTION
 {
   class BeamContactPair;
   class BeamContactParams;
+  namespace SUBMODELEVALUATOR
+  {
+    class BeamContactAssemblyManager;
+  }
 }  // namespace BEAMINTERACTION
 namespace GEOMETRYPAIR
 {
@@ -111,6 +115,17 @@ namespace BEAMINTERACTION
      * ID is in this condition.
      */
     virtual bool IdsInCondition(const int id_line, const int id_other) const = 0;
+
+    /**
+     * \brief Create the indirect assembly manager for this condition.
+     * @param discret (in) Discretization.
+     * @return Pointer to created assembly manager.
+     */
+    virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
+    CreateIndirectAssemblyManager(const Teuchos::RCP<const DRT::Discretization>& discret)
+    {
+      return Teuchos::null;
+    };
 
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
@@ -198,6 +213,16 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
         const std::vector<DRT::Element const*>& ele_ptrs);
+
+    /**
+     * Create all needed indirect assembly managers.
+     * @param discret (in) Discretization.
+     * @param assembly_managers (in/out) Pointer to assembly manager vector from the beam
+     * interaction submodel evaluator.
+     */
+    void CreateIndirectAssemblyManagers(const Teuchos::RCP<const DRT::Discretization>& discret,
+        std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+            assembly_managers);
 
     /**
      * \brief Return a const reference to the condition map.

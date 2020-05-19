@@ -212,6 +212,26 @@ BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
 /**
  *
  */
+void BEAMINTERACTION::BeamInteractionConditions::CreateIndirectAssemblyManagers(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    std::vector<Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
+{
+  Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+      condition_assembly_manager = Teuchos::null;
+  for (auto& map_pair : condition_map_)
+  {
+    for (auto& condition : map_pair.second)
+    {
+      condition_assembly_manager = condition->CreateIndirectAssemblyManager(discret);
+      if (not(condition_assembly_manager == Teuchos::null))
+        assembly_managers.push_back(condition_assembly_manager);
+    }
+  }
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::ConditionToElementIds(
     const Teuchos::RCP<const DRT::Condition>& condition, std::vector<int>& element_ids)
 {

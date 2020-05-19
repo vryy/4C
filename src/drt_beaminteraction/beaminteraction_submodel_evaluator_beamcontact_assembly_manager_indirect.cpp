@@ -30,19 +30,20 @@ coupling matrices M and D first.
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
     BeamContactAssemblyManagerInDirect(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr)
-    : BeamContactAssemblyManager(assembly_contact_elepairs)
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+            assembly_contact_elepairs,
+        const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
+    : BeamContactAssemblyManager()
 {
   // Create the mortar manager.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
       new BEAMINTERACTION::BeamToSolidMortarManager(
-          discret, beam_contact_params_ptr, discret->DofRowMap()->MaxAllGID()));
+          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID()));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
-  mortar_manager_->SetLocalMaps(assembly_contact_elepairs_);
+  mortar_manager_->SetLocalMaps(assembly_contact_elepairs);
 }
 
 
@@ -55,7 +56,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::Eva
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
 {
   // Evaluate the global mortar matrices.
-  mortar_manager_->EvaluateGlobalDM(assembly_contact_elepairs_);
+  mortar_manager_->EvaluateGlobalDM();
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->AddGlobalForceStiffnessPenaltyContributions(data_state, fe_sysmat, fe_sysvec);

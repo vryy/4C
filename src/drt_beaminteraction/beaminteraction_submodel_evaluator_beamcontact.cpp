@@ -891,24 +891,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   // Setup the geometry evaluation data.
   beam_interaction_conditions_ptr_->Setup(DiscretPtr());
 
-  // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
+  // Get the pairs that can be assembled directly.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_indirect;
   for (auto& elepairptr : contact_elepairs_)
-  {
     if (elepairptr->IsAssemblyDirect()) assembly_pairs_direct.push_back(elepairptr);
-    if (elepairptr->IsAssemblyIndirect()) assembly_pairs_indirect.push_back(elepairptr);
-  }
 
-  // Check if there are any processors that require a certain element assembly method.
+  // Check if there are any processors that require a direct element assembly method.
   // We need to do this as in some assembly methods MPI communications are needed and the
   // simulation crashes if the assembly manager is not on all ranks.
   int my_direct_pairs = assembly_pairs_direct.size();
-  int my_indirect_pairs = assembly_pairs_indirect.size();
   int global_direct_pairs = 0;
-  int global_indirect_pairs = 0;
   Discret().Comm().SumAll(&my_direct_pairs, &global_direct_pairs, 1);
-  Discret().Comm().SumAll(&my_indirect_pairs, &global_indirect_pairs, 1);
 
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)
@@ -916,11 +909,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
         Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
             new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect(
                 assembly_pairs_direct)));
-  if (global_indirect_pairs > 0)
-    assembly_managers_.push_back(
-        Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(
-            new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
-                assembly_pairs_indirect, DiscretPtr(), BeamContactParamsPtr())));
+
+  // Each indirect assembly manager depends on a beam interaction.
+  beam_interaction_conditions_ptr_->CreateIndirectAssemblyManagers(
+      DiscretPtr(), assembly_managers_);
 
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
                          << " currently monitors " << std::setw(5) << std::right

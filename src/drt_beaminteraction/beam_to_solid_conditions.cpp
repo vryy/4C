@@ -20,6 +20,7 @@
 #include "beam_to_solid_surface_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_surface_meshtying_params.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_lib/drt_discret.H"
@@ -94,6 +95,21 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
   // Return the newly created pair.
   return contact_pair;
 }
+
+/**
+ *
+ */
+Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+BEAMINTERACTION::BeamToSolidCondition::CreateIndirectAssemblyManager(
+    const Teuchos::RCP<const DRT::Discretization>& discret)
+{
+  if (beam_to_solid_params_->GetContactDiscretization() ==
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
+    return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
+        condition_contact_pairs_, discret, beam_to_solid_params_));
+  return Teuchos::null;
+}
+
 
 /**
  *

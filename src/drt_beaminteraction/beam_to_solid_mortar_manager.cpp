@@ -29,14 +29,15 @@
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    const Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid)
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),
       is_global_maps_build_(false),
       start_value_lambda_gid_(start_value_lambda_gid),
       discret_(discret),
-      beam_contact_parameters_ptr_(params),
+      beam_to_solid_params_(params),
       lambda_dof_rowmap_(Teuchos::null),
       lambda_dof_colmap_(Teuchos::null),
       beam_dof_rowmap_(Teuchos::null),
@@ -46,10 +47,11 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       global_D_(Teuchos::null),
       global_M_(Teuchos::null),
       global_kappa_(Teuchos::null),
-      global_active_lambda_(Teuchos::null)
+      global_active_lambda_(Teuchos::null),
+      contact_pairs_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  switch (params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType())
+  switch (params->GetMortarShapeFunctionType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
     {
@@ -229,6 +231,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
   CheckSetup();
   CheckGlobalMaps();
 
+  contact_pairs_ = contact_pairs;
+
   // At this point the global multi vectors are filled up completely. To get the map for global
   // node element ids to the global lambda ids we need to be able to extract more than the local
   // values on this processor. Therefore we need a new map that contains all rows we want to
@@ -381,8 +385,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
 {
   CheckSetup();
   CheckGlobalMaps();
@@ -409,7 +412,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   bool mortar_is_active = false;
 
   // Loop over elements and assemble the local D and M matrices into the global ones.
-  for (auto& elepairptr : contact_pairs)
+  for (auto& elepairptr : contact_pairs_)
   {
     // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
     // matrices.
@@ -483,8 +486,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
   const double rhs_factor = -1.0;
 
   // Get penalty parameter.
-  const double penalty_parameter =
-      beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
 
   // Scale D and M with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
@@ -621,8 +623,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
   CheckGlobalMaps();
 
   // Get penalty parameter.
-  const double penalty_parameter =
-      beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
 
   // Get the displacements of the beam and the solid.
   Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
