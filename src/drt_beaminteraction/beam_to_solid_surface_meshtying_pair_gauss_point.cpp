@@ -66,13 +66,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   const INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
       this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
   if (coupling_type ==
-      INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero)
+      INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero)
   {
     // Couple the positions -> this will result in an initial stress of the system.
     beam_dof_fad = this->ele1pos_;
     surface_dof_fad = this->face_element_->GetFacePosition();
   }
-  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements)
+  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement)
   {
     // Couple the displacements -> this will result in a non-fulfilment of the conservation of
     // angular momentum.

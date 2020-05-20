@@ -527,8 +527,8 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
     {
       switch (coupling_type)
       {
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
         {
           switch (shape)
           {
@@ -556,8 +556,9 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
           break;
         }
 
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+            reference_configuration_forced_to_zero_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
         {
           switch (shape)
@@ -599,8 +600,8 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
 
       switch (coupling_type)
       {
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
         {
           switch (mortar_shapefunction)
           {

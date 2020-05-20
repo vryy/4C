@@ -60,12 +60,13 @@ namespace BEAMINTERACTION
     {
       switch (coupling_type_)
       {
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
           return false;
           break;
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+            reference_configuration_forced_to_zero_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
           return true;
           break;
