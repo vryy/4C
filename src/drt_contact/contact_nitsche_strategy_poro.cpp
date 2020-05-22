@@ -10,23 +10,22 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_nitsche_strategy_poro.H"
-#include <Epetra_FEVector.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Operator.h>
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_mortar/mortar_element.H"
 #include "contact_interface.H"
 #include "contact_nitsche_utils.H"
 #include "contact_paramsinterface.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_so3/so3_plast/so3_ssn_plast.H"
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_inpar/inpar_thermo.H"
+
+#include <Epetra_FEVector.h>
+#include <Epetra_Operator.h>
+
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_cut/cut_output.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_so3/so3_plast/so3_ssn_plast.H"
+
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
 void CONTACT::CoNitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
@@ -61,7 +60,6 @@ void CONTACT::CoNitscheStrategyPoro::SetState(
   }
   else
     CONTACT::CoNitscheStrategy::SetState(statename, vec);
-  return;
 }
 
 void CONTACT::CoNitscheStrategyPoro::SetParentState(
@@ -78,15 +76,15 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
 
 
     // set state on interfaces
-    for (int i = 0; i < (int)interface_.size(); ++i)
+    for (const auto& interface : interface_)
     {
-      DRT::Discretization& idiscret_ = interface_[i]->Discret();
+      DRT::Discretization& idiscret = interface->Discret();
 
-      for (int j = 0; j < interface_[i]->Discret().ElementColMap()->NumMyElements(); ++j)
+      for (int j = 0; j < interface->Discret().ElementColMap()->NumMyElements(); ++j)
       {
-        int gid = interface_[i]->Discret().ElementColMap()->GID(j);
+        const int gid = interface->Discret().ElementColMap()->GID(j);
 
-        MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+        auto* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret.gElement(gid));
 
         std::vector<int> lm;
         std::vector<int> lmowner;
@@ -121,8 +119,6 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
   }
   else
     CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
-
-  return;
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
@@ -133,18 +129,15 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
     case DRT::UTILS::block_porofluid:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
-      break;
     default:
       return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
-      break;
   }
-  return Teuchos::null;
 }
 
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bp) const
 {
-  if (curr_state_eval_ == false) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
@@ -165,19 +158,15 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMatrixBl
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
               100, true, false, LINALG::SparseMatrix::FE_MATRIX));
-      break;
     case DRT::UTILS::block_porofluid_displ:
     case DRT::UTILS::block_porofluid_porofluid:
       return Teuchos::rcp(
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
               100, true, false, LINALG::SparseMatrix::FE_MATRIX));
-      break;
     default:
       return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
-      break;
   }
-  return Teuchos::null;
 }
 
 void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
@@ -214,21 +203,17 @@ void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bp) const
 {
-  if (curr_state_eval_ == false) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
     case DRT::UTILS::block_porofluid_porofluid:
       return kpp_;
-      break;
     case DRT::UTILS::block_porofluid_displ:
       return kpd_;
-      break;
     case DRT::UTILS::block_displ_porofluid:
       return kdp_;
-      break;
     default:
-      return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp);
-      break;
+      return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
   }
 }

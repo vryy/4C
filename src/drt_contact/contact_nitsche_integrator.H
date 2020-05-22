@@ -12,9 +12,11 @@
 #define CONTACT_INTEGRATOR_NITSCHE_H
 
 #include "contact_integrator.H"
-#include "../headers/pairedvector.H"
+
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
+
+#include "../headers/pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -24,39 +26,21 @@ namespace LINALG
 
 namespace CONTACT
 {
-  template <int dim>
-  struct DimToNumStr
-  {
-  };
-  template <>
-  struct DimToNumStr<1>
-  {
-    static const int NumStr = 1;
-  };
-  template <>
-  struct DimToNumStr<2>
-  {
-    static const int NumStr = 3;
-  };
-  template <>
-  struct DimToNumStr<3>
-  {
-    static const int NumStr = 6;
-  };
-
   class CoIntegratorNitsche : public CONTACT::CoIntegrator
   {
    public:
     /*!
-     \brief Constructor  with shape function specification
-
-     Constructs an instance of this class using a specific type of shape functions.<br>
-     Note that this is \b not a collective call as overlaps are
-     integrated in parallel by individual processes.<br>
-     Note also that this constructor relies heavily on the
-     DRT::UTILS::IntegrationPoints structs to get Gauss points
-     and corresponding weights.
-
+     * \brief Constructor with shape function specification
+     *
+     * Constructs an instance of this class using a specific type of shape functions.<br> Note that
+     * this is \b not a collective call as overlaps are integrated in parallel by individual
+     * processes.<br> Note also that this constructor relies heavily on the
+     * DRT::UTILS::IntegrationPoints structs to get Gauss points and corresponding weights.
+     *
+     * @param [in] params  interface contact parameter list
+     * @param [in] eletype shape of integration cell for segment based integration or slave side
+     *                     mortar contact element for element based integration
+     * @param [in] comm    contact interface communicator
      */
     CoIntegratorNitsche(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
         const Epetra_Comm& comm)
@@ -75,19 +59,10 @@ namespace CONTACT
     {
     }
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoIntegratorNitsche() {}
+    ~CoIntegratorNitsche() override = default;
 
    protected:
-    /*!
-     \brief Perform integration at GP
-            This is where the distinction between methods should be,
-            i.e. mortar, augmented, gpts,...
-     */
-    virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -96,14 +71,9 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
-    /*!
-     \brief Perform integration at GP
-            This is where the distinction between methods should be,
-            i.e. mortar, augmented, gpts,...
-     */
-    virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -112,44 +82,84 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
-    \brief Evaluate cauchy stress component and its derivatives
-    */
+     * @brief Evaluate cauchy stress component and its derivatives
+     *
+     * @tparam dim   dimension of the problem
+     * @param[in] moEle  mortar element
+     * @param[in] boundary_gpcoord      Gauss point coordinates
+     * @param[in] boundary_gpcoord_lin  directional derivative of Gauss point coordinates
+     * @param[in] gp_wgt        Gauss point weight
+     * @param[in] normal        normal
+     * @param[in] normal_deriv  directional derivative of normal
+     * @param[in] direction        direction of evaluation (e.g. normal or tangential direction)
+     * @param[in] direction_deriv  directional derivative of direction of evaluation
+     * @param[in] w                Nitsche weight
+     * @param[out] cauchy_nt        Cauchy stress tensor contracted with normal vector and direction
+     *                              vector \f[ \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                              \boldsymbol{t} \f]
+     * @param[out] deriv_sigma_nt   directional derivative of cauchy_nt \f[ \frac{ \mathrm{d}
+     *                              \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                              \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}} \f]
+     * @param[out] adjoint_test     directional derivative of cauchy_nt \f[ \frac{ \mathrm{d}
+     *                              \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                              \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}} \f]
+     * @param[out] deriv_adjoint_test   second directional derivative of cauchy_nt \f[ \frac{
+     *                                  \mathrm{d}^2 \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                                  \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}^2} \f]
+     */
     template <int dim>
     void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
-        std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
+        std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin, double gp_wgt,
         const LINALG::Matrix<dim, 1>& normal,
         std::vector<GEN::pairedvector<int, double>>& normal_deriv,
         const LINALG::Matrix<dim, 1>& direction,
-        std::vector<GEN::pairedvector<int, double>>& direction_deriv, const double w,
-        double& cauchy_nt, GEN::pairedvector<int, double>& deriv_sigma_nt,
-        LINALG::SerialDenseVector& adjoint_test,
+        std::vector<GEN::pairedvector<int, double>>& direction_deriv, double w, double& cauchy_nt,
+        GEN::pairedvector<int, double>& deriv_sigma_nt, LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test);
 
    private:
     /*!
-    \brief evaluate GPTS forces and linearization at this gp
-    */
+     * @brief evaluate GPTS forces and linearization at this gp
+     *
+     * @tparam dim  dimension of the problem
+     * @param[in] sele  slave side mortar element
+     * @param[in] mele  master side mortar element
+     * @param[in] sval  slave side shape function evaluated at current Gauss point
+     * @param[in] sderiv  slave side shape function derivative at current Gauss point
+     * @param[in] dsxi    directional derivative of slave side Gauss point coordinates
+     * @param[in] mval    master side shape function evaluated at current Gauss point
+     * @param[in] mderiv  master side shape function derivative at current Gauss point
+     * @param[in] dmxi    directional derivative of master side Gauss point coordinates
+     * @param[in] jac            Jacobian determinant of integration cell
+     * @param[in] jacintcellmap  directional derivative of cell Jacobian
+     * @param[in] wgt     Gauss point weight
+     * @param[in] gap     gap
+     * @param[in] dgapgp  directional derivative of gap
+     * @param[in] gpn         Gauss point normal
+     * @param[in] dnmap_unit  directional derivative of Gauss point normal
+     * @param[in] sxi         slave side Gauss point coordinates
+     * @param[in] mxi         master side Gauss point coordinates
+     */
     template <int dim>
     void GPTS_forces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
-        const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
-        const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-        const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+        const std::vector<GEN::pairedvector<int, double>>& dmxi, double jac,
+        const GEN::pairedvector<int, double>& jacintcellmap, double wgt, double gap,
+        const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
-
 
    protected:
     template <int dim>
-    void BuildAdjointTest(MORTAR::MortarElement& moEle, const double fac,
+    void BuildAdjointTest(MORTAR::MortarElement& moEle, double fac,
         const Epetra_SerialDenseMatrix& dsntdd, const Epetra_SerialDenseMatrix& d2sntdd2,
         const Epetra_SerialDenseMatrix& d2sntDdDn, const Epetra_SerialDenseMatrix& d2sntDdDt,
         const Epetra_SerialDenseMatrix& d2sntDdDpxi,
-        const std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin,
+        const std::vector<GEN::pairedvector<int, double>>& boundary_gpcoord_lin,
         LINALG::Matrix<dim, dim> derivtravo_slave,
         const std::vector<GEN::pairedvector<int, double>>& normal_deriv,
         const std::vector<GEN::pairedvector<int, double>>& direction_deriv,
@@ -157,47 +167,55 @@ namespace CONTACT
         GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test);
 
     template <int dim>
-    void IntegrateTest(const double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(double fac, MORTAR::MortarElement& ele,
         const LINALG::SerialDenseVector& shape, const LINALG::SerialDenseMatrix& deriv,
-        const std::vector<GEN::pairedvector<int, double>>& dxi, const double jac,
-        const GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
-        const double test_val, const GEN::pairedvector<int, double>& test_deriv,
-        const LINALG::Matrix<dim, 1>& test_dir,
+        const std::vector<GEN::pairedvector<int, double>>& dxi, double jac,
+        const GEN::pairedvector<int, double>& jacintcellmap, double wgt, double test_val,
+        const GEN::pairedvector<int, double>& test_deriv, const LINALG::Matrix<dim, 1>& test_dir,
         const std::vector<GEN::pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
-    void IntegrateAdjointTest(const double fac, const double jac,
-        const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double test,
+    void IntegrateAdjointTest(double fac, double jac,
+        const GEN::pairedvector<int, double>& jacintcellmap, double wgt, double test,
         const GEN::pairedvector<int, double>& deriv_test, MORTAR::MortarElement& moEle,
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test);
 
-
+    //! nitsche theta
     double theta_;
+    //! nitsche theta 2
     double theta_2_;
+    //! type of nitsche weighting
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
+    //! nitsche penalty parameter in normal direction
     double ppn_;
+    //! nitsche penalty parameter in tangential direction
     double ppt_;
-    double frcoeff_;  // coulomb
-    double frbound_;  // tresca
+    //! coulomb friction coefficient
+    double frcoeff_;
+    //! tresca friction bound
+    double frbound_;
+    //! type of contact friction law
     INPAR::CONTACT::FrictionType frtype_;
+    //! time step size
     double dt_;
+    //! flag indicating if unbiased two half pass algorithm is activated or not
     bool two_half_pass_;
   };
 
   namespace UTILS
   {
-    // map local surface coordinate to local parent coordinate
+    //! map local surface coordinate to local parent coordinate
     template <int dim>
-    void MapGPtoParent(MORTAR::MortarElement& moEle, double* boundary_gpcoord, const double wgt,
+    void MapGPtoParent(MORTAR::MortarElement& moEle, double* boundary_gpcoord, double wgt,
         LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtravo_slave);
 
-    // templated version of MapGPtoParent
+    //! templated version of MapGPtoParent
     template <DRT::Element::DiscretizationType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::MortarElement& sele, const double wgt, const double* gpcoord,
+    void inline SoEleGP(MORTAR::MortarElement& sele, double wgt, const double* gpcoord,
         LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtrafo);
 
-    // actually not the velocity but the displacement increment
+    //! actually not the velocity but the displacement increment
     template <int dim>
     void RelVelInvariant(MORTAR::MortarElement& sele, const double* sxi,
         const std::vector<GEN::pairedvector<int, double>>& derivsxi,
@@ -207,12 +225,12 @@ namespace CONTACT
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
         const double& gap, const GEN::pairedvector<int, double>& deriv_gap,
         LINALG::Matrix<dim, 1>& relVel, std::vector<GEN::pairedvector<int, double>>& relVel_deriv,
-        const double fac = 1.);
+        double fac = 1.0);
 
     template <int dim>
     void RelVel(MORTAR::MortarElement& ele, const LINALG::SerialDenseVector& shape,
         const LINALG::SerialDenseMatrix& deriv,
-        const std::vector<GEN::pairedvector<int, double>>& dxi, const double fac,
+        const std::vector<GEN::pairedvector<int, double>>& dxi, double fac,
         LINALG::Matrix<dim, 1>& relVel, std::vector<GEN::pairedvector<int, double>>& relVel_deriv);
 
     template <int dim>
@@ -232,10 +250,21 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dt1, double* t2p,
         std::vector<GEN::pairedvector<int, double>>& dt2);
 
-    // determine weights (harmonic/slave/master) and scale penalty
+    /*!
+     * @brief determine weights (harmonic/slave/master) and scale penalty
+     *
+     * @param[in] sele     slave-side nitsche weight
+     * @param[in] mele     master-side nitsche weight
+     * @param[in] nit_wgt  weighting methood for nitsche contact
+     * @param[in] dt       time step size
+     * @param[out] ws      slave-side nitsche weight
+     * @param[out] wm      master-side nitsche weight
+     * @param[out] pen     scaled nitsche penalty parameter in normal direction
+     * @param[out] pet     scaled nitsche penalty parameter in tangential direction
+     */
     void NitscheWeightsAndScaling(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const INPAR::CONTACT::NitscheWeighting nit_wgt, const double dt, double& ws, double& wm,
-        double& pen, double& pet);
+        INPAR::CONTACT::NitscheWeighting nit_wgt, double dt, double& ws, double& wm, double& pen,
+        double& pet);
   }  // namespace UTILS
 }  // namespace CONTACT
 #endif  // CONTACT_INTEGRATOR_NITSCHE_H
