@@ -61,9 +61,6 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
   if (springtype_ == cursurfnormal && coupling_ == -1)
     dserror("Coupling id necessary for DIRECTION cursurfnormal.");
 
-  if (springtype_ == cursurfnormal && viscosity_ != 0.)
-    dserror("Viscous damping not yet implemented for DIRECTION cursurfnormal.");
-
   // ToDo: delete rest until return statement!
   // get geometry
   std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
@@ -188,11 +185,12 @@ void UTILS::SpringDashpotNew::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> s
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo)
+    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
+    Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
 
-  if (springtype_ == cursurfnormal) GetCurNormals(disp);
+  if (springtype_ == cursurfnormal) GetCurNormals(disp, p);
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
@@ -217,7 +215,7 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
 
       // initialize
       double gap = 0.;          // displacement
-                                //      double gapdt = 0.; // velocity // unused ?!?
+      double gapdt = 0.;        // velocity
       double springstiff = 0.;  // spring stiffness
 
       // calculation of normals and displacements differs for each spring variant
@@ -264,12 +262,14 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
           {
             // force
             const double val =
-                -nodalarea * springstiff * (gap - offset_) * normal[k];  // + viscosity_*gapdt
+                -nodalarea *
+                (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) * normal[k];
             const int err = fint.SumIntoGlobalValues(1, &val, &dofs[k]);
             if (err) dserror("SumIntoGlobalValues failed!");
 
             // store spring stress for output
-            out_vec[k] = springstiff * (gap - offsetprestr[k] - offset_) * normal[k];
+            out_vec[k] =
+                (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) * normal[k];
           }
           // add to output
           springstress_.insert(std::pair<int, std::vector<double>>(gid, out_vec));
@@ -294,12 +294,12 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
 
   if (springtype_ == cursurfnormal)
   {
-    GetCurNormals(disp);
+    GetCurNormals(disp, p);
     stiff.UnComplete();  // sparsity pattern might change
   }
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
-  //  const double time_fac = p.get("time_fac",1.0); // unused for cursurfnormal ?!?
+  const double dt = p.get("dt", 1.0);
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
@@ -371,7 +371,8 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
           {
             // force
             const double val =
-                -nodalarea * (springstiff * (gap - offset_) + viscosity_ * gapdt) * normal[k];
+                -nodalarea *
+                (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) * normal[k];
             const int err = fint.SumIntoGlobalValues(1, &val, &dofs[k]);
             if (err) dserror("SumIntoGlobalValues failed!");
 
@@ -385,7 +386,9 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
               // linearize gap
               for (std::map<int, double>::iterator i = dgap.begin(); i != dgap.end(); ++i)
               {
-                const double dval = -nodalarea * springstiff * (i->second) * normal[k];
+                const double dval = -nodalarea *
+                                    (springstiff * (i->second) + viscosity_ * (i->second) / dt) *
+                                    normal[k];
                 stiff.Assemble(dval, dofs[k], i->first);
               }
 
@@ -393,7 +396,10 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
               for (GEN::pairedvector<int, double>::iterator i = dnormal[k].begin();
                    i != dnormal[k].end(); ++i)
               {
-                const double dval = -nodalarea * springstiff * (gap - offset_) * (i->second);
+                const double dval =
+                    -nodalarea *
+                    (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) *
+                    (i->second);
                 stiff.Assemble(dval, dofs[k], i->first);
               }
             }
@@ -811,8 +817,12 @@ void UTILS::SpringDashpotNew::InitializePrestrOffset()
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpotNew::GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp)
+void UTILS::SpringDashpotNew::GetCurNormals(
+    const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p)
 {
+  // get current time step size
+  const double dt = p.get("dt", 1.0);
+
   // temp nodal gap
   std::map<int, double> tmpgap;
 
@@ -827,6 +837,9 @@ void UTILS::SpringDashpotNew::GetCurNormals(const Teuchos::RCP<const Epetra_Vect
     //      dserror("The maps of reference gap and current gap are inconsistent.");
     else
       gap_[i->first] = i->second - j->second;
+
+    // calculate gap velocity via local finite difference (not the best way but also not the worst)
+    gapdt_[i->first] = (gap_[i->first] - gapn_[i->first]) / dt;
   }
 
   return;
@@ -850,4 +863,12 @@ void UTILS::SpringDashpotNew::SetSpringType()
     dserror(
         "Invalid direction option! Choose DIRECTION xyz, DIRECTION refsurfnormal or DIRECTION "
         "cursurfnormal!");
+}
+
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::SpringDashpotNew::Update()
+{
+  // store current time step
+  gapn_ = gap_;
 }

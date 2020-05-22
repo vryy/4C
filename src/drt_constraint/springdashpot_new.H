@@ -74,7 +74,7 @@ namespace UTILS
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
     void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-        const Teuchos::RCP<const Epetra_Vector> velp);
+        const Teuchos::RCP<const Epetra_Vector> velp, Teuchos::ParameterList p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
@@ -123,6 +123,9 @@ namespace UTILS
     //! return type of spring
     SpringType GetSpringType() { return springtype_; }
 
+    //! udpate condition for new time step
+    void Update();
+
    private:
     //! set type of spring during initialization
     void SetSpringType();
@@ -134,7 +137,7 @@ namespace UTILS
     void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
 
     //! get current normal
-    void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp);
+    void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
     void InitializePrestrOffset();
@@ -187,6 +190,9 @@ namespace UTILS
 
     //! Nodal gap velocity in current configuration
     std::map<int, double> gapdt_;
+
+    //! Nodal gap in current configuration (last time step)
+    std::map<int, double> gapn_;
 
     //! Linearization of nodal gap
     std::map<int, std::map<int, double>> dgap_;

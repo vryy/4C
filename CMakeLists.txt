@@ -2056,7 +2056,6 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
   src/drt_constraint/lagpenconstraint_noxinterface.cpp
-  src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
   src/drt_constraint/springdashpot_new.cpp
 )

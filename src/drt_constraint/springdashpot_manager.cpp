@@ -14,7 +14,7 @@
 #include "../drt_io/io.H"
 
 #include "springdashpot_manager.H"
-#include "springdashpot.H"
+#include "springdashpot_new.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -38,27 +38,28 @@ UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretizati
 
     // new instance of spring dashpot BC with current condition for every spring dashpot condition
     for (int i = 0; i < n_conds_; ++i)
-      springs_.push_back(Teuchos::rcp(new SpringDashpot(actdisc_, springdashpots[i])));
+      springs_.push_back(Teuchos::rcp(new SpringDashpotNew(actdisc_, springdashpots[i])));
   }
 
   return;
 }
 
 void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
-    Teuchos::RCP<LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
 {
   // evaluate all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
   {
+    springs_[i]->ResetNewton();
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
       springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
-      springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
+    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+      springs_[i]->EvaluateForceStiff(*stiff, *fint, disn, veln, parlist);
   }
 
   return;
@@ -75,7 +76,7 @@ void UTILS::SpringDashpotManager::Update()
 void UTILS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vector> dis)
 {
   // loop over all spring dashpot conditions and reset them
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->Reset(dis);
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetPrestress(dis);
 
   return;
 }
@@ -98,8 +99,8 @@ void UTILS::SpringDashpotManager::Output(Teuchos::RCP<IO::DiscretizationWriter> 
     springs_[i]->OutputGapNormal(gap, normals, springstress);
 
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
-    if (stype == UTILS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
+    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    if (stype == UTILS::SpringDashpotNew::cursurfnormal) found_cursurfnormal = true;
   }
 
   // write vectors to output
@@ -130,11 +131,11 @@ void UTILS::SpringDashpotManager::OutputRestart(Teuchos::RCP<IO::DiscretizationW
   for (int i = 0; i < n_conds_; ++i)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
       springs_[i]->OutputPrestrOffset(springoffsetprestr);
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
       springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
   }
 
@@ -167,11 +168,11 @@ void UTILS::SpringDashpotManager::ReadRestart(IO::DiscretizationReader& reader, 
   for (int i = 0; i < n_conds_; ++i)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
       springs_[i]->SetRestart(tempvec);
-    if (stype == UTILS::SpringDashpot::cursurfnormal) springs_[i]->SetRestartOld(tempvecold);
+    if (stype == UTILS::SpringDashpotNew::cursurfnormal) springs_[i]->SetRestartOld(tempvecold);
   }
 
   return;

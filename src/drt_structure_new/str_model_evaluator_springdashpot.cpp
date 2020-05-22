@@ -114,7 +114,10 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpotNew::cursurfnormal)
-      springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_);
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
+      springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   return true;
@@ -148,8 +151,11 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       springs_[i]->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
@@ -187,8 +193,11 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       springs_[i]->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
@@ -301,6 +310,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
         break;
     }
   }
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->Update();
 }
 
 /*----------------------------------------------------------------------*

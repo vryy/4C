@@ -27,12 +27,12 @@ namespace DRT
 
 namespace LINALG
 {
-  class SparseOperator;
-}
+  class SparseMatrix;
+}  // namespace LINALG
 
 namespace UTILS
 {
-  class SpringDashpot;
+  class SpringDashpotNew;
 
   class SpringDashpotManager
   {
@@ -53,7 +53,7 @@ namespace UTILS
     bool HaveSpringDashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
-    void StiffnessAndInternalForces(Teuchos::RCP<LINALG::SparseOperator> stiff,
+    void StiffnessAndInternalForces(Teuchos::RCP<LINALG::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
 
@@ -77,8 +77,8 @@ namespace UTILS
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);
 
    private:
-    Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
-    std::vector<Teuchos::RCP<SpringDashpot>> springs_;  ///< all spring dashpot instances
+    Teuchos::RCP<DRT::Discretization> actdisc_;            ///< standard discretization
+    std::vector<Teuchos::RCP<SpringDashpotNew>> springs_;  ///< all spring dashpot instances
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions
