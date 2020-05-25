@@ -70,10 +70,15 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
 
   for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
   {
-    if ((*numfuncnonlinstiff)[i] != 0 and
-        ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0 or (*disploffset)[i] != 0 or
-            (*numfuncdisploffset)[i] != 0))
-      dserror("Must not apply nonlinear stiffness and linear stiffness");
+    if ((*numfuncnonlinstiff)[i] != 0)
+    {
+      if ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0)
+        dserror("Must not apply nonlinear stiffness and constant/scaled stiffness");
+      if ((*disploffset)[i] != 0 or (*numfuncdisploffset)[i] != 0)
+        dserror(
+            "Must not apply nonlinear stiffness and constant offset. Incorporate offset in "
+            "nonlinear function instead");
+    }
   }
 
   // ToDo: delete rest until return statement!
@@ -151,13 +156,14 @@ void UTILS::SpringDashpotNew::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> s
   // can exist processors which do not own a portion of the elements belonging
   // to the condition geometry
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-  for (curr = geom.begin(); curr != geom.end(); ++curr)
+  for (auto& curr : geom)
   {
     // get element location vector and ownerships
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+
+    curr.second->LocationVector(*actdisc_, lm, lmowner, lmstride);
 
     const int eledim = (int)lm.size();
 
@@ -173,23 +179,23 @@ void UTILS::SpringDashpotNew::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> s
     elevector3.Size(eledim);
     elematrix1.Shape(eledim, eledim);
 
-    int err = curr->second->Evaluate(
+    int err = curr.second->Evaluate(
         params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     if (err) dserror("error while evaluating elements");
 
     if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
-    if (assmat) stiff->Assemble(curr->second->Id(), lmstride, elematrix1, lm, lmowner);
+    if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
 
     // save spring stress for postprocessing
     const int numdim = 3;
     const int numdf = 3;
     std::vector<double> stress(numdim, 0.0);
 
-    for (int node = 0; node < curr->second->NumNode(); ++node)
+    for (int node = 0; node < curr.second->NumNode(); ++node)
     {
       for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
       springstress_.insert(
-          std::pair<int, std::vector<double>>(curr->second->NodeIds()[node], stress));
+          std::pair<int, std::vector<double>>(curr.second->NodeIds()[node], stress));
     }
   } /* end of loop over geometry */
 
@@ -211,7 +217,7 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
-  for (int j = 0; j < (int)nds.size(); ++j)
+  for (unsigned j = 0; j < nds.size(); ++j)
   {
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(nds[j]))
@@ -253,21 +259,21 @@ void UTILS::SpringDashpotNew::EvaluateForce(Epetra_Vector& fint,
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-          for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+          for (unsigned i = 0; i < numfuncstiff->size(); ++i)
             if ((*numfuncstiff)[i])
               dserror(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
-          for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+          for (unsigned i = 0; i < numfuncvisco->size(); ++i)
             if ((*numfuncvisco)[i])
               dserror(
                   "temporal dependence of damping not implemented for current surface evaluation");
-          for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+          for (unsigned i = 0; i < numfuncdisploffset->size(); ++i)
             if ((*numfuncdisploffset)[i])
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
 
-          for (int i = 0; i < static_cast<int>(numfuncnonlinstiff->size()); ++i)
+          for (unsigned i = 0; i < numfuncnonlinstiff->size(); ++i)
             if ((*numfuncnonlinstiff)[i])
               dserror("Nonlinear spring not implemented for current surface evaluation");
 
@@ -325,7 +331,7 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
-  for (int j = 0; j < (int)nds.size(); ++j)
+  for (unsigned j = 0; j < nds.size(); ++j)
   {
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(nds[j]))
@@ -367,20 +373,20 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-          for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+          for (unsigned i = 0; i < numfuncstiff->size(); ++i)
             if ((*numfuncstiff)[i])
               dserror(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
-          for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+          for (unsigned i = 0; i < numfuncvisco->size(); ++i)
             if ((*numfuncvisco)[i])
               dserror(
                   "temporal dependence of damping not implemented for current surface evaluation");
-          for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+          for (unsigned i = 0; i < numfuncdisploffset->size(); ++i)
             if ((*numfuncdisploffset)[i])
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
-          for (int i = 0; i < static_cast<int>(numfuncnonlinstiff->size()); ++i)
+          for (unsigned i = 0; i < numfuncnonlinstiff->size(); ++i)
             if ((*numfuncnonlinstiff)[i])
               dserror("Nonlinear spring not implemented for current surface evaluation");
 
@@ -410,23 +416,22 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Ep
             if (!dnormal.empty() && !dgap.empty())
             {
               // linearize gap
-              for (std::map<int, double>::iterator i = dgap.begin(); i != dgap.end(); ++i)
+              for (auto& i : dgap)
               {
                 const double dval = -nodalarea *
-                                    (springstiff * (i->second) + viscosity_ * (i->second) / dt) *
+                                    (springstiff * (i.second) + viscosity_ * (i.second) / dt) *
                                     normal[k];
-                stiff.Assemble(dval, dofs[k], i->first);
+                stiff.Assemble(dval, dofs[k], i.first);
               }
 
               // linearize normal
-              for (GEN::pairedvector<int, double>::iterator i = dnormal[k].begin();
-                   i != dnormal[k].end(); ++i)
+              for (auto& i : dnormal[k])
               {
                 const double dval =
                     -nodalarea *
                     (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) *
-                    (i->second);
-                stiff.Assemble(dval, dofs[k], i->first);
+                    (i.second);
+                stiff.Assemble(dval, dofs[k], i.first);
               }
             }
             // store negative value of internal force for output (=reaction force)
@@ -473,7 +478,7 @@ void UTILS::SpringDashpotNew::ResetPrestress(Teuchos::RCP<const Epetra_Vector> d
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
-  for (int j = 0; j < (int)nds.size(); ++j)
+  for (unsigned j = 0; j < nds.size(); ++j)
   {
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(nds[j]))
@@ -526,7 +531,7 @@ void UTILS::SpringDashpotNew::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec
 {
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
-  for (int j = 0; j < (int)nds.size(); ++j)
+  for (unsigned j = 0; j < nds.size(); ++j)
   {
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(nds[j]))
@@ -543,18 +548,17 @@ void UTILS::SpringDashpotNew::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec
       if (springtype_ == refsurfnormal || springtype_ == xyz)
       {
         // import spring offset length
-        for (std::map<int, std::vector<double>>::iterator i = offset_prestr_.begin();
-             i != offset_prestr_.end(); ++i)
+        for (auto& i : offset_prestr_)
         {
           // global id -> local id
-          const int lid = vec->Map().LID(i->first);
+          const int lid = vec->Map().LID(i.first);
           // local id on processor
           if (lid >= 0)
           {
             // copy all components of spring offset length vector
-            (i->second)[0] = (*(*vec)(0))[lid];
-            (i->second)[1] = (*(*vec)(1))[lid];
-            (i->second)[2] = (*(*vec)(2))[lid];
+            (i.second)[0] = (*(*vec)(0))[lid];
+            (i.second)[1] = (*(*vec)(1))[lid];
+            (i.second)[2] = (*(*vec)(2))[lid];
           }
         }
       }
@@ -570,12 +574,12 @@ void UTILS::SpringDashpotNew::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
     Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const
 {
   // export gap function
-  for (std::map<int, double>::const_iterator i = gap_.begin(); i != gap_.end(); ++i)
+  for (auto& i : gap_)
   {
     // global id -> local id
-    const int lid = gap->Map().LID(i->first);
+    const int lid = gap->Map().LID(i.first);
     // local id on processor
-    if (lid >= 0) (*gap)[lid] += i->second;
+    if (lid >= 0) (*gap)[lid] += i.second;
   }
 
   // export normal
@@ -595,18 +599,17 @@ void UTILS::SpringDashpotNew::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
   }
 
   // export spring stress
-  for (std::map<int, std::vector<double>>::const_iterator i = springstress_.begin();
-       i != springstress_.end(); ++i)
+  for (auto& i : springstress_)
   {
     // global id -> local id
-    const int lid = stress->Map().LID(i->first);
+    const int lid = stress->Map().LID(i.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(*stress)(0))[lid] += (i->second).at(0);
-      (*(*stress)(1))[lid] += (i->second).at(1);
-      (*(*stress)(2))[lid] += (i->second).at(2);
+      (*(*stress)(0))[lid] += (i.second).at(0);
+      (*(*stress)(1))[lid] += (i.second).at(1);
+      (*(*stress)(2))[lid] += (i.second).at(2);
     }
   }
 
@@ -631,18 +634,17 @@ void UTILS::SpringDashpotNew::OutputPrestrOffsetOld(
     Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const
 {
   // export spring offset length
-  for (std::map<int, std::vector<double>>::const_iterator i = offset_prestr_.begin();
-       i != offset_prestr_.end(); ++i)
+  for (auto& i : offset_prestr_)
   {
     // global id -> local id
-    const int lid = springprestroffset->Map().LID(i->first);
+    const int lid = springprestroffset->Map().LID(i.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of spring offset length vector
-      (*(*springprestroffset)(0))[lid] = (i->second)[0];
-      (*(*springprestroffset)(1))[lid] = (i->second)[1];
-      (*(*springprestroffset)(2))[lid] = (i->second)[2];
+      (*(*springprestroffset)(0))[lid] = (i.second)[0];
+      (*(*springprestroffset)(1))[lid] = (i.second)[1];
+      (*(*springprestroffset)(2))[lid] = (i.second)[2];
     }
   }
 
@@ -683,9 +685,9 @@ void UTILS::SpringDashpotNew::InitializeCurSurfNormal()
 void UTILS::SpringDashpotNew::GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
 {
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator ele;
-  for (ele = geom.begin(); ele != geom.end(); ++ele)
+  for (auto& ele : geom)
   {
-    DRT::Element* element = ele->second.get();
+    DRT::Element* element = ele.second.get();
 
     Teuchos::ParameterList eparams;
 
@@ -815,7 +817,7 @@ void UTILS::SpringDashpotNew::InitializePrestrOffset()
   offset_prestr_.clear();
 
   const std::vector<int>& nds = *nodes_;
-  for (int j = 0; j < (int)nds.size(); ++j)
+  for (unsigned j = 0; j < nds.size(); ++j)
   {
     if (actdisc_->NodeRowMap()->MyGID(nds[j]))
     {
@@ -856,16 +858,16 @@ void UTILS::SpringDashpotNew::GetCurNormals(
   mortar_->Interface()->EvaluateDistances(disp, normals_, dnormals_, tmpgap, dgap_);
 
   // subtract reference gap from current gap (gap in reference configuration is zero everywhere)
-  for (std::map<int, double>::iterator i = tmpgap.begin(); i != tmpgap.end(); ++i)
+  for (auto& i : tmpgap)
   {
-    std::map<int, double>::iterator j = gap0_.find(i->first);
-    if (j == gap0_.end()) gap_[i->first] = i->second;
+    std::map<int, double>::iterator j = gap0_.find(i.first);
+    if (j == gap0_.end()) gap_[i.first] = i.second;
     //      dserror("The maps of reference gap and current gap are inconsistent.");
     else
-      gap_[i->first] = i->second - j->second;
+      gap_[i.first] = i.second - j->second;
 
     // calculate gap velocity via local finite difference (not the best way but also not the worst)
-    gapdt_[i->first] = (gap_[i->first] - gapn_[i->first]) / dt;
+    gapdt_[i.first] = (gap_[i.first] - gapn_[i.first]) / dt;
   }
 
   return;

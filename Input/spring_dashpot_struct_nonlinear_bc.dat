@@ -15,8 +15,8 @@ DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 TIMESTEP                        1
-NUMSTEP                         25
-MAXTIME                         25
+NUMSTEP                         20
+MAXTIME                         20
 TOLRES                          5e-8
 -----------------------------------------------STRUCT NOX/Printing
 Error                           = Yes
@@ -34,10 +34,10 @@ FUNCTION                        0.5*(1-cos(t*pi/25))*heaviside(25.000001-t)
 ------------------------------------------------------------FUNCT2
 FUNCTION                        x*x*1e9
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  9.61254736636141666e-02 TOLERANCE 9.6e-10
-STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE  9.61254736636141388e-02 TOLERANCE 9.6e-10
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE  9.22509473403193420e-02 TOLERANCE 9.2e-10
-STRUCTURE DIS structure NODE 25 QUANTITY dispx VALUE  9.22509473403190228e-02 TOLERANCE 9.2e-10
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  8.72422822155921041e-02 TOLERANCE 8.7e-10
+STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE  8.72422822155920069e-02 TOLERANCE 8.7e-10
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE  8.40337143920437540e-02 TOLERANCE 8.4e-10
+STRUCTURE DIS structure NODE 25 QUANTITY dispx VALUE  8.40337143920441704e-02 TOLERANCE 8.4e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -54,7 +54,7 @@ E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
 -----------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
 //                              side_x_free
-E 2 - NUMDOF 3 ONOFF 1 0 0 STIFF 0 0.0 0.0 FUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 FUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 FUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 2 0 0 DIRECTION xyz COUPLING none
+E 2 - NUMDOF 3 ONOFF 1 0 0 STIFF 0 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 2 0 0 DIRECTION xyz COUPLING none
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
