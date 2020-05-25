@@ -50,7 +50,7 @@ namespace ADAPTER
 
 namespace UTILS
 {
-  class SpringDashpotNew
+  class SpringDashpot
   {
    public:
     //! Type of spring
@@ -64,12 +64,12 @@ namespace UTILS
     /*!
     \brief constructor
      */
-    SpringDashpotNew(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond);
+    SpringDashpot(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief destructor
      */
-    ~SpringDashpotNew() { return; };
+    ~SpringDashpot() { return; };
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!

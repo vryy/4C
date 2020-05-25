@@ -32,7 +32,7 @@ namespace LINALG
 
 namespace UTILS
 {
-  class SpringDashpotNew;
+  class SpringDashpot;
 
   class SpringDashpotManager
   {
@@ -77,8 +77,8 @@ namespace UTILS
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);
 
    private:
-    Teuchos::RCP<DRT::Discretization> actdisc_;            ///< standard discretization
-    std::vector<Teuchos::RCP<SpringDashpotNew>> springs_;  ///< all spring dashpot instances
+    Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
+    std::vector<Teuchos::RCP<SpringDashpot>> springs_;  ///< all spring dashpot instances
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions
