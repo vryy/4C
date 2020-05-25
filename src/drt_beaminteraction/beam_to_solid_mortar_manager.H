@@ -165,7 +165,8 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -173,7 +174,8 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
     /**
      * \brief Return a const reference to the contact pairs in this mortar manager.
@@ -183,6 +185,13 @@ namespace BEAMINTERACTION
     {
       return contact_pairs_;
     }
+
+    /**
+     * \brief Calculate the internal mortar penalty energy.
+     * @param disp (in) Current displacement state.
+     * @return Global mortar energy.
+     */
+    double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
    protected:
     /**
@@ -216,6 +225,14 @@ namespace BEAMINTERACTION
      * @return Inverted global_kappa_ vector.
      */
     Teuchos::RCP<Epetra_Vector> InvertKappa() const;
+
+    /**
+     * \brief Get the global vector of the constraints.
+     * @param disp (in) Global displacement vector.
+     * @return Global vector of constraint values.
+     */
+    Teuchos::RCP<Epetra_Vector> GetGlobalConstraintVector(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
    private:
     //! Flag if setup was called.

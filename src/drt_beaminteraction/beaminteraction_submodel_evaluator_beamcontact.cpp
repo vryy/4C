@@ -378,6 +378,12 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContac
     contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->GetEnergy();
   }
 
+  for (const auto& assembly_manager : assembly_managers_)
+  {
+    contact_penalty_potential[STR::beam_contact_penalty_potential] +=
+        assembly_manager->GetEnergy(GState().GetDisNp());
+  }
+
   return contact_penalty_potential;
 }
 
