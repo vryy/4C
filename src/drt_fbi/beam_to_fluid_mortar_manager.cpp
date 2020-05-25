@@ -409,6 +409,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
   LINALG::SerialDenseMatrix local_M;
+  LINALG::SerialDenseVector dummy_constraint_offset;
   LINALG::SerialDenseVector local_kappa;
 
   // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
@@ -423,7 +424,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   {
     // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
     // matrices.
-    mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+    mortar_is_active = elepairptr->EvaluateDM(
+        local_D_centerlineDOFs, local_M, local_kappa, dummy_constraint_offset);
 
     if (mortar_is_active)
     {

@@ -60,14 +60,11 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidVolumeMeshtyingPairMortar(){};
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
-     * @param local_D (out) Local mortar matrix $D$.
-     * @param local_M (out) Local mortar matrix $M$.
-     * @param local_kappa (out) Local scaling vector.
-     * @return True if pair is in contact.
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair. (derived)
      */
     bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa) override;
+        LINALG::SerialDenseVector& local_kappa,
+        LINALG::SerialDenseVector& local_constraint_offset) override;
 
     /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.

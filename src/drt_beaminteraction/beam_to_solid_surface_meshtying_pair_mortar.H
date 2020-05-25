@@ -51,6 +51,13 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidSurfaceMeshtyingPairMortar(){};
 
     /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair. (derived)
+     */
+    bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+        LINALG::SerialDenseVector& local_kappa,
+        LINALG::SerialDenseVector& local_constraint_offset) override;
+
+    /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.
      */
     inline bool IsAssemblyDirect() const override { return false; };

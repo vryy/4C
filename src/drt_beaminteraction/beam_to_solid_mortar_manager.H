@@ -280,10 +280,14 @@ namespace BEAMINTERACTION
     //! Global \f$M\f$ matrix.
     Teuchos::RCP<LINALG::SparseMatrix> global_M_;
 
+    //! Global constraint offset vector. This vector is the right hand side of the constraint
+    //! equations.
+    Teuchos::RCP<Epetra_FEVector> global_constraint_offset_;
+
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
-    //! 37).
-    //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
+    //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
+    //! case).
     Teuchos::RCP<Epetra_FEVector> global_kappa_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the

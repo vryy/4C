@@ -32,6 +32,18 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   // Empty constructor.
 }
 
+/**
+ *
+ */
+template <typename beam, typename surface, typename mortar>
+bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
+    LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+{
+  dserror("Not implemented.");
+  return false;
+}
+
 
 /**
  * Explicit template initialization of template class.

@@ -16,6 +16,7 @@
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
+#include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_multiply.H"
@@ -46,6 +47,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       element_gid_to_lambda_gid_(Teuchos::null),
       global_D_(Teuchos::null),
       global_M_(Teuchos::null),
+      global_constraint_offset_(Teuchos::null),
       global_kappa_(Teuchos::null),
       global_active_lambda_(Teuchos::null),
       contact_pairs_(Teuchos::null)
@@ -179,6 +181,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       *lambda_dof_rowmap_, 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
   global_M_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *lambda_dof_rowmap_, 100, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  global_constraint_offset_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
   global_kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
   global_active_lambda_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
@@ -398,10 +401,13 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
   if (linalg_error != 0) dserror("Error in PutScalar!");
   linalg_error = global_kappa_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
+  linalg_error = global_constraint_offset_->PutScalar(0.);
+  if (linalg_error != 0) dserror("Error in PutScalar!");
 
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
   LINALG::SerialDenseMatrix local_M;
+  LINALG::SerialDenseVector local_constraint_offset;
   LINALG::SerialDenseVector local_kappa;
 
   // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
@@ -416,7 +422,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
   {
     // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
     // matrices.
-    mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+    mortar_is_active = elepairptr->EvaluateDM(
+        local_D_centerlineDOFs, local_M, local_kappa, local_constraint_offset);
 
     if (mortar_is_active)
     {
@@ -437,7 +444,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
       std::vector<int> dummy_1;
       std::vector<int> dummy_2;
       elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
-      elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
+      // We call this function on the element pointer of the geometry pair, since for face elements,
+      // the element pointer of the beam contact pair is to the volume element and only the element
+      // pointer of the geometry pair is to the face element.
+      elepairptr->GeometryPair()->Element2()->LocationVector(
+          *discret_, solid_row, dummy_1, dummy_2);
 
       // Save check the matrix sizes.
       if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
@@ -447,11 +458,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
         dserror("Size of local M matrix does not match the GID vectors!");
       if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
         dserror("Size of local kappa vector does not match the GID vector!");
+      if (local_constraint_offset.RowDim() != (int)lambda_row.size() &&
+          local_constraint_offset.ColDim() != 1)
+        dserror("Size of local constraint offset vector does not match the GID vector!");
       // Assemble into the global matrices.
       global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
       global_M_->FEAssemble(local_M, lambda_row, solid_row);
       global_kappa_->SumIntoGlobalValues(
           local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
+      global_constraint_offset_->SumIntoGlobalValues(
+          local_constraint_offset.RowDim(), &lambda_row[0], local_constraint_offset.Values());
 
       // Set all entries in the local kappa vector to 1 and add them to the active vector.
       for (int i_local = 0; i_local < local_kappa.RowDim(); i_local++) local_kappa(i_local) = 1.;
@@ -467,6 +483,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
   // Complete the global scaling vector.
   if (0 != global_kappa_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
   if (0 != global_active_lambda_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
+  if (0 != global_constraint_offset_->GlobalAssemble(Add, false))
+    dserror("Error in GlobalAssemble!");
 }
 
 /**
@@ -548,6 +566,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     if (linalg_error != 0) dserror("Error in Multiply!");
     linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update!");
+    linalg_error = global_M_scaled->Multiply(true, *global_constraint_offset_, *solid_temp);
+    if (linalg_error != 0) dserror("Error in Multiply!");
+    linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
+    if (linalg_error != 0) dserror("Error in Update!");
     LINALG::Export(*solid_force, *global_temp);
 
     // Get the force acting on the beam.
@@ -558,6 +580,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     linalg_error = Dt_kappa_M->Multiply(false, *solid_disp, *beam_temp);
     if (linalg_error != 0) dserror("Error in Multiply!");
     linalg_error = beam_force->Update(-1.0, *beam_temp, 1.0);
+    if (linalg_error != 0) dserror("Error in Update!");
+    linalg_error = global_D_scaled->Multiply(true, *global_constraint_offset_, *beam_temp);
+    if (linalg_error != 0) dserror("Error in Multiply!");
+    linalg_error = beam_force->Update(1.0, *beam_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update!");
     LINALG::Export(*beam_force, *global_temp);
 

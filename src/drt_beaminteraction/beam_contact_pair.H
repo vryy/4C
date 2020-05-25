@@ -284,10 +284,11 @@ namespace BEAMINTERACTION
      * @param local_D (out) Local mortar matrix $D$.
      * @param local_M (out) Local mortar matrix $M$.
      * @param local_kappa (out) Local scaling vector.
+     * @param local_constraint_offset (out) Local constraint offset vector.
      * @return True if pair is in contact.
      */
     virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa)
+        LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
     {
       return false;
     }
