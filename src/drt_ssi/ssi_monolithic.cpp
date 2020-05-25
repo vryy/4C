@@ -14,6 +14,7 @@
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
 #include "ssi_monolithic_assemble_strategy.H"
+#include "ssi_monolithic_evaluate_OD.H"
 
 #include <Epetra_Time.h>
 
@@ -113,14 +114,15 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   scatra_->ScaTraField()->PrepareLinearSolve();
 
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
-  EvaluateODBlockScatraStructureDomain();
+  scatrastructureODcoupling_->EvaluateODBlockScatraStructureDomain(scatrastructuredomain_);
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
-  if (SSIInterfaceMeshtying()) EvaluateODBlockScatraStructureInterface();
+  if (SSIInterfaceMeshtying())
+    scatrastructureODcoupling_->EvaluateODBlockScatraStructureInterface(scatrastructureinterface_);
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
-  EvaluateODBlockStructureScatraDomain();
+  scatrastructureODcoupling_->EvaluateODBlockStructureScatraDomain(structurescatradomain_);
 
   // assemble scatra block into system matrix
   strategy_assemble_->AssembleScatraDomain(
@@ -153,210 +155,6 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, scatra_->ScaTraField()->Residual(), structure_->RHS());
-}
-
-/*-----------------------------------------------------------------------------------*
- | assemble domain contributions of off-diagonal scatra-structure                    |
- | block of global system matrix                                          fang 08/17 |
- *-----------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::EvaluateODBlockScatraStructureDomain()
-{
-  // initialize scatra-structure matrix block
-  scatrastructuredomain_->Zero();
-
-  // create parameter list for element evaluation
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  eleparams.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
-
-  // number of dofset associated with displacement-related dofs on scalar transport discretization
-  eleparams.set<int>("ndsdisp", 1);
-
-  // number of dofset associated with velocity-related dofs on scalar transport discretization
-  eleparams.set<int>("ndsvel", 1);
-
-  // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
-
-  // add state vectors to scalar transport discretization
-  scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
-
-  // create strategy for assembly of scatra-structure matrix block
-  DRT::AssembleStrategy strategyscatrastructure(
-      0,  // row assembly based on number of dofset associated with scalar transport dofs on scalar
-          // transport discretization
-      1,  // column assembly based on number of dofset associated with structural dofs on scalar
-          // transport discretization
-      scatrastructuredomain_,  // scatra-structure matrix block
-      Teuchos::null,           // no additional matrices or vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
-
-  // assemble scatra-structure matrix block
-  scatra_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
-
-  // finalize scatra-structure matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
-  {
-    case INPAR::SCATRA::MatrixType::block_condition:
-    {
-      scatrastructuredomain_->Complete();
-      break;
-    }
-
-    case INPAR::SCATRA::MatrixType::sparse:
-    {
-      scatrastructuredomain_->Complete(*maps_->Map(1), *maps_->Map(0));
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
-
-  // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
-}
-
-/*-----------------------------------------------------------------------------------*
- | assemble interface contributions of off-diagonal scatra-structure                 |
- | block of global system matrix                                          fang 08/17 |
- *-----------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::EvaluateODBlockScatraStructureInterface()
-{
-  scatrastructureinterface_->Zero();
-  // create parameter list for element evaluation
-  Teuchos::ParameterList condparams;
-
-  // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
-
-  // number of dofset associated with displacement-related dofs on scalar transport discretization
-  condparams.set<int>("ndsdisp", 1);
-
-  // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
-
-  // add state vectors to scalar transport discretization
-  scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
-
-  // create strategy for assembly of auxiliary system matrix
-  DRT::AssembleStrategy strategyscatrastructures2i(
-      0,  // row assembly based on number of dofset associated with scalar transport dofs on
-          // scalar transport discretization
-      1,  // column assembly based on number of dofset associated with structural dofs on
-          // structural discretization
-      scatrastructureinterface_,  // auxiliary system matrix
-      Teuchos::null,              // no additional matrices of vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
-
-  // evaluate scatra-scatra interface coupling
-  std::vector<DRT::Condition*> conditions;
-  scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
-  for (auto const& condition : conditions)
-    if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
-    {
-      // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*condition);
-      // evaluate the condition now
-      scatra_->ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
-    }
-
-
-  // finalize scatra-structure matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
-  {
-    case INPAR::SCATRA::MatrixType::block_condition:
-    {
-      scatrastructureinterface_->Complete();
-      break;
-    }
-
-    case INPAR::SCATRA::MatrixType::sparse:
-    {
-      // finalize auxiliary system matrix
-      scatrastructureinterface_->Complete(*maps_->Map(1), *maps_->Map(0));
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
-
-  // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
-}
-
-/*-----------------------------------------------------------------------------------*
- | assemble off-diagonal structure-scatra block of global system matrix   fang 08/17 |
- *-----------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::EvaluateODBlockStructureScatraDomain() const
-{
-  // initialize structure-scatra matrix block
-  structurescatradomain_->Zero();
-
-  // create parameter list for element evaluation and fill it
-  Teuchos::ParameterList eleparams;
-  // set action
-  eleparams.set("action", "calc_struct_stiffscalar");
-  // set time
-  eleparams.set<double>("total time", Time());
-  // set numscatradofspernode
-  eleparams.set<int>("numscatradofspernode", scatra_->ScaTraField()->NumDofPerNode());
-
-  // remove state vectors from structure discretization
-  structure_->Discretization()->ClearState();
-
-  // set the current displacement state vector
-  structure_->Discretization()->SetState("displacement", structure_->Dispnp());
-
-  // create strategy for assembly of structure-scatra matrix block
-  DRT::AssembleStrategy strategystructurescatra(
-      0,  // row assembly based on number of dofset associated with structure dofs on structural
-          // discretization
-      1,  // column assembly based on number of dofset associated with scalar transport dofs on
-          // structural discretization
-      structurescatradomain_,  // structure-scatra matrix block
-      Teuchos::null,           // no additional matrices or vectors needed
-      Teuchos::null, Teuchos::null, Teuchos::null);
-
-  // assemble structure-scatra matrix block
-  structure_->Discretization()->Evaluate(eleparams, strategystructurescatra);
-
-  // need to scale structurescatrablock_ with 'timefac' (e.g. with theta for OST-scheme) to get
-  // correct implementation
-  const double timeintparam = structure_->TimIntParam();
-  // scale with theta
-  structurescatradomain_->Scale(1.0 - timeintparam);
-
-  // finalize structure-scatra matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
-  {
-    case INPAR::SCATRA::MatrixType::block_condition:
-    {
-      structurescatradomain_->Complete();
-      break;
-    }
-
-    case INPAR::SCATRA::MatrixType::sparse:
-    {
-      structurescatradomain_->Complete(*maps_->Map(0), *maps_->Map(1));
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
 }
 
 /*-------------------------------------------------------------------------------*
@@ -1187,6 +985,10 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
   }
+
+  // initialize object, that performs evaluations of OD coupling
+  scatrastructureODcoupling_ = Teuchos::rcp(new SSI::ScatraStructureODCoupling(
+      maps_->Map(0), maps_->Map(1), meshtying_strategy_s2i_, scatra_, structure_));
 }
 
 /*---------------------------------------------------------------------------------*
