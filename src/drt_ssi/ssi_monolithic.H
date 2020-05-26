@@ -14,10 +14,6 @@
 
 #include "ssi_base.H"
 
-#include "../drt_inpar/inpar_s2i.H"
-
-#include "ssi_monolithic_assemble_strategy.H"
-
 // forward declarations
 namespace ADAPTER
 {
@@ -38,6 +34,9 @@ namespace SCATRA
 
 namespace SSI
 {
+  class ScatraStructureODCoupling;
+  class AssembleStrategyBase;
+
   class SSI_Mono : public SSI_Base
   {
    public:
@@ -103,16 +102,6 @@ namespace SSI
 
     //! assemble global system of equations
     void AssembleMatAndRHS();
-
-    //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
-    void EvaluateODBlockScatraStructureDomain();
-
-    //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
-    //! matrix
-    void EvaluateODBlockScatraStructureInterface();
-
-    //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
-    void EvaluateODBlockStructureScatraDomain() const;
 
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
@@ -193,6 +182,9 @@ namespace SSI
     //! scatra-structure block of global system matrix (derivatives of scalar transport residuals
     //! w.r.t. structural degrees of freedom) containing interface contributions
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
+
+    //! all OD evaluation is in here
+    Teuchos::RCP<SSI::ScatraStructureODCoupling> scatrastructureODcoupling_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
