@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Assemble strategy for monolithic SSI
+\brief Evaluation of OD blocks for monolithic SSI
 
 \level 2
 
@@ -42,9 +42,6 @@ namespace SSI
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper>& structure);
 
-    //! destructor
-    virtual ~ScatraStructureODCoupling() { return; };
-
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateODBlockScatraStructureDomain(
         Teuchos::RCP<LINALG::SparseOperator>& scatrastructureblock);
@@ -60,19 +57,19 @@ namespace SSI
 
    private:
     //! map extractor associated with all degrees of freedom inside scatra field
-    const Teuchos::RCP<const Epetra_Map>& full_map_scatra_;
+    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    const Teuchos::RCP<const Epetra_Map>& full_map_structure_;
+    const Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I>& meshtying_strategy_s2i_;
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! scatra problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& scatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
     //! structure problem
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper>& structure_;
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OD_H

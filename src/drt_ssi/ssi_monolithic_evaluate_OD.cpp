@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Assemble strategy for monolithic SSI
+\brief Evaluation of OD blocks for monolithic SSI
 \level 2
 
 \maintainer Stephan Sinzig
@@ -42,8 +42,6 @@ SSI::ScatraStructureODCoupling::ScatraStructureODCoupling(
 
 
 /*-----------------------------------------------------------------------------------*
- | assemble domain contributions of off-diagonal scatra-structure                    |
- | block of global system matrix                                          fang 08/17 |
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureODCoupling::EvaluateODBlockScatraStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator>& scatrastructureblock)
@@ -111,8 +109,6 @@ void SSI::ScatraStructureODCoupling::EvaluateODBlockScatraStructureDomain(
 }
 
 /*-----------------------------------------------------------------------------------*
- | assemble interface contributions of off-diagonal scatra-structure                 |
- | block of global system matrix                                          fang 08/17 |
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureODCoupling::EvaluateODBlockScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator>& scatrastructureinterface)
@@ -187,7 +183,6 @@ void SSI::ScatraStructureODCoupling::EvaluateODBlockScatraStructureInterface(
 }
 
 /*-----------------------------------------------------------------------------------*
- | assemble off-diagonal structure-scatra block of global system matrix   fang 08/17 |
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureODCoupling::EvaluateODBlockStructureScatraDomain(
     Teuchos::RCP<LINALG::SparseOperator>& structurescatradomain) const
