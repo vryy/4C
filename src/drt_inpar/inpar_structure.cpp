@@ -371,7 +371,7 @@ namespace INPAR
           Teuchos::rcp(new RealVectorConditionComponent("stiff", 3)));
 
       robinspringdashpotcond->AddComponent(
-          Teuchos::rcp(new SeparatorConditionComponent("FUNCTSTIFF")));
+          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTSTIFF")));
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new IntVectorConditionComponent("funct_stiff", 3)));
 
@@ -380,7 +380,7 @@ namespace INPAR
           Teuchos::rcp(new RealVectorConditionComponent("visco", 3)));
 
       robinspringdashpotcond->AddComponent(
-          Teuchos::rcp(new SeparatorConditionComponent("FUNCTVISCO")));
+          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTVISCO")));
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new IntVectorConditionComponent("funct_visco", 3)));
 
@@ -390,9 +390,14 @@ namespace INPAR
           Teuchos::rcp(new RealVectorConditionComponent("disploffset", 3)));
 
       robinspringdashpotcond->AddComponent(
-          Teuchos::rcp(new SeparatorConditionComponent("FUNCTDISPLOFFSET")));
+          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTDISPLOFFSET")));
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new IntVectorConditionComponent("funct_disploffset", 3)));
+
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCTNONLINSTIFF")));
+      robinspringdashpotcond->AddComponent(
+          Teuchos::rcp(new IntVectorConditionComponent("funct_nonlinstiff", 3)));
 
       robinspringdashpotcond->AddComponent(
           Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));

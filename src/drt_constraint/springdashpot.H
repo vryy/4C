@@ -3,14 +3,14 @@
 
 \brief Methods for spring and dashpot constraints / boundary conditions
 
-\level 3
+\level 2
 
 \maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 
-#ifndef SPRINGDASHPOT_H
-#define SPRINGDASHPOT_H
+#ifndef SPRINGDASHPOT_NEW_H
+#define SPRINGDASHPOT_NEW_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -36,8 +36,7 @@ namespace Teuchos
 namespace LINALG
 {
   class SparseMatrix;
-  class SparseOperator;
-}  // namespace LINALG
+}
 
 namespace IO
 {
@@ -54,7 +53,7 @@ namespace UTILS
   class SpringDashpot
   {
    public:
-    // type of spring
+    //! Type of spring
     enum SpringType
     {
       xyz,            ///<
@@ -72,19 +71,29 @@ namespace UTILS
      */
     ~SpringDashpot() { return; };
 
-    //! add contribution of spring dashpot BC to residual vector and stiffness matrix
+    //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
-    void Evaluate(Teuchos::RCP<LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
-        Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
-        Teuchos::ParameterList parlist);
+    void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
+        const Teuchos::RCP<const Epetra_Vector> velp, Teuchos::ParameterList p);
+
+    //! add contribution of spring dashpot BC to stiffness matrix
+    // old version, NOT consistently integrated over element surface!!
+    // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
+    // -> however should migrate to new EvaluateRobin... mhv 08/2016
+    void EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
+        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velp,
+        Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
-    void EvaluateRobin(Teuchos::RCP<LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    void EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
         const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
         Teuchos::ParameterList p);
 
+    //! reset after Newton step
+    void ResetNewton();
+
     //! reset after prestressing with MULF
-    void Reset(Teuchos::RCP<Epetra_Vector> dis);
+    void ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis);
 
     //! set reset after prestressing with MULF
     void SetRestart(Teuchos::RCP<Epetra_Vector> vec);
@@ -93,8 +102,8 @@ namespace UTILS
     void SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec);
 
     //! output of gap, normal, and nodal stiffness
-    void OutputGapNormal(Teuchos::RCP<Epetra_Vector> &gap,
-        Teuchos::RCP<Epetra_MultiVector> &normals, Teuchos::RCP<Epetra_MultiVector> &stress);
+    void OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
+        Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const;
 
     //! select spring stiffness for tensile or compressive spring
     double SelectStiffness(double gap)
@@ -106,15 +115,16 @@ namespace UTILS
     }
 
     //! output of spring offset
-    void OutputPrestrOffset(Teuchos::RCP<Epetra_Vector> &springprestroffset);
-    //! output of spring offset
-    void OutputPrestrOffsetOld(Teuchos::RCP<Epetra_MultiVector> &springprestroffset);
+    void OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
 
-    //! udpate condition for new time step
-    void Update();
+    //! output of spring offset
+    void OutputPrestrOffsetOld(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
 
     //! return type of spring
     SpringType GetSpringType() { return springtype_; }
+
+    //! udpate condition for new time step
+    void Update();
 
    private:
     //! set type of spring during initialization
@@ -124,18 +134,19 @@ namespace UTILS
     void InitializeCurSurfNormal();
 
     //! calculate nodal area - old!
-    void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>> &geom);
+    void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
 
     //! get current normal
-    void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp, Teuchos::ParameterList parlist);
+    void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
     void InitializePrestrOffset();
 
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
     Teuchos::RCP<DRT::Condition> spring_;        ///< spring dashpot condition
-    Teuchos::RCP<ADAPTER::CouplingNonLinMortar>
-        mortar_;  ///< mortar interface in case of curnormal springs
+
+    /// Mortar interface in case of curnormal springs
+    Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_;
 
     //! @name Spring properties
     //@{
@@ -161,7 +172,7 @@ namespace UTILS
     //@{
 
     //! Condition nodes
-    const std::vector<int> *nodes_;
+    const std::vector<int>* nodes_;
 
     //! Condition real area
     std::map<int, double> area_;
@@ -174,14 +185,14 @@ namespace UTILS
     //! Nodal gap in reference configuration
     std::map<int, double> gap0_;
 
-    //! Nodal gap in current configuration (current time step)
-    std::map<int, double> gapnp_;
-
-    //! Nodal gap in current configuration (last time step)
-    std::map<int, double> gapn_;
+    //! Nodal gap in current configuration
+    std::map<int, double> gap_;
 
     //! Nodal gap velocity in current configuration
     std::map<int, double> gapdt_;
+
+    //! Nodal gap in current configuration (last time step)
+    std::map<int, double> gapn_;
 
     //! Linearization of nodal gap
     std::map<int, std::map<int, double>> dgap_;
@@ -213,4 +224,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /* SPRINGDASHPOT_MANAGER_H */
+#endif /* SPRINGDASHPOT_MANAGER_NEW_H */

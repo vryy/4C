@@ -14,11 +14,10 @@
 #include "../drt_io/io.H"
 
 #include "springdashpot_manager.H"
-#include "springdashpot.H"
-
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "springdashpot.H"
 
 UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
@@ -45,20 +44,21 @@ UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretizati
 }
 
 void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
-    Teuchos::RCP<LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
 {
   // evaluate all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
   {
+    springs_[i]->ResetNewton();
     // get spring type from current condition
     const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
       springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
     if (stype == UTILS::SpringDashpot::cursurfnormal)
-      springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
+      springs_[i]->EvaluateForceStiff(*stiff, *fint, disn, veln, parlist);
   }
 
   return;
@@ -75,7 +75,7 @@ void UTILS::SpringDashpotManager::Update()
 void UTILS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vector> dis)
 {
   // loop over all spring dashpot conditions and reset them
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->Reset(dis);
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetPrestress(dis);
 
   return;
 }
