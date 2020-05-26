@@ -32,7 +32,6 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<beam, fluid>
   {
     friend class FBI::PairFactory;
-    friend class BeamToFluidMeshtyingPairGPTS_TestSuite;
 
    public:
     /**
