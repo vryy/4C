@@ -58,6 +58,7 @@ STRAINS_GAUSSPOINT                    yes
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
 SEGMENTATION                          yes
+INTEGRATION_POINTS                    yes
 AVERAGED_NORMALS                      yes
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
