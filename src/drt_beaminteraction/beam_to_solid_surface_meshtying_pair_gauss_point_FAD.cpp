@@ -60,15 +60,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof_fad;
   const INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
       this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
-  if (coupling_type ==
-          INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad or
+  if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+                           reference_configuration_forced_to_zero_fad or
       coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad)
   {
     // Couple the positions -> this will result in an initial stress of the system.
     beam_dof_fad = this->ele1pos_;
     surface_dof_fad = this->face_element_->GetFacePosition();
   }
-  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad)
+  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad)
   {
     // Couple the displacements -> this will result in a non-fulfilment of the conservation of
     // angular momentum.
@@ -123,9 +123,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
           projected_gauss_point.GetEta(), beam_dof_fad, coupling_vector_beam, this->Element1());
 
       // Evaluate the coupling position for the surface.
-      if (coupling_type ==
-              INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad or
-          coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad)
+      if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+                               reference_configuration_forced_to_zero_fad or
+          coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad)
       {
         GEOMETRYPAIR::EvaluatePosition<surface>(projected_gauss_point.GetXi(), surface_dof_fad,
             coupling_vector_surface, this->face_element_->GetDrtFaceElement());

@@ -36,7 +36,8 @@ namespace BEAMINTERACTION
        * class.
        */
       BeamContactAssemblyManagerDirect(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs);
+          const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+              assembly_contact_elepairs);
 
       /**
        * \brief Destructor.
@@ -54,8 +55,20 @@ namespace BEAMINTERACTION
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat) override;
-    };
 
+      /**
+       * \brief Return a const reference to the contact pairs in this assembly manager.
+       * @return Reference to the pair vector.
+       */
+      const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+      {
+        return assembly_contact_elepairs_;
+      }
+
+     protected:
+      //! Vector of pairs to be evaluated by this class.
+      std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
+    };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
 

@@ -24,7 +24,7 @@ coupling matrices M and D first.
 namespace BEAMINTERACTION
 {
   class BeamToSolidMortarManager;
-  class BeamContactParams;
+  class BeamToSolidParamsBase;
 }  // namespace BEAMINTERACTION
 
 
@@ -46,9 +46,11 @@ namespace BEAMINTERACTION
        * class.
        */
       BeamContactAssemblyManagerInDirect(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
-          Teuchos::RCP<DRT::Discretization> discret,
-          Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr);
+          const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+              assembly_contact_elepairs,
+          const Teuchos::RCP<const DRT::Discretization>& discret,
+          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>&
+              beam_contact_params_ptr);
 
       /**
        * \brief Destructor.

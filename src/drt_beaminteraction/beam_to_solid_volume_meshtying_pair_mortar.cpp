@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 template <typename beam, typename solid, typename mortar>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -155,6 +155,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
     for (unsigned int i_col = 0; i_col < solid::n_dof_; i_col++)
       local_M(i_row, i_col) = M(i_row, i_col);
   for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
+
+  // This pair does not have constraint offset contributions.
+  local_constraint_offset.Shape(mortar::n_dof_, 1);
 
   // If we get to this point, the pair has a mortar contribution.
   return true;

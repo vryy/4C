@@ -20,6 +20,7 @@
 #include "beam_to_solid_mortar_manager.H"
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_lib/drt_discret.H"
@@ -178,26 +179,23 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
         beam_contact->BeamInteractionDataState().GetForceNp());
 
 
-  // Add the discrete Lagrange multiplicator values at the nodes of the Lagrange multiplicator
-  // shape function. To do this we need to calculate the global lambda vector. It will be added to
-  // the parameter list and each pair can get the values it needs and generate the visualization.
-  visualization = output_writer_base_ptr_->GetVisualizationWriter("mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
-      output_writer_base_ptr_->GetVisualizationWriter("mortar-continuous");
-  if (visualization != Teuchos::null || visualization_continuous != Teuchos::null)
+  // Loop over the assembly managers and add the visualization for the pairs contained in the
+  // assembly managers.
+  for (auto& assembly_manager : beam_contact->GetAssemblyManagers())
   {
-    // This output only works if there is an indirect assembly manager in the beam contact submodel
-    // evaluator.
-    Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>
-        indirect_assembly_manager = Teuchos::null;
-    for (auto& assembly_manager : beam_contact->GetAssemblyManagers())
+    // Add pair specific output for direct assembly managers.
+    auto direct_assembly_manager = Teuchos::rcp_dynamic_cast<
+        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
+    if (not(direct_assembly_manager == Teuchos::null))
     {
-      indirect_assembly_manager = Teuchos::rcp_dynamic_cast<
-          BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
-      if (indirect_assembly_manager != Teuchos::null) break;
+      for (const auto& pair : direct_assembly_manager->GetContactPairs())
+        pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
     }
 
-    if (indirect_assembly_manager != Teuchos::null)
+    // Add pair specific output for indirect assembly managers.
+    auto indirect_assembly_manager = Teuchos::rcp_dynamic_cast<
+        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
+    if (not(indirect_assembly_manager == Teuchos::null))
     {
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
       // that will be passed to the pairs.
@@ -215,14 +213,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
       Teuchos::RCP<std::unordered_set<int>> beam_tracker =
           Teuchos::rcp(new std::unordered_set<int>());
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
+
+      // Add the pair specific output.
+      for (const auto& pair : indirect_assembly_manager->GetMortarManager()->GetContactPairs())
+        pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
+
+      // Reset assembly manager specific values in the parameter list passed to the individual
+      // pairs.
+      visualization_params.remove("lambda");
+      visualization_params.remove("mortar_manager");
+      visualization_params.remove("beam_tracker");
     }
   }
-
-
-  // Add the pair specific visualization by looping over the individual contact pairs.
-  for (const auto& pair : beam_contact->GetContactPairs())
-    pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
-
 
   // Write the data to disc. The data will be cleared in this method.
   output_writer_base_ptr_->Write(i_step, time);

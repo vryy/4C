@@ -17,8 +17,10 @@
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 #include "beam_to_solid_surface_meshtying_pair_gauss_point.H"
 #include "beam_to_solid_surface_meshtying_pair_gauss_point_FAD.H"
+#include "beam_to_solid_surface_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_surface_meshtying_params.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_lib/drt_discret.H"
@@ -35,10 +37,12 @@
  */
 BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamInteractionConditionBase(condition_line),
       condition_other_(condition_other),
-      condition_contact_pairs_()
+      condition_contact_pairs_(),
+      beam_to_solid_params_(beam_to_solid_params)
 {
 }
 
@@ -67,15 +71,13 @@ void BEAMINTERACTION::BeamToSolidCondition::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
 
   // Create the beam contact pair.
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
-      CreateContactPairInternal(ele_ptrs, params_ptr);
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = CreateContactPairInternal(ele_ptrs);
 
   if (contact_pair != Teuchos::null)
   {
@@ -97,10 +99,26 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
 /**
  *
  */
+Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+BEAMINTERACTION::BeamToSolidCondition::CreateIndirectAssemblyManager(
+    const Teuchos::RCP<const DRT::Discretization>& discret)
+{
+  if (beam_to_solid_params_->GetContactDiscretization() ==
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
+    return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
+        condition_contact_pairs_, discret, beam_to_solid_params_));
+  return Teuchos::null;
+}
+
+
+/**
+ *
+ */
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
-    : BeamToSolidCondition(condition_line, condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
+    : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params)
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
@@ -130,16 +148,17 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   // Cast the solid element.
   const DRT::ELEMENTS::So_base* solidele = dynamic_cast<const DRT::ELEMENTS::So_base*>(ele_ptrs[1]);
   const DRT::Element::DiscretizationType shape = solidele->Shape();
 
   // Get the contact discretization method.
+  auto beam_to_volume_params = Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
+      beam_to_solid_params_, true);
   INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization =
-      params_ptr->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization();
+      beam_to_volume_params->GetContactDiscretization();
 
   // Check which contact discretization is wanted.
   if (contact_discretization ==
@@ -179,7 +198,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
   else if (contact_discretization == INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
   {
     INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function =
-        params_ptr->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
+        beam_to_volume_params->GetMortarShapeFunctionType();
 
     switch (mortar_shape_function)
     {
@@ -325,8 +344,9 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
  */
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::BeamToSolidConditionSurfaceMeshtying(
     const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other)
-    : BeamToSolidCondition(condition_line, condition_other)
+    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
+    : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params)
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
@@ -485,79 +505,200 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::SetState(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal(
-    const std::vector<DRT::Element const*>& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr)
+    const std::vector<DRT::Element const*>& ele_ptrs)
 {
   using namespace GEOMETRYPAIR;
 
   const Teuchos::RCP<const DRT::FaceElement>& face_element = surface_ids_[ele_ptrs[1]->Id()];
   const DRT::Element::DiscretizationType shape = face_element->Shape();
 
+  auto beam_to_surface_params = Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceMeshtyingParams>(
+      beam_to_solid_params_, true);
+
   INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
-      params_ptr->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
-  switch (coupling_type)
+      beam_to_surface_params->GetCouplingType();
+
+  INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization coupling_discretization =
+      beam_to_surface_params->GetContactDiscretization();
+
+  switch (coupling_discretization)
   {
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero:
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements:
+    case INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_to_segment:
     {
-      switch (shape)
+      switch (coupling_type)
       {
-        case DRT::Element::tri3:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri3>());
-        case DRT::Element::tri6:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri6>());
-        case DRT::Element::quad4:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad4>());
-        case DRT::Element::quad8:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad8>());
-        case DRT::Element::quad9:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad9>());
-        case DRT::Element::nurbs9:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>());
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
+        {
+          switch (shape)
+          {
+            case DRT::Element::tri3:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri3>());
+            case DRT::Element::tri6:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri6>());
+            case DRT::Element::quad4:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad4>());
+            case DRT::Element::quad8:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad8>());
+            case DRT::Element::quad9:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad9>());
+            case DRT::Element::nurbs9:
+              return Teuchos::rcp(
+                  new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>());
+            default:
+              dserror("Wrong element type for surface element.");
+          }
+          break;
+        }
+
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+            reference_configuration_forced_to_zero_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
+        {
+          switch (shape)
+          {
+            case DRT::Element::tri3:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_scalar_type, t_hermite, t_tri3>());
+            case DRT::Element::tri6:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_scalar_type, t_hermite, t_tri6>());
+            case DRT::Element::quad4:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_scalar_type, t_hermite, t_quad4>());
+            case DRT::Element::quad8:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_scalar_type, t_hermite, t_quad8>());
+            case DRT::Element::quad9:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_scalar_type, t_hermite, t_quad9>());
+            case DRT::Element::nurbs9:
+              return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite,
+                  t_nurbs9>());
+            default:
+              dserror("Wrong element type for surface element.");
+          }
+          break;
+        }
+
         default:
-          dserror("Wrong element type for surface element.");
+          dserror("Wrong coupling type.");
       }
       break;
     }
-
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero_fad:
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements_fad:
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
+    case INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar:
     {
-      switch (shape)
+      INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction =
+          beam_to_surface_params->GetMortarShapeFunctionType();
+
+      switch (coupling_type)
       {
-        case DRT::Element::tri3:
-          return Teuchos::rcp(
-              new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
-                  t_hermite, t_tri3>());
-        case DRT::Element::tri6:
-          return Teuchos::rcp(
-              new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
-                  t_hermite, t_tri6>());
-        case DRT::Element::quad4:
-          return Teuchos::rcp(
-              new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
-                  t_hermite, t_quad4>());
-        case DRT::Element::quad8:
-          return Teuchos::rcp(
-              new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
-                  t_hermite, t_quad8>());
-        case DRT::Element::quad9:
-          return Teuchos::rcp(
-              new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<line_to_surface_patch_scalar_type,
-                  t_hermite, t_quad9>());
-        case DRT::Element::nurbs9:
-          return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
-              line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>());
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
+        {
+          switch (mortar_shapefunction)
+          {
+            case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+            {
+              switch (shape)
+              {
+                case DRT::Element::tri3:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
+                case DRT::Element::tri6:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
+                case DRT::Element::quad4:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
+                case DRT::Element::quad8:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
+                case DRT::Element::quad9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
+                case DRT::Element::nurbs9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
+                default:
+                  dserror("Wrong element type for surface element.");
+              }
+              break;
+            }
+            case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+            {
+              switch (shape)
+              {
+                case DRT::Element::tri3:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
+                case DRT::Element::tri6:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
+                case DRT::Element::quad4:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
+                case DRT::Element::quad8:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
+                case DRT::Element::quad9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
+                case DRT::Element::nurbs9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
+                default:
+                  dserror("Wrong element type for surface element.");
+              }
+              break;
+            }
+            case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+            {
+              switch (shape)
+              {
+                case DRT::Element::tri3:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
+                case DRT::Element::tri6:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
+                case DRT::Element::quad4:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
+                case DRT::Element::quad8:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
+                case DRT::Element::quad9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
+                case DRT::Element::nurbs9:
+                  return Teuchos::rcp(
+                      new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
+                default:
+                  dserror("Wrong element type for surface element.");
+              }
+              break;
+            }
+            default:
+              dserror("Wrong mortar shape function.");
+          }
+        }
         default:
-          dserror("Wrong element type for surface element.");
+          dserror("Wrong coupling type.");
       }
       break;
     }
-
     default:
-      dserror("Wrong coupling type.");
+      dserror("Wrong coupling discretization.");
   }
 
+  // Default return value. This will cause an error.
   return Teuchos::null;
 }

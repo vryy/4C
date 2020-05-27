@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid,
 template <typename beam, typename fluid, typename mortar>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
 {
   if (!this->meshtying_is_evaluated_)
   {
