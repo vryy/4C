@@ -74,48 +74,69 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
-  // If a writer exists for segmentation point data, add the segmentation point data.
+  // Add segmentation and integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation = visualization_writer->GetVisualizationWriter("segmentation");
+      visualization_segmentation =
+          visualization_writer->GetVisualizationWriter("btssc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
-    // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
-
-    // Get the visualization vectors.
-    std::vector<double>& point_coordinates =
-        visualization_segmentation->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement =
-        visualization_segmentation->GetMutablePointDataVector("displacement");
-    std::vector<double>& projection_direction =
-        visualization_segmentation->GetMutablePointDataVector("projection_direction");
-
-    // Loop over the segments on the beam.
+    std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
     for (const auto& segment : this->line_to_3D_segments_)
-    {
-      // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetStartPoint(), segment.GetEndPoint()})
-      {
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            segmentation_point.GetEta(), this->ele1posref_, X_beam, this->Element1());
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            segmentation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-        u_beam = r_beam;
-        u_beam -= X_beam;
+        points.push_back(segmentation_point);
+    AddVisualizationIntegrationPoints(visualization_segmentation, points);
+  }
 
-        GEOMETRYPAIR::EvaluatePosition<surface>(segmentation_point.GetXi(),
-            this->face_element_->GetFacePosition(), r_solid,
-            this->face_element_->GetDrtFaceElement());
-        projection_dir = r_solid;
-        projection_dir -= r_beam;
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_integration_points =
+          visualization_writer->GetVisualizationWriter("btssc-integration-points");
+  if (visualization_integration_points != Teuchos::null)
+  {
+    std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
+    for (const auto& segment : this->line_to_3D_segments_)
+      for (const auto& segmentation_point : (segment.GetProjectionPoints()))
+        points.push_back(segmentation_point);
+    AddVisualizationIntegrationPoints(visualization_integration_points, points);
+  }
+}
 
-        for (unsigned int dim = 0; dim < 3; dim++)
-        {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X_beam(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u_beam(dim)));
-          projection_direction.push_back(FADUTILS::CastToDouble(projection_dir(dim)));
-        }
-      }
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::
+    AddVisualizationIntegrationPoints(
+        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
+            visualization_writer,
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points) const
+{
+  // Setup variables.
+  LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
+
+  // Get the visualization vectors.
+  std::vector<double>& point_coordinates = visualization_writer->GetMutablePointCoordinateVector();
+  std::vector<double>& displacement =
+      visualization_writer->GetMutablePointDataVector("displacement");
+  std::vector<double>& projection_direction =
+      visualization_writer->GetMutablePointDataVector("projection_direction");
+  for (const auto& point : points)
+  {
+    GEOMETRYPAIR::EvaluatePosition<beam>(
+        point.GetEta(), this->ele1posref_, X_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+    u_beam = r_beam;
+    u_beam -= X_beam;
+
+    GEOMETRYPAIR::EvaluatePosition<surface>(point.GetXi(), this->face_element_->GetFacePosition(),
+        r_solid, this->face_element_->GetDrtFaceElement());
+    projection_dir = r_solid;
+    projection_dir -= r_beam;
+
+    for (unsigned int dim = 0; dim < 3; dim++)
+    {
+      point_coordinates.push_back(FADUTILS::CastToDouble(X_beam(dim)));
+      displacement.push_back(FADUTILS::CastToDouble(u_beam(dim)));
+      projection_direction.push_back(FADUTILS::CastToDouble(projection_dir(dim)));
     }
   }
 }
