@@ -1702,7 +1702,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
 
       // scale coefficients with time function if activated
-      for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+      for (auto i = 0U; i < numfuncstiff->size(); ++i)
       {
         if ((*numfuncnonlinstiff)[i] == 0)
         {
@@ -1714,14 +1714,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         }
       }
 
-      for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+      for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] =
             (*numfuncvisco)[i] != 0
                 ? dashpotvisc[i] *
                       DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
                 : dashpotvisc[i];
 
-      for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+      for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
                                                     ->Funct((*numfuncdisploffset)[i] - 1)
@@ -1917,9 +1917,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                 }
                 else
                 {
-                  double displ[3] = {std::numeric_limits<float>::infinity(),
-                      std::numeric_limits<float>::infinity(),
-                      std::numeric_limits<float>::infinity()};
+                  double displ[3] = {std::numeric_limits<double>::infinity(),
+                      std::numeric_limits<double>::infinity(),
+                      std::numeric_limits<double>::infinity()};
                   displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
                   force_disp = DRT::Problem::Instance()
                                    ->Funct((*numfuncnonlinstiff)[dim] - 1)
@@ -1997,7 +1997,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               {
                 double displ[3] = {dispnp_refnormal_gp +
                                        (-disploffset[0] + offprestrn_refnormal_gp) * refnormal_gp,
-                    std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+                    std::numeric_limits<double>::infinity(),
+                    std::numeric_limits<double>::infinity()};
                 force_disp = DRT::Problem::Instance()
                                  ->Funct((*numfuncnonlinstiff)[0] - 1)
                                  .Evaluate(0, displ, time);
