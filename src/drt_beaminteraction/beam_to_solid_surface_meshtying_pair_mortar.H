@@ -67,6 +67,11 @@ namespace BEAMINTERACTION
      * matrices.
      */
     inline bool IsAssemblyIndirect() const override { return true; };
+
+    /**
+     * \brief The mortar energy contribution will be calculated globally in the mortar manager.
+     */
+    double GetEnergy() const override { return 0.0; }
   };
 }  // namespace BEAMINTERACTION
 
