@@ -1,5 +1,5 @@
-<!-- Set default label: team-->
-/label "team"
+<!-- Set default label -->
+/label "type::member"
 
 <!---
 Fill the Title field above with "Onboarding FirstName LastName".

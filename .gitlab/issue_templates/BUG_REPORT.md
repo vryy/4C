@@ -1,5 +1,5 @@
-<!-- Set default label: bug report-->
-/label "bug report"
+<!-- Set default label -->
+/label "type::bug report"
 
 <!---
 Provide a general summary of the bug in the Title above.
