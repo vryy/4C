@@ -300,7 +300,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
   // check for prestressing and reset if necessary
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
   if (prestress_type != INPAR::STR::PreStress::none and
-      GState().GetTimeN() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
+      GState().GetTimeNp() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
   {
     switch (prestress_type)
     {

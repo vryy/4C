@@ -1700,29 +1700,33 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                               ? ParentElement()->ParamsInterfacePtr()->GetTotalTime()
                               : params.get("total time", 0.0);
 
-      if ((*numfuncnonlinstiff)[0] == 0 and (*numfuncnonlinstiff)[1] == 0 and
-          (*numfuncnonlinstiff)[2] == 0)
+
+      // scale coefficients with time function if activated
+      for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
       {
-        // scale coefficients with time function if activated
-        for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
+        if ((*numfuncnonlinstiff)[i] == 0)
+        {
           springstiff[i] =
               (*numfuncstiff)[i] != 0
                   ? springstiff[i] *
                         DRT::Problem::Instance()->Funct((*numfuncstiff)[i] - 1).EvaluateTime(time)
                   : springstiff[i];
-        for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
-          dashpotvisc[i] =
-              (*numfuncvisco)[i] != 0
-                  ? dashpotvisc[i] *
-                        DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
-                  : dashpotvisc[i];
-        for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
-          disploffset[i] = (*numfuncdisploffset)[i] != 0
-                               ? disploffset[i] * DRT::Problem::Instance()
-                                                      ->Funct((*numfuncdisploffset)[i] - 1)
-                                                      .EvaluateTime(time)
-                               : disploffset[i];
+        }
       }
+
+      for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+        dashpotvisc[i] =
+            (*numfuncvisco)[i] != 0
+                ? dashpotvisc[i] *
+                      DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
+                : dashpotvisc[i];
+
+      for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+        disploffset[i] = (*numfuncdisploffset)[i] != 0
+                             ? disploffset[i] * DRT::Problem::Instance()
+                                                    ->Funct((*numfuncdisploffset)[i] - 1)
+                                                    .EvaluateTime(time)
+                             : disploffset[i];
 
       // type of Robin conditions
       enum RobinType
@@ -1793,6 +1797,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // --------------------------------------------------
 
 
+      std::vector<double> refnormal(lm.size());
       std::vector<double> mydisp_refnormal(lm.size());
       std::vector<double> myvelo_refnormal(lm.size());
       std::vector<double> myoffprestr_refnormal(lm.size());
@@ -1824,17 +1829,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               N_otimes_N(node * numdf + dim1, node * numdf + dim2) =
                   elevector2[node * numdf + dim1] * elevector2[node * numdf + dim2];
 
-        // displacement offset, only take the first one and use this as the one in refsurfnormal
-        const double ref_disploff = disploffset[0];
-
         // (N \otimes N) disp, (N \otimes N) velo
         for (int node = 0; node < numnode; ++node)
           for (int dim1 = 0; dim1 < numdim; dim1++)
             for (int dim2 = 0; dim2 < numdim; dim2++)
             {
+              refnormal[node * numdf + dim1] += elevector2[node * numdf + dim1];
               mydisp_refnormal[node * numdf + dim1] +=
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
-                  (mydisp[node * numdf + dim2] - ref_disploff);
+                  (mydisp[node * numdf + dim2]);
               myvelo_refnormal[node * numdf + dim1] +=
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
                   myvelo[node * numdf + dim2];
@@ -1914,8 +1917,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                 }
                 else
                 {
-                  double displ[3] = {0.0, 0.0, 0.0};
-                  displ[dim] = dispnp_gp;
+                  double displ[3] = {std::numeric_limits<float>::infinity(),
+                      std::numeric_limits<float>::infinity(),
+                      std::numeric_limits<float>::infinity()};
+                  displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
                   force_disp = DRT::Problem::Instance()
                                    ->Funct((*numfuncnonlinstiff)[dim] - 1)
                                    .Evaluate(0, displ, time);
@@ -1966,11 +1971,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
             for (int dim = 0; dim < numdim; dim++)
             {
               // displacement and velocity in normal direction at Gauss point
+              double refnormal_gp = 0.0;
               double dispnp_refnormal_gp = 0.0;
               double velonp_refnormal_gp = 0.0;
               double offprestrn_refnormal_gp = 0.0;
               for (int node = 0; node < numnode; ++node)
               {
+                refnormal_gp += funct[node] * refnormal[node * numdf + dim];
                 dispnp_refnormal_gp += funct[node] * mydisp_refnormal[node * numdf + dim];
                 velonp_refnormal_gp += funct[node] * myvelo_refnormal[node * numdf + dim];
                 offprestrn_refnormal_gp += funct[node] * myoffprestr_refnormal[node * numdf + dim];
@@ -1982,18 +1989,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               if ((*numfuncnonlinstiff)[0] == 0)
               {
                 force_disp = springstiff[0] *
-                             (dispnp_refnormal_gp - disploffset[0] + offprestrn_refnormal_gp);
+                             (dispnp_refnormal_gp +
+                                 (-disploffset[0] + offprestrn_refnormal_gp) * refnormal_gp);
                 force_disp_deriv = springstiff[0];
               }
               else
               {
-                double displ[3] = {dispnp_refnormal_gp, 0.0, 0.0};
+                double displ[3] = {dispnp_refnormal_gp +
+                                       (-disploffset[0] + offprestrn_refnormal_gp) * refnormal_gp,
+                    std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
                 force_disp = DRT::Problem::Instance()
-                                 ->Funct((*numfuncnonlinstiff)[dim] - 1)
+                                 ->Funct((*numfuncnonlinstiff)[0] - 1)
                                  .Evaluate(0, displ, time);
 
                 force_disp_deriv = (DRT::Problem::Instance()
-                                        ->Funct((*numfuncnonlinstiff)[dim] - 1)
+                                        ->Funct((*numfuncnonlinstiff)[0] - 1)
                                         .EvaluateSpatialDerivative(0, displ, time))[0];
               }
 

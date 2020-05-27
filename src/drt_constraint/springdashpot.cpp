@@ -64,21 +64,12 @@ UTILS::SpringDashpot::SpringDashpot(
   // safety checks of input
   const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
   const std::vector<int>* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
-  const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
-  const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
   const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
 
   for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
   {
-    if ((*numfuncnonlinstiff)[i] != 0)
-    {
-      if ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0)
-        dserror("Must not apply nonlinear stiffness and constant/scaled stiffness");
-      if ((*disploffset)[i] != 0 or (*numfuncdisploffset)[i] != 0)
-        dserror(
-            "Must not apply nonlinear stiffness and constant offset. Incorporate offset in "
-            "nonlinear function instead");
-    }
+    if ((*numfuncnonlinstiff)[i] != 0 and ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0))
+      dserror("Must not apply nonlinear stiffness and linear stiffness");
   }
 
   // ToDo: delete rest until return statement!
@@ -476,42 +467,30 @@ void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
   // this should be sufficient, no need to loop over nodes anymore
   offset_prestr_new_->Update(1.0, *dis, 1.0);
 
-  // loop nodes of current condition
-  const std::vector<int>& nds = *nodes_;
-  for (unsigned j = 0; j < nds.size(); ++j)
+  // loop over all nodes only necessary for cursurfnormal which does not use consistent integration
+  if (springtype_ == cursurfnormal)
   {
-    // nodes owned by processor
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    const std::vector<int>& nds = *nodes_;
+    for (unsigned j = 0; j < nds.size(); ++j)
     {
-      int gid = nds[j];
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d", gid);
-
-      const int numdof = actdisc_->NumDof(0, node);
-      assert(numdof == 3);
-      std::vector<int> dofs = actdisc_->Dof(0, node);
-
-      // initialize. calculation of displacements differs for each spring variant
-      std::vector<double> uoff(numdof, 0.0);  // displacement vector of condition nodes
-      if (springtype_ == refsurfnormal || springtype_ == xyz)
+      // nodes owned by processor
+      if (actdisc_->NodeRowMap()->MyGID(nds[j]))
       {
-        for (int k = 0; k < numdof; ++k)
-        {
-          uoff[k] = -(*dis)[dis->Map().LID(dofs[k])];  // extract nodal displacement to be offset
-        }
+        int gid = nds[j];
+        DRT::Node* node = actdisc_->gNode(gid);
+        if (!node) dserror("Cannot find global node %d", gid);
 
-        std::vector<double> offpr = offset_prestr_[gid];
-        offset_prestr_.erase(gid);
+        const int numdof = actdisc_->NumDof(0, node);
+        assert(numdof == 3);
+        std::vector<int> dofs = actdisc_->Dof(0, node);
 
-        for (int k = 0; k < numdof; ++k)
-        {
-          uoff[k] += offpr[k];  // accumulate displacements to be offset
-        }
-      }
-      offset_prestr_.insert(std::pair<int, std::vector<double>>(gid, uoff));
+        // initialize. calculation of displacements differs for each spring variant
+        std::vector<double> uoff(numdof, 0.0);  // displacement vector of condition nodes
+        offset_prestr_.insert(std::pair<int, std::vector<double>>(gid, uoff));
 
-    }  // node owned by processor
-  }    // loop over nodes
+      }  // node owned by processor
+    }    // loop over nodes
+  }
 }
 
 /*----------------------------------------------------------------------*
