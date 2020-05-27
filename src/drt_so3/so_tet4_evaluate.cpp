@@ -76,6 +76,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
+  SetParamsInterfacePtr(params);
+
   LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET4, 1> elevec1(elevec1_epetra.A(), true);
@@ -386,9 +388,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     // this is a dummy output for strain energy
     case calc_struct_energy:
     {
-      // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-
       // initialization of internal energy
       double intenergy = 0.0;
 
@@ -536,8 +535,17 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         intenergy += fac * psi;
       }
 
-      // return result
-      elevec1_epetra(0) = intenergy;
+      if (IsParamsInterface())  // new structural time integration
+      {
+        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+      }
+      else  // old structural time integration
+      {
+        // check length of elevec1
+        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+        elevec1_epetra(0) = intenergy;
+      }
     }
     break;
     // this is needed by bone topology optimization

@@ -37,6 +37,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 {
   EnsureMaterialPostSetup(params);
 
+  SetParamsInterfacePtr(params);
+
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, 1> elevec1(elevec1_epetra.A(), true);
@@ -411,9 +413,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_energy:
     {
-      // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-
       // initialization of internal energy
       double intenergy = 0.0;
 
@@ -527,8 +526,17 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         intenergy += fac * psi;
       }
 
-      // return result
-      elevec1_epetra(0) = intenergy;
+      if (IsParamsInterface())  // new structural time integration
+      {
+        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+      }
+      else  // old structural time integration
+      {
+        // check length of elevec1
+        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+        elevec1_epetra(0) = intenergy;
+      }
     }
     break;
 
