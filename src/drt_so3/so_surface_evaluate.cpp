@@ -1988,15 +1988,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               double force_disp_deriv;
               if ((*numfuncnonlinstiff)[0] == 0)
               {
-                force_disp = springstiff[0] *
-                             (dispnp_refnormal_gp +
-                                 (-disploffset[0] + offprestrn_refnormal_gp) * refnormal_gp);
+                force_disp =
+                    springstiff[0] * (dispnp_refnormal_gp + -disploffset[0] * refnormal_gp +
+                                         offprestrn_refnormal_gp);
                 force_disp_deriv = springstiff[0];
               }
               else
               {
-                double displ[3] = {dispnp_refnormal_gp +
-                                       (-disploffset[0] + offprestrn_refnormal_gp) * refnormal_gp,
+                double displ[3] = {
+                    dispnp_refnormal_gp + -disploffset[0] * refnormal_gp + offprestrn_refnormal_gp,
                     std::numeric_limits<double>::infinity(),
                     std::numeric_limits<double>::infinity()};
                 force_disp = DRT::Problem::Instance()
