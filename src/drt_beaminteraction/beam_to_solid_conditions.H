@@ -28,6 +28,10 @@ namespace DRT
 {
   class FaceElement;
 }
+namespace BEAMINTERACTION
+{
+  class BeamToSolidParamsBase;
+}
 
 
 namespace BEAMINTERACTION
@@ -44,9 +48,11 @@ namespace BEAMINTERACTION
      * @param condition_line (in) The line condition containing the beam elements.
      * @param condition_other (in) The surface / volume condition containing the solid elements
      * interacting with the beam.
+     * @param beam_to_solid_params (in) Pointer to the beam-to-solid parameters.
      */
     BeamToSolidCondition(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other);
+        const Teuchos::RCP<const DRT::Condition>& condition_other,
+        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
     /**
      * \brief Destructor.
@@ -67,14 +73,20 @@ namespace BEAMINTERACTION
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+        const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
      * @return
      */
     const Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
+
+    /**
+     * \brief Create the indirect assembly manager for this condition.
+     * @param discret (in) Discretization.
+     */
+    Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> CreateIndirectAssemblyManager(
+        const Teuchos::RCP<const DRT::Discretization>& discret) override;
 
    protected:
     /**
@@ -89,12 +101,10 @@ namespace BEAMINTERACTION
      * pair is initialized.
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
-     * @param params_ptr (in) Pointer beam contact parameters.
      * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) = 0;
+        const std::vector<DRT::Element const*>& ele_ptrs) = 0;
 
    protected:
     //! Pointer to the solid condition.
@@ -102,6 +112,9 @@ namespace BEAMINTERACTION
 
     //! Vector containing all beam contact pairs created by this condition.
     std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
+
+    //! Pointer to the beam-to-solid parameters.
+    Teuchos::RCP<const BeamToSolidParamsBase> beam_to_solid_params_;
   };
 
   /**
@@ -115,7 +128,8 @@ namespace BEAMINTERACTION
      * \brief Constructor (derived).
      */
     BeamToSolidConditionVolumeMeshtying(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other);
+        const Teuchos::RCP<const DRT::Condition>& condition_other,
+        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
     /**
      * \brief Destructor.
@@ -134,8 +148,7 @@ namespace BEAMINTERACTION
      * \brief Return the created beam contact pair for this condition. (derived)
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+        const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Check if a solid ID is in this condition.
@@ -162,7 +175,8 @@ namespace BEAMINTERACTION
      * \brief Constructor (derived).
      */
     BeamToSolidConditionSurfaceMeshtying(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other);
+        const Teuchos::RCP<const DRT::Condition>& condition_other,
+        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
     /**
      * \brief Destructor.
@@ -195,8 +209,7 @@ namespace BEAMINTERACTION
      * \brief Return the created beam contact pair for this condition. (derived)
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) override;
+        const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Check if a solid ID is in this condition.

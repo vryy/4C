@@ -34,21 +34,26 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
     Teuchos::RCP<const DRT::Discretization> discretization1,
     Teuchos::RCP<const DRT::Discretization> discretization2,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid)
-    : BEAMINTERACTION::BeamToSolidMortarManager(Teuchos::null, params, start_value_lambda_gid),
+    : is_setup_(false),
+      is_local_maps_build_(false),
+      is_global_maps_build_(false),
+      start_value_lambda_gid_(start_value_lambda_gid),
       discretization_structure_(discretization1),
       discretization_fluid_(discretization2),
-      fluid_dof_rowmap_(Teuchos::null)
-{
-}
-/**
- *
- */
-void BEAMINTERACTION::BeamToFluidMortarManager::Init(
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params)
+      beam_contact_parameters_ptr_(params),
+      lambda_dof_rowmap_(Teuchos::null),
+      lambda_dof_colmap_(Teuchos::null),
+      beam_dof_rowmap_(Teuchos::null),
+      fluid_dof_rowmap_(Teuchos::null),
+      node_gid_to_lambda_gid_(Teuchos::null),
+      element_gid_to_lambda_gid_(Teuchos::null),
+      global_D_(Teuchos::null),
+      global_M_(Teuchos::null),
+      global_kappa_(Teuchos::null),
+      global_active_lambda_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  switch (Teuchos::rcp_dynamic_cast<const FBI::BeamToFluidMeshtyingParams>(params)
-              ->GetMortarShapeFunctionType())
+  switch (params->GetMortarShapeFunctionType())
   {
     case INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::line2:
     {
@@ -336,6 +341,56 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
 /**
  *
  */
+void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
+    const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
+    std::vector<int>& lambda_row) const
+{
+  CheckSetup();
+  CheckLocalMaps();
+
+  // Clear the output vectors.
+  lambda_row.clear();
+
+  // Get the global DOFs ids of the nodal Lagrange multipliers.
+  if (n_lambda_node_ > 0)
+  {
+    for (int i_node = 0; i_node < contact_pair->Element1()->NumNode(); i_node++)
+    {
+      const DRT::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
+      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
+      {
+        // Get the global id of the node.
+        int node_id = node.Id();
+
+        // Check if the id is in the map. If it is, add it to the output vector.
+        auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
+        if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
+          dserror("Global node id %d not in map!", node_id);
+        for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+      }
+    }
+  }
+
+  // Get the global DOFs ids of the element Lagrange multipliers.
+  if (n_lambda_element_ > 0)
+  {
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair->Element1()))
+    {
+      // Get the global id of the element.
+      int element_id = contact_pair->Element1()->Id();
+
+      // Check if the id is in the map. If it is, add it to the output vector.
+      auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
+      if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
+        dserror("Global element id %d not in map!", element_id);
+      for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+    }
+  }
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
@@ -354,6 +409,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
   LINALG::SerialDenseMatrix local_M;
+  LINALG::SerialDenseVector dummy_constraint_offset;
   LINALG::SerialDenseVector local_kappa;
 
   // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
@@ -368,7 +424,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   {
     // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
     // matrices.
-    mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+    mortar_is_active = elepairptr->EvaluateDM(
+        local_D_centerlineDOFs, local_M, local_kappa, dummy_constraint_offset);
 
     if (mortar_is_active)
     {
@@ -542,4 +599,39 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
   if (linalg_error != 0) dserror("Error in Multiply!");
 
   return lambda;
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobalLambdaCol(
+    Teuchos::RCP<const Epetra_Vector> disp) const
+{
+  Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
+  LINALG::Export(*GetGlobalLambda(disp), *lambda_col);
+  return lambda_col;
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::InvertKappa() const
+{
+  // Create the inverse vector.
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
+      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+
+  // Calculate the local inverse of kappa.
+  double local_kappa_inv_value = 0.;
+  for (int lid = 0; lid < lambda_dof_rowmap_->NumMyElements(); lid++)
+  {
+    if (global_active_lambda_->Values()[lid] > 0.1)
+      local_kappa_inv_value = 1. / global_kappa_->Values()[lid];
+    else
+      local_kappa_inv_value = 0.0;
+
+    global_kappa_inv->ReplaceMyValue(lid, 0, local_kappa_inv_value);
+  }
+
+  return global_kappa_inv;
 }

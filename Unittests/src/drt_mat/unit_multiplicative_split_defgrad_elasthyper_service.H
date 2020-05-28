@@ -17,6 +17,8 @@
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
 
+#include "../common/special_assertions.H"
+
 namespace MAT
 {
   class MultiplicativeSplitDefgrad_ElastHyperService;
@@ -157,21 +159,8 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     cmat_target(5, 4) = -0.0079082879496605533;
     cmat_target(5, 5) = 0.64761600029220823;
 
-    AssertMatrixEqual(S_stress, S_stress_target, 1.0e-9);
-    AssertMatrixEqual(cmat, cmat_target, 1.0e-9);
-  }
-
-  template <unsigned int N, unsigned int M>
-  void AssertMatrixEqual(
-      const LINALG::Matrix<N, M>& mat1, const LINALG::Matrix<N, M>& mat2, double delta = 1e-9)
-  {
-    for (unsigned int i = 0; i < N; ++i)
-    {
-      for (unsigned int j = 0; j < M; ++j)
-      {
-        TS_ASSERT_DELTA(mat1(i, j), mat2(i, j), delta);
-      }
-    }
+    TESTING::AssertDelta(S_stress, S_stress_target, 1.0e-9);
+    TESTING::AssertDelta(cmat, cmat_target, 1.0e-9);
   }
 
  private:

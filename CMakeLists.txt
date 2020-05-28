@@ -876,9 +876,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_conditions.cpp
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
   src/drt_beaminteraction/beam_to_solid_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_params_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp
@@ -2056,9 +2058,8 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
   src/drt_constraint/lagpenconstraint_noxinterface.cpp
-  src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
-  src/drt_constraint/springdashpot_new.cpp
+  src/drt_constraint/springdashpot.cpp
 )
 
 set(OBJS_DRT_IO_LIB
@@ -2522,6 +2523,7 @@ src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
+src/drt_ssi/ssi_monolithic_evaluate_OD.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp

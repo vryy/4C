@@ -34,6 +34,10 @@ namespace BEAMINTERACTION
 {
   class BeamContactPair;
   class BeamContactParams;
+  namespace SUBMODELEVALUATOR
+  {
+    class BeamContactAssemblyManager;
+  }
 }  // namespace BEAMINTERACTION
 namespace GEOMETRYPAIR
 {
@@ -72,12 +76,10 @@ namespace BEAMINTERACTION
      * \brief Create the beam contact pair needed for this condition.
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
-     * @param params_ptr (in) Pointer beam contact parameters.
      * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr) = 0;
+        const std::vector<DRT::Element const*>& ele_ptrs) = 0;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
@@ -113,6 +115,17 @@ namespace BEAMINTERACTION
      * ID is in this condition.
      */
     virtual bool IdsInCondition(const int id_line, const int id_other) const = 0;
+
+    /**
+     * \brief Create the indirect assembly manager for this condition.
+     * @param discret (in) Discretization.
+     * @return Pointer to created assembly manager.
+     */
+    virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
+    CreateIndirectAssemblyManager(const Teuchos::RCP<const DRT::Discretization>& discret)
+    {
+      return Teuchos::null;
+    };
 
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
@@ -156,8 +169,12 @@ namespace BEAMINTERACTION
      * This method searches the discretization for input beam interaction conditions, finds the
      * correct line-to- line / surface / volume pairings and adds them to the class variable \ref
      * condition_map_.
+     *
+     * @param discret (in) pointer to the discretization
+     * @param params (in) Pointer beam contact parameters.
      */
-    void SetBeamInteractionConditions(const Teuchos::RCP<const DRT::Discretization>& discret);
+    void SetBeamInteractionConditions(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const BeamContactParams>& params_ptr);
 
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
@@ -193,11 +210,19 @@ namespace BEAMINTERACTION
      * creates the correct pair.
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
-     * @param params_ptr (in) Pointer beam contact parameters.
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr);
+        const std::vector<DRT::Element const*>& ele_ptrs);
+
+    /**
+     * Create all needed indirect assembly managers.
+     * @param discret (in) Discretization.
+     * @param assembly_managers (in/out) Pointer to assembly manager vector from the beam
+     * interaction submodel evaluator.
+     */
+    void CreateIndirectAssemblyManagers(const Teuchos::RCP<const DRT::Discretization>& discret,
+        std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+            assembly_managers);
 
     /**
      * \brief Return a const reference to the condition map.

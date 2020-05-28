@@ -27,8 +27,9 @@ be directly assembled into the global matrices.
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
     BeamContactAssemblyManagerDirect(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs)
-    : BeamContactAssemblyManager(assembly_contact_elepairs)
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+            assembly_contact_elepairs)
+    : BeamContactAssemblyManager(), assembly_contact_elepairs_(assembly_contact_elepairs)
 {
 }
 

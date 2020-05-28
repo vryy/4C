@@ -19,8 +19,4 @@
 /**
  *
  */
-BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager::BeamContactAssemblyManager(
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs)
-    : assembly_contact_elepairs_(assembly_contact_elepairs)
-{
-}
+BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager::BeamContactAssemblyManager() {}
