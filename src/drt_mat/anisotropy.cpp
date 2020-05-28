@@ -75,11 +75,6 @@ void MAT::Anisotropy::UnpackAnisotropy(
   {
     gpCylinderCoordinateSystemManager.Unpack(data, position);
   }
-
-  // for (const auto& extension : extensions_)
-  //{
-  //  extension->UnpackAnisotropy(data, position);
-  //}
 }
 
 void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp) { numgp_ = numgp; }
