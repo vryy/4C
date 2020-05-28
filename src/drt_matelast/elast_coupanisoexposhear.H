@@ -137,6 +137,14 @@ namespace MAT
 
       //@}
 
+      /// @name Methods for Packing and Unpacking
+      ///@{
+      void PackSummand(DRT::PackBuffer& data) const override;
+
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      ///@}
+
       /*!
        * \brief Register the anisotropy extension to the global anisotropy manager
        *

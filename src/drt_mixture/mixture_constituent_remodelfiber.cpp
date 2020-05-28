@@ -95,6 +95,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::PackConstituent(DRT::PackBuffer& 
   DRT::ParObject::AddtoPack(data, sig_h_);
 
   summand_->PackSummand(data);
+
+  orthogonalAnisotropyExtension_.PackAnisotropy(data);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
@@ -110,6 +112,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
   DRT::ParObject::ExtractfromPack(position, data, sig_h_);
 
   summand_->UnpackSummand(data, position);
+
+  orthogonalAnisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::RegisterAnisotropyExtensions(

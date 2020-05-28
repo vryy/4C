@@ -147,6 +147,8 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
+  anisotropy_.PackAnisotropy(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -155,8 +157,6 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
       p->PackSummand(data);
     }
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -194,6 +194,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   summandProperties_.Unpack(position, data);
 
+  // Pack anisotropy
+  anisotropy_.UnpackAnisotropy(data, position);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
@@ -212,13 +215,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       p->UnpackSummand(data, position);
       p->RegisterAnisotropyExtensions(anisotropy_);
     }
-  }
 
-  // Pack anisotropy
-  anisotropy_.UnpackAnisotropy(data, position);
-
-  if (params_ != nullptr)
-  {
     // For Stat Inverse Analysis
     // pointer to elasthyper
     params_->SetMaterialPtrSIA(this);

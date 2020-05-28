@@ -60,6 +60,7 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
 void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
+  anisotropyExtension_.PackAnisotropy(data);
 }
 
 /*----------------------------------------------------------------------*/
@@ -68,6 +69,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, tauc_n_);
+  anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
 void MAT::ELASTIC::AnisoActiveStress_Evolution::RegisterAnisotropyExtensions(

@@ -190,6 +190,14 @@ namespace MAT
        */
       void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
 
+      /// @name Methods for Packing and Unpacking
+      ///@{
+      void PackSummand(DRT::PackBuffer& data) const override;
+
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      ///@}
+
       /// Add anisotropic principal stresses
       void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
