@@ -12,7 +12,7 @@ is decreased that should result in a deformation of the cubes. The result values
 the old time integration scheme.
 
 Tests:
-- MULF prestressing in the new time integration scheme with a robin spring-dashpot boundary condition
+- MULF prestressing in the old time integration scheme with a robin spring-dashpot boundary condition
 
 Elements:
 - HEX8
@@ -29,7 +29,7 @@ STRUCT_STRESS                   Yes
 STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 DYNAMICTYP                      Statics
 PRESTRESS                       Mulf
 PRESTRESSTIME                   3.0001
