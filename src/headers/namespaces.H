@@ -1824,6 +1824,13 @@ namespace STRUMULTI
 {
 }  // namespace STRUMULTI
 
+/*!
+ * \brief Various methods needed for testing
+ */
+namespace TESTING
+{
+}
+
 /*! \brief Thermal dynamics
  *
  */
