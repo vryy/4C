@@ -136,16 +136,20 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
   }
   AddtoPack(data, isPreEvaluatedInt);
 
-  // pack all constituents
-  for (auto const& constituent : *constituents_)
-  {
-    constituent->PackConstituent(data);
-  }
-
-  // pack mixturerule
-  mixture_rule_->PackMixtureRule(data);
-
   anisotropy_.PackAnisotropy(data);
+
+  // pack all constituents
+  // constituents are not accessible during post processing
+  if (params_ != nullptr)
+  {
+    for (auto const& constituent : *constituents_)
+    {
+      constituent->PackConstituent(data);
+    }
+
+    // pack mixturerule
+    mixture_rule_->PackMixtureRule(data);
+  }
 }
 
 // Unpack data
@@ -195,6 +199,8 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       isPreEvaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
     }
 
+    anisotropy_.UnpackAnisotropy(data, position);
+
     // extract constituents
     // constituents are not accessible during post processing
     if (params_ != nullptr)
@@ -223,14 +229,13 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       mixture_rule_->SetConstituents(constituents_);
       mixture_rule_->SetMaterialMassDensity(params_->density_);
       mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
+
+      // position checking is not available in post processing mode
+      if (position != data.size())
+      {
+        dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
+      }
     }
-  }
-
-  anisotropy_.UnpackAnisotropy(data, position);
-
-  if (position != data.size())
-  {
-    dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
   }
 }
 

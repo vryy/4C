@@ -66,6 +66,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, dPIact_);
   AddtoPack(data, lambdaact_);
+  anisotropyExtension_.PackAnisotropy(data);
 }
 
 
@@ -76,6 +77,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
 {
   ExtractfromPack(position, data, dPIact_);
   ExtractfromPack(position, data, lambdaact_);
+  anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
 /*----------------------------------------------------------------------*/

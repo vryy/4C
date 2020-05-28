@@ -124,13 +124,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) con
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
+  anisotropy_->PackAnisotropy(data);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->PackSummand(data);
   }
-
-  anisotropy_->PackAnisotropy(data);
 }
 
 
@@ -167,6 +167,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
     }
   }
 
+  anisotropy_->UnpackAnisotropy(data, position);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     std::vector<int>::const_iterator m;
@@ -189,8 +191,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
     // inelastic deformation gradient factors
     inelastic_->Setup(params_);
   }
-
-  anisotropy_->UnpackAnisotropy(data, position);
 }
 
 

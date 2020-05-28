@@ -238,6 +238,8 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, setup_);
   AddtoPack(data, nr_rf_tot_);
 
+  anisotropy_.PackAnisotropy(data);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -254,8 +256,6 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
       potsumelpenalty_->PackSummand(data);
     }
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -312,6 +312,8 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, mue_frac_);
   ExtractfromPack(position, data, setup_);
   ExtractfromPack(position, data, nr_rf_tot_);
+
+  anisotropy_.UnpackAnisotropy(data, position);
 
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
@@ -388,19 +390,12 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
             "This can easily be expanded to other materials!");
       potsumelpenalty_ = sum;
       potsumelpenalty_->UnpackSummand(data, position);
+
+      // in the postprocessing mode, we do not unpack everything we have packed
+      // -> position check cannot be done in this case
+      if (position != data.size())
+        dserror("Mismatch in size of data %d <-> %d", data.size(), position);
     }
-  }
-
-  anisotropy_.UnpackAnisotropy(data, position);
-
-
-
-  if (params_->membrane_ != 1)
-  {
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
 

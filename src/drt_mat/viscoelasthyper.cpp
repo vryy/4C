@@ -125,6 +125,8 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, viscogeneralizedgenmax_);
   AddtoPack(data, viscofract_);
 
+  anisotropy_.PackAnisotropy(data);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -177,8 +179,6 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
       for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
         AddtoPack(data, histfractartstresslastall_->at(gp).at(step));
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -226,6 +226,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
   viscogeneralizedgenmax_ = (bool)ExtractInt(position, data);
   viscofract_ = (bool)ExtractInt(position, data);
 
+  anisotropy_.UnpackAnisotropy(data, position);
 
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
@@ -310,8 +311,6 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
           ExtractfromPack(position, data, histfractartstresslastall_->at(gp).at(step));
     }
   }
-
-  anisotropy_.UnpackAnisotropy(data, position);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

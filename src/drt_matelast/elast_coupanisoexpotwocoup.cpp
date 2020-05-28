@@ -49,6 +49,17 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
                                              FiberAnisotropyExtension<2>::STRUCTURAL_TENSOR_STRESS);
 }
 
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PackSummand(DRT::PackBuffer& data) const
+{
+  anisotropyExtension_.PackAnisotropy(data);
+}
+
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
+    const std::vector<char>& data, std::vector<char>::size_type& position)
+{
+  anisotropyExtension_.UnpackAnisotropy(data, position);
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
