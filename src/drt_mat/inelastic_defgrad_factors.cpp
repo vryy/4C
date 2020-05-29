@@ -338,7 +338,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
     const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameter
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double material_concentration =
       concentrations_->at(gp_).at(Sc1 - 1) * defgrad->Determinant();
 
@@ -366,7 +366,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
   const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
   const double detjacobian = defgrad->Determinant();
@@ -396,7 +396,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
   const double detjacobian = defgrad->Determinant();
   const double material_concentration = concentrations_->at(gp_).at(Sc1 - 1) * detjacobian;
@@ -464,7 +464,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
   FinM.Clear();
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double material_concentration =
       concentrations_->at(gp_).at(Sc1 - 1) * defgrad->Determinant();
 
@@ -495,7 +495,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
   static LINALG::Matrix<9, 6> diFinjdC(true);
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
   const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
   const double detjacobian = defgrad->Determinant();
@@ -580,7 +580,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
     const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
   // get polynomial
@@ -609,7 +609,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
@@ -643,7 +643,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
@@ -705,7 +705,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad
   FinM.Clear();
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
   // get polynomials
@@ -739,7 +739,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
   static LINALG::Matrix<9, 6> diFinjdC(true);
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
   const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
@@ -777,7 +777,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
   static LINALG::Matrix<9, 1> diFinjdc9x1(true);
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
