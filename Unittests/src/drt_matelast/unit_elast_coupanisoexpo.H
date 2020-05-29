@@ -20,6 +20,8 @@
 #include "src/drt_mat/anisotropy.H"
 #include "src/drt_matelast/elast_aniso_structuraltensor_strategy.H"
 
+#include "../common/special_assertions.H"
+
 namespace MAT
 {
   namespace ELASTIC
@@ -89,117 +91,95 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(0), fibersele_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(0), fibersele_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(0), fibersele_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(0), fibersele_->at(1), 1e-10);
 
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(1), fibersele_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersele_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(1), fibersele_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersele_->at(1), 1e-10);
 
     // Test GP fibers
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(0), fibersgp0_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(0), fibersgp0_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(0), fibersgp0_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(0), fibersgp0_->at(1), 1e-10);
 
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(1), fibersgp1_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersgp1_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<3, 1>(anisotropyExtension_->GetFiber(1), fibersgp1_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersgp1_->at(1), 1e-10);
   }
 
   void test_GetStructuralTensor()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(0), tensorsele_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(0), tensorsele_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(0), tensorsele_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(0), tensorsele_->at(1), 1e-10);
 
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(1), tensorsele_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsele_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(1), tensorsele_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsele_->at(1), 1e-10);
 
     // Test GP fibers
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(0), tensorsgp0_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(0), tensorsgp0_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(0), tensorsgp0_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(0), tensorsgp0_->at(1), 1e-10);
 
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(0), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<3, 3>(
-        anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(1), 1e-10);
+    TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(1), 1e-10);
   }
 
   void test_StructuralTensors_stress()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(0), tensorsele_stress_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(0), tensorsele_stress_->at(1), 1e-10);
 
     SetupAnisotropyExtension(1, 1);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(1), tensorsele_stress_->at(0), 1e-10);
 
     SetupAnisotropyExtension(1, 2);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(1), tensorsele_stress_->at(1), 1e-10);
 
     // Test GP fibers
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(0), tensorsgp0_stress_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(0), tensorsgp0_stress_->at(1), 1e-10);
 
     SetupAnisotropyExtension(3, 1);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(1), tensorsgp1_stress_->at(0), 1e-10);
 
     SetupAnisotropyExtension(3, 2);
-    AssertMatrixEqual<6, 1>(
+    TESTING::AssertDelta(
         anisotropyExtension_->GetStructuralTensor_stress(1), tensorsgp1_stress_->at(1), 1e-10);
-  }
-
- private:
-  template <unsigned int N, unsigned int M>
-  void AssertMatrixEqual(
-      const LINALG::Matrix<N, M>& mat1, const LINALG::Matrix<N, M>& mat2, double delta = 1e-10)
-  {
-    for (unsigned int i = 0; i < N; ++i)
-    {
-      for (unsigned int j = 0; j < M; ++j)
-      {
-        TS_ASSERT_DELTA(mat1(i, j), mat2(i, j), delta);
-      }
-    }
   }
 
  private:
