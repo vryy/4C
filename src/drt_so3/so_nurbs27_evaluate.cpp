@@ -903,7 +903,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     // call material law
     LINALG::Matrix<6, 6> cmat(true);
     LINALG::Matrix<6, 1> stress(true);
-    params.set<int>("gp", gp);
     UTILS::GetTemperatureForStructuralMaterial<nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law

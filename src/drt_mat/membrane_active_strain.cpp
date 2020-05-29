@@ -247,15 +247,13 @@ void MAT::Membrane_ActiveStrain::Evaluate(
         Q_trafo,  ///< Trafo from local membrane orthonormal coordinates to global coordinates
     LINALG::Matrix<3, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
     LINALG::Matrix<3, 3>* cmat,    ///< Constitutive matrix
-    const int eleGID               ///< Element GID
+    const int gp,
+    const int eleGID  ///< Element GID
 )
 {
   // blank resulting quantities
   stress->Clear();
   cmat->Clear();
-
-  // current gp
-  const int gp = params.get<int>("gp");
 
   // get pointer to vector containing the scalar states at the gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =

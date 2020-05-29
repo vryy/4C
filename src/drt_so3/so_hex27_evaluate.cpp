@@ -664,7 +664,6 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           // compute stress vector and constitutive matrix
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
           LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-          params.set<int>("gp", gp);
           SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
 
           // compute GP contribution to energy error norm
@@ -1044,7 +1043,6 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1413,7 +1411,6 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
     UTILS::GetTemperatureForStructuralMaterial<hex27>(shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc

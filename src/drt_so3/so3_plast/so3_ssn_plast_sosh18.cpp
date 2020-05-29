@@ -413,7 +413,6 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       plmat->EvaluateElast(&defgrd, &DeltaLp(), &pk2, &cmat, gp, Id());
     else
     {
-      params.set<int>("gp", gp);
       SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &pk2, &cmat, gp, Id());
     }
     // material call *********************************************

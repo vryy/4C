@@ -980,7 +980,6 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
       params.set("gprefecoord", point);
     }
 
-    params.set<int>("gp", gp);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1506,7 +1505,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-      params.set<int>("gp", gp);
+
       SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

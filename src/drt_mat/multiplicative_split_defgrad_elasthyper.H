@@ -342,8 +342,8 @@ namespace MAT
         LINALG::Matrix<6, 1>& ddPII) const;  ///< Second derivative with respect to invariants
 
     /// pre-evaluation, intended to be used for stuff that have to be done only once
-    void PreEvaluate(
-        Teuchos::ParameterList& params) const;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params,
+        int gp) const;  ///< parameter list as handed in from the element
 
    private:
     /// Holder for anisotropy

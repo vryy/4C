@@ -478,6 +478,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -485,7 +487,7 @@ namespace MAT
      */
     void EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
         const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     //@}
 

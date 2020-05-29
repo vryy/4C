@@ -1150,7 +1150,6 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
       params.set("gprefecoord", point);
     }
 
-    params.set<int>("gp", gp);
     SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
     // end of call material law
 

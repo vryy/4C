@@ -134,8 +134,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
       {
         dserror("No concentration from scatra provided for the activation");
       }
-      // get Gauss point number
-      const int gp = params.get<int>("gp", -1);
       // safety check
       if (gp == -1)
       {

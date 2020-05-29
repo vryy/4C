@@ -273,8 +273,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
     /*==== call material law ======================================================*/
     // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
     LINALG::Matrix<numstr_, 1> dSdc(true);
-    // set current gauss point
-    params.set<int>("gp", gp);
 
     params.set<std::string>("scalartype", "concentration");
 

@@ -466,7 +466,6 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
 
     LINALG::Matrix<6, 1> pk2;
     LINALG::Matrix<6, 6> cmat;
-    params.set<int>("gp", gp);
     SolidMaterial()->Evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, Id());
 
     // return gp stresses

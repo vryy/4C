@@ -1548,7 +1548,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
     // QUICK HACK until so_disp exclusively uses LINALG::Matrix!!!!!
     LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
-    params.set<int>("gp", iquad);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
     so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());

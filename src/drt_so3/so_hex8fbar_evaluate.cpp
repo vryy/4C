@@ -1275,7 +1275,6 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
       params.set("elecenter", point);
     }
 
-    params.set<int>("gp", gp);
     SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
     // end of call material law
 

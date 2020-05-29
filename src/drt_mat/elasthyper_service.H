@@ -346,12 +346,13 @@ namespace MAT
    * @param ddPII (in) : Second derivative of the Free-energy function with respect to the
    * principal invariants
    * @param params (in/out) : Container for additional information
-   * @param eleGID : Global element id
+   * @param gp (in) : Gauss point
+   * @param eleGID (in) : Global element id
    * @param properties (in) : Class holding the properties of the formulation of the summands
    */
   void ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
       const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-      const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, int eleGID,
+      const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, int gp, int eleGID,
       const SummandProperties& properties);
 
   /**

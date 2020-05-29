@@ -1637,7 +1637,7 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR2D(
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const& defgrd_glob,
     double& rcg33, Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& pk2M_glob,
-    LINALG::Matrix<6, 6>& cmat_glob, const int eleGID)
+    LINALG::Matrix<6, 6>& cmat_glob, const int gp, const int eleGID)
 {
   // blank resulting quantities
   pk2M_glob.Clear();
@@ -1645,9 +1645,6 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const&
 
   // save current simulation time (used for the evaluation of elastin degradation)
   t_tot_ = params.get<double>("total time");
-
-  // current gauss point
-  int gp = params.get<int>("gp");
 
   // time step size
   double dt = params.get<double>("delta time");

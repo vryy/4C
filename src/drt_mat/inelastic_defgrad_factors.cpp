@@ -414,11 +414,9 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarIso::PreEvaluate(Teuchos::ParameterList& params)
+void MAT::InelasticDefgradLinScalarIso::PreEvaluate(Teuchos::ParameterList& params, const int gp)
 {
-  // get Gauss point number
-  gp_ = params.get<int>("gp", -1);
-  if (gp_ == -1) dserror("No Gauss point number provided in material.");
+  gp_ = gp;
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
@@ -544,11 +542,9 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarAniso::PreEvaluate(Teuchos::ParameterList& params)
+void MAT::InelasticDefgradLinScalarAniso::PreEvaluate(Teuchos::ParameterList& params, const int gp)
 {
-  // get Gauss point number
-  gp_ = params.get<int>("gp", -1);
-  if (gp_ == -1) dserror("No Gauss point number provided in material.");
+  gp_ = gp;
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
@@ -665,11 +661,10 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracIso::PreEvaluate(Teuchos::ParameterList& params)
+void MAT::InelasticDefgradPolyIntercalFracIso::PreEvaluate(
+    Teuchos::ParameterList& params, const int gp)
 {
-  // get Gauss point number
-  gp_ = params.get<int>("gp", -1);
-  if (gp_ == -1) dserror("No Gauss point number provided in material.");
+  gp_ = gp;
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
@@ -802,11 +797,10 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracAniso::PreEvaluate(Teuchos::ParameterList& params)
+void MAT::InelasticDefgradPolyIntercalFracAniso::PreEvaluate(
+    Teuchos::ParameterList& params, const int gp)
 {
-  // get Gauss point number
-  gp_ = params.get<int>("gp", -1);
-  if (gp_ == -1) dserror("No Gauss point number provided in material.");
+  gp_ = gp;
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)

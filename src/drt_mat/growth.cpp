@@ -555,7 +555,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
     LINALG::Matrix<6, 1> dthetadCvec(true);
-    EvaluateGrowth(&theta, &dthetadCvec, defgrd, glstrain, params, eleGID);
+    EvaluateGrowth(&theta, &dthetadCvec, defgrd, glstrain, params, gp, eleGID);
 
     // modify the parameter list to be passed to the elastic material
     Teuchos::ParameterList paramselast(params);
@@ -700,17 +700,16 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
     const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // get gauss point number
-  const int gp = params.get<int>("gp", -1);
   if (gp == -1) dserror("No Gauss point number provided in material.");
 
   double thetaold = ThetaOld_atgp(gp);
 
   MAT::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
-      refdir_, curdir_, F_g_hist_, growthtrig_const_, params, eleGID);
+      refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -739,16 +738,12 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgr
   if (((time > starttime + eps) and (time <= endtime + eps)) or
       ((starttime < 0.0) and (endtime < 0.0)))
   {
-    // get gauss point number
-    const int gp = params.get<int>("gp", -1);
-    if (gp == -1) dserror("no Gauss point number provided in material");
-
     double theta = theta_->at(gp);
     double thetaold = ThetaOld()->at(gp);
 
     MAT::Growth* matgrowth = this;
     Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
-        refdir_, curdir_, F_g_hist_, growthtrig_const_, params, eleGID);
+        refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());

@@ -840,7 +840,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
           // compute stress vector and constitutive matrix
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
           LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-          params.set<int>("gp", gp);
+
           SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
 
           // compute GP contribution to energy error norm
@@ -1602,9 +1602,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       params.set("gprefecoord", point);
     }
 
-    params.set<int>("gp", gp);
-
-
     UTILS::GetTemperatureForStructuralMaterial<tet4>(shapefcts[gp], params);
 
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
@@ -2257,7 +2254,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-      params.set<int>("gp", gp);
+
       SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

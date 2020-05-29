@@ -48,12 +48,9 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
     const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
     const std::vector<LINALG::Matrix<3, 1>>& curdir,
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   double dt = params.get<double>("delta time", -1.0);
 
   double theta = *thetainit;
@@ -1103,11 +1100,8 @@ void MAT::GrowthLawAC::Evaluate(double* theta, const double& thetaold,
     const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
     const std::vector<LINALG::Matrix<3, 1>>& curdir,
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  // get Gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("No Gauss point number provided in material.");
   // get pointer to vector containing the scalar values at the Gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> concentrations =
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
@@ -1220,11 +1214,8 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta, const double& thetaold,
     const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
     const std::vector<LINALG::Matrix<3, 1>>& curdir,
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  // get Gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("No Gauss point number provided in material.");
   // get pointer to vector containing the scalar values at the Gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> concentrations =
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
@@ -1348,11 +1339,8 @@ void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta, const double& thetao
     const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
     const std::vector<LINALG::Matrix<3, 1>>& curdir,
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
   // get pointer to vector containing the scalar values at the Gauß points
   Teuchos::RCP<std::vector<std::vector<double>>> concentrations =
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
@@ -1458,7 +1446,7 @@ void MAT::GrowthLawConst::Evaluate(double* theta, const double& thetaold,
     const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
     const std::vector<LINALG::Matrix<3, 1>>& curdir,
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   double dt = params.get<double>("delta time", -1.0);
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle

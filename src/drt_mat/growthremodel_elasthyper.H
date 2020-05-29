@@ -246,7 +246,8 @@ namespace MAT
         Teuchos::ParameterList& params,           ///< Container for additional information
         LINALG::Matrix<3, 3>& pk2M_glob,          ///< 2nd Piola-Kirchhoff stress global coordinates
         LINALG::Matrix<6, 6>& cmat_glob,          ///< Elasticity tensor in global coordinates
-        const int eleGID);                        ///< Element ID
+        int gp,                                   ///< Gauss point
+        int eleGID);                              ///< Element ID
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string, int>& names);

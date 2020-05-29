@@ -53,7 +53,7 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
 
   // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
   if (checkpolyconvexity)
-    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, eleGID, properties);
+    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, gp, eleGID, properties);
 
 
   // clear stress and cmat (for safety reasons)
@@ -441,8 +441,8 @@ void MAT::ElastHyperProperties(
 
 void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-    const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int eleGID,
-    const SummandProperties& properties)
+    const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int gp,
+    const int eleGID, const SummandProperties& properties)
 {
   // This polyconvexity-test is just implemented for isotropic hyperelastic-materials
   // --> error if anisotropic material is tested (plastic and viscoelastic materials should not get
@@ -558,8 +558,8 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
             (-1.0e-10 * EWFreD.NormInf()))  // do not test < 0, but reasonable small value
         {
           std::cout << "\nWARNING: Your system is not polyconvex!" << std::endl;
-          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID
-                    << " and Gauß-Point: " << params.get<int>("gp") << std::endl;
+          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID << " and Gauß-Point: " << gp
+                    << std::endl;
           std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
         }
 }

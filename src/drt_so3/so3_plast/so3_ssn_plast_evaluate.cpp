@@ -800,7 +800,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       total_glstrain(3) = RCG()(0, 1);
       total_glstrain(4) = RCG()(1, 2);
       total_glstrain(5) = RCG()(2, 0);
-      params.set<int>("gp", gp);
+
       SolidMaterial()->Evaluate(
           &DefgrdMod(), &total_glstrain, params, &SetPK2(), &SetCmat(), gp, Id());
     }

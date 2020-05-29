@@ -192,7 +192,8 @@ namespace MAT
         LINALG::Matrix<3, 1>*
             stress,                  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
         LINALG::Matrix<3, 3>* cmat,  ///< Constitutive matrix
-        const int eleGID             ///< Element GID
+        int gp,                      ///< Gauss point
+        int eleGID                   ///< Element GID
     );
 
     /// Update internal variables

@@ -1537,7 +1537,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     }
     else
     {
-      params.set<int>("gp", ip);
       w1_call_matgeononl(strain, stress, C, numeps, material, params, ip);
 
       // return gp strains (only in case of strain output)

@@ -2458,8 +2458,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       params.set("elecenter", point);
     }
 
-    params.set<int>("gp", gp);
-
     // if output is requested only active stresses are written.
     params.set<int>("iostress", iostress);
 
@@ -3571,7 +3569,6 @@ void DRT::ELEMENTS::So_hex8::Update_element(
         // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
         LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-        params.set<int>("gp", gp);
         SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
         // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

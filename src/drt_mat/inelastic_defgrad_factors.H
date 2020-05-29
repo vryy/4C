@@ -346,8 +346,9 @@ namespace MAT
      *        Evaluate()
      *
      * @param[in] params  parameter list as handed in from the element
+     * @param[in] gp      Gauss point
      */
-    virtual void PreEvaluate(Teuchos::ParameterList& params) = 0;
+    virtual void PreEvaluate(Teuchos::ParameterList& params, int gp) = 0;
 
     /// return material parameters
     virtual MAT::PAR::Parameter* Parameter() { return params_; }
@@ -417,7 +418,7 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override = 0;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override = 0;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -475,7 +476,7 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -545,7 +546,7 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -611,7 +612,7 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
@@ -677,7 +678,7 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params) override;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFracAniso* Parameter() override
     {
