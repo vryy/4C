@@ -80,6 +80,8 @@ namespace BEAMINTERACTION
       {
         dserror("Not implemented!");
       }
+
+      virtual double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const { return 0.0; }
     };
 
   }  // namespace SUBMODELEVALUATOR

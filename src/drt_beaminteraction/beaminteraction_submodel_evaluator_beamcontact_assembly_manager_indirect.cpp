@@ -61,3 +61,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::Eva
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->AddGlobalForceStiffnessPenaltyContributions(data_state, fe_sysmat, fe_sysvec);
 }
+
+
+double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::GetEnergy(
+    const Teuchos::RCP<const Epetra_Vector>& disp) const
+{
+  return mortar_manager_->GetEnergy(disp);
+}

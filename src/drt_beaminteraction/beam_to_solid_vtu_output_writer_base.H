@@ -60,6 +60,16 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create a new visualization writer in this object.
+     * @param writer_name (in) Internal name for the new writer (this one will be used for actual
+     * created output files).
+     * @param writer_name_key (in) Key for the new writer in the writer map.
+     * @return RCP to the newly created writer.
+     */
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> AddVisualizationWriter(
+        const std::string& writer_name, const std::string& writer_name_key);
+
+    /**
+     * \brief Create a new visualization writer in this object.
      * @param writer_name (in) Name of the new writer. If the name already exists, throw an error.
      * @return RCP to the newly created writer.
      */
