@@ -21,7 +21,7 @@ MAT::Anisotropy::Anisotropy()
       gp_fibers_initialized_(false),
       elementFibers_(0),
       gpFibers_(0),
-      elementCylinderCoordinateSystemManager_(),
+      elementCylinderCoordinateSystemManager_(boost::none),
       gpCylinderCoordinateSystemManagers_(0),
       extensions_(0)
 {
@@ -128,7 +128,6 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* line
 
 void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterList& params)
 {
-  // ToDo: Implement GP anisotropy
   if (params.isParameter("fiberholder"))
   {
     const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
@@ -139,13 +138,55 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
         fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber2);
 
     gpFibers_.resize(numgp_);
-    for (int gp = 0; gp < numgp_; ++gp)
+    for (unsigned gp = 0; gp < numgp_; ++gp)
     {
       gpFibers_[gp].resize(2);
       gpFibers_[gp][0].Update(gpfiber1.at(gp));
       gpFibers_[gp][1].Update(gpfiber2.at(gp));
     }
   }
+
+  OnGPFibersInitialized();
+}
+
+void MAT::Anisotropy::SetElementFibers(const std::vector<LINALG::Matrix<3, 1>>& fibers)
+{
+  elementFibers_ = fibers;
+
+  OnElementFibersInitialized();
+}
+
+void MAT::Anisotropy::SetGaussPointFibers(
+    const std::vector<std::vector<LINALG::Matrix<3, 1>>>& fibers)
+{
+  // check input fibers whether they make sense
+
+  // Check whether the size of the first vector is the number of Gauss points
+  if (fibers.size() != numgp_)
+  {
+    dserror("The Gauss point fibers don't have the expected size of %d (%d given).", numgp_,
+        fibers.size());
+  }
+
+  // Check whether every second vector have the same lenghts
+  unsigned num_fibs = 1;
+  unsigned i = 0;
+  for (const auto gpfibers : fibers)
+  {
+    if (i == 0)
+    {
+      num_fibs = gpfibers.size();
+    }
+    else if (num_fibs != gpfibers.size())
+    {
+      dserror(
+          "The size of the Gauss point do not match! At every Gauss point, the same amount of "
+          "fibers are necessary. Error occured at Gauss point %d. Expected %d fibers, but got %d.",
+          i, num_fibs, gpfibers.size());
+    }
+  }
+
+  gpFibers_ = fibers;
 
   OnGPFibersInitialized();
 }

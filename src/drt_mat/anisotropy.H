@@ -49,17 +49,11 @@ namespace MAT
   class Anisotropy
   {
    public:
-    friend class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite;
-    friend class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite;
     //! Numerical tolerance used to check for unit vectors
     static constexpr float TOLERANCE = 1e-9;
 
     /*!
-     * Minimal constructor
-     *
-     * \note When using this constructor, the initialization mode and the structural tensor
-     * strategy have to be set with #Initialize(int, const
-     * Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>&)
+     * Constructor of the anisotropy class
      */
     Anisotropy();
 
@@ -143,6 +137,21 @@ namespace MAT
     const CylinderCoordinateSystemManager& GetGPCylinderCoordinateSystem(int gp) const;
 
     /*!
+     * \brief Set vector of element fibers
+     *
+     * \param fibers Vector of element fibers
+     */
+    void SetElementFibers(const std::vector<LINALG::Matrix<3, 1>>& fibers);
+
+    /*!
+     * \brief Set Gauss point fibers. First index represents the Gauss point, second index the
+     * fiber id
+     *
+     * @param fibers Vector of Gauss point fibers
+     */
+    void SetGaussPointFibers(const std::vector<std::vector<LINALG::Matrix<3, 1>>>& fibers);
+
+    /*!
      * Reads the line definition of an element to get the fibers defined on the element
      *
      * @param linedef (in) : Input line of the corresponding element
@@ -217,7 +226,7 @@ namespace MAT
 
    private:
     /// Number of Gauss points
-    int numgp_ = 0;
+    unsigned numgp_ = 0;
 
     /// Flag whether element fibers were set
     bool element_fibers_initialized_;

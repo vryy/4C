@@ -40,16 +40,6 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     SetupFibers();
     SetupStructuralTensors();
     SetupStructuralTensors_stress();
-
-    anisotropy_ = Teuchos::rcp(new MAT::Anisotropy());
-    anisotropy_->numgp_ = 2;
-    anisotropy_->element_fibers_initialized_ = true;
-    anisotropy_->gp_fibers_initialized_ = true;
-    anisotropy_->elementCylinderCoordinateSystemManager_ = boost::none;
-
-    anisotropy_->elementFibers_ = *fibersele_;
-    anisotropy_->gpFibers_.emplace_back(*fibersgp0_);
-    anisotropy_->gpFibers_.emplace_back(*fibersgp1_);
   }
 
   /// Tear down test suite
@@ -65,11 +55,18 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
         FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
         FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 
-    anisotropy_->extensions_.clear();
+    anisotropy_ = Teuchos::rcp(new MAT::Anisotropy());
     anisotropy_->RegisterAnisotropyExtension(*anisotropyExtension_);
+    anisotropy_->SetNumberOfGaussPoints(2);
 
-    anisotropy_->OnElementFibersInitialized();
-    anisotropy_->OnGPFibersInitialized();
+    // Setup element fibers
+    anisotropy_->SetElementFibers(*fibersele_);
+
+    // Setup Gauss point fibers
+    std::vector<std::vector<LINALG::Matrix<3, 1>>> gpfibers(0);
+    gpfibers.emplace_back(*fibersgp0_);
+    gpfibers.emplace_back(*fibersgp1_);
+    anisotropy_->SetGaussPointFibers(gpfibers);
   }
 
   void test_GetScalarProduct()

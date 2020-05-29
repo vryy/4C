@@ -17,7 +17,6 @@
 #include <Teuchos_RCPDecl.hpp>
 #include "src/linalg/linalg_fixedsizematrix.H"
 #include "src/drt_matelast/elast_coupanisoexpo.H"
-#include "src/drt_mat/anisotropy.H"
 
 namespace MAT
 {

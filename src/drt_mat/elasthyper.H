@@ -150,8 +150,6 @@ namespace MAT
   {
    public:
     friend class MAT::PAR::ElastHyper;
-    friend class MAT::ElastHyper_TestSuite;
-    friend class MAT::ElastHyperService_TestSuite;
 
     /// construct empty material object
     ElastHyper();
