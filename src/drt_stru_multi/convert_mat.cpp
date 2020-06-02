@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Material conversion (old file by Lena Yoshihara)
+\brief Material conversion
 
 \maintainer Martin Kronbichler
 

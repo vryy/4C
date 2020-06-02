@@ -1,9 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
 
-\maintainer Martin Kronbichler
+\brief Four-element Maxwell material model for reduced dimensional acinus elements with non-linear
+spring with exponential behaviour, inherits from Maxwell_0d_acinus
+
+The originally linear spring (Stiffness1) of the 4-element Maxwell model is substituted by an
+exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
+
+Necessary input lines:
+(material section)
+MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 3221.86 Viscosity2
+1000.0 // acinus properties;
+(element section)
+1 RED_ACINUS  MAT 3 TYPE Exponential AcinusVolume 300 AlveolarDuctVolume 0.03711 E1_0 0 E1_EXP 0
+E1_LIN 0 TAU 0
+
+\maintainer Carolin Geitner
 
 \level 3
 */
