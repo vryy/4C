@@ -882,6 +882,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_FAD.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp

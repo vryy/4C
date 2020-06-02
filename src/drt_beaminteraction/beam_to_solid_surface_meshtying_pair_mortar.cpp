@@ -178,30 +178,101 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
 
 
 /**
- * Explicit template initialization of template class.
+ *
  */
-namespace BEAMINTERACTION
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
+    const DRT::Element::DiscretizationType surface_shape,
+    const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>;
+  switch (mortar_shapefunction)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    default:
+      dserror("Wrong mortar shape function.");
+  }
 
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>;
-
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>;
-}  // namespace BEAMINTERACTION
+  return Teuchos::null;
+}
