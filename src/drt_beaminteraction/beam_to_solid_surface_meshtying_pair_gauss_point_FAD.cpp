@@ -13,8 +13,6 @@ coupling terms are evaluated using FAD.
 
 #include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_factory.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
 #include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 

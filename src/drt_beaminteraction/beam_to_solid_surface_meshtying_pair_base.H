@@ -115,18 +115,7 @@ namespace BEAMINTERACTION
      */
     void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
 
-    /**
-     * \brief Get energy for Gauss point to segment coupling.
-     */
-    double GetEnergy() const override;
-
    protected:
-    /**
-     * \brief Get the penalty potential for Gauss point to segment coupling.
-     * @return Penalty potential.
-     */
-    scalar_type GetPenaltyPotential() const;
-
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
