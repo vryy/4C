@@ -55,39 +55,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> coupling_vector_beam;
-  LINALG::Matrix<3, 1, scalar_type> coupling_vector_surface;
+  LINALG::Matrix<3, 1, scalar_type> coupling_vector;
   LINALG::Matrix<3, 1, scalar_type> force;
   LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
-
-  // Set the DOF vectors, depending on the desired coupling type.
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type> beam_dof_fad;
-  LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof_fad;
-  const INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
-  if (coupling_type ==
-      INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero)
-  {
-    // Couple the positions -> this will result in an initial stress of the system.
-    beam_dof_fad = this->ele1pos_;
-    surface_dof_fad = this->face_element_->GetFacePosition();
-  }
-  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement)
-  {
-    // Couple the displacements -> this will result in a non-fulfilment of the conservation of
-    // angular momentum.
-    beam_dof_fad = this->ele1pos_;
-    for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
-      beam_dof_fad(i_dof_beam) -= this->ele1posref_(i_dof_beam);
-    surface_dof_fad = this->face_element_->GetFacePosition();
-    for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
-      surface_dof_fad(i_dof_surface) -=
-          this->face_element_->GetFaceReferencePosition()(i_dof_surface);
-  }
-  else
-    dserror(
-        "BeamToSolidSurfaceMeshtyingPairGaussPoint::EvaluateAndAssemble: Got unexpected "
-        "surface coupling type.");
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
@@ -116,29 +86,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
-      // Evaluate the positions / displacements depending on the coupling type. In both cases, the
-      // terms are exclusively formulated with 0 normal direction, i.e. directly on the surface.
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          projected_gauss_point.GetEta(), beam_dof_fad, coupling_vector_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(projected_gauss_point.GetXi(), surface_dof_fad,
-          coupling_vector_surface, this->face_element_->GetDrtFaceElement());
-
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
-      force = coupling_vector_surface;
-      force -= coupling_vector_beam;
+      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      force = coupling_vector;
       force.Scale(penalty_parameter);
 
       // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
       // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-          force_pair(i_dof) -= force(i_dir) * coupling_vector_beam(i_dir).dx(i_dof) *
+          force_pair(i_dof) += force(i_dir) * coupling_vector(i_dir).dx(i_dof) *
                                projected_gauss_point.GetGaussWeight() * segment_jacobian;
       for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           force_pair(i_dof + beam::n_dof_) +=
-              force(i_dir) * coupling_vector_surface(i_dir).dx(i_dof + beam::n_dof_) *
+              force(i_dir) * coupling_vector(i_dir).dx(i_dof + beam::n_dof_) *
               projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }

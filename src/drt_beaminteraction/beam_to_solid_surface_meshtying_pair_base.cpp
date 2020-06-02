@@ -10,6 +10,8 @@
 
 #include "beam_to_solid_surface_meshtying_pair_base.H"
 
+#include "beam_contact_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
@@ -180,7 +182,77 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 {
   return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>(
       this->geometry_pair_, true);
-};
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface>
+LINALG::Matrix<3, 1, scalar_type>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::EvaluateCoupling(
+    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const
+{
+  using namespace INPAR::BEAMTOSOLID;
+
+  LINALG::Matrix<3, 1, scalar_type> r_beam(true);
+  LINALG::Matrix<3, 1, scalar_type> r_surface(true);
+
+  const BeamToSolidSurfaceCoupling coupling_type =
+      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
+  switch (coupling_type)
+  {
+    case BeamToSolidSurfaceCoupling::displacement:
+    case BeamToSolidSurfaceCoupling::displacement_fad:
+    {
+      // In this case we have to substract the reference position from the DOF vectors.
+      LINALG::Matrix<beam::n_dof_, 1, scalar_type> beam_dof = this->ele1pos_;
+      LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof =
+          this->face_element_->GetFacePosition();
+
+      for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+        beam_dof(i_dof_beam) -= this->ele1posref_(i_dof_beam);
+      for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+        surface_dof(i_dof_surface) -=
+            this->face_element_->GetFaceReferencePosition()(i_dof_surface);
+
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          evaluation_point.GetEta(), beam_dof, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(), surface_dof, r_surface,
+          this->face_element_->GetDrtFaceElement());
+
+      r_beam -= r_surface;
+      return r_beam;
+    }
+    case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+    case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero_fad:
+    {
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          evaluation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(),
+          this->face_element_->GetFacePosition(), r_surface,
+          this->face_element_->GetDrtFaceElement());
+
+      r_beam -= r_surface;
+      return r_beam;
+    }
+    case BeamToSolidSurfaceCoupling::consistent_fad:
+    {
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          evaluation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(evaluation_point.GetXi(),
+          this->face_element_->GetFacePosition(), r_surface,
+          this->face_element_->GetDrtFaceElement(), this->face_element_->GetCurrentNormals());
+
+      r_beam -= r_surface;
+      return r_beam;
+    }
+    default:
+    {
+      dserror("Got unexpected coupling type.");
+      return r_beam;
+    }
+  }
+}
 
 
 /**

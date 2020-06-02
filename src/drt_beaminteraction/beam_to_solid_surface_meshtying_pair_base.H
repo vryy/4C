@@ -123,6 +123,16 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
         const;
 
+    /**
+     * \brief Evaluate the coupling vector at an evaluation point.
+     * @param evaluation_point (in) Projection point from 1D to 3D where the coupling should be
+     * evaluated.
+     * @return 3D vector with the difference in the positions / displacements at the projection
+     * point.
+     */
+    LINALG::Matrix<3, 1, scalar_type> EvaluateCoupling(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
+
    private:
     /**
      * \brief Add points on the beam element to an output writer.
