@@ -118,13 +118,13 @@ namespace ADAPTER
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve(){};
 
-    /// Get function for the structure field structure_
+    /// Get function for the structure field #structure_
     virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
     {
       return structure_;
     };
 
-    /// Get function for the bridge object bridge_
+    /// Get function for the bridge object #bridge_
     virtual Teuchos::RCP<const ADAPTER::FBIConstraintBridge> GetBridge() const final
     {
       return bridge_;
@@ -217,10 +217,10 @@ namespace ADAPTER
       return Teuchos::null;
     };
 
-    /// Get function for the fluid field fluid_
+    /// Get function for the fluid field #fluid_
     virtual Teuchos::RCP<ADAPTER::FluidMovingBoundary> GetFluid() const final { return fluid_; };
 
-    /// Get function for the structure and the fluid discretization in the vector discretizations_
+    /// Get function for the structure and the fluid discretization in the vector #discretizations_
     virtual std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const final
     {
       return discretizations_;

@@ -67,19 +67,19 @@ namespace ADAPTER
 
     void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
-    /// Matrix containing only structure side contributions \f$C_ss\f$
+    /// Matrix containing only structure side contributions \f$C_{ss}\f$
     Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const override { return Css_; };
 
-    /// Matrix containing only fluid side contributions \f$C_ff\f$
+    /// Matrix containing only fluid side contributions \f$C_{ff}\f$
     Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const override { return Cff_; };
 
-    /// Matrix containing mixed fluid side contributions \f$C_fs\f$
+    /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
     Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
 
-    /// Matrix containing mixed structure side contributions \f$C_sf\f$
+    /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
     Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const override { return Csf_; };
 
-    /// Force vector acting on the fluid side \f$f_f\f$
+    /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
     Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const override { return ff_; };
 
     /// Force vector acting on the structure side \f$f_s\f$

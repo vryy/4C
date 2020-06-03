@@ -126,16 +126,16 @@ namespace ADAPTER
     /// Sets the fluid solve flag
     virtual void PrepareFluidSolve() = 0;
 
-    /// Matrix containing only structure side contributions \f$C_ss\f$
+    /// Matrix containing only structure side contributions \f$C_{ss}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
 
-    /// Matrix containing only fluid side contributions \f$C_ff\f$
+    /// Matrix containing only fluid side contributions \f$C_{ff}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
 
-    /// Matrix containing mixed fluid side contributions \f$C_fs\f$
+    /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
 
-    /// Matrix containing mixed structure side contributions \f$C_sf\f$
+    /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
