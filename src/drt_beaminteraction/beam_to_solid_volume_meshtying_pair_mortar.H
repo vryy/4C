@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
      */
     bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
         LINALG::SerialDenseVector& local_kappa,
-        LINALG::SerialDenseVector& local_constraint_offset) override;
+        LINALG::SerialDenseVector& local_constraint) override;
 
     /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.

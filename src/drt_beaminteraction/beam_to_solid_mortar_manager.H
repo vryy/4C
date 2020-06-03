@@ -226,14 +226,6 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<Epetra_Vector> InvertKappa() const;
 
-    /**
-     * \brief Get the global vector of the constraints.
-     * @param disp (in) Global displacement vector.
-     * @return Global vector of constraint values.
-     */
-    Teuchos::RCP<Epetra_Vector> GetGlobalConstraintVector(
-        const Teuchos::RCP<const Epetra_Vector>& disp) const;
-
    private:
     //! Flag if setup was called.
     bool is_setup_;
@@ -297,9 +289,8 @@ namespace BEAMINTERACTION
     //! Global \f$M\f$ matrix.
     Teuchos::RCP<LINALG::SparseMatrix> global_M_;
 
-    //! Global constraint offset vector. This vector is the right hand side of the constraint
-    //! equations.
-    Teuchos::RCP<Epetra_FEVector> global_constraint_offset_;
+    //! Global constraint vector.
+    Teuchos::RCP<Epetra_FEVector> global_constraint_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

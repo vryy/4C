@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 template <typename beam, typename surface, typename mortar>
 bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -144,32 +144,44 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       local_M(i_row, i_col) = M(i_row, i_col);
   for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
 
-  // Calculate the constraint offset vector.
-  local_constraint_offset.Size(mortar::n_dof_);
+  // Add the local constraint contributions. For this we multiply the local mortar matrices with the
+  // positions / displacements to get the actual constraint terms for this pair.
+  LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
+  LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
   switch (this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
-      // Add the reference offset values.
-      for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar::n_dof_; i_dof_lambda++)
-      {
-        double row_value = 0.0;
-        for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
-          row_value += local_D(i_dof_lambda, i_dof_beam) * this->ele1posref_(i_dof_beam);
-        for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
-          row_value -= local_M(i_dof_lambda, i_dof_surface) *
-                       this->face_element_->GetFaceReferencePosition()(i_dof_surface);
-        local_constraint_offset(i_dof_lambda) = row_value;
-      }
+      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+        beam_coupling_dof(i_beam) = FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+        surface_coupling_dof(i_surface) =
+            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface));
       break;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
     {
-      // In this case we do not need to add a constraint offset.
+      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+        beam_coupling_dof(i_beam) =
+            FADUTILS::CastToDouble(this->ele1pos_(i_beam)) - this->ele1posref_(i_beam);
+      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+        surface_coupling_dof(i_surface) =
+            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)) -
+            this->face_element_->GetFaceReferencePosition()(i_surface);
       break;
     }
     default:
       dserror("Wrong coupling type.");
+  }
+  local_constraint.Shape(mortar::n_dof_, 1);
+  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  {
+    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+      local_constraint(i_lambda) +=
+          FADUTILS::CastToDouble(D(i_lambda, i_beam) * beam_coupling_dof(i_beam));
+    for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+      local_constraint(i_lambda) -=
+          FADUTILS::CastToDouble(M(i_lambda, i_surface) * surface_coupling_dof(i_surface));
   }
 
   // If we get to this point, the pair has a mortar contribution.
