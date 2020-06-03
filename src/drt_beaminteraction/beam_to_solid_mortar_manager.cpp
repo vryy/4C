@@ -436,7 +436,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
 
       // Get the GIDs of the Lagrange multipliers.
       std::vector<int> lambda_row;
-      LocationVector(elepairptr, lambda_row);
+      LocationVector(elepairptr.get(), lambda_row);
 
       // Get the GIDs of the beam DOF.
       std::vector<int> beam_row;

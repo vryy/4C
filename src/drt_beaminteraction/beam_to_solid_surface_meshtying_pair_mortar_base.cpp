@@ -66,10 +66,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
-    Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this_rcp, lambda_row);
+    mortar_manager->LocationVector(this, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda(i_dof) = lambda_pair[i_dof];

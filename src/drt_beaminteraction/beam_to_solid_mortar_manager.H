@@ -142,8 +142,8 @@ namespace BEAMINTERACTION
      * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
      * this pair.
      */
-    void LocationVector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
-        std::vector<int>& lambda_row) const;
+    void LocationVector(
+        const BEAMINTERACTION::BeamContactPair* contact_pair, std::vector<int>& lambda_row) const;
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
