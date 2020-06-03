@@ -31,6 +31,7 @@ interaction.
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret_faces.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <iostream>
@@ -45,7 +46,8 @@ ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
       geometrycoupler_(geometrycoupler),
       column_structure_displacement_(Teuchos::null),
       column_structure_velocity_(Teuchos::null),
-      column_fluid_velocity_(Teuchos::null)
+      column_fluid_velocity_(Teuchos::null),
+      velocity_pressure_splitter_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 }
 
@@ -61,6 +63,9 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap());
   geometrycoupler_->Setup(discretizations_);
+
+  LINALG::CreateMapExtractorFromDiscretization(
+      *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
 
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {

@@ -36,7 +36,8 @@ namespace FBI
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class MapExtractor;
+}  // namespace LINALG
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -229,6 +230,12 @@ namespace ADAPTER
     /// Get function for the bridge object bridge_
     virtual Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const final { return bridge_; };
 
+    /// Get map extractor to split fluid velocity and pressure values
+    Teuchos::RCP<const LINALG::MapExtractor> GetVelocityPressureSplitter() const
+    {
+      return velocity_pressure_splitter_;
+    }
+
    private:
     FBIConstraintenforcer() = delete;
 
@@ -260,6 +267,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
+    /**
+     * \brief Extractor to split fluid values into velocities and pressure DOFs
+     *
+     * velocities  = OtherVector
+     * pressure    = CondVector
+     */
+    Teuchos::RCP<LINALG::MapExtractor> velocity_pressure_splitter_;
   };
 }  // namespace ADAPTER
 #endif

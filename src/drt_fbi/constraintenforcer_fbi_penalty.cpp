@@ -19,6 +19,7 @@ fluid-beam interaction)
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include <Epetra_Vector.h>
@@ -123,10 +124,10 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
     double norm, normf, norms;
     double norm_vel;
 
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)
-        ->Velnp()
-        ->MaxValue(&norm_vel);  // todo this uses the pressure. Fix such that only the maximum
-                                // velocity quantity is used
+    GetVelocityPressureSplitter()
+        ->ExtractOtherVector(
+            Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp())
+        ->MaxValue(&norm_vel);
 
     violation->MaxValue(&norm);
     if (norm_vel > 1e-15) normf = norm / norm_vel;
