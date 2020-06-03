@@ -339,8 +339,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
-    const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
-    std::vector<int>& lambda_row) const
+    const BEAMINTERACTION::BeamContactPair* contact_pair, std::vector<int>& lambda_row) const
 {
   CheckSetup();
   CheckLocalMaps();
@@ -393,13 +392,15 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
   CheckSetup();
   CheckGlobalMaps();
 
-  // Clear the old values of D, M and kappa.
+  // Reset the global data structures.
   int linalg_error = 0;
   linalg_error = global_D_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
   linalg_error = global_M_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
   linalg_error = global_kappa_->PutScalar(0.);
+  if (linalg_error != 0) dserror("Error in PutScalar!");
+  linalg_error = global_active_lambda_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
   linalg_error = global_constraint_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
@@ -473,6 +474,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
       global_active_lambda_->SumIntoGlobalValues(
           local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
     }
+
+    // Evaluate the mortar contributions of the pair and the pair assembles the terms into the
+    // global matrices.
+    elepairptr->EvaluateAndAssembleDM(*discret_, this, *global_D_, *global_M_, *global_constraint_,
+        *global_kappa_, *global_active_lambda_);
   }
 
   // Complete the global mortar matrices.

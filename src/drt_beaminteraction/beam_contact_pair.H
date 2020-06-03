@@ -44,6 +44,7 @@ namespace BEAMINTERACTION
   class BeamContactParams;
   class BeamToSolidVtuOutputWriterBase;
   class BeamInteractionConditions;
+  class BeamToSolidMortarManager;
 
   /*!
    \brief
@@ -292,6 +293,22 @@ namespace BEAMINTERACTION
     {
       return false;
     }
+
+    /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
+     * them into global matrices.
+     * @param discret (in) Discretization, used to get the beam GIDs.
+     * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
+     * @param global_D (in/out) Global mortar matrix D.
+     * @param global_M (in/out) Global mortar matrix D.
+     * @param global_constraint_offset (in/out) Global constraint offset vector.
+     * @param global_kappa (in/out) Global scaling matrix.
+     * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
+     */
+    virtual void EvaluateAndAssembleDM(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
+        LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint_offset,
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active){};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.

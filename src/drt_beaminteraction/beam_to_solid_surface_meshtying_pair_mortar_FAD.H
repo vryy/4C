@@ -57,6 +57,15 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidSurfaceMeshtyingPairMortarFAD(){};
+
+    /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
+     * them into global matrices. (derived)
+     */
+    void EvaluateAndAssembleDM(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
+        LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint,
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active) override;
   };
 
 

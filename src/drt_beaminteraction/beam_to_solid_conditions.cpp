@@ -607,6 +607,7 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
             reference_configuration_forced_to_zero_fad:
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
           return BeamToSolidSurfaceMeshtyingPairMortarFADFactory(shape, mortar_shapefunction);
         default:
           dserror("Wrong coupling type.");
