@@ -6709,7 +6709,7 @@ void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(
  * problems                                                                    |
  *----------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetCouplingContributions(
-    Teuchos::RCP<LINALG::SparseMatrix> contributing_matrix)
+    Teuchos::RCP<const LINALG::SparseMatrix> contributing_matrix)
 {
   if (couplingcontributions_ == Teuchos::null)
     couplingcontributions_ = Teuchos::rcp(new LINALG::SparseMatrix(

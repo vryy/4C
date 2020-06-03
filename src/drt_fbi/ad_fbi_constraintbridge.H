@@ -25,6 +25,10 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -36,6 +40,7 @@ namespace GEOMETRYPAIR
 }
 
 class Epetra_Vector;
+class Epetra_FEVector;
 
 namespace FBI
 {
@@ -119,25 +124,31 @@ namespace ADAPTER
     virtual void ResetBridge();
 
     /// Sets the fluid solve flag
-    virtual void PrepareFluidSolve(){};
+    virtual void PrepareFluidSolve() = 0;
+
+    /// Matrix containing only structure side contributions \f$C_{ss}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
+
+    /// Matrix containing only fluid side contributions \f$C_{ff}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
+
+    /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
+
+    /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const = 0;
+
+    /// Force vector acting on the fluid side \f$f_f\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const = 0;
+
+    /// Force vector acting on the structure side \f$f_s\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
      */
     FBIConstraintBridge();
-
-    /// Provides access to data container holding all beam interaction related parameters
-    virtual void SetParams(Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params) final
-    {
-      beam_interaction_params_ = params;
-    };
-
-    /// Provides access to data container holding all geometry related evaluation data
-    virtual void SetGeometryData(Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> data) final
-    {
-      geometry_evaluation_data_ = data;
-    };
 
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
