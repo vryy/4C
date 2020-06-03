@@ -27,7 +27,7 @@ namespace INPAR
   namespace STI
   {
     //! type of coupling between scatra and thermo fields
-    enum CouplingType
+    enum class CouplingType
     {
       coupling_undefined,
       coupling_monolithic,
@@ -41,14 +41,14 @@ namespace INPAR
     };
 
     //! type of monolithic system matrix in global system of equations
-    enum MatrixType
+    enum class MatrixType
     {
       matrix_block,
       matrix_sparse
     };
 
     //! type of scalar transport time integration
-    enum ScaTraTimIntType
+    enum class ScaTraTimIntType
     {
       scatratiminttype_standard,
       scatratiminttype_elch

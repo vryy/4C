@@ -249,9 +249,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
                                         DRT::Problem::Instance()->SSIControlParams(),
                                         "SCATRATIMINTTYPE") == INPAR::SSI::scatratiminttype_elch) or
            (probtype == prb_sti and disname == "scatra" and
-               DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(
+               Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
-                   INPAR::STI::scatratiminttype_elch))
+                   INPAR::STI::ScaTraTimIntType::scatratiminttype_elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
@@ -560,10 +560,11 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
-  if (probtype == prb_elch or (probtype == prb_sti and discret->Name() == "scatra" and
-                                  DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(
-                                      DRT::Problem::Instance()->STIDynamicParams(),
-                                      "SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch))
+  if (probtype == prb_elch or
+      (probtype == prb_sti and discret->Name() == "scatra" and
+          Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
+              DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
+              INPAR::STI::ScaTraTimIntType::scatratiminttype_elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));

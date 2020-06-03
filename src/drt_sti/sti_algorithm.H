@@ -23,6 +23,11 @@
 class Epetra_Time;
 class Epetra_Vector;
 
+namespace ADAPTER
+{
+  class ScaTraBaseAlgorithm;
+}  // namespace ADAPTER
+
 namespace SCATRA
 {
   class MeshtyingStrategyS2I;
@@ -44,10 +49,10 @@ namespace STI
     );
 
     //! access scatra time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const { return scatra_; };
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& Scatra() const { return scatra_; };
 
     //! access thermo time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const { return thermo_; };
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& Thermo() const { return thermo_; };
 
     //! time loop
     void TimeLoop();
@@ -78,10 +83,10 @@ namespace STI
         ) const;
 
     //! scatra time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
     //! thermo time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;

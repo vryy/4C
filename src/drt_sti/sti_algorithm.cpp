@@ -60,44 +60,43 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
     dserror("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra->Init(*fieldparameters_, *fieldparameters_, solverparams_scatra);
-  scatra->Setup();
-  scatra_ = scatra->ScaTraField();
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_->Init(*fieldparameters_, *fieldparameters_, solverparams_scatra);
+  scatra_->Setup();
 
   // modify field parameters for thermo field
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  thermo->Init(*fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
-  thermo->Setup();
-  thermo_ = thermo->ScaTraField();
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  thermo_->Init(*fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
+  thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
-  if (scatra_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+  if (scatra_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
     dserror("Scatra discretization does not have any degrees of freedom!");
-  if (thermo_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+  if (thermo_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
     dserror("Thermo discretization does not have any degrees of freedom!");
 
   // additional safety check
-  if (thermo_->NumScal() != 1) dserror("Thermo field must involve exactly one transported scalar!");
+  if (thermo_->ScaTraField()->NumScal() != 1)
+    dserror("Thermo field must involve exactly one transported scalar!");
 
   // perform initializations associated with scatra-scatra interface coupling
-  if (scatra_->S2ICoupling())
+  if (scatra_->ScaTraField()->S2ICoupling())
   {
     // safety check
-    if (!thermo_->S2ICoupling())
+    if (!thermo_->ScaTraField()->S2ICoupling())
       dserror(
           "Can't evaluate scatra-scatra interface coupling in scatra field, but not in thermo "
           "field!");
 
     // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time
     // integrators
-    strategyscatra_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->Strategy());
-    strategythermo_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->Strategy());
+    strategyscatra_ =
+        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->ScaTraField()->Strategy());
+    strategythermo_ =
+        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->ScaTraField()->Strategy());
 
     // perform initializations depending on type of meshtying method
     switch (strategyscatra_->CouplingType())
@@ -121,7 +120,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
 
         // extract scatra-scatra interface coupling conditions
         std::vector<DRT::Condition*> conditions;
-        scatra_->Discretization()->GetCondition("S2ICoupling", conditions);
+        scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
 
         // loop over all conditions
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
@@ -178,7 +177,7 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
   fieldparameters_->set<int>("INITFUNCNO", stiparameters_->get<int>("THERMO_INITFUNCNO"));
 
   // perform additional manipulations associated with scatra-scatra interface coupling
-  if (scatra_->S2ICoupling())
+  if (scatra_->ScaTraField()->S2ICoupling())
   {
     // set flag for matrix type associated with thermo field
     fieldparameters_->set<std::string>("MATRIXTYPE", "sparse");
@@ -210,10 +209,10 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
 void STI::Algorithm::Output()
 {
   // output scatra field
-  scatra_->Output();
+  scatra_->ScaTraField()->Output();
 
   // output thermo field
-  thermo_->Output();
+  thermo_->ScaTraField()->Output();
 
   return;
 }
@@ -228,22 +227,22 @@ void STI::Algorithm::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // provide scatra and thermo fields with velocities
-  scatra_->SetVelocityField(1);
-  thermo_->SetVelocityField(1);
+  scatra_->ScaTraField()->SetVelocityField(1);
+  thermo_->ScaTraField()->SetVelocityField(1);
 
   // pass thermo degrees of freedom to scatra discretization for preparation of first time step
   // (calculation of initial time derivatives etc.)
-  if (Step() == 1) TransferThermoToScatra(thermo_->Phiafnp());
+  if (Step() == 1) TransferThermoToScatra(thermo_->ScaTraField()->Phiafnp());
 
   // prepare time step for scatra field
-  scatra_->PrepareTimeStep();
+  scatra_->ScaTraField()->PrepareTimeStep();
 
   // pass scatra degrees of freedom to thermo discretization for preparation of first time step
   // (calculation of initial time derivatives etc.)
-  if (Step() == 1) TransferScatraToThermo(scatra_->Phiafnp());
+  if (Step() == 1) TransferScatraToThermo(scatra_->ScaTraField()->Phiafnp());
 
   // prepare time step for thermo field
-  thermo_->PrepareTimeStep();
+  thermo_->ScaTraField()->PrepareTimeStep();
 
   return;
 }  // STI::Algorithm::PrepareTimeStep()
@@ -256,11 +255,11 @@ void STI::Algorithm::ReadRestart(int step  //! time step for restart
 )
 {
   // read scatra and thermo restart variables
-  scatra_->ReadRestart(step);
-  thermo_->ReadRestart(step);
+  scatra_->ScaTraField()->ReadRestart(step);
+  thermo_->ScaTraField()->ReadRestart(step);
 
   // set time and time step
-  SetTimeStep(scatra_->Time(), step);
+  SetTimeStep(scatra_->ScaTraField()->Time(), step);
 
   return;
 }  // STI::Algorithm::ReadRestart
@@ -293,7 +292,7 @@ void STI::Algorithm::TimeLoop()
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (DRT::INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
-      scatra_->OutputNonlinSolverStats(iter_, dtnonlinsolve, Step(), Comm());
+      scatra_->ScaTraField()->OutputNonlinSolverStats(iter_, dtnonlinsolve, Step(), Comm());
 
     // update scatra and thermo fields
     Update();
@@ -314,10 +313,10 @@ void STI::Algorithm::TransferScatraToThermo(
     ) const
 {
   // pass scatra degrees of freedom to thermo discretization
-  thermo_->Discretization()->SetState(2, "scatra", scatra);
+  thermo_->ScaTraField()->Discretization()->SetState(2, "scatra", scatra);
 
   // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (thermo_->S2ICoupling())
+  if (thermo_->ScaTraField()->S2ICoupling())
   {
     switch (strategythermo_->CouplingType())
     {
@@ -325,12 +324,12 @@ void STI::Algorithm::TransferScatraToThermo(
       {
         // pass master-side scatra degrees of freedom to thermo discretization
         const Teuchos::RCP<Epetra_Vector> imasterphinp =
-            LINALG::CreateVector(*scatra_->Discretization()->DofRowMap(), true);
+            LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(), true);
         strategyscatra_->InterfaceMaps()->InsertVector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
                 strategyscatra_->InterfaceMaps()->ExtractVector(*scatra, 2)),
             1, imasterphinp);
-        thermo_->Discretization()->SetState(2, "imasterscatra", imasterphinp);
+        thermo_->ScaTraField()->Discretization()->SetState(2, "imasterscatra", imasterphinp);
 
         break;
       }
@@ -339,7 +338,7 @@ void STI::Algorithm::TransferScatraToThermo(
       {
         // extract scatra-scatra interface coupling conditions
         std::vector<DRT::Condition*> conditions;
-        thermo_->Discretization()->GetCondition("S2ICoupling", conditions);
+        thermo_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
 
         // loop over all conditions
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
@@ -383,15 +382,15 @@ void STI::Algorithm::TransferThermoToScatra(
     ) const
 {
   // pass thermo degrees of freedom to scatra discretization
-  scatra_->Discretization()->SetState(2, "thermo", thermo);
+  scatra_->ScaTraField()->Discretization()->SetState(2, "thermo", thermo);
 
   // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (scatra_->S2ICoupling() and
+  if (scatra_->ScaTraField()->S2ICoupling() and
       strategyscatra_->CouplingType() == INPAR::S2I::coupling_mortar_standard)
   {
     // extract scatra-scatra interface coupling conditions
     std::vector<DRT::Condition*> conditions;
-    scatra_->Discretization()->GetCondition("S2ICoupling", conditions);
+    scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
 
     // loop over all conditions
     for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
@@ -423,16 +422,16 @@ void STI::Algorithm::TransferThermoToScatra(
 void STI::Algorithm::Update()
 {
   // update scatra field
-  scatra_->Update();
+  scatra_->ScaTraField()->Update();
 
   // compare scatra field to analytical solution if applicable
-  scatra_->EvaluateErrorComparedToAnalyticalSol();
+  scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   // update thermo field
-  thermo_->Update();
+  thermo_->ScaTraField()->Update();
 
   // compare thermo field to analytical solution if applicable
-  thermo_->EvaluateErrorComparedToAnalyticalSol();
+  thermo_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   return;
 }  // STI::Algorithm::Update()
