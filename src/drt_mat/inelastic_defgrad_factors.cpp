@@ -29,13 +29,6 @@ MAT::PAR::InelasticDefgradScalar::InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::
   if (Scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
   if (matdata->GetDouble("SCALAR1_RefConc") < 0.0)
     dserror("The reference concentration of SCALAR1 can't be negative");
-
-  // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
-    dserror(
-        "If you use the material 'InelasticDefgradScalar' please set 'MASSLIN' in the "
-        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
 }
 
 /*--------------------------------------------------------------------*
@@ -151,6 +144,13 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
   // another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
+
+  // check correct masslin type
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
+    dserror(
+        "If you use the material 'InelasticDefgradFactors' please set 'MASSLIN' in the "
+        "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
