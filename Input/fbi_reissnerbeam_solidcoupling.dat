@@ -109,10 +109,6 @@ CONSTRAINT_VIOLATION                 Yes
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 1e+08 POISSONRATIO 0.0 DENS 1e-01 CROSSAREA 0.12566370614359174 SHEARCORR 0.75 MOMINPOL 0.002513274122871835 MOMIN2 0.0012566370614359175 MOMIN3 0.0012566370614359175
---------------------------------------------------------------------------FUNCT1
-FUNCTION -1000*t*(x-0.5)*(x+0.5)*(y-0.5)*(y+0.5)
-
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  5
