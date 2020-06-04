@@ -29,29 +29,29 @@ namespace INPAR
     //! type of coupling between scatra and thermo fields
     enum class CouplingType
     {
-      coupling_undefined,
-      coupling_monolithic,
-      coupling_oneway_scatratothermo,
-      coupling_oneway_thermotoscatra,
-      coupling_twoway_scatratothermo,
-      coupling_twoway_scatratothermo_aitken,
-      coupling_twoway_scatratothermo_aitken_dofsplit,
-      coupling_twoway_thermotoscatra,
-      coupling_twoway_thermotoscatra_aitken
+      undefined,
+      monolithic,
+      oneway_scatratothermo,
+      oneway_thermotoscatra,
+      twoway_scatratothermo,
+      twoway_scatratothermo_aitken,
+      twoway_scatratothermo_aitken_dofsplit,
+      twoway_thermotoscatra,
+      twoway_thermotoscatra_aitken
     };
 
     //! type of monolithic system matrix in global system of equations
     enum class MatrixType
     {
-      matrix_block,
-      matrix_sparse
+      block,
+      sparse
     };
 
     //! type of scalar transport time integration
     enum class ScaTraTimIntType
     {
-      scatratiminttype_standard,
-      scatratiminttype_elch
+      standard,
+      elch
     };
 
     //! set valid parameters for scatra-thermo interaction

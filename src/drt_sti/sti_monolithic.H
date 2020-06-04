@@ -16,6 +16,8 @@
 
 #include "sti_algorithm.H"
 
+#include "../drt_inpar/inpar_sti.H"
+
 // forward declarations
 class Epetra_Map;
 class Epetra_MultiVector;
@@ -39,7 +41,7 @@ namespace LINALG
 
 namespace STI
 {
-  class ScatraThermoODCoupling;
+  class ScatraThermoOffDiagCoupling;
 
   //! monolithic coupling algorithm for scatra-thermo interaction
   class Monolithic : public Algorithm
@@ -209,7 +211,7 @@ namespace STI
     Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
     //! evaluation of OD blocks for scatra-structure coupling
-    Teuchos::RCP<STI::ScatraThermoODCoupling> scatrathermoODcoupling_;
+    Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 #endif

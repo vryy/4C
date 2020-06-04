@@ -167,7 +167,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   switch (Teuchos::getIntegralValue<INPAR::STI::CouplingType>(stidyn, "COUPLINGTYPE"))
   {
     // monolithic algorithm
-    case INPAR::STI::CouplingType::coupling_monolithic:
+    case INPAR::STI::CouplingType::monolithic:
     {
       // extract and check ID of monolithic linear solver
       const int solver_id = stidyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
@@ -185,13 +185,13 @@ void sti_dyn(const int& restartstep  //! time step for restart
     }
 
     // partitioned algorithm
-    case INPAR::STI::CouplingType::coupling_oneway_scatratothermo:
-    case INPAR::STI::CouplingType::coupling_oneway_thermotoscatra:
-    case INPAR::STI::CouplingType::coupling_twoway_scatratothermo:
-    case INPAR::STI::CouplingType::coupling_twoway_scatratothermo_aitken:
-    case INPAR::STI::CouplingType::coupling_twoway_scatratothermo_aitken_dofsplit:
-    case INPAR::STI::CouplingType::coupling_twoway_thermotoscatra:
-    case INPAR::STI::CouplingType::coupling_twoway_thermotoscatra_aitken:
+    case INPAR::STI::CouplingType::oneway_scatratothermo:
+    case INPAR::STI::CouplingType::oneway_thermotoscatra:
+    case INPAR::STI::CouplingType::twoway_scatratothermo:
+    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken:
+    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case INPAR::STI::CouplingType::twoway_thermotoscatra:
+    case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       sti_algorithm = Teuchos::rcp(new STI::Partitioned(comm, stidyn, scatradyn,
           DRT::Problem::Instance()->SolverParams(solver_id_scatra),
@@ -212,8 +212,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   if (restartstep) sti_algorithm->ReadRestart(restartstep);
 
   // provide scatra and thermo fields with velocities
-  sti_algorithm->Scatra()->ScaTraField()->SetVelocityField(1);
-  sti_algorithm->Thermo()->ScaTraField()->SetVelocityField(1);
+  sti_algorithm->ScaTraField()->SetVelocityField(1);
+  sti_algorithm->ThermoField()->SetVelocityField(1);
 
   // enter time loop and solve scatra-thermo interaction problem
   sti_algorithm->TimeLoop();
@@ -223,17 +223,16 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // perform result tests
   problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new STI::STIResultTest(sti_algorithm)));
-  if (Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(problem->STIDynamicParams(),
-          "SCATRATIMINTTYPE") == INPAR::STI::ScaTraTimIntType::scatratiminttype_elch)
-    problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(
-        new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(
-            sti_algorithm->Scatra()->ScaTraField()))));
+  if (Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
+          problem->STIDynamicParams(), "SCATRATIMINTTYPE") == INPAR::STI::ScaTraTimIntType::elch)
+    problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new SCATRA::ElchResultTest(
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(sti_algorithm->ScaTraField()))));
   else
     dserror(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "
         "but not for other kinds of thermodynamic scalar transport!");
-  problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(
-      new SCATRA::ScaTraResultTest(sti_algorithm->Thermo()->ScaTraField())));
+  problem->AddFieldTest(
+      Teuchos::rcp<DRT::ResultTest>(new SCATRA::ScaTraResultTest(sti_algorithm->ThermoField())));
   problem->TestAll(comm);
 
   return;

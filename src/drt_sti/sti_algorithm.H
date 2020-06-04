@@ -15,9 +15,7 @@
 #define STI_ALGORITHM_H
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include "../drt_inpar/inpar_s2i.H"
-#include "../drt_inpar/inpar_sti.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 // forward declarations
 class Epetra_Time;
@@ -49,10 +47,16 @@ namespace STI
     );
 
     //! access scatra time integrator
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& Scatra() const { return scatra_; };
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const
+    {
+      return scatra_->ScaTraField();
+    };
 
     //! access thermo time integrator
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& Thermo() const { return thermo_; };
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const
+    {
+      return thermo_->ScaTraField();
+    };
 
     //! time loop
     void TimeLoop();

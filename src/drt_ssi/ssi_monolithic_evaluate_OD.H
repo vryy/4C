@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Evaluation of OD blocks for monolithic SSI
+\brief Evaluation of off-diagonal blocks for monolithic SSI
 
 \level 2
 

@@ -32,9 +32,7 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "scalar transport time integration type is needed to instantiate correct scalar transport "
       "time integration scheme for scatra-thermo interaction problems",
       tuple<std::string>("Standard", "Elch"),
-      tuple<ScaTraTimIntType>(
-          ScaTraTimIntType::scatratiminttype_standard, ScaTraTimIntType::scatratiminttype_elch),
-      &stidyn);
+      tuple<ScaTraTimIntType>(ScaTraTimIntType::standard, ScaTraTimIntType::elch), &stidyn);
 
   // type of coupling between scatra and thermo fields
   setStringToIntegralParameter<CouplingType>("COUPLINGTYPE", "Undefined",
@@ -43,14 +41,11 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "OneWay_ThermoToScatra", "TwoWay_ScatraToThermo", "TwoWay_ScatraToThermo_Aitken",
           "TwoWay_ScatraToThermo_Aitken_Dofsplit", "TwoWay_ThermoToScatra",
           "TwoWay_ThermoToScatra_Aitken"),
-      tuple<CouplingType>(CouplingType::coupling_undefined, CouplingType::coupling_monolithic,
-          CouplingType::coupling_oneway_scatratothermo,
-          CouplingType::coupling_oneway_thermotoscatra,
-          CouplingType::coupling_twoway_scatratothermo,
-          CouplingType::coupling_twoway_scatratothermo_aitken,
-          CouplingType::coupling_twoway_scatratothermo_aitken_dofsplit,
-          CouplingType::coupling_twoway_thermotoscatra,
-          CouplingType::coupling_twoway_thermotoscatra_aitken),
+      tuple<CouplingType>(CouplingType::undefined, CouplingType::monolithic,
+          CouplingType::oneway_scatratothermo, CouplingType::oneway_thermotoscatra,
+          CouplingType::twoway_scatratothermo, CouplingType::twoway_scatratothermo_aitken,
+          CouplingType::twoway_scatratothermo_aitken_dofsplit, CouplingType::twoway_thermotoscatra,
+          CouplingType::twoway_thermotoscatra_aitken),
       &stidyn);
 
   // specification of initial temperature field
@@ -87,7 +82,7 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<MatrixType>("MATRIXTYPE", "block",
       "type of global system matrix in global system of equations",
       tuple<std::string>("block", "sparse"),
-      tuple<MatrixType>(MatrixType::matrix_block, MatrixType::matrix_sparse), &stidyn_monolithic);
+      tuple<MatrixType>(MatrixType::block, MatrixType::sparse), &stidyn_monolithic);
 
   /*----------------------------------------------------------------------*/
   // valid parameters for partitioned scatra-thermo interaction
