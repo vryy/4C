@@ -352,7 +352,7 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
     // clang-format off
     printf("+----------+-----------------+--------------+------------------+---------------+\n");
     printf("| step/max | scaled-disp-inc | rel-disp-inc | scaled-force-inc | rel-force-inc |\n");
-    printf("|  %3d/%3d |      %10.3E |   %10.3E |       %10.3E |   %10.3E  |\n", itnum, itmax_, scaled_disp_inc, relative_disp_inc, scaled_force_inc, relative_force_inc);
+    printf("|  %3d/%3d |      %10.3E |   %10.3E |       %10.3E |    %10.3E |\n", itnum, itmax_, scaled_disp_inc, relative_disp_inc, scaled_force_inc, relative_force_inc);
     printf("+----------+-----------------+--------------+------------------+---------------+\n");
     // clang-format on
   }
