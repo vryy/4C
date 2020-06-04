@@ -503,15 +503,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   int linalg_error = 0;
 
-  // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to the
-  // right hand side, -1 to the left hand side.
-  const double rhs_factor = -1.0;
-
-  // Get penalty parameter.
-  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
-
   if (stiff != Teuchos::null)
   {
+    // Get penalty parameter.
+    const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
+
     // Scale D and M with kappa^-1.
     Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
     Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
@@ -539,6 +535,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   if (force != Teuchos::null)
   {
+    // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to the
+    // right hand side, -1 to the left hand side.
+    const double rhs_factor = -1.0;
+
     // Get the penalty Lagrange multiplier vector.
     Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda(data_state->GetDisColNp());
 
@@ -571,6 +571,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     linalg_error = force->Update(-1.0 * rhs_factor, *global_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update");
   }
+
+  // Add the force and stiffness contributions that are assembled directly by the pairs.
+  Teuchos::RCP<Epetra_Vector> lambda_col = GetGlobalLambdaCol(data_state->GetDisColNp());
+  for (auto& elepairptr : contact_pairs_)
+    elepairptr->EvaluateAndAssemble(*discret_, this, force, stiff, *lambda_col);
 }
 
 /**

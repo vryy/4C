@@ -36,6 +36,87 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
+    mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager,
+    const Teuchos::RCP<Epetra_FEVector>& force_vector,
+    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda)
+{
+  // Call Evaluate on the geometry Pair. Only do this once for meshtying.
+  if (!this->meshtying_is_evaluated_)
+  {
+    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+        this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
+        this->face_element_->GetReferenceNormals());
+    this->meshtying_is_evaluated_ = true;
+  }
+
+  // If there are no intersection segments, return no contact status.
+  if (this->line_to_3D_segments_.size() == 0) return;
+
+  // Get the local Lagrange multiplier vector.
+  std::vector<int> lambda_gid;
+  mortar_manager->LocationVector(this, lambda_gid);
+  std::vector<double> local_lambda;
+  DRT::UTILS::ExtractMyValues(global_lambda, local_lambda, lambda_gid);
+  LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda(local_lambda.data());
+
+
+  // Initialize variables for local values.
+  LINALG::Matrix<3, 1, scalar_type> coupling_vector(true);
+  LINALG::Matrix<3, 1, double> lambda(true);
+  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  scalar_type potential = 0.0;
+
+  // Initialize scalar variables.
+  double segment_jacobian = 0.0;
+  double beam_segmentation_factor = 0.0;
+
+  // Loop over segments to evaluate the coupling potential.
+  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  {
+    // Factor to account for a segment length not from -1 to 1.
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+
+    // Gauss point loop.
+    for (unsigned int i_gp = 0;
+         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+    {
+      // Get the current Gauss point.
+      const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
+          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+
+      // Get the jacobian in the reference configuration.
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+
+      // Jacobian including the segment length.
+      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+
+      // Get the Gauss point contribution to the coupling potential.
+      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      GEOMETRYPAIR::EvaluatePosition<mortar>(projected_gauss_point.GetEta(), q_lambda, lambda);
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        potential += coupling_vector(i_dim) * lambda(i_dim) *
+                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
+    }
+  }
+
+  // Get the pair GIDs.
+  std::vector<int> pair_gid = this->GetPairGID(discret);
+
+  // Add the terms to the global stiffness matrix.
+  if (stiffness_matrix != Teuchos::null)
+    for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
+      for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
+        stiffness_matrix->FEAssemble(FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+            pair_gid[i_dof], pair_gid[j_dof]);
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface, typename mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
     mortar>::EvaluateAndAssembleDM(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
     LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint,

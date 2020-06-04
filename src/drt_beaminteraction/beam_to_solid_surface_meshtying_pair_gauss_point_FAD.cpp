@@ -11,7 +11,6 @@ coupling terms are evaluated using FAD.
 
 #include "beam_to_solid_surface_meshtying_pair_gauss_point_FAD.H"
 
-#include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
 #include "../drt_geometry_pair/geometry_pair_scalar_types.H"
@@ -55,22 +54,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   scalar_type potential = this->GetPenaltyPotential();
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid;
-  {
-    // Get the beam centerline GIDs.
-    LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
-    UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
-
-    // Get the patch (in this case just the one face element) GIDs.
-    const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
-    pair_gid.resize(beam::n_dof_ + patch_gid.size());
-
-    // Combine beam and solid GIDs into one vector.
-    for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
-      pair_gid[i_dof_beam] = beam_centerline_gid(i_dof_beam);
-    for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
-      pair_gid[beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
-  }
+  std::vector<int> pair_gid = this->GetPairGID(*discret);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)

@@ -14,6 +14,7 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_factory.H"
@@ -252,6 +253,32 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
       return r_beam;
     }
   }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface>
+std::vector<int>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::GetPairGID(
+    const DRT::Discretization& discret) const
+{
+  // Get the beam centerline GIDs.
+  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  UTILS::GetElementCenterlineGIDIndices(discret, this->Element1(), beam_centerline_gid);
+
+  // Get the patch (in this case just the one face element) GIDs.
+  const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
+  std::vector<int> pair_gid;
+  pair_gid.resize(beam::n_dof_ + patch_gid.size());
+
+  // Combine beam and solid GIDs into one vector.
+  for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+    pair_gid[i_dof_beam] = beam_centerline_gid(i_dof_beam);
+  for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
+    pair_gid[beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
+
+  return pair_gid;
 }
 
 

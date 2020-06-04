@@ -18,6 +18,7 @@
 
 
 // forward declaration ...
+class Epetra_Vector;
 class Epetra_FEVector;
 namespace LINALG
 {
@@ -279,6 +280,30 @@ namespace BEAMINTERACTION
     virtual void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix){};
+
+    /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix.
+     *
+     * This method can be used for pairs that couple more DOF than the ones from the two contact
+     * elements, e.g. surface patches with averaged normals also create coupling terms in the DOF of
+     * the neighbouring surface elements. Those pairs write their coupling terms into the global
+     * system vector / matrix and do not require an outside routine to do so.
+     *
+     * In some cases this can also be used to avoid the creation of variable size element vectors
+     * and matrices, by directly assembling templated vectors and matrices into the global ones.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
+     * @param force_vector (in / out) Global force vector.
+     * @param stiffness_matrix (in / out) Global stiffness matrix.
+     * @param lambda (in) Global Lagrange multiplier vector.
+     */
+    virtual void EvaluateAndAssemble(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Epetra_Vector& global_lambda){};
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.

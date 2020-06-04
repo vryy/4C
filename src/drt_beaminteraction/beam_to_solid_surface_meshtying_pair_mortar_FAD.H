@@ -59,6 +59,16 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidSurfaceMeshtyingPairMortarFAD(){};
 
     /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix. (derived)
+     */
+    void EvaluateAndAssemble(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Epetra_Vector& global_lambda) override;
+
+    /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
      * them into global matrices. (derived)
      */
