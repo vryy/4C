@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Testcases for the inelastic_defgrad_factors functions
+\brief test cases for the inelastic_defgrad_factors methods
 
 \level 3
 
@@ -35,7 +35,7 @@ namespace MAT
 class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 {
  public:
-  /// Setup Testsuite
+  /// set up test suite
   void setUp() override
   {
     // clang-format off
@@ -78,8 +78,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // create linear shape evaluation object
     linear_shape_ = Teuchos::rcp(new InelasticDefgradLinearShape(GrowthFac, RefConc));
 
-    // prepare variables needed to instantiate
-    // polynomial shape evaluation object
+    // prepare variables needed to instantiate polynomial shape evaluation object
     std::vector<double> PolyCoeffs{0.1051717305, -3.9012322937, 31.9658107225, -122.8624633232,
         258.6769103514, -306.7800791732, 192.5096604774, -49.7490196448};
     const double Xmin(0.152);
@@ -88,21 +87,16 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // create polynomial shape evaluation object
     polynomial_shape_ = Teuchos::rcp(new InelasticDefgradPolynomialShape(PolyCoeffs, Xmin, Xmax));
 
-    // parameter list to be passed to
-    // PreEvaluate
+    // parameter list to be passed to PreEvaluate
     Teuchos::ParameterList params_lin;
-    // has to be gp 0 as only then concentration
-    // values are set during PreEvaluate
+    // has to be gp 0 as only then concentration values are set during PreEvaluate
     params_lin.set<int>("gp", 0);
-    // set up a dummy concentration vector and
-    // store it to the parameter list
+    // set up a dummy concentration vector and store it to the parameter list
     auto gpconc_lin =
         Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 44327.362)));
     params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
-    // create InelasticDefgradLinScalarIso
-    // object initialize container for material
-    // parameters
+    // create InelasticDefgradLinScalarIso object initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradScalarData =
         Teuchos::rcp(new MAT::PAR::Material());
 
@@ -117,26 +111,22 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_inelastic_defgrad_scalar_ =
         Teuchos::rcp(new MAT::PAR::InelasticDefgradScalar(InelasticDefgradScalarData));
 
-    // setup pointer to
-    // InelasticDefgradLinScalarIso object
+    // setup pointer to InelasticDefgradLinScalarIso object
     lin_scalar_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarIso(
         params_inelastic_defgrad_scalar_.get(), linear_shape_));
 
-    // call PreEvaluate to set the concentration
-    // value
+    // call PreEvaluate to set the concentration value
     lin_scalar_iso_->PreEvaluate(params_lin);
 
-    // create InelasticDefgradLinScalarAniso
-    // object initialize container for material
-    // parameters
+    // create InelasticDefgradLinScalarAniso object initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradLinScalarAnisoData =
         Teuchos::rcp(new MAT::PAR::Material());
 
     InelasticDefgradLinScalarAnisoData->Add("SCALAR1", 1);
     InelasticDefgradLinScalarAnisoData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
     InelasticDefgradLinScalarAnisoData->Add("SCALAR1_RefConc", RefConc);
-    // vector to instantiate the deformation
-    // direction object
+
+    // vector to instantiate the deformation direction object
     const std::vector<double> growthdir{1.0, 0.5, 0.3};
     InelasticDefgradLinScalarAnisoData->Add("GrowthDirection", growthdir);
 
@@ -147,23 +137,19 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_inelastic_defgrad_lin_scalar_aniso_ = Teuchos::rcp(
         new MAT::PAR::InelasticDefgradLinScalarAniso(InelasticDefgradLinScalarAnisoData));
 
-    // setup pointer to
-    // InelasticDefgradLinScalarAniso object
+    // set up pointer to InelasticDefgradLinScalarAniso object
     lin_scalar_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarAniso(
         params_inelastic_defgrad_lin_scalar_aniso_.get(), linear_shape_));
 
-    // call PreEvaluate to set the concentration
-    // value
+    // call PreEvaluate to set the concentration value
     lin_scalar_aniso_->PreEvaluate(params_lin);
 
-    // InelasticDefgradPolyIntercalFracIso
-    // object initialize container for required
-    // electrode material parameters
+    // InelasticDefgradPolyIntercalFracIso object initialize container for required electrode
+    // material parameters
     const int problemid(0);
     DRT::Problem& problem = (*DRT::Problem::Instance());
     problem.Materials()->SetReadFromProblem(problemid);
-    // setup material to be added to problem
-    // instance
+    // set up material to be added to problem instance
     const int matid(1);
     const Teuchos::RCP<MAT::PAR::Material> electrode_mat =
         Teuchos::rcp(new MAT::PAR::Material(matid, INPAR::MAT::m_electrode, "MAT_electrode"));
@@ -191,20 +177,16 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // add material to problem instance
     problem.Materials()->Insert(matid, electrode_mat);
 
-    // parameter list to be passed to
-    // PreEvaluate
+    // parameter list to be passed to PreEvaluate
     Teuchos::ParameterList params_poly;
-    // has to be gp 0 as only then concentration
-    // values are set during PreEvaluate
+    // has to be gp 0 as only then concentration values are set during PreEvaluate
     params_poly.set<int>("gp", 0);
-    // set up a dummy concentration vector and
-    // store it to the parameter list
+    // set up a dummy concentration vector and store it to the parameter list
     auto gpconc_poly =
         Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 22641.893)));
     params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
 
-    // initialize container for material
-    // parameters
+    // initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradPolyIntercalFracData =
         Teuchos::rcp(new MAT::PAR::Material());
 
@@ -226,19 +208,14 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_inelastic_defgrad_poly_intercal_frac_->SetPolynomReferenceValue(
         polynomial_shape_->ComputePolynomial(X_ref));
 
-    // setup pointer to
-    // InelasticDefgradPolyIntercalFracIso
-    // object
+    // set up pointer to InelasticDefgradPolyIntercalFracIso object
     poly_intercal_frac_iso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracIso(
         params_inelastic_defgrad_poly_intercal_frac_.get(), polynomial_shape_));
 
-    // call PreEvaluate to set the concentration
-    // value
+    // call PreEvaluate to set the concentration value
     poly_intercal_frac_iso_->PreEvaluate(params_poly);
 
-    // create
-    // InelasticDefgradPolyIntercalFracAniso
-    // object initialize container for material
+    // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
     // parameters
     const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradPolyIntercalFracAnisoData =
         Teuchos::rcp(new MAT::PAR::Material());
@@ -261,18 +238,15 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_inelastic_defgrad_poly_intercal_frac_aniso_->SetPolynomReferenceValue(
         polynomial_shape_->ComputePolynomial(X_ref));
 
-    // setup pointer to
-    // InelasticDefgradPolyIntercalFracIso
-    // object
+    // set up pointer to InelasticDefgradPolyIntercalFracIso object
     poly_intercal_frac_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracAniso(
         params_inelastic_defgrad_poly_intercal_frac_aniso_.get(), polynomial_shape_));
 
-    // call PreEvaluate to set the concentration
-    // value
+    // call PreEvaluate to set the concentration value
     poly_intercal_frac_aniso_->PreEvaluate(params_poly);
   }
 
-  /// Tear down test suite
+  /// tear down test suite
   void tearDown() override
   {
     linear_shape_ = Teuchos::null;
@@ -326,12 +300,11 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // result of fourth growth direction
     LINALG::Matrix<3, 3> growth_dir_4(true);
-    growth_dir_4(0, 0) = 0.74626865671641791044776119402985;
-    growth_dir_4(0, 1) = growth_dir_4(1, 0) = 0.37313432835820895522388059701493;
-    growth_dir_4(0, 2) = growth_dir_4(2, 0) = 0.22388059701492537313432835820896;
-    growth_dir_4(1, 1) = 0.18656716417910447761194029850746;
-    growth_dir_4(1, 2) = growth_dir_4(2, 1) = 0.11194029850746268656716417910448;
-    growth_dir_4(2, 2) = 0.067164179104477611940298507462687;
+    // clang-format off
+    growth_dir_4(0, 0) = 0.74626865671641791044776119402985; growth_dir_4(0, 1) = 0.37313432835820895522388059701493; growth_dir_4(0, 2) = 0.22388059701492537313432835820896;
+    growth_dir_4(1, 0) = growth_dir_4(0,1); growth_dir_4(1, 1) = 0.18656716417910447761194029850746; growth_dir_4(1, 2) = 0.11194029850746268656716417910448;
+    growth_dir_4(2, 0) = growth_dir_4(0, 2); growth_dir_4(2, 1) = growth_dir_4(1, 2); growth_dir_4(2, 2) = 0.067164179104477611940298507462687;
+    // clang-format on
 
     // put all results together
     const std::vector<LINALG::Matrix<3, 3>> growth_direction_solutions{
@@ -381,44 +354,34 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // create matrix to be filled by tested methods
     LINALG::Matrix<3, 3> iFin(true);
 
-    // test InelasticDefgradLinScalarIso
-    // evaluate the method
+    // test InelasticDefgradLinScalarIso evaluate the method
     lin_scalar_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
     TESTING::AssertDelta(iFin, iFin_lin_scalar_iso_solution_, 1.0e-10);
 
-
     // clear matrix to be filled again
     iFin.Clear();
 
-
-    // test InelasticDefgradLinScalarAniso
-    // evaluate the method
+    // test InelasticDefgradLinScalarAniso evaluate the method
     lin_scalar_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
     TESTING::AssertDelta(iFin, iFin_lin_scalar_aniso_solution_, 1.0e-10);
 
-
     // clear matrix to be filled again
     iFin.Clear();
 
-
-    // test InelasticDefgradPolyIntercalFracIso
-    // evaluate the method
+    // test InelasticDefgradPolyIntercalFracIso evaluate the method
     poly_intercal_frac_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
     TESTING::AssertDelta(iFin, iFin_poly_intercal_frac_iso_solution_, 1.0e-10);
 
-
     // clear matrix to be filled again
     iFin.Clear();
 
-
-    // test InelasticDefgradPolyIntercalFracAniso
-    // evaluate the method
+    // test InelasticDefgradPolyIntercalFracAniso evaluate the method
     poly_intercal_frac_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
@@ -441,8 +404,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     LINALG::Matrix<6, 6> CMatAdd(true);
     LINALG::Matrix<6, 6> CMatAdd_ref_solution(true);
 
-    // test InelasticDefgradLinScalarIso
-    // set up reference solution
+    // test InelasticDefgradLinScalarIso set up reference solution
     // clang-format off
     CMatAdd_ref_solution(0, 0) = -1.5298408106321838e+02; CMatAdd_ref_solution(0, 1) = -1.2850516942246250e+02; CMatAdd_ref_solution(0, 2) = -1.1003777104023889e+02; CMatAdd_ref_solution(0, 3) =  5.9684525433019955e+00; CMatAdd_ref_solution(0, 4) =  6.3904917135249439e+00; CMatAdd_ref_solution(0, 5) =  9.7975743219718243e+00;
     CMatAdd_ref_solution(1, 0) = -1.4182447741625558e+02; CMatAdd_ref_solution(1, 1) = -1.1913120876345852e+02; CMatAdd_ref_solution(1, 2) = -1.0201093646719031e+02; CMatAdd_ref_solution(1, 3) =  5.5330767557948386e+00; CMatAdd_ref_solution(1, 4) =  5.9243297825808430e+00; CMatAdd_ref_solution(1, 5) =  9.0828787446608494e+00;
@@ -462,8 +424,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear matrix before test of next method
     CMatAdd.Clear();
 
-    // test InelasticDefgradLinScalarAniso
-    // set up reference solution
+    // test InelasticDefgradLinScalarAniso set up reference solution
     // clang-format off
     CMatAdd_ref_solution(0, 0) = -2.5348465151755443e+02; CMatAdd_ref_solution(0, 1) = -2.1292469035256323e+02; CMatAdd_ref_solution(0, 2) = -1.8232541485396175e+02; CMatAdd_ref_solution(0, 3) =  9.8893368677541016e+00; CMatAdd_ref_solution(0, 4) =  1.0588628266226561e+01; CMatAdd_ref_solution(0, 5) =  1.6233942090328238e+01;
     CMatAdd_ref_solution(1, 0) = -1.0402849846169919e+02; CMatAdd_ref_solution(1, 1) = -8.7382946818243298e+01; CMatAdd_ref_solution(1, 2) = -7.4825197601167204e+01; CMatAdd_ref_solution(1, 3) =  4.0585213304843331e+00; CMatAdd_ref_solution(1, 4) =  4.3455060995216570e+00; CMatAdd_ref_solution(1, 5) =  6.6623072034563453e+00;
@@ -483,8 +444,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear matrix before test of next method
     CMatAdd.Clear();
 
-    // test InelasticDefgradPolyIntercalFracIso
-    // set up reference solution
+    // test InelasticDefgradPolyIntercalFracIso set up reference solution
     // clang-format off
     CMatAdd_ref_solution(0, 0) = -8.9980093707125818e+01; CMatAdd_ref_solution(0, 1) = -7.5582420772949916e+01; CMatAdd_ref_solution(0, 2) = -6.4720517852000711e+01; CMatAdd_ref_solution(0, 3) =  3.5104431480744864e+00; CMatAdd_ref_solution(0, 4) =  3.7586724005615206e+00; CMatAdd_ref_solution(0, 5) =  5.7626038569938007e+00;
     CMatAdd_ref_solution(1, 0) = -8.3416389987696661e+01; CMatAdd_ref_solution(1, 1) = -7.0068972232146919e+01; CMatAdd_ref_solution(1, 2) = -5.9999403589425583e+01; CMatAdd_ref_solution(1, 3) =  3.2543697456299596e+00; CMatAdd_ref_solution(1, 4) =  3.4844916234667358e+00; CMatAdd_ref_solution(1, 5) =  5.3422439439128073e+00;
@@ -504,8 +464,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear matrix before test of next method
     CMatAdd.Clear();
 
-    // test InelasticDefgradPolyIntercalFracAniso
-    // set up reference solution
+    // test InelasticDefgradPolyIntercalFracAniso set up reference solution
     // clang-format off
     CMatAdd_ref_solution(0, 0) = -1.5036309611574805e+02; CMatAdd_ref_solution(0, 1) = -1.2630356705712084e+02; CMatAdd_ref_solution(0, 2) = -1.0815255958852929e+02; CMatAdd_ref_solution(0, 3) =  5.8661986083372124e+00; CMatAdd_ref_solution(0, 4) =  6.2810072333641545e+00; CMatAdd_ref_solution(0, 5) =  9.6297183291054971e+00;
     CMatAdd_ref_solution(1, 0) = -6.1708064055666021e+01; CMatAdd_ref_solution(1, 1) = -5.1834185433507010e+01; CMatAdd_ref_solution(1, 2) = -4.4385126718431692e+01; CMatAdd_ref_solution(1, 3) =  2.4074508229590710e+00; CMatAdd_ref_solution(1, 4) =  2.5776856602645020e+00; CMatAdd_ref_solution(1, 5) =  3.9519755235222713e+00;
@@ -530,8 +489,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     LINALG::Matrix<6, 1> dSdc(true);
     LINALG::Matrix<6, 1> dSdc_ref_solution(true);
 
-    // test InelasticDefgradLinScalarIso
-    // set up reference solution
+    // test InelasticDefgradLinScalarIso set up reference solution
     // clang-format off
     dSdc_ref_solution(0) = -4.1608801904598307e-03; dSdc_ref_solution(1) = -3.8573598932803953e-03; dSdc_ref_solution(2) = -3.6304563701462541e-03; dSdc_ref_solution(3) = 7.6263158165085275e-05; dSdc_ref_solution(4) = 7.9917188927245458e-05; dSdc_ref_solution(5) = 1.2288151837264513e-04;
     // clang-format on
@@ -545,8 +503,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
 
-    // test InelasticDefgradLinScalarAniso
-    // set up reference solution
+    // test InelasticDefgradLinScalarAniso set up reference solution
     // clang-format off
     dSdc_ref_solution(0) = -6.8943072884109979e-03; dSdc_ref_solution(1) = -2.8293801255942189e-03; dSdc_ref_solution(2) = -1.8063137656362403e-03; dSdc_ref_solution(3) = -2.4306167424464095e-03; dSdc_ref_solution(4) = -6.7293136778145881e-04; dSdc_ref_solution(5) = -1.3836000233652130e-03;
     // clang-format on
@@ -560,8 +517,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
 
-    // test InelasticDefgradPolyIntercalFracIso
-    // set up reference solution
+    // test InelasticDefgradPolyIntercalFracIso set up reference solution
     // clang-format off
     dSdc_ref_solution(0) = -4.7912028948510080e-03; dSdc_ref_solution(1) = -4.4417029669688171e-03; dSdc_ref_solution(2) = -4.1804263218530044e-03; dSdc_ref_solution(3) = 8.7816098384379664e-05; dSdc_ref_solution(4) = 9.2023670331699243e-05; dSdc_ref_solution(5) = 1.4149657274453755e-04;
     // clang-format on
@@ -576,8 +532,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
 
-    // test InelasticDefgradPolyIntercalFracAniso
-    // set up reference solution
+    // test InelasticDefgradPolyIntercalFracAniso set up reference solution
     // clang-format off
     dSdc_ref_solution(0) = -8.0064386655720986e-03; dSdc_ref_solution(1) = -3.2857918119254472e-03; dSdc_ref_solution(2) = -2.0976930343176458e-03; dSdc_ref_solution(3) = -2.8227032903830871e-03; dSdc_ref_solution(4) = -7.8148296803340908e-04; dSdc_ref_solution(5) = -1.6067906841603652e-03;
     // clang-format on
