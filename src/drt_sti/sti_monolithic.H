@@ -39,6 +39,8 @@ namespace LINALG
 
 namespace STI
 {
+  class ScatraThermoODCoupling;
+
   //! monolithic coupling algorithm for scatra-thermo interaction
   class Monolithic : public Algorithm
   {
@@ -76,6 +78,15 @@ namespace STI
     const LINALG::Solver& Solver() const { return *solver_; };
 
    private:
+    //! Apply Dirichlet conditions to assembled OD blocks
+    void ApplyDirichletOD(Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
+
+    //! Assemble interface and domain contributions of OD blocks
+    void AssembleDomainInterfaceOD(
+        Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
+
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
@@ -142,12 +153,20 @@ namespace STI
     const INPAR::STI::MatrixType matrixtype_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
-    //! degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock_;
+    //! degrees of freedom), domain contributions
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockdomain_;
+
+    //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
+    //! degrees of freedom), interface contributions
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface_;
 
     //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
-    //! degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock_;
+    //! degrees of freedom), domain contributions
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockdomain_;
+
+    //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
+    //! degrees of freedom), interface contributions
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface_;
 
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
@@ -188,6 +207,9 @@ namespace STI
 
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
     Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
+
+    //! evaluation of OD blocks for scatra-structure coupling
+    Teuchos::RCP<STI::ScatraThermoODCoupling> scatrathermoODcoupling_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 #endif
