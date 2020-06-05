@@ -35,8 +35,6 @@ namespace MAT
   namespace ELASTIC
   {
     class StructuralTensorStrategyBase;
-    class CoupAnisoExpoAnisotropyExtension_TestSuite;
-    class CoupAnisoExpoShearAnisotropyExtension_TestSuite;
   }  // namespace ELASTIC
   class BaseAnisotropyExtension;
 

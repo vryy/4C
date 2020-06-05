@@ -21,9 +21,6 @@ namespace MAT
 {
   namespace ELASTIC
   {
-    // forward declarations
-    class CoupAnisoExpoBase_TestSuite;
-
     /*!
      * \brief Pure abstract class to define the interface to the implementation of specific
      * materials
