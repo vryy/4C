@@ -101,16 +101,6 @@ namespace SSI
     void AssembleStructureScatraDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure_scatra,
         LINALG::SparseMatrix structurescatradomain, bool zero);
 
-    //! copy slave side interface contributions to master side
-    void CopyScatraStructureInterfaceS2Iblock(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& scatrastructureinterface_block,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside);
-
-    //! copy slave side interface contributions to master side
-    void CopyScatraStructureInterfaceS2Isparse(
-        Teuchos::RCP<LINALG::SparseMatrix>& scatrastructureinterface_sparse,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside);
-
     //! structural coupling converter
     ADAPTER::CouplingSlaveConverter converter_;
 
@@ -188,7 +178,7 @@ namespace SSI
 
     //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
 
     //! assemble StructureBlock into system matrix
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
@@ -224,7 +214,7 @@ namespace SSI
 
     //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
 
     //! assemble StructureBlock into system matrix
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
@@ -264,7 +254,7 @@ namespace SSI
 
     //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
 
     //! assemble StructureBlock into system matrix
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,

@@ -14,8 +14,6 @@
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
 #include "ssi_monolithic_assemble_strategy.H"
-#include "ssi_monolithic_evaluate_OD.H"
-
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
@@ -41,6 +39,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_matrixtransform.H"
+#include "ssi_monolithic_evaluate_OffDiag.H"
 
 /*--------------------------------------------------------------------------*
  | constructor                                                   fang 08/17 |
@@ -114,15 +113,18 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   scatra_->ScaTraField()->PrepareLinearSolve();
 
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
-  scatrastructureODcoupling_->EvaluateODBlockScatraStructureDomain(scatrastructuredomain_);
+  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
+      scatrastructuredomain_);
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying())
-    scatrastructureODcoupling_->EvaluateODBlockScatraStructureInterface(scatrastructureinterface_);
+    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
+        scatrastructureinterface_);
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
-  scatrastructureODcoupling_->EvaluateODBlockStructureScatraDomain(structurescatradomain_);
+  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
+      structurescatradomain_);
 
   // assemble scatra block into system matrix
   strategy_assemble_->AssembleScatraDomain(
@@ -773,6 +775,9 @@ void SSI::SSI_Mono::Setup()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SetupSystem()
 {
+  // merge slave and master side block maps for interface matrix for thermo and scatra
+  Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
+  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
   if (SSIInterfaceMeshtying())
   {
     // check whether slave-side degrees of freedom are Dirichlet-free
@@ -781,6 +786,10 @@ void SSI::SSI_Mono::SetupSystem()
     maps[1] = structure_->GetDBCMapExtractor()->CondMap();
     if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+
+    interface_map_scatra = LINALG::MultiMapExtractor::MergeMaps(
+        {meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(),
+            meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap()});
   }
 
   // initialize global map extractor
@@ -804,6 +813,12 @@ void SSI::SSI_Mono::SetupSystem()
     case INPAR::SCATRA::MatrixType::sparse:
     {
       maps_systemmatrix_ = maps_;
+      if (SSIInterfaceMeshtying())
+      {
+        blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
+            std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_scatra)));
+        blockmapscatrainterface->CheckForValidMapExtractor();
+      }
       break;
     }
 
@@ -838,6 +853,19 @@ void SSI::SSI_Mono::SetupSystem()
 
       // safety check
       map_structure_->CheckForValidMapExtractor();
+      if (SSIInterfaceMeshtying())
+      {
+        // build block map for scatra interface by merging slave and master side for each block
+        std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
+            maps_systemmatrix_scatra, Teuchos::null);
+        for (int iblockmap = 0; iblockmap < maps_systemmatrix_scatra; ++iblockmap)
+          partial_blockmapscatrainterface.at(iblockmap) = LINALG::MultiMapExtractor::MergeMaps(
+              {meshtying_strategy_s2i_->BlockMapsSlave().Map(iblockmap),
+                  meshtying_strategy_s2i_->BlockMapsMaster().Map(iblockmap)});
+        blockmapscatrainterface = Teuchos::rcp(
+            new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
+        blockmapscatrainterface->CheckForValidMapExtractor();
+      }
 
       break;
     }
@@ -908,7 +936,7 @@ void SSI::SSI_Mono::SetupSystem()
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ =
             Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
+                *map_structure_, *blockmapscatrainterface, 81, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
@@ -926,8 +954,8 @@ void SSI::SSI_Mono::SetupSystem()
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
-        scatrastructureinterface_ = Teuchos::rcp(new LINALG::SparseMatrix(
-            *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
+        scatrastructureinterface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
@@ -987,8 +1015,9 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize object, that performs evaluations of OD coupling
-  scatrastructureODcoupling_ = Teuchos::rcp(new SSI::ScatraStructureODCoupling(
-      maps_->Map(0), maps_->Map(1), meshtying_strategy_s2i_, scatra_, structure_));
+  scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
+      maps_scatra_, maps_structure_, maps_->Map(0), maps_->Map(1), icoup_structure_,
+      interface_map_scatra, meshtying_strategy_s2i_, scatra_, structure_));
 }
 
 /*---------------------------------------------------------------------------------*

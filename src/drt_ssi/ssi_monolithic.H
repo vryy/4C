@@ -34,7 +34,7 @@ namespace SCATRA
 
 namespace SSI
 {
-  class ScatraStructureODCoupling;
+  class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
 
   class SSI_Mono : public SSI_Base
@@ -184,7 +184,7 @@ namespace SSI
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
 
     //! all OD evaluation is in here
-    Teuchos::RCP<SSI::ScatraStructureODCoupling> scatrastructureODcoupling_;
+    Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
