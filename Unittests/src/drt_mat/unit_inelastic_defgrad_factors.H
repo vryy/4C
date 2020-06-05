@@ -89,8 +89,6 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // parameter list to be passed to PreEvaluate
     Teuchos::ParameterList params_lin;
-    // has to be gp 0 as only then concentration values are set during PreEvaluate
-    params_lin.set<int>("gp", 0);
     // set up a dummy concentration vector and store it to the parameter list
     auto gpconc_lin =
         Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 44327.362)));
@@ -116,7 +114,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
         params_inelastic_defgrad_scalar_.get(), linear_shape_));
 
     // call PreEvaluate to set the concentration value
-    lin_scalar_iso_->PreEvaluate(params_lin);
+    lin_scalar_iso_->PreEvaluate(params_lin, 0);
 
     // create InelasticDefgradLinScalarAniso object initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradLinScalarAnisoData =
@@ -142,7 +140,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
         params_inelastic_defgrad_lin_scalar_aniso_.get(), linear_shape_));
 
     // call PreEvaluate to set the concentration value
-    lin_scalar_aniso_->PreEvaluate(params_lin);
+    lin_scalar_aniso_->PreEvaluate(params_lin, 0);
 
     // InelasticDefgradPolyIntercalFracIso object initialize container for required electrode
     // material parameters
@@ -179,8 +177,6 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // parameter list to be passed to PreEvaluate
     Teuchos::ParameterList params_poly;
-    // has to be gp 0 as only then concentration values are set during PreEvaluate
-    params_poly.set<int>("gp", 0);
     // set up a dummy concentration vector and store it to the parameter list
     auto gpconc_poly =
         Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 22641.893)));
@@ -213,7 +209,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
         params_inelastic_defgrad_poly_intercal_frac_.get(), polynomial_shape_));
 
     // call PreEvaluate to set the concentration value
-    poly_intercal_frac_iso_->PreEvaluate(params_poly);
+    poly_intercal_frac_iso_->PreEvaluate(params_poly, 0);
 
     // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
     // parameters
@@ -243,7 +239,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
         params_inelastic_defgrad_poly_intercal_frac_aniso_.get(), polynomial_shape_));
 
     // call PreEvaluate to set the concentration value
-    poly_intercal_frac_aniso_->PreEvaluate(params_poly);
+    poly_intercal_frac_aniso_->PreEvaluate(params_poly, 0);
   }
 
   /// tear down test suite
