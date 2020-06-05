@@ -20,7 +20,7 @@ filter. But to link the filter, stubs of these functions are needed.
 
 void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   dserror("MAT::MicroMaterial::Evaluate not available");
 }

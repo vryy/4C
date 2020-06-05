@@ -193,6 +193,7 @@ namespace MAT
         Teuchos::ParameterList& params,  ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,
+        int gp,             ///< Gauss point
         const int eleGID);  ///< Constitutive matrix
 
     /// setup material description
@@ -209,13 +210,13 @@ namespace MAT
     virtual void EvaluateKinQuantVis(LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 1>& scg,
         LINALG::Matrix<6, 1>& icg, LINALG::Matrix<3, 1>& prinv, LINALG::Matrix<7, 1>& rateinv,
         LINALG::Matrix<6, 1>& modrcg, Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& scgrate,
-        LINALG::Matrix<6, 1>& modrcgrate, LINALG::Matrix<7, 1>& modrateinv);
+        LINALG::Matrix<6, 1>& modrcgrate, LINALG::Matrix<7, 1>& modrateinv, int gp);
 
     /// calculates the factors associated to the viscous laws
     virtual void EvaluateMuXi(LINALG::Matrix<3, 1>& inv, LINALG::Matrix<3, 1>& modinv,
         LINALG::Matrix<8, 1>& mu, LINALG::Matrix<8, 1>& modmu, LINALG::Matrix<33, 1>& xi,
         LINALG::Matrix<33, 1>& modxi, LINALG::Matrix<7, 1>& rateinv,
-        LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, const int eleGID);
+        LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
     virtual void EvaluateIsoViscoPrincipal(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
@@ -235,19 +236,21 @@ namespace MAT
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
     virtual void EvaluateViscoGenMax(LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params);
+        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
+        int gp);
 
     /// calculates the stress and elasticitiy tensor for the GeneneralizedMax-material
     virtual void EvaluateViscoGeneralizedGenMax(LINALG::Matrix<6, 1>& Q,
         LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
-        const LINALG::Matrix<6, 1>* glstrain, const int eleGID);
+        const LINALG::Matrix<6, 1>* glstrain, int gp, int eleGID);
 
     /// calculates the stress and elasticity tensor for the viscos Fract-material
     /// depending on the viscoelastic material isochoric-principal, isochoric-modified
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
     virtual void EvaluateViscoFract(LINALG::Matrix<6, 1> stress, LINALG::Matrix<6, 6> cmat,
-        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params);
+        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
+        int gp);
 
     /// @name Flags to specify the viscous formulations
     //@{

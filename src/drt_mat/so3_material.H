@@ -38,18 +38,18 @@ namespace MAT
     /// Evaluate material law
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID) = 0;
+        int gp, int eleGID) = 0;
 
     /// Evaluate material law
     virtual void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int eleGID)
+        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, int gp, int eleGID)
     {
       dserror("Material does not support evaluation of nonlinear mass matrix");
     };
 
     /// Evaluate strain energy function (for hyperelastic materials only)
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID)
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
       dserror("Material does not support calculation of strain energy");
     };
@@ -60,7 +60,7 @@ namespace MAT
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int eleGID)
+        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
     {
       dserror("Material does not support evaluation for GEMM");
     };
@@ -94,6 +94,7 @@ namespace MAT
      * \param[out]    D2sntDFDt second derivative of snt w.r.t. deformation gradient and vector n
                                 (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
                                 \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \param[in]     gp        Gauss point
      * \param[in]     eleGID    global ID of element
      * \param[in]     temp      temperature (if thermal dependency shall be handeled)
      * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
@@ -105,7 +106,7 @@ namespace MAT
     virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
         const double* temp = NULL, double* DsntDT = NULL, LINALG::Matrix<9, 1>* D2sntDFDT = NULL)
     {
       dserror("EvaluateCauchy not implementend for this material");

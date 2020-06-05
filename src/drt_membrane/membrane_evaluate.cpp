@@ -363,7 +363,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
         {
           Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
-              ->StrainEnergy(cauchygreen_loc, psi, Id());
+              ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
         }
         else
           dserror(
@@ -802,24 +802,18 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
     {
       Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
-          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
+          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
     }
     // active strain with passive elasthyper component (incompressible, plane stress)
     else if (Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)
     {
-      // set current gauss point
-      params.set<int>("gp", gp);
-
       Teuchos::rcp_dynamic_cast<MAT::Membrane_ActiveStrain>(DRT::Element::Material(), true)
-          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
+          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
     }
     // growth remodel elasthyper evaluation
     else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
              Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
     {
-      // set current gauss point
-      params.set<int>("gp", gp);
-
       // Gauß-point coordinates in reference configuration
       LINALG::Matrix<1, noddof_> gprefecoord(true);
       gprefecoord.MultiplyTN(shapefcts, xrefe);
@@ -836,7 +830,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       LINALG::Matrix<6, 6> cmat_glob(true);
       double rcg33 = 0.0;
       Teuchos::rcp_dynamic_cast<MAT::GrowthRemodel_ElastHyper>(Material(), true)
-          ->EvaluateMembrane(defgrd_glob, rcg33, params, pk2M_glob, cmat_glob, Id());
+          ->EvaluateMembrane(defgrd_glob, rcg33, params, pk2M_glob, cmat_glob, gp, Id());
 
       LINALG::Matrix<3, 3> pk2M_loc(true);
       mem_globaltolocal(Q_trafo, pk2M_glob, pk2M_loc);

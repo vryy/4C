@@ -790,7 +790,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = aaa->Density();
     }
     break;
@@ -798,7 +798,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
     {
       MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = hyper->Density();
       return;
       break;

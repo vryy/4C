@@ -737,14 +737,9 @@ void MAT::ConstraintMixture::ResetStep()
  |  Evaluate                                      (public)         12/10|
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<NUM_STRESS_3D, 1>* stress, LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,
-    const int eleGID)
+    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   // map in GetParameter can now calculate LID, so we do not need it here   05/2017 birzle
   // get element lID incase we have element specific material parameters
   // int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);

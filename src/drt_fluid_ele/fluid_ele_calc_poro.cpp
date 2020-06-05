@@ -1319,7 +1319,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
         structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
-      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, false);
+      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, false);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -1833,7 +1833,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
         structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
-      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, true);
+      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -6523,7 +6523,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     Teuchos::ParameterList& params, const LINALG::Matrix<my::nsd_, my::nsd_>& defgrd,
     const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-    const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_X, const bool computeLinOD)
+    const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_X, const int gp, const bool computeLinOD)
 {
   const double dens_struct = structmat_->Density();
   mixres_.Clear();
@@ -6618,7 +6618,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     static LINALG::Matrix<6, 6> cmat(true);
     stress_vec.Clear();
     cmat.Clear();
-    structmat_->Evaluate(NULL, &glstrain, params, &stress_vec, &cmat, my::eid_);
+    structmat_->Evaluate(NULL, &glstrain, params, &stress_vec, &cmat, gp, my::eid_);
 
     static LINALG::Matrix<6, my::nsd_> E_X(true);
     E_X.Clear();

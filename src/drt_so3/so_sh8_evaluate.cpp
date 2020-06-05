@@ -743,7 +743,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
 
     // call material for evaluation of strain energy function
     double psi = 0.0;
-    SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+    SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
     const double detJ_w = detJ * gpweights[gp];
 
@@ -1051,8 +1051,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary

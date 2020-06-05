@@ -1157,8 +1157,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     // call material law
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);  // 2nd PK stress
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    params.set<int>("gp", gp);
-    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress, &cmat, Id());
+
+    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress, &cmat, gp, Id());
     if (iso_ == iso_enforced)
     {
       LINALG::Matrix<MAT::NUM_STRESS_3D, 1> pk2gen(

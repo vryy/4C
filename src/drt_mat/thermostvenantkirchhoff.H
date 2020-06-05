@@ -159,12 +159,14 @@ namespace MAT
         Teuchos::ParameterList& params,                //!< parameter list
         LINALG::Matrix<6, 1>* stress,                  //!< stress
         LINALG::Matrix<6, 6>* cmat,                    //!< elastic material tangent
+        int gp,                                        ///< Gauss point
         int eleGID                                     //!< element GID
         ) override;
 
     /// add strain energy
     void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                         ///< strain energy functions
+        int gp,                                              ///< Gauss point
         int eleGID                                           ///< element GID
         ) override;
 

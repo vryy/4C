@@ -351,11 +351,8 @@ void MAT::Robinson::Update()
  *----------------------------------------------------------------------*/
 void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* strain,
     Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
-  // extract from parameter list
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("No Gauss point number provided in Robinson material");
   LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc(*strain);
   straininc.Update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;

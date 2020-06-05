@@ -110,7 +110,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     MAT::ElastHyperProperties(potsum, properties);
 
     // Evaluate method to test
-    MAT::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0);
+    MAT::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
 
     // Build matrices with the correct solution
     LINALG::Matrix<6, 1> S_stress_target;

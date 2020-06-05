@@ -19,9 +19,9 @@
 
 void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, int eleGID,
+    LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, const int gp, int eleGID,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-    const MAT::SummandProperties& properties, bool checkpolyconvexity)
+    const SummandProperties& properties, bool checkpolyconvexity)
 {
   static LINALG::Matrix<6, 1> id2(false);
   id2.Clear();
@@ -49,11 +49,11 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
   UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
-  ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, eleGID);
+  ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
 
   // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
   if (checkpolyconvexity)
-    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, eleGID, properties);
+    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, gp, eleGID, properties);
 
 
   // clear stress and cmat (for safety reasons)
@@ -65,16 +65,16 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
 
   if (properties.coeffStretchesPrinc || properties.coeffStretchesMod)
   {
-    ElastHyperAddResponseStretches(cmat, stress, C_strain, potsum, properties, eleGID);
+    ElastHyperAddResponseStretches(cmat, stress, C_strain, potsum, properties, gp, eleGID);
   }
 
   // Evaluate anisotropic stress response from summands with principle invariants formulation
   if (properties.anisoprinc)
-    ElastHyperAddAnisotropicPrinc(stress, cmat, C_strain, params, eleGID, potsum);
+    ElastHyperAddAnisotropicPrinc(stress, cmat, C_strain, params, gp, eleGID, potsum);
 
   // Evaluate anisotropic stress response from summands with modified invariants formulation
   if (properties.anisomod)
-    ElastHyperAddAnisotropicMod(stress, cmat, C_strain, iC_strain, prinv, eleGID, potsum);
+    ElastHyperAddAnisotropicMod(stress, cmat, C_strain, iC_strain, prinv, gp, eleGID, potsum);
 }
 
 void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(
@@ -90,7 +90,7 @@ void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(
 void MAT::ElastHyperEvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
     LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-    const MAT::SummandProperties& properties, int eleGID)
+    const SummandProperties& properties, const int gp, int eleGID)
 {
   // derivatives of principla materials
   if (properties.isoprinc)
@@ -98,7 +98,7 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& pri
     // loop map of associated potential summands
     for (auto& p : potsum)
     {
-      p->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
+      p->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
     }
   }
 
@@ -117,7 +117,7 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& pri
 
     for (auto& p : potsum)
     {
-      p->AddDerivativesModified(dPmodI, ddPmodII, modinv, eleGID);
+      p->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     }
 
     // convert decoupled derivatives to principal derivatives
@@ -216,7 +216,7 @@ void MAT::ElastHyperAddIsotropicStressCmat(LINALG::Matrix<6, 1>& S_stress,
 void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& S_stress,
     const LINALG::Matrix<6, 1>& C_strain,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-    const SummandProperties& properties, int eleGID)
+    const SummandProperties& properties, const int gp, int eleGID)
 {
   // get principal stretches and directions
   LINALG::Matrix<3, 1> prstr;
@@ -383,18 +383,18 @@ void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Mat
 }
 
 void MAT::ElastHyperAddAnisotropicPrinc(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    const LINALG::Matrix<6, 1>& C_strain, Teuchos::ParameterList& params, int eleGID,
+    const LINALG::Matrix<6, 1>& C_strain, Teuchos::ParameterList& params, const int gp, int eleGID,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
 {
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
-  for (auto& p : potsum) p->AddStressAnisoPrincipal(C_strain, cmat, S_stress, params, eleGID);
+  for (auto& p : potsum) p->AddStressAnisoPrincipal(C_strain, cmat, S_stress, params, gp, eleGID);
 }
 
 void MAT::ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
     const LINALG::Matrix<6, 1>& C_strain, const LINALG::Matrix<6, 1>& iC_strain,
-    const LINALG::Matrix<3, 1>& prinv, int eleGID,
+    const LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
 {
   static LINALG::Matrix<6, 1> iC_stress(false);
@@ -403,7 +403,7 @@ void MAT::ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Ma
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
   for (auto& p : potsum)
-    p->AddStressAnisoModified(C_strain, iC_stress, cmat, S_stress, prinv(2), eleGID);
+    p->AddStressAnisoModified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID);
 }
 
 void MAT::CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
@@ -441,8 +441,8 @@ void MAT::ElastHyperProperties(
 
 void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-    const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int eleGID,
-    const SummandProperties& properties)
+    const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int gp,
+    const int eleGID, const SummandProperties& properties)
 {
   // This polyconvexity-test is just implemented for isotropic hyperelastic-materials
   // --> error if anisotropic material is tested (plastic and viscoelastic materials should not get
@@ -558,8 +558,8 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
             (-1.0e-10 * EWFreD.NormInf()))  // do not test < 0, but reasonable small value
         {
           std::cout << "\nWARNING: Your system is not polyconvex!" << std::endl;
-          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID
-                    << " and Gauß-Point: " << params.get<int>("gp") << std::endl;
+          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID << " and Gauß-Point: " << gp
+                    << std::endl;
           std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
         }
 }

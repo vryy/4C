@@ -783,10 +783,9 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(DRT::ELEMENTS::So_hex8* ele,  /
     //------------------------------------------------- call material law
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cstress;
@@ -1143,10 +1142,9 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(DRT::ELEMENTS::So_weg6* ele,  /
     //------------------------------------------------- call material law
     LINALG::Matrix<6, 6> cmat(true);
     LINALG::Matrix<6, 1> stress(true);
-    params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6, 1> cstress;
@@ -1506,10 +1504,9 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(Teuchos::ParameterList& para
     //------------------------------------------------- call material law
     LINALG::Matrix<6, 6> cmat(true);
     LINALG::Matrix<6, 1> stress(true);
-    params.set<int>("gp", gp);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, ele->Id());
+    so3mat->Evaluate(&F, &glstrain, params, &stress, &cmat, gp, ele->Id());
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6, 1> cstress;

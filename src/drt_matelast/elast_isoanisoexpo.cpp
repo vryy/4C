@@ -112,7 +112,7 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 1>& rcg,
     const LINALG::Matrix<6, 1>& icg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    double I3, const int eleGID)
+    double I3, const int gp, const int eleGID)
 {
   double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 
@@ -159,7 +159,7 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
     LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<4, 1>& dddPIII_aniso, const double I4,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
   double k1 = params_->k1_;
   double k2 = params_->k2_;

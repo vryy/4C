@@ -107,12 +107,10 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::PostSetup(Teuchos::ParameterList
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // Virtual GP (is zero for element fibers, otherwise it is the current GP)
-  int virtualgp = anisotropyExtension_.GetVirtualGaussPoint(params);
-
-  LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(virtualgp, 0);
+  LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
 
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0)
@@ -138,8 +136,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
       {
         dserror("No concentration from scatra provided for the activation");
       }
-      // get Gauss point number
-      const int gp = params.get<int>("gp", -1);
       // safety check
       if (gp == -1)
       {

@@ -383,9 +383,9 @@ void MAT::Growth::SetHistory(int timestep)
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
+  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 }
 
 
@@ -509,12 +509,8 @@ MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   double time = params.get<double>("total time", -1.0);
   if (abs(time + 1.0) < 1e-14) dserror("no time step or no total time given for growth material!");
   std::string action = params.get<std::string>("action", "none");
@@ -559,7 +555,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
     LINALG::Matrix<6, 1> dthetadCvec(true);
-    EvaluateGrowth(&theta, &dthetadCvec, defgrd, glstrain, params, eleGID);
+    EvaluateGrowth(&theta, &dthetadCvec, defgrd, glstrain, params, gp, eleGID);
 
     // modify the parameter list to be passed to the elastic material
     Teuchos::ParameterList paramselast(params);
@@ -568,7 +564,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1> S(true);
     LINALG::Matrix<6, 6> cmatdach(true);
 
-    GetSAndCmatdach(theta, defgrd, &S, &cmatdach, paramselast, eleGID);
+    GetSAndCmatdach(theta, defgrd, &S, &cmatdach, paramselast, gp, eleGID);
 
     *stress = S;
 
@@ -606,7 +602,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1> SEps(true);
     LINALG::Matrix<6, 6> cmatdachEps(true);
 
-    GetSAndCmatdach(theta + espilon, defgrd, &SEps, &cmatdachEps, params, eleGID);
+    GetSAndCmatdach(theta + espilon, defgrd, &SEps, &cmatdachEps, params, gp, eleGID);
 
     //--------------------------------------------------------------------------------------
     // calculate \frac{d S}{d C} = \frac{\partial S}{\partial C} +
@@ -654,7 +650,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1> Svec(true);
     LINALG::Matrix<6, 6> cmatdach(true);
 
-    GetSAndCmatdach(theta, defgrd, &Svec, &cmatdach, params, eleGID);
+    GetSAndCmatdach(theta, defgrd, &Svec, &cmatdach, params, gp, eleGID);
 
     *stress = Svec;
 
@@ -676,7 +672,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
   else
   {
-    EvaluateElastic(defgrd, glstrain, stress, cmat, params, eleGID);
+    EvaluateElastic(defgrd, glstrain, stress, cmat, params, gp, eleGID);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
@@ -704,17 +700,16 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
     const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // get gauss point number
-  const int gp = params.get<int>("gp", -1);
   if (gp == -1) dserror("No Gauss point number provided in material.");
 
   double thetaold = ThetaOld_atgp(gp);
 
   MAT::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
-      refdir_, curdir_, F_g_hist_, growthtrig_const_, params, eleGID);
+      refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -733,7 +728,7 @@ void MAT::GrowthVolumetric::ResetAll(const int numgp)
 void MAT::GrowthVolumetric::EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<NUM_STRESS_3D, 1>* linmass_disp, LINALG::Matrix<NUM_STRESS_3D, 1>* linmass_vel,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
   const double eps = 1.0e-14;
   const double starttime = Parameter()->starttime_;
@@ -743,16 +738,12 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgr
   if (((time > starttime + eps) and (time <= endtime + eps)) or
       ((starttime < 0.0) and (endtime < 0.0)))
   {
-    // get gauss point number
-    const int gp = params.get<int>("gp", -1);
-    if (gp == -1) dserror("no Gauss point number provided in material");
-
     double theta = theta_->at(gp);
     double thetaold = ThetaOld()->at(gp);
 
     MAT::Growth* matgrowth = this;
     Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
-        refdir_, curdir_, F_g_hist_, growthtrig_const_, params, eleGID);
+        refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
@@ -775,12 +766,8 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgr
 // *----------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmatdach, Teuchos::ParameterList& params,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   // calculate growth part F_g of the deformation gradient F
   LINALG::Matrix<3, 3> F_g(true);
   Parameter()->growthlaw_->CalcFg(
@@ -815,7 +802,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
 
   LINALG::Matrix<6, 1> Sdachvec(true);
   // elastic 2 PK stress and constitutive matrix
-  Matelastic()->Evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, eleGID);
+  Matelastic()->Evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
 
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T

@@ -131,7 +131,8 @@ namespace MAT
           LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           double I3,                        ///< third principal invariant
-          const int eleGID                  ///< element GID
+          int gp,                           ///< Gauss point
+          int eleGID                        ///< element GID
       );
 
       /// retrieve coefficients of first, second and third derivative
@@ -140,8 +141,9 @@ namespace MAT
           LINALG::Matrix<2, 1>& dPI_aniso,      ///< first derivative with respect to invariants
           LINALG::Matrix<3, 1>& ddPII_aniso,    ///< second derivative with respect to invariants
           LINALG::Matrix<4, 1>& dddPIII_aniso,  ///< third derivative with respect to invariants
-          const double I4,                      ///< fourth invariant
-          const int eleGID);                    ///< element GID
+          double I4,                            ///< fourth invariant
+          int gp,                               ///< Gauss point
+          int eleGID);                          ///< element GID
 
       /// @name Access methods
       //@{

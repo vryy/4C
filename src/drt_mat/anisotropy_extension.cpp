@@ -190,18 +190,6 @@ void MAT::FiberAnisotropyExtension<numfib>::SetFiberLocation(FiberLocation locat
 }
 
 template <unsigned int numfib>
-int MAT::FiberAnisotropyExtension<numfib>::GetVirtualGaussPoint(
-    const Teuchos::ParameterList& params) const
-{
-  if (fiberLocation_ == FiberLocation::ElementFibers)
-  {
-    return GPDEFAULT;
-  }
-
-  return params.get<int>("gp");
-}
-
-template <unsigned int numfib>
 int MAT::FiberAnisotropyExtension<numfib>::GetVirtualGaussPoint(const int gp) const
 {
   if (fiberLocation_ == FiberLocation::ElementFibers)

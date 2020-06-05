@@ -101,7 +101,7 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
 
     // Compute derivatives of the strain energy function w.r.t. the principal invariants of the
     // strain energy function
-    ElastHyperEvaluateInvariantDerivatives(prinv_new, dPI_new, ddPII_new, potsum, properties, 0);
+    ElastHyperEvaluateInvariantDerivatives(prinv_new, dPI_new, ddPII_new, potsum, properties, 0, 0);
 
     TS_ASSERT_DELTA(dPI_new(0), 0.639514, 1e-4);
     TS_ASSERT_DELTA(dPI_new(1), 0., 1e-4);

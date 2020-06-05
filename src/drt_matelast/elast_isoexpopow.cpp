@@ -37,7 +37,8 @@ MAT::ELASTIC::IsoExpoPow::IsoExpoPow(MAT::ELASTIC::PAR::IsoExpoPow* params) : pa
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;
@@ -53,7 +54,8 @@ void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const LINALG::Matrix
  *                                                      birzle 11/2014  */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+    const int eleGID)
 {
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;

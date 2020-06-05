@@ -68,6 +68,8 @@ namespace MAT
      * params - a parameter list as handed in from the element
      * \param In
      * eleGID - the calling element's GID
+     * \param In
+     * gp - Gauss point
      *
      *  \author kehl
      * \date 06/2015
@@ -77,7 +79,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID) = 0;
+        Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*! \brief derivative of theta wrt parameters
      *
@@ -212,6 +214,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -222,7 +226,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /*! \brief derivative of theta wrt parameters
      *
@@ -381,6 +385,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -391,7 +397,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID) = 0;
+        Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*! \brief derivative of theta wrt parameters
      *
@@ -1164,6 +1170,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -1174,7 +1182,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
@@ -1249,6 +1257,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -1259,7 +1269,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
@@ -1333,6 +1343,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -1343,7 +1355,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
@@ -1436,6 +1448,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -1446,7 +1460,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
         const std::vector<LINALG::Matrix<3, 1>>& curdir,
         const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /*! \brief derivative of theta wrt parameters
      *

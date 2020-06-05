@@ -229,9 +229,9 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     */
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
+
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+    so3mat->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // strain output **********************************************************

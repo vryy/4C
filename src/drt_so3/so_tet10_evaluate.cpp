@@ -520,7 +520,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
-        SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+        SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
         // sum up GP contribution to internal energy
         intenergy += fac * psi;
@@ -707,8 +707,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           // compute stress vector and constitutive matrix
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
           LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-          params.set<int>("gp", gp);
-          SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, Id());
+
+          SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
 
           // compute GP contribution to energy error norm
           energynorm += fac * stress.Dot(strainerror);
@@ -1235,9 +1235,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       params.set("gprefecoord", point);
     }
 
-    params.set<int>("gp", gp);
     UTILS::GetTemperatureForStructuralMaterial<tet10>(shapefcts_4gp[gp], params);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, Id());
+    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1458,7 +1457,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
         SolidMaterial()->EvaluateNonLinMass(
-            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, Id());
+            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, Id());
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor

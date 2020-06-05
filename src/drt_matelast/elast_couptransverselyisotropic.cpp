@@ -172,7 +172,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
  *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
-    const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   // build Cartesian identity 2-tensor I_{AB}
   LINALG::Matrix<6, 1> identity(true);
@@ -198,7 +198,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
  *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // direct return if an error occurred
   if (ResetInvariants(rcg, &params)) return;

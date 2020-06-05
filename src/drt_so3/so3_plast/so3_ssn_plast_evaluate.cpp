@@ -800,8 +800,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       total_glstrain(3) = RCG()(0, 1);
       total_glstrain(4) = RCG()(1, 2);
       total_glstrain(5) = RCG()(2, 0);
-      params.set<int>("gp", gp);
-      SolidMaterial()->Evaluate(&DefgrdMod(), &total_glstrain, params, &SetPK2(), &SetCmat(), Id());
+
+      SolidMaterial()->Evaluate(
+          &DefgrdMod(), &total_glstrain, params, &SetPK2(), &SetCmat(), gp, Id());
     }
     // material call *********************************************
 
@@ -2100,10 +2101,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
 
   if (plmat && temp)
     plmat->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn,
-        &D2sntDFDt, 0, &gp_temp, &DsntDT_gp, &D2sntDFDT);
+        &D2sntDFDt, -1, Id(), &gp_temp, &DsntDT_gp, &D2sntDFDT);
   else
-    SolidMaterial()->EvaluateCauchy(
-        defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn, &D2sntDFDt, 0);
+    SolidMaterial()->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2,
+        &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr);
 
   if (DsntDd)
   {
@@ -2750,7 +2751,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(DetF_0(), Id(), he_fac, he_fac_deriv);
+      plmat->EvaluateGoughJoule(DetF_0(), gp, Id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)
@@ -2801,7 +2802,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(DetF(), Id(), he_fac, he_fac_deriv);
+      plmat->EvaluateGoughJoule(DetF(), gp, Id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)

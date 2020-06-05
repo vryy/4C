@@ -156,10 +156,11 @@ namespace MAT
     // THE material routine
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID);
+        const int gp, const int eleGID);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

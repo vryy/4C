@@ -168,13 +168,15 @@ namespace MAT
         LINALG::Matrix<3, 1>*
             stress,                  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
         LINALG::Matrix<3, 3>* cmat,  ///< Constitutive matrix
-        const int eleGID             ///< Element GID
+        int gp,                      ///< Gauss point
+        int eleGID                   ///< Element GID
     );
 
     /// evaluate strain energy function
     virtual void StrainEnergy(LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
         double& psi,                                              ///< Strain energy function
-        const int eleGID                                          ///< Element GID
+        int gp,                                                   ///< Gauss point
+        int eleGID                                                ///< Element GID
     );
 
    protected:
@@ -192,7 +194,7 @@ namespace MAT
     virtual void EvaluateIsotropicStressCmat(LINALG::Matrix<3, 1>& stress_iso,
         LINALG::Matrix<3, 3>& cmat_iso, const LINALG::Matrix<3, 1>& id2,
         const LINALG::Matrix<3, 3>& id4sharp, const LINALG::Matrix<3, 1>& rcg, const double& rcg33,
-        const LINALG::Matrix<3, 1>& icg, int eleGID);
+        const LINALG::Matrix<3, 1>& icg, int gp, int eleGID);
 
     /// calculate principal invariants
     virtual void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
@@ -203,7 +205,7 @@ namespace MAT
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
     /// invariants
     virtual void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
-        LINALG::Matrix<2, 1>& dPI, LINALG::Matrix<3, 1>& ddPII, int eleGID);
+        LINALG::Matrix<2, 1>& dPI, LINALG::Matrix<3, 1>& ddPII, int gp, int eleGID);
 
     /// calculate stress and constitutive tensor factors
     virtual void CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
@@ -214,7 +216,7 @@ namespace MAT
     virtual void EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1>& stress_aniso,
         LINALG::Matrix<3, 3>& cmat_aniso, LINALG::Matrix<3, 3>& Q_trafo,
         const LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
-        int eleGID);
+        int gp, int eleGID);
 
     /// vector of fiber vectors
     std::vector<LINALG::Matrix<3, 1>> fibervecs_;

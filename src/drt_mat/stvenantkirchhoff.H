@@ -166,10 +166,11 @@ namespace MAT
     /// evaluate material law
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID);
+        int gp, int eleGID);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID);
 
     /// evaluate for GEMM
     virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
@@ -177,7 +178,7 @@ namespace MAT
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int eleGID);
+        LINALG::Matrix<3, 3>* rcg_old, int gp, int eleGID);
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6, 6>& cmat);

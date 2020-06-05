@@ -70,6 +70,9 @@ namespace MAT
         /// standard constructor
         explicit CoupAnisoExpoBase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
+        /// Constructor only used for unit testing
+        CoupAnisoExpoBase();
+
         /// @name material parameters
         //@{
 
@@ -93,7 +96,6 @@ namespace MAT
         void SetK1COMP(const double k1comp) { k1comp_ = k1comp; }
         void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
         //@}
-
       };  // class CoupAnisoExpoBase
 
     }  // namespace PAR
@@ -203,6 +205,7 @@ namespace MAT
           LINALG::Matrix<3, 1, T>& ddPII_aniso,    ///< second derivative with respect to invariants
           LINALG::Matrix<4, 1, T>& dddPIII_aniso,  ///< third derivative with respect to invariants
           LINALG::Matrix<3, 3, T> const& rcg,      ///< right Cauchy-Green tensor
+          int gp,                                  ///< Gauss point
           int eleGID) const;                       ///< element GID
 
       /// Add anisotropic principal stresses
@@ -211,6 +214,7 @@ namespace MAT
           LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
+          int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
 
@@ -220,6 +224,7 @@ namespace MAT
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>&
               glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
+          int gp,        //< Gauss point
           int eleGID     ///< element GID
           ) override;
 
@@ -227,6 +232,7 @@ namespace MAT
       template <typename T>
       void EvaluateFunc(T& psi,                ///< strain energy functions
           LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
+          int gp,                              ///< Gauss point
           int eleGID) const;                   ///< element GID
 
 

@@ -35,7 +35,8 @@ MAT::ELASTIC::VolPow::VolPow(MAT::ELASTIC::PAR::VolPow* params) : params_(params
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::VolPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   const double a = params_->a_;
   const double expon = params_->expon_;
@@ -49,7 +50,8 @@ void MAT::ELASTIC::VolPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 
  *                                                      birzle 11/2014  */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::VolPow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+    const int eleGID)
 {
   const double a = params_->a_;
   const double expon = params_->expon_;

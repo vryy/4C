@@ -37,7 +37,8 @@ MAT::ELASTIC::VolPenalty::VolPenalty(MAT::ELASTIC::PAR::VolPenalty* params) : pa
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::VolPenalty::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   const double eps = params_->eps_;
   const double gam = params_->gam_;
@@ -51,9 +52,8 @@ void MAT::ELASTIC::VolPenalty::AddStrainEnergy(double& psi, const LINALG::Matrix
  *                                                      birzle 11/2014  */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::VolPenalty::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int eleGID
-
-)
+    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+    const int eleGID)
 {
   const double eps = params_->eps_;
   const double gam = params_->gam_;

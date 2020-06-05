@@ -276,7 +276,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
 
     // call material law
     if (material->MaterialType() == INPAR::MAT::m_stvenant)
-      w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material, params);
+      w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material, params, ip);
     else
       dserror("It must be St.Venant-Kirchhoff material.");
 

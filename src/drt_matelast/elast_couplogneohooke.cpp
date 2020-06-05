@@ -78,7 +78,8 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   const double mue = params_->mue_;
   const double lambda = params_->lambda_;
@@ -96,7 +97,7 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi, const LINALG::M
  *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
   // ln of determinant of deformation gradient
   const double logdetf = std::log(std::sqrt(prinv(2)));

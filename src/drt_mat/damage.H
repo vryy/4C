@@ -188,7 +188,8 @@ namespace MAT
         Teuchos::ParameterList& params,                        //!< parameter list for communication
         LINALG::Matrix<NUM_STRESS_3D, 1>* stress,              //!< 2nd PK-stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,    //!< material stiffness matrix
-        const int eleGID);
+        int gp,                                                ///< Gauss point
+        int eleGID);
 
     //! evaluate material using Lemaitre material model
     virtual void EvaluateFullLemaitre(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
@@ -196,7 +197,8 @@ namespace MAT
         Teuchos::ParameterList& params,                      //!< parameter list for communication
         LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        const int eleGID);                                   //!< element GID
+        int gp,                                              //!< Gauss point
+        int eleGID);                                         //!< element GID
 
     //! evaluate material using the simplified Lemaitre model
     virtual void EvaluateSimplifiedLemaitre(
@@ -205,7 +207,8 @@ namespace MAT
         Teuchos::ParameterList& params,                      //!< parameter list for communication
         LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        const int eleGID);                                   //!< element GID
+        int gp,                                              //!< Gauss point
+        int eleGID);                                         //!< element GID
 
     //! computes stress
     void Stress(const double p,                             //!< volumetric stress tensor

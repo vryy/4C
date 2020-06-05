@@ -185,7 +185,7 @@ namespace MAT
 
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID);
+        int gp, int eleGID);
 
     //! computes Cauchy stress
     void Stress(const double p,                             //!< volumetric stress tensor

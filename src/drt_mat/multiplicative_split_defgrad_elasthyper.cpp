@@ -197,16 +197,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
 /*--------------------------------------------------------------------*
  | evaluate                                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
-    const LINALG::Matrix<3, 3>* defgrad,   ///< Deformation gradient
-    const LINALG::Matrix<6, 1>* glstrain,  ///< Green-Lagrange strain
-    Teuchos::ParameterList& params,        ///< Container for additional information
-    LINALG::Matrix<6, 1>* stress,          ///< 2nd Piola-Kirchhoff stresses
-    LINALG::Matrix<6, 6>* cmat,            ///< Constitutive matrix
-    const int eleGID)                      ///< Element ID
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrad,
+    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)  ///< Element ID
 {
   // do all stuff that only has to be done once per Evaluate() call
-  PreEvaluate(params);
+  PreEvaluate(params, gp);
 
   // static variables
   static LINALG::Matrix<6, 6> cmatiso(true);
@@ -233,7 +230,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
   // derivatives of principle invariants
   static LINALG::Matrix<3, 1> dPIe(true);
   static LINALG::Matrix<6, 1> ddPIIe(true);
-  EvaluateInvariantDerivatives(prinv, eleGID, dPIe, ddPIIe);
+  EvaluateInvariantDerivatives(prinv, gp, eleGID, dPIe, ddPIIe);
 
   // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
   static LINALG::Matrix<3, 1> gamma(true);
@@ -394,10 +391,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
  | evaluate derivatives of principle invariants         schmidt 03/18 |
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
-    const LINALG::Matrix<3, 1>&
-        prinv,                  ///< Principal invariants of the elastic right Cauchy-Green tensor
-    const int eleGID,           ///< Element ID
-    LINALG::Matrix<3, 1>& dPI,  ///< First derivative with respect to invariants
+    const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID, LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII) const  ///< Second derivative with respect to invariants
 {
   // clear variables
@@ -408,7 +402,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
   // derivatives of strain energy function w.r.t. principal invariants
   for (unsigned p = 0; p < potsumel_.size(); ++p)
   {
-    potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
+    potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
   }
 
   return;
@@ -662,12 +656,12 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
 /*--------------------------------------------------------------------*
  | pre evaluate                                         schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
-    Teuchos::ParameterList& params) const  ///< parameter list as handed in from the element
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(Teuchos::ParameterList& params,
+    const int gp) const  ///< parameter list as handed in from the element
 {
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
-    inelastic_->FacDefGradIn()[p].second->PreEvaluate(params);
+    inelastic_->FacDefGradIn()[p].second->PreEvaluate(params, gp);
 
   return;
 }

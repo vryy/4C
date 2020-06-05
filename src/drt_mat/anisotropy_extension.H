@@ -161,17 +161,6 @@ namespace MAT
      * used, this returns FiberAnisotropyExtension::GPDEFAULT. In case of Gauss point fibers, it
      * returns the Gauss point
      *
-     * \param params Container that has stored the current Gauss point
-     *
-     * \return int
-     */
-    int GetVirtualGaussPoint(const Teuchos::ParameterList& params) const;
-
-    /*!
-     * \brief Returns the Id of the fiber to be returned at the Gauss point. If Element fibers are
-     * used, this returns FiberAnisotropyExtension::GPDEFAULT. In case of Gauss point fibers, it
-     * returns the Gauss point
-     *
      * \param gp Current Gauss point
      *
      * \return int
@@ -243,6 +232,13 @@ namespace MAT
      * \param location
      */
     void SetFiberLocation(FiberLocation location);
+
+    /*!
+     * \brief Returns the location where the fibers are stored (elemet/node)
+     *
+     * \return FiberLocation
+     */
+    virtual FiberLocation GetFiberLocation() const { return fiberLocation_; }
 
     /*!
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are

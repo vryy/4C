@@ -85,7 +85,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -107,7 +108,7 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matr
  *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
   double c = 0.;
   double beta = 0.;
@@ -202,8 +203,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(
-    LINALG::Matrix<10, 1>& dddPIII_iso, const LINALG::Matrix<3, 1>& prinv_iso, const int eleGID)
+void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
+    const LINALG::Matrix<3, 1>& prinv_iso, const int gp, const int eleGID)
 {
   const double beta = params_->beta_;
   const double c = params_->c_;

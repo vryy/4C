@@ -439,7 +439,7 @@ namespace MAT
     /// \date 11/09
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID);
+        const int gp, const int eleGID);
 
 
     /// Return quick accessible material parameter data

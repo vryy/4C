@@ -64,10 +64,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
-  int gp = anisotropyExtension_.GetVirtualGaussPoint(params);
-
   LINALG::Matrix<6, 1> A1 = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
   LINALG::Matrix<6, 1> A2 = anisotropyExtension_.GetStructuralTensor_stress(gp, 1);
   LINALG::Matrix<6, 1> A1A2 = anisotropyExtension_.GetCoupledStructuralTensor_stress(gp);
@@ -200,10 +198,32 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
 const LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_stress(int gp) const
 {
-  return A1A2_[gp];
+  switch (this->GetFiberLocation())
+  {
+    case FiberLocation::ElementFibers:
+      return A1A2_[GPDEFAULT];
+    case FiberLocation::GPFibers:
+      return A1A2_[gp];
+    default:
+      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+  }
+
+  // Can not land here because of the dserror(). Just here to ensure no compiler warning.
+  std::abort();
 }
 
 double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledScalarProduct(int gp) const
 {
-  return a1a2_[gp];
+  switch (this->GetFiberLocation())
+  {
+    case FiberLocation::ElementFibers:
+      return a1a2_[GPDEFAULT];
+    case FiberLocation::GPFibers:
+      return a1a2_[gp];
+    default:
+      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+  }
+
+  // Can not land here because of the dserror(). Just here to ensure no compiler warning.
+  std::abort();
 }
