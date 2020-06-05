@@ -1,9 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
 
-\maintainer Martin Kronbichler
+\brief Base of four-element Maxwell material model for reduced dimensional
+acinus elements
+
+Four-element Maxwell model consists of a parallel configuration of a spring (Stiffness1),
+spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
+(derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
+
+Input line reads:
+(material section)
+MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 3221.86 Viscosity2
+1000.0 // acinus properties;
+
+\maintainer Carolin Geitner
 
 \level 3
 */

@@ -32,7 +32,6 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<beam, fluid>
   {
     friend class FBI::PairFactory;
-    friend class BeamToFluidMeshtyingPairGPTS_TestSuite;
 
    public:
     /**
@@ -67,14 +66,8 @@ namespace BEAMINTERACTION
     /** \brief You will have to use the FBI::PairFactory
      *
      */
-    BeamToFluidMeshtyingPairGaussPoint();
 
-    /**
-     * \brief Evaluate the penalty force for the visualization
-     */
-    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, scalar_type>& force,
-        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-        LINALG::Matrix<3, 1, scalar_type> v_beam) const override;
+    BeamToFluidMeshtyingPairGaussPoint();
   };
 }  // namespace BEAMINTERACTION
 

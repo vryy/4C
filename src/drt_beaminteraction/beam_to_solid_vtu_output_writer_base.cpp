@@ -32,12 +32,12 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::BeamToSolidVtuOutputWriterBase(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
 BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::AddVisualizationWriter(
-    const std::string& writer_name)
+    const std::string& writer_name, const std::string& writer_name_key)
 {
-  const auto& it = visualization_writers_.find(writer_name);
+  const auto& it = visualization_writers_.find(writer_name_key);
   if (it != visualization_writers_.end())
   {
-    dserror("The output writer '%s' you want to add already exists.", writer_name.c_str());
+    dserror("The output writer key '%s' you want to add already exists.", writer_name_key.c_str());
     return Teuchos::null;
   }
   else
@@ -46,9 +46,19 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::AddVisualizationWriter(
         Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>(
             new BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization(
                 base_output_name_ + "-" + writer_name, vtk_params_, restart_time_));
-    visualization_writers_[writer_name] = new_writer;
+    visualization_writers_[writer_name_key] = new_writer;
     return new_writer;
   }
+}
+
+/**
+ *
+ */
+Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::AddVisualizationWriter(
+    const std::string& writer_name)
+{
+  return AddVisualizationWriter(writer_name, writer_name);
 }
 
 /**

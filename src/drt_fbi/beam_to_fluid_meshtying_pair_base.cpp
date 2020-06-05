@@ -192,8 +192,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
     std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
-    std::vector<double>& velocity = visualization->GetMutablePointDataVector("velocity");
-    std::vector<double>& force = visualization->GetMutablePointDataVector("force");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
@@ -205,15 +203,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
         EvaluateBeamPosition(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<fluid>(
-            projection_point.GetXi(), this->ele2pos_, r_fluid, this->Element2());
-        this->EvaluatePenaltyForce(force_integration_point, projection_point, v_beam);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
           point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
           displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-          velocity.push_back(FADUTILS::CastToDouble(v_beam(dim)));
-          force.push_back(FADUTILS::CastToDouble(force_integration_point(dim)));
         }
       }
     }

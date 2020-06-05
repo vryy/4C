@@ -19,6 +19,7 @@ LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
 DYNAMICTYP                            Statics
 RESULTSEVRY                           1
+RESEVRYERGY                           1
 NLNSOL                                fullnewton
 PREDICT                               TangDis
 TIMESTEP                              1.0
@@ -57,6 +58,7 @@ STRAINS_GAUSSPOINT                    yes
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
 SEGMENTATION                          yes
+INTEGRATION_POINTS                    yes
 AVERAGED_NORMALS                      yes
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
@@ -134,6 +136,7 @@ STRUCTURE DIS structure NODE 878 QUANTITY dispz VALUE 0.029000230878828276 TOLER
 STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 0.3866420511482737 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE 0.23640182208687066 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE -0.04310812143712411 TOLERANCE 1e-10
+STRUCTURE SPECIAL QUANTITY beam_contact_penalty_potential VALUE 8.29060353834162444e-04 TOLERANCE 1e-14
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3r_herm2line3_static_beam_to_solid_surface_coupling.xml
 -----------------------------------------------------------------------MATERIALS

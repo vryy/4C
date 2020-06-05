@@ -78,6 +78,17 @@ void MAT::ELASTIC::CoupAnisoExpo::RegisterAnisotropyExtensions(MAT::Anisotropy& 
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
+void MAT::ELASTIC::CoupAnisoExpo::PackSummand(DRT::PackBuffer& data) const
+{
+  anisotropyExtension_.PackAnisotropy(data);
+}
+
+void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(
+    const std::vector<char>& data, std::vector<char>::size_type& position)
+{
+  anisotropyExtension_.UnpackAnisotropy(data, position);
+}
+
 void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )

@@ -37,6 +37,10 @@ namespace GEOMETRYPAIR
   template <typename surface, typename scalar_type>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVtuOutputWriterVisualization;
+}  // namespace BEAMINTERACTION
 
 
 namespace BEAMINTERACTION
@@ -111,13 +115,34 @@ namespace BEAMINTERACTION
      */
     void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
 
+    /**
+     * \brief Get energy for Gauss point to segment coupling.
+     */
+    double GetEnergy() const override;
+
    protected:
+    /**
+     * \brief Get the penalty potential for Gauss point to segment coupling.
+     * @return Penalty potential.
+     */
+    scalar_type GetPenaltyPotential() const;
+
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
         const;
+
+   private:
+    /**
+     * \brief Add points on the beam element to an output writer.
+     * @param visualization_writer (in/out) Output writer the points are appended to.
+     * @param points (in) Vector with the projection points.
+     */
+    void AddVisualizationIntegrationPoints(
+        const Teuchos::RCP<BeamToSolidVtuOutputWriterVisualization>& visualization_writer,
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.

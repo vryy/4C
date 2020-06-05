@@ -155,6 +155,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::PackConstituent(DRT::PackBuf
 
   DRT::ParObject::AddtoPack(data, mue_frac_);
 
+  anisotropyExtension_.PackAnisotropy(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -171,6 +173,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::UnpackConstituent(
   DRT::ParObject::ExtractfromPack(position, data, current_reference_density_);
 
   DRT::ParObject::ExtractfromPack(position, data, mue_frac_);
+
+  anisotropyExtension_.UnpackAnisotropy(data, position);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->UnpackSummand(data, position);

@@ -67,6 +67,27 @@ namespace ADAPTER
 
     void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
+    /// Matrix containing only structure side contributions \f$C_{ss}\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const override { return Css_; };
+
+    /// Matrix containing only fluid side contributions \f$C_{ff}\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const override { return Cff_; };
+
+    /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
+
+    /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const override { return Csf_; };
+
+    /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
+    Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const override { return ff_; };
+
+    /// Force vector acting on the structure side \f$f_s\f$
+    Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const override
+    {
+      return fs_;
+    };
+
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
@@ -91,23 +112,11 @@ namespace ADAPTER
     /// Sets the flag to compute force contributions from beam and fluid
     void UnsetWeakDirichletFlag();
 
-    /// Matrix containing only structure side contributions \f$C_ss\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCss() { return Css_; };
+    /// Scales all structure vectors and martrices with penalty
+    void ScalePenaltyStructureContributions();
 
-    /// Matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCff() { return Cff_; };
-
-    /// Matrix containing mixed fluid side contributions \f$C_fs\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCfs() { return Cfs_; };
-
-    /// Matrix containing mixed structure side contributions \f$C_sf\f$
-    Teuchos::RCP<LINALG::SparseMatrix> const GetCsf() { return Csf_; };
-
-    /// Force vector acting on the fluid side \f$f_f\f$
-    Teuchos::RCP<Epetra_FEVector> const GetFluidCouplingResidual() { return ff_; };
-
-    /// Force vector acting on the structure side \f$f_s\f$
-    Teuchos::RCP<Epetra_FEVector> const GetStructureCouplingResidual() { return fs_; };
+    /// Scales all fluid vectors and martrices with penalty
+    void ScalePenaltyFluidContributions();
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$

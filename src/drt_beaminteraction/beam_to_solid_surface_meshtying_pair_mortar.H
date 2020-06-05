@@ -67,6 +67,21 @@ namespace BEAMINTERACTION
      * matrices.
      */
     inline bool IsAssemblyIndirect() const override { return true; };
+
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
+     * add mortar specific data to the output.
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        const Teuchos::ParameterList& visualization_params) const override;
+
+    /**
+     * \brief The mortar energy contribution will be calculated globally in the mortar manager.
+     */
+    double GetEnergy() const override { return 0.0; }
   };
 }  // namespace BEAMINTERACTION
 

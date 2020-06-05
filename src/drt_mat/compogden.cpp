@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
+\brief Compressible Ogden hyperelastic material (with shell8)
 
 \level 3
 

@@ -69,3 +69,20 @@ void ADAPTER::FBIConstraintBridgePenalty::UnsetWeakDirichletFlag()
 {
   beam_interaction_params_->UnsetWeakDirichletFlag();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyStructureContributions()
+{
+  if (fs_->Scale(GetParams()->GetPenaltyParameter()))
+    dserror("Scaling of the penalty force was unsuccessful!\n");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
+{
+  if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
+      ff_->Scale(GetParams()->GetPenaltyParameter()))
+    dserror("Scaling of the penalty force was unsuccessful!\n");
+}

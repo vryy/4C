@@ -199,6 +199,17 @@ void MAT::ELASTIC::CoupAnisoExpoShear::RegisterAnisotropyExtensions(MAT::Anisotr
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
+void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(DRT::PackBuffer& data) const
+{
+  anisotropyExtension_.PackAnisotropy(data);
+}
+
+void MAT::ELASTIC::CoupAnisoExpoShear::UnpackSummand(
+    const std::vector<char>& data, std::vector<char>::size_type& position)
+{
+  anisotropyExtension_.UnpackAnisotropy(data, position);
+}
+
 void MAT::ELASTIC::CoupAnisoExpoShear::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
 {
   // no fibers to export here

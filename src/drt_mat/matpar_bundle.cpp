@@ -1,7 +1,6 @@
-/*======================================================================*/
+/*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
+\brief Bundle holds all read-in materials of a #DRT::Problem
 
 \level 1
 

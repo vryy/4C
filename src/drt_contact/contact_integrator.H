@@ -63,7 +63,12 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoIntegrator() {}
+    virtual ~CoIntegrator() = default;
+
+    //! don't want = operator
+    CoIntegrator operator=(const CoIntegrator& old) = delete;
+    //! don't want copy constructor
+    CoIntegrator(const CoIntegrator& old) = delete;
 
     //! get specified integration type
     inline enum INPAR::MORTAR::IntType IntegrationType() const { return integrationtype_; }
@@ -221,7 +226,7 @@ namespace CONTACT
      */
     void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, const double* sxigp,
         const double* mxigp, const std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi, const double alpha);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi, double alpha);
 
     /*!
      \brief Compute directional derivative of slave / master Gauss point
@@ -284,10 +289,32 @@ namespace CONTACT
 
      */
     void InitializeGP(DRT::Element::DiscretizationType eletype);
+
     /*!
-     \brief Perform integration at GP
-            This is where the distinction between methods should be,
-            i.e. mortar, augmented, gpts,...
+     * @brief Perform integration at Gauss point for 3D problems.
+     * This is where the distinction between methods should be, i.e. mortar, augmented, gpts,...
+     *
+     * @param[in] sele     current mortar slave element
+     * @param[in] mele     current mortar master element
+     * @param[in] sval     slave side shape function evaluated at current Gauss point
+     * @param[in] lmval    Lagrangian multiplier shape function evaluated at current Gauss point
+     * @param[in] mval     master side shape function evaluated at current Gauss point
+     * @param[in] sderiv   slave side shape function derivative at current Gauss point
+     * @param[in] mderiv   master side shape function derivative at current Gauss point
+     * @param[in] lmderiv  Lagrangian multiplier shape function derivative evaluated at current
+     *                     Gauss point
+     * @param[in] dualmap  directional derivative of dual shape functions
+     * @param[in] wgt      Gauss point weight
+     * @param[in] jac           Jacobian determinant of integration cell
+     * @param[in] derivjac      directional derivative of cell Jacobian
+     * @param[in] normal        integration cell normal
+     * @param[in] dnmap_unit    directional derivative of integration cell normal
+     * @param[in] gap           gap
+     * @param[in] deriv_gap     directional derivative of gap
+     * @param[in] sxi       slave side Gauss point coordinates
+     * @param[in] mxi       master side Gauss point coordinates
+     * @param[in] derivsxi  directional derivative of slave side Gauss point coordinates
+     * @param[in] derivmxi  directional derivative of master side Gauss point coordinates
      */
     virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
@@ -301,9 +328,30 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& derivmxi);
 
     /*!
-     \brief Perform integration at GP
-            This is where the distinction between methods should be,
-            i.e. mortar, augmented, gpts,...
+     * @brief Perform integration at Gauss point for 2D problems.
+     * This is where the distinction between methods should be, i.e. mortar, augmented, gpts,...
+     *
+     * @param[in] sele     mortar slave element
+     * @param[in] mele     mortar master element
+     * @param[in] sval     slave side shape function evaluated at current Gauss point
+     * @param[in] lmval    Lagrangian multiplier shape function evaluated at current Gauss point
+     * @param[in] mval     master side shape function evaluated at current Gauss point
+     * @param[in] sderiv   slave side shape function derivative at current Gauss point
+     * @param[in] mderiv   master side shape function derivative at current Gauss point
+     * @param[in] lmderiv  Lagrangian multiplier shape function derivative evaluated at current
+     *                     Gauss point
+     * @param[in] dualmap  directional derivative of dual shape functions
+     * @param[in] wgt      Gauss point weight
+     * @param[in] jac           Jacobian determinant of integration cell
+     * @param[in] derivjac      directional derivative of cell Jacobian
+     * @param[in] normal        integration cell normal
+     * @param[in] dnmap_unit    directional derivative of integration cell normal
+     * @param[in] gap           gap
+     * @param[in] deriv_gap     directional derivative of gap
+     * @param[in] sxi       slave side Gauss point coordinates
+     * @param[in] mxi       master side Gauss point coordinates
+     * @param[in] derivsxi  directional derivative of slave side Gauss point coordinates
+     * @param[in] derivmxi  directional derivative of master side Gauss point coordinates
      */
     virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
@@ -775,10 +823,6 @@ namespace CONTACT
      */
     INPAR::MORTAR::LagMultQuad LagMultQuad() { return lagmultquad_; }
     //@}
-
-    // don't want = operator and cctor
-    CoIntegrator operator=(const CoIntegrator& old) = delete;
-    CoIntegrator(const CoIntegrator& old) = delete;
 
     //! containing contact input parameters
     Teuchos::ParameterList& imortar_;

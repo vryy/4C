@@ -151,7 +151,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
 
   // If a writer exists for segmentation point data, add the segmentation point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation = visualization_writer->GetVisualizationWriter("segmentation");
+      visualization_segmentation =
+          visualization_writer->GetVisualizationWriter("btsvc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     // Setup variables.
@@ -189,7 +190,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   // If a writer exists for integration point data, add the integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->GetVisualizationWriter("integration-points");
+          visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.

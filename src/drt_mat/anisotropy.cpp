@@ -50,11 +50,6 @@ void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
   {
     gpCylinderCoordinateSystemManager.Pack(data);
   }
-
-  for (const auto& extension : extensions_)
-  {
-    extension->PackAnisotropy(data);
-  }
 }
 
 void MAT::Anisotropy::UnpackAnisotropy(
@@ -79,11 +74,6 @@ void MAT::Anisotropy::UnpackAnisotropy(
   for (auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
   {
     gpCylinderCoordinateSystemManager.Unpack(data, position);
-  }
-
-  for (const auto& extension : extensions_)
-  {
-    extension->UnpackAnisotropy(data, position);
   }
 }
 

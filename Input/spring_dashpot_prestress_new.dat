@@ -12,7 +12,7 @@ is decreased that should result in a deformation of the cubes. The result values
 the old time integration scheme.
 
 Tests:
-- MULF prestressing in the time integration scheme with a robin spring-dashpot boundary condition
+- MULF prestressing in the new time integration scheme with a robin spring-dashpot boundary condition
 
 Elements:
 - HEX8
@@ -32,7 +32,7 @@ FILESTEPS                       1000
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
 PRESTRESS                       Mulf
-PRESTRESSTIME                   3.0
+PRESTRESSTIME                   3.0001
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -77,15 +77,15 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 1 2 5 6 7 VALUES 
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 5 TIMES 0 2 3 6 7 VALUES 0 0 1 1 0.5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.96626484260875256e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE -1.96626484260875090e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE -5.90108118742495857e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 44 QUANTITY dispx VALUE -1.96641293080049490e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 44 QUANTITY dispy VALUE -1.96641293080049212e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 44 QUANTITY dispz VALUE -5.90140329172335956e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.96626484260875173e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE -1.96626484260875284e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE -5.90108118742496204e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 44 QUANTITY dispx VALUE -1.96641293080049628e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 44 QUANTITY dispy VALUE -1.96641293080049268e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 44 QUANTITY dispz VALUE -5.90140329172333042e-02 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE -1.96619587680623653e-01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -1.96619587680629149e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 59 QUANTITY dispz VALUE -5.90165008386095216e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 59 QUANTITY dispz VALUE -5.90165008386093828e-02 TOLERANCE 1e-9
 -------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        21
 NODES                           80

@@ -177,9 +177,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("mortar");
+      visualization_writer->GetVisualizationWriter("btsvc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("mortar-continuous");
+      visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
@@ -264,7 +264,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
       const unsigned int mortar_segments =
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-                  "output_params_ptr")
+                  "btsvc-output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
       std::vector<double>& point_coordinates =
