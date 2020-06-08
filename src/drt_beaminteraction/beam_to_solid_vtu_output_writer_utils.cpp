@@ -116,3 +116,66 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     }
   }
 }
+
+/**
+ *
+ */
+void BEAMINTERACTION::GetGlobalCouplingForceResultants(const DRT::Discretization& discret,
+    const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
+    LINALG::Matrix<3, 2, double>& beam_resultant, LINALG::Matrix<3, 2, double>& solid_resultant)
+{
+  beam_resultant.Clear();
+  solid_resultant.Clear();
+
+  // Initialize variables.
+  std::vector<double> local_force;
+  std::vector<double> local_position;
+  std::vector<int> gid_node;
+
+  // Loop over the nodes and sum up the forces and moments.
+  for (int i_lid = 0; i_lid < discret.NumMyRowNodes(); i_lid++)
+  {
+    gid_node.clear();
+    DRT::Node* current_node = discret.lRowNode(i_lid);
+    discret.Dof(current_node, gid_node);
+
+    // Get the local force and displacement values.
+    DRT::UTILS::ExtractMyValues(force, local_force, gid_node);
+    DRT::UTILS::ExtractMyValues(displacement, local_position, gid_node);
+    for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->X()[dim];
+
+    if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
+    {
+      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*current_node))
+        GetNodeCouplingForceResultants(local_force, local_position, beam_resultant);
+      else
+        // Do nothing for non-centerline nodes.
+        continue;
+    }
+    else
+      GetNodeCouplingForceResultants(local_force, local_position, solid_resultant);
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& local_force,
+    const std::vector<double>& local_position, LINALG::Matrix<3, 2, double>& resultant)
+{
+  LINALG::Matrix<3, 1, double> node_pos(true);
+  LINALG::Matrix<3, 1, double> node_force(true);
+  LINALG::Matrix<3, 1, double> node_moment(true);
+
+  // Add the force values for this node to the resultants and get the local node position.
+  for (unsigned int dim = 0; dim < 3; ++dim)
+  {
+    node_pos(dim) = local_position[dim];
+    node_force(dim) = local_force[dim];
+    resultant(dim, 0) += node_force(dim);
+  }
+
+  // Add the moment values for this node.
+  node_moment.CrossProduct(node_pos, node_force);
+  for (unsigned int dim = 0; dim < 3; ++dim) resultant(dim, 1) += node_moment(dim);
+}
