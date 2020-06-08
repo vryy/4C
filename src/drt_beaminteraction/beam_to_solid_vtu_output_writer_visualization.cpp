@@ -74,6 +74,21 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutablePointCoordin
  *
  */
 std::vector<double>&
+BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutableFieldDataVector(
+    std::string data_name)
+{
+  // Check if the field data vector already exists.
+  std::map<std::string, std::vector<double>>& field_data_map = GetMutableFieldDataMap();
+  const auto& it = field_data_map.find(data_name);
+  if (it == field_data_map.end())
+    dserror("The data vector with the name '%s' does not exist.", data_name.c_str());
+  return it->second;
+}
+
+/**
+ *
+ */
+std::vector<double>&
 BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutablePointDataVector(
     std::string data_name, int additional_reserve)
 {
@@ -115,6 +130,27 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutableCellDataVect
   {
     dserror("The cell data vector with the name '%s' does not exist.", data_name.c_str());
     return it->second.first;
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddFieldDataVector(
+    std::string data_name, int reserve)
+{
+  // Check if the point data vector already exists.
+  std::map<std::string, std::vector<double>>& field_data_map = GetMutableFieldDataMap();
+  const auto& it = field_data_map.find(data_name);
+  if (it != field_data_map.end())
+    dserror("The field data vector with the name '%s' you want to add already exists.",
+        data_name.c_str());
+  else
+  {
+    std::vector<double> new_vector;
+    field_data_map[data_name] = new_vector;
+    std::vector<double>& added_pair = field_data_map[data_name];
+    if (reserve > 0) added_pair.reserve(reserve);
   }
 }
 
@@ -269,6 +305,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
   GetMutablePointCoordinateVector().clear();
   GetMutableCellTypeVector().clear();
   GetMutableCellOffsetVector().clear();
+  for (auto& field_data : GetMutableFieldDataMap()) field_data.second.clear();
   for (auto& point_data : GetMutablePointDataMap()) point_data.second.first.clear();
   for (auto& cell_data : GetMutableCellDataMap()) cell_data.second.first.clear();
 }
