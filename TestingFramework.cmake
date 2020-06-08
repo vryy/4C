@@ -2102,9 +2102,6 @@ baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 # testing the AMGnxn with a TSI problem
 baci_test(tsi_simplrocketnozzle_monolithic_amgnxn_AMGBGS 2 "")
 
-# fsi using the AMGnxn framework
-baci_test(fsi_pw_mono_ss_ost_ga_amgnxn 2 "")
-
 # fsi_lung using the AMGnxn framework
 baci_test(fsi_lung_mono_amgnxn 2 "")
 
