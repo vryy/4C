@@ -47,7 +47,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       visualization_writer->GetVisualizationWriter("btssc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("btssc-mortar-continuous");
-  if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_nodal_forces =
+          visualization_writer->GetVisualizationWriter("btssc-nodal-forces");
+  if (visualization_discret != Teuchos::null or visualization_continuous != Teuchos::null or
+      visualization_nodal_forces != Teuchos::null)
   {
     // Setup variables.
     LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
@@ -168,6 +172,62 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         // Add the cell for this segment (poly line).
         cell_type.push_back(4);
         cell_offset.push_back(point_coordinates.size() / 3);
+      }
+    }
+
+
+    // Calculate the global moment of the coupling load.
+    if (visualization_nodal_forces != Teuchos::null)
+    {
+      // Get the global moment vector.
+      auto line_load_moment_origin =
+          visualization_params.get<Teuchos::RCP<LINALG::Matrix<3, 1, double>>>(
+              "global_coupling_moment_origin");
+
+      // Initialize variables for local values.
+      LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+      LINALG::Matrix<3, 1, double> lambda_gauss_point(true);
+      LINALG::Matrix<3, 1, double> r_gauss_point(true);
+      LINALG::Matrix<3, 1, double> temp_moment(true);
+
+      // Initialize scalar variables.
+      double segment_jacobian = 0.0;
+      double beam_segmentation_factor = 0.0;
+
+      // Loop over segments to evaluate the coupling potential.
+      for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+      {
+        // Factor to account for a segment length not from -1 to 1.
+        beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+
+        // Gauss point loop.
+        for (unsigned int i_gp = 0;
+             i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+        {
+          // Get the current Gauss point.
+          const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
+              this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+
+          // Get the jacobian in the reference configuration.
+          GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+              projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+
+          // Jacobian including the segment length.
+          segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+
+          // Evaluate the coupling load at this point.
+          GEOMETRYPAIR::EvaluatePosition<mortar>(
+              projected_gauss_point.GetEta(), q_lambda, lambda_gauss_point);
+
+          // Get the position at this Gauss point.
+          GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(),
+              FADUTILS::CastToDouble(this->ele1pos_), r_gauss_point, this->Element1());
+
+          // Calculate moment around origin.
+          temp_moment.CrossProduct(r_gauss_point, lambda_gauss_point);
+          temp_moment.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+          (*line_load_moment_origin) += temp_moment;
+        }
       }
     }
   }
