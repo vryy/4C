@@ -37,7 +37,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, su
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
     mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
+    Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::GetPairVisualization(visualization_writer, visualization_params);

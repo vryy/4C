@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const override;
+        Teuchos::ParameterList& visualization_params) const override;
 
     /**
      * \brief Create the geometry pair for this contact pair.

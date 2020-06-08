@@ -148,7 +148,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPairVisualization(
     Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
+    Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualization(

@@ -348,7 +348,7 @@ namespace BEAMINTERACTION
      */
     virtual void GetPairVisualization(
         Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const
+        Teuchos::ParameterList& visualization_params) const
     {
     }
 
