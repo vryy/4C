@@ -79,7 +79,9 @@ void RuntimeVtpWriter::WriteFiles()
 {
   vtp_writer_->InitializeVtkFileStreamsForNewGeometryAndOrTimeStep();
 
-  vtp_writer_->WriteVtkHeadersAndFieldData();
+  vtp_writer_->WriteVtkHeaders();
+
+  vtp_writer_->WriteVtkFieldData();
 
   vtp_writer_->WriteGeometryPolyData(point_coordinates_);
 

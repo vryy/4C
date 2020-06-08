@@ -141,7 +141,13 @@ class VtkWriterBase
   void InitializeVtkFileStreamsForNewGeometryAndOrTimeStep();
 
   //! write prologue of all required vtk files
-  void WriteVtkHeadersAndFieldData();
+  void WriteVtkHeaders();
+
+  //! write given field data, including time and cycle for vtk file.
+  void WriteVtkFieldData(const std::map<std::string, std::vector<double>>& field_data_map);
+
+  //! write field data for time and cycle for vtk file.
+  void WriteVtkFieldData();
 
   //! write epilogue of all required vtk files
   void WriteVtkFooters();
@@ -190,10 +196,9 @@ class VtkWriterBase
   //! write prologue of the VTK file on this processor
   void WriteVtkHeaderThisProcessor(const std::string& byteorder);
 
-
-  // if previously set, write time and cycle as 'field data'
-  void WriteTimeOrCycleAsFieldData();
-
+  //! write field data array to the VTK file on this processor
+  template <typename T>
+  void WriteFieldDataArray(const std::string& name, const std::vector<T>& field_data);
 
   //! write the required information about the DataArray to master file
   // Todo template <typename T>
@@ -319,5 +324,29 @@ class VtkWriterBase
   //! number of involved processors
   unsigned int numproc_;
 };
+
+
+/**
+ * \brief Function to get the vtk type string for a c++ scalar type. This function has to be
+ * specialized for all used scalar types.
+ * @return Vtk type string.
+ */
+template <typename T>
+std::string ScalarTypeToVtkType()
+{
+  dserror("The scalar type has to be specialized in vtk_writer_base.H");
+  return "";
+}
+template <>
+inline std::string ScalarTypeToVtkType<int>()
+{
+  return "Int32";
+}
+template <>
+inline std::string ScalarTypeToVtkType<double>()
+{
+  return "Float64";
+}
+
 
 #endif
