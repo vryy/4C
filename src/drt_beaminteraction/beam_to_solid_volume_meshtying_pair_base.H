@@ -15,8 +15,7 @@
 
 #include "beam_to_solid_pair_base.H"
 
-#include "beam3contact_defines.H"
-
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
@@ -43,15 +42,15 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPairBase
-      : public BeamToSolidPairBase<Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>,
-            beam, solid>
+      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>, beam,
+            solid>
   {
    protected:
     //! Type to be used for scalar AD variables.
-    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
+    using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type_fad, beam, solid>;
+    using base_class = BeamToSolidPairBase<scalar_type, beam, solid>;
 
    public:
     /**
@@ -146,9 +145,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
-        const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
-        LINALG::Matrix<3, 1, scalar_type_fad>& force) const;
+    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
+        const LINALG::Matrix<3, 1, scalar_type>& r_solid,
+        LINALG::Matrix<3, 1, scalar_type>& force) const;
 
     /**
      * \brief Get the reference position to be used for the evaluation of the coupling terms.
@@ -164,7 +163,7 @@ namespace BEAMINTERACTION
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the solid.
-    LINALG::Matrix<solid::n_dof_, 1, scalar_type_fad> ele2pos_;
+    LINALG::Matrix<solid::n_dof_, 1, scalar_type> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the solid.
     LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;

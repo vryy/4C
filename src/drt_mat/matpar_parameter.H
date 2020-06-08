@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
+\brief Base object to hold 'quick' access to material parameters
 
 \level 1
 

@@ -136,16 +136,20 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
   }
   AddtoPack(data, isPreEvaluatedInt);
 
-  // pack all constituents
-  for (auto const& constituent : *constituents_)
-  {
-    constituent->PackConstituent(data);
-  }
-
-  // pack mixturerule
-  mixture_rule_->PackMixtureRule(data);
-
   anisotropy_.PackAnisotropy(data);
+
+  // pack all constituents
+  // constituents are not accessible during post processing
+  if (params_ != nullptr)
+  {
+    for (auto const& constituent : *constituents_)
+    {
+      constituent->PackConstituent(data);
+    }
+
+    // pack mixturerule
+    mixture_rule_->PackMixtureRule(data);
+  }
 }
 
 // Unpack data
@@ -195,6 +199,8 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       isPreEvaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
     }
 
+    anisotropy_.UnpackAnisotropy(data, position);
+
     // extract constituents
     // constituents are not accessible during post processing
     if (params_ != nullptr)
@@ -223,14 +229,13 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       mixture_rule_->SetConstituents(constituents_);
       mixture_rule_->SetMaterialMassDensity(params_->density_);
       mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
+
+      // position checking is not available in post processing mode
+      if (position != data.size())
+      {
+        dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
+      }
     }
-  }
-
-  anisotropy_.UnpackAnisotropy(data, position);
-
-  if (position != data.size())
-  {
-    dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
   }
 }
 
@@ -287,13 +292,10 @@ void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const i
 // Evaluates the material
 void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // check, whether the PostSetup method was already called
   if (!setup_) dserror("The material's PostSetup() method has not been called yet.");
-
-  // read Gauß point
-  int gp = params.get<int>("gp");
 
   if (!isPreEvaluated_[gp])
   {

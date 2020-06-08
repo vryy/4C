@@ -601,7 +601,8 @@ namespace DRT
           Epetra_SerialDenseMatrix& C,                 ///< elasticity matrix
           const int numeps,                            ///< number of strains
           Teuchos::RCP<const MAT::Material> material,  ///< the material data
-          Teuchos::ParameterList& params               ///< element parameter list
+          Teuchos::ParameterList& params,              ///< element parameter list
+          int gp                                       ///< Gauss point
       );
 
       /// Stress and constitutive matrix mapper from 3d to 2d
@@ -611,7 +612,8 @@ namespace DRT
       void MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,  ///< stress matrix
           Epetra_SerialDenseMatrix& C,                                ///< elasticity matrix
           const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-          Teuchos::ParameterList& params           ///< element parameter list
+          Teuchos::ParameterList& params,          ///< element parameter list
+          int gp                                   ///< Gauss point
       );
 
       /// Generic 3D stress response
@@ -621,7 +623,8 @@ namespace DRT
           LINALG::Matrix<6, 1>* stress,          ///< 3D 2nd Piola-Kirchhoff stress vector
           LINALG::Matrix<6, 6>* cmat,            ///< 3D elasticity matrix
           const LINALG::Matrix<6, 1>* glstrain,  ///< 3D Green-Lagrange strain vector
-          Teuchos::ParameterList& params         ///< element parameter list
+          Teuchos::ParameterList& params,        ///< element parameter list
+          int gp                                 ///< Gauss point
       );
 
       /// Map plane Green-Lagrange strains to 3d
@@ -633,7 +636,8 @@ namespace DRT
       /// Internal/strain energy
       double EnergyInternal(Teuchos::RCP<const MAT::Material> material,  ///< element material
           Teuchos::ParameterList& params,                                ///< element parameter list
-          const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
+          const Epetra_SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
+          int gp                               ///< Gauss point
       );
 
       /// Kinetic Energy

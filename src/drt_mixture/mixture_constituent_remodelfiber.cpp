@@ -60,7 +60,7 @@ MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
 
   // Get anisotropy extension from CoupAnisoExpo
   auto anisotropyExtensionProvider =
-      Teuchos::rcp_dynamic_cast<MAT::FiberAnisotropyExtensionProvider>(summand_);
+      Teuchos::rcp_dynamic_cast<MAT::FiberAnisotropyExtensionProvider<1>>(summand_);
   if (coupAnisoExpo == Teuchos::null and coupAnisoExpoActive == Teuchos::null)
   {
     dserror(
@@ -72,8 +72,8 @@ MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
       Teuchos::rcpFromRef(anisotropyExtensionProvider->GetFiberAnisotropyExtension());
 
   fiberAnisotropyExtension_->RegisterNeededTensors(
-      MAT::FiberAnisotropyExtension::STRUCTURAL_TENSOR |
-      MAT::FiberAnisotropyExtension::STRUCTURAL_TENSOR_STRESS);
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
   orthogonalAnisotropyExtension_.SetAnisotropyExtension(fiberAnisotropyExtension_);
 
   auto growthEvolution = Teuchos::rcp<CauchyLinearGrowthEvolution>(
@@ -95,6 +95,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::PackConstituent(DRT::PackBuffer& 
   DRT::ParObject::AddtoPack(data, sig_h_);
 
   summand_->PackSummand(data);
+
+  orthogonalAnisotropyExtension_.PackAnisotropy(data);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
@@ -110,6 +112,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
   DRT::ParObject::ExtractfromPack(position, data, sig_h_);
 
   summand_->UnpackSummand(data, position);
+
+  orthogonalAnisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::RegisterAnisotropyExtensions(
@@ -227,7 +231,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matri
     activeCMat.Clear();
 
     activeSummand_->AddActiveStressCmatAniso(
-        C, activeCMat, activeStress, eleGID);  // FIXME: This should be Ce instead of C ???
+        C, activeCMat, activeStress, gp, eleGID);  // FIXME: This should be Ce instead of C ???
 
     S_stress.Update(CurrentRefDensity(gp), activeStress, 1.0);
     cmat.Update(CurrentRefDensity(gp), activeCMat, 1.0);
@@ -404,7 +408,7 @@ MIXTURE::OrthogonalAnisotropyExtension::OrthogonalAnisotropyExtension()
 }
 
 void MIXTURE::OrthogonalAnisotropyExtension::SetAnisotropyExtension(
-    Teuchos::RCP<MAT::FiberAnisotropyExtension>& other)
+    Teuchos::RCP<MAT::FiberAnisotropyExtension<1>>& other)
 {
   other_ = other;
   other_->RegisterNeededTensors(STRUCTURAL_TENSOR);

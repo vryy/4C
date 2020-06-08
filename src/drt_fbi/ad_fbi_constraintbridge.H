@@ -17,7 +17,7 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #include <Epetra_Map.h>
 #include <vector>
 
-// Forward decleration
+// Forward declaration
 
 namespace DRT
 {
@@ -25,6 +25,10 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -34,6 +38,9 @@ namespace GEOMETRYPAIR
 {
   class LineTo3DEvaluationData;
 }
+
+class Epetra_Vector;
+class Epetra_FEVector;
 
 namespace FBI
 {
@@ -73,8 +80,10 @@ namespace ADAPTER
      * other.
      *
      */
-    virtual void Evaluate(
-        const DRT::Discretization& discretization1, const DRT::Discretization& discretization2) = 0;
+    virtual void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
+        Teuchos::RCP<const DRT::Discretization> discretization2,
+        Teuchos::RCP<const Epetra_Vector> fluid_vel,
+        Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair
@@ -115,25 +124,31 @@ namespace ADAPTER
     virtual void ResetBridge();
 
     /// Sets the fluid solve flag
-    virtual void PrepareFluidSolve(){};
+    virtual void PrepareFluidSolve() = 0;
+
+    /// Matrix containing only structure side contributions \f$C_{ss}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
+
+    /// Matrix containing only fluid side contributions \f$C_{ff}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
+
+    /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
+
+    /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const = 0;
+
+    /// Force vector acting on the fluid side \f$f_f\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const = 0;
+
+    /// Force vector acting on the structure side \f$f_s\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
      *
      */
     FBIConstraintBridge();
-
-    /// Provides access to data container holding all beam interaction related parameters
-    virtual void SetParams(Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params) final
-    {
-      beam_interaction_params_ = params;
-    };
-
-    /// Provides access to data container holding all geometry related evaluation data
-    virtual void SetGeometryData(Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> data) final
-    {
-      geometry_evaluation_data_ = data;
-    };
 
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;

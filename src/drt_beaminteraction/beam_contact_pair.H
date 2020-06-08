@@ -91,7 +91,6 @@ namespace BEAMINTERACTION
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr,
         const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
             beam_interaction_conditions_ptr);
 
@@ -285,10 +284,11 @@ namespace BEAMINTERACTION
      * @param local_D (out) Local mortar matrix $D$.
      * @param local_M (out) Local mortar matrix $M$.
      * @param local_kappa (out) Local scaling vector.
+     * @param local_constraint_offset (out) Local constraint offset vector.
      * @return True if pair is in contact.
      */
     virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa)
+        LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
     {
       return false;
     }

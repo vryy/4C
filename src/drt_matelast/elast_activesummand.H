@@ -37,6 +37,7 @@ namespace MAT
           const LINALG::Matrix<3, 3>& CM,  ///< rigtht Cauchy Green tensor
           LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
+          int gp,                          ///< Gauss point
           int eleGID) const = 0;           ///< element GID
 
 

@@ -581,8 +581,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
-  src/drt_matelast/elast_coupanisoexpoactive.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
+  src/drt_matelast/elast_coupanisoexpoactive.cpp
+  src/drt_matelast/elast_coupanisoexpobase.cpp
+  src/drt_matelast/elast_coupanisoexposhear.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp
   src/drt_matelast/elast_coupanisoneohooke.cpp
   src/drt_matelast/elast_coupanisoneohooke_VarProp.cpp
@@ -888,8 +890,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_conditions.cpp
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
   src/drt_beaminteraction/beam_to_solid_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_params_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
+  src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar.cpp
   src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
   src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp
@@ -1218,18 +1223,22 @@ set(OBJS_DRT_MEMBRANE_LIB
 set(OBJS_DRT_FBI
   src/drt_fbi/fbi_calc_utils.cpp
   src/drt_fbi/constraintenforcer_fbi.cpp
+  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
   src/drt_fbi/ad_fbi_constraintbridge.cpp
+  src/drt_fbi/beam_to_fluid_assembly_manager_factory.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_base.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_factory.cpp
   src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_mortar.cpp
   src/drt_fbi/beam_to_fluid_meshtying_params.cpp
   src/drt_fbi/beam_to_fluid_meshtying_vtk_output_params.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
+  src/drt_fbi/beam_to_fluid_mortar_manager.cpp
   src/drt_fbi/constraintenforcer_fbi_factory.cpp
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
-  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
-  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager_indirect.cpp
   src/drt_fbi/immersed_geometry_coupler_fbi.cpp
 )
 set(OBJS_DRT_FSI
@@ -1437,6 +1446,7 @@ set(OBJS_DRT_STI
   src/drt_sti/sti_clonestrategy.cpp
   src/drt_sti/sti_dyn.cpp
   src/drt_sti/sti_monolithic.cpp
+  src/drt_sti/sti_monolithic_evaluate_OffDiag.cpp
   src/drt_sti/sti_partitioned.cpp
   src/drt_sti/sti_resulttest.cpp
 )
@@ -2063,9 +2073,8 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
   src/drt_constraint/lagpenconstraint_noxinterface.cpp
-  src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
-  src/drt_constraint/springdashpot_new.cpp
+  src/drt_constraint/springdashpot.cpp
 )
 
 set(OBJS_DRT_IO_LIB
@@ -2529,6 +2538,7 @@ src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
+src/drt_ssi/ssi_monolithic_evaluate_OffDiag.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp

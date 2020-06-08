@@ -151,9 +151,9 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
     int eleGID) const
 {
   LINALG::Matrix<3, 3> F(false);
-  LINALG::Matrix<6, 1> E_strain(false);
-  LINALG::Matrix<6, 1> S_stress(false);
-  LINALG::Matrix<6, 6> cmat(false);
+  LINALG::Matrix<6, 1> E_strain(true);
+  LINALG::Matrix<6, 1> S_stress(true);
+  LINALG::Matrix<6, 6> cmat(true);
   MAT::IdentityMatrix(F);
 
 

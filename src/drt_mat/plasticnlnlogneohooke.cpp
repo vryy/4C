@@ -265,12 +265,8 @@ void MAT::PlasticNlnLogNeoHooke::Update()
  *----------------------------------------------------------------------*/
 void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // extract the gauss points from the parameter list
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   // elastic material data
   // get material parameters
   const double ym = params_->youngs_;                  // Young's modulus

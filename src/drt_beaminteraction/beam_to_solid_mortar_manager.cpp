@@ -16,6 +16,7 @@
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
+#include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_multiply.H"
@@ -29,14 +30,15 @@
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    const Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid)
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),
       is_global_maps_build_(false),
       start_value_lambda_gid_(start_value_lambda_gid),
       discret_(discret),
-      beam_contact_parameters_ptr_(params),
+      beam_to_solid_params_(params),
       lambda_dof_rowmap_(Teuchos::null),
       lambda_dof_colmap_(Teuchos::null),
       beam_dof_rowmap_(Teuchos::null),
@@ -45,11 +47,13 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       element_gid_to_lambda_gid_(Teuchos::null),
       global_D_(Teuchos::null),
       global_M_(Teuchos::null),
+      global_constraint_offset_(Teuchos::null),
       global_kappa_(Teuchos::null),
-      global_active_lambda_(Teuchos::null)
+      global_active_lambda_(Teuchos::null),
+      contact_pairs_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  switch (params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType())
+  switch (params->GetMortarShapeFunctionType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
     {
@@ -177,6 +181,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       *lambda_dof_rowmap_, 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
   global_M_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *lambda_dof_rowmap_, 100, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  global_constraint_offset_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
   global_kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
   global_active_lambda_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
@@ -229,6 +234,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
   CheckSetup();
   CheckGlobalMaps();
 
+  contact_pairs_ = contact_pairs;
+
   // At this point the global multi vectors are filled up completely. To get the map for global
   // node element ids to the global lambda ids we need to be able to extract more than the local
   // values on this processor. Therefore we need a new map that contains all rows we want to
@@ -237,9 +244,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
   std::vector<int> element_gid_needed;
 
   // Loop over the pairs and get the global node and element indices needed on this rank.
-  for (unsigned int i_pair = 0; i_pair < contact_pairs.size(); i_pair++)
+  for (unsigned int i_pair = 0; i_pair < contact_pairs_.size(); i_pair++)
   {
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs[i_pair];
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs_[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->Element1()->Owner() != discret_->Comm().MyPID())
@@ -381,8 +388,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM()
 {
   CheckSetup();
   CheckGlobalMaps();
@@ -395,10 +401,13 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   if (linalg_error != 0) dserror("Error in PutScalar!");
   linalg_error = global_kappa_->PutScalar(0.);
   if (linalg_error != 0) dserror("Error in PutScalar!");
+  linalg_error = global_constraint_offset_->PutScalar(0.);
+  if (linalg_error != 0) dserror("Error in PutScalar!");
 
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
   LINALG::SerialDenseMatrix local_M;
+  LINALG::SerialDenseVector local_constraint_offset;
   LINALG::SerialDenseVector local_kappa;
 
   // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
@@ -409,11 +418,12 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   bool mortar_is_active = false;
 
   // Loop over elements and assemble the local D and M matrices into the global ones.
-  for (auto& elepairptr : contact_pairs)
+  for (auto& elepairptr : contact_pairs_)
   {
     // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
     // matrices.
-    mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+    mortar_is_active = elepairptr->EvaluateDM(
+        local_D_centerlineDOFs, local_M, local_kappa, local_constraint_offset);
 
     if (mortar_is_active)
     {
@@ -434,7 +444,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
       std::vector<int> dummy_1;
       std::vector<int> dummy_2;
       elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
-      elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
+      // We call this function on the element pointer of the geometry pair, since for face elements,
+      // the element pointer of the beam contact pair is to the volume element and only the element
+      // pointer of the geometry pair is to the face element.
+      elepairptr->GeometryPair()->Element2()->LocationVector(
+          *discret_, solid_row, dummy_1, dummy_2);
 
       // Save check the matrix sizes.
       if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
@@ -444,12 +458,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
         dserror("Size of local M matrix does not match the GID vectors!");
       if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
         dserror("Size of local kappa vector does not match the GID vector!");
-
+      if (local_constraint_offset.RowDim() != (int)lambda_row.size() &&
+          local_constraint_offset.ColDim() != 1)
+        dserror("Size of local constraint offset vector does not match the GID vector!");
       // Assemble into the global matrices.
       global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
       global_M_->FEAssemble(local_M, lambda_row, solid_row);
       global_kappa_->SumIntoGlobalValues(
           local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
+      global_constraint_offset_->SumIntoGlobalValues(
+          local_constraint_offset.RowDim(), &lambda_row[0], local_constraint_offset.Values());
 
       // Set all entries in the local kappa vector to 1 and add them to the active vector.
       for (int i_local = 0; i_local < local_kappa.RowDim(); i_local++) local_kappa(i_local) = 1.;
@@ -465,6 +483,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   // Complete the global scaling vector.
   if (0 != global_kappa_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
   if (0 != global_active_lambda_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
+  if (0 != global_constraint_offset_->GlobalAssemble(Add, false))
+    dserror("Error in GlobalAssemble!");
 }
 
 /**
@@ -484,8 +504,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
   const double rhs_factor = -1.0;
 
   // Get penalty parameter.
-  const double penalty_parameter =
-      beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
 
   // Scale D and M with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
@@ -547,6 +566,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     if (linalg_error != 0) dserror("Error in Multiply!");
     linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update!");
+    linalg_error = global_M_scaled->Multiply(true, *global_constraint_offset_, *solid_temp);
+    if (linalg_error != 0) dserror("Error in Multiply!");
+    linalg_error = solid_force->Update(-1.0, *solid_temp, 1.0);
+    if (linalg_error != 0) dserror("Error in Update!");
     LINALG::Export(*solid_force, *global_temp);
 
     // Get the force acting on the beam.
@@ -557,6 +580,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     linalg_error = Dt_kappa_M->Multiply(false, *solid_disp, *beam_temp);
     if (linalg_error != 0) dserror("Error in Multiply!");
     linalg_error = beam_force->Update(-1.0, *beam_temp, 1.0);
+    if (linalg_error != 0) dserror("Error in Update!");
+    linalg_error = global_D_scaled->Multiply(true, *global_constraint_offset_, *beam_temp);
+    if (linalg_error != 0) dserror("Error in Multiply!");
+    linalg_error = beam_force->Update(1.0, *beam_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update!");
     LINALG::Export(*beam_force, *global_temp);
 
@@ -616,44 +643,28 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
  *
  */
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda(
-    Teuchos::RCP<const Epetra_Vector> disp) const
+    const Teuchos::RCP<const Epetra_Vector>& disp) const
 {
   CheckSetup();
   CheckGlobalMaps();
 
   // Get penalty parameter.
-  const double penalty_parameter =
-      beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
 
-  // Get the displacements of the beam and the solid.
-  Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
-  Teuchos::RCP<Epetra_Vector> solid_disp = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
-  LINALG::Export(*disp, *beam_disp);
-  LINALG::Export(*disp, *solid_disp);
+  // Get the constraint vector.
+  Teuchos::RCP<Epetra_Vector> constraint = GetGlobalConstraintVector(disp);
 
-  // Set up lambda vector;
-  Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-
-  // Create a temporary vector and calculate lambda.
-  Teuchos::RCP<Epetra_Vector> lambda_temp_1 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  Teuchos::RCP<Epetra_Vector> lambda_temp_2 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  int linalg_error = global_D_->Multiply(false, *beam_disp, *lambda_temp_2);
-  if (linalg_error != 0) dserror("Error in Multiply!");
-  linalg_error = lambda_temp_1->Update(1.0, *lambda_temp_2, 0.0);
-  if (linalg_error != 0) dserror("Error in Update!");
-  linalg_error = global_M_->Multiply(false, *solid_disp, *lambda_temp_2);
-  if (linalg_error != 0) dserror("Error in Multiply!");
-  linalg_error = lambda_temp_1->Update(-1.0, *lambda_temp_2, 1.0);
-  if (linalg_error != 0) dserror("Error in Multiply!");
-  linalg_error = lambda_temp_1->Scale(penalty_parameter);
+  // Scale with the penalty parameter.
+  int linalg_error = constraint->Scale(penalty_parameter);
   if (linalg_error != 0) dserror("Error in Scale!");
 
-  // Scale Lambda with kappa^-1.
+  // Scale with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
   Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
-  linalg_error = kappa_inv_mat->Multiply(false, *lambda_temp_1, *lambda);
+  Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  linalg_error = kappa_inv_mat->Multiply(false, *constraint, *lambda);
   if (linalg_error != 0) dserror("Error in Multiply!");
 
   return lambda;
@@ -663,11 +674,34 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
  *
  */
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambdaCol(
-    Teuchos::RCP<const Epetra_Vector> disp) const
+    const Teuchos::RCP<const Epetra_Vector>& disp) const
 {
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
   LINALG::Export(*GetGlobalLambda(disp), *lambda_col);
   return lambda_col;
+}
+
+/**
+ *
+ */
+double BEAMINTERACTION::BeamToSolidMortarManager::GetEnergy(
+    const Teuchos::RCP<const Epetra_Vector>& disp) const
+{
+  // Since this value is also computed for the reference configuration, where the global mortar
+  // matrices are not build yet we return 0 in this case.
+  if (not global_D_->Filled()) return 0.0;
+
+  // Calculate the penalty potential.
+  Teuchos::RCP<Epetra_Vector> constraint = GetGlobalConstraintVector(disp);
+  Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda(disp);
+  double dot_product = 0.0;
+  constraint->Dot(*lambda, &dot_product);
+
+  // Only rank 0 should return the global energy value.
+  if (constraint->Comm().MyPID() == 0)
+    return 0.5 * dot_product;
+  else
+    return 0.0;
 }
 
 /**
@@ -692,4 +726,39 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::InvertKap
   }
 
   return global_kappa_inv;
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalConstraintVector(
+    const Teuchos::RCP<const Epetra_Vector>& disp) const
+{
+  CheckSetup();
+  CheckGlobalMaps();
+
+  // Get the displacements of the beam and the solid.
+  Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
+  Teuchos::RCP<Epetra_Vector> solid_disp = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
+  LINALG::Export(*disp, *beam_disp);
+  LINALG::Export(*disp, *solid_disp);
+
+  // Set up the constraint vector;
+  Teuchos::RCP<Epetra_Vector> constraint = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+
+  // Create a temporary vector and calculate lambda.
+  Teuchos::RCP<Epetra_Vector> constraint_temp =
+      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  int linalg_error = global_D_->Multiply(false, *beam_disp, *constraint_temp);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = constraint->Update(1.0, *constraint_temp, 0.0);
+  if (linalg_error != 0) dserror("Error in Update!");
+  linalg_error = global_M_->Multiply(false, *solid_disp, *constraint_temp);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = constraint->Update(-1.0, *constraint_temp, 1.0);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = constraint->Update(1.0, *global_constraint_offset_, 1.0);
+  if (linalg_error != 0) dserror("Error in Update!");
+
+  return constraint;
 }

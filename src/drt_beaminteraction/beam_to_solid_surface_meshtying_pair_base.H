@@ -34,9 +34,13 @@ namespace GEOMETRYPAIR
 
   class FaceElement;
 
-  template <typename surface>
+  template <typename surface, typename scalar_type>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVtuOutputWriterVisualization;
+}  // namespace BEAMINTERACTION
 
 
 namespace BEAMINTERACTION
@@ -64,6 +68,20 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
+
+    /**
+     * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam
+     * element. (derived)
+     *
+     * This function has to be overwritten here, since the size of FAD variables for surface
+     * elements is not known at compile time and has to be set depending on the surface patch that
+     * the surface element is part of.
+     *
+     * @param beam_centerline_dofvec
+     * @param solid_nodal_dofvec
+     */
+    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+        const std::vector<double>& solid_nodal_dofvec) override;
 
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
@@ -97,7 +115,18 @@ namespace BEAMINTERACTION
      */
     void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
 
+    /**
+     * \brief Get energy for Gauss point to segment coupling.
+     */
+    double GetEnergy() const override;
+
    protected:
+    /**
+     * \brief Get the penalty potential for Gauss point to segment coupling.
+     * @return Penalty potential.
+     */
+    scalar_type GetPenaltyPotential() const;
+
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
@@ -105,13 +134,23 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
         const;
 
+   private:
+    /**
+     * \brief Add points on the beam element to an output writer.
+     * @param visualization_writer (in/out) Output writer the points are appended to.
+     * @param points (in) Vector with the projection points.
+     */
+    void AddVisualizationIntegrationPoints(
+        const Teuchos::RCP<BeamToSolidVtuOutputWriterVisualization>& visualization_writer,
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points) const;
+
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
-    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface>> face_element_;
+    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

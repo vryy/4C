@@ -592,7 +592,8 @@ void MAT::PlasticElastHyper::EvaluateElast(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<6, 1> ddPII(true);
 
   EvaluateKinQuantElast(defgrd, deltaLp, gp);
-  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
+  ElastHyperEvaluateInvariantDerivatives(
+      prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -639,7 +640,7 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
   glstrain.Update(0.5, elRCGv, 0.0);
   glstrain.Update(-0.5, idv, 1.0);
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddStrainEnergy(psi, prinv, modinv, glstrain, eleGID);
+    potsum_[p]->AddStrainEnergy(psi, prinv, modinv, glstrain, gp, eleGID);
 
   double dPj1 = 0.;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -681,7 +682,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(const LINALG::Matrix<3, 3>* d
   // loop map of associated potential summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, eleGID);
+    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
     potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
   }
@@ -732,7 +733,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const LINALG::Matrix<3, 3>* defgrd,
   // loop map of associated potential summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, eleGID);
+    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
     potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
   }
@@ -765,7 +766,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const LINALG::Matrix<3, 3>* defgrd,
  |  evaluate Gough Joule Effect                             seitz 10/15 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticElastHyper::EvaluateGoughJoule(
-    const double j, const int eleGID, double& he_fac, double& he_fac_deriv)
+    const double j, const int gp, const int eleGID, double& he_fac, double& he_fac_deriv)
 {
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
@@ -779,7 +780,7 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(
   // loop map of associated potential summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, eleGID);
+    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
     potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
   }
@@ -811,8 +812,9 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<8, 1> delta(true);
 
   if (EvaluateKinQuantPlast(defgrd, deltaDp, gp, params)) return;
-  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
-  if (temp && cauchy) AddThermalExpansionDerivs(prinv_, dPI, ddPII, eleGID, *temp);
+  ElastHyperEvaluateInvariantDerivatives(
+      prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
+  if (temp && cauchy) AddThermalExpansionDerivs(prinv_, dPI, ddPII, gp, eleGID, *temp);
   CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
   // blank resulting quantities
@@ -1332,7 +1334,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
 
   if (EvaluateKinQuantPlast(defgrd, deltaLp, gp, params)) return;
 
-  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
+  ElastHyperEvaluateInvariantDerivatives(
+      prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
   CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
   // blank resulting quantities
@@ -1853,16 +1856,16 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const LINALG::Matrix<3, 1>& dPI
   }
 }
 
-void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv,
-    const int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
+void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int gp,
+    int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
     LINALG::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
     if (summandProperties_.isoprinc)
     {
-      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
-      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
+      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
+      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, gp, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       dserror("not implemented for this form of strain energy function");
@@ -1947,7 +1950,8 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>&
 
 
 void MAT::PlasticElastHyper::AddThermalExpansionDerivs(const LINALG::Matrix<3, 1>& prinv,
-    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID, const double& temp)
+    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, const int gp, int eleGID,
+    const double& temp)
 {
   const double j = sqrt(prinv(2));
   LINALG::Matrix<3, 1> modinv(true);
@@ -1957,7 +1961,7 @@ void MAT::PlasticElastHyper::AddThermalExpansionDerivs(const LINALG::Matrix<3, 1
   double dddPmodIII = 0.;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, eleGID);
+    potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
     potsum_[p]->AddCoupDerivVol(j, NULL, &(ddPmodII(2)), &dddPmodIII, NULL);
   }

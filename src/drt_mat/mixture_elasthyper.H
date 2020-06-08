@@ -225,7 +225,7 @@ namespace MAT
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int eleGID) final;
+        const int gp, const int eleGID) final;
 
     /*!
      * \brief Get the names and dimension of the quantities to visualize

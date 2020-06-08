@@ -2,7 +2,6 @@
 /*! \file
 \brief
 class for handling of micro-macro transitions
-Former file of Lena Yoshihara
 
 \level 3
 

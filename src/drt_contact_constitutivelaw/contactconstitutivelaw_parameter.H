@@ -71,24 +71,11 @@ namespace CONTACT
       /// destructor
       virtual ~Parameter() = default;
 
-      /// (unique) contact constitutive law ID
-      int Id() const { return id_; }
-
-      /// Get contact constitutive law type
-      virtual INPAR::CONTACT::ConstitutiveLawType Type() const { return type_; }
-
-      /// Get contact constitutive law name
-      virtual std::string Name() const { return name_; }
-
       /// create CoConstLaw instance of matching type with my parameters
       virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() = 0;
 
       // Access offset of the function
       double GetOffset() { return offset_; }
-
-     private:
-      /// contact constitutive law ID, as defined in input file
-      int id_;
 
       /**
        * \brief Offset from the edge (gap==0) from where the constitutive law will be used
@@ -98,24 +85,7 @@ namespace CONTACT
        * constitutive laws
        */
       const double offset_;
-
-      /// CoConstLaw type
-      INPAR::CONTACT::ConstitutiveLawType type_;
-      /// contact constitutive law name
-      std::string name_;
     };  // class Parameter
-
-    /// For every DRT::ParObject a corresponding DRT::ParObjectType has to be implemented
-    class ConstitutiveLawType : public DRT::ParObjectType
-    {
-     public:
-      virtual std::string Name() const { return "ParConstitutiveLawType"; }
-
-      static ConstitutiveLawType& Instance() { return instance_; };
-
-     private:
-      static ConstitutiveLawType instance_;
-    };
 
     /**
      * \brief Container to pass Contact Constitutive Law parameters around
@@ -133,45 +103,8 @@ namespace CONTACT
           const std::string name                           ///< name of contact constitutivelaw
       );
 
-
-      /// Empty Constructor
-      Container();
-
-      /**
-       * \brief Copy Constructor
-       *
-       * Makes a deep copy of a condition
-       */
-      Container(const Container& old);
-
       /// Destructor
       virtual ~Container() = default;
-
-      /**
-       * \brief Return unique ParObject id
-       *
-       * every class implementing ParObject needs a unique id defined at the
-       * top of this file.
-       *
-       */
-      int UniqueParObjectId() const override
-      {
-        return ConstitutiveLawType::Instance().UniqueParObjectId();
-      }
-
-      /**
-       * \brief Pack this class so it can be communicated
-       *
-       * \ref Pack and \ref Unpack are used to communicate this class
-       *
-       */
-      void Pack(DRT::PackBuffer& data) const override;
-
-      /** \brief Unpack data from a char vector into this class
-       *
-       * \ref Pack and \ref Unpack are used to communicate this class
-       */
-      void Unpack(const std::vector<char>& data) override;
 
       //@}
 

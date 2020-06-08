@@ -164,6 +164,8 @@ namespace MAT
      * \param Out
      * cmat - material stiffness matrix
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -171,7 +173,7 @@ namespace MAT
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID) = 0;
+        const int gp, const int eleGID) = 0;
 
     /*! \brief Evaluate mass change
      *
@@ -185,6 +187,8 @@ namespace MAT
      * linmass_disp - linearization wrt to displacements
      * \param Out
      * linmass_vel - linearization wrt to velocities
+     * gp - Gauss point
+     * \param In
      * \param In
      * eleGID - the calling element's GID
      *
@@ -193,7 +197,7 @@ namespace MAT
      */
     void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel,
+        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
         const int eleGID) = 0;
 
     /*! \brief Evaluate elastic material stresses and cmat
@@ -208,6 +212,7 @@ namespace MAT
      * cmat - material stiffness matrix
      * \param In
      * params - a parameter list as handed in from the element
+     * \param In gp - Gauss point
      * \param In
      * eleGID - the calling element's GID
      *
@@ -216,7 +221,7 @@ namespace MAT
      */
     void EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params,
-        const int eleGID);
+        int gp, int eleGID);
     //@}
 
 
@@ -390,6 +395,8 @@ namespace MAT
      * \param Out
      * cmat - material stiffness matrix
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -397,12 +404,12 @@ namespace MAT
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int eleGID);
+        const int gp, const int eleGID);
 
     /// calculate stresses and elastic material tangent (both in Voigt notation)
     void GetSAndCmatdach(const double theta, const LINALG::Matrix<3, 3>* defgrd,
         LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmatdach,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
     void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
@@ -441,6 +448,8 @@ namespace MAT
      * \param Out
      * linmass_vel - linearization wrt to velocities
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -448,7 +457,8 @@ namespace MAT
      */
     void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int eleGID);
+        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
+        const int eleGID);
 
     /*! \brief evaluate the volumetric growth factor
      *
@@ -468,6 +478,8 @@ namespace MAT
      * \param In
      * params - a parameter list as handed in from the element
      * \param In
+     * gp - Gauss point
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -475,7 +487,7 @@ namespace MAT
      */
     void EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
         const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     //@}
 

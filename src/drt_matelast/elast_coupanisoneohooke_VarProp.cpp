@@ -142,7 +142,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, DRT::INPUT::LineD
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int eleGID)
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   double time_ = params.get<double>("total time", 0.0);
   Teuchos::RCP<std::vector<double>> pos_ =

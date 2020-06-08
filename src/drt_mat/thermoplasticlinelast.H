@@ -191,7 +191,8 @@ namespace MAT
         Teuchos::ParameterList& params,                      //!< parameter list for communication
         LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        const int eleGID);
+        int gp,                                              ///< Gauss point
+        int eleGID);
 
     // computes stress
     void Stress(const double p,                             //!< volumetric stress tensor

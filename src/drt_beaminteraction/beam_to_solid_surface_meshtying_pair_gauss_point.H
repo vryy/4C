@@ -15,6 +15,8 @@
 
 #include "beam_to_solid_surface_meshtying_pair_base.H"
 
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
+
 
 namespace BEAMINTERACTION
 {
@@ -26,11 +28,11 @@ namespace BEAMINTERACTION
   template <typename beam, typename surface>
   class BeamToSolidSurfaceMeshtyingPairGaussPoint
       : public BeamToSolidSurfaceMeshtyingPairBase<
-            Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>, beam, surface>
+            GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>, beam, surface>
   {
    private:
     //! Type to be used for scalar AD variables.
-    using scalar_type = Sacado::ELRFad::SLFad<double, beam::n_dof_ + surface::n_dof_>;
+    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>;
 
     //! Shortcut to the base class.
     using base_class = BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>;

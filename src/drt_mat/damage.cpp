@@ -367,16 +367,17 @@ void MAT::Damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     Teuchos::ParameterList& params,            // parameter list for communication & HISTORY
     LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
-    const int eleGID)
+    int gp,                                              // Gauss point
+    int eleGID)
 {
   // in case kinematic hardening is ignored, use implementation according to de
   // Souza Neto, Computational Methods for Plasticity
   if ((params_->kinhard_ == 0.0) and (params_->kinhard_rec_ == 0.0) and (params_->hardexpo_ == 0.0))
-    EvaluateSimplifiedLemaitre(defgrd, linstrain, params, stress, cmat, eleGID);
+    EvaluateSimplifiedLemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
   // in case full Lemaitre material model is considered, i.e. including
   // kinematic hardening, use implementation according to Doghri
   else
-    EvaluateFullLemaitre(defgrd, linstrain, params, stress, cmat, eleGID);
+    EvaluateFullLemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
 }  // Evaluate
 
 
@@ -388,9 +389,8 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const LINALG::Matrix<3, 3>* defgrd,
     Teuchos::ParameterList& params,            // parameter list for communication & HISTORY
     LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
-    const int eleGID)
+    const int gp, const int eleGID)
 {
-  const int gp = params.get<int>("gp", -1);
   if (gp == -1) dserror("no Gauss point number provided in material");
   if (eleGID == -1) dserror("no element provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(true);
@@ -1161,7 +1161,7 @@ void MAT::Damage::EvaluateFullLemaitre(const LINALG::Matrix<3, 3>* defgrd,
     Teuchos::ParameterList& params,            // parameter list for communication & HISTORY
     LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
-    int EleGID)
+    const int gp, const int EleGID)
 {
   // --------- full Lemaitre material model requires solution of five equations
 
@@ -1176,8 +1176,6 @@ void MAT::Damage::EvaluateFullLemaitre(const LINALG::Matrix<3, 3>* defgrd,
   //
   // 4) determine scalar-valued damage
   // D_{n+1} = D_n + 1/(1 - D_{n+1}) . y(s_tilde) . Dgamma / (1 - D)
-
-  const int gp = params.get<int>("gp", -1);
   if (gp == -1) dserror("no Gauss point number provided in material");
 
   if (EleGID == -1) dserror("no element provided in material");

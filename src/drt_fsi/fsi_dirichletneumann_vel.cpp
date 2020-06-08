@@ -179,7 +179,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP
 void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
-  constraint_manager_->PrintViolation(Time(), Step());
+  constraint_manager_->Output(Time(), Step());
   vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
   StructureField()->Discretization()->Writer()->ClearMapCache();
   MBFluidField()->Discretization()->Writer()->ClearMapCache();

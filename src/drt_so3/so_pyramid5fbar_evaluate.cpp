@@ -574,7 +574,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
-        SolidMaterial()->StrainEnergy(glstrain, psi, Id());
+        SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
 
         // sum up GP contribution to internal energy
         intenergy += fac * psi;
@@ -1150,8 +1150,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
       params.set("gprefecoord", point);
     }
 
-    params.set<int>("gp", gp);
-    SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, Id());
+    SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
     // end of call material law
 
     // print plastic strains
@@ -1380,7 +1379,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
         //}
 
         SolidMaterial()->EvaluateNonLinMass(
-            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, Id());
+            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, Id());
 
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time

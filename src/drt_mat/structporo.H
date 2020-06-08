@@ -280,18 +280,17 @@ namespace MAT
         Teuchos::ParameterList& params,                        ///< (i) parameter list
         LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
         LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
+        int gp,                        ///< (i) Gauss point
         int EleID)                     ///< (i) element GID
     {
-      mat_->Evaluate(defgrd, glstrain, params, stress, cmat, EleID);
+      mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     };
 
     /// Evaluate strain energy function (for hyperelastic materials only)
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
-        double& psi,                                                 ///< (o) strain energy
-        int EleID                                                    ///< (i) element GID
-    )
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int EleID)
     {
-      mat_->StrainEnergy(glstrain, psi, EleID);
+      mat_->StrainEnergy(glstrain, psi, gp, EleID);
     };
 
     /// Evaluate material law for GEMM
@@ -300,10 +299,10 @@ namespace MAT
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int eleGID)
+        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
     {
-      mat_->EvaluateGEMM(
-          stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new, rcg_old, eleGID);
+      mat_->EvaluateGEMM(stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new,
+          rcg_old, gp, eleGID);
     };
 
     /**
@@ -346,12 +345,12 @@ namespace MAT
     void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
-        const double* temp = NULL, double* DsntDT = NULL,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int gp,
+        const int eleGID, const double* temp = NULL, double* DsntDT = NULL,
         LINALG::Matrix<9, 1>* D2sntDFDT = NULL) override
     {
       mat_->EvaluateCauchy(defgrd, n, t, snt, DsntDn, DsntDt, DsntDF, D2sntDF2, D2sntDFDn,
-          D2sntDFDt, eleGID, temp, DsntDT, D2sntDFDT);
+          D2sntDFDt, gp, eleGID, temp, DsntDT, D2sntDFDT);
     }
 
     //@}

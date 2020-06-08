@@ -42,6 +42,12 @@ namespace MAT
 
   namespace PAR
   {
+    enum class InelasticSource
+    {
+      inelastic_none,
+      inelastic_concentration
+    };
+
     class MultiplicativeSplitDefgrad_ElastHyper : public Parameter
     {
      public:
@@ -90,6 +96,54 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   class Material;
+
+  /*----------------------------------------------------------------------*/
+  /*! \class InelasticFactorsHandler
+
+     All factors (class InelasticDefgradFactors) contributing to inelastic deformation are stored
+     within this class. They are initially classified according to the source of inelastic
+     deformation (e.g. concentration). All contributions from one source can be returned.
+  */
+  class InelasticFactorsHandler
+  {
+   public:
+    /// constructor
+    InelasticFactorsHandler();
+
+    /// destructor
+    virtual ~InelasticFactorsHandler() = default;
+
+    /// Evaluate inelasitc deformation gradient from all factors and assign to different sources
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM);
+
+    /// Returns all inelastic factors as a vector
+    const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>&
+    FacDefGradIn() const
+    {
+      return facdefgradin_;
+    };
+
+    /// Return vector of all inelastic deformation gradients
+    const std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>>& iFinj() const
+    {
+      return iFinj_;
+    };
+
+    /// total number of inelastic contributions
+    int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); };
+
+    /// Assigns the different inelastic factors to different sources
+    void Setup(MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params);
+
+   private:
+    /// vector that holds pairs of inelastic contribution and respective source
+    std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>
+        facdefgradin_;
+
+    /// vector that holds pairs of inelastic deformation gradients and respective source
+    std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>> iFinj_;
+  };
 
   class MultiplicativeSplitDefgrad_ElastHyper : public So3Material
   {
@@ -163,7 +217,8 @@ namespace MAT
         Teuchos::ParameterList& params,                 ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,                   ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                     ///< Constitutive matrix
-        const int eleGID) final;                        ///< Element ID
+        int gp,                                         ///< Gauss point
+        int eleGID) final;                              ///< Element ID
 
     /// setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) final;
@@ -172,13 +227,11 @@ namespace MAT
     void Update() final;
 
     /// Evaluate off-diagonal stiffness matrix
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const std::vector<LINALG::Matrix<3, 3>>&
-            iFinjM,  ///< Vector that holds all inverse inelastic deformation gradient factors as
-                     ///< 3x3 matrices
-        const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
+    void EvaluateODStiffMat(PAR::InelasticSource source,  ///< Source of inelastic deformation
+        const LINALG::Matrix<3, 3>* const defgrad,        ///< Deformation gradient
+        const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t.
                                               ///< the inverse inelastic deformation gradient
-        LINALG::Matrix<6, 1>& dstressdx);     ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
+        LINALG::Matrix<6, 1>& dstressdx);     ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t.
                                               ///< primary variable of different field
 
     /*! \brief Evaluate additional terms of the elasticity tensor
@@ -190,13 +243,10 @@ namespace MAT
      */
     void EvaluateAdditionalCmat(
         const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const std::vector<LINALG::Matrix<3, 3>>&
-            iFinjM,  ///< Vector that holds all inverse inelastic deformation gradient factors as
-                     ///< 3x3 matrices
-        const LINALG::Matrix<6, 1>& iCV,       ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>& dSdiFin,   ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
-                                               ///< the inverse inelastic deformation gradient
-        LINALG::Matrix<6, 6>& cmatadd) const;  ///< Additional elasticity tensor
+        const LINALG::Matrix<6, 1>& iCV,            ///< Inverse right Cauchy-Green tensor
+        const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
+                                              ///< the inverse inelastic deformation gradient
+        LINALG::Matrix<6, 6>& cmatadd);       ///< Additional elasticity tensor
 
     /// Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
     /// gradient
@@ -214,14 +264,6 @@ namespace MAT
         LINALG::Matrix<6, 9>& dSdiFin)
         const;  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic right
                 ///< Cauchy-Green tensor
-
-    /// evaluate inelastic deformation gradient
-    void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        std::vector<LINALG::Matrix<3, 3>>&
-            iFinjM,  ///< Vector that holds all inverse inelastic deformation gradient factors as
-                     ///< 3x3 matrices
-        LINALG::Matrix<3, 3>& iFinM) const;  ///< Inverse inelastic deformation gradient
 
     /*! \brief Evaluates stress and cmat
      *
@@ -293,27 +335,28 @@ namespace MAT
     /// calculates the derivatives of the hyperelastic laws with respect to the invariants
     void EvaluateInvariantDerivatives(
         const LINALG::Matrix<3, 1>&
-            prinv,         ///< Principal invariants of the elastic right Cauchy-Green tensor
-        const int eleGID,  ///< Element ID
+            prinv,   ///< Principal invariants of the elastic right Cauchy-Green tensor
+        int gp,      ///< Gauss point
+        int eleGID,  ///< Element ID
         LINALG::Matrix<3, 1>& dPI,           ///< First derivative with respect to invariants
         LINALG::Matrix<6, 1>& ddPII) const;  ///< Second derivative with respect to invariants
 
     /// pre-evaluation, intended to be used for stuff that have to be done only once
-    void PreEvaluate(
-        Teuchos::ParameterList& params) const;  ///< parameter list as handed in from the element
+    void PreEvaluate(Teuchos::ParameterList& params,
+        int gp) const;  ///< parameter list as handed in from the element
 
    private:
+    /// Holder for anisotropy
+    Teuchos::RCP<Anisotropy> anisotropy_;
+
+    /// Holds and classifies all inelastic factors
+    Teuchos::RCP<InelasticFactorsHandler> inelastic_;
+
     /// My material parameters
     MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params_;
 
     /// map to elastic materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsumel_;
-
-    /// map to inelastic deformation gradient factors
-    std::vector<Teuchos::RCP<MAT::InelasticDefgradFactors>> facdefgradin_;
-
-    /// Holder for anisotropy
-    Anisotropy anisotropy_;
   };
 
 }  // namespace MAT

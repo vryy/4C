@@ -32,6 +32,7 @@ namespace MAT
    * @param params      (in/out)  : Container for additional information
    * @param stress      (out)     : 2nd Piola Kirchhoff stress
    * @param cmat        (out)     : Elasticity tensor
+   * @param gp          (in)      : Gauss point
    * @param eleGID      (in)      : Element id
    * @param potsum      (in)      : Summands of the Free-energy function
    * @param properties    (in)      : Data class with flags of the type of the summands
@@ -39,7 +40,7 @@ namespace MAT
    */
   void ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<6, 1>& glstrain,
       Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
-      int eleGID, const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+      int gp, int eleGID, const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
       const SummandProperties& properties, bool checkpolyconvexity = false);
 
   /*!
@@ -61,12 +62,13 @@ namespace MAT
    * @param ddPII Second derivative of potsum
    * @param potsum List of summands
    * @param properties Properties of the summands
+   * @param gp Gauss point
    * @param eleGID Global element id
    */
   void ElastHyperEvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
       LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-      const SummandProperties& properties, int eleGID);
+      const SummandProperties& properties, int gp, int eleGID);
 
   /*!
    * \brief Converts the derivatives with respect to the modified principal invariants in
@@ -187,12 +189,13 @@ namespace MAT
    * @param C_strain (in) : Right Cauchy-Green strain tensor in strain-like Voigt notation
    * @param potsum (in) : Summands of the Free-energy function
    * @param properties (in) : Properties of the summands
+   * @param gp (in) : Gauss point
    * @param eleGID (in) : Global element id
    */
   void ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& S_stress,
       const LINALG::Matrix<6, 1>& C_strain,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
-      const SummandProperties& properties, int eleGID);
+      const SummandProperties& properties, int gp, int eleGID);
 
   /*!
    * \brief Evaluates the anisotropic stress response from the potsum elements formulated in the
@@ -202,11 +205,12 @@ namespace MAT
    * @param cmat Elasticity tensor in stress-like Voigt notation (rows and columns)
    * @param C_strain Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param params Container for additional information
+   * @param gp Gauss point
    * @param eleGID Global element id
    * @param potsum Summands of the Free-energy function
    */
   void ElastHyperAddAnisotropicPrinc(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-      const LINALG::Matrix<6, 1>& C_strain, Teuchos::ParameterList& params, int eleGID,
+      const LINALG::Matrix<6, 1>& C_strain, Teuchos::ParameterList& params, int gp, int eleGID,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
   /*!
@@ -223,7 +227,7 @@ namespace MAT
    */
   void ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
       const LINALG::Matrix<6, 1>& C_strain, const LINALG::Matrix<6, 1>& iC_strain,
-      const LINALG::Matrix<3, 1>& prinv, int eleGID,
+      const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
   /*!
@@ -342,12 +346,13 @@ namespace MAT
    * @param ddPII (in) : Second derivative of the Free-energy function with respect to the
    * principal invariants
    * @param params (in/out) : Container for additional information
-   * @param eleGID : Global element id
+   * @param gp (in) : Gauss point
+   * @param eleGID (in) : Global element id
    * @param properties (in) : Class holding the properties of the formulation of the summands
    */
   void ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
       const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-      const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, int eleGID,
+      const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, int gp, int eleGID,
       const SummandProperties& properties);
 
   /**

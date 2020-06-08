@@ -109,7 +109,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinitio
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
   double c = params_->c_;
 

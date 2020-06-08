@@ -15,10 +15,11 @@
 #include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "elastin_membrane_prestress_strategy.H"
+#include "../drt_mat/anisotropy_extension.H"
 
 MIXTURE::ElastinAnisotropyExtension::ElastinAnisotropyExtension(
     const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy)
-    : FiberAnisotropyExtension(structuralTensorStrategy)
+    : FiberAnisotropyExtension<1>(structuralTensorStrategy)
 {
   RegisterNeededTensors(
       FiberAnisotropyExtension::FIBER_VECTORS | FiberAnisotropyExtension::STRUCTURAL_TENSOR);
@@ -30,26 +31,26 @@ void MIXTURE::ElastinAnisotropyExtension::OnGlobalDataInitialized()
   {
     for (int gp = 0; gp < GetAnisotropy()->GetNumberOfGaussPoints(); ++gp)
     {
-      std::vector<LINALG::Matrix<3, 1>> fibers(1);
+      std::array<LINALG::Matrix<3, 1>, 1> fibers;
 
       fibers[0].Update(GetAnisotropy()->GetGPCylinderCoordinateSystem(gp).GetRad());
-      SetFibers(gp, fibers);
+      MAT::FiberAnisotropyExtension<1>::SetFibers(gp, fibers);
     }
 
     orthogonalStructuralTensor_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
 
-    SetFiberLocation(FiberLocation::GPFibers);
+    SetFiberLocation(MAT::FiberLocation::GPFibers);
   }
   else if (GetAnisotropy()->HasElementCylinderCoordinateSystem())
   {
-    std::vector<LINALG::Matrix<3, 1>> fibers(1);
+    std::array<LINALG::Matrix<3, 1>, 1> fibers;
 
     fibers[0].Update(GetAnisotropy()->GetElementCylinderCoordinateSystem().GetRad());
-    SetFibers(GPDEFAULT, fibers);
+    FiberAnisotropyExtension<1>::SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 
     orthogonalStructuralTensor_.resize(1);
 
-    SetFiberLocation(FiberLocation::ElementFibers);
+    SetFiberLocation(MAT::FiberLocation::ElementFibers);
   }
   else
   {
@@ -154,6 +155,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::PackConstituent(DRT::PackBuf
 
   DRT::ParObject::AddtoPack(data, mue_frac_);
 
+  anisotropyExtension_.PackAnisotropy(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -170,6 +173,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::UnpackConstituent(
   DRT::ParObject::ExtractfromPack(position, data, current_reference_density_);
 
   DRT::ParObject::ExtractfromPack(position, data, mue_frac_);
+
+  anisotropyExtension_.UnpackAnisotropy(data, position);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->UnpackSummand(data, position);
@@ -289,7 +294,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastin::EvaluateElasticPart(
 
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(
-      F, iFin, S_stress, cmat, Summands(), SummandProperties(), eleGID);
+      F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 
   S_stress.Scale(CurrentRefDensity(gp));
   cmat.Scale(CurrentRefDensity(gp));

@@ -238,6 +238,8 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, setup_);
   AddtoPack(data, nr_rf_tot_);
 
+  anisotropy_.PackAnisotropy(data);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -254,8 +256,6 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
       potsumelpenalty_->PackSummand(data);
     }
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -312,6 +312,8 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, mue_frac_);
   ExtractfromPack(position, data, setup_);
   ExtractfromPack(position, data, nr_rf_tot_);
+
+  anisotropy_.UnpackAnisotropy(data, position);
 
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
@@ -388,19 +390,12 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
             "This can easily be expanded to other materials!");
       potsumelpenalty_ = sum;
       potsumelpenalty_->UnpackSummand(data, position);
+
+      // in the postprocessing mode, we do not unpack everything we have packed
+      // -> position check cannot be done in this case
+      if (position != data.size())
+        dserror("Mismatch in size of data %d <-> %d", data.size(), position);
     }
-  }
-
-  anisotropy_.UnpackAnisotropy(data, position);
-
-
-
-  if (params_->membrane_ != 1)
-  {
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
 
@@ -799,13 +794,10 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR3D(LINALG::Matrix<3, 3> const* const 
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // save current simulation time (used for the evaluation of elastin degradation)
   t_tot_ = params.get<double>("total time");
-
-  // current gp
-  int gp = params.get<int>("gp");
 
   // time step size
   double dt = params.get<double>("delta time");
@@ -1228,7 +1220,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateInvariantDerivatives(LINALG::Matrix<
   {
     dPgrowthI.Clear();
     ddPgrowthII.Clear();
-    potsumeliso_[p]->AddDerivativesPrincipal(dPgrowthI, ddPgrowthII, prinv, eleGID);
+    potsumeliso_[p]->AddDerivativesPrincipal(dPgrowthI, ddPgrowthII, prinv, gp, eleGID);
     dPIw.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPIIw.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
@@ -1243,7 +1235,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateInvariantDerivatives(LINALG::Matrix<
   {
     dPgrowthI.Clear();
     ddPgrowthII.Clear();
-    potsumeliso_[p]->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, eleGID);
+    potsumeliso_[p]->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
     dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
@@ -1251,7 +1243,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateInvariantDerivatives(LINALG::Matrix<
   // volpenalty
   dPgrowthI.Clear();
   ddPgrowthII.Clear();
-  potsumelpenalty_->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, 0);
+  potsumelpenalty_->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
   dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
   ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
 
@@ -1640,7 +1632,7 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR2D(
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const& defgrd_glob,
     double& rcg33, Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& pk2M_glob,
-    LINALG::Matrix<6, 6>& cmat_glob, const int eleGID)
+    LINALG::Matrix<6, 6>& cmat_glob, const int gp, const int eleGID)
 {
   // blank resulting quantities
   pk2M_glob.Clear();
@@ -1648,9 +1640,6 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const&
 
   // save current simulation time (used for the evaluation of elastin degradation)
   t_tot_ = params.get<double>("total time");
-
-  // current gauss point
-  int gp = params.get<int>("gp");
 
   // time step size
   double dt = params.get<double>("delta time");

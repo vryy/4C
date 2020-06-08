@@ -41,6 +41,13 @@ namespace BEAMINTERACTION
       : public BeamToSolidVolumeMeshtyingPairBase<beam,
             fluid>  // todo can i just derice from beamtosolidmeshtyingpairbase?
   {
+   protected:
+    //! Shortcut to base class.
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, fluid>;
+
+    //! Scalar type for FAD variables.
+    using scalar_type = typename base_class::scalar_type;
+
    public:
     /**
      * \brief empty Destructor.
@@ -58,23 +65,6 @@ namespace BEAMINTERACTION
      * all contact pairs.
      */
     void PreEvaluate() override;
-
-    /**
-     * \brief Evaluate this contact element pair.
-     * @param forcevec1 (out) Force vector on element 1.
-     * @param forcevec2 (out) Force vector on element 2.
-     * @param stiffmat11 (out) Stiffness contributions on element 1 - element 1.
-     * @param stiffmat12 (out) Stiffness contributions on element 1 - element 2.
-     * @param stiffmat21 (out) Stiffness contributions on element 2 - element 1.
-     * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
-     * @return True if pair is in contact.
-     */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
-    {
-      return false;
-    };
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions, tangents and velocities)
@@ -119,10 +109,6 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
-   private:  //! Type to be used for scalar AD variables. This can not be inherited from the base
-             //! class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + fluid::n_dof_> TYPE_BTS_VMT_AD;
-
    protected:
     /** \brief You will have to use the FBI::PairFactory
      *
@@ -130,22 +116,15 @@ namespace BEAMINTERACTION
     BeamToFluidMeshtyingPairBase();
 
     void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
-
-    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
-        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
-    {
-      dserror("Not implemented yet!\n");
-    };
+        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1vel_;
-    LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2vel_;
+    LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1vel_;
+    LINALG::Matrix<fluid::n_dof_, 1, scalar_type> ele2vel_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1poscur_;
-    LINALG::Matrix<fluid::n_dof_, 1, TYPEBTS> ele2poscur_;
+    LINALG::Matrix<beam::n_dof_, 1, double> ele1poscur_;
+    LINALG::Matrix<fluid::n_dof_, 1, double> ele2poscur_;
   };
 }  // namespace BEAMINTERACTION
 

@@ -227,7 +227,7 @@ void MAT::StructPoroReactionECM::ChemPotential(
 
   double psi = 0.0;
   // evaluate strain energy
-  mat_->StrainEnergy(glstrain, psi, EleID);
+  mat_->StrainEnergy(glstrain, psi, gp, EleID);
 
   // derivative of
   double dpsidphiref = 0.0;

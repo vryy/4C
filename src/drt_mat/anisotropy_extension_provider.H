@@ -15,11 +15,16 @@
 
 namespace MAT
 {
+  // forward declaration
+  template <unsigned int numfib>
   class FiberAnisotropyExtension;
 
   /*!
    * \brief An pure abstract interface for an FiberAnisotropyExtension provider
+   *
+   * \tparam numfib Number of fibers
    */
+  template <unsigned int numfib>
   class FiberAnisotropyExtensionProvider
   {
    public:
@@ -33,7 +38,7 @@ namespace MAT
      *
      * \return FiberAnisotropyExtension& Reference to a fiber anisotropy extension
      */
-    virtual FiberAnisotropyExtension& GetFiberAnisotropyExtension() = 0;
+    virtual FiberAnisotropyExtension<numfib>& GetFiberAnisotropyExtension() = 0;
   };
 }  // namespace MAT
 

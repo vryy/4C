@@ -23,7 +23,6 @@ interaction.
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_inpar/inpar_fbi.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -32,6 +31,7 @@ interaction.
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret_faces.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <iostream>
@@ -46,7 +46,8 @@ ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
       geometrycoupler_(geometrycoupler),
       column_structure_displacement_(Teuchos::null),
       column_structure_velocity_(Teuchos::null),
-      column_fluid_velocity_(Teuchos::null)
+      column_fluid_velocity_(Teuchos::null),
+      velocity_pressure_splitter_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 }
 
@@ -63,6 +64,9 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap());
   geometrycoupler_->Setup(discretizations_);
 
+  LINALG::CreateMapExtractorFromDiscretization(
+      *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
+
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {
     geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
@@ -70,17 +74,6 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
     // After ghosting we need to explicitly set up the MultiMapExtractor again
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
         ->SetupMultiMapExtractor();
-  }
-  std::ofstream log;
-  if ((discretizations_[1]->Comm().MyPID() == 0) &&
-      (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
-  {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    s.append(".penalty");
-    log.open(s.c_str(), std::ofstream::out);
-    log << "Time \t Step \t ViolationNorm \t FluidViolationNorm \t StructureViolationNorm"
-        << std::endl;
-    log.close();
   }
 }
 
@@ -112,7 +105,8 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   CreatePairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
-  bridge_->Evaluate(*discretizations_[0], *discretizations_[1]);
+  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
 }
 
 /*----------------------------------------------------------------------*/
@@ -222,7 +216,7 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
       *beam_dofvec);  // todo get "interface" displacements only for beam
                       // elements
   ;
-  // extract veclocity of the beam element
+  // extract velocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
@@ -246,59 +240,9 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
       *(fluid_->Discretization()), elements[1], column_fluid_velocity_, vel_tmp);
 
   // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just
-  // use a extractor?
+  // use an extractor?
   for (unsigned int i = 0; i < vel_tmp.size(); i++)
   {
     if ((i + 1) % 4) fluid_dofvec->push_back(vel_tmp[i]);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-
-void ADAPTER::FBIConstraintenforcer::PrintViolation(double time, double step)
-{
-  if (GetBridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
-  {
-    double penalty_parameter = GetBridge()->GetParams()->GetPenaltyParameter();
-
-    Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
-        Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()->Map());
-
-    int err = Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
-                  ->GetCff()
-                  ->Multiply(false,
-                      *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp()),
-                      *violation);
-
-    if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
-
-    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
-    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
-
-    double norm, normf, norms;
-    double norm_vel;
-
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
-        ->Velnp()
-        ->MaxValue(&norm_vel);  // todo this uses the pressure. Fix such that only the maximum
-                                // velocity quantity is used
-
-    violation->MaxValue(&norm);
-    if (norm_vel > 1e-15) normf = norm / norm_vel;
-
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
-        ->Velnp()
-        ->MaxValue(&norm_vel);
-    if (norm_vel > 1e-15) norms = norm / norm_vel;
-
-    std::ofstream log;
-    if (discretizations_[1]->Comm().MyPID() == 0)
-    {
-      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      s.append(".penalty");
-      log.open(s.c_str(), std::ofstream::app);
-      log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"
-          << normf / penalty_parameter << "\t" << norms / penalty_parameter << std::endl;
-    }
   }
 }

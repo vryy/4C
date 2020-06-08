@@ -147,6 +147,8 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
+  anisotropy_.PackAnisotropy(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -155,8 +157,6 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
       p->PackSummand(data);
     }
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -194,6 +194,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   summandProperties_.Unpack(position, data);
 
+  // Pack anisotropy
+  anisotropy_.UnpackAnisotropy(data, position);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
@@ -212,13 +215,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       p->UnpackSummand(data, position);
       p->RegisterAnisotropyExtensions(anisotropy_);
     }
-  }
 
-  // Pack anisotropy
-  anisotropy_.UnpackAnisotropy(data, position);
-
-  if (params_ != nullptr)
-  {
     // For Stat Inverse Analysis
     // pointer to elasthyper
     params_->SetMaterialPtrSIA(this);
@@ -365,7 +362,7 @@ void MAT::ElastHyper::EvaluateFiberVecs(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   static LINALG::Matrix<6, 1> C_strain(true);
   C_strain.Clear();
@@ -381,7 +378,7 @@ void MAT::ElastHyper::StrainEnergy(
   // loop map of associated potential summands
   for (const auto& p : potsum_)
   {
-    p->AddStrainEnergy(psi, prinv, modinv, glstrain, eleGID);
+    p->AddStrainEnergy(psi, prinv, modinv, glstrain, gp, eleGID);
   }
 }
 
@@ -394,7 +391,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-    LINALG::Matrix<3, 3>* rcg_old, const int eleGID)
+    LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (stress == nullptr) dserror("No stress vector supplied");
@@ -407,7 +404,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   // standard material evaluate call at midpoint t_{n+1/2}
   Teuchos::ParameterList params;
   LINALG::Matrix<3, 3> defgrd(true);
-  Evaluate(&defgrd, glstrain_m, params, stress, cmat, eleGID);
+  Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
   *density = Density();
 
   //**********************************************************************
@@ -453,8 +450,8 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   // strain energy function at t_{n+1} and t_{n}
   double psi = 0.0;
   double psio = 0.0;
-  StrainEnergy(*glstrain_new, psi, eleGID);
-  StrainEnergy(*glstrain_old, psio, eleGID);
+  StrainEnergy(*glstrain_new, psi, gp, eleGID);
+  StrainEnergy(*glstrain_old, psio, gp, eleGID);
 
   // derivative of strain energy function dpsi = 0.5*stress
   // double contraction dpsi : M
@@ -474,7 +471,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   // algorithmic material tensor requires stresses at t_{n+1}
   LINALG::Matrix<6, 1> stressnew(true);
   LINALG::Matrix<6, 6> cmatnew(true);
-  Evaluate(&defgrd, glstrain_new, params, &stressnew, &cmatnew, eleGID);
+  Evaluate(&defgrd, glstrain_new, params, &stressnew, &cmatnew, gp, eleGID);
 
   // initialize algorithmic material tensor
   LINALG::Matrix<6, 6> algcmat(true);
@@ -513,26 +510,26 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
 
-  ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, eleGID, potsum_,
+  ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID, potsum_,
       summandProperties_, checkpolyconvexity);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
-    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
-    const double* temp)
+void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int gp,
+    int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
+    LINALG::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (auto& i : potsum_)
   {
     if (summandProperties_.isoprinc)
     {
-      i->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
-      i->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
+      i->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
+      i->AddThirdDerivativesPrincipalIso(dddPIII, prinv, gp, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       dserror("not implemented for this form of strain energy function");
@@ -545,8 +542,8 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
     LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
     LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
-    LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID, const double* temp, double* DsntDT,
-    LINALG::Matrix<9, 1>* D2sntDFDT)
+    LINALG::Matrix<9, 3>* D2sntDFDt, const int gp, const int eleGID, const double* temp,
+    double* DsntDT, LINALG::Matrix<9, 1>* D2sntDFDT)
 {
   snt = 0.0;
 
@@ -578,7 +575,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   dPI.Clear();
   ddPII.Clear();
   dddPIII.Clear();
-  EvaluateCauchyDerivs(prinv, eleGID, dPI, ddPII, dddPIII, temp);
+  EvaluateCauchyDerivs(prinv, gp, eleGID, dPI, ddPII, dddPIII, temp);
 
   const double prefac = 2.0 / sqrt(prinv(2));
 

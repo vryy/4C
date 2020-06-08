@@ -15,7 +15,7 @@
 #define STR_MODEL_EVALUATOR_SPRINGDASHPOT_H
 
 #include "str_model_evaluator_generic.H"
-#include "../drt_constraint/springdashpot_new.H"
+#include "../drt_constraint/springdashpot.H"
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
@@ -125,7 +125,7 @@ namespace STR
 
      private:
       //! all spring dashpot instances
-      std::vector<Teuchos::RCP<UTILS::SpringDashpotNew>> springs_;
+      std::vector<Teuchos::RCP<UTILS::SpringDashpot>> springs_;
 
       //! number of spring dashpot conditions
       int n_conds_;

@@ -283,7 +283,8 @@ namespace MAT
             stress,  //!< output (mandatory) second Piola-Kirchhoff stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
             cmat,  //!< output (mandatory) material stiffness matrix
-        const int eleGID);
+        int gp,    ///< Gauss point
+        int eleGID);
 
     //! evaluate the elasto-plastic tangent
     void SetupCmatElastoPlastic(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&

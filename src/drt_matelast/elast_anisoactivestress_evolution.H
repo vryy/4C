@@ -176,6 +176,7 @@ namespace MAT
           LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
+          int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
 
@@ -224,7 +225,7 @@ namespace MAT
       double tauc_n_;
 
       /// Special anisotropic behavior
-      DefaultAnisotropyExtension anisotropyExtension_;
+      DefaultAnisotropyExtension<1> anisotropyExtension_;
     };
 
   }  // namespace ELASTIC

@@ -842,8 +842,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
-    params.set<int>("gp", MapMyGpToSoHex8(gp));
-
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -879,7 +877,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     LINALG::Matrix<numstr_, 1> couplstress(true);
     LINALG::Matrix<numstr_, numstr_> cmat(true);
     LINALG::Matrix<numstr_, 1> glstrain(true);
-    params.set<int>("gp", MapMyGpToSoHex8(gp));
+
     // insert strain increment into parameter list
     // calculate iterative strains
     LINALG::Matrix<numstr_, 1> straininc(true);
@@ -1007,8 +1005,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
     // shape functions (shapefunct) and their first derivatives (deriv)
     DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
-
-    params.set<int>("gp", MapMyGpToSoHex8(gp));
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1217,7 +1213,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     LINALG::Matrix<numstr_, 1> couplstress(true);
     LINALG::Matrix<numstr_, numstr_> cmat_T(true);
     LINALG::Matrix<numstr_, 1> glstrain(true);
-    params.set<int>("gp", MapMyGpToSoHex8(gp));
+
     // insert strain increment into parameter list
     // calculate iterative strains
     LINALG::Matrix<numstr_, 1> straininc(true);
@@ -1429,8 +1425,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
 
-    params.set<int>("gp", MapMyGpToSoHex8(gp));
-
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -1620,8 +1614,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
-      params.set<int>("gp", MapMyGpToSoHex8(gp));
-
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1
       **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -1714,7 +1706,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       LINALG::Matrix<numstr_, 1> couplstress_bar(true);   // S_bar_{vol,T}
       LINALG::Matrix<numstr_, numstr_> cmat_T_bar(true);  // dC_T_dE
       LINALG::Matrix<numstr_, 1> glstrain(true);
-      params.set<int>("gp", MapMyGpToSoHex8(gp));
+
       // insert strain increment into parameter list which is only required for robinson
       // calculate iterative strains
       LINALG::Matrix<numstr_, 1> straininc(true);
@@ -1966,7 +1958,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
-      params.set<int>("gp", MapMyGpToSoHex8(gp));
       // copy structural shape functions needed for the thermo field
       // identical shapefunctions for the displacements and the temperatures
       LINALG::Matrix<1, 1> NT(false);

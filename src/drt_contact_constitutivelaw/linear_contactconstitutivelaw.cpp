@@ -38,33 +38,6 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
     : params_(params)
 {
 }
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType
-    CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawType::instance_;
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // matid
-  int CONSTITUTIVELAWid = -1;
-  if (params_ != NULL) CONSTITUTIVELAWid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, CONSTITUTIVELAWid);
-}
-
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-
-  // matid
-  int CONSTITUTIVELAWid = -1;
-  ExtractfromPack(position, data, CONSTITUTIVELAWid);
-}
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
@@ -83,7 +56,7 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::EvaluateDeriv(double gap
 {
   if (gap + params_->GetOffset() > 0)
   {
-    printf("You should not be here. The Evaluate function is only tested for active nodes.");
+    dserror("You should not be here. The Evaluate function is only tested for active nodes.");
   }
   return params_->GetA();
 }

@@ -131,14 +131,10 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
 
 void PASI::PartitionedAlgo::StructStep()
 {
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
-  {
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " STRUCTURE SOLVER" << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-  }
-
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::StructStep");
+
+  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+    printf("-------------------- STRUCTURE SOLVER --------------------\n");
 
   // integrate structural time step
   structurefield_->Solve();
@@ -146,14 +142,10 @@ void PASI::PartitionedAlgo::StructStep()
 
 void PASI::PartitionedAlgo::ParticleStep()
 {
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
-  {
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " PARTICLE SOLVER" << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-  }
-
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
+
+  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+    printf("-------------------- PARTICLE SOLVER ---------------------\n");
 
   // integrate time step
   particlealgorithm_->IntegrateTimeStep();
@@ -204,16 +196,13 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   // export column to row displacements (no communication)
   LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
 
-  double normwalldisp(0.0);
-  walldatastate->GetDispRow()->Norm2(&normwalldisp);
-
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+  // print norm of interface displacement to the screen
+  if (PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
-    // clang-format off
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of interface displacements: " << std::setprecision(7) << normwalldisp << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    // clang-format on
+    double normintfdisp(0.0);
+    intfdispnp->Norm2(&normintfdisp);
+
+    if (Comm().MyPID() == 0) printf("--> Norm of interface displacement: %10.5E\n", normintfdisp);
   }
 }
 

@@ -32,17 +32,11 @@ namespace CONTACT
      * In order to support storage of material data (for restart, post
      * processing, ...) this class implements DRT::ParObject.
      */
-    class ConstitutiveLaw : public DRT::ParObject
+    class ConstitutiveLaw
     {
      public:
       /// return type of this constitutive law
-      virtual INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const
-      {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_none;
-      };
-
-      /// return copy of this Contact ConstitutiveLaw object
-      virtual Teuchos::RCP<ConstitutiveLaw> Clone() const = 0;
+      virtual INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const = 0;
 
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const = 0;
@@ -56,7 +50,7 @@ namespace CONTACT
       static Teuchos::RCP<ConstitutiveLaw> Factory(const int id);
 
       /* \brief create Contact Constitutivelaw object given input information for the constitutive
-       * law \params[in] Container holding the Coefficients for the Contact ConstitutiveLaw
+       * law \param[in] Container holding the Coefficients for the Contact ConstitutiveLaw
        */
       static Teuchos::RCP<ConstitutiveLaw> Factory(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);

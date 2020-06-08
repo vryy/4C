@@ -40,7 +40,7 @@ namespace STR
 }  // namespace STR
 namespace BEAMINTERACTION
 {
-  class BeamContactParams;
+  class BeamToSolidParamsBase;
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
@@ -48,6 +48,7 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 
 namespace BEAMINTERACTION
 {
@@ -90,11 +91,12 @@ namespace BEAMINTERACTION
      * \brief Standard Constructor
      *
      * @params discret (in) Pointer to the discretization.
-     * @params params (in) Parameters for the beam contact.
+     * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid);
+    BeamToSolidMortarManager(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+        int start_value_lambda_gid);
 
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
@@ -145,10 +147,8 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
-     * @param contact_pairs (in) Vector with all beam contact pairs in the model evaluator.
      */
-    void EvaluateGlobalDM(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+    void EvaluateGlobalDM();
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -165,7 +165,8 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -173,7 +174,24 @@ namespace BEAMINTERACTION
      * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
+
+    /**
+     * \brief Return a const reference to the contact pairs in this mortar manager.
+     * @return Reference to the pair vector.
+     */
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+    {
+      return contact_pairs_;
+    }
+
+    /**
+     * \brief Calculate the internal mortar penalty energy.
+     * @param disp (in) Current displacement state.
+     * @return Global mortar energy.
+     */
+    double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const;
 
    protected:
     /**
@@ -208,6 +226,14 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<Epetra_Vector> InvertKappa() const;
 
+    /**
+     * \brief Get the global vector of the constraints.
+     * @param disp (in) Global displacement vector.
+     * @return Global vector of constraint values.
+     */
+    Teuchos::RCP<Epetra_Vector> GetGlobalConstraintVector(
+        const Teuchos::RCP<const Epetra_Vector>& disp) const;
+
    private:
     //! Flag if setup was called.
     bool is_setup_;
@@ -231,7 +257,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
 
     //! Row map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
@@ -271,16 +297,23 @@ namespace BEAMINTERACTION
     //! Global \f$M\f$ matrix.
     Teuchos::RCP<LINALG::SparseMatrix> global_M_;
 
+    //! Global constraint offset vector. This vector is the right hand side of the constraint
+    //! equations.
+    Teuchos::RCP<Epetra_FEVector> global_constraint_offset_;
+
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
-    //! 37).
-    //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
+    //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
+    //! case).
     Teuchos::RCP<Epetra_FEVector> global_kappa_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
     Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
+
+    //! Vector with all contact pairs to be evaluated by this mortar manager.
+    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
   };
 }  // namespace BEAMINTERACTION
 

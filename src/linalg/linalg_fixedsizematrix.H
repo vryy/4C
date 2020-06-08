@@ -3297,15 +3297,15 @@ namespace LINALG
       return data_;
     }
     /// Return the number of rows
-    static inline unsigned int Rows() { return rows; }
+    static constexpr unsigned int Rows() { return rows; }
     /// Return the number of columns
-    static inline unsigned int Columns() { return cols; }
+    static constexpr unsigned int Columns() { return cols; }
     /// Return the number of columns
-    static inline unsigned int Cols() { return cols; }
+    static constexpr unsigned int Cols() { return cols; }
     /// Return the number of rows
-    static inline unsigned int M() { return rows; }
+    static constexpr unsigned int M() { return rows; }
     /// Return the number of columns
-    static inline unsigned int N() { return cols; }
+    static constexpr unsigned int N() { return cols; }
     /// Check whether the matrix is initialized
     /*!
       You cannot test whether the matrix is empty using M() and N(),

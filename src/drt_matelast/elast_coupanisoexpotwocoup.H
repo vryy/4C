@@ -86,7 +86,7 @@ namespace MAT
      * \brief Anisotropy manager for two fibers and the structural tensor of the combination of
      * those two
      */
-    class CoupAnisoExpoTwoCoupAnisoExtension : public DefaultAnisotropyExtension
+    class CoupAnisoExpoTwoCoupAnisoExtension : public DefaultAnisotropyExtension<2>
     {
      public:
       /*!
@@ -190,12 +190,21 @@ namespace MAT
        */
       void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
 
+      /// @name Methods for Packing and Unpacking
+      ///@{
+      void PackSummand(DRT::PackBuffer& data) const override;
+
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      ///@}
+
       /// Add anisotropic principal stresses
       void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
+          int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
       /// @name Access methods

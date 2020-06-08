@@ -129,7 +129,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
     LINALG::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
     Teuchos::rcp_dynamic_cast<MAT::So3Material>(ParentElement()->Material())
-        ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, ParentElement()->Id());
+        ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
     bc.MultiplyTN(bop, cmat);
     vol.Multiply(ip.IP().qwgt[gp] * jac, bc, bop, 1.);
   }
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     LINALG::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
     Teuchos::rcp_dynamic_cast<MAT::So3Material>(ParentElement()->Material())
-        ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, ParentElement()->Id());
+        ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
 
     double normalfac = 1.;
     if (Shape() == DRT::Element::nurbs9)

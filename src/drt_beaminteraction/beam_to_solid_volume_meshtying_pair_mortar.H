@@ -41,9 +41,12 @@ namespace BEAMINTERACTION
     //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
     friend BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
 
-   private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
+   protected:
+    //! Shortcut to the base class.
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+
+    //! Type to be used for scalar AD variables.
+    using scalar_type = typename base_class::scalar_type;
 
    public:
     /**
@@ -57,14 +60,11 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidVolumeMeshtyingPairMortar(){};
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
-     * @param local_D (out) Local mortar matrix $D$.
-     * @param local_M (out) Local mortar matrix $M$.
-     * @param local_kappa (out) Local scaling vector.
-     * @return True if pair is in contact.
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair. (derived)
      */
     bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa) override;
+        LINALG::SerialDenseVector& local_kappa,
+        LINALG::SerialDenseVector& local_constraint_offset) override;
 
     /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.
@@ -95,9 +95,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Return 0 by default.
      */
-    void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
-        const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
-        LINALG::Matrix<3, 1, scalar_type_fad>& force) const override;
+    void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
+        const LINALG::Matrix<3, 1, scalar_type>& r_solid,
+        LINALG::Matrix<3, 1, scalar_type>& force) const override;
   };
 }  // namespace BEAMINTERACTION
 

@@ -73,6 +73,7 @@ class CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw_TestSuite : public CxxTest:
   void test_EvaluateDeriv()
   {
     TS_ASSERT_DELTA(coconstlaw_->EvaluateDeriv(-0.75), 4.28125, 1.e-15);
+    TS_ASSERT_THROWS_ANYTHING(coconstlaw_->EvaluateDeriv(-0.25));
     return;
   }
 

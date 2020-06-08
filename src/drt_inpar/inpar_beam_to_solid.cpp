@@ -157,10 +157,14 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     setStringToIntegralParameter<BeamToSolidSurfaceCoupling>("COUPLING_TYPE", "none",
         "How the coupling constraints are formulated/",
-        tuple<std::string>("none", "configurations_forced_to_zero", "displacements"),
+        tuple<std::string>("none", "reference_configuration_forced_to_zero",
+            "reference_configuration_forced_to_zero_fad", "displacement", "displacement_fad",
+            "consistent_fad"),
         tuple<BeamToSolidSurfaceCoupling>(BeamToSolidSurfaceCoupling::none,
-            BeamToSolidSurfaceCoupling::configurations_forced_to_zero,
-            BeamToSolidSurfaceCoupling::displacements),
+            BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero,
+            BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero_fad,
+            BeamToSolidSurfaceCoupling::displacement, BeamToSolidSurfaceCoupling::displacement_fad,
+            BeamToSolidSurfaceCoupling::consistent_fad),
         &beam_to_solid_surface_mestying);
 
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",

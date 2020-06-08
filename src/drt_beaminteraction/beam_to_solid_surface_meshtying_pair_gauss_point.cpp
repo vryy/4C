@@ -66,28 +66,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   const INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type =
       this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
   if (coupling_type ==
-      INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::configurations_forced_to_zero)
+      INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero)
   {
     // Couple the positions -> this will result in an initial stress of the system.
-
     beam_dof_fad = this->ele1pos_;
-
-    for (unsigned int i = 0; i < surface::n_dof_; i++)
-      surface_dof_fad(i) = scalar_type(beam::n_dof_ + surface::n_dof_, beam::n_dof_ + i,
-          this->face_element_->GetFacePosition()(i));
+    surface_dof_fad = this->face_element_->GetFacePosition();
   }
-  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacements)
+  else if (coupling_type == INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement)
   {
     // Couple the displacements -> this will result in a non-fulfilment of the conservation of
     // angular momentum.
-
-    for (unsigned int i = 0; i < beam::n_dof_; i++)
-      beam_dof_fad(i) = this->ele1pos_(i) - this->ele1posref_(i);
-
-    for (unsigned int i = 0; i < surface::n_dof_; i++)
-      surface_dof_fad(i) = scalar_type(beam::n_dof_ + surface::n_dof_, beam::n_dof_ + i,
-                               this->face_element_->GetFacePosition()(i)) -
-                           this->face_element_->GetFaceReferencePosition()(i);
+    beam_dof_fad = this->ele1pos_;
+    for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+      beam_dof_fad(i_dof_beam) -= this->ele1posref_(i_dof_beam);
+    surface_dof_fad = this->face_element_->GetFacePosition();
+    for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+      surface_dof_fad(i_dof_surface) -=
+          this->face_element_->GetFaceReferencePosition()(i_dof_surface);
   }
   else
     dserror(
@@ -155,17 +150,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
     LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
     UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
 
-    // Get the solid GIDs.
-    std::vector<int> lmrow;
-    std::vector<int> lmrowowner;
-    std::vector<int> lmstride;
-    this->face_element_->GetDrtFaceElement()->LocationVector(*discret, lmrow, lmrowowner, lmstride);
+    // Get the patch (in this case just the one face element) GIDs.
+    const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
 
     // Combine beam and solid GIDs into one vector.
     for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
       pair_gid(i_dof_beam) = beam_centerline_gid(i_dof_beam);
     for (unsigned int i_dof_solid = 0; i_dof_solid < surface::n_dof_; i_dof_solid++)
-      pair_gid(beam::n_dof_ + i_dof_solid) = lmrow[i_dof_solid];
+      pair_gid(beam::n_dof_ + i_dof_solid) = patch_gid[i_dof_solid];
   }
 
   // If given, assemble force terms into the global vector.
@@ -180,22 +172,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_ + surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < beam::n_dof_ + surface::n_dof_; j_dof++)
-        stiffness_matrix->FEAssemble(force_pair(i_dof).dx(j_dof), pair_gid(i_dof), pair_gid(j_dof));
+        stiffness_matrix->FEAssemble(
+            FADUTILS::CastToDouble(force_pair(i_dof).dx(j_dof)), pair_gid(i_dof), pair_gid(j_dof));
 }
 
 
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs9>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_tri3>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_tri6>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, GEOMETRYPAIR::t_nurbs9>;
+}  // namespace BEAMINTERACTION

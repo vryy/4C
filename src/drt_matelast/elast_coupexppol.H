@@ -107,7 +107,8 @@ namespace MAT
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-          const int eleGID                       ///< element GID
+          int gp,                                ///< Gauss point
+          int eleGID                             ///< element GID
       );
 
 
@@ -115,7 +116,8 @@ namespace MAT
           LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
           LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const int eleGID                    ///< element GID
+          int gp,                             ///< Gauss point
+          int eleGID                          ///< element GID
       );
       /// @name Access methods
       //@{

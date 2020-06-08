@@ -175,7 +175,8 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
+    const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
@@ -212,7 +213,8 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::M
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int eleGID)
+    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+    const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters

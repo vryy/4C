@@ -53,15 +53,15 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_fluid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force2;
-  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
-  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
-  LINALG::Matrix<fluid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_f(true);
+  LINALG::Matrix<3, 1, scalar_type> r_beam;
+  LINALG::Matrix<3, 1, scalar_type> r_fluid;
+  LINALG::Matrix<3, 1, scalar_type> v_beam;
+  LINALG::Matrix<3, 1, scalar_type> v_fluid;
+  LINALG::Matrix<3, 1, scalar_type> force;
+  LINALG::Matrix<3, 1, scalar_type> force2;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
+  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
   LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
   LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
@@ -178,9 +178,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       for (unsigned int i_dof1 = 0; i_dof1 < beam::n_dof_; i_dof1++)
       {
         for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-          (*forcevec1)(i_dof1) += (*stiffmat11)(i_dof1, i_dof2) * this->ele1vel_(i_dof2).val();
+          (*forcevec1)(i_dof1) +=
+              (*stiffmat11)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
-          (*forcevec1)(i_dof1) -= (*stiffmat12)(i_dof1, i_dof2) * this->ele2vel_(i_dof2).val();
+          (*forcevec1)(i_dof1) -=
+              (*stiffmat12)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
       }
     }
 
@@ -194,9 +196,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) += (*stiffmat22)(i_dof1, i_dof2) * this->ele2vel_(i_dof2).val();
+            (*forcevec2)(i_dof1) +=
+                (*stiffmat22)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) * this->ele1vel_(i_dof2).val();
+            (*forcevec2)(i_dof1) -=
+                (*stiffmat21)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         }
       }
       else
@@ -204,33 +208,14 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) * this->ele1vel_(i_dof2).val();
+            (*forcevec2)(i_dof1) -=
+                (*stiffmat21)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         }
     }
   }
 
   // Return true as there are meshtying contributions.
   return true;
-}
-
-/*------------------------------------------------------------------------------------------------*/
-
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::EvaluatePenaltyForce(
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force,
-    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_beam) const
-{
-  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> v_fluid;
-
-  GEOMETRYPAIR::EvaluatePosition<beam>(
-      projected_gauss_point.GetEta(), this->ele1vel_, v_beam, this->Element1());
-  GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2vel_, v_fluid);
-
-  force = v_fluid;
-  force -= v_beam;
-  force.Scale(Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
-                  ->GetPenaltyParameter());
 }
 
 /**

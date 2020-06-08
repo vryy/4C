@@ -115,25 +115,21 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   // evaluate elastic material corresponding to zero concentration
   LINALG::Matrix<6, 1> stress_lambda_zero = *stress;
   LINALG::Matrix<6, 6> cmat_zero_conc = *cmat;
 
   lambda_zero_mat_->Evaluate(
-      defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, eleGID);
+      defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, gp, eleGID);
 
   // evaluate elastic material corresponding to infinite concentration
   LINALG::Matrix<6, 1> stress_lambda_unit = *stress;
   LINALG::Matrix<6, 6> cmat_infty_conc = *cmat;
 
   lambda_unit_mat_->Evaluate(
-      defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, eleGID);
+      defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, gp, eleGID);
 
   double lambda;
   // get the ratio of interpolation
@@ -180,10 +176,10 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // evaluate strain energy functions
     double psi_lambda_zero = 0.0;
-    lambda_zero_mat_->StrainEnergy(*glstrain, psi_lambda_zero, eleGID);
+    lambda_zero_mat_->StrainEnergy(*glstrain, psi_lambda_zero, gp, eleGID);
 
     double psi_lambda_unit = 0.0;
-    lambda_unit_mat_->StrainEnergy(*glstrain, psi_lambda_unit, eleGID);
+    lambda_unit_mat_->StrainEnergy(*glstrain, psi_lambda_unit, gp, eleGID);
 
     // and add the stresses due to possible dependency of the ratio w.r.t. to C
     // ... - 2 * \Psi_0 * \frac{\partial}{\partial \mym C} \lambda(C) ) + * 2 * \Psi_1 *
@@ -370,14 +366,14 @@ void MAT::ScalarDepInterp::ReadLambda(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID)
+    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // evaluate strain energy functions
   double psi_lambda_zero = 0.0;
-  lambda_zero_mat_->StrainEnergy(glstrain, psi_lambda_zero, eleGID);
+  lambda_zero_mat_->StrainEnergy(glstrain, psi_lambda_zero, gp, eleGID);
 
   double psi_lambda_unit = 0.0;
-  lambda_unit_mat_->StrainEnergy(glstrain, psi_lambda_unit, eleGID);
+  lambda_unit_mat_->StrainEnergy(glstrain, psi_lambda_unit, gp, eleGID);
 
   double lambda = 0.0;
   for (unsigned gp = 0; gp < lambda_.size(); gp++)

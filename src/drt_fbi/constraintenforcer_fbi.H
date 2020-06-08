@@ -36,7 +36,8 @@ namespace FBI
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class MapExtractor;
+}  // namespace LINALG
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -116,32 +117,16 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> StructureToFluid(int step);
 
     /// Interface to do preparations to solve the fluid
-    virtual void PrepareFluidSolve(){};
+    virtual void PrepareFluidSolve() = 0;
 
-    /// Get function for the structure field strcuture_
-    virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
-    {
-      return structure_;
-    };
-    /// Get function for the fluid field fluid_
-    virtual Teuchos::RCP<const ADAPTER::FluidMovingBoundary> GetFluid() const final
-    {
-      return fluid_;
-    };
+    /// Get function for the structure field #structure_
+    Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const { return structure_; };
 
-    /// Get function for the bridge object bridge_
-    virtual const Teuchos::RCP<ADAPTER::FBIConstraintBridge> GetBridge() const final
-    {
-      return bridge_;
-    };
+    /// Get function for the bridge object #bridge_
+    Teuchos::RCP<const ADAPTER::FBIConstraintBridge> GetBridge() const { return bridge_; };
 
-    /// Get function for the structure and the fluid discretization in the vector discretizations_
-    virtual const std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const final
-    {
-      return discretizations_;
-    }
-
-    virtual void PrintViolation(double time, double step);
+    /// Handle fbi specific output
+    virtual void Output(double time, int step) = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
@@ -158,7 +143,7 @@ namespace ADAPTER
      * \param[in] pairids a map relating all beam element ids to a set of fluid
      * elements ids which they potentially cut
      */
-    virtual void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
+    void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /**
      * \brief Extracts current element dofs that are needed for the computations on pair level
@@ -179,7 +164,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -193,7 +178,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -227,6 +212,24 @@ namespace ADAPTER
       return Teuchos::null;
     };
 
+    /// Get function for the fluid field #fluid_
+    Teuchos::RCP<ADAPTER::FluidMovingBoundary> GetFluid() const { return fluid_; };
+
+    /// Get function for the structure and the fluid discretization in the vector #discretizations_
+    std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const
+    {
+      return discretizations_;
+    }
+
+    /// Get function for the bridge object #bridge_
+    Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const { return bridge_; };
+
+    /// Get map extractor to split fluid velocity and pressure values
+    Teuchos::RCP<const LINALG::MapExtractor> GetVelocityPressureSplitter() const
+    {
+      return velocity_pressure_splitter_;
+    }
+
    private:
     FBIConstraintenforcer() = delete;
 
@@ -258,6 +261,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
+    /**
+     * \brief Extractor to split fluid values into velocities and pressure DOFs
+     *
+     * velocities  = OtherVector
+     * pressure    = CondVector
+     */
+    Teuchos::RCP<LINALG::MapExtractor> velocity_pressure_splitter_;
   };
 }  // namespace ADAPTER
 #endif

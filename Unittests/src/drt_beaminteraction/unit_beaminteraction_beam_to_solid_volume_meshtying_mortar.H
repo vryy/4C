@@ -4240,10 +4240,11 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
+    LINALG::SerialDenseVector local_constraint_offset;
     contact_pair.CastGeometryPair()->Setup();
     contact_pair.ele1posref_ = q_beam;
     contact_pair.ele2posref_ = q_solid;
-    contact_pair.EvaluateDM(local_D, local_M, local_kappa);
+    contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint_offset);
 
     // Check the results for D.
     TS_ASSERT_EQUALS(local_D.M(), lambda_type::n_dof_);
@@ -4264,6 +4265,12 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     TS_ASSERT_EQUALS(local_kappa.N(), 1);
     for (int i_row = 0; i_row < local_M.M(); i_row++)
       TS_ASSERT_DELTA(local_kappa(i_row), result_local_kappa(i_row), 1e-11);
+
+    // Check the results for the local constraint offset vector.
+    TS_ASSERT_EQUALS(local_constraint_offset.M(), lambda_type::n_dof_);
+    TS_ASSERT_EQUALS(local_constraint_offset.N(), 1);
+    for (int i_row = 0; i_row < local_M.M(); i_row++)
+      TS_ASSERT_DELTA(local_constraint_offset(i_row), 0.0, 1e-11);
   }
 
 

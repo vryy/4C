@@ -240,7 +240,7 @@ namespace MAT
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
         LINALG::Matrix<NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int eleGID);
+        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp, const int eleGID);
 
     /// Return density
     virtual double Density() const { return params_->density_; }

@@ -500,7 +500,7 @@ void STR::MODELEVALUATOR::Structure::InertialAndViscousForces()
 {
   CheckInitSetup();
 
-  if (masslin_type_ == INPAR::STR::ml_none)
+  if (masslin_type_ == INPAR::STR::ml_none and !TimInt().GetDataSDynPtr()->NeglectInertia())
   {
     // calculate the inertial force at t_{n+1}
     Mass().Multiply(false, *GState().GetAccNp(), FinertialNp());

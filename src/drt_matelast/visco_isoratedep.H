@@ -99,7 +99,7 @@ namespace MAT
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           LINALG::Matrix<8, 1>& modmu,   ///< necassary coefficients for piola-kirchhoff-stress
           LINALG::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
-          LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, const int eleGID);
+          LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp, int eleGID);
 
       /// @name Access methods
       //@{

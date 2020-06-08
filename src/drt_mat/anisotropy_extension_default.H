@@ -22,8 +22,11 @@ namespace MAT
    * This is an anisotropy extension that contains the functionality of most of the anisotropic
    * materials. Fibers are either initialized using the FIBERX notation, via a cylinder coordinate
    * system or in x direction.
+   *
+   * \tparam numfib Number of fibers
    */
-  class DefaultAnisotropyExtension : public FiberAnisotropyExtension
+  template <unsigned int numfib>
+  class DefaultAnisotropyExtension : public FiberAnisotropyExtension<numfib>
   {
    public:
     //! @name Initialization modes of the fibers
@@ -52,11 +55,19 @@ namespace MAT
      * \param adapt_angle flag whether the angle is subject to growth and remodeling
      *
      * \param stucturalTensorStrategy Reference to the sturctural tensor strategy
+     * \param fiber_ids List of ids of the fibers
      */
     DefaultAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,
-        const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy);
+        const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy,
+        std::array<int, numfib> fiber_ids);
 
-    ~DefaultAnisotropyExtension() override = default;
+    ///@name Packing and Unpacking
+    /// @{
+    void PackAnisotropy(DRT::PackBuffer& data) const override;
+
+    void UnpackAnisotropy(
+        const std::vector<char>& data, std::vector<char>::size_type& position) override;
+    /// @}
 
     /*!
      * \brief Initializes the Element fibers
@@ -93,7 +104,21 @@ namespace MAT
      */
     void SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec);
 
+    /*!
+     * \brief Status of fiber initialization
+     *
+     * \return true In case the fibers are initialized
+     * \return false In case the fibers are not yet initialized
+     */
+    bool FibersInitialized() const { return initialized_; }
+
    protected:
+    void OnFibersInitialized() override
+    {
+      FiberAnisotropyExtension<numfib>::OnFibersInitialized();
+      initialized_ = true;
+    }
+
     /*!
      * \brief The single fiber is aligned in z-direction
      */
@@ -109,6 +134,12 @@ namespace MAT
     /// flag whether the angle should be adapted with growth and remodeling (for comoatibility
     /// reasons)
     const bool adapt_angle_;
+
+    /// Ids of the fiber to use
+    const std::array<int, numfib> fiber_ids_;
+
+    /// Flag that shows the initialization state of the fibers
+    bool initialized_ = false;
   };
 }  // namespace MAT
 

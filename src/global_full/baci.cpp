@@ -18,6 +18,7 @@
 #include "../drt_comm/comm_utils.H"
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/drt_validcontactconstitutivelaw.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_lib/drt_function.H"
@@ -290,6 +291,7 @@ int main(int argc, char *argv[])
       PrintDefaultDatHeader();
       PrintConditionDatHeader();
       PrintMaterialDatHeader();
+      PrintContactConstitutiveLawDatHeader();
       DRT::UTILS::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
       PrintFunctionDatHeader();

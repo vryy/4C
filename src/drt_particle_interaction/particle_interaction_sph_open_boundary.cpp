@@ -106,7 +106,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::CheckOpenBoundaryPhaseChange(
   const int numparticleperdir = std::round(maxinteractiondistance / initialparticlespacing);
 
   // tolerance for phase change of open boundary particle to fluid particle
-  const double toleranceopenboundarytofluid = 0.05 * initialparticlespacing;
+  const double toleranceopenboundarytofluid = 0.1 * initialparticlespacing;
 
   // get container of owned particles of open boundary phase
   PARTICLEENGINE::ParticleContainer* container_i =

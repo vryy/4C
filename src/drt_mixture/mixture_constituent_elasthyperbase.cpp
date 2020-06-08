@@ -75,6 +75,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(DRT::PackBuffer
 
   DRT::ParObject::AddtoPack(data, prestretch_);
 
+  cosyAnisotropyExtension_.PackAnisotropy(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -118,6 +120,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
   summandProperties_.Unpack(position, data);
 
   DRT::ParObject::ExtractfromPack(position, data, prestretch_);
+
+  cosyAnisotropyExtension_.UnpackAnisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

@@ -78,7 +78,6 @@ void BEAMINTERACTION::BeamContactPair::Setup()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
     std::vector<DRT::Element const*> const& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams>& params_ptr,
     const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_interaction_conditions_ptr)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
@@ -213,7 +212,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           {
             // Create the beam contact pairs defined by conditions in the input file. For now this
             // is only implemented for beam-to-solid pairs.
-            return beam_interaction_conditions_ptr->CreateContactPair(ele_ptrs, params_ptr);
+            return beam_interaction_conditions_ptr->CreateContactPair(ele_ptrs);
           }
           else if (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[1]) != NULL)
           {

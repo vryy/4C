@@ -866,6 +866,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_anisoactivestress_evolution:
     case INPAR::MAT::mes_coupanisoexpoactive:
     case INPAR::MAT::mes_coupanisoexpo:
+    case INPAR::MAT::mes_coupanisoexposhear:
     case INPAR::MAT::mes_coupanisopow:
     case INPAR::MAT::mes_couptransverselyisotropic:
     case INPAR::MAT::mes_coupanisoexpotwocoup:
@@ -905,8 +906,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_prestress_strategy_cylinder:
     case INPAR::MAT::mix_remodelfiber_expl:
     case INPAR::MAT::mix_remodelfiber_impl:
-    case INPAR::MAT::mfi_poly_scalar_aniso:
-    case INPAR::MAT::mfi_poly_scalar_iso:
+    case INPAR::MAT::mfi_poly_intercal_frac_aniso:
+    case INPAR::MAT::mfi_poly_intercal_frac_iso:
     {
       return Teuchos::null;
     }

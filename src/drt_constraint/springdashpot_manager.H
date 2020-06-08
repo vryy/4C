@@ -27,8 +27,8 @@ namespace DRT
 
 namespace LINALG
 {
-  class SparseOperator;
-}
+  class SparseMatrix;
+}  // namespace LINALG
 
 namespace UTILS
 {
@@ -53,7 +53,7 @@ namespace UTILS
     bool HaveSpringDashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
-    void StiffnessAndInternalForces(Teuchos::RCP<LINALG::SparseOperator> stiff,
+    void StiffnessAndInternalForces(Teuchos::RCP<LINALG::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
 

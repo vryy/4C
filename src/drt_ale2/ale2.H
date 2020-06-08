@@ -356,19 +356,22 @@ namespace DRT
           Epetra_SerialDenseMatrix& C,                             ///< elasticity matrix
           const int numeps,                                        ///< number of strains
           Teuchos::RCP<const MAT::Material> material,              ///< the material data
-          Teuchos::ParameterList& params                           ///< element parameter list
+          Teuchos::ParameterList& params,                          ///< element parameter list
+          int gp                                                   ///< Integration point
       );
 
       void MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,  ///< stress state (output)
           Epetra_SerialDenseMatrix& C,                                ///< material tensor (output)
           const Epetra_SerialDenseVector& strain,                     ///< strain state (input)
-          Teuchos::ParameterList& params                              ///< parameter list
+          Teuchos::ParameterList& params,                             ///< parameter list
+          int gp                                                      ///< Integration point
       );
 
       void MaterialResponse3d(LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
           LINALG::Matrix<6, 6>* cmat,                        ///< material tensor (output)
           const LINALG::Matrix<6, 1>* glstrain,              ///< strain state (input)
-          Teuchos::ParameterList& params                     ///< parameter list
+          Teuchos::ParameterList& params,                    ///< parameter list
+          int gp                                             ///< Integration point
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D

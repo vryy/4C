@@ -1694,25 +1694,34 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const auto* numfuncstiff = params.get<const std::vector<int>*>("funct_stiff");
       const auto* numfuncvisco = params.get<const std::vector<int>*>("funct_visco");
       const auto* numfuncdisploffset = params.get<const std::vector<int>*>("funct_disploffset");
+      const auto* numfuncnonlinstiff = params.get<const std::vector<int>*>("funct_nonlinstiff");
 
       const double time = ParentElement()->IsParamsInterface()
                               ? ParentElement()->ParamsInterfacePtr()->GetTotalTime()
                               : params.get("total time", 0.0);
 
+
       // scale coefficients with time function if activated
-      for (int i = 0; i < static_cast<int>(numfuncstiff->size()); ++i)
-        springstiff[i] =
-            (*numfuncstiff)[i] != 0
-                ? springstiff[i] *
-                      DRT::Problem::Instance()->Funct((*numfuncstiff)[i] - 1).EvaluateTime(time)
-                : springstiff[i];
-      for (int i = 0; i < static_cast<int>(numfuncvisco->size()); ++i)
+      for (auto i = 0U; i < numfuncstiff->size(); ++i)
+      {
+        if ((*numfuncnonlinstiff)[i] == 0)
+        {
+          springstiff[i] =
+              (*numfuncstiff)[i] != 0
+                  ? springstiff[i] *
+                        DRT::Problem::Instance()->Funct((*numfuncstiff)[i] - 1).EvaluateTime(time)
+                  : springstiff[i];
+        }
+      }
+
+      for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] =
             (*numfuncvisco)[i] != 0
                 ? dashpotvisc[i] *
                       DRT::Problem::Instance()->Funct((*numfuncvisco)[i] - 1).EvaluateTime(time)
                 : dashpotvisc[i];
-      for (int i = 0; i < static_cast<int>(numfuncdisploffset->size()); ++i)
+
+      for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
                                                     ->Funct((*numfuncdisploffset)[i] - 1)
@@ -1788,6 +1797,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // --------------------------------------------------
 
 
+      std::vector<double> refnormal(lm.size());
       std::vector<double> mydisp_refnormal(lm.size());
       std::vector<double> myvelo_refnormal(lm.size());
       std::vector<double> myoffprestr_refnormal(lm.size());
@@ -1819,17 +1829,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               N_otimes_N(node * numdf + dim1, node * numdf + dim2) =
                   elevector2[node * numdf + dim1] * elevector2[node * numdf + dim2];
 
-        // displacement offset, only take the first one and use this as the one in refsurfnormal
-        const double ref_disploff = disploffset[0];
-
         // (N \otimes N) disp, (N \otimes N) velo
         for (int node = 0; node < numnode; ++node)
           for (int dim1 = 0; dim1 < numdim; dim1++)
             for (int dim2 = 0; dim2 < numdim; dim2++)
             {
+              refnormal[node * numdf + dim1] += elevector2[node * numdf + dim1];
               mydisp_refnormal[node * numdf + dim1] +=
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
-                  (mydisp[node * numdf + dim2] - ref_disploff);
+                  (mydisp[node * numdf + dim2]);
               myvelo_refnormal[node * numdf + dim1] +=
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
                   myvelo[node * numdf + dim2];
@@ -1888,13 +1896,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
             {
               if ((*onoff)[dim])  // is this dof activated?
               {
-                const double fac_d = intpoints.qwgt[gp] * detA * springstiff[dim];
-                const double fac_v = intpoints.qwgt[gp] * detA * dashpotvisc[dim];
-
                 // displacement and velocity at Gauss point
-                double dispnp_gp = 0.;
-                double velonp_gp = 0.;
-                double offprestrn_gp = 0.;
+                double dispnp_gp = 0.0;
+                double velonp_gp = 0.0;
+                double offprestrn_gp = 0.0;
                 for (int node = 0; node < numnode; ++node)
                 {
                   dispnp_gp += funct[node] * mydisp[node * numdf + dim];
@@ -1902,29 +1907,56 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   offprestrn_gp += funct[node] * myoffprestr[node * numdf + dim];
                 }
 
+                // displacement related forces and derivatives
+                double force_disp;
+                double force_disp_deriv;
+                if ((*numfuncnonlinstiff)[dim] == 0)
+                {
+                  force_disp = springstiff[dim] * (dispnp_gp - disploffset[dim] + offprestrn_gp);
+                  force_disp_deriv = springstiff[dim];
+                }
+                else
+                {
+                  double displ[3] = {std::numeric_limits<double>::infinity(),
+                      std::numeric_limits<double>::infinity(),
+                      std::numeric_limits<double>::infinity()};
+                  displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
+                  force_disp = DRT::Problem::Instance()
+                                   ->Funct((*numfuncnonlinstiff)[dim] - 1)
+                                   .Evaluate(0, displ, time);
+
+                  force_disp_deriv = (DRT::Problem::Instance()
+                                          ->Funct((*numfuncnonlinstiff)[dim] - 1)
+                                          .EvaluateSpatialDerivative(0, displ, time))[dim];
+                }
+
+                // velocity related forces and derivatives
+                const double force_vel = dashpotvisc[dim] * velonp_gp;
+                const double force_vel_deriv = dashpotvisc[dim];
+
+                // multiply integration factor
+                const double fac = intpoints.qwgt[gp] * detA;
+                const double force_disp_fac = force_disp * fac;
+                const double force_disp_deriv_fac = force_disp_deriv * fac;
+                const double force_vel_fac = force_vel * fac;
+                const double force_vel_deriv_fac = force_vel_deriv * fac;
+
+                // residual
                 for (int node = 0; node < numnode; ++node)
-                  elevector1[node * numdf + dim] +=
-                      funct[node] *
-                      (fac_d * (dispnp_gp - disploffset[dim] + offprestrn_gp) + fac_v * velonp_gp);
+                  elevector1[node * numdf + dim] += funct[node] * (force_disp_fac + force_vel_fac);
 
                 // spring stress for output (const per element)
                 for (int node = 0; node < numnode; ++node)
-                  elevector3[node * numdf + dim] -=
-                      springstiff[dim] * (dispnp_gp - disploffset[dim] + offprestrn_gp) +
-                      dashpotvisc[dim] * velonp_gp;
-              }
-            }
+                  elevector3[node * numdf + dim] -= force_disp + force_vel;
 
-            for (int dim = 0; dim < numdim; dim++)
-              if ((*onoff)[dim])  // is this dof activated?
-              {
-                const double fac_d = intpoints.qwgt[gp] * detA * springstiff[dim];
-                const double fac_v = intpoints.qwgt[gp] * detA * dashpotvisc[dim];
+                // stiffness matrix
                 for (int node1 = 0; node1 < numnode; ++node1)
                   for (int node2 = 0; node2 < numnode; ++node2)
                     (elematrix1)(node1 * numdf + dim, node2 * numdf + dim) +=
-                        funct[node1] * funct[node2] * (fac_d + fac_v * time_fac);
+                        funct[node1] * funct[node2] *
+                        (force_disp_deriv_fac + force_vel_deriv_fac * time_fac);
               }
+            }
           }
           break;
 
@@ -1935,44 +1967,77 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               if ((*onoff)[checkdof] != 0)
                 dserror("refsurfnormal Robin condition on 1st dof only!");
 
-            const double ref_stiff = springstiff[0];
-            const double ref_visco = dashpotvisc[0];
-
-            const double fac_d = intpoints.qwgt[gp] * detA * ref_stiff;
-            const double fac_v = intpoints.qwgt[gp] * detA * ref_visco;
-
+            // all parameters are in dof No. 1
             for (int dim = 0; dim < numdim; dim++)
             {
               // displacement and velocity in normal direction at Gauss point
-              double dispnp_refnormal_gp = 0.;
-              double velonp_refnormal_gp = 0.;
-              double offprestrn_refnormal_gp = 0.;
+              double refnormal_gp = 0.0;
+              double dispnp_refnormal_gp = 0.0;
+              double velonp_refnormal_gp = 0.0;
+              double offprestrn_refnormal_gp = 0.0;
               for (int node = 0; node < numnode; ++node)
               {
+                refnormal_gp += funct[node] * refnormal[node * numdf + dim];
                 dispnp_refnormal_gp += funct[node] * mydisp_refnormal[node * numdf + dim];
                 velonp_refnormal_gp += funct[node] * myvelo_refnormal[node * numdf + dim];
                 offprestrn_refnormal_gp += funct[node] * myoffprestr_refnormal[node * numdf + dim];
               }
 
+              // displacement related forces and derivatives
+              double force_disp;
+              double force_disp_deriv;
+              if ((*numfuncnonlinstiff)[0] == 0)
+              {
+                force_disp =
+                    springstiff[0] * (dispnp_refnormal_gp + -disploffset[0] * refnormal_gp +
+                                         offprestrn_refnormal_gp);
+                force_disp_deriv = springstiff[0];
+              }
+              else
+              {
+                double displ[3] = {
+                    dispnp_refnormal_gp + -disploffset[0] * refnormal_gp + offprestrn_refnormal_gp,
+                    std::numeric_limits<double>::infinity(),
+                    std::numeric_limits<double>::infinity()};
+                force_disp = DRT::Problem::Instance()
+                                 ->Funct((*numfuncnonlinstiff)[0] - 1)
+                                 .Evaluate(0, displ, time);
+
+                force_disp_deriv = (DRT::Problem::Instance()
+                                        ->Funct((*numfuncnonlinstiff)[0] - 1)
+                                        .EvaluateSpatialDerivative(0, displ, time))[0];
+              }
+
+              // velocity related forces
+              const double force_vel = dashpotvisc[0] * velonp_refnormal_gp;
+              const double force_vel_deriv = dashpotvisc[0];
+
+              // multiply integration factor
+              const double fac = intpoints.qwgt[gp] * detA;
+              const double force_disp_fac = force_disp * fac;
+              const double force_disp_deriv_fac = force_disp_deriv * fac;
+              const double force_vel_fac = force_vel * fac;
+              const double force_vel_deriv_fac = force_vel_deriv * fac;
+
+
+              // residual
               for (int node = 0; node < numnode; ++node)
-                elevector1[node * numdf + dim] +=
-                    funct[node] * (fac_d * (dispnp_refnormal_gp + offprestrn_refnormal_gp) +
-                                      fac_v * velonp_refnormal_gp);
+                elevector1[node * numdf + dim] += funct[node] * (force_disp_fac + force_vel_fac);
 
               // spring stress for output (const per element)
               for (int node = 0; node < numnode; ++node)
-                elevector3[node * numdf + dim] -=
-                    ref_stiff * (dispnp_refnormal_gp + offprestrn_refnormal_gp) +
-                    ref_visco * velonp_refnormal_gp;
-            }
+                elevector3[node * numdf + dim] -= force_disp + force_vel;
 
-            for (int dim1 = 0; dim1 < numdim; dim1++)
+              // stiffness matrix
+              const int dim1 = dim;
               for (int dim2 = 0; dim2 < numdim; dim2++)
                 for (int node1 = 0; node1 < numnode; ++node1)
                   for (int node2 = 0; node2 < numnode; ++node2)
                     (elematrix1)(node1 * numdf + dim1, node2 * numdf + dim2) +=
-                        funct[node1] * funct[node2] * (fac_d + fac_v * time_fac) *
+                        funct[node1] * funct[node2] *
+                        (force_disp_deriv_fac + force_vel_deriv_fac * time_fac) *
                         N_otimes_N(node2 * numdf + dim1, node2 * numdf + dim2);
+            }
           }
           break;
 
@@ -2096,12 +2161,14 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
       const double e0 = intpoints.qxg[gpid][0];
       const double e1 = intpoints.qxg[gpid][1];
 
-      // get shape functions and derivatives of shape functions in the plane of the element
+      // get shape functions and derivatives of shape functions in the plane of
+      // the element
       DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
       DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       double detA;
-      // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
+      // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th
+      // column
       LINALG::SerialDenseMatrix metrictensor(2, 3);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
       // LINALG::SerialDenseMatrix metrictensor(2,2);
@@ -2168,14 +2235,16 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
       const double e0 = intpoints.qxg[gpid][0];
       const double e1 = intpoints.qxg[gpid][1];
 
-      // get shape functions and derivatives of shape functions in the plane of the element
+      // get shape functions and derivatives of shape functions in the plane of
+      // the element
       DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
       DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);
       double detA;
-      // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
+      // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd
+      // column
       LINALG::SerialDenseMatrix metrictensor(2, numdim);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
@@ -2204,7 +2273,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
         {
           for (int j = 0; j < numnode; j++)
           {
-            //"diagonal" (dV)^2/(dx_i dx_j) = 0, therefore only six entries have to be specified
+            //"diagonal" (dV)^2/(dx_i dx_j) = 0, therefore only six entries have
+            // to be specified
             (*Vdiff2)(3 * i + inda, 3 * j + indb) +=
                 invnumind * intpoints.qwgt[gpid] * dotprodc *
                 (deriv(0, i) * deriv(1, j) - deriv(1, i) * deriv(0, j));

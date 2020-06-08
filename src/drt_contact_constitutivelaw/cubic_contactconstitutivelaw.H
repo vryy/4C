@@ -57,22 +57,6 @@ namespace CONTACT
     };  // class
 
     /*----------------------------------------------------------------------*/
-
-    /** \brief DRT::ParObjectType for the CubicConstitutiveLaw \f$ Ax^3+Bx^2+Cx+D \f$
-     * relating the gap to the contact pressure
-     */
-    class CubicConstitutiveLawType : public ConstitutiveLawType
-    {
-     public:
-      std::string Name() const { return "CubicConstitutiveLaw"; }
-
-      static CubicConstitutiveLawType& Instance() { return instance_; };
-
-     private:
-      static CubicConstitutiveLawType instance_;
-    };
-
-    /*----------------------------------------------------------------------*/
     /** \brief implements a cubic contact constitutive law \f$ Ax^3+Bx^2+Cx+D \f$ relating the gap
      * to the contact pressure
      *
@@ -83,61 +67,12 @@ namespace CONTACT
       /// construct the ConstitutiveLaw object given a set of parameters
       explicit CubicConstitutiveLaw(CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params);
 
-      //! @name Packing and Unpacking
-
-      /*!
-        \brief Return unique ParObject id
-
-        every class implementing ParObject needs a unique id defined at the
-        top of drt_parobject.H (this file) and should return it in this method.
-      */
-      int UniqueParObjectId() const override
-      {
-        return CubicConstitutiveLawType::Instance().UniqueParObjectId();
-      }
-
-      /**
-       *  \brief Pack this class so it can be communicated
-       *
-       *  Resizes the vector data and stores all information of a class in it.
-       *  The first information to be stored in data has to be the
-       *  unique parobject id delivered by UniqueParObjectId() which will then
-       *  identify the exact class on the receiving processor.
-       *
-       *  \param data (in/out): char vector to store class information
-       *  \todo  Fully implement this class
-       */
-      void Pack(DRT::PackBuffer& data) const override;
-
-      /**
-       *  \brief Unpack data from a char vector into this class
-       *
-       *  The vector data contains all information to rebuild the
-       *  exact copy of an instance of a class on a different processor.
-       *  The first entry in data has to be an integer which is the unique
-       *  parobject id defined at the top of this file and delivered by
-       *  UniqueParObjectId().
-       *
-       *  \param data (in) : vector storing all data to be unpacked into this
-       *  instance.
-       *  \todo Fully implement this class
-       */
-      void Unpack(const std::vector<char>& data) override;
-
-      //@}
-
       //! @name Access methods
 
       /// contact constitutive law type
       INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_cubic;
-      }
-
-      /// return copy of this ConstitutiveLaw object
-      Teuchos::RCP<ConstitutiveLaw> Clone() const override
-      {
-        return Teuchos::rcp(new CubicConstitutiveLaw(*this));
       }
 
       double GetA() { return params_->GetA(); }

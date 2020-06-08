@@ -158,11 +158,12 @@ namespace MAT
        *  \param[in]  prinv    principal invariants of right Cauchy-Green tensor
        *  \param[in]  modinv   modified invariants of right Cauchy-Green tensor
        *  \param[in]  glstrain Green-Lagrange strain in strain like Voigt notation
+       *  \param[in]  go       Gauss point
        *  \param[in]  eleGID   element global ID
        *
        *  \author hiermeier \date 09/17 */
       virtual void AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-          const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain,
+          const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
           const int eleGID);
 
       /** \brief Add anisotropic principal stresses
@@ -171,12 +172,13 @@ namespace MAT
        *  \param[out] cmat   material stiffness matrix
        *  \param[out] stress 2nd PK-stress
        *  \param[in]  params additional parameters for comp. of material properties
+       *  \param[in]  go       Gauss point
        *  \param[in]  eleGID element GID
        *
        *  \author hiermeier \date 09/17 */
       virtual void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
           LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-          const int eleGID);
+          const int gp, const int eleGID);
 
       /** \brief Set fiber directions
        *

@@ -518,8 +518,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    params.set<int>("gp", gp);
-    SolidMaterial()->Evaluate(&mod_defgrd, &mod_glstrain, params, &stress, &cmat, Id());
+    SolidMaterial()->Evaluate(&mod_defgrd, &mod_glstrain, params, &stress, &cmat, gp, Id());
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1223,8 +1222,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
-      params.set<int>("gp",gp);
-      SolidMaterial()->Evaluate(&defgrd,&mod_glstrain,params,&stress,&cmat,Id());
+      SolidMaterial()->Evaluate(&defgrd,&mod_glstrain,params,&stress,&cmat,gp,Id());
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

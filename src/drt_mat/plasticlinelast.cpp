@@ -301,14 +301,9 @@ void MAT::PlasticLinElast::Update()
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  // linear strain vector
-    Teuchos::ParameterList& params,            // parameter list for communication & HISTORY
-    LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
-    const int eleGID)
+    const LINALG::Matrix<6, 1>* linstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(true);
 
   // get material parameters

@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 template <typename beam, typename solid, typename mortar>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -156,6 +156,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       local_M(i_row, i_col) = M(i_row, i_col);
   for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
 
+  // This pair does not have constraint offset contributions.
+  local_constraint_offset.Shape(mortar::n_dof_, 1);
+
   // If we get to this point, the pair has a mortar contribution.
   return true;
 }
@@ -174,16 +177,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("mortar");
+      visualization_writer->GetVisualizationWriter("btsvc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("mortar-continuous");
+      visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
     LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, scalar_type_fad> X;
-    LINALG::Matrix<3, 1, scalar_type_fad> r;
-    LINALG::Matrix<3, 1, scalar_type_fad> u;
+    LINALG::Matrix<3, 1, scalar_type> X;
+    LINALG::Matrix<3, 1, scalar_type> r;
+    LINALG::Matrix<3, 1, scalar_type> u;
     LINALG::Matrix<3, 1, double> lambda_discret;
     LINALG::Matrix<3, 1, double> xi_mortar_node;
 
@@ -261,7 +264,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
       const unsigned int mortar_segments =
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-                  "output_params_ptr")
+                  "btsvc-output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
       std::vector<double>& point_coordinates =
@@ -311,9 +314,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
-    const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
-    LINALG::Matrix<3, 1, scalar_type_fad>& force) const
+    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
+    const LINALG::Matrix<3, 1, scalar_type>& r_solid,
+    LINALG::Matrix<3, 1, scalar_type>& force) const
 {
   force.PutScalar(0.);
 }
@@ -322,41 +325,31 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line2>;
+/**
+ * Explicit template initialization of template class.
+ */
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
 
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line2>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line2>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line2>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line2>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line2>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line2>;
 
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line3>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line3>;
+
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line4>;
+  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
+}  // namespace BEAMINTERACTION

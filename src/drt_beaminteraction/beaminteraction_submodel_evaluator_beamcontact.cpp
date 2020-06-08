@@ -84,10 +84,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
-  // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
-  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(DiscretPtr());
-
   // build runtime vtp writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
@@ -170,6 +166,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           GState().GetTimeN());
     }
   }
+
+  // Build the container to manage beam-to-solid conditions and get all coupling conditions.
+  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
+  beam_interaction_conditions_ptr_->SetBeamInteractionConditions(
+      DiscretPtr(), beam_contact_params_ptr_);
 
   // set flag
   issetup_ = true;
@@ -375,6 +376,12 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContac
   for (auto& elepairptr : contact_elepairs_)
   {
     contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->GetEnergy();
+  }
+
+  for (const auto& assembly_manager : assembly_managers_)
+  {
+    contact_penalty_potential[STR::beam_contact_penalty_potential] +=
+        assembly_manager->GetEnergy(GState().GetDisNp());
   }
 
   return contact_penalty_potential;
@@ -873,8 +880,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(
-              ele_ptrs, beam_contact_params_ptr_, beam_interaction_conditions_ptr_);
+          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_interaction_conditions_ptr_);
 
       if (newbeaminteractionpair == Teuchos::null)
         dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",
@@ -889,26 +895,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   }
 
   // Setup the geometry evaluation data.
-  beam_interaction_conditions_ptr_->Setup();
+  beam_interaction_conditions_ptr_->Setup(DiscretPtr());
 
-  // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
+  // Get the pairs that can be assembled directly.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_indirect;
   for (auto& elepairptr : contact_elepairs_)
-  {
     if (elepairptr->IsAssemblyDirect()) assembly_pairs_direct.push_back(elepairptr);
-    if (elepairptr->IsAssemblyIndirect()) assembly_pairs_indirect.push_back(elepairptr);
-  }
 
-  // Check if there are any processors that require a certain element assembly method.
+  // Check if there are any processors that require a direct element assembly method.
   // We need to do this as in some assembly methods MPI communications are needed and the
   // simulation crashes if the assembly manager is not on all ranks.
   int my_direct_pairs = assembly_pairs_direct.size();
-  int my_indirect_pairs = assembly_pairs_indirect.size();
   int global_direct_pairs = 0;
-  int global_indirect_pairs = 0;
   Discret().Comm().SumAll(&my_direct_pairs, &global_direct_pairs, 1);
-  Discret().Comm().SumAll(&my_indirect_pairs, &global_indirect_pairs, 1);
 
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)
@@ -916,11 +915,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
         Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
             new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect(
                 assembly_pairs_direct)));
-  if (global_indirect_pairs > 0)
-    assembly_managers_.push_back(
-        Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(
-            new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
-                assembly_pairs_indirect, DiscretPtr(), BeamContactParamsPtr())));
+
+  // Each indirect assembly manager depends on a beam interaction.
+  beam_interaction_conditions_ptr_->CreateIndirectAssemblyManagers(
+      DiscretPtr(), assembly_managers_);
 
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
                          << " currently monitors " << std::setw(5) << std::right

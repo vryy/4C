@@ -297,7 +297,8 @@ namespace MAT
             stress,  //!< [OUT] (mandatory) second Piola-Kirchhoff stress
         LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
             cmat,  //!< [OUT] (mandatory) material stiffness matrix
-        const int eleGID) override;
+        int gp,    //!< [IN ]Gauss point
+        int eleGID) override;
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
     void MillerBravaisToMiller(

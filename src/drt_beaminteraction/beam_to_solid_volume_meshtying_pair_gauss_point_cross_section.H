@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
     using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    using scalar_type_fad = Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_>;
+    using scalar_type = typename base_class::scalar_type;
 
    public:
     /**
@@ -88,7 +88,7 @@ namespace BEAMINTERACTION
      * position is calculated.
      */
     void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const override;
+        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 

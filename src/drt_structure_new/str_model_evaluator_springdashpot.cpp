@@ -61,7 +61,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   Teuchos::RCP<DRT::Discretization> discret_ptr =
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
   for (int i = 0; i < n_conds_; ++i)
-    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpotNew(discret_ptr, springdashpots[i])));
+    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpots[i])));
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
@@ -105,16 +105,19 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   for (int i = 0; i < n_conds_; ++i)
   {
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
+    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       springs_[i]->EvaluateRobin(
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
-      springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_);
+    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
+      springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   return true;
@@ -139,17 +142,20 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
   // loop over all spring dashpot conditions and evaluate them
   for (int i = 0; i < n_conds_; ++i)
   {
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
+    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       springs_[i]->EvaluateRobin(
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       springs_[i]->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
@@ -178,17 +184,20 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
   // loop over all spring dashpot conditions and evaluate them
   for (int i = 0; i < n_conds_; ++i)
   {
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
+    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       springs_[i]->EvaluateRobin(
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    {
+      springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       springs_[i]->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+    }
   }
 
   if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
@@ -233,11 +242,11 @@ void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
   for (int i = 0; i < n_conds_; ++i)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
+    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
       springs_[i]->OutputPrestrOffset(springoffsetprestr);
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal)
+    if (stype == UTILS::SpringDashpot::cursurfnormal)
       springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
   }
 
@@ -264,11 +273,11 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(IO::DiscretizationReader& i
   for (int i = 0; i < n_conds_; ++i)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-    if (stype == UTILS::SpringDashpotNew::xyz or stype == UTILS::SpringDashpotNew::refsurfnormal)
+    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
       springs_[i]->SetRestart(tempvec);
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal) springs_[i]->SetRestartOld(tempvecold);
+    if (stype == UTILS::SpringDashpot::cursurfnormal) springs_[i]->SetRestartOld(tempvecold);
   }
 }
 
@@ -291,7 +300,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
   // check for prestressing and reset if necessary
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
   if (prestress_type != INPAR::STR::PreStress::none and
-      GState().GetTimeN() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
+      GState().GetTimeNp() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
   {
     switch (prestress_type)
     {
@@ -301,6 +310,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
         break;
     }
   }
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->Update();
 }
 
 /*----------------------------------------------------------------------*
@@ -354,8 +364,8 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
     springs_[i]->OutputGapNormal(gap, normals, springstress);
 
     // get spring type from current condition
-    const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
-    if (stype == UTILS::SpringDashpotNew::cursurfnormal) found_cursurfnormal = true;
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    if (stype == UTILS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
   }
 
   // write vectors to output

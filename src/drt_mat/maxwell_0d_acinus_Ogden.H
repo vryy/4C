@@ -1,9 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Former file of Lena Yoshihara
 
-\maintainer Martin Kronbichler
+\brief Four-element Maxwell material model for reduced dimensional
+acinus elements with non-linear Ogden-like spring, inherits from Maxwell_0d_acinus
+
+The originally linear spring (Stiffness1) of the 4-element Maxwell model is substituted by a
+non-linear pressure-volume relation derived from the Ogden strain energy function considering pure
+volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
+
+\maintainer Carolin Geitner
 
 \level 3
 */

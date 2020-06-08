@@ -221,12 +221,8 @@ void MAT::ViscoNeoHooke::Update()
 void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<NUM_STRESS_3D, 1>* stress, LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,
-    const int eleGID)
+    const int gp, const int eleGID)
 {
-  // get gauss point number
-  const int gp = params.get<int>("gp", -1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
   // get material parameters
   const double E_s = params_->youngs_slow_;
   const double nue = params_->poisson_;

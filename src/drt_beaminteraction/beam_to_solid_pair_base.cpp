@@ -14,6 +14,7 @@
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3k.H"
@@ -103,9 +104,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::ResetSt
 {
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-  {
-    ele1pos_(i) = scalar_type_fad(beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
-  }
+    ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
+        beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
 /**
@@ -186,41 +186,41 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Evaluat
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex8::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex20::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex27::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tet4::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tet10::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double,
-        GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs27::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
 
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tri3::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tri6::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad4::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad8::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_quad9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>;
-template class BEAMINTERACTION::BeamToSolidPairBase<
-    Sacado::ELRFad::SLFad<double, GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_nurbs9::n_dof_>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex8>, t_hermite,
+      t_hex8>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex20>, t_hermite,
+      t_hex20>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex27>, t_hermite,
+      t_hex27>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet4>, t_hermite,
+      t_tet4>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet10>, t_hermite,
+      t_tet10>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_nurbs27>, t_hermite,
+      t_nurbs27>;
+
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad4>, t_hermite,
+      t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad8>, t_hermite,
+      t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad9>, t_hermite,
+      t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri3>, t_hermite,
+      t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri6>, t_hermite,
+      t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>,
+      t_hermite, t_nurbs9>;
+}  // namespace BEAMINTERACTION

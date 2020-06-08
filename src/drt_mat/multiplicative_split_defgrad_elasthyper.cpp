@@ -37,11 +37,11 @@ MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_Elas
       density_(matdata->GetDouble("DENS"))
 {
   // check if sizes fit
-  if (nummat_elast_ != (int)matids_elast_->size())
+  if (nummat_elast_ != static_cast<int>(matids_elast_->size()))
     dserror("number of elastic materials %d does not fit to size of elastic material ID vector %d",
         nummat_elast_, matids_elast_->size());
 
-  if (numfac_inel_ != (int)inel_defgradfacids_->size())
+  if (numfac_inel_ != static_cast<int>(inel_defgradfacids_->size()))
     dserror(
         "number of inelastic deformation gradient factors %d does not fit to size of inelastic "
         "deformation gradient ID vector %d",
@@ -74,7 +74,10 @@ DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
  | construct empty material                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper()
-    : params_(NULL), potsumel_(0), facdefgradin_(0), anisotropy_()
+    : anisotropy_(Teuchos::rcp(new MAT::Anisotropy())),
+      inelastic_(Teuchos::rcp(new MAT::InelasticFactorsHandler())),
+      params_(NULL),
+      potsumel_(0)
 {
 }
 
@@ -84,7 +87,10 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
  *--------------------------------------------------------------------*/
 MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
     MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params)
-    : params_(params), potsumel_(0), facdefgradin_(0), anisotropy_()
+    : anisotropy_(Teuchos::rcp(new MAT::Anisotropy())),
+      inelastic_(Teuchos::rcp(new MAT::InelasticFactorsHandler())),
+      params_(params),
+      potsumel_(0)
 {
   std::vector<int>::const_iterator m;
 
@@ -95,38 +101,10 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsumel_.push_back(sum);
-    sum->RegisterAnisotropyExtensions(anisotropy_);
+    sum->RegisterAnisotropyExtensions(*anisotropy_);
   }
 
-  // inelastic deformation gradient factors
-  for (m = params_->inel_defgradfacids_->begin(); m != params_->inel_defgradfacids_->end(); ++m)
-  {
-    const int matid = *m;
-    Teuchos::RCP<MAT::InelasticDefgradFactors> fac = MAT::InelasticDefgradFactors::Factory(matid);
-    if (fac == Teuchos::null) dserror("Failed to allocate!");
-    facdefgradin_.push_back(fac);
-  }
-
-  // safety checks
-  // get the scatra structure control parameter list
-  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-  if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
-      INPAR::SSI::ssi_Monolithic)
-  {
-    for (unsigned int p = 0; p < facdefgradin_.size(); ++p)
-    {
-      if ((facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_lin_scalar_aniso) and
-          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_lin_scalar_iso) and
-          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_poly_scalar_iso) and
-          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_poly_scalar_aniso))
-        dserror(
-            "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you need "
-            "to use the material 'MAT_InelasticDefgradLinScalarAniso' "
-            "'MAT_InelasticDefgradLinScalarIso', 'MAT_InelasticDefgradPolyScalarIso' or "
-            "'MAT_InelasticDefgradPolyScalarAniso'!"
-            " If you want to use a different material, feel free to implement it! ;-)");
-    }
-  }
+  inelastic_->Setup(params);
 }
 
 
@@ -146,13 +124,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) con
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
+  anisotropy_->PackAnisotropy(data);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->PackSummand(data);
   }
-
-  anisotropy_.PackAnisotropy(data);
 }
 
 
@@ -164,7 +142,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
   // make sure we have a pristine material
   params_ = NULL;
   potsumel_.clear();
-  facdefgradin_.clear();
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -190,6 +167,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
     }
   }
 
+  anisotropy_->UnpackAnisotropy(data, position);
+
   if (params_ != NULL)  // summands are not accessible in postprocessing mode
   {
     std::vector<int>::const_iterator m;
@@ -206,36 +185,25 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
     for (auto& p : potsumel_)
     {
       p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(anisotropy_);
+      p->RegisterAnisotropyExtensions(*anisotropy_);
     }
 
     // inelastic deformation gradient factors
-    for (m = params_->inel_defgradfacids_->begin(); m != params_->inel_defgradfacids_->end(); ++m)
-    {
-      const int matid = *m;
-      Teuchos::RCP<MAT::InelasticDefgradFactors> fac = MAT::InelasticDefgradFactors::Factory(matid);
-      if (fac == Teuchos::null) dserror("Failed to allocate");
-      facdefgradin_.push_back(fac);
-    }
+    inelastic_->Setup(params_);
   }
-
-  anisotropy_.UnpackAnisotropy(data, position);
 }
 
 
 /*--------------------------------------------------------------------*
  | evaluate                                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
-    const LINALG::Matrix<3, 3>* defgrad,   ///< Deformation gradient
-    const LINALG::Matrix<6, 1>* glstrain,  ///< Green-Lagrange strain
-    Teuchos::ParameterList& params,        ///< Container for additional information
-    LINALG::Matrix<6, 1>* stress,          ///< 2nd Piola-Kirchhoff stresses
-    LINALG::Matrix<6, 6>* cmat,            ///< Constitutive matrix
-    const int eleGID)                      ///< Element ID
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrad,
+    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)  ///< Element ID
 {
   // do all stuff that only has to be done once per Evaluate() call
-  PreEvaluate(params);
+  PreEvaluate(params, gp);
 
   // static variables
   static LINALG::Matrix<6, 6> cmatiso(true);
@@ -244,8 +212,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
 
   // build inverse inelastic deformation gradient
   static LINALG::Matrix<3, 3> iFinM(true);
-  std::vector<LINALG::Matrix<3, 3>> iFinjM;
-  EvaluateInverseInelasticDefGrad(defgrad, iFinjM, iFinM);
+  inelastic_->EvaluateInverseInelasticDefGrad(defgrad, iFinM);
 
   // static variables of kinetic quantities
   static LINALG::Matrix<6, 1> iCV(true);
@@ -263,7 +230,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
   // derivatives of principle invariants
   static LINALG::Matrix<3, 1> dPIe(true);
   static LINALG::Matrix<6, 1> ddPIIe(true);
-  EvaluateInvariantDerivatives(prinv, eleGID, dPIe, ddPIIe);
+  EvaluateInvariantDerivatives(prinv, gp, eleGID, dPIe, ddPIIe);
 
   // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
   static LINALG::Matrix<3, 1> gamma(true);
@@ -290,12 +257,21 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
     // evaluate additional terms for the elasticity tensor
     // cmatadd = 2 \frac{\partial S}{\partial F_{in}^{-1}} : \frac{\partial F_{in}^{-1}}{\partial
     // C}, where F_{in}^{-1} can be multiplicatively composed of several inelastic contributions
-    EvaluateAdditionalCmat(defgrad, iFinjM, iCV, dSdiFin, cmatadd);
+    EvaluateAdditionalCmat(defgrad, iCV, dSdiFin, cmatadd);
     cmat->Update(1.0, cmatadd, 1.0);
   }
   // evaluate OD Block
   else
-    EvaluateODStiffMat(defgrad, iFinjM, dSdiFin, *stress);
+  {
+    // get source of deformation for this OD block
+    PAR::InelasticSource source;
+    if (params.get<std::string>("scalartype", "none") == "concentration")
+      source = PAR::InelasticSource::inelastic_concentration;
+    else
+      dserror("unknown scalaratype");
+
+    EvaluateODStiffMat(source, defgrad, dSdiFin, *stress);
+  }
 
   return;
 }
@@ -415,10 +391,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
  | evaluate derivatives of principle invariants         schmidt 03/18 |
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
-    const LINALG::Matrix<3, 1>&
-        prinv,                  ///< Principal invariants of the elastic right Cauchy-Green tensor
-    const int eleGID,           ///< Element ID
-    LINALG::Matrix<3, 1>& dPI,  ///< First derivative with respect to invariants
+    const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID, LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII) const  ///< Second derivative with respect to invariants
 {
   // clear variables
@@ -429,7 +402,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
   // derivatives of strain energy function w.r.t. principal invariants
   for (unsigned p = 0; p < potsumel_.size(); ++p)
   {
-    potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
+    potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
   }
 
   return;
@@ -485,61 +458,81 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
     const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-    const std::vector<LINALG::Matrix<3, 3>>&
-        iFinjM,  ///< Vector that holds all inverse inelastic deformation gradient factors as 3x3
-                 ///< matrices
-    const LINALG::Matrix<6, 1>& iCV,      ///< Inverse right Cauchy-Green tensor
-    const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the
-                                          ///< inverse inelastic deformation gradient
-    LINALG::Matrix<6, 6>& cmatadd) const  ///< Additional elasticity tensor
+    const LINALG::Matrix<6, 1>& iCV,            ///< Inverse right Cauchy-Green tensor
+    const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t.
+                                          ///< the inverse inelastic deformation gradient
+    LINALG::Matrix<6, 6>& cmatadd)        ///< Additional elasticity tensor
 {
   // clear variable
   cmatadd.Clear();
 
+  const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>&
+      facdefgradin = inelastic_->FacDefGradIn();
+
+  const std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>>& iFinjM =
+      inelastic_->iFinj();
+
+  const int num_contributions = inelastic_->NumInelasticDefGrad();
+
   // check amount of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
-  switch (facdefgradin_.size())
+  if (num_contributions == 1)
+    facdefgradin[0].second->EvaluateAdditionalCmat(
+        defgrad, iFinjM[0].second, iCV, dSdiFin, cmatadd);
+
+  else if (num_contributions > 1)
   {
-    case 1:
-    {
-      facdefgradin_[0]->EvaluateAdditionalCmat(defgrad, iFinjM[0], iCV, dSdiFin, cmatadd);
+    // static variables
+    // dSdiFinj = dSdiFin : diFindiFinj
+    // diFindiFinj = \Pi_(k=num_contributions_part)^(j+1) iFin_k : dFinjdFinj : \Pi_(k=j-1)^(0). The
+    // double contraction and derivative in index notation for three contributions: diFindiFinj_abcd
+    // = iFin_(j-1)_ae \delta_ec \delta_df iFin_(j+1)_fb = iFin_(j-1)_ac iFin_(j+1)_db. This is
+    // performed by nonsymmetric product \Pi_(k=num_contributions_part)^(j+1) iFin_k (x)
+    // \Pi_(k=j-1)^(0) iFin_k, where (x) denots the nonsymmetric product and \Pi is the
+    // multiplication operator.
+    static LINALG::Matrix<6, 9> dSdiFinj(true);
+    static LINALG::Matrix<9, 9> diFindiFinj(true);
+    static LINALG::Matrix<3, 3> id(true);
+    for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
-      break;
-    }
-    case 2:
-    {
-      // static variables
-      // dSdiFinj = dSdiFin : diFindiFinj
-      static LINALG::Matrix<6, 9> dSdiFinj(true);
-      static LINALG::Matrix<9, 9> diFindiFinj(true);
-      static LINALG::Matrix<3, 3> id(true);
-      for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
+    // product of all iFinj, except for the one, that is currently evaluated. In case of inner
+    // (neither first or last) we have two products
+    static LINALG::Matrix<3, 3> producta(true);
+    static LINALG::Matrix<3, 3> productb(true);
+    static LINALG::Matrix<3, 3> producta_temp(true);
+    static LINALG::Matrix<3, 3> productb_temp(true);
 
-      // evaluation of first inelastic deformation gradient factor contribution
+    for (int i = 0; i < num_contributions; ++i)
+    {
       // clear static variable
       diFindiFinj.Clear();
-      AddNonSymmetricProduct(1.0, iFinjM[1], id, diFindiFinj);
-      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
-      facdefgradin_[0]->EvaluateAdditionalCmat(defgrad, iFinjM[0], iCV, dSdiFinj, cmatadd);
 
-      // evaluation of second inelastic deformation gradient factor contribution
-      // clear static variable
-      diFindiFinj.Clear();
-      AddNonSymmetricProduct(1.0, id, iFinjM[0], diFindiFinj);
-      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
-      facdefgradin_[1]->EvaluateAdditionalCmat(defgrad, iFinjM[1], iCV, dSdiFinj, cmatadd);
+      // multiply all inelastic deformation gradients except for range between first and current
+      producta = id;
+      for (int j = num_contributions - 1; j > i; --j)
+      {
+        producta_temp.Multiply(1.0, producta, iFinjM[j].second, 0.0);
+        producta.Update(1.0, producta_temp, 0.0);
+      }
 
-      break;
+      // multiply all inelastic deformation gradients except for range between last and current
+      productb = id;
+      if (i > 0)
+        for (int j = i - 1; j >= 0; --j)
+        {
+          productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
+          productb.Update(1.0, productb_temp, 0.0);
+        }
+
+      // evaluate additional contribution to C by applying chain rule
+      AddNonSymmetricProduct(1.0, producta, productb, diFindiFinj);
+      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
+      facdefgradin[i].second->EvaluateAdditionalCmat(
+          defgrad, iFinjM[i].second, iCV, dSdiFinj, cmatadd);
     }
-    default:
-      dserror(
-          "You defined %i inelastic deformation gradient factors. But framework is only "
-          "implemented for a maximum of 2 inelastic contributions! "
-          "If you really need more than 2 inelastic contributions, it's your turn to implement it! "
-          ";-)",
-          facdefgradin_.size());
-      break;
   }
+  else
+    dserror("You should not be here");
 
   return;
 }
@@ -552,8 +545,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
     const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_->SetNumberOfGaussPoints(numgp);
+  anisotropy_->ReadAnisotropyFromElement(linedef);
 
   // elastic materials
   for (auto& p : potsumel_) p->Setup(numgp, linedef);
@@ -573,14 +566,161 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Update()
 
 
 /*--------------------------------------------------------------------*
- | evaluate the inverse of the inelastic deformation                  |
- | gradient                                             schmidt 03/18 |
+ | evaluate the off-diagonal contribution to the                      |
+ | stiffness matrix (for monolithic calculation)        schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-    std::vector<LINALG::Matrix<3, 3>>& iFinjM,  ///< Vector that holds all inverse inelastic
-                                                ///< deformation gradient factors as 3x3 matrices
-    LINALG::Matrix<3, 3>& iFinM) const          ///< Inverse inelastic deformation gradient
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::InelasticSource source,
+    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<6, 9>& dSdiFin,
+    LINALG::Matrix<6, 1>& dstressdx)
+{
+  // clear variable
+  dstressdx.Clear();
+
+  // References to vetor of inelastic contributions and inelastic deformation gradients
+  const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>&
+      facdefgradin = inelastic_->FacDefGradIn();
+  const std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>>& iFinjM =
+      inelastic_->iFinj();
+
+  // number of contributions for this source
+  const int num_contributions = inelastic_->NumInelasticDefGrad();
+
+  // check number of factors the inelastic deformation gradient consists of and choose
+  // implementation accordingly
+  if (num_contributions == 1)
+  {
+    facdefgradin[0].second->EvaluateODStiffMat(defgrad, iFinjM[0].second, dSdiFin, dstressdx);
+  }
+  else if (num_contributions > 1)
+  {
+    // static variables
+    // dSdiFinj = dSdiFin : diFindiFinj
+    // diFindiFinj = \Pi_(k=num_contributions_part)^(j+1) iFin_k : dFinjdFinj : \Pi_(k=j-1)^(0). The
+    // double contraction and derivative in index notation for three contributions: diFindiFinj_abcd
+    // = iFin_(j-1)_ae \delta_ec \delta_df iFin_(j+1)_fb = iFin_(j-1)_ac iFin_(j+1)_db. This is
+    // performed by nonsymmetric product \Pi_(k=num_contributions_part)^(j+1) iFin_k (x)
+    // \Pi_(k=j-1)^(0) iFin_k, where (x) denots the nonsymmetric product and \Pi is the
+    // multiplication operator.
+    static LINALG::Matrix<6, 9> dSdiFinj(true);
+    static LINALG::Matrix<9, 9> diFindiFinj(true);
+    static LINALG::Matrix<3, 3> id(true);
+    for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
+
+    // product of all iFinj, except for the one, that is currently evaluated. In case of inner
+    // (neither first or last) we have two products
+    static LINALG::Matrix<3, 3> producta(true);
+    static LINALG::Matrix<3, 3> productb(true);
+    static LINALG::Matrix<3, 3> producta_temp(true);
+    static LINALG::Matrix<3, 3> productb_temp(true);
+
+    for (int i = 0; i < num_contributions; ++i)
+    {
+      // only if the contribution is from this source, the derivative is non-zero
+      if (facdefgradin[i].first == source)
+      {
+        // clear static variable
+        diFindiFinj.Clear();
+
+        // multiply all inelastic deformation gradients except for range between first and current
+        // in reverse order
+        producta = id;
+        for (int j = num_contributions - 1; j > i; --j)
+        {
+          producta_temp.Multiply(1.0, producta, iFinjM[j].second, 0.0);
+          producta.Update(1.0, producta_temp, 0.0);
+        }
+
+        // multiply all inelastic deformation gradients except for range between last and current
+        productb = id;
+        if (i > 0)
+          for (int j = i - 1; j >= 0; --j)
+          {
+            productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
+            productb.Update(1.0, productb_temp, 0.0);
+          }
+
+        // evaluate additional contribution to OD block by applying chain rule
+        AddNonSymmetricProduct(1.0, producta, productb, diFindiFinj);
+        dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
+        facdefgradin[i].second->EvaluateODStiffMat(defgrad, iFinjM[i].second, dSdiFinj, dstressdx);
+      }
+    }
+  }
+  else
+    dserror("You should not be here");
+
+  return;
+}
+
+
+/*--------------------------------------------------------------------*
+ | pre evaluate                                         schmidt 03/18 |
+ *--------------------------------------------------------------------*/
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(Teuchos::ParameterList& params,
+    const int gp) const  ///< parameter list as handed in from the element
+{
+  // loop over all inelastic contributions
+  for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
+    inelastic_->FacDefGradIn()[p].second->PreEvaluate(params, gp);
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ | InelasticFactorsHandler                                            |
+ *--------------------------------------------------------------------*/
+MAT::InelasticFactorsHandler::InelasticFactorsHandler() : facdefgradin_(), iFinj_() { return; };
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params)
+{
+  facdefgradin_.clear();
+  iFinj_.clear();
+
+  // get inelastic deformation gradient factors and assign them to their source
+  std::vector<int>::const_iterator matnum;
+  for (matnum = params->inel_defgradfacids_->begin(); matnum != params->inel_defgradfacids_->end();
+       ++matnum)
+  {
+    Teuchos::RCP<MAT::InelasticDefgradFactors> fac = MAT::InelasticDefgradFactors::Factory(*matnum);
+    if (fac == Teuchos::null) dserror("Failed to allocate!");
+    std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>> temppair(
+        fac->GetInelasticSource(), fac);
+    facdefgradin_.push_back(temppair);
+  }
+
+  iFinj_.resize(facdefgradin_.size());
+
+  // safety checks
+  // get the scatra structure control parameter list
+  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
+      INPAR::SSI::ssi_Monolithic)
+  {
+    for (unsigned p = 0; p < facdefgradin_.size(); ++p)
+    {
+      const INPAR::MAT::MaterialType materialtype = facdefgradin_[p].second->MaterialType();
+      if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
+          (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
+        dserror(
+            "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you "
+            "need to use the material 'MAT_InelasticDefgradLinScalarAniso' "
+            "'MAT_InelasticDefgradLinScalarIso', 'MAT_InelasticDefgradPolyScalarIso' or "
+            "'MAT_InelasticDefgradPolyScalarAniso'!"
+            " If you want to use a different material, feel free to implement it! ;-)");
+    }
+  }
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
+    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
 {
   // temporary variables
   static LINALG::Matrix<3, 3> iFinp(true);
@@ -590,20 +730,18 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInverseInelasticDefGrad
   iFinM.Clear();
   iFin_init_store.Clear();
 
-  // initialize them
   for (int i = 0; i < 3; ++i) iFin_init_store(i, i) = 1.0;
 
-  // loop over all inelastic contributions
-  for (unsigned int p = 0; p < facdefgradin_.size(); ++p)
+  for (int i = 0; i < NumInelasticDefGrad(); ++i)
   {
     // clear tmp variable
     iFinp.Clear();
 
     // calculate inelastic deformation gradient and its inverse
-    facdefgradin_[p]->EvaluateInverseInelasticDefGrad(defgrad, iFinp);
+    facdefgradin_[i].second->EvaluateInverseInelasticDefGrad(defgrad, iFinp);
 
     // store inelastic deformation gradient of p-th inelastic contribution
-    iFinjM.push_back(iFinp);
+    iFinj_[i].second = iFinp;
 
     // update inverse inelastic deformation gradient
     iFinM.Multiply(iFin_init_store, iFinp);
@@ -611,85 +749,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInverseInelasticDefGrad
     // store result for next evaluation
     iFin_init_store.Update(1.0, iFinM, 0.0);
   }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
- | evaluate the off-diagonal contribution to the                      |
- | stiffness matrix (for monolithic calculation)        schmidt 03/18 |
- *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(
-    const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-    const std::vector<LINALG::Matrix<3, 3>>&
-        iFinMj,  ///< Vector that holds all inverse inelastic deformation gradient factors as 3x3
-                 ///< matrices
-    const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the
-                                          ///< inverse inelastic deformation gradient
-    LINALG::Matrix<6, 1>& dstressdx)  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary
-                                      ///< variable of different field
-{
-  // clear variable
-  dstressdx.Clear();
-
-  // check amount of factors the inelastic deformation gradient consists of and choose
-  // implementation accordingly
-  switch (facdefgradin_.size())
-  {
-    case 1:
-    {
-      facdefgradin_[0]->EvaluateODStiffMat(defgrad, iFinMj[0], dSdiFin, dstressdx);
-
-      break;
-    }
-    case 2:
-    {
-      // static variables
-      // dSdiFinj = dSdiFin : diFindiFinj
-      static LINALG::Matrix<6, 9> dSdiFinj(true);
-      static LINALG::Matrix<9, 9> diFindiFinj(true);
-      static LINALG::Matrix<3, 3> id(true);
-      for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
-
-      // evaluation of first inelastic deformation gradient factor contribution
-      // clear static variable
-      diFindiFinj.Clear();
-      AddNonSymmetricProduct(1.0, iFinMj[1], id, diFindiFinj);
-      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
-      facdefgradin_[0]->EvaluateODStiffMat(defgrad, iFinMj[0], dSdiFinj, dstressdx);
-
-      // evaluation of second inelastic deformation gradient factor contribution
-      // clear static variable
-      diFindiFinj.Clear();
-      AddNonSymmetricProduct(1.0, id, iFinMj[0], diFindiFinj);
-      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
-      facdefgradin_[1]->EvaluateODStiffMat(defgrad, iFinMj[1], dSdiFinj, dstressdx);
-
-      break;
-    }
-    default:
-      dserror(
-          "You defined %i inelastic deformation gradient factors. But framework is only "
-          "implemented for a maximum of 2 inelastic contributions! "
-          "If you really need more than 2 inelastic contributions, it's your turn to implement it! "
-          ";-)",
-          facdefgradin_.size());
-      break;
-  }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
- | pre evaluate                                         schmidt 03/18 |
- *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
-    Teuchos::ParameterList& params) const  ///< parameter list as handed in from the element
-{
-  // loop over all inelastic contributions
-  for (unsigned int p = 0; p < facdefgradin_.size(); ++p) facdefgradin_[p]->PreEvaluate(params);
 
   return;
 }

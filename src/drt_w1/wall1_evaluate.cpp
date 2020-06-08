@@ -716,7 +716,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           tempstrainerror[2] = strainerror(2, 0);
           tempstrainerror[3] = strainerror(3, 0);
           Teuchos::RCP<const MAT::Material> material = Material();
-          w1_call_matgeononl(tempstrainerror, tempstress, C, numeps, material, params);
+          w1_call_matgeononl(tempstrainerror, tempstress, C, numeps, material, params, ip);
           LINALG::Matrix<4, 1> stress(true);
           stress(0, 0) = tempstress(0, 0);
           stress(1, 0) = tempstress(1, 1);
@@ -1476,7 +1476,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       /*-----total deformation gradient, Green-Lagrange-strain E^F -----------*/
       w1_call_defgrad_tot(F_enh, F_tot, F, strain);
       /* call material law----------------------------------------------------*/
-      w1_call_matgeononl(strain, stress, C, numeps, material, params);
+      w1_call_matgeononl(strain, stress, C, numeps, material, params, ip);
 
       // return gp strains (only in case of strain output)
       switch (iostrain)
@@ -1537,8 +1537,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     }
     else
     {
-      params.set<int>("gp", ip);
-      w1_call_matgeononl(strain, stress, C, numeps, material, params);
+      w1_call_matgeononl(strain, stress, C, numeps, material, params, ip);
 
       // return gp strains (only in case of strain output)
       switch (iostrain)
@@ -1767,7 +1766,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     strain[3] = strain[2];
 
     // material call
-    w1_call_matgeononl(strain, stress, C, numeps, material, params);
+    w1_call_matgeononl(strain, stress, C, numeps, material, params, ip);
 
     // return gp strains (only in case of strain output)
     switch (iostrain)
@@ -2303,7 +2302,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
       w1_call_defgrad_tot(Fenhv, Fm, Fuv, Ev);  // at t_{n}
     }
 
-    internal_energy += fac * EnergyInternal(material, params, Ev);
+    internal_energy += fac * EnergyInternal(material, params, Ev, ip);
   }  // end loop Gauss points
 
 

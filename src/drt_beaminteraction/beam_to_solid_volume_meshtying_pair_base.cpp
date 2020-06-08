@@ -110,8 +110,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   // Solid element.
   for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_(i) =
-        scalar_type_fad(beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
+    ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
 
@@ -151,13 +151,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
 
   // If a writer exists for segmentation point data, add the segmentation point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation = visualization_writer->GetVisualizationWriter("segmentation");
+      visualization_segmentation =
+          visualization_writer->GetVisualizationWriter("btsvc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type_fad> X;
-    LINALG::Matrix<3, 1, scalar_type_fad> u;
-    LINALG::Matrix<3, 1, scalar_type_fad> r;
+    LINALG::Matrix<3, 1, scalar_type> X;
+    LINALG::Matrix<3, 1, scalar_type> u;
+    LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates =
@@ -189,15 +190,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   // If a writer exists for integration point data, add the integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->GetVisualizationWriter("integration-points");
+          visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type_fad> X;
-    LINALG::Matrix<3, 1, scalar_type_fad> u;
-    LINALG::Matrix<3, 1, scalar_type_fad> r;
-    LINALG::Matrix<3, 1, scalar_type_fad> r_solid;
-    LINALG::Matrix<3, 1, scalar_type_fad> force_integration_point;
+    LINALG::Matrix<3, 1, scalar_type> X;
+    LINALG::Matrix<3, 1, scalar_type> u;
+    LINALG::Matrix<3, 1, scalar_type> r;
+    LINALG::Matrix<3, 1, scalar_type> r_solid;
+    LINALG::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates =
@@ -236,9 +237,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForce(
-    const LINALG::Matrix<3, 1, scalar_type_fad>& r_beam,
-    const LINALG::Matrix<3, 1, scalar_type_fad>& r_solid,
-    LINALG::Matrix<3, 1, scalar_type_fad>& force) const
+    const LINALG::Matrix<3, 1, scalar_type>& r_beam,
+    const LINALG::Matrix<3, 1, scalar_type>& r_solid,
+    LINALG::Matrix<3, 1, scalar_type>& force) const
 {
   // TODO: call this function also in the Evaluate methods.
   // The base implementation of the force is a simple linear penalty law.
@@ -266,21 +267,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCoupli
 /**
  * Explicit template initialization of template class.
  */
-// Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8>;
-// Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20>;
-// Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27>;
-// Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4>;
-// Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10>;
-// Hermite beam element, nurbs27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs27>;
+namespace BEAMINTERACTION
+{
+  using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_tet10>;
+  template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_nurbs27>;
+}  // namespace BEAMINTERACTION

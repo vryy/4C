@@ -151,12 +151,11 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // fixme this backwards compatibility modification should be moved outside
   // use initial value as a default value
   double temperature = params.get<double>("scalartemp", params_->thetainit_);
-  unsigned gp = params.get<int>("gp", 0);
   Reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
 
   SetupCmat(*cmat);
@@ -176,10 +175,7 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  | calculates strain energy                                 seitz 11/15 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-    double& psi,                           ///< strain energy functions
-    const int eleGID                       ///< element GID
-)
+    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   if (YoungsIsTempDependent())
     dserror("Calculation of strain energy only for constant Young's modulus");

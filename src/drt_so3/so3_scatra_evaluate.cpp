@@ -273,12 +273,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
     /*==== call material law ======================================================*/
     // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
     LINALG::Matrix<numstr_, 1> dSdc(true);
-    // set current gauss point
-    params.set<int>("gp", gp);
+
+    params.set<std::string>("scalartype", "concentration");
 
     // get dSdc, hand in NULL as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, NULL, Id());
+    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, NULL, gp, Id());
 
     /*==== end of call material law ===============================================*/
 

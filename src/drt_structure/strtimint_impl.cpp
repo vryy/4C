@@ -36,7 +36,6 @@
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/springdashpot_manager.H"
-#include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1052,7 +1051,11 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<LINALG::SparseOp
 {
   psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
-    springman_->StiffnessAndInternalForces(stiff, fint, disn, veln, psprdash);
+  {
+    auto stiff_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
+    if (stiff_sparse == Teuchos::null) dserror("Cannot cast stiffness matrix to sparse matrix!");
+    springman_->StiffnessAndInternalForces(stiff_sparse, fint, disn, veln, psprdash);
+  }
 
   return;
 }

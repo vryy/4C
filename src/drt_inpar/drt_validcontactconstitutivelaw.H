@@ -40,7 +40,7 @@ namespace DRT
 
     /** \brief print all known contact constitutive law sections without contents
      *
-     * \params[in] contactconstitutivlawlist list of contact constitutive law definitions
+     * \param[in] contactconstitutivlawlist list of contact constitutive law definitions
      */
     void PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
         std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&

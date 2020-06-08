@@ -161,6 +161,9 @@ namespace PASI
     /*!
      * \brief convergence check of the outer loop
      *
+     * Convergence check of the partitioned coupling outer loop based on relative and scaled
+     * interface displacement and force increment norms.
+     *
      * \author Sebastian Fuchs \date 02/2017
      *
      * \param[in] itnum iteration counter
@@ -188,16 +191,25 @@ namespace PASI
     Teuchos::RCP<Epetra_Vector> intfforceincnp_;
 
     //! maximum iteration steps
-    int itmax_;
+    const int itmax_;
 
-    //! convergence tolerance
-    double ittol_;
+    //! tolerance of relative interface displacement increments in partitioned iterations
+    const double convtolrelativedisp_;
+
+    //! tolerance of dof and dt scaled interface displacement increments in partitioned iterations
+    const double convtolscaleddisp_;
+
+    //! tolerance of relative interface force increments in partitioned iterations
+    const double convtolrelativeforce_;
+
+    //! tolerance of dof and dt scaled interface force increments in partitioned iterations
+    const double convtolscaledforce_;
 
     //! ignore convergence check and proceed simulation
-    bool ignoreconvcheck_;
+    const bool ignoreconvcheck_;
 
     //! write restart every n steps
-    int writerestartevery_;
+    const int writerestartevery_;
   };
 
   /*!
