@@ -15,6 +15,8 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_structure/stru_aux.H"
 
+#include "../drt_lib/prestress_service.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> structure)
@@ -71,17 +73,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp()
 {
   // prestressing business
-  double time = 0.0;
-  double pstime = -1.0;
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype != INPAR::STR::PreStress::none)
-  {
-    time = Time();
-    pstime = sdyn.get<double>("PRESTRESSTIME");
-  }
-
   Teuchos::RCP<Epetra_Vector> idis;
 
   switch (predictor_)
@@ -90,7 +81,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     {
       // d(n)
       // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-      if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+      if (UTILS::PRESTRESS::IsActive(Time()))
       {
         idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
       }
@@ -107,7 +98,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     case 3:
     {
       // d(n)+dt*v(n)
-      if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+      if (UTILS::PRESTRESS::IsActive(Time()))
         dserror("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
@@ -121,7 +112,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     case 4:
     {
       // d(n)+dt*v(n)+0.5*dt^2*a(n)
-      if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+      if (UTILS::PRESTRESS::IsActive(Time()))
         dserror("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
@@ -154,18 +145,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
       "Full map of map extractor and Dispn() do not match.");
 
   // prestressing business
-  double time = 0.0;
-  double pstime = -1.0;
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype != INPAR::STR::PreStress::none)
-  {
-    time = TimeOld();
-    pstime = sdyn.get<double>("PRESTRESSTIME");
-  }
-
-  if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+  if (UTILS::PRESTRESS::IsActive(Time()))
   {
     return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
   }
@@ -184,18 +164,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
       "Full map of map extractor and Dispnp() do not match.");
 
   // prestressing business
-  double time = 0.0;
-  double pstime = -1.0;
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype != INPAR::STR::PreStress::none)
-  {
-    time = Time();
-    pstime = sdyn.get<double>("PRESTRESSTIME");
-  }
-
-  if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+  if (UTILS::PRESTRESS::IsActive(Time()))
   {
     if (Discretization()->Comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;

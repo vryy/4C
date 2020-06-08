@@ -22,6 +22,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -514,18 +515,8 @@ void FSI::Monolithic::PrepareTimeloop()
   // check for prestressing,
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
-  {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype =
-        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::PreStress::none)
-    {
-      const double pstime = sdyn.get<double>("PRESTRESSTIME");
-
-      if (Time() + Dt() <= pstime)
-        dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
-    }
-  }
+  if (::UTILS::PRESTRESS::IsActive(Time() + Dt()))
+    dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;
 }

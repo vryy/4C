@@ -16,6 +16,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_lib/drt_locsys.H"
+#include "../drt_lib/prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 12/14  */
@@ -23,8 +24,6 @@
 STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretization> discret)
     : TimIntAdjoint(discret), stiffp_(Teuchos::null)
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
   stiffp_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
 
   // initialize solution at stepn
@@ -35,8 +34,7 @@ STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretiza
   rhsnp_ = LINALG::CreateVector(*(dofrowmap_), true);
 
   // prestress stuff
-  pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  pstime_ = ::UTILS::PRESTRESS::GetTime();
 }
 
 
@@ -54,7 +52,7 @@ void STR::TimIntAdjointPrestress::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> 
   if ((int)time_.size() != msteps_)
     dserror("setup of the timesteps for the adjoint problem messed up");
 
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf())
   {
     // get prestress time
     stepn_ = (int)(pstime_ / dt_);

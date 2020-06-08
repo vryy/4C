@@ -15,6 +15,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/prestress_service.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -130,15 +131,11 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
 {
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
-  // get the prestress type
-  const enum INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   // get the dynamic type
   const enum INPAR::STR::DynamicType dyntype =
       DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
-  if (pstype == INPAR::STR::PreStress::mulf or  // prestress type
-      pstype == INPAR::STR::PreStress::id or dyntype == INPAR::STR::dyna_statics or  // dynamic type
+  if (::UTILS::PRESTRESS::IsAny() or dyntype == INPAR::STR::dyna_statics or  // dynamic type
       dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
       dyntype == INPAR::STR::dyna_onesteptheta or dyntype == INPAR::STR::dyna_gemm)
     ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());

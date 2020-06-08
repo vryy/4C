@@ -14,6 +14,7 @@
 #include "so_surface.H"
 #include "so_line.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/prestress_service.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -108,11 +109,10 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+    pstype_ = ::UTILS::PRESTRESS::GetType();
+    pstime_ = ::UTILS::PRESTRESS::GetTime();
   }
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));
 
   return;
@@ -138,7 +138,7 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(const DRT::ELEMENTS::So_pyramid5& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
@@ -184,11 +184,11 @@ void DRT::ELEMENTS::So_pyramid5::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
-  // prestress_
+  // Pack prestress_
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
@@ -225,11 +225,11 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
   invJ_.resize(size, LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
-  // prestress_
+  // Extract prestress_
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
   }
 
   // invdesign_
-  else if (pstype_ == INPAR::STR::PreStress::id)
+  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
   {
     std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position, data, tmpinvdesign);

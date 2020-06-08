@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "prestress.H"
+#include "../drt_lib/prestress_service.H"
 
 DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
@@ -89,7 +90,7 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_hex8(id, owner)
 {
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
   return;
 }
