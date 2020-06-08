@@ -34,7 +34,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -6.6644258919659460e+00 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -6.31323417477359072e+00 TOLERANCE 1e-5
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

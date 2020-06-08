@@ -144,7 +144,7 @@ namespace UTILS
      */
     static inline bool IsActive(const double currentTime)
     {
-      return IsAny() && currentTime <= GetTime();
+      return IsAny() && currentTime <= GetTime() + 1.0e-15;
     }
 
     /*!
@@ -159,7 +159,7 @@ namespace UTILS
     static inline bool IsActive(
         const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
     {
-      return IsAny(pstype) && currentTime <= pstime;
+      return IsAny(pstype) && currentTime <= pstime + 1.0e-15;
     }
 
     /*!
@@ -172,7 +172,7 @@ namespace UTILS
      */
     static inline bool IsMulfActive(const double currentTime)
     {
-      return IsMulf() && currentTime <= GetTime();
+      return IsMulf() && currentTime <= GetTime() + 1.0e-15;
     }
 
     /*!
@@ -188,7 +188,7 @@ namespace UTILS
     static inline bool IsMulfActive(
         const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
     {
-      return IsMulf() && currentTime <= pstime;
+      return IsMulf(pstype) && currentTime <= pstime + 1.0e-15;
     }
 
     /*!
@@ -201,7 +201,7 @@ namespace UTILS
      */
     static inline bool IsInverseDesignActive(const double currentTime)
     {
-      return IsInverseDesign() && currentTime <= GetTime();
+      return IsInverseDesign() && currentTime <= GetTime() + 1.0e-15;
     }
 
     /*!
@@ -217,7 +217,7 @@ namespace UTILS
     static inline bool IsInverseDesignActive(
         const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
     {
-      return IsInverseDesign(pstype) && currentTime <= pstime;
+      return IsInverseDesign(pstype) && currentTime <= pstime + 1.0e-15;
     }
 
   }  // namespace PRESTRESS
