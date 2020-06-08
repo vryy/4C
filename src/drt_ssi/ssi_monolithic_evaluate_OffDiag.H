@@ -68,7 +68,8 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
     //! copy slave entries to master side scaled by -1.0
-    void EvaluateScatraThermoInterfaceSlaveSide(Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+    void EvaluateScatraStructureInterfaceSlaveSide(
+        Teuchos::RCP<LINALG::SparseOperator> slavematrix);
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapsscatra_;

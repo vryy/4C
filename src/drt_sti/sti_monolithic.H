@@ -81,11 +81,11 @@ namespace STI
 
    private:
     //! Apply Dirichlet conditions to assembled OD blocks
-    void ApplyDirichletOD(Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
+    void ApplyDirichletOffDiag(Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
         Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
 
     //! Assemble interface and domain contributions of OD blocks
-    void AssembleDomainInterfaceOD(
+    void AssembleDomainInterfaceOffDiag(
         Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
         Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
 

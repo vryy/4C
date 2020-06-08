@@ -800,10 +800,10 @@ void STI::Monolithic::AssembleMatAndRHS()
   Teuchos::RCP<LINALG::SparseOperator> thermoscatra_domain_interface(Teuchos::null);
 
   // assemble interface and domain contributions of OD blocks
-  AssembleDomainInterfaceOD(scatrathermo_domain_interface, thermoscatra_domain_interface);
+  AssembleDomainInterfaceOffDiag(scatrathermo_domain_interface, thermoscatra_domain_interface);
 
   // apply Dirichlet BCs to OD blocks
-  ApplyDirichletOD(scatrathermo_domain_interface, thermoscatra_domain_interface);
+  ApplyDirichletOffDiag(scatrathermo_domain_interface, thermoscatra_domain_interface);
 
   // build global system matrix
   switch (matrixtype_)
@@ -1800,7 +1800,7 @@ void STI::Monolithic::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STI::Monolithic::ApplyDirichletOD(
+void STI::Monolithic::ApplyDirichletOffDiag(
     Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
     Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface)
 {
@@ -1843,7 +1843,7 @@ void STI::Monolithic::ApplyDirichletOD(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STI::Monolithic::AssembleDomainInterfaceOD(
+void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
     Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface)
 {

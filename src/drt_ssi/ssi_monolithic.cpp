@@ -9,12 +9,13 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "ssi_monolithic.H"
+
 #include "ssi_coupling.H"
+#include "ssi_monolithic_assemble_strategy.H"
 #include "ssi_monolithic_convcheck_strategies.H"
+#include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
-#include "ssi_monolithic_assemble_strategy.H"
-#include <Epetra_Time.h>
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
@@ -34,12 +35,14 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_matrixtransform.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_matrixtransform.H"
-#include "ssi_monolithic_evaluate_OffDiag.H"
+
+#include <Epetra_Time.h>
+
 
 /*--------------------------------------------------------------------------*
  | constructor                                                   fang 08/17 |

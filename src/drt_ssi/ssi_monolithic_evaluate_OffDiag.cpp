@@ -156,7 +156,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
   }
 
   // evaluate interface contibutions on slave side
-  EvaluateScatraThermoInterfaceSlaveSide(slavematrix);
+  EvaluateScatraStructureInterfaceSlaveSide(slavematrix);
 
   // copy interface contributions from slave side to master side
   CopySlaveToMasterScatraStructureInterface(slavematrix, mastermatrix);
@@ -331,7 +331,7 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraThermoInterfaceSlaveSide(
+void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveSide(
     Teuchos::RCP<LINALG::SparseOperator> slavematrix)
 {
   // create parameter list for element evaluation
