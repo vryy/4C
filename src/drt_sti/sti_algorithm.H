@@ -15,13 +15,16 @@
 #define STI_ALGORITHM_H
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include "../drt_inpar/inpar_s2i.H"
-#include "../drt_inpar/inpar_sti.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 // forward declarations
 class Epetra_Time;
 class Epetra_Vector;
+
+namespace ADAPTER
+{
+  class ScaTraBaseAlgorithm;
+}  // namespace ADAPTER
 
 namespace SCATRA
 {
@@ -44,10 +47,16 @@ namespace STI
     );
 
     //! access scatra time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const { return scatra_; };
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const
+    {
+      return scatra_->ScaTraField();
+    };
 
     //! access thermo time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const { return thermo_; };
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const
+    {
+      return thermo_->ScaTraField();
+    };
 
     //! time loop
     void TimeLoop();
@@ -78,10 +87,10 @@ namespace STI
         ) const;
 
     //! scatra time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
     //! thermo time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;

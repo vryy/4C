@@ -1432,6 +1432,7 @@ set(OBJS_DRT_STI
   src/drt_sti/sti_clonestrategy.cpp
   src/drt_sti/sti_dyn.cpp
   src/drt_sti/sti_monolithic.cpp
+  src/drt_sti/sti_monolithic_evaluate_OffDiag.cpp
   src/drt_sti/sti_partitioned.cpp
   src/drt_sti/sti_resulttest.cpp
 )
@@ -2523,7 +2524,7 @@ src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
-src/drt_ssi/ssi_monolithic_evaluate_OD.cpp
+src/drt_ssi/ssi_monolithic_evaluate_OffDiag.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp

@@ -16,6 +16,8 @@
 
 #include "sti_algorithm.H"
 
+#include "../drt_inpar/inpar_sti.H"
+
 namespace STI
 {
   //! partitioned coupling algorithm for scatra-thermo interaction

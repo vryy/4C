@@ -346,7 +346,7 @@ void SSI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
 
@@ -354,22 +354,15 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
-  // master and slave side of scatrastructureinterface
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra(), 81, false, true));
-
-  // copy slave side to master side and scale with -1.0. Add slave side
-  CopyScatraStructureInterfaceS2Iblock(
-      scatrastructureinterface_block, scatrastructureinterfaceslaveside);
-
   // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs
   // and assemble into auxiliary system matrix
   for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
   {
     // assemble scatrastructureinterface_sparse into system matrix
     AssembleScatraStructureDomainMeshtying(systemmatrix_block->Matrix(iblock, numberscatrablocks),
-        scatrastructureinterface_block->Matrix(iblock, 0), true);
+        Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(scatrastructureinterface)
+            ->Matrix(iblock, 0),
+        true);
   }
 
   return;
@@ -379,23 +372,15 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBlockSparse::AssembleScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   // cast systemmatrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
   CastSystemMatrixBlock(systemmatrix, systemmatrix_block);
 
-  // master and slave side of scatrastructureinterface
-  Teuchos::RCP<LINALG::SparseMatrix> scatrastructureinterface_sparse =
-      Teuchos::rcp(new LINALG::SparseMatrix(*ssi_mono_->Maps()->Map(0), 27, false, true));
-
-  // copy slave side to master side and scale with -1.0. Add slave side
-  CopyScatraStructureInterfaceS2Isparse(
-      scatrastructureinterface_sparse, scatrastructureinterfaceslaveside);
-
   // assemble scatrastructureinterface_sparse into system matrix
-  AssembleScatraStructureDomainMeshtying(
-      systemmatrix_block->Matrix(0, 1), *scatrastructureinterface_sparse, true);
+  AssembleScatraStructureDomainMeshtying(systemmatrix_block->Matrix(0, 1),
+      *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureinterface), true);
 
   return;
 }
@@ -404,23 +389,15 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructureInterface(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategySparse::AssembleScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   // cast systemmatrix
   Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_sparse;
   CastSystemMatrixSparse(systemmatrix, systemmatrix_sparse);
 
-  // master and slave side of scatrastructureinterface
-  Teuchos::RCP<LINALG::SparseMatrix> scatrastructureinterface_sparse =
-      Teuchos::rcp(new LINALG::SparseMatrix(*ssi_mono_->Maps()->Map(0), 27, false, true));
-
-  // copy slave side to master side and scale with -1.0. Add slave side
-  CopyScatraStructureInterfaceS2Isparse(
-      scatrastructureinterface_sparse, scatrastructureinterfaceslaveside);
-
   // assemble scatrastructureinterface_sparse into system matrix
-  AssembleScatraStructureDomainMeshtying(
-      *systemmatrix_sparse, *scatrastructureinterface_sparse, true);
+  AssembleScatraStructureDomainMeshtying(*systemmatrix_sparse,
+      *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureinterface), true);
 
   return;
 }
@@ -779,83 +756,3 @@ void SSI::AssembleStrategySparse::CastSystemMatrixSparse(
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |                                copy slave side values on master side |
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Isparse(
-    Teuchos::RCP<LINALG::SparseMatrix>& scatrastructureinterface_sparse,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
-{
-  // cast scatrastructureinterfaceslaveside
-  const LINALG::SparseMatrix& scatrastructureinterfaceslaveside_sparse =
-      *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureinterfaceslaveside);
-
-  // insert slave side values into
-  scatrastructureinterface_sparse->Add(scatrastructureinterfaceslaveside_sparse, false, 1.0, 0.0);
-
-  // copy slave side values to master side and scale with minus 1. Insert into
-  // scatrastructureinterface_sparse
-  LINALG::MatrixRowColTransform()(scatrastructureinterfaceslaveside_sparse, -1.0,
-      ADAPTER::CouplingSlaveConverter(*ssi_mono_->MeshtyingStrategyS2I()->CouplingAdapter()),
-      ADAPTER::CouplingSlaveConverter(*ssi_mono_->CouplingAdapterStructure()),
-      *scatrastructureinterface_sparse, true, true);
-
-  // finalize
-  scatrastructureinterface_sparse->Complete(*ssi_mono_->Maps()->Map(1), *ssi_mono_->Maps()->Map(0));
-
-  return;
-};
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::CopyScatraStructureInterfaceS2Iblock(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& scatrastructureinterface_block,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside)
-{
-  const int numberscatrablocks = ssi_mono_->MapsScatra()->NumMaps();
-
-  // cast scatrastructureinterfaceslaveside
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterfaceslaveside_block =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>>(
-          scatrastructureinterfaceslaveside);
-
-  // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
-  // master-side structural dofs
-  LINALG::SparseMatrix mastermatrix(
-      *ssi_mono_->MeshtyingStrategyS2I()->CouplingAdapter()->MasterDofMap(), 27, false, true);
-
-  // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
-  // assemble into auxiliary system matrix
-  for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
-    LINALG::MatrixRowColTransform()(scatrastructureinterfaceslaveside_block->Matrix(iblock, 0),
-        -1.0,
-        ADAPTER::CouplingSlaveConverter(*ssi_mono_->MeshtyingStrategyS2I()->CouplingAdapter()),
-        ADAPTER::CouplingSlaveConverter(*ssi_mono_->CouplingAdapterStructure()), mastermatrix, true,
-        true);
-
-  // finalize auxiliary system matrix
-  mastermatrix.Complete(*ssi_mono_->CouplingAdapterStructure()->MasterDofMap(),
-      *ssi_mono_->MeshtyingStrategyS2I()->CouplingAdapter()->MasterDofMap());
-
-  // split auxiliary system matrix and assemble into scatra-structure matrix block
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix =
-      mastermatrix.Split<LINALG::DefaultBlockMatrixStrategy>(
-          *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra());
-  blockmastermatrix->Complete();
-
-  // build block matrix with master and slave side contributions
-  for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
-  {
-    // add slave side contributions
-    scatrastructureinterface_block->Matrix(iblock, 0).Add(
-        scatrastructureinterfaceslaveside_block->Matrix(iblock, 0), false, 1.0, 0.0);
-    // add master side contributions
-    scatrastructureinterface_block->Matrix(iblock, 0).Add(
-        blockmastermatrix->Matrix(iblock, 0), false, 1.0, 1.0);
-  }
-
-  scatrastructureinterface_block->Complete();
-
-  return;
-};
