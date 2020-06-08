@@ -73,6 +73,10 @@ namespace INVANA
   class SurfCurrentGroup : public ObjectiveFunct
   {
    private:
+#ifndef TRILINOS_Q1_2015
+    //! Kokkos ScopeGuard ensures correct finalization of Kokkos in destructor of this class
+    Kokkos::ScopeGuard kokkosscopeguard_;
+#endif
     //! Discretization of the source model
     Teuchos::RCP<DRT::Discretization> sourcedis_;
 
@@ -94,7 +98,12 @@ namespace INVANA
     SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret);
 
     //! Standard destructor
-    virtual ~SurfCurrentGroup() { Kokkos::finalize(); }
+    virtual ~SurfCurrentGroup()
+    {
+#ifdef TRILINOS_Q1_2015
+      Kokkos::finalize();
+#endif
+    }
 
     //! read target discretization
     DRT::Problem* ReadReferenceDiscretization();

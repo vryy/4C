@@ -31,7 +31,12 @@
 
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret)
-    : sourcedis_(discret), targetdis_(Teuchos::null)
+    :
+#ifndef TRILINOS_Q1_2015
+      kokkosscopeguard_(),
+#endif
+      sourcedis_(discret),
+      targetdis_(Teuchos::null)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -57,8 +62,10 @@ INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> dis
         "Size of conditions in source and target differs. We need the size to be equal for "
         "meaningful computation");
 
+#ifdef TRILINOS_Q1_2015
   // initialize parallel environment for the computation of each surface current pair
   Kokkos::initialize();
+#endif
 #if defined(KOKKOS_HAVE_OPENMP)
   std::cout << "Surface Currents in OpenMP-mode" << std::endl;
 #else
