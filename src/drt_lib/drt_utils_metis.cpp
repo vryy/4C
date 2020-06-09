@@ -14,7 +14,6 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 
 #ifdef PARALLEL
-#ifdef LINUX_MUENCH
 typedef int idxtype;
 extern "C"
 {
@@ -23,7 +22,6 @@ extern "C"
   void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *, idxtype *, int *, int *, int *,
       int *, int *, idxtype *);
 }
-#endif
 #endif  // PARALLEL
 
 

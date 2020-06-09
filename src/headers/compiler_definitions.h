@@ -24,10 +24,7 @@
 /* append underslash for gnu's linux compiler gcc and g77 */
 /* refer to src/fortran for the respective routines */
 
-/* LINUX_MUENCH is still in use!  */
-#ifdef LINUX_MUENCH
 #define CCA_APPEND_U (1)
-#endif
 
 #ifdef CCA_APPEND_U
 /* required for lapack access. Do not remove! */

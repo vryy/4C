@@ -63,7 +63,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 #
 # Legacy defines
 
-add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
 
 # external library variable
