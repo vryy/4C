@@ -84,35 +84,42 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
   // Loop over face elements.
   for (auto const& face_element_iterator : face_elements)
   {
-    // Setup variables.
-    LINALG::Matrix<3, 1, double> X, u, r, n, n_averaged;
-
-    // Set the element parameter coordinates.
-    LINALG::Matrix<2, 1, double> xi(true);
-    LINALG::SerialDenseMatrix nodal_coordinates = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-        face_element_iterator.second->GetDrtFaceElement()->Shape());
-
-    // Loop over element nodes.
-    for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->NumNode();
-         i_node++)
+    // Only write the output for the faces that are part of a pair, since otherwise there are faces
+    // which have empty position arrays since SetState was never called on them.
+    if (face_element_iterator.second->IsPartOfPair())
     {
-      for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
-      face_element_iterator.second->EvaluateFacePositionDouble(xi, r);
-      face_element_iterator.second->EvaluateFacePositionDouble(xi, X, true);
-      face_element_iterator.second->EvaluateFaceNormalDouble(xi, n, false, false);
-      face_element_iterator.second->EvaluateFaceNormalDouble(xi, n_averaged, false, true);
+      // Setup variables.
+      LINALG::Matrix<3, 1, double> X, u, r, n, n_averaged;
 
-      u = r;
-      u -= X;
+      // Set the element parameter coordinates.
+      LINALG::Matrix<2, 1, double> xi(true);
+      LINALG::SerialDenseMatrix nodal_coordinates =
+          DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+              face_element_iterator.second->GetDrtFaceElement()->Shape());
 
-      for (unsigned int dim = 0; dim < 3; dim++)
+      // Loop over element nodes.
+      for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->NumNode();
+           i_node++)
       {
-        point_coordinates.push_back(X(dim));
-        displacement.push_back(u(dim));
-        normal_averaged.push_back(n_averaged(dim));
-        normal_element.push_back(n(dim));
+        for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+          xi(i_dim) = nodal_coordinates(i_dim, i_node);
+        face_element_iterator.second->EvaluateFacePositionDouble(xi, r);
+        face_element_iterator.second->EvaluateFacePositionDouble(xi, X, true);
+        face_element_iterator.second->EvaluateFaceNormalDouble(xi, n, false, false);
+        face_element_iterator.second->EvaluateFaceNormalDouble(xi, n_averaged, false, true);
+
+        u = r;
+        u -= X;
+
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(X(dim));
+          displacement.push_back(u(dim));
+          normal_averaged.push_back(n_averaged(dim));
+          normal_element.push_back(n(dim));
+        }
+        coupling_id.push_back(condition_coupling_id);
       }
-      coupling_id.push_back(condition_coupling_id);
     }
   }
 }
