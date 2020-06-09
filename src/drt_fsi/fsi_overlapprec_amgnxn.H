@@ -12,8 +12,6 @@
 #ifndef FSI_OVERLAPPREC_AMGNXN_H
 #define FSI_OVERLAPPREC_AMGNXN_H
 
-#ifdef HAVE_MueLu
-
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
 #include "Teuchos_RCP.hpp"
@@ -98,5 +96,4 @@ namespace FSI
 
 }  // namespace FSI
 
-#endif  // HAVE_MueLu
 #endif  // FSI_OVERLAPPREC_AMGNXN_H

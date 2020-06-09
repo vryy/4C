@@ -89,23 +89,11 @@ if (HAVE_TEKO)
   add_definitions("-DHAVE_TEKO")
 endif (HAVE_TEKO)
 
-option (HAVE_MueLu "Turn on MueLu support (needs MueLu to be compiled within Trilinos" OFF)
-if (HAVE_MueLu)
-  MESSAGE("II Turn on support for MueLu")
-  add_definitions("-DHAVE_MueLu")
-endif (HAVE_MueLu)
-
 option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" OFF)
 if (HAVE_Stratimikos)
   MESSAGE("II Turn on support for Stratimikos")
   add_definitions("-DHAVE_Stratimikos")
 endif (HAVE_Stratimikos)
-
-option (HAVE_Kokkos "Turn on Kokkos support (needs Kokkos to be compiled with Trilinos)" OFF)
-if (HAVE_Kokkos)
-  MESSAGE("II Turn on support for Kokkos")
-  add_definitions("-DHAVE_Kokkos")
-endif(HAVE_Kokkos)
 
 option (TRILINOS_Q1_2015 "Select Trilinos installation Q1_2015" OFF)
 if (TRILINOS_Q1_2015)

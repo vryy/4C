@@ -7,7 +7,6 @@
 
 \maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -381,7 +380,3 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   return hierarchy;
 }
-
-
-
-#endif

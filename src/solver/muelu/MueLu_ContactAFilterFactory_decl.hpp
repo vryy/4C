@@ -10,8 +10,6 @@
 #ifndef MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLu
-
 #include <Teuchos_ParameterList.hpp>
 
 #include <Xpetra_VectorFactory_fwd.hpp>
@@ -77,5 +75,4 @@ namespace MueLu
 
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 
-#endif  // HAVE_MueLu
-#endif  /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */
+#endif /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */

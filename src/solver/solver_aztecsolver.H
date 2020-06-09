@@ -11,16 +11,12 @@
 #ifndef SOLVER_AZTECSOLVER_H_
 #define SOLVER_AZTECSOLVER_H_
 
-#ifdef HAVE_MueLu
-
 #include <MueLu_PermutationFactory_fwd.hpp>
 #include <MueLu_FactoryBase_fwd.hpp>
 #include <MueLu_Level_fwd.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-#endif  // HAVE_MueLu
 
 #include "solver_krylovsolver.H"
 

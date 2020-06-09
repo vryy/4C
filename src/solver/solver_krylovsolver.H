@@ -15,7 +15,6 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#ifdef HAVE_MueLu  // TODO remove this as soon as all use Q1/2013 MueLu or newer
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MapFactory.hpp>
 
@@ -25,7 +24,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#endif                                // HAVE_MueLu
 
 #include "solver_solvertype.H"
 #include "solver_preconditionertype.H"
@@ -159,8 +157,6 @@ namespace LINALG
        */
       Teuchos::RCP<Epetra_Map> activeDofMap_;
 
-#ifdef HAVE_MueLu
-
      protected:
       //! @name Permutation methods.
       //!@{
@@ -270,8 +266,6 @@ namespace LINALG
       Teuchos::RCP<MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>> PermFact_;
 
       //!@}
-
-#endif  // HAVE_MueLu
 
 #ifdef WRITEOUTSTATISTICS
       double dtimeprecondsetup_;

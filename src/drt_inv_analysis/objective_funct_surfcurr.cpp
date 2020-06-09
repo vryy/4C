@@ -8,8 +8,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef HAVE_Kokkos
-
 #include "objective_funct_surfcurr.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1018,4 +1016,3 @@ int INVANA::Triangulation::NumTris()
 
   return trimap_->NumGlobalElements();
 }
-#endif

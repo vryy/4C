@@ -1216,7 +1216,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
       break;
     }
     case INPAR::FSI::AMGnxn:
-#ifdef HAVE_MueLu
     {
       // TODO This is a temporary hack to input the xml file without adding a new input parameter in
       // FSI/DYNAMIC MONOLITHIC SOLVER. We assume that the xml file is given in the first position
@@ -1230,9 +1229,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           *FluidField(), *AleField(), structuresplit, amgnxn_xml,
           DRT::Problem::Instance()->ErrorFile()->Handle()));
     }
-#else
-      dserror("The AMGnxn preconditioner works only with MueLu activated");
-#endif  // HAVE_MueLu
     break;
     case INPAR::FSI::HybridSchwarz:
     {

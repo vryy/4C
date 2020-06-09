@@ -974,7 +974,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
               apciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
     case INPAR::FSI::AMGnxn:
-#ifdef HAVE_MueLu
     {
       // Parse BLOCKSMOOTHER list
       std::vector<std::string> blocksmoother;
@@ -992,9 +991,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
           *FluidField(), *AleField(), structuresplit, amgnxn_xml,
           DRT::Problem::Instance()->ErrorFile()->Handle(), "LungFSI"));
     }
-#else
-      dserror("The AMGnxn preconditioner works only with MueLu activated");
-#endif  // HAVE_MueLu
     break;
     case INPAR::FSI::FSIAMG:
     default:

@@ -11,7 +11,6 @@ Created on: Feb 27, 2014
 /*----------------------------------------------------------------------*/
 #ifndef AMGNXN_OBJECTS_H
 #define AMGNXN_OBJECTS_H
-#ifdef HAVE_MueLu
 
 // Trilinos includes
 #include "Epetra_MultiVector.h"
@@ -185,5 +184,4 @@ namespace LINALG
   }    // namespace SOLVER
 }  // namespace LINALG
 
-#endif  // HAVE_MueLu
 #endif  // AMGNXN_OBJECTS_H
