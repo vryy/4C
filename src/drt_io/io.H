@@ -87,8 +87,14 @@ namespace IO
     /// destructor
     virtual ~DiscretizationReader(){};
 
+    /// read and return vector
+    Teuchos::RCP<Epetra_MultiVector> ReadVector(std::string name);
+
     /// read into given vector
     void ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+
+    /// read and return vector
+    Teuchos::RCP<Epetra_MultiVector> ReadMultiVector(const std::string name);
 
     /// read into given vector
     void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);

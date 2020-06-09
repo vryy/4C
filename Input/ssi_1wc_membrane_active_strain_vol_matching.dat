@@ -28,7 +28,7 @@ The formulation is fully incompressible due to membrane.
 - no-flux bc for scatra field
 - initial conditions for scatra field are solution and derivatives at time 0
 - no spatial coupling of scatra field
-- material formulationa and parameters for active strain material described in [2]
+- material formulation and parameters for active strain material described in [2]
 - active fibers align with x- and y-direction respectively
 - activation of active strain material based on phi1
 - DBC for structure field such that all displacements are restricted to the xy-plane
@@ -53,6 +53,17 @@ PREDICT                         ConstDis
 TOLDISP                         1.0e-6
 TOLRES                          1.0e-6
 TIMESTEP                        0.1
+---------------------------------------------------------STRUCT NOX/Printing
+Error = No
+Warning = No
+Outer Iteration = Yes
+Inner Iteration = No
+Parameters = No
+Details = No
+Outer Iteration StatusTest = No
+Linear Solver Details = No
+Test Details = No
+Debug = No
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -67,16 +78,15 @@ FSSUGRDIFF                      No
 -----------------------------------------------------------------SSI CONTROL
 DIFFTIMESTEPSIZE                yes
 RESULTSEVRY                     1
-RESTARTEVRY                     51
+RESTARTEVRY                     40
 NUMSTEP                         50
 MAXTIME                         5
 TIMESTEP                        0.1
 COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          5
 FIELDCOUPLING                   volume_matching
-SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
-----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 EXPLPREDICT                     yes
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
@@ -522,14 +532,6 @@ NODE       121 COORD  5.0000000000000000e+00  5.0000000000000000e+00  0.00000000
    98 MEMBRANESCATRA4 QUAD4  107 108 119 118    MAT 1 KINEM nonlinear THICK 3.5 STRESS_STRAIN plane_stress TYPE AdvReac AXI 1.0 0.0 0.0 CIR 0.0 1.0 0.0 RAD 0.0 0.0 1.0
    99 MEMBRANESCATRA4 QUAD4  108 109 120 119    MAT 1 KINEM nonlinear THICK 3.5 STRESS_STRAIN plane_stress TYPE AdvReac AXI 1.0 0.0 0.0 CIR 0.0 1.0 0.0 RAD 0.0 0.0 1.0
    100 MEMBRANESCATRA4 QUAD4  109 110 121 120    MAT 1 KINEM nonlinear THICK 3.5 STRESS_STRAIN plane_stress TYPE AdvReac AXI 1.0 0.0 0.0 CIR 0.0 1.0 0.0 RAD 0.0 0.0 1.0
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA    DIS scatra    NODE 49 QUANTITY phi1  VALUE  2.95089735323807778e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE  1.66214978173845757e-01 TOLERANCE 1e-09
