@@ -36,7 +36,12 @@ endmacro (baci_test)
 macro (baci_test_post_ensight arg nproc restart)
 
   # run normal testing
-  baci_test(${arg} ${nproc} "${restart}")
+  if( "${ARGN}" STREQUAL "minimal")
+    baci_test(${arg} ${nproc} "${restart}" minimal)
+  else ()
+    baci_test(${arg} ${nproc} "${restart}")
+  endif ()
+  
 
   # additionally run postprocessing in serial mode
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_SER\ --outputtype=bin)
