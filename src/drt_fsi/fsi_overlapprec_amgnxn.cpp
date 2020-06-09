@@ -10,8 +10,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
-
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
@@ -894,6 +892,3 @@ void FSI::AMGnxnInterfaceLungFSI::Default_SCHUR_ILU_KLU(Teuchos::ParameterList& 
       file_contents, Teuchos::Ptr<Teuchos::ParameterList>(&params));
   return;
 }
-
-
-#endif  // HAVE_MueLu

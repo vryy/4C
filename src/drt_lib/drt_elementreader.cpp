@@ -219,7 +219,7 @@ namespace DRT
         bsize = maxblocksize;
       }
 
-#if !defined(PARALLEL) || !defined(HAVE_PARMETIS)
+#if !defined(PARALLEL)
       // For simplicity we remember all node ids of all elements on
       // processor 0. This way we can create the graph on processor 0 and
       // use serial metis. If this turns out to be too memory consuming,
@@ -332,7 +332,7 @@ namespace DRT
                 // node ids --- it will be used later during reading of nodes
                 // to add the node to one or more discretisations
                 std::copy(nodeids, nodeids + numnode, std::inserter(nodes_, nodes_.begin()));
-#if !defined(PARALLEL) || !defined(HAVE_PARMETIS)
+#if !defined(PARALLEL)
                 elementnodes.push_back(std::vector<int>(nodeids, nodeids + numnode));
 #endif
 
@@ -380,7 +380,7 @@ namespace DRT
       // just skip the partitioning.
       if (numnodes)
       {
-#if defined(PARALLEL) && defined(HAVE_PARMETIS)
+#if defined(PARALLEL)
 
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;

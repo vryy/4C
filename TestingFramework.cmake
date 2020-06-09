@@ -973,7 +973,6 @@ baci_test(invana_levenbergmarquardt_tri_fsi_contour 2 "")
 result_file(invana_levenbergmarquardt_tri_fsi_contour 1 result xxx_coupneohooke_Para.txt invana_levenbergmarquardt_tri_fsi_contour_coupneohooke_Para.txt 1e-10)
 # Surface Current Evaluation needs Kokkos
 # Statistical stuff neeeds C++11
-if (HAVE_Kokkos)
 baci_test(invana_arch_surfcurr_target 2 "")
 baci_test(invana_arch_surfcurr 2 "")
 baci_test(invana_arch_surfcurr_prestress_pc_target 2 "")
@@ -983,7 +982,6 @@ baci_test(invana_arch_surfcurr_volgrowth_pc 2 "")
 baci_test(invana_arch_stat_target 2 "")
 baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_smc_estim invana_arch_stat_smcprediction 4 2 2)
 baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_mh_estim "" 4 2 "")
-endif (HAVE_Kokkos)
 baci_test(inversedesign 2 "")
 baci_test(inversedesign_tet4 2 "")
 baci_test(inversedesign_wedge6 2 "")
@@ -2099,7 +2097,6 @@ baci_framework_test(tutorial_fsi_3d 2 fsi_part_struct_solver.xml)
 # cut test
 cut_test(2)
 
-if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 
@@ -2174,7 +2171,6 @@ baci_test(sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mort
 baci_test(sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_2x2 3 "")
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard_BGS-AMG_4x4 3 15)
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_4x4 3 15)
-endif (HAVE_MueLu)
 
 # brownian dynamic test cases using random numbers from Boost Random libraries
 if (${Boost_MINOR_VERSION} GREATER 56)

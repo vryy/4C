@@ -7,7 +7,6 @@
 
 \maintainer Martin Kronbichler
 */
-#ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
@@ -282,5 +281,3 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
     }  // if (xml file)
   }    // if (create)
 }
-
-#endif

@@ -9,7 +9,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
 #include <MueLu_ConfigDefs.hpp>
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -48,7 +47,6 @@ typedef Scalar SC;
 typedef LocalOrdinal LO;
 typedef GlobalOrdinal GO;
 typedef Node NO;
-#endif  // HAVE_MueLu
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
@@ -63,10 +61,8 @@ typedef Node NO;
 #include "solver_krylovprojectionpreconditioner.H"
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
-#ifdef HAVE_MueLu
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
-#endif  // HAVE_MueLu
 #ifdef TRILINOS_Q1_2015
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
@@ -87,19 +83,14 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver(
       params_(params),
       outfile_(outfile),
       ncall_(0),
-      activeDofMap_(Teuchos::null)
-#ifdef HAVE_MueLu
-      ,
+      activeDofMap_(Teuchos::null),
       bAllowPermutation_(false),
       bPermuteLinearSystem_(false),
       permutationStrategy_("none"),
       diagDominanceRatio_(1.0),
       PermFact_(Teuchos::null)
-#endif
 {
-#ifdef HAVE_MueLu
   data_ = Teuchos::rcp(new MueLu::Level());
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -111,9 +102,7 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   x_ = Teuchos::null;
   b_ = Teuchos::null;
   activeDofMap_ = Teuchos::null;
-#ifdef HAVE_MueLu
   data_ = Teuchos::null;
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -243,12 +232,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
-#ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp(
           new LINALG::SOLVER::MueLuPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
-#else
-      dserror("MueLu only available with most recent version of Trilinos");
-#endif
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
@@ -344,14 +329,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
-#ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp(
           new MueLuBlockPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
-#else
-      dserror(
-          "MueLu AMG preconditioner for blocked systems only available with most recent Trilinos "
-          "version.");
-#endif
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
@@ -364,11 +343,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-#ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_, Params()));
-#else
-      dserror("AMGnxn preconditioner only works with most recent Trilinos version");
-#endif
     }
     else
     {
@@ -382,7 +357,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
 #endif
 }
 
-#ifdef HAVE_MueLu
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
@@ -943,5 +917,3 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst
       Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
   return xEpPermScalCrsMat->getEpetra_CrsMatrixNonConst();
 }
-
-#endif  // HAVE_MueLu

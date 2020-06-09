@@ -9,8 +9,6 @@
 Created on: Feb 27, 2014
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
-
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
@@ -1235,6 +1233,3 @@ void LINALG::SOLVER::PrintMap(const Epetra_Map& Map, std::string prefix)
   for (int LID = 0; LID < NumLID; LID++) ofile << LID << " " << Map.GID(LID) << std::endl;
   return;
 }
-
-
-#endif  // HAVE_MueLu

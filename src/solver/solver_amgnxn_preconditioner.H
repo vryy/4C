@@ -12,8 +12,6 @@ Created on: Feb 27, 2014
 #ifndef AMGNXN_OPERATOR_H
 #define AMGNXN_OPERATOR_H
 
-#ifdef HAVE_MueLu
-
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
 #include "Teuchos_RCP.hpp"
@@ -314,5 +312,4 @@ namespace LINALG
   }  // namespace SOLVER
 }  // namespace LINALG
 
-#endif  // HAVE_MueLu
 #endif  // AMGNXN_OPERATOR_H

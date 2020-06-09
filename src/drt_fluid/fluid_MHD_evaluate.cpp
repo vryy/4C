@@ -338,7 +338,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
 
     //**********************************************************************
     // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(HAVE_PARMETIS)
+#if defined(PARALLEL)
 
     Teuchos::RCP<Epetra_Map> bndrownodes;
     Teuchos::RCP<Epetra_Map> bndcolnodes;
@@ -351,12 +351,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
         bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
 
 #else
-#if defined(PARALLEL)
-    dserror("require PARMETIS not METIS");
-#else
     bndrownodes = Teuchos::rcp(new Epetra_Map(*newrownodemap));
     bndcolnodes = Teuchos::rcp(new Epetra_Map(*newcolnodemap));
-#endif
 #endif
     if (bnd_discret_->Comm().MyPID() == 0)
     {

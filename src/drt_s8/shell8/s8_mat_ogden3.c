@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
 #include "shell8.h"
 #include "../../drt_lib/drt_dserror.H"
@@ -298,7 +297,3 @@ printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",P
   /*----------------------------------------------------------------------*/
   return;
 } /* end of s8_mat_ogden_uncoupled2 */
-
-
-
-#endif
