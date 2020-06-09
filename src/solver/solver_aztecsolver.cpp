@@ -24,7 +24,9 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>  // remove me
+#ifdef TRILINOS_Q1_2015
 #include <MueLu_HierarchyHelpers.hpp>
+#endif
 #include <MueLu_VerboseObject.hpp>
 
 #endif  // HAVE_MueLu

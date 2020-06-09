@@ -10,7 +10,7 @@
 #ifndef MUELU_SELECTIVESAPFACTORY_DECL_HPP_
 #define MUELU_SELECTIVESAPFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include <string>
 
@@ -118,6 +118,6 @@ namespace MueLu
 
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DECL_HPP_ */

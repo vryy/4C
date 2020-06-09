@@ -11,7 +11,7 @@
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_
 
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ConfigDefs.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"
@@ -71,6 +71,6 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_SHORT
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_ */

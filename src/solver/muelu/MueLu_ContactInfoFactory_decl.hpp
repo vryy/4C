@@ -10,7 +10,7 @@
 #ifndef MUELU_CONTACTINFOFACTORY_DECL_HPP_
 #define MUELU_CONTACTINFOFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 
 #include "MueLu_ConfigDefs.hpp"
@@ -84,7 +84,7 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_CONTACTINFOFACTORY_SHORT
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 
 #endif /* MUELU_CONTACTINFOFACTORY_DECL_HPP_ */

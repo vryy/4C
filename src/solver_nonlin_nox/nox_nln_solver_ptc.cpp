@@ -266,7 +266,11 @@ void NOX::NLN::Solver::PseudoTransient::createGroupPrePostOperator()
  *----------------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
 {
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   prePostOperator.runPreIterate(*this);
+#else
+  observer->runPreIterate(*this);
+#endif
 
   // On the first step do some initializations
   if (nIter == 0)
@@ -306,7 +310,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   // First check status
   if (status != NOX::StatusTest::Unconverged)
   {
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
     prePostOperator.runPostIterate(*this);
+#else
+    observer->runPostIterate(*this);
+#endif
     printUpdate();
     return status;
   }
@@ -342,7 +350,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
     utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - unable to calculate direction"
                     << std::endl;
     status = NOX::StatusTest::Failed;
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
     prePostOperator.runPostIterate(*this);
+#else
+    observer->runPostIterate(*this);
+#endif
     printUpdate();
     return status;
   }
@@ -376,7 +388,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
       utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - line search failed"
                       << std::endl;
       status = NOX::StatusTest::Failed;
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
       prePostOperator.runPostIterate(*this);
+#else
+      observer->runPostIterate(*this);
+#endif
       printUpdate();
       return status;
     }
@@ -392,7 +408,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   {
     utilsPtr->out() << "NOX::Solver::PseudoTransient::iterate - unable to compute F" << std::endl;
     status = NOX::StatusTest::Failed;
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
     prePostOperator.runPostIterate(*this);
+#else
+    observer->runPostIterate(*this);
+#endif
     printUpdate();
     return status;
   }
@@ -400,7 +420,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   // Evaluate the current status.
   status = otest.checkStatus(*this, checkType);
 
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   prePostOperator.runPostIterate(*this);
+#else
+  observer->runPostIterate(*this);
+#endif
 
   printUpdate();
 
@@ -434,7 +458,11 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
 NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
 {
   isPtcSolve_ = true;
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   prePostOperator.runPreSolve(*this);
+#else
+  observer->runPreSolve(*this);
+#endif
   // Iterate until converged or failed
   while (status == NOX::StatusTest::Unconverged) step();
 
@@ -442,7 +470,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
   outputParams.set("Nonlinear Iterations", nIter);
   outputParams.set("2-Norm of Residual", solnPtr->getNormF());
 
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   prePostOperator.runPostSolve(*this);
+#else
+  observer->runPostSolve(*this);
+#endif
   isPtcSolve_ = false;
   return status;
 }

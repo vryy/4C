@@ -10,7 +10,7 @@
 #ifndef MUELU_MYTRILINOSSMOOTHER_FWD_HPP
 #define MUELU_MYTRILINOSSMOOTHER_FWD_HPP
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 namespace MueLu
 {
@@ -22,6 +22,6 @@ namespace MueLu
 #define MUELU_MYTRILINOSSMOOTHER_SHORT
 #endif
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif  // MUELU_MYTRILINOSSMOOTHER_FWD_HPP

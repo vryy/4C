@@ -44,8 +44,9 @@
 
 #include <MueLu_EpetraOperator.hpp>  // Aztec interface
 
+#ifdef TRILINOS_Q1_2015
 #include "muelu/MueLu_BaciFactoryFactory_decl.hpp"  // Baci specific MueLu factories with xml interface
-
+#endif
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
@@ -228,11 +229,16 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
       mueluOp->SetFixedBlockSize(numdf);
 
+#ifdef TRILINOS_Q1_2015
       Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>>
           myFactFact = Teuchos::rcp(
               new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(mueluOp->getRowMap()->getComm()), myFactFact);
+#else
+      MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
+          xmlFileName, *(mueluOp->getRowMap()->getComm()));
+#endif
 
       Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
       H->SetDefaultVerbLevel(MueLu::Extreme);

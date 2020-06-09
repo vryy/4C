@@ -6,7 +6,7 @@
 \maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -32,4 +32,4 @@ template class MueLu::ContactAFilterFactory<std::complex<double>, int, int, Kokk
 # endif
 #endif*/
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015

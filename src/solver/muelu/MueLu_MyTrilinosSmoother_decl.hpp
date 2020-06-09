@@ -10,7 +10,7 @@
 #ifndef MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 #define MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -130,7 +130,7 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #define MUELU_MYTRILINOSSMOOTHER_SHORT
 #endif /* MUELU_MYTRILINOSSMOOTHER_DECL_HPP_ */

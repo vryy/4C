@@ -43,7 +43,7 @@ MATRIXTYPE                      block
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_2x2.xml
+AMGNXN_XML_FILE                 ssi_mono_3D_27hex8_scatra_BGS-AMG_2x2.xml
 ----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS

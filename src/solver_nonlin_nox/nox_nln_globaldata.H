@@ -38,10 +38,14 @@ namespace LINALG
 namespace NOX
 {
   class Utils;
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   namespace Abstract
   {
     class PrePostOperator;
   }  // namespace Abstract
+#else
+  class Observer;
+#endif
   namespace Epetra
   {
     class Scaling;
@@ -215,7 +219,11 @@ namespace NOX
       Teuchos::RCP<NOX::Direction::UserDefinedFactory> direction_factory_;
 
       /// pre/post operator pointer for the NOX::NLN::Solver pre/post operator
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
       Teuchos::RCP<NOX::Abstract::PrePostOperator> prePostOpPtr_;
+#else
+      Teuchos::RCP<NOX::Observer> prePostOpPtr_;
+#endif
 
       /// True if it is a constrained problem
       bool isConstrained_;

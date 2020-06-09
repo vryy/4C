@@ -73,6 +73,10 @@ namespace INVANA
   class SurfCurrentGroup : public ObjectiveFunct
   {
    private:
+#ifndef TRILINOS_Q1_2015
+    //! Kokkos ScopeGuard ensures correct finalization of Kokkos in destructor of this class
+    Kokkos::ScopeGuard kokkosscopeguard_;
+#endif
     //! Discretization of the source model
     Teuchos::RCP<DRT::Discretization> sourcedis_;
 
@@ -94,7 +98,12 @@ namespace INVANA
     SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret);
 
     //! Standard destructor
-    virtual ~SurfCurrentGroup() { Kokkos::finalize(); }
+    virtual ~SurfCurrentGroup()
+    {
+#ifdef TRILINOS_Q1_2015
+      Kokkos::finalize();
+#endif
+    }
 
     //! read target discretization
     DRT::Problem* ReadReferenceDiscretization();
@@ -271,7 +280,11 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType::size_type i, double& sum) const
     {
+#ifdef TRILINOS_Q1_2015
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
+#else
+      for (currents_type::size_type j = 0; j < c2.extent(0); j++)
+#endif
       {
         sum += (n1(i, 0) * n2(j, 0) + n1(i, 1) * n2(j, 1) + n1(i, 2) * n2(j, 2)) *
                kernel(c1(i, 0), c1(i, 1), c1(i, 2), c2(j, 0), c2(j, 1), c2(j, 2), lscale);
@@ -313,7 +326,11 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(int i) const
     {
+#ifdef TRILINOS_Q1_2015
       for (trimesh_type::size_type j = 0; j < in.dimension_1(); j++) in(i, j) = 0.0;
+#else
+      for (trimesh_type::size_type j = 0; j < in.extent(1); j++) in(i, j) = 0.0;
+#endif
     }
   };
 
@@ -340,7 +357,11 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType1::size_type i) const
     {
+#ifdef TRILINOS_Q1_2015
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
+#else
+      for (currents_type::size_type j = 0; j < c2.extent(0); j++)
+#endif
       {
         double ker =
             fac * kernel(c1(i, 0), c1(i, 1), c1(i, 2), c2(j, 0), c2(j, 1), c2(j, 2), lscale);
@@ -383,7 +404,11 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType::size_type i) const
     {
+#ifdef TRILINOS_Q1_2015
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
+#else
+      for (currents_type::size_type j = 0; j < c2.extent(0); j++)
+#endif
       {
         double ker[3];
         double arg = fac *

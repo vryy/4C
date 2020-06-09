@@ -17,8 +17,11 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_ABSTRACT_PREPOSTOPERATOR_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_ABSTRACT_PREPOSTOPERATOR_H_
 
-
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
 #include <NOX_Abstract_PrePostOperator.H>  // base class
+#else
+#include <NOX_Observer.hpp>  // base class
+#endif
 
 // forward declaration
 class Epetra_Vector;
@@ -83,7 +86,11 @@ namespace NOX
 
         \author Michael Hiermeier
        */
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
       class PrePostOperator : public NOX::Abstract::PrePostOperator
+#else
+      class PrePostOperator : public NOX::Observer
+#endif
       {
        public:
         //! constructor (does nothing)

@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|

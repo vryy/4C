@@ -207,7 +207,7 @@ namespace INPAR
       DoubleParameter(
           "ML_PROLONG_THRES", 0., "threshold for prolongator smoother/aggregation", &list);
 
-      setNumericStringParameter("ML_SMOTIMES", "1 1 1 1 1",
+      StringParameter("ML_SMOTIMES", "1 1 1 1 1",
           "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",
           &list);
 

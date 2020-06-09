@@ -21,7 +21,11 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
+#ifdef TRILINOS_Q1_2015
 #include <MueLu_HierarchyHelpers.hpp>
+#else
+#include <MueLu_HierarchyUtils.hpp>
+#endif
 #include <MueLu_VerboseObject.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -61,12 +65,14 @@ typedef Node NO;
 #include "solver_mlpreconditioner.H"
 #ifdef HAVE_MueLu
 #include "solver_muelupreconditioner.H"
+#include "solver_amgnxn_preconditioner.H"
+#endif  // HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
-#include "solver_amgnxn_preconditioner.H"
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif  // HAVE_TEKO
@@ -246,31 +252,29 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
-      dserror("MueLu (Contact) preconditioner only available with most recent version of Trilinos");
+      dserror("MueLu (Contact) preconditioner only available with Trilinos Q1_2015.");
 #endif
     }
     else if (Params().isSublist("MueLu (Contact2) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner2(
           outfile_, Params().sublist("MueLu (Contact2) Parameters")));
 #else
-      dserror("MueLu (Contact2) preconditioner only available with most recent Trilinos version.");
+      dserror("MueLu (Contact2) preconditioner only available with Trilinos Q1_2015.");
 #endif
     }
     else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPenaltyPreconditioner(
           outfile_, Params().sublist("MueLu (PenaltyContact) Parameters")));
 #else
-      dserror(
-          "MueLu (PenaltyContact) preconditioner only available with most recent version of "
-          "Trilinons.");
+      dserror("MueLu (PenaltyContact) preconditioner only available with Trilinos Q1_2015.");
 #endif
     }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
@@ -351,11 +355,11 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
-      dserror("MueLu (Contact) preconditioner only available with most recent Trilinos version");
+      dserror("MueLu (Contact) preconditioner only available with Trilinos Q1_2015.");
 #endif
     }
     else if (Params().isSublist("AMGnxn Parameters"))
@@ -406,8 +410,13 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
   // check, if "SlaveDofMap" information is available in parameter lists
   if (epSlaveDofMap != Teuchos::null)
   {
+#ifdef TRILINOS_Q1_2015
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
         Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
+#else
+    Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xSlaveDofMap =
+        Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(epSlaveDofMap));
+#endif
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(
                                   xSlaveDofMap));  // set map with active dofs
 

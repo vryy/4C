@@ -1,4 +1,4 @@
-#
+
 # Build system for baci and support tools.
 # Including nightly test definitions.
 #
@@ -8,6 +8,9 @@
 
 cmake_minimum_required(VERSION 2.8)
 project(baci CXX C Fortran)
+
+# Print CMake version to screen
+message("II Using CMAke ${CMAKE_VERSION}")
 
 # The version number.
 set (baci_VERSION_MAJOR 1)
@@ -104,6 +107,18 @@ if (HAVE_Kokkos)
   add_definitions("-DHAVE_Kokkos")
 endif(HAVE_Kokkos)
 
+option (TRILINOS_Q1_2015 "Select Trilinos installation Q1_2015" OFF)
+if (TRILINOS_Q1_2015)
+  MESSAGE("II Trilinos installation: Q1_2015")
+  add_definitions("-DTRILINOS_Q1_2015")
+endif (TRILINOS_Q1_2015)
+
+option (TRILINOS_Q1_2019 "Select Trilinos installation Q1_2019" OFF)
+if (TRILINOS_Q1_2019)
+  MESSAGE("II Trilinos installation: Q1_2019")
+  add_definitions("-DTRILINOS_Q1_2019")
+endif (TRILINOS_Q1_2019)
+
 option (ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
 if (ENABLE_STACKTR)
   MESSAGE("II Print stacktrace in dserror")
@@ -113,17 +128,22 @@ endif (ENABLE_STACKTR)
 
 #   additional features
 
-
-find_package(HDF5 REQUIRED)
+if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
+set(HDF5_PREFER_PARALLEL true)
+endif()
+find_package(HDF5 REQUIRED COMPONENTS C HL)
 if (HDF5_FOUND)
+  MESSAGE("-- HDF5_IS_PARALLEL: ${HDF5_IS_PARALLEL}")
   MESSAGE("-- HDF5 include directory: ${HDF5_INCLUDE_DIRS}")
-  MESSAGE("-- HDF5 library directory: ${HDF5_LIBRARY}")
+  MESSAGE("-- HDF5 library directory: ${HDF5_LIBRARY_DIRS}")
   MESSAGE("-- HDF5 libraries: ${HDF5_LIBRARIES}")
+  MESSAGE("-- HDF5 HL libraries: ${HDF5_HL_LIBRARIES}")
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${HDF5_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
     ${HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
     )
 endif(HDF5_FOUND)
 
@@ -141,10 +161,6 @@ if (QHULL_FOUND)
     ${QHULL_LIBRARIES}
     )
 endif (QHULL_FOUND)
-
-if (NOT QHULL_FOUND)
-   MESSAGE(FATAL_ERROR "QHull not found")
-endif ()
 
 if (HAVE_OpenMP)
 find_package(OpenMP)
@@ -199,8 +215,6 @@ find_package(LAPACK REQUIRED)
 ### TRILINOS
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
 find_package(Trilinos REQUIRED)
-# old find_package string for Trilinos < Q1/2012
-#find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)  # needed for build system on navier??
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")

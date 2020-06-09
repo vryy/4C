@@ -29,6 +29,11 @@
   <ParameterList name="myMuelu">
     <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
+
+      <ParameterList name="Matrix">
+        <Parameter name="PDE equations" type="int" value="3"/>
+      </ParameterList>
+
       <!-- Factory collection -->
       <ParameterList name="Factories">
 
@@ -123,6 +128,11 @@
   <ParameterList name="myMueluF">
     <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
+
+      <ParameterList name="Matrix">
+        <Parameter name="PDE equations" type="int" value="4"/>
+      </ParameterList>
+
       <!-- Factory collection -->
       <ParameterList name="Factories">
 

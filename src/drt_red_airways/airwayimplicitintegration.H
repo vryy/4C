@@ -24,47 +24,19 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_function.H"
 
 #include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
-#include <ml_agg_genP.h>
-#include <ml_operator.h>
-#include <MLAPI_Error.h>
-#include <MLAPI_CompObject.h>
-#include <MLAPI_TimeObject.h>
-#include <MLAPI_Operator.h>
-#include <MLAPI_Operator_Utils.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_InverseOperator.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_BaseOperator.h>
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Eig.h>
 
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
-
-
-using namespace MLAPI;
 
 // forward declarations
 namespace DRT
@@ -72,6 +44,12 @@ namespace DRT
   class ResultTest;
   class RedAirwayResultTest;
 }  // namespace DRT
+
+namespace LINALG
+{
+  class MapExtractor;
+  class Solver;
+}  // namespace LINALG
 
 namespace AIRWAY
 {

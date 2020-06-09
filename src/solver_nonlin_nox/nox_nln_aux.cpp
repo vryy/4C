@@ -26,7 +26,11 @@
 #include <Epetra_Vector.h>
 
 #include <NOX_Abstract_ImplicitWeighting.H>
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
 #include <NOX_PrePostOperator_Vector.H>
+#else
+#include <NOX_Observer_Vector.hpp>
+#endif
 
 #include "../drt_inpar/drt_boolifyparameters.H"
 
@@ -595,6 +599,7 @@ enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std::s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
 void NOX::NLN::AUX::AddToPrePostOpVector(
     Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr)
 {
@@ -626,6 +631,35 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
     p_nox_opt.set<Teuchos::RCP<NOX::Abstract::PrePostOperator>>(
         "User Defined Pre/Post Operator", ppo_ptr);
 }
+#else
+void NOX::NLN::AUX::AddToPrePostOpVector(
+    Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<NOX::Observer>& ppo_ptr)
+{
+  // if there is already a pre/post operator, we will convert the pre/post op
+  // to a pre/post op vector and add the previous and new pre/post op
+  if (p_nox_opt.isType<Teuchos::RCP<NOX::Observer>>("User Defined Pre/Post Operator"))
+  {
+    Teuchos::RCP<NOX::Observer> user_ppo =
+        p_nox_opt.get<Teuchos::RCP<NOX::Observer>>("User Defined Pre/Post Operator");
+
+    Teuchos::RCP<NOX::ObserverVector> user_ppo_vec =
+        Teuchos::rcp_dynamic_cast<NOX::ObserverVector>(user_ppo, false);
+
+    if (user_ppo_vec.is_null())
+    {
+      user_ppo_vec = Teuchos::rcp(new NOX::ObserverVector());
+      user_ppo_vec->pushBack(user_ppo);
+    }
+
+    user_ppo_vec->pushBack(ppo_ptr);
+
+    p_nox_opt.set<Teuchos::RCP<NOX::Observer>>("User Defined Pre/Post Operator", user_ppo_vec);
+  }
+  // if there is no pre/post operator, we will just add the new one
+  else
+    p_nox_opt.set<Teuchos::RCP<NOX::Observer>>("User Defined Pre/Post Operator", ppo_ptr);
+}
+#endif
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
