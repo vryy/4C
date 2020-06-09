@@ -139,6 +139,7 @@ def check_inputtests(look_cmd, allerrors):
   with open('TestingFramework.cmake', 'r') as cmakefile:
     entry_regex = [
       re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
+      re.compile(r'baci_test_post_ensight *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_Nested_Par *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+) *'),
       re.compile(r'baci_test_Nested_Par_MultipleInvana *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+)*'),
@@ -147,7 +148,7 @@ def check_inputtests(look_cmd, allerrors):
     ]
 
     # list of test categories as one test can be run in different scenarios using differnt mpi-ranks
-    test_categories = ['', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
+    test_categories = ['', '', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
 
     # go through all lines in the TestingFramework.cmake file
     for line in cmakefile:
