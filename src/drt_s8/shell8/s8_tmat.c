@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
 #include "shell8.h"
 
@@ -132,4 +131,3 @@ void s8_getdensity(MATERIAL *mat, DOUBLE *density)
   /*----------------------------------------------------------------------*/
   return;
 } /* end of s8_getdensity */
-#endif

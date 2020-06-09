@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 
 #include "shell8.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -181,5 +180,3 @@ bool DRT::ELEMENTS::Shell8::ReadElement(
 
   return true;
 }
-
-#endif  // #ifdef D_SHELL8

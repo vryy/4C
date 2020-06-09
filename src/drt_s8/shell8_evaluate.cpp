@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 
 #include "shell8.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -4147,7 +4146,3 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
   }  // for (int i=1; i<numa3; ++i)
   return;
 }
-
-
-
-#endif  // #ifdef D_SHELL8

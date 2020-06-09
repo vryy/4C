@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
 #include "../../headers/compiler_definitions.h" /* access to fortran routines */
 #include "shell8.h"
@@ -669,5 +668,3 @@ void s8_kov_CGcuca(double T[3][3], double **gkon)
   /*----------------------------------------------------------------------*/
   return;
 } /* end of s8_kov_CGcuca */
-
-#endif

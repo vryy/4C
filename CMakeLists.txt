@@ -65,7 +65,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
-add_definitions("-DD_SHELL8") # TODO remove D_SHELL8 flag
 
 # external library variable
 set(LIBRARIES "")
@@ -2619,11 +2618,6 @@ option (D_FLUID3      "fluid3" ON)
 if (D_FLUID3)
   add_definitions("-DD_FLUID3")
 endif(D_FLUID3)
-
-option (D_SHELL8      "shell8" ON)
-if (D_SHELL8)
-  add_definitions("-DD_SHELL8")
-endif(D_SHELL8)
 
 option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)

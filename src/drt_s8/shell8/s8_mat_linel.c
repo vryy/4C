@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
 #include "shell8.h"
 
@@ -210,7 +209,3 @@ void s8_mat_neohooke(NEO_HOOKE *mat, DOUBLE *stress, DOUBLE **CC, DOUBLE **gmkon
   /*----------------------------------------------------------------------*/
   return;
 } /* end of s8_mat_neohooke */
-
-
-
-#endif
