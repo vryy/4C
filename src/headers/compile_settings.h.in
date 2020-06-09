@@ -61,10 +61,6 @@
 #cmakedefine INVERSEDESIGNUSE
 #endif
 
-#ifndef HAVE_PARMETIS
-#cmakedefine HAVE_PARMETIS
-#endif
-
 #ifndef PERF
 #cmakedefine PERF
 #endif

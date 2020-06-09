@@ -65,7 +65,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
-add_definitions("-DHAVE_PARMETIS") # TODO remove PARMETIS flag
 add_definitions("-DD_SHELL8") # TODO remove D_SHELL8 flag
 
 # external library variable

@@ -181,9 +181,7 @@ namespace DRT
           double t1 = time.ElapsedTime();
           if (0 == myrank)
           {
-#if defined(HAVE_PARMETIS)
             if (!reader_.MyOutputFlag()) printf("block %d ", block);
-#endif
 
             int bcount = 0;
             for (; file; ++filecount)
