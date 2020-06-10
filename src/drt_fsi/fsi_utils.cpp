@@ -382,13 +382,13 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   idispms_->Scale(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Import> msimpo =
+  Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
-  Teuchos::RCP<Epetra_Import> slimpo =
+  Teuchos::RCP<Epetra_Import> slave_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
-  idispms_->Import(*idisptotal, *msimpo, Add);
-  idispms_->Import(*ifluid, *slimpo, Add);
+  if (idispms_->Import(*idisptotal, *master_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*ifluid, *slave_importer, Add)) dserror("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);
@@ -650,10 +650,12 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
       // if no close elements could be found, try with a much larger radius and print a warning
       if (closeeles.empty())
       {
+        const double enlarge_factor = 100;
         std::cout << "WARNING: no elements found in radius r=" << maxmindist_
-                  << ". Will try once with a bigger radius!" << std::endl;
+                  << ". Will try once with a " << static_cast<int>(enlarge_factor)
+                  << "-times bigger radius!" << std::endl;
         closeeles = searchTree->searchElementsInRadius(
-            interfacedis, currentpositions, alenodecurr, 100.0 * maxmindist_, 0);
+            interfacedis, currentpositions, alenodecurr, enlarge_factor * maxmindist_, 0);
         maxmindist_ *= 10.0;
 
         // if still no element is found, complain about it!

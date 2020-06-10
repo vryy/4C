@@ -10,6 +10,7 @@
 */
 
 #include "ad_str_fsiwrapper.H"
+#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -236,3 +237,10 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> ADAPTER::FSIStructureWrapper::FSIModelEvaluator()
+{
+  return fsi_model_evaluator_;
+};
