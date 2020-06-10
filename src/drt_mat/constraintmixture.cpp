@@ -37,6 +37,7 @@ For a detailed description see:
 #include "../drt_fem_general/drt_utils_integration.H"         // for debug plotting with gmsh
 #include "../drt_lib/drt_utils.H"                             // for debug plotting with gmsh
 #include "../drt_inpar/inpar_structure.H"                     // for pstime
+#include "../drt_lib/prestress_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -491,13 +492,9 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   minindex_ = 0;
 
   // prestress time
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(timeintegr, "PRESTRESS");
-  if (pstype == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulfActive(params_->starttime_ + dt))
   {
-    double pstime = timeintegr.get<double>("PRESTRESSTIME");
-    if (pstime > params_->starttime_ + dt)
-      dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+    dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
   }
 
   // basal mass production rate determined by DENS, PHIE and degradation function

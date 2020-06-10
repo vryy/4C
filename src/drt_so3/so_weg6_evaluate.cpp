@@ -10,6 +10,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -135,7 +136,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+      if (::UTILS::PRESTRESS::IsInverseDesignActive(
+              time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, NULL, &elevec1, NULL, NULL,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
@@ -197,7 +199,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+      if (::UTILS::PRESTRESS::IsInverseDesignActive(
+              time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL,
             NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
@@ -236,7 +239,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
-        if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+        if (::UTILS::PRESTRESS::IsInverseDesignActive(
+                time_, pstype_, pstime_))  // inverse design analysis
           invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
               params, iostress, iostrain);
         else
@@ -301,7 +305,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_WEG6 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_WEG6 + 2];
 
-        if (pstype_ == INPAR::STR::PreStress::mulf)
+        if (::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_WEG6 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_WEG6 + 1];
@@ -329,7 +333,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
         LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-        if (pstype_ == INPAR::STR::PreStress::mulf)
+        if (::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           LINALG::Matrix<3, 3> invJdef;
@@ -358,7 +362,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
           defgrd.MultiplyTT(xcurr, N_XYZ);
 
 
-        if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+        if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+            !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
         {
           dserror("Calc Energy not implemented for prestress id");
         }
@@ -485,7 +490,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->ResetAll(NUMGPT_WEG6);
 
       // Reset prestress
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         time_ = 0.0;
         LINALG::Matrix<3, 3> Id(true);
@@ -496,7 +501,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (pstype_ == INPAR::STR::PreStress::id)
+      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
         dserror("Reset of Inverse Design not yet implemented");
     }
     break;
@@ -602,7 +607,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         }
         else
         {
-          if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+          if (::UTILS::PRESTRESS::IsInverseDesignActive(
+                  time_, pstype_, pstime_))  // inverse design analysis
             invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress,
                 &strain, params, iostress, iostrain);
 
@@ -719,11 +725,12 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
+    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
-    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
       if (!(invdesign_->IsInit()))
       {
         invdesign_->MatrixtoStorage(gp, invJ_[gp], invdesign_->JHistory());
@@ -731,9 +738,11 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
       }
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
-  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
-  if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_) invdesign_->IsInit() = true;
+  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+      !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
+    invdesign_->IsInit() = true;
 
   return;
 }
@@ -783,7 +792,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_WEG6 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_WEG6 + 2];
 
-    if (pstype_ == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
       xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -809,7 +818,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-    if (pstype_ == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;
@@ -838,7 +847,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
       defgrd.MultiplyTT(xcurr, N_XYZ);
 
 
-    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
     {
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
@@ -1430,7 +1440,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       xcurr(i, 1) = x[1] + disp[i * NODDOF_WEG6 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_WEG6 + 2];
 
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
         xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -1458,7 +1468,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         LINALG::Matrix<3, 3> invJdef;

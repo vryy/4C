@@ -23,6 +23,8 @@
 #include "str_impl_gemm.H"
 #include "str_impl_ost.H"  // derived from ost
 
+#include "../drt_lib/prestress_service.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::Factory::Factory()
@@ -54,7 +56,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
   const enum INPAR::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
 
   // check if we have a problem that needs to be prestressed
-  if (prestresstype == INPAR::STR::PreStress::mulf or prestresstype == INPAR::STR::PreStress::id)
+  if (::UTILS::PRESTRESS::IsAny(prestresstype))
   {
     impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::PreStress());
     return impl_int_ptr;

@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/prestress_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_mat/so3_material.H"
 
@@ -113,12 +114,10 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+    pstype_ = ::UTILS::PRESTRESS::GetType();
+    pstime_ = ::UTILS::PRESTRESS::GetTime();
   }
-
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
 
   return;
@@ -150,7 +149,7 @@ DRT::ELEMENTS::So_tet10::So_tet10(const DRT::ELEMENTS::So_tet10& old)
     invJ_mass_[i] = old.invJ_mass_[i];
   }
 
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
@@ -202,11 +201,11 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, size_mass);
   for (int i = 0; i < size_mass; ++i) AddtoPack(data, invJ_mass_[i]);
 
-  // prestress_
+  // Pack prestress
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
@@ -249,11 +248,11 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   invJ_mass_.resize(size_mass, LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   for (int i = 0; i < size_mass; ++i) ExtractfromPack(position, data, invJ_mass_[i]);
 
-  // prestress_
+  // Unpack prestress
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);

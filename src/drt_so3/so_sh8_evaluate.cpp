@@ -29,6 +29,7 @@
 #include "../drt_lib/drt_condition.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_structure_new/str_enum_lists.H"
+#include "../drt_lib/prestress_service.H"
 
 
 /*----------------------------------------------------------------------*
@@ -565,8 +566,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (pstype_ == INPAR::STR::PreStress::mulf)
-    dserror("mulf is unsupported for the So_sh8 element!");
+  if (::UTILS::PRESTRESS::IsMulf(pstype_)) dserror("mulf is unsupported for the So_sh8 element!");
 
   if (kintype_ != INPAR::STR::kinem_nonlinearTotLag)
     dserror("Unsupported kinematic type for the So_sh8 element!");

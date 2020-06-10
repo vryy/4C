@@ -46,6 +46,7 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/prestress_service.H"
 
 
 
@@ -887,7 +888,6 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
   int error = 0;
   t1_ = Teuchos::Time::wallTime();
   // init some variables
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   *cont_elementdata_ = *cont_elementdata_init_;
   *cont_nodedata_ = *cont_nodedata_init_;
   *cont_disn_ = *cont_disn_init_;
@@ -920,14 +920,10 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
 
     IO::cout << "Gamma is  " << gamma << IO::endl;
     // if we have prestress we need possibly a two step process
-    // get prestress type
-    INPAR::STR::PreStress pstype =
-        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-
-    if (pstype == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf())
     {
       // get prestress time
-      double pstime = sdyn.get<double>("PRESTRESSTIME");
+      double pstime = ::UTILS::PRESTRESS::GetTime();
       double endtime;
 
       // compute the number of steps we did in prestressing mode
@@ -1056,11 +1052,8 @@ void UQ::MLMC::SetupStochMatDet(double value)
 void UQ::MLMC::ResetPrestress()
 {
   // Reset Presstress possibly still present in Discretization
-  // Get prestress parameter
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // get prestress type
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
+  INPAR::STR::PreStress pstype = ::UTILS::PRESTRESS::GetType();
   switch (pstype)
   {
     case INPAR::STR::PreStress::none:

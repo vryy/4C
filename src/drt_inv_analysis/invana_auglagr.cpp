@@ -35,6 +35,7 @@
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/prestress_service.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -69,9 +70,9 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
 
   // prestress stuff
   pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
-  if (pstype_ == INPAR::STR::PreStress::mulf) pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  if (::UTILS::PRESTRESS::IsMulf(pstype_)) pstime_ = ::UTILS::PRESTRESS::GetTime();
 
-  if (pstype_ == INPAR::STR::PreStress::id)
+  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     dserror("id is not implemented yet for the adjoint formulation");
 
   // initialize the vector of time steps according to the structural dynamic params
@@ -259,9 +260,9 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
 
   // initialize adjoint time integration with RHS as input
   Teuchos::RCP<STR::TimIntAdjoint> timintadj;
-  if (pstype_ == INPAR::STR::PreStress::none)
+  if (::UTILS::PRESTRESS::IsNone(pstype_))
     timintadj = Teuchos::rcp(new STR::TimIntAdjoint(Discret()));
-  else if (pstype_ == INPAR::STR::PreStress::mulf)
+  else if (::UTILS::PRESTRESS::IsMulf(pstype_))
     timintadj = Teuchos::rcp(new STR::TimIntAdjointPrestress(Discret()));
 
   timintadj->SetupAdjoint(adjrhs, mtime, dis_, time_);
@@ -272,7 +273,7 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
   // get the solution
   disdual_->Update(1.0, *timintadj->ExtractSolution(), 0.0);
 
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     disdualp_->Update(1.0, *timintadj->ExtractPrestressSolution(), 0.0);
   }
@@ -338,7 +339,7 @@ void INVANA::InvanaAugLagr::EvaluateGradient(
 
     Discret()->ClearState();
 
-    if (pstype_ == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       int stepps = (int)(pstime_ / (timestep_));
       Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(stepps - 1), false));
