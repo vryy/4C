@@ -81,7 +81,7 @@ void RuntimeVtpWriter::WriteFiles()
 
   vtp_writer_->WriteVtkHeaders();
 
-  vtp_writer_->WriteVtkFieldData();
+  vtp_writer_->WriteVtkTimeAndOrCycle();
 
   vtp_writer_->WriteGeometryPolyData(point_coordinates_);
 

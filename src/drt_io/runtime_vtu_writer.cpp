@@ -124,7 +124,7 @@ void RuntimeVtuWriter::WriteFiles()
 
   vtu_writer_->WriteVtkHeaders();
 
-  vtu_writer_->WriteVtkFieldData(field_data_vectors_);
+  vtu_writer_->WriteVtkFieldDataAndOrTimeAndOrCycle(field_data_vectors_);
 
   vtu_writer_->WriteGeometryUnstructuredGridContiguous(
       point_coordinates_, cell_offset_, cell_types_);

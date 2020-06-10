@@ -339,7 +339,7 @@ void VtkWriterBase::WriteVtkHeaders()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFieldData(
+void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
     const std::map<std::string, std::vector<double>>& field_data_map)
 {
   ThrowErrorIfInvalidFileStream(currentout_);
@@ -377,11 +377,11 @@ void VtkWriterBase::WriteVtkFieldData(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFieldData()
+void VtkWriterBase::WriteVtkTimeAndOrCycle()
 {
   std::map<std::string, std::vector<double>> empty_map;
   empty_map.clear();
-  WriteVtkFieldData(empty_map);
+  WriteVtkFieldDataAndOrTimeAndOrCycle(empty_map);
 }
 
 /*----------------------------------------------------------------------*
@@ -424,7 +424,7 @@ void VtkWriterBase::WriteFieldDataArray(const std::string& name, const std::vect
 {
   const unsigned int n_data = field_data.size();
 
-  // If the array is empty is is skipped.
+  // If the array is empty it is skipped.
   if (n_data == 0) return;
 
   // Set the header for the current field data array.

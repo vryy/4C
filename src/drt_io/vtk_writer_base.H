@@ -144,10 +144,11 @@ class VtkWriterBase
   void WriteVtkHeaders();
 
   //! write given field data, including time and cycle for vtk file.
-  void WriteVtkFieldData(const std::map<std::string, std::vector<double>>& field_data_map);
+  void WriteVtkFieldDataAndOrTimeAndOrCycle(
+      const std::map<std::string, std::vector<double>>& field_data_map);
 
   //! write field data for time and cycle for vtk file.
-  void WriteVtkFieldData();
+  void WriteVtkTimeAndOrCycle();
 
   //! write epilogue of all required vtk files
   void WriteVtkFooters();
