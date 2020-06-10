@@ -320,7 +320,7 @@ void VtkWriterBase::AppendMasterFileAndTimeToCollectionFileMidSectionContent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkHeadersAndFieldData()
+void VtkWriterBase::WriteVtkHeaders()
 {
   // Todo: might need BigEndian on some systems
   const std::string byteorder = "LittleEndian";
@@ -334,10 +334,54 @@ void VtkWriterBase::WriteVtkHeadersAndFieldData()
   // start file on each individual processor
   WriteVtkHeaderThisProcessor(byteorder);
 
-  WriteTimeOrCycleAsFieldData();
-
-
   currentPhase_ = INIT;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
+    const std::map<std::string, std::vector<double>>& field_data_map)
+{
+  ThrowErrorIfInvalidFileStream(currentout_);
+
+  // Initialize field data section.
+  currentout_ << "    <FieldData>\n";
+
+  // If previously set add time and cycle to field data.
+  if (time_ != std::numeric_limits<double>::min() || cycle_ != std::numeric_limits<int>::max())
+  {
+    if (time_ != std::numeric_limits<double>::min())
+    {
+      std::vector<double> temp_vector;
+      temp_vector.resize(1);
+      temp_vector[0] = time_;
+      WriteFieldDataArray("TIME", temp_vector);
+    }
+
+    if (cycle_ != std::numeric_limits<int>::max())
+    {
+      std::vector<int> temp_vector;
+      temp_vector.resize(1);
+      temp_vector[0] = cycle_;
+      WriteFieldDataArray("CYCLE", temp_vector);
+    }
+  }
+
+  // Write every field data array.
+  for (const auto& field_data_iterator : field_data_map)
+    WriteFieldDataArray(field_data_iterator.first, field_data_iterator.second);
+
+  // Finalize field data section.
+  currentout_ << "    </FieldData>\n\n";
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void VtkWriterBase::WriteVtkTimeAndOrCycle()
+{
+  std::map<std::string, std::vector<double>> empty_map;
+  empty_map.clear();
+  WriteVtkFieldDataAndOrTimeAndOrCycle(empty_map);
 }
 
 /*----------------------------------------------------------------------*
@@ -375,29 +419,30 @@ void VtkWriterBase::WriteVtkHeaderThisProcessor(const std::string& byteorder)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteTimeOrCycleAsFieldData()
+template <typename T>
+void VtkWriterBase::WriteFieldDataArray(const std::string& name, const std::vector<T>& field_data)
 {
-  ThrowErrorIfInvalidFileStream(currentout_);
+  const unsigned int n_data = field_data.size();
 
-  // if previously set, write output time and cycle as 'field data'
-  if (time_ != std::numeric_limits<double>::min() || cycle_ != std::numeric_limits<int>::max())
-  {
-    currentout_ << "    <FieldData>\n";
+  // If the array is empty it is skipped.
+  if (n_data == 0) return;
 
-    // time
-    if (time_ != std::numeric_limits<double>::min())
-      currentout_ << "      <DataArray type=\"Float64\" Name=\"TIME\" NumberOfTuples=\"1\" "
-                     "format=\"ascii\">\n"
-                  << time_ << "\n      </DataArray>\n";
+  // Set the header for the current field data array.
+  currentout_ << "      <DataArray type=\"";
+  currentout_ << ScalarTypeToVtkType<T>();
+  currentout_ << "\" Name=\"";
+  currentout_ << name;
+  currentout_ << "\" NumberOfTuples=\"1\"";
+  if (n_data > 1) currentout_ << " NumberOfComponents=\"" << n_data << "\"";
+  currentout_ << " format=\"ascii\">\n";
 
-    // cycle
-    if (cycle_ != std::numeric_limits<int>::max())
-      currentout_ << "      <DataArray type=\"Int32\" Name=\"CYCLE\" NumberOfTuples=\"1\" "
-                     "format=\"ascii\">\n"
-                  << cycle_ << "\n      </DataArray>\n";
+  // Add the field data.
+  currentout_ << std::setprecision(15) << std::scientific;
+  for (unsigned int i = 0; i < n_data; i++) currentout_ << field_data[i] << " ";
+  currentout_ << std::resetiosflags(std::ios::scientific);
 
-    currentout_ << "    </FieldData>\n\n";
-  }
+  // Finish the current field data array.
+  currentout_ << "\n      </DataArray>\n";
 }
 
 /*----------------------------------------------------------------------*

@@ -178,14 +178,20 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
                 error_string += ' Name of the array: {}'.format(name)
             raise ValueError(error_string)
 
-    def compare_data_sets(data1, data2):
+    def compare_data_sets(data1, data2, name):
         """
         Compare data sets obtained from vtk objects.
         """
 
         # Both data sets need to have the same number of arrays.
         if not data1.GetNumberOfArrays() == data2.GetNumberOfArrays():
-            raise ValueError('Length of vtk data objects does not match!')
+            data1_names = [data1.GetArrayName(i)
+                for i in range(data1.GetNumberOfArrays())]
+            data2_names = [data2.GetArrayName(i)
+                for i in range(data2.GetNumberOfArrays())]
+            raise ValueError('Length of vtk data objects for {} does not '
+                'match!\nNames in data1: {}\nNames in data2: {}'.format(
+                    name, data1_names, data2_names))
 
         # Compare each array.
         for i in range(data1.GetNumberOfArrays()):
@@ -214,7 +220,8 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         # pvtkpaths representing timestep files
         for i in range(0, len(pvtkpaths1)):
-            compare_pvtk(pvtkpath_comp=os.path.join(dir1,pvtkpaths1[i]), pvtkpath_ref=os.path.join(dir2,pvtkpaths2[i]))
+            compare_pvtk(pvtkpath_comp=os.path.join(dir1,pvtkpaths1[i]),
+                pvtkpath_ref=os.path.join(dir2,pvtkpaths2[i]))
 
         for iter in enumerate(pvtkpaths1):
             data1array.append(merge_vtk(os.path.join(dir1,iter[1])))
@@ -249,8 +256,12 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
             # Compare Cells only if they exist.
             if data1array[i].GetDataObjectType() != 0:
-                compare_data_sets(data1array[i].GetCellData(), data2array[i].GetCellData())
-            compare_data_sets(data1array[i].GetPointData(), data2array[i].GetPointData())
+                compare_data_sets(data1array[i].GetCellData(),
+                    data2array[i].GetCellData(), 'cell data')
+            compare_data_sets(data1array[i].GetPointData(),
+                data2array[i].GetPointData(), 'point data')
+            compare_data_sets(data1array[i].GetFieldData(),
+                data2array[i].GetFieldData(), 'field data')
 
     except Exception as error:
         if raise_error:

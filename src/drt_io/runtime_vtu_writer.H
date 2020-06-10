@@ -101,6 +101,11 @@ class RuntimeVtuWriter
   std::vector<int32_t>& GetMutableCellOffsetVector();
 
   /**
+   * \brief Return a mutable reference to the field data map.
+   */
+  std::map<std::string, std::vector<double>>& GetMutableFieldDataMap();
+
+  /**
    * \brief Return a mutable reference to the point data map.
    */
   std::map<std::string, std::pair<std::vector<double>, unsigned int>>& GetMutablePointDataMap();
@@ -168,6 +173,9 @@ class RuntimeVtuWriter
 
   //! @}
 
+  //! Every entry here is a vector, scalars will be stored in vectors of length 1.
+  //! key: result name, entry: field data vector)
+  std::map<std::string, std::vector<double>> field_data_vectors_;
 
   //! key: result name, entry: (solution data vector, num_components)
   std::map<std::string, std::pair<std::vector<double>, unsigned int>> point_data_vectors_;
