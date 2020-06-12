@@ -56,6 +56,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       zeros_(Teuchos::null),
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
+      adaptivetimestepping_(false),
       issetup_(false),
       isinit_(false),
       ssiinterfacemeshtying_(
@@ -188,6 +189,19 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       scatra_disname, isAle);
 
   int redistribute = InitFieldCoupling(comm, struct_disname, scatra_disname);
+
+  // is adaptive time stepping activated?
+  if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
+  {
+    // safety check: adaptive time stepping in one of the subproblems?
+    if (!DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+      dserror(
+          "Must provide adaptive time stepping algorithim in one of the subproblems. (Currently "
+          "just ScTra)");
+    else
+      adaptivetimestepping_ =
+          DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING");
+  }
 
   // set isinit_ flag true
   SetIsInit(true);

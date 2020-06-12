@@ -211,6 +211,9 @@ namespace SSI
       if (not IsInit()) dserror("Init(...) was not called.");
     };
 
+    //! indicates adaptive time stepping
+    bool AdaptiveTimeStepping() { return adaptivetimestepping_; };
+
     //! set flag true after setup or false if setup became invalid
     void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
@@ -283,6 +286,9 @@ namespace SSI
 
     //! returns true if Init(..) was called and is still valid
     bool IsInit() { return isinit_; };
+
+    //! adaptive time stepping
+    bool adaptivetimestepping_;
 
     //! flag indicating if class is setup
     bool issetup_;

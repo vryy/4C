@@ -232,6 +232,14 @@ void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
   SetStructSolution(structure_->Dispnp(), structure_->Velnp());
   scatra_->ScaTraField()->PrepareTimeStep();
 
+  // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
+  // to structure
+  if (AdaptiveTimeStepping())
+  {
+    StructureField()->SetDt(scatra_->ScaTraField()->Dt());
+    StructureField()->SetTimen(scatra_->ScaTraField()->Time());
+  }
+
   SetScatraSolution(scatra_->ScaTraField()->Phinp());
   // NOTE: the predictor of the structure is called in here
   structure_->PrepareTimeStep();
