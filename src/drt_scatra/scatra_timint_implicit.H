@@ -483,7 +483,7 @@ namespace SCATRA
     double Dt() const { return dta_; }
 
     //! return if time step was changed during AdaptTimeStepSize()
-    bool TimeStepAdapted() { return timestepadapted_; };
+    bool TimeStepAdapted() const { return timestepadapted_; };
 
     /*========================================================================*/
     //! @name scalar degrees of freedom and related
@@ -940,7 +940,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! adapt time step size if desired
-    bool AdaptTimeStepSize();
+    void AdaptTimeStepSize();
 
     //! compute time step size
     virtual void ComputeTimeStepSize(double& dt);

@@ -719,8 +719,7 @@ void SSI::SSI_Mono::PrepareTimeStep()
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to structure
-  if (AdaptiveTimeStepping() and scatra_->ScaTraField()->TimeStepAdapted())
-    SetDtFromScaTraToStructure();
+  if (scatra_->ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
   // pass scalar transport degrees of freedom to structural discretization
   // has to be called AFTER scatra_->ScaTraField()->PrepareTimeStep() to ensure

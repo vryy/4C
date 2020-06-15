@@ -211,9 +211,6 @@ namespace SSI
       if (not IsInit()) dserror("Init(...) was not called.");
     };
 
-    //! indicates adaptive time stepping
-    bool AdaptiveTimeStepping() { return adaptivetimestepping_; };
-
     //! copies modified time step from scatra to structure and to this SSI algorithm
     void SetDtFromScaTraToStructure();
 
@@ -289,9 +286,6 @@ namespace SSI
 
     //! returns true if Init(..) was called and is still valid
     bool IsInit() { return isinit_; };
-
-    //! adaptive time stepping
-    bool adaptivetimestepping_;
 
     //! flag indicating if class is setup
     bool issetup_;

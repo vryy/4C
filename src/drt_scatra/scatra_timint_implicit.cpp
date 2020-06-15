@@ -1082,7 +1082,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //              set time dependent parameters
   // -------------------------------------------------------------------
   // adapt time step size if desired
-  timestepadapted_ = AdaptTimeStepSize();
+  AdaptTimeStepSize();
 
   // note the order of the following three functions is important
   IncrementTimeAndStep();
@@ -3218,10 +3218,9 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 /*----------------------------------------------------------------------*
  | adapt time step size if desired                           fang 02/18 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
+void SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
 {
-  // flag indicating that time step was changed
-  double timestepadapted = false;
+  timestepadapted_ = false;
 
   // check flag for adaptive time stepping
   if (DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"))
@@ -3248,11 +3247,11 @@ bool SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
       SetDt(dt);
 
       // time step was adapted
-      timestepadapted = true;
+      timestepadapted_ = true;
     }
   }
 
-  return timestepadapted;
+  return;
 }
 
 

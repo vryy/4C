@@ -140,8 +140,7 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
 
   // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
   // to structure
-  if (AdaptiveTimeStepping() and scatra_->ScaTraField()->TimeStepAdapted())
-    SetDtFromScaTraToStructure();
+  if (scatra_->ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
   structure_->PrepareTimeStep();
 

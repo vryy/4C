@@ -56,7 +56,6 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       zeros_(Teuchos::null),
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
-      adaptivetimestepping_(false),
       issetup_(false),
       isinit_(false),
       ssiinterfacemeshtying_(
@@ -190,9 +189,6 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
   int redistribute = InitFieldCoupling(comm, struct_disname, scatra_disname);
 
-  std::cout << "TIMEINTSTRATEGY: " << DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP")
-            << std::endl;
-
   // is adaptive time stepping activated?
   if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
   {
@@ -201,14 +197,11 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       dserror(
           "Must provide adaptive time stepping algorithim in one of the subproblems. (Currently "
           "just ScTra)");
-    else if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-             INPAR::STR::timada_kind_none)
+    if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+        INPAR::STR::timada_kind_none)
       dserror("Adaptive time stepping in SSI currently just from ScaTra");
-    else if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
+    if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
       dserror("Currently, only one step methods are allowed for adaptive time stepping");
-    else
-      adaptivetimestepping_ =
-          DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING");
   }
 
   // set isinit_ flag true
