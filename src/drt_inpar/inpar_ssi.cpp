@@ -80,6 +80,9 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("RESTART_FROM_STRUCTURE", "no",
       "restart from structure problem (e.g. from prestress calculations) instead of ssi", &ssidyn);
 
+  // Adaptive time stepping
+  BoolParameter("ADAPTIVE_TIMESTEPPING", "no", "flag for adaptive time stepping", &ssidyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
   /*----------------------------------------------------------------------*/
