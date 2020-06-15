@@ -214,6 +214,9 @@ namespace SSI
     //! indicates adaptive time stepping
     bool AdaptiveTimeStepping() { return adaptivetimestepping_; };
 
+    //! copies modified time step from scatra to structure and to this SSI algorithm
+    void SetDtFromScaTraToStructure();
+
     //! set flag true after setup or false if setup became invalid
     void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
