@@ -101,7 +101,8 @@ void SSI::SSI_Part1WC::DoScatraStep()
         Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->ReadVector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
         scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
@@ -115,7 +116,8 @@ void SSI::SSI_Part1WC::DoScatraStep()
         reader->ReadVector(phinptemp, "phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
         scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
