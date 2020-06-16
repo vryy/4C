@@ -15,6 +15,7 @@
 
 
 #include <Teuchos_RCP.hpp>
+#include <vector>
 #include <unordered_map>
 
 
