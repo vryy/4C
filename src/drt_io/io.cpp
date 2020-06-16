@@ -66,7 +66,6 @@ Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::strin
   {
     if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
   }
-
   return ReadMultiVector(name);
 }
 
@@ -82,35 +81,6 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, 
     if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
   }
   ReadMultiVector(vec, name);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadSerialDenseMatrix(
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata, std::string name)
-{
-  MAP* result = map_read_map(restart_step_, name.c_str());
-  std::string id_path = map_read_string(result, "ids");
-  std::string value_path = map_read_string(result, "values");
-  int columns = map_find_int(result, "columns", &columns);
-  if (not map_find_int(result, "columns", &columns))
-  {
-    columns = 1;
-  }
-  if (columns != 1)
-    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
-
-  Teuchos::RCP<Epetra_Map> elemap;
-  Teuchos::RCP<std::vector<char>> data =
-      reader_->ReadResultDataVecChar(id_path, value_path, columns, Comm(), elemap);
-
-  std::vector<char>::size_type position = 0;
-  for (int i = 0; i < elemap->NumMyElements(); ++i)
-  {
-    Teuchos::RCP<Epetra_SerialDenseMatrix> matrix = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *data, *matrix);
-    (*mapdata)[elemap->GID(i)] = matrix;
-  }
 }
 
 
@@ -151,6 +121,36 @@ void IO::DiscretizationReader::ReadMultiVector(
         name.c_str(), nv->GlobalLength(), vec->GlobalLength());
 
   LINALG::Export(*nv, *vec);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadSerialDenseMatrix(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata, std::string name)
+{
+  MAP* result = map_read_map(restart_step_, name.c_str());
+  std::string id_path = map_read_string(result, "ids");
+  std::string value_path = map_read_string(result, "values");
+  int columns = map_find_int(result, "columns", &columns);
+  if (not map_find_int(result, "columns", &columns))
+  {
+    columns = 1;
+  }
+  if (columns != 1)
+    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
+
+  Teuchos::RCP<Epetra_Map> elemap;
+  Teuchos::RCP<std::vector<char>> data =
+      reader_->ReadResultDataVecChar(id_path, value_path, columns, Comm(), elemap);
+
+  std::vector<char>::size_type position = 0;
+  for (int i = 0; i < elemap->NumMyElements(); ++i)
+  {
+    Teuchos::RCP<Epetra_SerialDenseMatrix> matrix = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    DRT::ParObject::ExtractfromPack(position, *data, *matrix);
+    (*mapdata)[elemap->GID(i)] = matrix;
+  }
 }
 
 

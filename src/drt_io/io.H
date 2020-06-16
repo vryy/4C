@@ -87,16 +87,53 @@ namespace IO
     /// destructor
     virtual ~DiscretizationReader(){};
 
-    /// read and return vector
+    /**
+     * \brief read in and return vector
+     *
+     * This method is based on the method ReadMultiVector(const std::string name). Also refer to the
+     * documentation therein.
+     *
+     * \param[in] name  name of vector to read in
+     * \return          source vector as read in
+     */
     Teuchos::RCP<Epetra_MultiVector> ReadVector(std::string name);
 
-    /// read into given vector
+    /**
+     * \brief read into given vector
+     *
+     * This method is based on the method ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec,
+     * std::string name). Also refer to the documentation therein.
+     *
+     * \param[in,out] vec   target vector to be filled
+     * \param[in]     name  name of vector to read in
+     */
     void ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
-    /// read and return vector
+    /**
+     * \brief read in and return multi-vector
+     *
+     * Read in and return the vector without modifying the underlying map.
+     *
+     * \note This is a special method that has to be used with care! It may be that the underlying
+     * map of the vector as read in does not match the current distribution of the underlying
+     * discretization.
+     *
+     * \param[in] name  name of vector to read in
+     * \return          source vector as read in
+     */
     Teuchos::RCP<Epetra_MultiVector> ReadMultiVector(const std::string name);
 
-    /// read into given vector
+    /**
+     * \brief read into given multi-vector
+     *
+     * In case the target vector to be filled is based on a different map than the source vector as
+     * read in, the source vector is exported to the target vector.
+     *
+     * \note This is the default method to read into a given vector.
+     *
+     * \param[in,out] vec   target vector to be filled
+     * \param[in]     name  name of vector to read in
+     */
     void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
     /// read into given std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >
