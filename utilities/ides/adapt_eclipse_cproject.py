@@ -56,9 +56,9 @@ def getPaths(build_folder):
     cachefile = os.path.join(build_folder,"CMakeCache.txt")
     with open(cachefile,"r") as f:
       for l in f.readlines():
-          if (l.find("INCLUDE_INSTALL_DIR:FILEPATH=") > -1):
+          if (l.find("INCLUDE_INSTALL_DIR:PATH=") > -1):
               pathlist.add(l.split("=")[1][0:-1])
-          if (l.find("Trilinos_DIR:FILEPATH=") > -1):
+	  if (l.find("Trilinos_DIR:PATH=") > -1):
               pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
 
     # add the cmake generated header directory
