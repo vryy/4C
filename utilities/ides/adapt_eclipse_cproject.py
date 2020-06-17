@@ -58,18 +58,22 @@ def getPaths(build_folder):
       for l in f.readlines():
           if (l.find("INCLUDE_INSTALL_DIR:PATH=") > -1):
               pathlist.add(l.split("=")[1][0:-1])
-	  if (l.find("Trilinos_DIR:PATH=") > -1):
+          if (l.find("Trilinos_DIR:PATH=") > -1):
               pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
 
     # add the cmake generated header directory
     pathlist.add( os.path.join(build_folder,"src","headers") )
 
-    # check whether a 64-bit machine is used
-    version = subprocess.Popen(["uname","-r"], stdout=subprocess.PIPE).communicate()[0]
-    if 'x86_64' in version:
-    	pathlist.add("/usr/include/openmpi-x86_64")
-    else:
-    	pathlist.add("/usr/include/openmpi/1.2.4-gcc")
+    # Get the openmpi include directory. The first one that exists on the system will be used.
+    possible_open_mpi_dirs = [
+        "/usr/include/openmpi-x86_64",
+        "/usr/include/openmpi/1.2.4-gcc",
+        "/usr/include/openmpi"
+        ]
+    for path in possible_open_mpi_dirs:
+        if os.path.isdir(path):
+            pathlist.add(path)
+            break
 
     # add compiler paths
     pathlist.update(getCompilerPaths())
@@ -83,15 +87,18 @@ def getDefineValue(build_folder):
 
     with open(build_folder+"/CMakeFiles/drt_lib.dir/flags.make","r") as f:
       for l in f.readlines():
-	if l.startswith("CXX_DEFINES"):
-	  for w in l.split():
-	    if w.startswith("-D"):
-	      flag = w[2:]
-	      if "=" in flag:
-		defineflag,val = flag.split("=",1)
-		definevalueset.add((defineflag,val))
-	      else:
-		symbolset.add(flag)
+        if l.startswith("CXX_FLAGS"):
+            if "-std=c++11" in l:
+                definevalueset.add(("__cplusplus","201103L"))
+        elif l.startswith("CXX_DEFINES"):
+            for w in l.split():
+                if w.startswith("-D"):
+                    flag = w[2:]
+                    if "=" in flag:
+                        defineflag,val = flag.split("=",1)
+                        definevalueset.add((defineflag,val))
+                    else:
+                        symbolset.add(flag)
 
     definevaluelist = []
     symbollist = []
@@ -146,9 +153,9 @@ def adapt(do_configure_file,build_folder,build_type):
                 found_symbol = True
 
         if not found_path:
-        	print "Please add manually (Eclipse) any path to the project's include path section to create an initial entry in '.cproject'"
+            print "Please add manually (Eclipse) any path to the project's include path section to create an initial entry in '.cproject'"
         if not found_symbol:
-        	print "Please add manually (Eclipse) any symbol to the project's symbol section to create an initial entry in '.cproject'"
+            print "Please add manually (Eclipse) any symbol to the project's symbol section to create an initial entry in '.cproject'"
 
         #print(etree.tostring(root, pretty_print=True))
         fo = open(".cproject","w")
