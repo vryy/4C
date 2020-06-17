@@ -70,7 +70,17 @@ namespace BEAMINTERACTION
     std::vector<double>& GetMutablePointCoordinateVector(int additional_reserve = -1);
 
     /**
-     * \brief Return a mutable reference to the a point data vector.
+     * \brief Return a mutable reference to the field data vector.
+     * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
+     * will be thrown.
+     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
+     * will be increased by additional_reserve.
+     * @return Point coordinate vector.
+     */
+    std::vector<double>& GetMutableFieldDataVector(std::string data_name);
+
+    /**
+     * \brief Return a mutable reference to the point data vector.
      * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
      * will be thrown.
      * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
@@ -81,7 +91,7 @@ namespace BEAMINTERACTION
         std::string data_name, int additional_reserve = -1);
 
     /**
-     * \brief Return a mutable reference to the a cell point data vector.
+     * \brief Return a mutable reference to the cell data vector.
      * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
      * will be thrown.
      * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
@@ -90,6 +100,15 @@ namespace BEAMINTERACTION
      */
     std::vector<double>& GetMutableCellDataVector(
         std::string data_name, int additional_reserve = -1);
+
+    /**
+     * \brief Add an new (empty) field data vector to the object.
+     * @param data_name (in) Name of the new data. If this name already exists, an error will be
+     * thrown.
+     * @param reserve (in) If this is larger than 0, the created vector will allocate the number of
+     * entries.
+     */
+    void AddFieldDataVector(std::string data_name, int reserve = -1);
 
     /**
      * \brief Add an new (empty) point data vector to the object.

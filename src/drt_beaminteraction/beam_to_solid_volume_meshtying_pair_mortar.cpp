@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 template <typename beam, typename solid, typename mortar>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -156,8 +156,17 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       local_M(i_row, i_col) = M(i_row, i_col);
   for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
 
-  // This pair does not have constraint offset contributions.
-  local_constraint_offset.Shape(mortar::n_dof_, 1);
+  // Add the local constraint contributions.
+  local_constraint.Shape(mortar::n_dof_, 1);
+  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  {
+    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+      local_constraint(i_lambda) +=
+          FADUTILS::CastToDouble(D(i_lambda, i_beam) * this->ele1pos_(i_beam));
+    for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      local_constraint(i_lambda) -=
+          FADUTILS::CastToDouble(M(i_lambda, i_solid) * this->ele2pos_(i_solid));
+  }
 
   // If we get to this point, the pair has a mortar contribution.
   return true;
@@ -169,7 +178,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
+    Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
@@ -199,10 +208,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
-    Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this_rcp, lambda_row);
+    mortar_manager->LocationVector(this, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda(i_dof) = lambda_pair[i_dof];

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Gauss point to segment mesh tying element for between a 3D beam and a surface element.
+\brief Mortar mesh tying element for between a 3D beam and a surface element.
 
 \level 3
 \maintainer Ivo Steinbrecher
@@ -12,18 +12,9 @@
 
 #include "beam_contact_params.H"
 #include "beam_to_solid_surface_meshtying_params.H"
-#include "beaminteraction_calc_utils.H"
-#include "beam_to_solid_vtu_output_writer_base.H"
-#include "beam_to_solid_vtu_output_writer_visualization.H"
-#include "beam_to_solid_surface_vtk_output_params.H"
-#include "beam_to_solid_mortar_manager.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_factory.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
-
-#include "Epetra_FEVector.h"
-#include <unordered_set>
 
 
 /**
@@ -43,7 +34,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 template <typename beam, typename surface, typename mortar>
 bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
     LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -153,207 +144,147 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       local_M(i_row, i_col) = M(i_row, i_col);
   for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
 
-  // Calculate the constraint offset vector.
-  local_constraint_offset.Size(mortar::n_dof_);
+  // Add the local constraint contributions. For this we multiply the local mortar matrices with the
+  // positions / displacements to get the actual constraint terms for this pair.
+  LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
+  LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
   switch (this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
-      // Add the reference offset values.
-      for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar::n_dof_; i_dof_lambda++)
-      {
-        double row_value = 0.0;
-        for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
-          row_value += local_D(i_dof_lambda, i_dof_beam) * this->ele1posref_(i_dof_beam);
-        for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
-          row_value -= local_M(i_dof_lambda, i_dof_surface) *
-                       this->face_element_->GetFaceReferencePosition()(i_dof_surface);
-        local_constraint_offset(i_dof_lambda) = row_value;
-      }
+      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+        beam_coupling_dof(i_beam) = FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+        surface_coupling_dof(i_surface) =
+            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface));
       break;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
     {
-      // In this case we do not need to add a constraint offset.
+      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+        beam_coupling_dof(i_beam) =
+            FADUTILS::CastToDouble(this->ele1pos_(i_beam)) - this->ele1posref_(i_beam);
+      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+        surface_coupling_dof(i_surface) =
+            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)) -
+            this->face_element_->GetFaceReferencePosition()(i_surface);
       break;
     }
     default:
       dserror("Wrong coupling type.");
+  }
+  local_constraint.Shape(mortar::n_dof_, 1);
+  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  {
+    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+      local_constraint(i_lambda) +=
+          FADUTILS::CastToDouble(D(i_lambda, i_beam) * beam_coupling_dof(i_beam));
+    for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+      local_constraint(i_lambda) -=
+          FADUTILS::CastToDouble(M(i_lambda, i_surface) * surface_coupling_dof(i_surface));
   }
 
   // If we get to this point, the pair has a mortar contribution.
   return true;
 }
 
+
 /**
  *
  */
-template <typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
-{
-  // Get visualization of base method.
-  base_class::GetPairVisualization(visualization_writer, visualization_params);
-
-
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("btssc-mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("btssc-mortar-continuous");
-  if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
-  {
-    // Setup variables.
-    LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> r;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, double> lambda_discret;
-    LINALG::Matrix<3, 1, double> xi_mortar_node;
-
-    // Get the mortar manager and the global lambda vector, those objects will be used to get the
-    // discrete Lagrange multiplier values for this pair.
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
-            "mortar_manager");
-    Teuchos::RCP<Epetra_Vector> lambda =
-        visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
-
-    // Get the lambda GIDs of this pair.
-    Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);
-    std::vector<int> lambda_row;
-    std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this_rcp, lambda_row);
-    DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
-    for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
-      q_lambda(i_dof) = lambda_pair[i_dof];
-
-    // Add the discrete values of the Lagrange multipliers.
-    if (visualization_discret != Teuchos::null)
-    {
-      // Check if data for this beam was already written.
-      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
-          visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker");
-
-      auto it = beam_tracker->find(this->Element1()->Id());
-      if (it == beam_tracker->end())
-      {
-        // Only do something if this beam element did not write any output yet.
-
-        // Add this element Id to the tracker.
-        beam_tracker->insert(this->Element1()->Id());
-
-        // Get the visualization vectors.
-        std::vector<double>& point_coordinates =
-            visualization_discret->GetMutablePointCoordinateVector();
-        std::vector<double>& displacement =
-            visualization_discret->GetMutablePointDataVector("displacement");
-        std::vector<double>& lambda_vis =
-            visualization_discret->GetMutablePointDataVector("lambda");
-
-        for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
-        {
-          // Get the local coordinate of this node.
-          xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
-
-          // Get position and displacement of the mortar node.
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi_mortar_node(0), this->ele1pos_, r, this->Element1());
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi_mortar_node(0), this->ele1posref_, X, this->Element1());
-          u = r;
-          u -= X;
-
-          // Get the discrete Lagrangian multiplier.
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
-
-          // Add to output data.
-          for (unsigned int dim = 0; dim < 3; dim++)
-          {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
-          }
-        }
-      }
-    }
-
-
-    // Add the continuous values for the Lagrange multipliers.
-    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
-    {
-      const unsigned int mortar_segments =
-          visualization_params
-              .get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>("btssc-output_params_ptr")
-              ->GetMortarLambdaContinuousSegments();
-      double xi;
-      std::vector<double>& point_coordinates =
-          visualization_continuous->GetMutablePointCoordinateVector(
-              (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& displacement = visualization_continuous->GetMutablePointDataVector(
-          "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& lambda_vis = visualization_continuous->GetMutablePointDataVector(
-          "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<uint8_t>& cell_type = visualization_continuous->GetMutableCellTypeVector();
-      std::vector<int32_t>& cell_offset = visualization_continuous->GetMutableCellOffsetVector();
-
-      for (const auto& segment : this->line_to_3D_segments_)
-      {
-        for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
-             i_curve_segment++)
-        {
-          // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtaA() +
-               i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r, this->Element1());
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X, this->Element1());
-          u = r;
-          u -= X;
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);
-
-          // Add to output data.
-          for (unsigned int dim = 0; dim < 3; dim++)
-          {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
-          }
-        }
-
-        // Add the cell for this segment (poly line).
-        cell_type.push_back(4);
-        cell_offset.push_back(point_coordinates.size() / 3);
-      }
-    }
-  }
-}
-
-
-/**
- * Explicit template initialization of template class.
- */
-namespace BEAMINTERACTION
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
+    const DRT::Element::DiscretizationType surface_shape,
+    const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>;
+  switch (mortar_shapefunction)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+    {
+      switch (surface_shape)
+      {
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(
+              new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
+        default:
+          dserror("Wrong element type for surface element.");
+      }
+      break;
+    }
+    default:
+      dserror("Wrong mortar shape function.");
+  }
 
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>;
-
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>;
-  template class BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>;
-}  // namespace BEAMINTERACTION
+  return Teuchos::null;
+}
