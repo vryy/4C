@@ -811,8 +811,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
           ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
     }
     // growth remodel elasthyper evaluation
-    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-             Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // Gauß-point coordinates in reference configuration
       LINALG::Matrix<1, noddof_> gprefecoord(true);
