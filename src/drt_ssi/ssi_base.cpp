@@ -708,6 +708,7 @@ void SSI::SSI_Base::SetDtFromScaTraToStructure()
   // change current time and time step of structure according to ScaTra
   StructureField()->SetDt(scatra_->ScaTraField()->Dt());
   StructureField()->SetTimen(scatra_->ScaTraField()->Time());
+  StructureField()->PostUpdate();
 
   // change current time and time step of this algorithm according to ScaTra
   SetTimeStep(scatra_->ScaTraField()->Time(), Step());

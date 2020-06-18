@@ -1163,6 +1163,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_artery.cpp
   src/drt_scatra/scatra_timint_elch.cpp
   src/drt_scatra/scatra_timint_elch_scheme.cpp
+  src/drt_scatra/scatra_timint_elch_service.cpp
   src/drt_scatra/scatra_timint_poromulti.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/scatra_utils.cpp

@@ -27,6 +27,8 @@ namespace FLD
 
 namespace SCATRA
 {
+  class CCCVCondition;
+
   class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   {
    public:
@@ -213,6 +215,9 @@ namespace SCATRA
     //! compute time step size
     void ComputeTimeStepSize(double& dt) final;
 
+    //! extrapolate current state and adapt time step
+    double ExtrapolateStateAdaptTimeStep(double dt);
+
     //! Parameter check for diffusion-conduction formulation
     void ValidParameterDiffCond();
 
@@ -225,7 +230,8 @@ namespace SCATRA
     //! set up concentration-potential splitter
     void SetupConcPotSplit();
 
-    //! set up concentration-potential-potential splitter for macro scale in multi-scale simulations
+    //! set up concentration-potential-potential splitter for macro scale in multi-scale
+    //! simulations
     void SetupConcPotPotSplit();
 
     /*--- calculate and update -----------------------------------------------*/
@@ -346,48 +352,28 @@ namespace SCATRA
     //! total electric currents at electrode boundaries
     Teuchos::RCP<std::vector<double>> electrodecurr_;
 
-    //! initial relaxation time of cccv condition
-    double cccv_init_relax_time_;
-
     //! cell voltage
     double cellvoltage_;
 
     //! cell voltage from previous time step
     double cellvoltage_old_;
 
-    //! cutoff voltage for CCCV cell cycling
-    double cutoff_voltage_;
+    Teuchos::RCP<SCATRA::CCCVCondition> cccv_condition_;
 
     //! cell C rate
     double cellcrate_;
 
-    //! flag indicating whether cell is currently being charged or discharged
-    bool charging_;
-
-    //! flag indicating whether cell is currently being operated in constant-current (CC),
-    //! constant-voltage (CV), or relaxation (RX) mode
-    INPAR::ELCH::CCCVCyclingMode mode_cccv_;
-
-    //! ID of constant-current constant-voltage (CCCV) half-cycle condition currently in effect
-    int condid_cccv_;
-
-    //! total number of charge and discharge half-cycles
-    int nhalfcycles_;
-
-    //! number of current charge or discharge half-cycle
-    int ihalfcycle_;
-
-    //! time step at the start of current charge or discharge half-cycle
-    int ihalfcycle_startstep_;
-
-    //! end time of current relaxation phase
-    double relax_endtime_;
+    //! cell C rate from previous time step
+    double cellcrate_old_;
 
     //! modified time step size for CCCV cell cycling
     const double cycling_timestep_;
 
     //! flag indicating modified time step size for CCCV cell cycling
     bool cycling_timestep_active_;
+
+    //! adapted time step
+    double dt_adapted_;
 
     //! map extractor for macro scale in multi-scale simulations
     Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;

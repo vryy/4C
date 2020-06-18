@@ -166,7 +166,7 @@ namespace STR
       virtual void UpdateStepTime();
 
       /// wrapper for things that should be done after solving the update
-      virtual void PostUpdate(){};
+      virtual void PostUpdate();
       /// @}
 
       /// @name Access global state from outside via adapter (needed for coupled problems)
