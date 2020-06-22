@@ -12,6 +12,7 @@ materials with @MAT::Anisotropy
 
 #include "anisotropy.H"
 #include "anisotropy_extension_cylinder_cosy.H"
+#include "anisotropy_coordinate_system_provider.H"
 #include "../drt_lib/drt_parobject.H"
 
 MAT::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
@@ -70,4 +71,15 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCylinderCoordinateSystem(in
   }
 
   return GetAnisotropy()->GetGPCylinderCoordinateSystem(gp);
+}
+
+const Teuchos::RCP<MAT::CoordinateSystemProvider>
+MAT::CylinderCoordinateSystemAnisotropyExtension::GetCoordinateSystemProvider(int gp) const
+{
+  auto cosy = Teuchos::rcp(new CoordinateSystemHolder());
+
+  if (cosyLocation_ != CosyLocation::None)
+    cosy->SetCylinderCoordinateSystemProvider(Teuchos::rcpFromRef(GetCylinderCoordinateSystem(gp)));
+
+  return cosy;
 }

@@ -19,7 +19,7 @@ namespace Teuchos
 }
 namespace MAT
 {
-  class CylinderCoordinateSystemProvider;
+  class CoordinateSystemProvider;
 }
 
 namespace MIXTURE
@@ -41,7 +41,7 @@ namespace MIXTURE
      * response to ensure equilibrium in the reference configuration
      *
      * \param mixtureRule Mixture rule
-     * \param anisotropy Cylinder coordinate system
+     * \param cosy Coordinate systems
      * \param constituent Constituent that needs to be prestressed
      * \param membraneEvaluation Evaluator of the membrane material
      * \param params Container for additional information
@@ -50,7 +50,7 @@ namespace MIXTURE
      * \return double Fraction of the elastin membrane contribution to the total elastin response
      */
     virtual double EvaluateMueFrac(MixtureRule& mixtureRule,
-        const MAT::CylinderCoordinateSystemProvider& anisotropy,
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const = 0;
   };

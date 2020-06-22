@@ -16,14 +16,14 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
-PRESTRESS                       Mulf
-PRESTRESSTIME                   7.0
+PRESTRESS                       MATERIAL_MULF
+PRESTRESSTIME                   1.0
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-TIMESTEP                        0.05
-NUMSTEP                         70
-MAXTIME                         7
+TIMESTEP                        0.01
+NUMSTEP                         100
+MAXTIME                         1
 DAMPING                         No
 TOLDISP                         1e-9
 NORM_DISP                       Abs
@@ -79,7 +79,7 @@ DSURF  1
 E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -3.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 99 VALUES 0 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 99 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 99 VALUES 1 1

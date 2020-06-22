@@ -38,19 +38,20 @@ MIXTURE::IterativePrestressStrategy::IterativePrestressStrategy(
 }
 
 void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(
-    const MAT::CylinderCoordinateSystemProvider& cosy, MIXTURE::MixtureConstituent& constituent,
-    LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
+    Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
   MAT::IdentityMatrix(G);
 }
 
 void MIXTURE::IterativePrestressStrategy::UpdatePrestress(
-    const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
     LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  // 1. Computate polar decomposition
+  // 1. Compute polar decomposition
 
   // 1.1 Singular value decomposition of F = RU
   LINALG::Matrix<3, 3> Q(true);

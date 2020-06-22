@@ -20,7 +20,7 @@
 // forward declarations
 namespace MAT
 {
-  class CylinderCoordinateSystemProvider;
+  class CoordinateSystemProvider;
 }
 
 namespace MIXTURE
@@ -89,7 +89,8 @@ namespace MIXTURE
      * @param gp (in) : Gauss-point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    virtual void EvaluatePrestress(
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
@@ -104,7 +105,7 @@ namespace MIXTURE
      * \param gp (in) : Gauss point
      * \param eleGID (in) : Global element id
      */
-    virtual void UpdatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    virtual void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
         LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };

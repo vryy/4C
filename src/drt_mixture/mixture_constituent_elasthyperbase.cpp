@@ -199,7 +199,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(LINALG::Matrix<
   if (params_->GetPrestressingMatId() > 0)
   {
     params_->PrestressStrategy()->UpdatePrestress(
-        cosyAnisotropyExtension_.GetCylinderCoordinateSystem(gp), *this, defgrd, prestretch_[gp],
+        cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, defgrd, prestretch_[gp],
         params, gp, eleGID);
   }
 }
@@ -242,10 +242,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    // params_->PrestressStrategy()->EvaluatePrestress(
-    //    cosyAnisotropyExtension_.GetCylinderCoordinateSystem(gp), *this, prestretch_[gp], params,
-    //    gp, eleGID);
-
-    MAT::IdentityMatrix(prestretch_[gp]);
+    params_->PrestressStrategy()->EvaluatePrestress(
+        cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
+        gp, eleGID);
   }
 }

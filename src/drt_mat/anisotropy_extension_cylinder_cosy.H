@@ -24,6 +24,7 @@ namespace DRT
 namespace MAT
 {
   // Forward declaration
+  class CoordinateSystemProvider;
   class CylinderCoordinateSystemProvider;
 
   /*!
@@ -84,6 +85,8 @@ namespace MAT
      * provider
      */
     const CylinderCoordinateSystemProvider& GetCylinderCoordinateSystem(int gp) const;
+
+    const Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
 
    private:
     /*!

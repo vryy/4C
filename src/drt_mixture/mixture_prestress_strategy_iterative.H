@@ -21,7 +21,7 @@
 // forward declarations
 namespace MAT
 {
-  class CylinderCoordinateSystemProvider;
+  class CoordinateSystemProvider;
 }
 
 namespace MIXTURE
@@ -67,11 +67,11 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit IterativePrestressStrategy(MIXTURE::PAR::IterativePrestressStrategy* params);
 
-    void EvaluatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    void EvaluatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    virtual void UpdatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    virtual void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
         LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

@@ -275,7 +275,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PreEvaluate(
   }
 
   mue_frac_[gp] = strategy->EvaluateMueFrac(mixtureRule,
-      CylinderCoordinateSystemAnisotropyExtension().GetCylinderCoordinateSystem(gp), *this, *this,
+      CylinderCoordinateSystemAnisotropyExtension().GetCoordinateSystemProvider(gp), *this, *this,
       params, gp, eleGID);
 }
 
