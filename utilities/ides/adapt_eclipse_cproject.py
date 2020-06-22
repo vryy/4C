@@ -14,6 +14,7 @@ except ImportError:
 
 import random
 import string
+from utils import get_mpi_include_path
 
 
 def getCompilerPaths():
@@ -64,16 +65,10 @@ def getPaths(build_folder):
     # add the cmake generated header directory
     pathlist.add( os.path.join(build_folder,"src","headers") )
 
-    # Get the openmpi include directory. The first one that exists on the system will be used.
-    possible_open_mpi_dirs = [
-        "/usr/include/openmpi-x86_64",
-        "/usr/include/openmpi/1.2.4-gcc",
-        "/usr/include/openmpi"
-        ]
-    for path in possible_open_mpi_dirs:
-        if os.path.isdir(path):
-            pathlist.add(path)
-            break
+    # Get the openmpi include directory.
+    open_mpi_dir = get_mpi_include_path()
+    if open_mpi_dir is not None:
+        pathlist.add(open_mpi_dir)
 
     # add compiler paths
     pathlist.update(getCompilerPaths())
