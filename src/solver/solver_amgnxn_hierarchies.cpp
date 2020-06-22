@@ -10,7 +10,6 @@ Created on: Aug 11, 2014
 *----------------------------------------------------------------------*/
 
 
-#ifdef HAVE_MueLu
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
@@ -818,7 +817,3 @@ LINALG::SOLVER::AMGNXN::MonolithicHierarchy::BuildVCycle()
 
   return V;
 }
-
-
-
-#endif  // HAVE_MueLu

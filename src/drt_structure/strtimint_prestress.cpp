@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/prestress_service.H"
 #include "../drt_constraint/springdashpot_manager.H"
 
 /*======================================================================*/
@@ -42,15 +43,10 @@ void STR::TimIntPrestress::UpdateStepElement()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
-  // which prestress type?
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  auto pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  double pstime = sdyn.get<double>("PRESTRESSTIME");
-
   // MULF
-  if (pstype == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf())
   {
-    if ((*time_)[0] <= pstime)
+    if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
     {
       if (!discret_->Comm().MyPID()) IO::cout << "====== Entering MULF update" << IO::endl;
       // action for elements
@@ -67,9 +63,9 @@ void STR::TimIntPrestress::UpdateStepElement()
   }
 
   // INVERSE DESIGN
-  else if (pstype == INPAR::STR::PreStress::id)
+  else if (::UTILS::PRESTRESS::IsInverseDesign())
   {
-    if ((*time_)[0] <= pstime)
+    if (::UTILS::PRESTRESS::IsInverseDesignActive((*time_)[0]))
     {
       if (!discret_->Comm().MyPID()) IO::cout << "====== Entering INVERSEDESIGN update" << IO::endl;
       // action for elements
@@ -92,7 +88,8 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (pstype == INPAR::STR::PreStress::id && (*time_)[0] <= pstime && timen_ > pstime)
+  if (::UTILS::PRESTRESS::IsInverseDesignActive((*time_)[0]) &&
+      !::UTILS::PRESTRESS::IsInverseDesignActive(timen_))
   {
     // switch in id mode:
     dis_->UpdateSteps(*zeros_);
@@ -106,7 +103,7 @@ void STR::TimIntPrestress::UpdateStepElement()
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
-  if (pstype == INPAR::STR::PreStress::mulf && (*time_)[0] <= pstime)
+  if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient in
     // material law (mhv 12/2015) pass current displacement state to spring at end of MULF step

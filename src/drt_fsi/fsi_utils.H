@@ -90,13 +90,13 @@ namespace FSI
           const Epetra_Comm& comm                    ///< communicator
       );
 
-      /// Compute new coupling matrices D and M
+      /// Compute new coupling matrices D and M for solid/fluid
       void EvaluateMortar(Teuchos::RCP<Epetra_Vector> idispstruct,  ///< displacement of structure
           Teuchos::RCP<Epetra_Vector> idispale,                     ///< (proj.) displacement of ale
           ::ADAPTER::CouplingMortar& coupsf                         ///< mortar adapter
       );
 
-      /// Compute new coupling matrices D and M
+      /// Compute new coupling matrices D and M for solid/ale coupling
       void EvaluateFluidMortar(Teuchos::RCP<Epetra_Vector> idispma,  ///< displacement of structure
           Teuchos::RCP<Epetra_Vector> idispsl  ///< (proj.) displacement of ale
       );

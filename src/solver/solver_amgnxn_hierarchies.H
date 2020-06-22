@@ -11,8 +11,6 @@ Created on: Aug 11, 2014
 /*----------------------------------------------------------------------*/
 #ifndef AMGNXN_HIERARCHIES_H
 #define AMGNXN_HIERARCHIES_H
-#ifdef HAVE_MueLu
-
 
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
@@ -140,5 +138,4 @@ namespace LINALG
   }    // namespace SOLVER
 }  // namespace LINALG
 
-#endif  // HAVE_MueLu
 #endif  // AMGNXN_HIERARCHIES_H

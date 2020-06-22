@@ -13,6 +13,8 @@
 
 #include "ad_str_fsiwrapper_immersed.H"
 
+#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure/stru_aux.H"

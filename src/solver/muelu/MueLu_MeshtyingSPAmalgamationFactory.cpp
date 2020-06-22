@@ -7,8 +7,6 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
-
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_MeshtyingSPAmalgamationFactory_def.hpp"
@@ -30,4 +28,3 @@ template class MueLu::MeshtyingSPAmalgamationFactory<double, int, long long int,
 // template class MueLu::MeshtyingSPAmalgamationFactory<std::complex<double>, int, int,
 // KokkosSerialNode>; # else # warning To compile MueLu with 'complex' support, please turn on
 // Teuchos_ENABLE_COMPLEX # endif #endif
-#endif  // HAVE_MueLu

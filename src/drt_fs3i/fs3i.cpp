@@ -46,6 +46,8 @@
 
 #include "../linalg/linalg_matrixtransform.H"
 
+#include "../drt_lib/prestress_service.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3I_Base::FS3I_Base()
@@ -258,8 +260,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   // is structure calculated dynamic when not prestressing?
   if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(structdynparams, "DYNAMICTYP") !=
-          INPAR::STR::PreStress::mulf)
+      !::UTILS::PRESTRESS::IsMulf())
     dserror(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");

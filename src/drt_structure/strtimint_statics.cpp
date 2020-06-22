@@ -14,6 +14,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/prestress_service.H"
 
 
 /*======================================================================*/
@@ -47,10 +48,9 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
   auto dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
-  if (pstype != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
+  if (::UTILS::PRESTRESS::IsAny() && dyntype != INPAR::STR::dyna_statics)
   {
     dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
@@ -59,9 +59,9 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pstype == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf())
       IO::cout << "with static MULF prestress" << IO::endl;
-    else if (pstype == INPAR::STR::PreStress::id)
+    else if (::UTILS::PRESTRESS::IsInverseDesign())
       IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
     else
       IO::cout << "with statics" << IO::endl;

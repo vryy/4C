@@ -12,7 +12,7 @@
 #include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
-#ifdef HAVE_MueLu
+
 #include <MueLu.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_RAPFactory.hpp>
@@ -33,7 +33,6 @@ typedef Scalar SC;
 typedef LocalOrdinal LO;
 typedef GlobalOrdinal GO;
 typedef Node NO;
-#endif
 
 // BACI headers
 #include "../linalg/linalg_ana.H"
@@ -207,7 +206,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     }
     else if (vismuelu)
     {
-#ifdef HAVE_MueLu
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A00));
@@ -267,9 +265,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
 
       // set preconditioner
       Ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-#else
-      dserror("BACI has been compiled without MueLu support.");
-#endif
     }
     else
     {
@@ -294,7 +289,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     }
     else if (pismuelu)
     {
-#ifdef HAVE_MueLu
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A11));
@@ -354,9 +348,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
 
       // set preconditioner
       Pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-#else
-      dserror("BACI has been compiled without MueLu support.");
-#endif
     }
     else
     {

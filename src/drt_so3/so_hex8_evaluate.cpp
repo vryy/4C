@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_utils_elements.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/voigt_notation.H"
+#include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -120,7 +121,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+      if (::UTILS::PRESTRESS::IsInverseDesignActive(
+              time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, matptr, NULL, &elevec1, NULL, NULL,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none);
 
@@ -196,7 +198,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+      if (::UTILS::PRESTRESS::IsInverseDesignActive(
+              time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL,
             NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else  // standard analysis
@@ -511,7 +514,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
-        if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+        if (::UTILS::PRESTRESS::IsInverseDesignActive(
+                time_, pstype_, pstime_))  // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
               params, iostress, iostrain);
 
@@ -652,13 +656,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // EAS
       if (eastype_ != soh8_easnone) dserror("Storage of EAS stuff must be implemented first");
 
-      // due to the multiplicativity and futility to redo prestress steps
-      // other than the last one, no need to store/recover anything
-      // ... but keep in mind
-      if (pstype_ != INPAR::STR::PreStress::none)
-      {
-      }
-
       // Material
       SolidMaterial()->StoreHistory(timestep);
     }
@@ -673,13 +670,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // EAS
       if (eastype_ != soh8_easnone) dserror("Recpvery of EAS stuff must be implemented first");
 
-      // due to the multiplicativity and futility to redo prestress steps
-      // other than the last one, no need to store/recover anything
-      // ... but keep in mind
-      if (pstype_ != INPAR::STR::PreStress::none)
-      {
-      }
-
       // Material
       SolidMaterial()->SetHistory(timestep);
     }
@@ -691,7 +681,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->ResetAll(NUMGPT_SOH8);
 
       // Reset prestress
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         time_ = 0.0;
         LINALG::Matrix<3, 3> Id(true);
@@ -702,7 +692,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (pstype_ == INPAR::STR::PreStress::id)
+      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
         dserror("Reset of Inverse Design not yet implemented");
 
       // reset EAS parameters:
@@ -746,7 +736,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (pstype_ == INPAR::STR::PreStress::mulf)
+        if (::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -796,7 +786,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
 
-        if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+        if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+            !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
         {
           dserror("Calc Energy not implemented for prestress id");
         }
@@ -805,7 +796,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (pstype_ == INPAR::STR::PreStress::mulf)
+        if (::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           LINALG::Matrix<3, 3> invJdef;
@@ -1415,7 +1406,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType ioplstrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
-        if (pstype_ == INPAR::STR::PreStress::id && time_ <= pstime_)  // inverse design analysis
+        if (::UTILS::PRESTRESS::IsInverseDesignActive(
+                time_, pstype_, pstime_))  // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
               params, iostress, iostrain);
 
@@ -1679,23 +1671,28 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_)
+    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    {
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
+    }
 
-    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
+    {
       if (!(invdesign_->IsInit()))
       {
-        // printf("Ele %d id use InitJacobianMapping pstime < time %10.5e <
-        // %10.5e\n",Id(),pstime_,time_);
         invdesign_->MatrixtoStorage(gp, invJ_[gp], invdesign_->JHistory());
         invdesign_->DetJHistory()[gp] = detJ_[gp];
       }
+    }
   }
 
-  if (pstype_ == INPAR::STR::PreStress::mulf && pstime_ >= time_) prestress_->IsInit() = true;
+  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
-  if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_) invdesign_->IsInit() = true;
+  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+      !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
+    invdesign_->IsInit() = true;
 
   return;
 }
@@ -1899,7 +1896,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
   /* ============================================================================*/
 
   // check for prestressing
-  if (pstype_ != INPAR::STR::PreStress::none && eastype_ != soh8_easnone)
+  if (::UTILS::PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
@@ -1919,7 +1916,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (pstype_ == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -2091,7 +2088,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (pstype_ == INPAR::STR::PreStress::mulf)
+    if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3, 3> invJdef;
@@ -2145,7 +2142,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       }  // if (det_defgrd<0.0)
     }
 
-    if (pstype_ == INPAR::STR::PreStress::id && pstime_ < time_)
+    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
+        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
     {
       // printf("Ele %d entering id poststress\n",Id());
       // make the multiplicative update so that defgrd refers to
@@ -2856,7 +2854,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   /* ============================================================================*/
 
   // check for prestressing or EAS
-  if (pstype_ != INPAR::STR::PreStress::none || eastype_ != soh8_easnone)
+  if (::UTILS::PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
     dserror("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
 
   // GEMM coefficients
@@ -3471,7 +3469,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
       xcurr(i, 1) = x[1] + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_SOH8 + 2];
 
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -3511,7 +3509,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (pstype_ == INPAR::STR::PreStress::mulf)
+      if (::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         LINALG::Matrix<3, 3> invJdef;

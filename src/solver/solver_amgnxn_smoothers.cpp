@@ -9,9 +9,6 @@
 Created on: Feb 27, 2014
 *----------------------------------------------------------------------*/
 
-
-#ifdef HAVE_MueLu
-
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
@@ -2253,5 +2250,3 @@ LINALG::SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
 
   return S;
 }
-
-#endif  // HAVE_MueLu

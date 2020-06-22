@@ -9,9 +9,6 @@
 Created on: Feb 27, 2014
 *----------------------------------------------------------------------*/
 
-
-#ifdef HAVE_MueLu
-
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
@@ -349,5 +346,3 @@ void LINALG::SOLVER::AMGNXN::VcycleSingle::Apply(
   for (int i = 0; i < NumSweeps_; i++) DoVcycle(X, Y, FirstLevel_, InitialGuessIsZero and i == 0);
   return;
 }
-
-#endif  // HAVE_MueLu

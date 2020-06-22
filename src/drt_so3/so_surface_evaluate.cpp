@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -42,10 +43,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 {
   // set the interface ptr in the parent element
   ParentElement()->SetParamsInterfacePtr(params);
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
   // acting on the spatial configuration. Therefore, it needs to be linearized. On the
@@ -153,7 +150,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // BACI
       // no exection here for mulf because displacements are reset after each load step, hence last
       // converged state is always the material configuration
-      if (pstype == INPAR::STR::PreStress::id && time <= pstime)
+      if (::UTILS::PRESTRESS::IsInverseDesignActive(time))
       {
         // no linearization needed for inverse analysis
         loadlin = false;
@@ -186,8 +183,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // which we want equilibrium. This true spatial configuration is the material configuration in
       // BACI
       // same holds for mulf
-      if ((pstype == INPAR::STR::PreStress::id || pstype == INPAR::STR::PreStress::mulf) &&
-          time <= pstime)
+      if (::UTILS::PRESTRESS::IsActive(time))
       {
         // no linearization needed for inverse design analysis and mulf
         loadlin = false;

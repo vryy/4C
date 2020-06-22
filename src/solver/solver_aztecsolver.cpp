@@ -9,8 +9,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
-
 #include <MueLu_ConfigDefs.hpp>
 
 #include <Xpetra_Matrix.hpp>
@@ -28,8 +26,6 @@
 #include <MueLu_HierarchyHelpers.hpp>
 #endif
 #include <MueLu_VerboseObject.hpp>
-
-#endif  // HAVE_MueLu
 
 // Aztec headers
 #include "AztecOO.h"
@@ -83,14 +79,12 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
 
-#ifdef HAVE_MueLu
   permutationStrategy_ = azlist.get<std::string>("permutation strategy", "none");
   diagDominanceRatio_ = azlist.get<double>("diagonal dominance ratio", 1.0);
   if (permutationStrategy_ == "none")
     bAllowPermutation_ = false;
   else
     bAllowPermutation_ = true;
-#endif
 
   // decide whether we recreate preconditioners
   // after this call, the solver can access the preconditioner object using the
@@ -139,7 +133,6 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   ////////////////////////////////////// permutation stuff
-#ifdef HAVE_MueLu
   if (bAllowPermutation_)
   {
     // extract (user-given) additional information about linear system from
@@ -177,12 +170,9 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   }
   else
   {
-#endif  // HAVE_MueLu
     b_ = b;
     A_ = matrix;  // we cannot use A, since it could be Teuchos::null (for blocked operators)
-#ifdef HAVE_MueLu
   }
-#endif
   x_ = x;
   ////
 
@@ -367,7 +357,6 @@ int LINALG::SOLVER::AztecSolver::Solve()
   }
 #endif
 
-#ifdef HAVE_MueLu
   GlobalOrdinal rowperm = 0;
   GlobalOrdinal colperm = 0;
   GlobalOrdinal lrowperm = 0;
@@ -410,7 +399,6 @@ int LINALG::SOLVER::AztecSolver::Solve()
         bPermuteLinearSystem_ ? 1 : 0, NonPermutedNearZeros, PermutedNearZeros);
     fflush(outfile_);
   }
-#endif  // HAVE_MueLu
 
   ncall_ += 1;
   if (we_have_a_problem)

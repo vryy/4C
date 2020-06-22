@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
      * @param visualization_params Parameter list
      */
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const override;
+        Teuchos::ParameterList& visualization_params) const override;
 
    protected:
     virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, scalar_type>& force,

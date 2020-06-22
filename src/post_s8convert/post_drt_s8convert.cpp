@@ -9,11 +9,6 @@
 */
 /*---------------------------------------------------------------------------*/
 
-
-
-#ifdef D_SHELL8
-
-
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_so3/so_hex8.H"
@@ -240,13 +235,8 @@ void Converter::write_element_result(std::string result_name, PostField* field, 
   writer_->WriteVector(result_name, h8data(), *h8map);
 }
 
-#endif
-
-
 int main(int argc, char** argv)
 {
-#ifdef D_SHELL8
-
   Teuchos::CommandLineProcessor My_CLP;
   My_CLP.setDocString("Post DRT shell8 conversion Filter\n");
 
@@ -264,7 +254,6 @@ int main(int argc, char** argv)
     default:
       dserror("problem type %d not yet supported", problem.Problemtype());
   }
-#endif
 
   return 0;
 }

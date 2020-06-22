@@ -10,7 +10,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#ifdef HAVE_MueLu
 #include <Xpetra_StridedMap.hpp>
 #include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
@@ -24,7 +23,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#endif                                // HAVE_MueLu
 
 #include "solver_blockpreconditioners.H"
 
@@ -46,8 +44,6 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   SetupLinearProblem(matrix, x, b);
-
-#ifdef HAVE_MueLu
 
   // some typedefs
   typedef Scalar SC;
@@ -376,9 +372,6 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
       dserror("MueLuBlockPreconditioner does not support this problem type.");
     }
   }
-#else
-  dserror("MueLuBlockPreconditioner only available with MueLu enabled.");
-#endif
 }
 
 //----------------------------------------------------------------------------------

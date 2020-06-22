@@ -58,6 +58,20 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::string name)
+{
+  MAP* result = map_read_map(restart_step_, name.c_str());
+  int columns;
+  if (map_find_int(result, "columns", &columns))
+  {
+    if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
+  }
+  return ReadMultiVector(name);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -68,6 +82,47 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, 
   }
   ReadMultiVector(vec, name);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadMultiVector(const std::string name)
+{
+  MAP* result = map_read_map(restart_step_, name.c_str());
+  const std::string id_path = map_read_string(result, "ids");
+  const std::string value_path = map_read_string(result, "values");
+  int columns;
+  if (not map_find_int(result, "columns", &columns))
+  {
+    columns = 1;
+  }
+  return reader_->ReadResultData(id_path, value_path, columns, Comm());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadMultiVector(
+    Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
+{
+  // check if vec is a null pointer
+  if (vec == Teuchos::null)
+  {
+    dserror("vec is a null pointer. You need to allocate memory before calling this function");
+  }
+
+  Teuchos::RCP<Epetra_MultiVector> nv = ReadMultiVector(name);
+
+  if (nv->GlobalLength() > vec->GlobalLength())
+    dserror(
+        "Reading vector \"%s\": Global length of source exceeds target "
+        "(Multi-) Vector length! This case is not supported ! "
+        "Source size: %d Target size: %d",
+        name.c_str(), nv->GlobalLength(), vec->GlobalLength());
+
+  LINALG::Export(*nv, *vec);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -96,38 +151,6 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
     DRT::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadMultiVector(
-    Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
-{
-  // check if vec is a null pointer
-  if (vec == Teuchos::null)
-  {
-    dserror("vec is a null pointer. You need to allocate memory before calling this function");
-  }
-
-  MAP* result = map_read_map(restart_step_, name.c_str());
-  std::string id_path = map_read_string(result, "ids");
-  std::string value_path = map_read_string(result, "values");
-  int columns;
-  if (not map_find_int(result, "columns", &columns))
-  {
-    columns = 1;
-  }
-  Teuchos::RCP<Epetra_MultiVector> nv =
-      reader_->ReadResultData(id_path, value_path, columns, Comm());
-  if (nv->GlobalLength() > vec->GlobalLength())
-    dserror(
-        "Reading vector \"%s\": Global length of source exceeds target "
-        "(Multi-) Vector length! This case is not supported ! "
-        "Source size: %d Target size: %d",
-        name.c_str(), nv->GlobalLength(), vec->GlobalLength());
-
-  LINALG::Export(*nv, *vec);
 }
 
 

@@ -30,6 +30,7 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
+#include "../drt_lib/prestress_service.H"
 
 /*======================================================================*/
 /* create marching time integrator */
@@ -67,9 +68,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
   // TODO: add contact solver...
 
   // check if we have a problem that needs to be prestressed
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype == INPAR::STR::PreStress::mulf || pstype == INPAR::STR::PreStress::id)
+  if (::UTILS::PRESTRESS::IsAny())
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));

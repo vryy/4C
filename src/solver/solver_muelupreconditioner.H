@@ -14,8 +14,6 @@ Created on: Dec 1, 2011
 #ifndef SOLVER_MUELUPRECONDITIONER_H_
 #define SOLVER_MUELUPRECONDITIONER_H_
 
-#ifdef HAVE_MueLu
-
 #include "solver_preconditionertype.H"
 
 namespace LINALG
@@ -112,7 +110,5 @@ namespace LINALG
     };
   }  // namespace SOLVER
 }  // namespace LINALG
-
-#endif  // HAVE_MueLu
 
 #endif /* SOLVER_MUELUPRECONDITIONER_H_ */

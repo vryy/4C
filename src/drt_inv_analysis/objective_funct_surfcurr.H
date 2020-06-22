@@ -7,7 +7,6 @@
 \maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
-#ifdef HAVE_Kokkos
 
 #ifndef OBJECTIVE_FUNCT_SURFCURR_H
 #define OBJECTIVE_FUNCT_SURFCURR_H
@@ -709,4 +708,3 @@ namespace INVANA
 }  // namespace INVANA
 
 #endif  // OBJECTIVE_FUNCT_SURFCURR_H
-#endif

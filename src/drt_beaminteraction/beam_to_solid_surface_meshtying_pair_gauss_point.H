@@ -13,7 +13,7 @@
 #define BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_H_
 
 
-#include "beam_to_solid_surface_meshtying_pair_base.H"
+#include "beam_to_solid_surface_meshtying_pair_gauss_point_base.H"
 
 #include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 
@@ -27,7 +27,7 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename surface>
   class BeamToSolidSurfaceMeshtyingPairGaussPoint
-      : public BeamToSolidSurfaceMeshtyingPairBase<
+      : public BeamToSolidSurfaceMeshtyingPairGaussPointBase<
             GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>, beam, surface>
   {
    private:
@@ -35,7 +35,7 @@ namespace BEAMINTERACTION
     using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam, surface>;
 
    public:
     /**

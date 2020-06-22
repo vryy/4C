@@ -18,6 +18,7 @@
 
 
 // forward declaration ...
+class Epetra_Vector;
 class Epetra_FEVector;
 namespace LINALG
 {
@@ -44,6 +45,7 @@ namespace BEAMINTERACTION
   class BeamContactParams;
   class BeamToSolidVtuOutputWriterBase;
   class BeamInteractionConditions;
+  class BeamToSolidMortarManager;
 
   /*!
    \brief
@@ -280,18 +282,58 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix){};
 
     /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix.
+     *
+     * This method can be used for pairs that couple more DOF than the ones from the two contact
+     * elements, e.g. surface patches with averaged normals also create coupling terms in the DOF of
+     * the neighbouring surface elements. Those pairs write their coupling terms into the global
+     * system vector / matrix and do not require an outside routine to do so.
+     *
+     * In some cases this can also be used to avoid the creation of variable size element vectors
+     * and matrices, by directly assembling templated vectors and matrices into the global ones.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
+     * @param force_vector (in / out) Global force vector.
+     * @param stiffness_matrix (in / out) Global stiffness matrix.
+     * @param lambda (in) Global Lagrange multiplier vector.
+     */
+    virtual void EvaluateAndAssemble(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Epetra_Vector& global_lambda){};
+
+    /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
      * @param local_D (out) Local mortar matrix $D$.
      * @param local_M (out) Local mortar matrix $M$.
      * @param local_kappa (out) Local scaling vector.
-     * @param local_constraint_offset (out) Local constraint offset vector.
+     * @param local_constraint (out) Local constraint vector.
      * @return True if pair is in contact.
      */
     virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+        LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
     {
       return false;
     }
+
+    /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
+     * them into global matrices.
+     * @param discret (in) Discretization, used to get the beam GIDs.
+     * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
+     * @param global_D (in/out) Global mortar matrix D.
+     * @param global_M (in/out) Global mortar matrix D.
+     * @param global_constraint_offset (in/out) Global constraint offset vector.
+     * @param global_kappa (in/out) Global scaling matrix.
+     * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
+     */
+    virtual void EvaluateAndAssembleDM(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
+        LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint_offset,
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active){};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.
@@ -306,7 +348,7 @@ namespace BEAMINTERACTION
      */
     virtual void GetPairVisualization(
         Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const
+        Teuchos::ParameterList& visualization_params) const
     {
     }
 

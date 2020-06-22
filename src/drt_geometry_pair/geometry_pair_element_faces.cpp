@@ -165,22 +165,34 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
           {
             const DRT::Node* other_node =
                 find_in_faces->second->GetDrtFaceElement()->Nodes()[i_node_connected_element];
-            const int node_id = other_node->Id();
+            const int other_node_id = other_node->Id();
 
-            // Check if this node is part of this face element. If not and if it is not already in
-            // other_faces_node_gid, it is added to that vector.
-            auto it = std::find(my_node_gid.begin(), my_node_gid.end(), node_id);
+            // Check if the other node is part of this face element.
+            auto it = std::find(my_node_gid.begin(), my_node_gid.end(), other_node_id);
             if (it == my_node_gid.end())
             {
-              if (std::find(other_faces_node_gid.begin(), other_faces_node_gid.end(), node_id) ==
-                  other_faces_node_gid.end())
+              // The other node is not part of this face element. Check if this other node was
+              // already processed for this patch.
+              auto it_other = std::find(
+                  other_faces_node_gid.begin(), other_faces_node_gid.end(), other_node_id);
+              if (it_other == other_faces_node_gid.end())
               {
-                other_faces_node_gid.push_back(node_id);
+                // This node was not processed yet, so add it to other_faces_node_gid.
+                other_faces_node_gid.push_back(other_node_id);
                 discret->Dof(other_node, 0, temp_node_dof_gid);
                 for (const auto& value : temp_node_dof_gid) this->patch_dof_gid_.push_back(value);
+
+                // Add the patch id of this other node to the face element tracker.
+                temp_connected_face.my_node_patch_lid_.push_back(
+                    my_node_gid.size() + other_faces_node_gid.size() - 1);
               }
-              temp_connected_face.my_node_patch_lid_.push_back(
-                  my_node_gid.size() + other_faces_node_gid.size() - 1);
+              else
+              {
+                // Get the patch index of the other node and add it to the face element tracker.
+                const int index_other_node = std::distance(other_faces_node_gid.begin(), it_other);
+                temp_connected_face.my_node_patch_lid_.push_back(
+                    my_node_gid.size() + index_other_node);
+              }
             }
             else
             {

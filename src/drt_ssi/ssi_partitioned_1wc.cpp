@@ -81,32 +81,54 @@ void SSI::SSI_Part1WC::DoScatraStep()
   }
 
   // -------------------------------------------------------------------
-  //                  solve nonlinear / linear equation
+  //      load solution from previously performed scatra simulation
   // -------------------------------------------------------------------
   if (isscatrafromfile_)
   {
     int diffsteps = structure_->Dt() / scatra_->ScaTraField()->Dt();
     if (scatra_->ScaTraField()->Step() % diffsteps == 0)
     {
+      Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(
+          scatra_->ScaTraField()->Discretization(), scatra_->ScaTraField()->Step()));
+
       // check if this is a cardiac monodomain problem
       Teuchos::RCP<SCATRA::TimIntCardiacMonodomain> cardmono =
           Teuchos::rcp_dynamic_cast<SCATRA::TimIntCardiacMonodomain>(scatra_->ScaTraField());
+
       if (cardmono == Teuchos::null)
-        dserror("SCATRA_FROM_RESTART_FILE works only for Cardiac Monodoamin problems");
-      // create vector with dofrowmap from previously performed scarta calculation
-      Teuchos::RCP<Epetra_Vector> phinptemp = LINALG::CreateVector(*cardmono->DofRowMapScatra());
-      Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(
-          scatra_->ScaTraField()->Discretization(), scatra_->ScaTraField()->Step()));
-      // read phinp from restart file
-      reader->ReadVector(phinptemp, "phinp");
-      // replace old scatra map with new map since ssi map has more dofs
-      phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
-      // update phinp
-      scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
+      {
+        // read phinp from restart file
+        Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->ReadVector("phinp");
+
+        // replace old scatra map with new map since ssi map has more dofs
+        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
+
+        // update phinp
+        scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
+      }
+      else
+      {
+        // create vector with dofrowmap from previously performed scatra calculation
+        Teuchos::RCP<Epetra_Vector> phinptemp = LINALG::CreateVector(*cardmono->DofRowMapScatra());
+
+        // read phinp from restart file
+        reader->ReadVector(phinptemp, "phinp");
+
+        // replace old scatra map with new map since ssi map has more dofs
+        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
+
+        // update phinp
+        scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
+      }
     }
   }
+  // -------------------------------------------------------------------
+  //                  solve nonlinear / linear equation
+  // -------------------------------------------------------------------
   else
-    scatra_->ScaTraField()->Solve();  // really solve scatra problem
+    scatra_->ScaTraField()->Solve();
 
 
   // -------------------------------------------------------------------
@@ -137,6 +159,10 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
   IncrementTimeAndStep();
 
   if (printheader) PrintHeader();
+
+  // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
+  // to structure
+  if (scatra_->ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
   structure_->PrepareTimeStep();
 

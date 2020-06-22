@@ -836,8 +836,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     case INPAR::SOLVER::azprec_MLfluid:   // unsymmetric, unsmoothed restriction
     case INPAR::SOLVER::azprec_MLfluid2:  // full Pretrov-Galerkin unsymmetric smoothed
     {
-#if defined(PARALLEL) && \
-    defined(HAVE_PARMETIS)  // these are the hard-coded ML repartitioning settings
+#if defined(PARALLEL)
+      // these are the hard-coded ML repartitioning settings
       mllist.set("repartition: enable", 1);
       mllist.set("repartition: partitioner", "ParMETIS");
       mllist.set("repartition: max min ratio", 1.3);
