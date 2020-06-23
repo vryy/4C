@@ -139,7 +139,7 @@ def check_inputtests(look_cmd, allerrors):
   with open('TestingFramework.cmake', 'r') as cmakefile:
     entry_regex = [
       re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_post_ensight *\( *([a-zA-Z0-9_\.\-]+ .) *'),
+      re.compile(r'baci_test_and_post_ensight_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_Nested_Par *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+) *'),
       re.compile(r'baci_test_Nested_Par_MultipleInvana *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+)*'),
