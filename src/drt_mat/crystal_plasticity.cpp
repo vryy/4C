@@ -58,7 +58,7 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
   else if (youngs_ <= 0.)
     dserror("Young's modulus YOUNG is negative or zero!!! Check your input!");
   else if (poisson_ >= 0.5 || poisson_ < -1.)
-    dserror("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check you input!");
+    dserror("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check your input!");
   else if (density_ <= 0.)
     dserror("Density is negative or zero!!! Check you input!");
   else if (!(lattice_ == "L10" || lattice_ == "D019" || lattice_ == "FCC" || lattice_ == "BCC" ||
