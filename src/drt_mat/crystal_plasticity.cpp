@@ -58,7 +58,7 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
   else if (youngs_ <= 0.)
     dserror("Young's modulus YOUNG is negative or zero!!! Check your input!");
   else if (poisson_ >= 0.5 || poisson_ < -1.)
-    dserror("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check you input!");
+    dserror("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check your input!");
   else if (density_ <= 0.)
     dserror("Density is negative or zero!!! Check your input!");
   else if (!(lattice_ == "L10" || lattice_ == "D019" || lattice_ == "FCC" || lattice_ == "BCC" ||
@@ -67,19 +67,19 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
         "Lattice type not known. Please check the LAT parameter in the input file. Currently it "
         "has to be FCC, BCC, HCP, D019 or L10");
   else if (ctoa_ <= 0.)
-    dserror("C to a ratio CTOA is negative or zero!!! Check you input!");
+    dserror("C to a ratio CTOA is negative or zero!!! Check your input!");
   else if (lattice_const_ <= 0.)
-    dserror("Lattice constant ABASE is negative or zero!!! Check you input!");
+    dserror("Lattice constant ABASE is negative or zero!!! Check your input!");
   else if (num_slip_sys_ <= 0.)
-    dserror("Number of slip systems NUMSLIPSYS is negative or zero!!! Check you input!");
+    dserror("Number of slip systems NUMSLIPSYS is negative or zero!!! Check your input!");
   else if (num_slip_sets_ > num_slip_sys_)
     dserror(
         "Number of slip system sets NUMSLIPSETS is greater than number of slip systems "
-        "NUMSLIPSYS!!! Check you input!");
+        "NUMSLIPSYS!!! Check your input!");
   else if ((num_twin_sys_ != 0) && (num_twin_sets_ > num_twin_sys_))
     dserror(
         "The number of twinning system sets NUMTWINSETS is greater than the number of twinning "
-        "systems NUMTWINSYS!!! Check you input!");
+        "systems NUMTWINSYS!!! Check your input!");
 
   // check for slip/twinning set index out of range
   for (int i = 0; i < num_slip_sys_; i++)
@@ -87,10 +87,11 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
     if (slip_set_mem_[i] > num_slip_sets_)
       dserror(
           "The index of one slip system in SLIPSETMEMBERS exceeds the number of slip sets given in "
-          "NUMSLIPSETS!!! Check you input!");
+          "NUMSLIPSETS!!! Check your input!");
     else if (slip_set_mem_[i] < 1)
       dserror(
-          "The index of one slip system in SLIPSETMEMBERS is negative or zero!!! Check you input!");
+          "The index of one slip system in SLIPSETMEMBERS is negative or zero!!! Check your "
+          "input!");
   }
   if (num_twin_sys_ != 0)
   {
@@ -100,10 +101,10 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
         dserror(
             "The index of one twinning system in TWINSETMEMBERS exceeds the number of twinning "
             "sets given in "
-            "NUMTWINSETS!!! Check you input!");
+            "NUMTWINSETS!!! Check your input!");
       else if (twin_set_mem_[i] < 1)
         dserror(
-            "The index of one twinning system in TWINSETMEMBERS is negative or zero!!! Check you "
+            "The index of one twinning system in TWINSETMEMBERS is negative or zero!!! Check your "
             "input!");
     }
   }
@@ -111,42 +112,42 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
   for (int i = 0; i < num_slip_sets_; i++)
   {
     if (slip_rate_exp_[i] <= 0)
-      dserror("One of the entries in SLIPRATEEXP is negative or zero!!! Check you input!");
+      dserror("One of the entries in SLIPRATEEXP is negative or zero!!! Check your input!");
     else if (slip_ref_shear_rate_[i] <= 0)
-      dserror("One of the entries in GAMMADOTSLIPREF is negative or zero!!! Check you input!");
+      dserror("One of the entries in GAMMADOTSLIPREF is negative or zero!!! Check your input!");
     else if (dis_dens_init_[i] < 0)
-      dserror("One of the entries in DISDENSINIT is negative!!! Check you input!");
+      dserror("One of the entries in DISDENSINIT is negative!!! Check your input!");
     else if (dis_gen_coeff_[i] < 0)
-      dserror("One of the entries in DISGENCOEFF is negative!!! Check you input!");
+      dserror("One of the entries in DISGENCOEFF is negative!!! Check your input!");
     else if (dis_dyn_rec_coeff_[i] < 0)
-      dserror("One of the entries in DISDYNECCOEFF is negative!!! Check you input!");
+      dserror("One of the entries in DISDYNECCOEFF is negative!!! Check your input!");
     else if (slip_lat_resist_[i] < 0)
-      dserror("One of the entries in TAUY0 is negative!!! Check you input!");
+      dserror("One of the entries in TAUY0 is negative!!! Check your input!");
     else if (slip_micro_bound_[i] <= 0)
-      dserror("One of the entries in MFPSLIP is negative or zero!!! Check you input!");
+      dserror("One of the entries in MFPSLIP is negative or zero!!! Check your input!");
     else if (slip_hp_coeff_[i] < 0)
-      dserror("One of the entries in SLIPHPCOEFF is negative!!! Check you input!");
+      dserror("One of the entries in SLIPHPCOEFF is negative!!! Check your input!");
     else if (slip_by_twin_[i] < 0)
-      dserror("One of the entries in SLIPBYTWIN is negative!!! Check you input!");
+      dserror("One of the entries in SLIPBYTWIN is negative!!! Check your input!");
   }
   if (num_twin_sys_ != 0)
   {
     for (int i = 0; i < num_twin_sets_; i++)
     {
       if (twin_rate_exp_[i] <= 0)
-        dserror("One of the entries in TWINRATEEXP is negative or zero!!! Check you input!");
+        dserror("One of the entries in TWINRATEEXP is negative or zero!!! Check your input!");
       else if (twin_ref_shear_rate_[i] <= 0)
-        dserror("One of the entries in GAMMADOTTWINREF is negative or zero!!! Check you input!");
+        dserror("One of the entries in GAMMADOTTWINREF is negative or zero!!! Check your input!");
       else if (twin_lat_resist_[i] < 0)
-        dserror("One of the entries in TAUT0 is negative!!! Check you input!");
+        dserror("One of the entries in TAUT0 is negative!!! Check your input!");
       else if (twin_micro_bound_[i] <= 0)
-        dserror("One of the entries in MFPTWIN is negative or zero!!! Check you input!");
+        dserror("One of the entries in MFPTWIN is negative or zero!!! Check your input!");
       else if (twin_hp_coeff_[i] < 0)
-        dserror("One of the entries in TWINHPCOEFF is negative!!! Check you input!");
+        dserror("One of the entries in TWINHPCOEFF is negative!!! Check your input!");
       else if (twin_by_slip_[i] < 0)
-        dserror("One of the entries in TWINBYSLIP is negative!!! Check you input!");
+        dserror("One of the entries in TWINBYSLIP is negative!!! Check your input!");
       else if (twin_by_twin_[i] < 0)
-        dserror("One of the entries in TWINBYTWIN is negative!!! Check you input!");
+        dserror("One of the entries in TWINBYTWIN is negative!!! Check your input!");
     }
   }
 }
