@@ -19,6 +19,7 @@
 #include "randomfield_spectral.H"
 #include "mc_mat_par_manager.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_red_airways/airwayimplicitintegration.H"

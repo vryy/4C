@@ -630,7 +630,7 @@ void FLD::XWall::SetupXWallDis()
   if (parallel)
   {
     // redistribute
-#if defined(PARALLEL) && defined(HAVE_PARMETIS)
+#if defined(PARALLEL)
 
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Map> rownodes;
@@ -640,11 +640,6 @@ void FLD::XWall::SetupXWallDis()
         xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
-
-#else
-#if defined(PARALLEL)
-    dserror("require PARMETIS not METIS");
-#endif
 #endif
 
     PeriodicBoundaryConditions pbc(xwdiscret_, false);

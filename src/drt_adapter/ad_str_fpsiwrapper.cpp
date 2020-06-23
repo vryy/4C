@@ -15,6 +15,8 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_structure/stru_aux.H"
 
+#include "../drt_lib/prestress_service.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> structure)
@@ -33,18 +35,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
   else
   {
     // prestressing business
-    double time = 0.0;
-    double pstime = -1.0;
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype =
-        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::PreStress::none)
-    {
-      time = TimeOld();
-      pstime = sdyn.get<double>("PRESTRESSTIME");
-    }
-
-    if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+    if (UTILS::PRESTRESS::IsActive(TimeOld()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
@@ -67,18 +58,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
   else
   {
     // prestressing business
-    double time = 0.0;
-    double pstime = -1.0;
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype =
-        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::PreStress::none)
-    {
-      time = Time();
-      pstime = sdyn.get<double>("PRESTRESSTIME");
-    }
-
-    if (pstype != INPAR::STR::PreStress::none && time <= pstime)
+    if (UTILS::PRESTRESS::IsActive(Time()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }

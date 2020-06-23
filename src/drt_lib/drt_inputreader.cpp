@@ -919,7 +919,6 @@ namespace DRT
       }
 
 #ifdef TRAP_FE
-#ifdef LINUX_MUENCH
       // somehow the following test whether we have a double or not
       // creates always an internal floating point exception (FE_INVALID). An alternative
       // implementation using boost::lexical_cast<double> does not solve this problem!
@@ -928,7 +927,6 @@ namespace DRT
       feclearexcept(FE_INVALID);
       /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
       fedisableexcept(FE_INVALID);
-#endif
 #endif
 
       {  // try to find a double
@@ -939,11 +937,9 @@ namespace DRT
         ssd >> dv;
 
 #ifdef TRAP_FE
-#ifdef LINUX_MUENCH
         feclearexcept(FE_INVALID);
         /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
         feenableexcept(FE_INVALID | FE_DIVBYZERO);
-#endif
 #endif
 
         if (ssd.eof())

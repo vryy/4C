@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const override;
+        Teuchos::ParameterList& visualization_params) const override;
 
     /**
      * \brief Create the geometry pair for this contact pair.
@@ -115,24 +115,30 @@ namespace BEAMINTERACTION
      */
     void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
 
-    /**
-     * \brief Get energy for Gauss point to segment coupling.
-     */
-    double GetEnergy() const override;
-
    protected:
-    /**
-     * \brief Get the penalty potential for Gauss point to segment coupling.
-     * @return Penalty potential.
-     */
-    scalar_type GetPenaltyPotential() const;
-
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
         const;
+
+    /**
+     * \brief Evaluate the coupling vector at an evaluation point.
+     * @param evaluation_point (in) Projection point from 1D to 3D where the coupling should be
+     * evaluated.
+     * @return 3D vector with the difference in the positions / displacements at the projection
+     * point.
+     */
+    LINALG::Matrix<3, 1, scalar_type> EvaluateCoupling(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
+
+    /**
+     * \brief Get the GIDs of the pair, i.e. first the beam GIDs and then the pair GIDs.
+     * @param discret (in) Discretization.
+     * @return Vector with the GIDs of this pair.
+     */
+    std::vector<int> GetPairGID(const DRT::Discretization& discret) const;
 
    private:
     /**

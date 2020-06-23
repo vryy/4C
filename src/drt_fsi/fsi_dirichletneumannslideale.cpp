@@ -66,16 +66,15 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 {
   // dispn and dispnp of structure, used for surface integral and velocity of the fluid in the
   // interface
-  Teuchos::RCP<Epetra_Vector> idispn = StructureField()->ExtractInterfaceDispn();
   Teuchos::RCP<Epetra_Vector> idisptotal = StructureField()->ExtractInterfaceDispnp();
-  Teuchos::RCP<Epetra_Vector> idispstep = StructureField()->ExtractInterfaceDispnp();
-  idispstep->Update(-1.0, *idispn, 1.0);
 
   slideale_->Remeshing(*StructureField(), MBFluidField()->Discretization(), idisptotal, islave_,
       StructureFluidCouplingMortar(), Comm());
 
+  // Evaluate solid/fluid Mortar coupling
   slideale_->EvaluateMortar(
       StructureField()->ExtractInterfaceDispnp(), islave_, StructureFluidCouplingMortar());
+  // Evaluate solid/ale Mortar coupling
   slideale_->EvaluateFluidMortar(idisptotal, islave_);
 
   Teuchos::RCP<Epetra_Vector> unew =

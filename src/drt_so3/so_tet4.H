@@ -446,7 +446,7 @@ namespace DRT
       /// compute Jacobian mapping wrt to deformed configuration
       void UpdateJacobianMapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
-      /// compute defgrd in all gp for given disp
+      /// compute defgrd ypein all gp for given disp
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 

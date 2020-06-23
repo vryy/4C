@@ -11,7 +11,7 @@
 #ifndef MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ConfigDefs.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"
@@ -111,6 +111,6 @@ namespace MueLu
 // Re-define as it has been undefined at the top
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_SHORT
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_ */

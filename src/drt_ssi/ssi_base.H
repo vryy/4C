@@ -211,6 +211,9 @@ namespace SSI
       if (not IsInit()) dserror("Init(...) was not called.");
     };
 
+    //! copies modified time step from scatra to structure and to this SSI algorithm
+    void SetDtFromScaTraToStructure();
+
     //! set flag true after setup or false if setup became invalid
     void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 

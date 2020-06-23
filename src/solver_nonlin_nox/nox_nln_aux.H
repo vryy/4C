@@ -30,10 +30,14 @@ namespace LINALG
 }  // namespace LINALG
 namespace NOX
 {
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
   namespace Abstract
   {
     class PrePostOperator;
   }  // namespace Abstract
+#else
+  class Observer;
+#endif
   namespace StatusTest
   {
     class Generic;
@@ -144,7 +148,11 @@ namespace NOX
 
       /// add pre/post operator to pre/post operator vector
       void AddToPrePostOpVector(Teuchos::ParameterList& p_nox_opt,
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
           const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr);
+#else
+          const Teuchos::RCP<NOX::Observer>& ppo_ptr);
+#endif
 
       /// return the name of the parameter list corresponding to the set direction method
       std::string GetDirectionMethodListName(const Teuchos::ParameterList& p);

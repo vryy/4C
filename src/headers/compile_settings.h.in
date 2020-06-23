@@ -33,10 +33,6 @@
 #cmakedefine D_FLUID3
 #endif
 
-#ifndef D_SHELL8
-#cmakedefine D_SHELL8
-#endif
-
 #ifndef D_THERMO
 #cmakedefine D_THERMO
 #endif
@@ -59,10 +55,6 @@
 
 #ifndef INVERSEDESIGNUSE
 #cmakedefine INVERSEDESIGNUSE
-#endif
-
-#ifndef HAVE_PARMETIS
-#cmakedefine HAVE_PARMETIS
 #endif
 
 #ifndef PERF

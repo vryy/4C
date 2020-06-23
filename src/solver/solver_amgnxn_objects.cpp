@@ -9,9 +9,6 @@
 Created on: Feb 27, 2014
 *----------------------------------------------------------------------*/
 
-
-#ifdef HAVE_MueLu
-
 #include <iostream>
 #include "Teuchos_TimeMonitor.hpp"
 #include "solver_amgnxn_objects.H"
@@ -473,6 +470,3 @@ LINALG::SOLVER::AMGNXN::DiagonalBlockedMatrix::NewRangeBlockedVector(int NV, boo
 
   return out;
 }
-
-
-#endif  // HAVE_MueLu

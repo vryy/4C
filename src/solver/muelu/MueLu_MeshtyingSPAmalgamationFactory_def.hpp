@@ -10,8 +10,6 @@
 #ifndef MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DEF_HPP_
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
-
 #include "MueLu_MeshtyingSPAmalgamationFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
@@ -161,9 +159,5 @@ namespace MueLu
     Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
   }
 }  // namespace MueLu
-
-#endif  // HAVE_MueLu
-
-
 
 #endif /* MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DEF_HPP_ */

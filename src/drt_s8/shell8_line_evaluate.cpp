@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 
 #include "shell8.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
@@ -200,6 +199,3 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(Teuchos::ParameterList& params,
   }  // for (int gp=0; gp<ngp; ++gp)
   return 0;
 }
-
-
-#endif  // #ifdef D_SHELL8

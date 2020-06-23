@@ -8,8 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
-
 #include "shell8.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_discret.H"
@@ -106,7 +104,3 @@ void DRT::ELEMENTS::Shell8Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-
-
-#endif  // #ifdef D_SHELL8

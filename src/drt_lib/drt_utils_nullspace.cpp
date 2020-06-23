@@ -24,7 +24,6 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
   double* mode[6];
   for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
 
-#ifdef D_SHELL8
   // special for shell8
   Epetra_SerialDenseMatrix dir;
   DRT::Element* dwele = dis.lRowElement(0);
@@ -48,7 +47,6 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
       dir(i, 2) = (*a3ref)(2, j) * h2;
     }
   }
-#endif
 
   /* the rigid body modes for structures are:
         xtrans   ytrans  ztrans   xrot       yrot       zrot
@@ -113,7 +111,6 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
             mode[4][lid] = -x[0] + x0[0];
             mode[5][lid] = 0.0;
             break;
-#ifdef D_SHELL8
           case 3:
             mode[0][lid] = 0.0;
             mode[1][lid] = 0.0;
@@ -138,7 +135,6 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
             mode[4][lid] = -dir(i, 0);
             mode[5][lid] = 0.0;
             break;
-#endif
           default:
             dserror("Only dofs 0 - 5 supported");
             break;

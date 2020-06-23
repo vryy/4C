@@ -10,7 +10,7 @@
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DEF_HPP_
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ContactSPRepartitionInterface_decl.hpp"
 
@@ -80,6 +80,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_CONTACTSPREPARTITIONINTERFACE_DEF_HPP_ */

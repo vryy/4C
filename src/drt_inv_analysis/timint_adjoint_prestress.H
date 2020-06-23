@@ -66,9 +66,6 @@ namespace STR
     //! stiffness matrix with neumann terms
     Teuchos::RCP<LINALG::SparseOperator> stiffp_;
 
-    //! prestress type
-    INPAR::STR::PreStress pstype_;
-
     //! prestress time
     double pstime_;
   };

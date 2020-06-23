@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -28,4 +28,4 @@ template class MueLu::ContactSPRepartitionInterface<int, long long int, KokkosSe
 #endif
 #endif
 
-#endif
+#endif  // TRILINOS_Q1_2015

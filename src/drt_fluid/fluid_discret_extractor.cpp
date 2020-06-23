@@ -373,7 +373,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // this is the actual redistribution
     // call PARMETIS (with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(HAVE_PARMETIS)
+#if defined(PARALLEL)
 
     Teuchos::RCP<Epetra_Map> sepcondrownodes;
     Teuchos::RCP<Epetra_Map> sepcondcolnodes;
@@ -389,12 +389,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
 
 #else
-#if defined(PARALLEL)
-    dserror("require PARMETIS not METIS");
-#else
     sepcondrownodes = Teuchos::rcp(new Epetra_Map(*newrownodemap));
     sepcondcolnodes = Teuchos::rcp(new Epetra_Map(*newcolnodemap));
-#endif
 #endif
     if (childdiscret_->Comm().MyPID() == 0)
     {

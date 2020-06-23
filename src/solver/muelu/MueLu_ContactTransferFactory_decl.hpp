@@ -11,7 +11,7 @@
 #define MUELU_CONTACTTRANSFERFACTORY_DECL_HPP_
 
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 
 #include "MueLu_ConfigDefs.hpp"
@@ -80,6 +80,6 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_CONTACTTRANSFERFACTORY_SHORT
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_CONTACTTRANSFERFACTORY_DECL_HPP_ */

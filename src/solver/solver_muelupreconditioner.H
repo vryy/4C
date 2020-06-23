@@ -14,8 +14,6 @@ Created on: Dec 1, 2011
 #ifndef SOLVER_MUELUPRECONDITIONER_H_
 #define SOLVER_MUELUPRECONDITIONER_H_
 
-#ifdef HAVE_MueLu
-
 #include "solver_preconditionertype.H"
 
 namespace LINALG
@@ -65,11 +63,19 @@ namespace LINALG
         }
 
         // check if myMap is an Epetra_Map
+#ifdef TRILINOS_Q1_2015
         Teuchos::RCP<Xpetra::EpetraMap> xmyMap = Teuchos::null;
+#else
+        Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xmyMap = Teuchos::null;
+#endif
         Teuchos::RCP<Epetra_Map> epTest = Teuchos::rcp_dynamic_cast<Epetra_Map>(myMap);
         if (epTest != Teuchos::null)
         {
+#ifdef TRILINOS_Q1_2015
           xmyMap = Teuchos::rcp(new Xpetra::EpetraMap(myMap));
+#else
+          xmyMap = Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(myMap));
+#endif
           H.GetLevel(0)->Set(
               name, Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(xmyMap));
         }
@@ -104,7 +110,5 @@ namespace LINALG
     };
   }  // namespace SOLVER
 }  // namespace LINALG
-
-#endif  // HAVE_MueLu
 
 #endif /* SOLVER_MUELUPRECONDITIONER_H_ */

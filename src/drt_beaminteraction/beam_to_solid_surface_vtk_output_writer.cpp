@@ -78,6 +78,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("force_beam", 3);
       visualization_writer->AddPointDataVector("force_solid", 3);
+      visualization_writer->AddFieldDataVector("sum_coupling_force_beam");
+      visualization_writer->AddFieldDataVector("sum_coupling_moment_beam");
+      visualization_writer->AddFieldDataVector("sum_coupling_force_solid");
+      visualization_writer->AddFieldDataVector("sum_coupling_moment_solid");
     }
 
     if (output_params_ptr_->GetAveragedNormalsOutputFlag())
@@ -209,10 +213,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and
   // solid nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> nodal_force_visualization =
       output_writer_base_ptr_->GetVisualizationWriter("btssc-nodal-forces");
-  if (visualization != Teuchos::null)
-    AddBeamInteractionNodalForces(visualization, beam_contact->DiscretPtr(),
+  if (nodal_force_visualization != Teuchos::null)
+    AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->DiscretPtr(),
         beam_contact->BeamInteractionDataState().GetDisNp(),
         beam_contact->BeamInteractionDataState().GetForceNp());
 
@@ -235,6 +239,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
         BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
     if (not(indirect_assembly_manager == Teuchos::null))
     {
+      // If needed, setup the vector with the global moments around the origin.
+      if (nodal_force_visualization != Teuchos::null)
+      {
+        // This array will hold the global coupling moment around the origin.
+        auto global_coupling_moment_origin = Teuchos::rcp(new LINALG::Matrix<3, 1, double>(true));
+        visualization_params.set("global_coupling_moment_origin", global_coupling_moment_origin);
+      }
+
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
       // that will be passed to the pairs.
       Teuchos::RCP<Epetra_Vector> lambda =
@@ -255,6 +267,66 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
       // Add the pair specific output.
       for (const auto& pair : indirect_assembly_manager->GetMortarManager()->GetContactPairs())
         pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
+
+      if (nodal_force_visualization != Teuchos::null)
+      {
+        // Get the global force and moment resultants from the nodal forces. The first column
+        // represents the forces, the second one the moments.
+        LINALG::Matrix<3, 2, double> beam_resultant(true);
+        LINALG::Matrix<3, 2, double> solid_resultant(true);
+        GetGlobalCouplingForceResultants(beam_contact->Discret(),
+            *(beam_contact->BeamInteractionDataState().GetForceNp()),
+            *(beam_contact->BeamInteractionDataState().GetDisNp()), beam_resultant,
+            solid_resultant);
+
+        // The beam coupling moments are calculated in each pair and replace the ones evaluated in
+        // the previous function.
+        auto global_coupling_moment_origin =
+            visualization_params.get<Teuchos::RCP<LINALG::Matrix<3, 1, double>>>(
+                "global_coupling_moment_origin");
+        for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+          beam_resultant(i_dim, 1) = (*global_coupling_moment_origin)(i_dim);
+
+        // Sum the values over all ranks.
+        LINALG::Matrix<3, 2, double> beam_resultant_global(true);
+        LINALG::Matrix<3, 2, double> solid_resultant_global(true);
+        MPI_Allreduce(beam_resultant.A(), beam_resultant_global.A(),
+            beam_resultant.M() * beam_resultant.N(), MPI_DOUBLE, MPI_SUM,
+            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
+        MPI_Allreduce(solid_resultant.A(), solid_resultant_global.A(),
+            solid_resultant.M() * solid_resultant.N(), MPI_DOUBLE, MPI_SUM,
+            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
+
+        // Add to the vtk output writer.
+        std::vector<double>& field_data_beam_force =
+            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_force_beam");
+        std::vector<double>& field_data_beam_moment =
+            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_moment_beam");
+        field_data_beam_force.clear();
+        field_data_beam_force.resize(3);
+        field_data_beam_moment.clear();
+        field_data_beam_moment.resize(3);
+        for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        {
+          field_data_beam_force[i_dim] = beam_resultant_global(i_dim, 0);
+          field_data_beam_moment[i_dim] = beam_resultant_global(i_dim, 1);
+        }
+        std::vector<double>& field_data_solid_force =
+            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_force_solid");
+        std::vector<double>& field_data_solid_moment =
+            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_moment_solid");
+        field_data_solid_force.clear();
+        field_data_solid_force.resize(3);
+        field_data_solid_moment.clear();
+        field_data_solid_moment.resize(3);
+        for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        {
+          field_data_solid_force[i_dim] = solid_resultant_global(i_dim, 0);
+          field_data_solid_moment[i_dim] = solid_resultant_global(i_dim, 1);
+        }
+
+        visualization_params.remove("global_coupling_moment_origin", false);
+      }
 
       // Reset assembly manager specific values in the parameter list passed to the individual
       // pairs.

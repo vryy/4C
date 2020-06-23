@@ -27,6 +27,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/prestress_service.H"
 
 #include "../drt_io/io.H"
 
@@ -299,8 +300,9 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
 
   // check for prestressing and reset if necessary
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
-  if (prestress_type != INPAR::STR::PreStress::none and
-      GState().GetTimeNp() <= TimInt().GetDataSDyn().GetPreStressTime() + 1e-15)
+  const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
+
+  if (::UTILS::PRESTRESS::IsActive(GState().GetTimeNp(), prestress_type, prestress_time))
   {
     switch (prestress_type)
     {

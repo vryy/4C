@@ -9,8 +9,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
-
 #include <MueLu_ConfigDefs.hpp>
 
 #include <Xpetra_Matrix.hpp>
@@ -24,9 +22,11 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
+#include <Trilinos_version.h>
+#ifdef TRILINOS_Q1_2015
 #include <MueLu_HierarchyHelpers.hpp>
+#endif
 #include <MueLu_VerboseObject.hpp>
-#endif  // HAVE_MueLu
 
 // Belos headers
 #include "BelosConfigDefs.hpp"
@@ -91,14 +91,12 @@ void LINALG::SOLVER::BelosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   if (!Params().isSublist("Belos Parameters")) dserror("Do not have belos parameter list");
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
-#ifdef HAVE_MueLu
   permutationStrategy_ = belist.get<std::string>("permutation strategy", "none");
   diagDominanceRatio_ = belist.get<double>("diagonal dominance ratio", 1.0);
   if (permutationStrategy_ == "none")
     bAllowPermutation_ = false;
   else
     bAllowPermutation_ = true;
-#endif
 
   int reuse = belist.get("reuse", 0);
   bool create = AllowReusePreconditioner(reuse, reset) == false;
@@ -141,7 +139,6 @@ void LINALG::SOLVER::BelosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   }
 
   ////////////////////////////////////// permutation stuff
-#ifdef HAVE_MueLu
   if (bAllowPermutation_)
   {
     // extract (user-given) additional information about linear system from
@@ -172,12 +169,9 @@ void LINALG::SOLVER::BelosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   }
   else
   {
-#endif  // HAVE_MueLu
     b_ = b;
     A_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
-#ifdef HAVE_MueLu
   }
-#endif
   x_ = x;
 
 
@@ -239,7 +233,6 @@ int LINALG::SOLVER::BelosSolver::Solve()
     we_have_a_problem = true;
   }
 
-#ifdef HAVE_MueLu
   GlobalOrdinal rowperm = 0;
   GlobalOrdinal colperm = 0;
   GlobalOrdinal lrowperm = 0;
@@ -283,7 +276,6 @@ int LINALG::SOLVER::BelosSolver::Solve()
         bPermuteLinearSystem_ ? 1 : 0, NonPermutedNearZeros, PermutedNearZeros);
     fflush(outfile_);
   }
-#endif  // HAVE_MueLu
 
   ncall_ += 1;  // increment counter of solver calls
   if (we_have_a_problem)

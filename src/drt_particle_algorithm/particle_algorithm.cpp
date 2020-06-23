@@ -463,11 +463,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 {
   // init gravity acceleration vector
   std::vector<double> gravity;
-  double value;
+  std::string value;
   std::istringstream gravitystream(
       Teuchos::getNumericStringParameter(params_, "GRAVITY_ACCELERATION"));
 
-  while (gravitystream >> value) gravity.push_back(value);
+  while (gravitystream >> value) gravity.push_back(std::atof(value.c_str()));
 
   // safety check
   if ((int)gravity.size() != 3)

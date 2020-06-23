@@ -15,16 +15,14 @@
 #include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
 #include "../drt_structure_new/str_timint_basedataio_runtime_vtk_output.H"
 #include "../drt_structure_new/str_timint_basedataio.H"
+#include "../drt_lib/prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> structure)
     : FSIStructureWrapper(structure)
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype =
-      Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-  if (pstype != INPAR::STR::PreStress::none)
+  if (::UTILS::PRESTRESS::IsAny())
   {
     dserror("Prestressing for fluid-beam interaction not tested yet.");
   }

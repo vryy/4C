@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -34,4 +34,4 @@ template class MueLu::BaciFactoryFactory<std::complex<double>, int, int>;
 #endif
 #endif
 
-#endif /* HAVE_MueLu */
+#endif  // TRILINOS_Q1_2015

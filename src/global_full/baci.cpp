@@ -306,10 +306,6 @@ int main(int argc, char *argv[])
      * time. Better stop immediately if some illegal operation occurs. */
 #ifdef TRAP_FE
 
-    /* Sadly, it seems the functions needed for this are different on
-     * different machines. */
-#ifdef LINUX_MUENCH
-
     /* This is a GNU extension thus it's only available on linux. But
      * it's exactly what we want: SIGFPE just for the given
      * exceptions. We don't care about FE_INEXACT. (It happens all the
@@ -329,8 +325,6 @@ int main(int argc, char *argv[])
 
     /* The hard GNU way. But it does too much. */
     /*fesetenv((fenv_t*)-2);*/
-
-#endif
 
 #ifdef HPUX_MUENCH
     /*

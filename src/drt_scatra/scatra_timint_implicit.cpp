@@ -235,6 +235,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       scstrgrdisp_(Teuchos::null),
       outintegrreac_(DRT::INPUT::IntegralValue<int>(*params, "OUTINTEGRREAC")),
       skipinitder_(DRT::INPUT::IntegralValue<int>(*params, "SKIPINITDER")),
+      timestepadapted_(false),
       issetup_(false),
       isinit_(false)
 {
@@ -3219,6 +3220,8 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
 {
+  timestepadapted_ = false;
+
   // check flag for adaptive time stepping
   if (DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"))
   {
@@ -3242,6 +3245,9 @@ void SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
 
       // adapt time step size
       SetDt(dt);
+
+      // time step was adapted
+      timestepadapted_ = true;
     }
   }
 

@@ -36,7 +36,7 @@ INV_BETA                        0.1
 INV_INITREG                     1
 UPDATE_REG                      GRAD
 MONITORFILE                     invana_cube.mon
-INV_LIST                        -1
+INV_LIST                        -1 -1
 NEW_FILES                       yes
 PARAM_BOUNDS                    yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC

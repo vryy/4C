@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
      */
     bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
         LINALG::SerialDenseVector& local_kappa,
-        LINALG::SerialDenseVector& local_constraint_offset) override;
+        LINALG::SerialDenseVector& local_constraint) override;
 
     /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.
@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        const Teuchos::ParameterList& visualization_params) const override;
+        Teuchos::ParameterList& visualization_params) const override;
 
    protected:
     /**

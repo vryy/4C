@@ -17,6 +17,7 @@
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/prestress_service.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -129,15 +130,15 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    // pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+
+    pstype_ = ::UTILS::PRESTRESS::GetType();
+    pstime_ = ::UTILS::PRESTRESS::GetTime();
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (pstype_ == INPAR::STR::PreStress::id)
+  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
 
   if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
@@ -178,10 +179,10 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
-  if (pstype_ == INPAR::STR::PreStress::id)
+  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
@@ -237,16 +238,16 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, data_);
   // line search
   AddtoPack(data, old_step_length_);
-  // prestress_
+  // Pack prestress type
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
   // invdesign_
-  else if (pstype_ == INPAR::STR::PreStress::id)
+  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
   {
     DRT::ParObject::AddtoPack(data, *invdesign_);
   }
@@ -290,11 +291,11 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   data_.Unpack(tmp);
   // line search
   ExtractfromPack(position, data, old_step_length_);
-  // prestress_
+  // Extract prestress
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (pstype_ == INPAR::STR::PreStress::mulf)
+  if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -309,7 +310,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
     prestress_->Unpack(tmpprestress);
   }
   // invdesign_
-  else if (pstype_ == INPAR::STR::PreStress::id)
+  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
   {
     std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position, data, tmpinvdesign);

@@ -105,9 +105,12 @@ void BINSTRATEGY::BinningStrategy::Init(
   {
     for (int row = 0; row < 3; ++row)
     {
-      double value = 1.0e12;  // this is also default input if not specified in input file
+      std::string value;
       if (xaabbstream >> value)
-        domain_bounding_box_corner_positions_(row, col) = value;
+      {
+        double doublevalue = std::atof(value.c_str());
+        domain_bounding_box_corner_positions_(row, col) = doublevalue;
+      }
       else
         dserror("specify six values for bounding box in three dimensional problem. Fix input file");
     }
@@ -123,9 +126,12 @@ void BINSTRATEGY::BinningStrategy::Init(
       Teuchos::getNumericStringParameter(binstrategyparams, "BIN_PER_DIR"));
   for (int idim = 0; idim < 3; ++idim)
   {
-    int val = -1;
+    std::string val;
     if (binstream >> val)
-      bin_per_dir_[idim] = val;
+    {
+      int intval = std::atoi(val.c_str());
+      if (intval > 0) bin_per_dir_[idim] = intval;
+    }
     else
       dserror(
           "You need to specify three figures for BIN_PER_DIR in input file for three dimensional "
@@ -530,10 +536,11 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
   {
-    int val = -1;
+    std::string val;
     if (periodicbc >> val)
     {
-      if (val)
+      int intval = std::atoi(val.c_str());
+      if (intval)
       {
         // output pbc bounds based on XAABB of bins
         if (myrank_ == 0)

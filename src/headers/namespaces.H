@@ -1939,6 +1939,13 @@ namespace UTILS
   {
   }  // namespace MOR
 
+  /*!
+   * \brief Utilities for prestressing
+   */
+  namespace PRESTRESS
+  {
+  }  // namespace PRESTRESS
+
   /*! \brief Utilities for the Voigt notation
    *
    * All functionality concerning manipulation of tensors in Voigt notation should be gathered here.

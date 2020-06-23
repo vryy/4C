@@ -8,7 +8,7 @@
 \maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 
 #include "../drt_lib/drt_dserror.H"
@@ -1528,4 +1528,4 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hier
 }  // Write()
 
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015

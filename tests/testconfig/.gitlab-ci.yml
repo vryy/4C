@@ -1,7 +1,7 @@
+--- #-------------------------------------------------------------------------------
+
 #-------------------------------------------------------------------------------
 # Define global variables for all jobs
-#-------------------------------------------------------------------------------
-
 variables:
     # Clone repository by default, file have changed attribute.
     GIT_STRATEGY: clone
@@ -263,7 +263,6 @@ variables:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
 
-
 # This kind of job is started when a user triggers a job in the gitlab UI.
 #
 # The doxygen_web job is meant for merge request testing.
@@ -296,7 +295,6 @@ variables:
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
-
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -334,7 +332,6 @@ variables:
             # Only build doxygen during nightly tests.
             - $GITLAB_SCHEDULER_TYPE == "1"
 
-
 #-------------------------------------------------------------------------------
 # Stages during testing.
 #-------------------------------------------------------------------------------
@@ -344,7 +341,6 @@ stages:
     - buildtest
     - doxygen
     - pages
-
 
 #-------------------------------------------------------------------------------
 # Actual jobs for testing.
@@ -374,7 +370,6 @@ checkcode:
             - $GITLAB_SCHEDULER_TYPE == "3"
     tags:
         - all
-
 
 # IMCS--------------------------------------------------------------------------
 
@@ -441,15 +436,14 @@ imcs-buildtest_daily_debug:
     tags:
         - imcs-nightly
 
-
 # LNM---------------------------------------------------------------------------
 
 lnm-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-minimal-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -460,8 +454,8 @@ lnm-buildtest_full:
     <<: *buildtest_full
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-$TEST_TAG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -478,8 +472,8 @@ lnm-buildtest_coverage_weekly:
         # enable coverage option of ctest
         CTEST_CONFIGURE_POSTFIX: "--coverage"
         CTEST_MAKE: "make full -j4"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-coverage-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-coverage-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -521,8 +515,8 @@ lnm-buildtest_daily:
     <<: *buildtest_daily
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -580,13 +574,12 @@ lnm-buildtest_daily_schmarrn:
         variables:
             - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
 
-
 lnm-buildtest_daily_debug:
     <<: *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation DEBUG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -598,7 +591,7 @@ lnm-doxygen-web:
     variables:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -610,7 +603,7 @@ lnm-doxygen:
     variables:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"

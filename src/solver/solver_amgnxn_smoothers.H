@@ -11,7 +11,6 @@ Created on: Feb 27, 2014
 /*----------------------------------------------------------------------*/
 #ifndef AMGNXN_SMOOTHERS_H
 #define AMGNXN_SMOOTHERS_H
-#ifdef HAVE_MueLu
 
 // Trilinos includes
 #include "Epetra_MultiVector.h"
@@ -506,6 +505,4 @@ namespace LINALG
   }    // namespace SOLVER
 }  // namespace LINALG
 
-
-#endif  // HAVE_MueLu
 #endif  // AMGNXN_OPERATOR_H

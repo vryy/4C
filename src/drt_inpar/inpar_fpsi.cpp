@@ -58,14 +58,14 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       yesnotuple, yesnovalue, &fpsidyn);
 
   // Iterationparameters
-  setNumericStringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "tolerances for single fields in the residual norm for the Newton iteration \n"
       "for NORM_RESF != *_split only the first value is used for all fields \n"
       "order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "
       "fluidpressure, ale",
       &fpsidyn);
 
-  setNumericStringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  StringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "tolerance in the increment norm for the Newton iteration \n"
       "for NORM_INC != *_split only the first value is used for all fields \n"
       "order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "

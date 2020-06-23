@@ -22,6 +22,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -514,18 +515,8 @@ void FSI::Monolithic::PrepareTimeloop()
   // check for prestressing,
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
-  {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype =
-        Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
-    if (pstype != INPAR::STR::PreStress::none)
-    {
-      const double pstime = sdyn.get<double>("PRESTRESSTIME");
-
-      if (Time() + Dt() <= pstime)
-        dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
-    }
-  }
+  if (::UTILS::PRESTRESS::IsActive(Time() + Dt()))
+    dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;
 }
@@ -1158,32 +1149,32 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   std::vector<std::string> blocksmoother;
   std::vector<double> schuromega;
   {
-    int word1;
-    double word2;
+    std::string word1;
+    std::string word2;
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
-      while (pciterstream >> word1) pciter.push_back(word1);
-      while (pcomegastream >> word2) pcomega.push_back(word2);
+      while (pciterstream >> word1) pciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) pcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
       std::istringstream pcomegastream(
           Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
-      while (pciterstream >> word1) spciter.push_back(word1);
-      while (pcomegastream >> word2) spcomega.push_back(word2);
+      while (pciterstream >> word1) spciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) spcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
-      while (pciterstream >> word1) fpciter.push_back(word1);
-      while (pcomegastream >> word2) fpcomega.push_back(word2);
+      while (pciterstream >> word1) fpciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) fpcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
-      while (pciterstream >> word1) apciter.push_back(word1);
-      while (pcomegastream >> word2) apcomega.push_back(word2);
+      while (pciterstream >> word1) apciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) apcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::string word;
@@ -1194,7 +1185,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     {
       std::istringstream blocksmootherstream(
           Teuchos::getNumericStringParameter(fsimono, "SCHUROMEGA"));
-      while (blocksmootherstream >> word2) schuromega.push_back(word2);
+      while (blocksmootherstream >> word2) schuromega.push_back(std::atof(word2.c_str()));
     }
   }
 
@@ -1216,7 +1207,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
       break;
     }
     case INPAR::FSI::AMGnxn:
-#ifdef HAVE_MueLu
     {
       // TODO This is a temporary hack to input the xml file without adding a new input parameter in
       // FSI/DYNAMIC MONOLITHIC SOLVER. We assume that the xml file is given in the first position
@@ -1230,9 +1220,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           *FluidField(), *AleField(), structuresplit, amgnxn_xml,
           DRT::Problem::Instance()->ErrorFile()->Handle()));
     }
-#else
-      dserror("The AMGnxn preconditioner works only with MueLu activated");
-#endif  // HAVE_MueLu
     break;
     case INPAR::FSI::HybridSchwarz:
     {

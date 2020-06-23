@@ -10,8 +10,6 @@
 #ifndef MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
 
-#ifdef HAVE_MueLu
-
 #include <Xpetra_Matrix_fwd.hpp>
 #include <Xpetra_Map_fwd.hpp>
 #include <Xpetra_StridedMap_fwd.hpp>
@@ -77,7 +75,5 @@ namespace MueLu
 }  // namespace MueLu
 
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_SHORT
-#endif  // HAVE_MueLu
-
 
 #endif /* MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_ */

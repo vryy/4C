@@ -9,8 +9,6 @@
 
 */
 /*---------------------------------------------------------------------*/
-
-#if defined(D_SHELL8)
 typedef enum _MATERIAL_TYP
 {
   m_stvenant,  /* St.Venant Kirchhoff material */
@@ -96,5 +94,3 @@ typedef struct _VISCOHYPER
   DOUBLE tau[4];   /* relaxation times of hte maxwell elements */
   DOUBLE betas[4]; /* strain energy factors of the springs of the maxwell elements */
 } VISCOHYPER;
-
-#endif /* !defined(D_SHELL8) */

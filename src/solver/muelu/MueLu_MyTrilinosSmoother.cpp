@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -42,4 +42,4 @@ typedef Sacado::PCE::OrthogPoly<double, Storage> pce_type;
 template class MueLu::MyTrilinosSmoother<pce_type, int, int, KokkosSerialNode>;
 #endif
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015

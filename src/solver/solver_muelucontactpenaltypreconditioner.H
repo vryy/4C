@@ -14,8 +14,6 @@ Created on: Jan 11, 2012
 #ifndef SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_
 #define SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_
 
-#ifdef HAVE_MueLu
-
 #include "solver_preconditionertype.H"
 
 #include <MueLu_Hierarchy.hpp>  // for MueLu
@@ -90,8 +88,5 @@ namespace LINALG
     };
   }  // namespace SOLVER
 }  // namespace LINALG
-
-#endif  // HAVE_MueLu
-
 
 #endif /* SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_ */

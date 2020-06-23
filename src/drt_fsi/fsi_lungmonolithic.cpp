@@ -931,32 +931,32 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
   std::vector<int> apciter;
   std::vector<double> apcomega;
   {
-    int word1;
-    double word2;
+    std::string word1;
+    std::string word2;
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
-      while (pciterstream >> word1) pciter.push_back(word1);
-      while (pcomegastream >> word2) pcomega.push_back(word2);
+      while (pciterstream >> word1) pciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) pcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
       std::istringstream pcomegastream(
           Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
-      while (pciterstream >> word1) spciter.push_back(word1);
-      while (pcomegastream >> word2) spcomega.push_back(word2);
+      while (pciterstream >> word1) spciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) spcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
-      while (pciterstream >> word1) fpciter.push_back(word1);
-      while (pcomegastream >> word2) fpcomega.push_back(word2);
+      while (pciterstream >> word1) fpciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) fpcomega.push_back(std::atof(word2.c_str()));
     }
     {
       std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
       std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
-      while (pciterstream >> word1) apciter.push_back(word1);
-      while (pcomegastream >> word2) apcomega.push_back(word2);
+      while (pciterstream >> word1) apciter.push_back(std::atoi(word1.c_str()));
+      while (pcomegastream >> word2) apcomega.push_back(std::atof(word2.c_str()));
     }
   }
 
@@ -974,7 +974,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
               apciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
     case INPAR::FSI::AMGnxn:
-#ifdef HAVE_MueLu
     {
       // Parse BLOCKSMOOTHER list
       std::vector<std::string> blocksmoother;
@@ -992,9 +991,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
           *FluidField(), *AleField(), structuresplit, amgnxn_xml,
           DRT::Problem::Instance()->ErrorFile()->Handle(), "LungFSI"));
     }
-#else
-      dserror("The AMGnxn preconditioner works only with MueLu activated");
-#endif  // HAVE_MueLu
     break;
     case INPAR::FSI::FSIAMG:
     default:

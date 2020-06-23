@@ -144,7 +144,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestar
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
     Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-    const Teuchos::ParameterList& visualization_params) const
+    Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);

@@ -42,6 +42,8 @@
 #include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
 
+#include "../drt_lib/prestress_service.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Structure::Structure()
@@ -1046,11 +1048,9 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
 
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
+  const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
   bool isDuringPrestressing =
-      prestress_type != INPAR::STR::PreStress::none and
-      GState().GetTimeN() <= TimInt().GetDataSDyn().GetPreStressTime() +
-                                 1e-9;  // Add here some tolerance to avoid early stopping of
-                                        // prestressing because of floating point comparisons
+      ::UTILS::PRESTRESS::IsActive(GState().GetTimeN(), prestress_type, prestress_time);
 
   if (isDuringPrestressing)
   {

@@ -61,7 +61,7 @@ COUPALGO                        iter_monolithicstructuresplit
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
 AUXINTEGRATORFLUID              None
-AVERAGINGDT                     1.0
+AVERAGINGDT                     1.0 0.0
 DIVERCONT                       halve_step
 DTMAX                           0.2
 DTMIN                           0.002

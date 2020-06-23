@@ -8,7 +8,7 @@
 \maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -670,4 +670,4 @@ LINALG::SOLVER::MueLuContactPenaltyPreconditioner::GetContactCoarsestSolverFacto
   return SmooFact;
 }
 
-#endif
+#endif  // TRILINOS_Q1_2015

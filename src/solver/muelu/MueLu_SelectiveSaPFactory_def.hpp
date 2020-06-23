@@ -10,7 +10,7 @@
 #ifndef MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 #define MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 
-#ifdef HAVE_MueLu
+#ifdef TRILINOS_Q1_2015
 
 #include <Epetra_RowMatrixTransposer.h>
 
@@ -501,6 +501,6 @@ namespace MueLu
 
 }  // namespace MueLu
 
-#endif  // HAVE_MueLu
+#endif  // TRILINOS_Q1_2015
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DEF_HPP_ */

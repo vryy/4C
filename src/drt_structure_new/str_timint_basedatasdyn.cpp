@@ -18,6 +18,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_lib/prestress_service.H"
+
 #include "../linalg/linalg_solver.H"
 
 #include <Epetra_Time.h>
@@ -178,8 +180,8 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     itermin_ = sdynparams.get<int>("MINITER");
     itermax_ = sdynparams.get<int>("MAXITER");
     loadlin_ = (DRT::INPUT::IntegralValue<int>(sdynparams, "LOADLIN") == 1);
-    prestresstime_ = sdynparams.get<double>("PRESTRESSTIME");
-    prestresstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
+    prestresstime_ = ::UTILS::PRESTRESS::GetTime();
+    prestresstype_ = ::UTILS::PRESTRESS::GetType();
     predtype_ = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");
     nlnsolvertype_ = DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ = DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT");

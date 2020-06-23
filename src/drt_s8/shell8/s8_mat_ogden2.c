@@ -8,7 +8,6 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifdef D_SHELL8
 
 #include "../../headers/compiler_definitions.h" /* access to fortran routines */
 #include "shell8.h"
@@ -383,7 +382,3 @@ PK2tautil[2] = tautil[2]/CGlambda2[2];
   /*----------------------------------------------------------------------*/
   return;
 } /* end of s8_mat_ogden_uncoupled */
-
-
-
-#endif
