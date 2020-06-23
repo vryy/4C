@@ -54,7 +54,7 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
 {
   // check validity of input parameters
   if (tol_ <= 0.)
-    dserror("Newton tolerance TOL is negative or zero!!! Check you input!");
+    dserror("Newton tolerance TOL is negative or zero!!! Check your input!");
   else if (youngs_ <= 0.)
     dserror("Young's modulus YOUNG is negative or zero!!! Check you input!");
   else if (poisson_ >= 0.5 || poisson_ < -1.)
