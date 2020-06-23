@@ -2330,7 +2330,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB
+  // anisotropic strain-dependent growth law (Goektepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
