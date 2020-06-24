@@ -5,8 +5,8 @@ This routine establishes a crystal plasticity model.
 
 The elastic response is based on a hyperelastic Neo-Hookean law with the following Helmholtz free
 energy
-\f[ \rho_0 \psi_{E} = \frac{\mu}{2} \left[ \mathrm{tr} \boldsymbol{C}_E -3 \right] +
-\frac{\lambda}{2} \mathrm{ln}^{2} J_E - \mu \mathrm{ln} J_E \f]
+\f{eqnarray*}{\rho_0 \psi_{E} =& \frac{\mu}{2} \left[ \mathrm{tr} \boldsymbol{C}_E -3 \right]
+                               & +\frac{\lambda}{2} \mathrm{ln}^{2} J_E - \mu \mathrm{ln} J_E \f}
 
 An intermediate configuration is introduced by a multiplicative split of the deformation gradient
 into an elastic part and a plastic part as proposed by Rice [J Mech Phys Solids, Vol. 19, 1971]
@@ -46,23 +46,24 @@ The work hardening of slip systems is modeled via classical Taylor hardening ext
 Hall-Petch type hardening effect of twins that evolve on non-coplanar systems (cf. Schnabel
 [Materials, 10:8, 2017])
 
-\f[ \Delta \tau_{\alpha}^{Y} = a G b_{\alpha} \sqrt{\sum_{\alpha}^{N^{\mathrm{sl}}}
-\rho_{\mathrm{dis}}^{\alpha} } + \frac{\sum_{\beta}^{\text{ncp}} h_{\alpha \beta} f_{\beta}}{1 -
-\sum_{\beta}^{\text{ncp}} f_{\beta}
+\f{eqnarray*}{ \Delta \tau_{\alpha}^{Y} =& a G b_{\alpha} \sqrt{\sum_{\alpha}^{N^{\mathrm{sl}}}
+\rho_{\mathrm{dis}}^{\alpha} } \\
+&+ \frac{\sum_{\beta}^{\text{ncp}} h_{\alpha \beta} f_{\beta}}{1 -
+\sum_{\beta}^{\text{ncp}} f_{\beta}} \f}
 
 The work hardening of twinning systems is modeled accordingly via (cf. Schnabel
 [Materials, 10:8, 2017] and Beyerlein [IJP, Vol. 24, 2008])
 
-\f[ \Delta \tau_{\beta}^{T} =  \frac{\sum_{\beta^{\prime}}^{\text{ncp}} h_{\beta \beta^{\prime}}
-f_{\beta^{\prime}}}{1 - sum_{\beta^{\prime}}^{\text{ncp}} f_{\beta^{\prime}}
-+ G b_{\beta} \sum_{\alpha}^{N^{mathrm{sl}} C_{\beta \alpha} b_{\alpha} \rho_{\alpha}^{mathrm{dis}}
-\f].
+\f{eqnarray*}{\Delta \tau_{\beta}^{T} =&  \frac{\sum_{\beta^{\prime}}^{\text{ncp}} h_{\beta \beta^{\prime}}
+f_{\beta^{\prime}}}{1 - sum_{\beta^{\prime}}^{\text{ncp}} f_{\beta^{\prime}}} \\
+&+ G b_{\beta} \sum_{\alpha}^{N^{mathrm{sl}}} C_{\beta \alpha} b_{\alpha} \rho_{\alpha}^{mathrm{dis}}
+\f}.
 
 The corresponding evolution of defects, i.e., the evolving dislocation densities \f$
 \rho_{\mathrm{dis}}^{\alpha}\f$ is modeled by a Kocks-Mecking type model (cf., e.g., Mecking and
 Kocks [Acta Metall, Vo. 29, 1981])
 
-\f[ \dot{\rho}_{\mathrm{dis}}^{\alpha} = \left (k_1 \sqrt{\rho_{\mathrm{dis}}^{\alpha}} - k_2
+\f[ \dot{\rho}_{\mathrm{dis}}^{\alpha} = \left(k_1 \sqrt{\rho_{\mathrm{dis}}^{\alpha}} - k_2
 \rho_{\mathrm{dis}}^{\alpha}\right) \dot{\gamma}_{\alpha} \f].
 
 The twinned volume fractions are assumed to directly evolve with the twinning rate, i.e. by
