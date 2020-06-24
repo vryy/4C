@@ -445,6 +445,7 @@ imcs-buildtest_full:
 imcs-buildtest_interactive:
     <<: *buildtest_interactive
     variables:
+        TEST_TAG: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-interactive-baci-Q1-2015-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
@@ -526,6 +527,7 @@ lnm-buildtest_full:
 lnm-workstation-buildtest_interactive:
     <<: *buildtest_interactive
     variables:
+        TEST_TAG: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-interactive-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
