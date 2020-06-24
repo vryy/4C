@@ -20,7 +20,6 @@
 #include "elemag_dyn.H"
 #include "elemag_timeint.H"
 #include "elemag_ele.H"
-//#include "elemag_impl.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_elemag.H"
 #include "../drt_lib/drt_discret_hdg.H"
@@ -30,6 +29,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
+//#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 void electromagnetics_drt()
 {
@@ -117,10 +117,18 @@ void electromagnetics_drt()
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimIntOST(elemagdishdg,solver,params,output));
       break;
     }
-    case INPAR::ELEMAG::elemag_implicit_euler:
-    case INPAR::ELEMAG::elemag_bdf:
+    case INPAR::ELEMAG::elemag_bdf1:
+    case INPAR::ELEMAG::elemag_bdf2:
+    case INPAR::ELEMAG::elemag_bdf4:
     {
       elemagalgo = Teuchos::rcp(new ELEMAG::ElemagTimeInt(elemagdishdg, solver, params, output));
+      break;
+    }
+    case INPAR::ELEMAG::elemag_genAlpha:
+    {
+      dserror("Generalized-alpha method not yet implemented.");
+      // elemagalgo = Teuchos::rcp(new ELEMAG::ElemagGenAlpha(elemagdishdg, solver, params,
+      // output));
       break;
     }
     case INPAR::ELEMAG::elemag_explicit_euler:
@@ -157,15 +165,19 @@ void electromagnetics_drt()
     elemagalgo->ReadRestart(restart);
   else
   {
-    int startfuncno = elemagparams.get<int>("STARTFUNCNO");
+    Teuchos::ParameterList start_params;
+    start_params.set("startfuncno", elemagparams.get<int>("STARTFUNCNO"));
     INPAR::ELEMAG::InitialField init =
         DRT::INPUT::IntegralValue<INPAR::ELEMAG::InitialField>(elemagparams, "INITIALFIELD");
-    elemagalgo->SetInitialField(init, startfuncno);
+    elemagalgo->SetInitialField(init, start_params);
   }
 
   // call time-integration scheme
   elemagalgo->Integrate();
 
+  // PrintMatrixInMatlabFormat("matrix_matlab");
+  // LINALG::PrintMatrixInMatlabFormat("hdg_elemag", elemagalgo->SystemMatrix());
+  // elemagalgo->SpySysmat("matrix.mat");
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))

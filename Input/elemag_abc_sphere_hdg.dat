@@ -1,7 +1,5 @@
 //
 // Maintainer: Luca Berardocco
-// berardocco@lnm.mw.tum.de
-// 089 - 289-15244
 //
 ==================================================================
                   General Data File BACI
@@ -54,8 +52,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION 0
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.34056064957722654e-01 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 2.78534593842883482e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.37220510434278437e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.28588777486087280e-01 TOLERANCE 1e-6
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
@@ -561,15 +559,6 @@ NODE       328 COORD -1.1710633574267343e-01 -3.4122964477009388e-01  3.46191328
 NODE       329 COORD -3.2502666642973260e-01 -3.3050801627427295e-01  1.8740895733134066e-01
 NODE       330 COORD -2.3500357953636669e-01 -3.5214303790954438e-01  2.6602368025597234e-01
 NODE       331 COORD -1.9743633852307638e-01 -1.2381966635045837e-01  4.4236589205708698e-01
-------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------ELECTROMAGNETIC ELEMENTS
    1 ELECTROMAGNETIC TET4  1 2 3 4    MAT 0 DEG 1 SPC 0
    2 ELECTROMAGNETIC TET4  5 3 6 4    MAT 0 DEG 1 SPC 0
@@ -2001,6 +1990,5 @@ NODE       331 COORD -1.9743633852307638e-01 -1.2381966635045837e-01  4.42365892
    1428 ELECTROMAGNETIC TET4  253 329 254 162    MAT 0 DEG 1 SPC 0
    1429 ELECTROMAGNETIC TET4  309 282 283 230    MAT 0 DEG 1 SPC 0
    1430 ELECTROMAGNETIC TET4  144 146 190 87    MAT 0 DEG 1 SPC 0
--------------------------------------------------------ARTERY ELEMENTS
 ---------------------------------------------------------------END
 // END

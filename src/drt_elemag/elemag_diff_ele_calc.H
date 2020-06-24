@@ -112,8 +112,7 @@ namespace DRT
 
         /// Compute the residual
         void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
-            double dt, Epetra_SerialDenseVector& interiorElectricn,
-            Epetra_SerialDenseVector& interiorElectricnm);
+            double dt, DRT::ELEMENTS::ElemagDiff& ele);
 
         /// Computes the source term in the element.
         void ComputeSource(Teuchos::ParameterList& params,
@@ -131,18 +130,27 @@ namespace DRT
         /// Calls local solver to compute matrices: internal and face
         void ComputeMatrices(DRT::Discretization& discretization,
             const Teuchos::RCP<MAT::Material>& mat, DRT::ELEMENTS::ElemagDiff& ele, double dt,
-            INPAR::ELEMAG::DynamicType dyna);
+            INPAR::ELEMAG::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
         void ComputeInteriorMatrices(double dt, double sigma, double mu, double epsilon);
 
         /// Set up face matrices
-        void ComputeFaceMatrices(
-            const int face, double dt, int indexstart, int newindex, double sigma, double mu);
+        void ComputeFaceMatrices(const int face, double dt, int indexstart, int newindex,
+            double sigma, double mu, const double tau);
 
-        /// Condense the local matrx into the element matrix for the trace and similarly for the
+        /// Condense the local matrix into the element matrix for the trace and similarly for the
         /// residuals.
         void CondenseLocalPart(Epetra_SerialDenseMatrix& elemat);
+
+        /*!
+        \brief Make the matrix symmetric in case of dirichlet boundary conditions in the element
+
+        \note So far the function only acts on the matrices and not on the RHS! This is ok for PEC
+        boundary conditions because the DBC is anyway zero.
+        */
+        void Symmetrify(
+            DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseMatrix& elemat, bool dodirich = true);
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
@@ -189,20 +197,15 @@ namespace DRT
         Epetra_SerialDenseMatrix Bmat;
         /// u trace
         Epetra_SerialDenseMatrix Cmat;
+        Epetra_SerialDenseMatrix Fmat;
         /// electric second time
-        // Epetra_SerialDenseMatrix Dmat;
+        Epetra_SerialDenseMatrix Dmat;
         /// electric evolution
         Epetra_SerialDenseMatrix Emat;
-        /// electric u
-        Epetra_SerialDenseMatrix Fmat;
         /// electric electric
         Epetra_SerialDenseMatrix Gmat;
         /// electric trace
         Epetra_SerialDenseMatrix Hmat;
-        /// trace u
-        Epetra_SerialDenseMatrix Imat;
-        /// trace electric
-        Epetra_SerialDenseMatrix Jmat;
         /// trace trace
         Epetra_SerialDenseMatrix Lmat;
 

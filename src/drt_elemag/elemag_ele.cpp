@@ -16,6 +16,7 @@
 #include "elemag_ele_boundary_calc.H"
 #include "elemag_ele_intfaces_calc.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -64,9 +65,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(const int id, const
 void DRT::ELEMENTS::ElemagType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  nv = DRT::UTILS::getDimension(dwele->Shape());
-  np = 1;
-  dimns = nv + np;
+  nv = DRT::UTILS::getDimension(dwele->Shape()) - 1;
+  dimns = nv;
   numdf = dimns;
   return;
 }
@@ -76,6 +76,43 @@ void DRT::ELEMENTS::ElemagType::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   // DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
+  if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
+  {
+    const Epetra_Map* rowmap = dis.DofRowMap();
+    const int lrows = rowmap->NumMyElements();
+    double* mode[2];
+    for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+    const Epetra_Map* frowmap = facedis->FaceRowMap();
+    for (int i = 0; i < frowmap->NumMyElements(); ++i)
+    {
+      std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
+      unsigned int dim = 2;  // Bad Luca! Hard coding is not nice!
+      // Epetra_SerialDenseMatrix test(dim, dofs.size());
+      // const unsigned int dim = DRT::UTILS::getDimension(facedis->lRowFace(i)->Shape());
+      dsassert(dofs.size() % dim == 0, "Could not match face dofs");
+      const unsigned int ndofs = dofs.size() / dim;
+      for (unsigned int i = 0; i < dofs.size() / dim; ++i)
+      {
+        for (unsigned int i = 0; i < dofs.size(); ++i)
+        {
+          const unsigned int lid = rowmap->LID(dofs[i]);
+          for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
+          mode[i / ndofs][lid] = 1.;
+        }
+        //// const unsigned int lid = rowmap->LID(dofs[i+d*4]);
+        //// Set everything to zero
+        // for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
+        //// for (unsigned int d = 0; d < dim; ++d)
+        //{
+        //  const unsigned int lid = rowmap->LID(dofs[i + d * ndofs]);
+        //  mode[d][lid] = 1.;
+        //}
+      }
+    }
+  }
+  else
+    dserror("Faces not initialized");
+
   return;
 }
 
