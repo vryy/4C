@@ -37,12 +37,12 @@ variables:
     GITLAB_SCHEDULER_LNM_DEEP: "0"
     GITLAB_SCHEDULER_LNM_BRUTEFORCE: "0"
 
-    # Flags for entering debugging on specific machines # (0: off, 1: on)
-    GITLAB_DEBUG_MODE: "0"
-    # Flag for the machine to debug on (none, lnm_workstation, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs)
-    GITLAB_DEBUG_MACHINE: "none"
-    # Flags for doing a clean build in debug mode # (0: off, 1: on)
-    GITLAB_DEBUG_CLEAN: "0"
+    # Flags for entering interactive mode on specific machines # (0: off, 1: on)
+    GITLAB_INTERACTIVE_MODE: "0"
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs)
+    GITLAB_INTERACTIVE_MACHINE: "none"
+    # Flags for doing a clean build in interactive mode # (0: off, 1: on)
+    GITLAB_INTERACTIVE_CLEAN: "0"
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -122,10 +122,10 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
-            - $GITLAB_DEBUG_MODE == "1"
+            - $GITLAB_INTERACTIVE_MODE == "1"
 
-# This kind of job is started when a user triggers a job in the Gitlab UI and sets the debug flag GITLAB_DEBUG_MODE to 1
-.buildtest_debug: &buildtest_debug
+# This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
+.buildtest_interactive: &buildtest_interactive
     stage: buildtest
     script:
         # Specify which configuration is tested by this pipeline
@@ -133,7 +133,7 @@ variables:
         - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
         - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # clear cache only if specified
-        - 'if [ "$GITLAB_DEBUG_CLEAN" == "1" ]; then'
+        - 'if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then'
         - "echo Cleaning old build files"
         # Delete old build files.
         - rm -rf ../baci-build/
@@ -141,22 +141,22 @@ variables:
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         - "fi"
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_interactive.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
-        - grep -B 200 '*Failed\|*Timeout' ../buildtest_debug.log || true
-        - sed -n '/tests passed,/,//p' ../buildtest_debug.log
+        - grep -B 200 '*Failed\|*Timeout' ../buildtest_interactive.log || true
+        - sed -n '/tests passed,/,//p' ../buildtest_interactive.log
         # Specify which configuration was tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
         - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
         - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Move the log file to the source folder, so it can be found by artifacts.
-        - mv ../buildtest_debug.log buildtest_debug.log
+        - mv ../buildtest_interactive.log buildtest_interactive.log
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
-            - buildtest_debug.log
+            - buildtest_interactive.log
         expire_in: 1 week
 
 # This kind of job is started by a weekly scheduler, with the variable
@@ -338,7 +338,7 @@ variables:
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
-            - $GITLAB_DEBUG_MODE == "1"
+            - $GITLAB_INTERACTIVE_MODE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -412,7 +412,7 @@ checkcode:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
-            - $GITLAB_DEBUG_MODE == "1"
+            - $GITLAB_INTERACTIVE_MODE == "1"
     tags:
         - all
 
@@ -442,20 +442,20 @@ imcs-buildtest_full:
     tags:
         - imcs-full
 
-imcs-buildtest_debug:
-    <<: *buildtest_debug
+imcs-buildtest_interactive:
+    <<: *buildtest_interactive
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-$TEST_TAG-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-interactive-baci-Q1-2015-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
-        - imcs-debug
+        - imcs-interactive
     rules:
-        - if: '$GITLAB_DEBUG_MODE == "1" && $GITLAB_DEBUG_MACHINE == "imcs"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
           when: always
 
 imcs-buildtest_daily:
@@ -523,20 +523,20 @@ lnm-buildtest_full:
     tags:
         - lnm-release-user-full
 
-lnm-workstation-buildtest_debug:
-    <<: *buildtest_debug
+lnm-workstation-buildtest_interactive:
+    <<: *buildtest_interactive
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-interactive-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
-        - lnm-release-user-debug
+        - lnm-workstation-interactive
     rules:
-        - if: '$GITLAB_DEBUG_MODE == "1" && $GITLAB_DEBUG_MACHINE == "lnm_workstation"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_workstation"'
           when: always
 
 lnm-buildtest_coverage_weekly:
@@ -617,22 +617,22 @@ lnm-buildtest_daily_bruteforce:
         variables:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
 
-lnm-buildtest-bruteforce_debug:
-    <<: *buildtest_debug
+lnm-buildtest-bruteforce_interactive:
+    <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-BruteForce-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
-        - lnm-release-user-build-bruteforce-debug
+        - lnm-bruteforce-interactive
     rules:
-        - if: '$GITLAB_DEBUG_MODE == "1" && $GITLAB_DEBUG_MACHINE == "lnm_bruteforce"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce"'
           when: always
 
 lnm-buildtest_daily_deep:
@@ -652,22 +652,22 @@ lnm-buildtest_daily_deep:
         variables:
             - $GITLAB_SCHEDULER_LNM_DEEP == "1"
 
-lnm-buildtest-deep_debug:
-    <<: *buildtest_debug
+lnm-buildtest-deep_interactive:
+    <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Deep-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "deep_cluster_Q12015_gcc48.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
-        - lnm-release-user-build-deep-debug
+        - lnm-deep-interactive
     rules:
-        - if: '$GITLAB_DEBUG_MODE == "1" && $GITLAB_DEBUG_MACHINE == "lnm_deep"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_deep"'
           when: always
 
 lnm-buildtest_daily_schmarrn:
@@ -687,22 +687,22 @@ lnm-buildtest_daily_schmarrn:
         variables:
             - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
 
-lnm-buildtest-schmarrn_debug:
-    <<: *buildtest_debug
+lnm-buildtest-schmarrn_interactive:
+    <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Kaiser-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-Kaiser-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
-        - lnm-release-user-build-schmarrn-debug
+        - lnm-schmarrn-interactive
     rules:
-        - if: '$GITLAB_DEBUG_MODE == "1" && $GITLAB_DEBUG_MACHINE == "lnm_schmarrn"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_schmarrn"'
           when: always
 
 lnm-buildtest_daily_debug:
