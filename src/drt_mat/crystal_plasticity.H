@@ -54,10 +54,11 @@ Hall-Petch type hardening effect of twins that evolve on non-coplanar systems (c
 The work hardening of twinning systems is modeled accordingly via (cf. Schnabel
 [Materials, 10:8, 2017] and Beyerlein [IJP, Vol. 24, 2008])
 
-\f{eqnarray*}{\Delta \tau_{\beta}^{T} =&  \frac{\sum_{\beta^{\prime}}^{\text{ncp}} h_{\beta \beta^{\prime}}
+\f{eqnarray*}{\Delta \tau_{\beta}^{T} =&  \frac{\sum_{\beta^{\prime}}^{\text{ncp}} h_{\beta
+\beta^{\prime}}
 f_{\beta^{\prime}}}{1 - sum_{\beta^{\prime}}^{\text{ncp}} f_{\beta^{\prime}}} \\
-&+ G b_{\beta} \sum_{\alpha}^{N^{mathrm{sl}}} C_{\beta \alpha} b_{\alpha} \rho_{\alpha}^{mathrm{dis}}
-\f}.
+&+ G b_{\beta} \sum_{\alpha}^{N^{mathrm{sl}}} C_{\beta \alpha} b_{\alpha}
+\rho_{\alpha}^{mathrm{dis}} \f}.
 
 The corresponding evolution of defects, i.e., the evolving dislocation densities \f$
 \rho_{\mathrm{dis}}^{\alpha}\f$ is modeled by a Kocks-Mecking type model (cf., e.g., Mecking and
