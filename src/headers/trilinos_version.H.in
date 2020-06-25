@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------*/
+/*!
+
+\brief trilinos version information
+
+\level 0
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
+
+#ifndef TRILINOS_VERSION_H
+#define TRILINOS_VERSION_H
+
+#include <string>
+
+const std::string TrilinosVersion = "@TrilinosVersion@";
+const std::string TrilinosGitHash = "@TrilinosGitHash@";
+
+#endif

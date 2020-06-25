@@ -209,6 +209,15 @@ MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
 
+# get trilinos version information
+include(GetTrilinosVersion)
+get_trilinos_version()
+
+# configure trilinos version file to pass information to the source code
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
+  "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H")
+
 # test for git executable
 FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
   DOC "git command line client")
