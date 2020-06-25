@@ -1279,10 +1279,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
     }
 
     // evaluate electrode domain kinetics conditions
-    for (unsigned icond = 0; icond < conditions.size(); ++icond)
+    for (const auto& condition : conditions)
     {
       // extract condition ID
-      const int condid = conditions[icond]->GetInt("ConditionID");
+      const int condid = condition->GetInt("ConditionID");
 
       Teuchos::RCP<Epetra_SerialDenseVector> scalars =
           EvaluateSingleElectrodeInfo(condid, condstring);
@@ -1339,10 +1339,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     }
 
     // loop over conditions for electrode state of charge
-    for (unsigned icond = 0; icond < conditions.size(); ++icond)
+    for (const auto& condition : conditions)
     {
       // extract condition ID
-      const int condid = conditions[icond]->GetInt("ConditionID");
+      const int condid = condition->GetInt("ConditionID");
 
       // add state vectors to discretization
       discret_->ClearState();
@@ -1380,12 +1380,12 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
       // extract reference concentrations at 0% and 100% state of charge
       const double volratio = isale_ ? (*electrodeinitvols_)[condid] / intdomain : 1.;
-      const double c_0 = conditions[icond]->GetDouble("c_0%") * volratio;
-      const double c_100 = conditions[icond]->GetDouble("c_100%") * volratio;
+      const double c_0 = condition->GetDouble("c_0%") * volratio;
+      const double c_100 = condition->GetDouble("c_100%") * volratio;
       const double c_delta_inv = 1. / (c_100 - c_0);
 
       // get one hour for c_rate
-      const double one_hour = conditions[icond]->GetDouble("one_hour");
+      const double one_hour = condition->GetDouble("one_hour");
 
       // compute state of charge and C rate for current electrode
       const double c_avg = (*scalars)(0) / intdomain;
@@ -1492,10 +1492,10 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
     std::vector<double> potentials(2, 0.);
 
     // loop over both conditions for cell voltage
-    for (unsigned icond = 0; icond < conditions.size(); ++icond)
+    for (const auto& condition : conditions)
     {
       // extract condition ID
-      const int condid = conditions[icond]->GetInt("ConditionID");
+      const int condid = condition->GetInt("ConditionID");
 
       // process line and surface conditions
       if (conditionspoint.size() == 0)
@@ -1537,7 +1537,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         double potential(0.);
 
         // extract nodal cloud
-        const std::vector<int>* const nodeids = conditions[icond]->Nodes();
+        const std::vector<int>* const nodeids = condition->Nodes();
         if (nodeids == NULL) dserror("Cell voltage point condition does not have nodal cloud!");
         if (nodeids->size() != 1)
           dserror("Nodal cloud of cell voltage point condition must have exactly one node!");
@@ -2694,10 +2694,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
 
   // loop over all electrode kinetics point boundary conditions
-  for (unsigned icond = 0; icond < conditions.size(); ++icond)
+  for (const auto& condition : conditions)
   {
     // extract nodal cloud of current condition
-    const std::vector<int>* nodeids = conditions[icond]->Nodes();
+    const std::vector<int>* nodeids = condition->Nodes();
 
     // safety checks
     if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
@@ -2713,7 +2713,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
     if (discret_->NodeRowMap()->MyGID(nodeid))
     {
       // equip element parameter list with current condition
-      condparams.set<Teuchos::RCP<DRT::Condition>>("condition", conditions[icond]);
+      condparams.set<Teuchos::RCP<DRT::Condition>>("condition", condition);
 
       // get node
       DRT::Node* node = discret_->gNode(nodeid);
@@ -2945,17 +2945,14 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
       discret_->GetCondition("CCCVHalfCycle", cccvhalfcycleconditions);
 
       // loop over all conditions
-      for (unsigned icond = 0; icond < cccvhalfcycleconditions.size(); ++icond)
+      for (const auto& cccvhalfcyclecondition : cccvhalfcycleconditions)
       {
         // check relevance of current condition
-        if (cccvhalfcycleconditions[icond]->GetInt("ConditionID") ==
+        if (cccvhalfcyclecondition->GetInt("ConditionID") ==
             cccv_condition_->GetHalfCycleConditionID())
         {
-          // extract condition
-          const DRT::Condition& condition = *cccvhalfcycleconditions[icond];
-
           // extract cutoff voltage from condition and perform safety check
-          const double cutoff_voltage = condition.GetDouble("CutoffVoltage");
+          const double cutoff_voltage = cccvhalfcyclecondition->GetDouble("CutoffVoltage");
           if (cutoff_voltage < 0.)
             dserror(
                 "Cutoff voltage for constant-current constant-voltage (CCCV) cell cycling must "
@@ -2963,7 +2960,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
                 "be negative!");
 
           // extract nodal cloud of current condition and perform safety check
-          const std::vector<int>* nodegids = cccvhalfcycleconditions[icond]->Nodes();
+          const std::vector<int>* nodegids = cccvhalfcyclecondition->Nodes();
           if (!nodegids or !nodegids->size())
             dserror(
                 "Constant-current constant-voltage (CCCV) cell cycling boundary condition does "
@@ -3040,14 +3037,14 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
       discret_->GetCondition("CCCVHalfCycle", cccvhalfcycleconditions);
 
       // loop over all conditions
-      for (unsigned icond = 0; icond < cccvhalfcycleconditions.size(); ++icond)
+      for (const auto& cccvhalfcyclecondition : cccvhalfcycleconditions)
       {
         // check relevance of current condition
-        if (cccvhalfcycleconditions[icond]->GetInt("ConditionID") ==
+        if (cccvhalfcyclecondition->GetInt("ConditionID") ==
             cccv_condition_->GetHalfCycleConditionID())
         {
           // extract condition
-          DRT::Condition& condition = *cccvhalfcycleconditions[icond];
+          DRT::Condition& condition = *cccvhalfcyclecondition;
 
           // To avoid code redundancy, we evaluate the condition using the element-based algorithm
           // for standard Neumann boundary conditions. For this purpose, we must provide the
