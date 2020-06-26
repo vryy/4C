@@ -12,6 +12,8 @@
 #ifndef DRT_FUNCTIONVARIABLES_H
 #define DRT_FUNCTIONVARIABLES_H
 
+#include <Sacado.hpp>
+
 // define periodicstruct
 struct periodicstruct
 {
@@ -22,15 +24,6 @@ struct periodicstruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace Sacado
-{
-  namespace Fad
-  {
-    template <typename>
-    class DFad;
-  }
-}  // namespace Sacado
-
 namespace DRT
 {
   namespace PARSER
