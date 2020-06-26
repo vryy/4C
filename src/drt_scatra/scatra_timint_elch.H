@@ -370,7 +370,7 @@ namespace SCATRA
     const double cycling_timestep_;
 
     //! flag indicating modified time step size for CCCV cell cycling
-    bool cycling_timestep_active_;
+    bool adapted_timestep_active_;
 
     //! adapted time step
     double dt_adapted_;

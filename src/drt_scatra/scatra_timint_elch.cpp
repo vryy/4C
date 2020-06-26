@@ -63,14 +63,12 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       cellcrate_(0.),
       cellcrate_old_(-1.0),
       cycling_timestep_(elchparams_->get<double>("CYCLING_TIMESTEP")),
-      cycling_timestep_active_(false),
+      adapted_timestep_active_(false),
       dt_adapted_(-1.0),
       splitter_macro_(Teuchos::null)
 {
   // safety check
   if (frt_ <= 0.) dserror("Factor F/RT is non-positive!");
-
-  return;
 }
 
 
@@ -100,8 +98,6 @@ void SCATRA::ScaTraTimIntElch::Init()
           "Adaptive time stepping for CCCV cell cycling requires that the modified time step size "
           "is smaller than the original time step size!");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -265,13 +261,10 @@ void SCATRA::ScaTraTimIntElch::Setup()
     {
       dserror(
           "More than one constant-current constant-voltage (CCCV) cell cycling boundary "
-          "condition "
-          "is not allowed!");
+          "condition is not allowed!");
       break;
     }
   }
-
-  return;
 }
 
 
@@ -306,13 +299,9 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
   // set up concentration-potential splitter
   splitter_ =
       Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(), conddofmap, otherdofmap));
-
-  return;
 }
 
 /*---------------------------------------------------------------------*
- | set up concentration-potential-potential splitter for               |
- | macro scale in multi-scale simulations                   fang 08/17 |
  *---------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
 {
@@ -349,8 +338,6 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
 
   // set up concentration-potential-potential splitter
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
-
-  return;
 }
 
 
@@ -378,13 +365,10 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
   eleparams.set<int>("equpot", equpot_);
   eleparams.set<bool>("boundaryfluxcoupling",
       DRT::INPUT::IntegralValue<bool>(*elchparams_, "COUPLE_BOUNDARY_FLUXES"));
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- | compute time step size                                    fang 02/18 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
 {
@@ -396,7 +380,7 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
   {
     // adaptive time stepping for CCCV cell cycling is currently inactive -> Check if it should be
     // activated
-    if (!cycling_timestep_active_)
+    if (!adapted_timestep_active_)
     {
       // check, current phase allows adaptive time stepping
       if (cccv_condition_->IsAdaptiveTimeSteppingPhase())
@@ -407,9 +391,10 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
         // activate adaptive time stepping and set new time step
         if (dt_new != dt)
         {
-          // reset: phase has not changed so far
+          // CCCV half cycle was not changed since this time step adaptivity. Thus, reset observer
+          // (tracks phase changes)
           cccv_condition_->ResetPhaseChangeObserver();
-          cycling_timestep_active_ = true;
+          adapted_timestep_active_ = true;
           dt_adapted_ = dt = dt_new;
         }
       }
@@ -419,13 +404,11 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
       // if time step adaptivity is enabled for more than 3 steps after last change of phase:
       // disable, otherwise keep adapted time step
       if (cccv_condition_->IsStepsFromLastPhaseChange(3, step_))
-        cycling_timestep_active_ = false;
+        adapted_timestep_active_ = false;
       else
         dt = dt_adapted_;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -509,8 +492,6 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
 )
 {
   discret_->SetState("dctoggle", dctoggle_);
-
-  return;
 }
 
 
@@ -529,8 +510,6 @@ void SCATRA::ScaTraTimIntElch::NonlinearSolve()
 
     stopgalvanostat = ApplyGalvanostaticControl();
   }  // end galvanostatic control
-
-  return;
 }
 
 
@@ -548,8 +527,6 @@ void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
 
   // call base class routine
   ScaTraTimIntImpl::AssembleMatAndRHS();
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::AssembleMatAndRHS
 
 
@@ -571,8 +548,6 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::PrepareTimeLoop
 
 
@@ -593,8 +568,6 @@ void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 
   // initialize Nernst boundary conditions
   InitNernstBC();
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep
 
 /*----------------------------------------------------------------------------------------*
@@ -603,8 +576,6 @@ void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 void SCATRA::ScaTraTimIntElch::CreateScalarHandler()
 {
   scalarhandler_ = Teuchos::rcp(new ScalarHandlerElch());
-
-  return;
 }  // ScaTraTimIntImpl::CreateMeshtyingStrategy
 
 /*----------------------------------------------------------------------*
@@ -788,7 +759,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       break;
     }
   }
-  return;
 }  // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
 
@@ -800,8 +770,6 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 {
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
-
-  return;
 }
 
 
@@ -823,8 +791,6 @@ void SCATRA::ScaTraTimIntElch::Output(const int num)
     // print cell voltage to screen and file
     OutputCellVoltage();
   }
-
-  return;
 }
 
 
@@ -845,8 +811,6 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 
   // for elch problems with moving boundary
   if (isale_) output_->WriteVector("trueresidual", trueresidual_);
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 
 
@@ -883,7 +847,7 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
     cellcrate_ = reader.ReadDouble("cellcrate");
 
     // is time step adaptivity activated?
-    cycling_timestep_active_ = static_cast<bool>(reader.ReadInt("cycling_timestep_active"));
+    adapted_timestep_active_ = static_cast<bool>(reader.ReadInt("adapted_timestep_active"));
 
     // adapted time step
     dt_adapted_ = reader.ReadDouble("dt_adapted");
@@ -891,8 +855,6 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
     // read restart of cccv condition
     cccv_condition_->ReadRestart(reader);
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific
 
 
@@ -911,8 +873,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
   if (cond.size() and pointcond.size())
     dserror(
         "Cannot have electrode boundary kinetics point conditions and electrode boundary "
-        "kinetics "
-        "line/surface conditions at the same time!");
+        "kinetics line/surface conditions at the same time!");
 
   // process conditions
   else if (cond.size() or pointcond.size())
@@ -971,8 +932,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
     // clean up
     discret_->ClearState();
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
 
@@ -1197,15 +1156,13 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
     // print out results to screen
     printf(
         "| %2d |      total       |    %10.3E     |     %10.3E     |     %10.3E      |     "
-        "%10.3E  "
-        "   |  %10.3E   |      %10.3E      |\n",
+        "%10.3E     |  %10.3E   |      %10.3E      |\n",
         id, boundaryint, cint / boundaryint, electrodepot, overpotentialint / boundaryint,
         currentintegral + currentdlintegral,
         currentintegral / boundaryint + currentdlintegral / boundaryint);
     printf(
         "| %2d |   electrolyte    |    %10.3E     |     %10.3E     |     %10.3E      |     "
-        "%10.3E  "
-        "   |  %10.3E   |      %10.3E      |\n",
+        "%10.3E     |  %10.3E   |      %10.3E      |\n",
         id, boundaryint_porous, cint / boundaryint_porous, electrodepot,
         overpotentialint / boundaryint, currentintegral + currentdlintegral,
         currentintegral / boundaryint_porous + currentdlintegral / boundaryint_porous);
@@ -1221,9 +1178,8 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
     {
       f.open(fname.c_str(), std::fstream::trunc);
       f << "#ID,Step,Time,Total_current,Boundary_integral,Mean_current_density_electrode_"
-           "kinetics,"
-           "Mean_current_density_dl,Mean_overpotential,Mean_electrode_pot_diff,Mean_opencircuit_"
-           "pot,Electrode_pot,Mean_concentration,Boundary_integral_porous\n";
+           "kinetics,Mean_current_density_dl,Mean_overpotential,Mean_electrode_pot_diff,Mean_"
+           "opencircuit_pot,Electrode_pot,Mean_concentration,Boundary_integral_porous\n";
     }
     else
       f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
@@ -1245,8 +1201,6 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
   (*electrodeconc_)[id] = cint / boundaryint;
   (*electrodeeta_)[id] = overpotentialint / boundaryint;
   (*electrodecurr_)[id] = currentintegral + currentdlintegral;
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
 
 
@@ -1309,8 +1263,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
     // clean discretization
     discret_->ClearState();
   }
-
-  return;
 }
 
 
@@ -1450,8 +1402,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     if (myrank_ == 0)
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior
 
 
@@ -1609,8 +1559,6 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       file.close();
     }  // if(myrank_ == 0)
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputCellVoltage
 
 
@@ -1664,10 +1612,8 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
     output_->WriteDouble("dt_adapted", dt_adapted_);
 
     // is time step adaptivity activated?
-    output_->WriteInt("cycling_timestep_active", cycling_timestep_active_);
+    output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputRestart()
 
 
@@ -1744,8 +1690,6 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   }
   else
     dserror("Material type is not allowed!");
-
-  return;
 }  // ScaTraTimIntElch::SetupNatConv()
 
 
@@ -1829,8 +1773,6 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
       dserror(
           "Subgrid diffusivity is not incoperated in the ELCH diffusion-conduction framework!!");
   }
-
-  return;
 }
 
 
@@ -1887,8 +1829,6 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
 
   // At element level the Nernst condition has to be handled like a DC
   if (ektoggle_ != Teuchos::null) dctoggle_->Update(1.0, *ektoggle_, 1.0);
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::InitNernstBC
 
 
@@ -2107,8 +2047,6 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
   // reset global system matrix and its graph, since we solved a very special problem with a
   // special sparsity pattern
   sysmat_->Reset();
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 
 
@@ -2271,9 +2209,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       if (conditions.size() > 2)
         dserror(
             "The framework may not work for geometric setups containing more than two "
-            "electrodes! "
-            "\n"
-            "If you need it, check the framework exactly!!");
+            "electrodes! \n If you need it, check the framework exactly!!");
 
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
@@ -2320,8 +2256,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         if (condid_cathode != 0 or condid_anode != 1)
           dserror(
               "The defined GSTATCONDID_CATHODE and GSTATCONDID_ANODE is wrong for a setup with "
-              "only one electrode!!\n"
-              "Choose: GSTATCONDID_CATHODE=0 and GSTATCONDID_ANODE=1");
+              "only one electrode!!\n Choose: GSTATCONDID_CATHODE=0 and GSTATCONDID_ANODE=1");
       }
 
       // get the applied electrode potential of the cathode
@@ -2513,8 +2448,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       else
         dserror(
             "The combination of the parameter GSTAT_APPROX_ELECT_RESIST %i and the number of "
-            "electrodes %i\n"
-            "is not valid!",
+            "electrodes %i\n is not valid!",
             approxelctresist, conditions.size());
 
       // calculate increment due to ohmic resistance
@@ -2658,8 +2592,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   // add linearization of NernstCondition to system matrix
   if (ektoggle_ != Teuchos::null) LinearizationNernstCondition();
-
-  return;
 }  // ScaTraTimIntElch::EvaluateElectrodeKineticsConditions
 
 
@@ -2703,8 +2635,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
     if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
     if (nodeids->size() != 1)
       dserror(
-          "Electrode kinetics point boundary condition must be associated with exactly one "
-          "node!");
+          "Electrode kinetics point boundary condition must be associated with exactly one node!");
 
     // extract global ID of conditioned node
     const int nodeid = (*nodeids)[0];
@@ -2768,8 +2699,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
   // remove state vectors from discretization
   discret_->ClearState();
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions
 
 
@@ -2803,8 +2732,6 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   discret_->EvaluateCondition(
       condparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condstring);
   discret_->ClearState();
-
-  return;
 }  //  SCATRA::ScaTraTimIntImpl::LinearizationNernstCondition()
 
 
@@ -2830,8 +2757,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
 
   // call base class routine
   ScaTraTimIntImpl::EvaluateSolutionDependingConditions(systemmatrix, rhs);
-
-  return;
 }  // ScaTraTimIntElch::EvaluateSolutionDependingConditions
 
 
@@ -2956,16 +2881,14 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
           if (cutoff_voltage < 0.)
             dserror(
                 "Cutoff voltage for constant-current constant-voltage (CCCV) cell cycling must "
-                "not "
-                "be negative!");
+                "not be negative!");
 
           // extract nodal cloud of current condition and perform safety check
           const std::vector<int>* nodegids = cccvhalfcyclecondition->Nodes();
           if (!nodegids or !nodegids->size())
             dserror(
                 "Constant-current constant-voltage (CCCV) cell cycling boundary condition does "
-                "not "
-                "have a nodal cloud!");
+                "not have a nodal cloud!");
 
           // loop over all nodes
           for (unsigned inode = 0; inode < nodegids->size(); ++inode)
@@ -3010,8 +2933,6 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
       // merge map with existing map for Dirichlet boundary conditions
       AddDirichCond(dbcmap);
     }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::ApplyDirichletBC
 
 
@@ -3095,8 +3016,6 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
         }  // relevant condition
       }    // loop over all conditions
     }
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::ApplyNeumannBC
 
 
@@ -3183,8 +3102,6 @@ void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
   else
     // call base class routine
     ScaTraTimIntImpl::PerformAitkenRelaxation(phinp, phinp_inc_diff);
-
-  return;
 }
 
 
@@ -3219,8 +3136,6 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
 
   // perform actual flux output by calling base class routine
   ScaTraTimIntImpl::OutputFlux(flux, fluxtype);
-
-  return;
 }  // SCATRA::ScaTraTimIntElch::OutputFlux
 
 
@@ -3269,8 +3184,6 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
     numscal_.clear();
     numscal_.insert(NumDofPerNode() - 1);
   }
-
-  return;
 }
 
 /*-------------------------------------------------------------------------*
@@ -3283,8 +3196,7 @@ int SCATRA::ScalarHandlerElch::NumScalInCondition(
   // for now only equal dof numbers are supported
   if (not equalnumdof_)
     dserror(
-        "Different number of DOFs per node within ScaTra discretization! This is not supported "
-        "for "
+        "Different number of DOFs per node within ScaTra discretization! This is not supported for "
         "Elch!");
 
   return NumScal();

@@ -73,8 +73,7 @@ namespace INPAR
       approxelctresist_efflenintegcond
     };
 
-    enum class CCCVHalfCyclePhase  // TODO enum class (CCCVHalfCyclePhase), rename constant_current,
-                                   // constant_voltage, etc.
+    enum class CCCVHalfCyclePhase
     {
       undefined,           //!< undefined mode
       constant_current,    //!< constant-current (CC) mode

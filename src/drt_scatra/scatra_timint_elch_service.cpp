@@ -91,9 +91,6 @@ void SCATRA::CCCVCondition::SetFirstCCCVHalfCycle(int step)
     // initial relaxation is over (or has never been started)
     phaseinitialrelaxation_ = false;
   }
-
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -156,8 +153,6 @@ void SCATRA::CCCVCondition::NextPhase(int step, double time)
     charging_ = !charging_;
     ihalfcycle_++;
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -185,9 +180,9 @@ int SCATRA::CCCVCondition::GetHalfCycleConditionID() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int dstep, int step)
+bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int deltastep, int step)
 {
-  bool out = phasechanged_ ? (step >= (steplastphasechange_ + dstep)) : false;
+  bool out = phasechanged_ ? (step >= (steplastphasechange_ + deltastep)) : false;
   if (out) phasechanged_ = false;
 
   return out;
@@ -217,16 +212,11 @@ void SCATRA::CCCVCondition::SetPhaseChangeObserver(int step)
   // store, that phase is changed now
   phasechanged_ = true;
   steplastphasechange_ = step;
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::ResetPhaseChangeObserver()
-{
-  phasechanged_ = false;
-  return;
-}
+void SCATRA::CCCVCondition::ResetPhaseChangeObserver() { phasechanged_ = false; }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -251,8 +241,6 @@ void SCATRA::CCCVCondition::ReadRestart(IO::DiscretizationReader& reader)
   // read restart in half cycles
   halfcycle_charge_->ReadRestart(reader);
   halfcycle_discharge_->ReadRestart(reader);
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -275,6 +263,7 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
       dserror(
           "Must not activate adaptive time stepping for half cycles while adaptive time "
           "stepping in scatra is disabled.");
+
   return;
 }
 
@@ -359,5 +348,4 @@ void SCATRA::CCCVHalfCycleCondition::ReadRestart(IO::DiscretizationReader& reade
 
   // current phase in half cycle
   phase_cccv_ = static_cast<INPAR::ELCH::CCCVHalfCyclePhase>(reader.ReadInt("phase_cccv"));
-  return;
 }

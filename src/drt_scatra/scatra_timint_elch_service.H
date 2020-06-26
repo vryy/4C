@@ -152,7 +152,7 @@ namespace SCATRA
 
     //! true if difference between 'step' is and the step when the phase was last changed is equal
     //! or more than dstep
-    bool IsStepsFromLastPhaseChange(int dstep, int step);
+    bool IsStepsFromLastPhaseChange(int deltastep, int step);
 
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
