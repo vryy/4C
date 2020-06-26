@@ -36,11 +36,11 @@ USE_TRILINOS_Q1_2019=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--additionaltests=testfile] [--forceBuild]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--additionaltests=testfile] [--forceBuild] [--ide=clion/eclipse/vscode]"
 
 eval set -- $OPTIONS
 
@@ -82,6 +82,18 @@ while true; do
       ;;
     -f|--forceBuild)
       USE_FORCEBUILD=1
+      ;;
+    --ide)
+      ADAPT_IDE_CLION=0
+      ADAPT_IDE_ECLIPSE=0
+      ADAPT_IDE_VSCODE=0
+      case "$2" in
+        "clion") ADAPT_IDE_CLION=1;;
+        "eclipse") ADAPT_IDE_ECLIPSE=1;;
+        "vscode") ADAPT_IDE_VSCODE=1;;
+        *) echo "Wrong option for --ide. See possible options via 'do-configure --help'."; exit 1 ;;
+      esac
+      shift
       ;;
     --) shift ;
       break
@@ -251,17 +263,31 @@ $CMAKE_COMMAND "${CMAKE_FULL_ARGS[@]}"
 
 cd "$BACI_HOME"
 
-# adapt Eclipse settings
-if [ -f .cproject ]; then ./utilities/ides/adapt_eclipse_cproject.py "`basename $0`" "$BUILD_FOLDER" "$BUILD_TYPE"; fi
-
 # adapt CLion settings
-if [ -f .idea/workspace.xml ]; then
-  CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
-  ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
+if [[ $ADAPT_IDE_CLION == 1 ]]; then
+  if [ -f .idea/workspace.xml ]; then
+    CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
+    ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
+  else
+    echo "The option --ide=clion is set but no .idea/workspace.xml file could be found!"
+  fi
+fi
+
+# adapt Eclipse settings
+if [[ $ADAPT_IDE_ECLIPSE == 1 ]]; then
+  if [ -f .cproject ]; then
+    ./utilities/ides/adapt_eclipse_cproject.py "`basename $0`" "$BUILD_FOLDER" "$BUILD_TYPE";
+  else
+    echo "The option --ide=eclipse is set but no .cproject file could be found!"
+  fi
 fi
 
 # adapt VSCode settings
-if [ -d .vscode ]; then
-  CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
-  ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
+if [[ $ADAPT_IDE_VSCODE == 1 ]]; then
+  if [ -d .vscode ]; then
+    CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
+    ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
+  else
+    echo "The option --ide=vscode is set but no .vscode directory could be found!"
+  fi
 fi
