@@ -88,48 +88,6 @@ void LINALG::PrintMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintSerialDenseMatrixInMatlabFormat(
-    std::string fname, const Epetra_SerialDenseMatrix& A, const bool newfile)
-{
-  // The following source code has been adapted from the PrintMatrixInMatlabFormat
-  // method in order to also print a Epetra_SerialDenseMatrix.
-
-  std::ofstream os;
-
-  // open file for writing
-  if (newfile)
-    os.open(fname.c_str(), std::fstream::trunc);
-  else
-    os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-
-  int NumMyRows = A.RowDim();
-  int NumMyColumns = A.ColDim();
-
-  for (int i = 0; i < NumMyRows; i++)
-  {
-    for (int j = 0; j < NumMyColumns; j++)
-    {
-      os << std::setw(10) << i + 1;  // increase index by one for matlab
-      os << std::setw(10) << j + 1;  // increase index by one for matlab
-      os << std::setw(30) << std::setprecision(16) << std::scientific << A(i, j);
-      os << std::endl;
-    }
-  }
-
-  os << std::flush;
-
-  // close file
-  os.close();
-
-  // just to be sure
-  if (os.is_open()) os.close();
-
-  // have fun with your Matlab matrix
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname, const BlockSparseMatrixBase& A)
 {
   // For each sub-matrix of A use the existing printing method

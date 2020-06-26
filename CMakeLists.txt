@@ -1942,6 +1942,7 @@ set(OBJS_LINALG
   src/linalg/linalg_utils_densematrix_determinant.cpp
   src/linalg/linalg_utils_densematrix_eigen.cpp
   src/linalg/linalg_utils_densematrix_inverse.cpp
+  src/linalg/linalg_utils_densematrix_print.cpp
   src/linalg/linalg_utils_densematrix_svd.cpp
   src/linalg/linalg_utils_sparse_algebra_assemble.cpp
   src/linalg/linalg_utils_sparse_algebra_create.cpp
