@@ -91,7 +91,7 @@ while true; do
         "clion") ADAPT_IDE_CLION=1;;
         "eclipse") ADAPT_IDE_ECLIPSE=1;;
         "vscode") ADAPT_IDE_VSCODE=1;;
-        *) echo "Wrong option for --ide. Possible options [clion/eclipse/vscode]"; exit 1 ;;
+        *) echo "Wrong option for --ide. See possible options via 'do-configure --help'."; exit 1 ;;
       esac
       shift
       ;;
@@ -269,7 +269,7 @@ if [[ $ADAPT_IDE_CLION == 1 ]]; then
     CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
     ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
   else
-    echo "The option --ide=clion is set but no idea/workspace.xml file could be found!"
+    echo "The option --ide=clion is set but no .idea/workspace.xml file could be found!"
   fi
 fi
 
