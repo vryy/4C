@@ -288,6 +288,6 @@ if [[ $ADAPT_IDE_VSCODE == 1 ]]; then
     CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
     ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
   else
-    echo "The option --ide=vscode is set but no .vscode file could be found!"
+    echo "The option --ide=vscode is set but no .vscode directory could be found!"
   fi
 fi
