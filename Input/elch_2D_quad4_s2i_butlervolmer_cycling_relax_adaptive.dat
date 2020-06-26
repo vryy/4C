@@ -69,18 +69,18 @@ COMPONENT 1 FUNCTION -0.177573557
 COMPONENT 0 FUNCTION 22.37
 COMPONENT 1 FUNCTION 3.39
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 5.46386528538791705e+00 TOLERANCE 1.e-09           // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 6 QUANTITY phi1 VALUE 1.20000041885359843e+00 TOLERANCE 1.e-09           // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 6 QUANTITY phi2 VALUE -1.10918322743760261e-01 TOLERANCE 1.e-10          // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE 1.19999958114648297e+00 TOLERANCE 1.e-09           // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE -1.10918345582387404e-01 TOLERANCE 1.e-10          // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.90315202076313881e+01 TOLERANCE 1.e-08          // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 3.54585992983631781e+00 TOLERANCE 1.e-09          // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 3.74627094668482374e-01 TOLERANCE 1.e-10          // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 2.80764133353983425e-01 TOLERANCE 1.e-10          // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.54585992983631737e+00 TOLERANCE 1.e-09   // cell voltage
-SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
-SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE 2768.0 TOLERANCE 1.e-20                        // total number of time steps
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE  5.46455011080955089e+00 TOLERANCE 5.5e-09 // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 6 QUANTITY phi1 VALUE  1.20000051657345574e+00 TOLERANCE 1.2e-09 // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 6 QUANTITY phi2 VALUE -1.10914624918090773e-01 TOLERANCE 1.1e-10 // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  1.19999948342665230e+00 TOLERANCE 1.2e-09 // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE -1.10914653085040990e-01 TOLERANCE 1.1e-10 // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE  1.90309897834278203e+01 TOLERANCE 1.9e-08 // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE  3.54587864821211829e+00 TOLERANCE 3.5e-09 // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE  3.74670556803217369e-01 TOLERANCE 3.7e-10 // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE  2.80796706034292243e-01 TOLERANCE 2.8e-10 // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE  3.54587864821211829e+00 TOLERANCE 3.5e-09 // cell voltage
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20 // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE  2.33400000000000000e+03 TOLERANCE 1.0e-16 // total number of time steps
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  17
@@ -118,11 +118,11 @@ E 1 - ID 0
 E 6 - ID 1
 --------------------------DESIGN CCCV CELL CYCLING LINE CONDITIONS
 DLINE  1
-E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2  InitRelaxTime -1.0
+E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2  InitRelaxTime -1.0 AdaptiveTimeSteppingInitRelax 0
 ----------------------------DESIGN CCCV HALF-CYCLE LINE CONDITIONS
 DLINE  2
-E 6 - ID 1 Current 1.229302022e-06 CutoffVoltage 3.55 CutoffCRate 0.25 RelaxTime 100.0
-E 6 - ID 2 Current -1.229302022e-06 CutoffVoltage 3.316 CutoffCRate 100.0 RelaxTime 100.0
+E 6 - ID 1 Current 1.229302022e-06 CutoffVoltage 3.55 CutoffCRate 0.25 RelaxTime 100.0 AdaptiveTimeSteppingPhaseOnOff 1 0 0
+E 6 - ID 2 Current -1.229302022e-06 CutoffVoltage 3.316 CutoffCRate 100.0 RelaxTime 100.0 AdaptiveTimeSteppingPhaseOnOff 1 0 0
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    2 DLINE 1
 NODE    3 DLINE 1
