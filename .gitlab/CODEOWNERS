@@ -1,0 +1,272 @@
+# -------------------------------------------------------------------------------------------------------------------- #
+# BACI code owners file
+#
+# eligible code owners:
+#  * single developers (@username)
+#  * baci teams (@baci/team_name)
+#  * baci developer group (@baci/baci_developers)
+#  * baci maintainer group (@baci/baci_maintainer)
+#
+# note:
+# The order in which the paths are defined is significant: the last pattern that matches a given path will be used to find the code owners.
+# 
+# refer to:
+# https://docs.gitlab.com/ee/user/project/code_owners.html
+# -------------------------------------------------------------------------------------------------------------------- #
+
+# --- specify default code owner ------------------------------------------------------------------------------------- #
+*						@baci/baci_maintainer
+
+
+
+# --- specify code owner of basic directories and file --------------------------------------------------------------- #
+
+/buildconfig/					@baci/baci_maintainer @baci/team_infrastructure
+
+/cmake/						@baci/baci_maintainer @baci/team_infrastructure
+
+/doc/						@baci/baci_maintainer @baci/team_infrastructure
+
+/doc_removed_code/				@baci/baci_maintainer
+
+/guides/                                         @baci/team_infrastructure
+
+/tests/						@baci/team_testing
+
+# Note: the code ownershiop of the directories baci/Unittests/src/<dir> is overwritten by the specification based on the BACI source directories
+/Unittests/					@baci/team_testing
+
+/utilities/					@baci/baci_maintainer @baci/team_infrastructure
+
+# testing framework configuration files
+TestingFramework.cmake				@baci/team_testing
+UnittestingFramework.cmake			@baci/team_testing
+
+
+
+# --- specify code owner of BACI source directories (including corresponding unit test directory) -------------------- #
+#
+# Note: omitting a leading `/` in the list below matches not only the directory baci/src/<dir> but also baci/Unittests/src/<dir>
+# Note: stick to alphabetical order
+
+src/drt_adapter/				@baci/team_discretization
+
+src/drt_ale/					@baci/team_fluid
+
+src/drt_ale2/					@baci/team_fluid
+
+src/drt_ale3/					@baci/team_fluid
+
+src/drt_art_net/				@baci/team_reduced_fluid_models
+
+src/drt_beam3/					@baci/team_structure
+
+src/drt_beamcontact/				@baci/team_structure
+
+src/drt_beaminteraction/			@baci/team_structure
+
+src/drt_bele3/					@baci/team_discretization
+
+src/drt_binstrategy/				@baci/team_discretization
+
+src/drt_browniandyn/				@baci/team_structure
+
+src/drt_cardiovascular0d/			@baci/team_reduced_fluid_models
+
+src/drt_comm/					@baci/team_discretization
+
+src/drt_constraint/				@baci/team_discretization
+
+src/drt_contact/				@baci/team_contact
+
+src/drt_contact_aug/				@baci/team_contact
+
+src/drt_contact_constitutivelaw/		@baci/team_contact
+
+src/drt_contact_xcontact/			@baci/team_contact
+
+src/drt_cut/					@baci/team_fluid
+
+src/drt_discsh3/				@baci/team_structure
+
+src/drt_ehl/					@baci/team_scatra
+
+src/drt_elch/					@baci/team_scatra
+
+src/drt_elemag/					@baci/team_scatra
+
+src/drt_fbi/					@baci/team_fluid @baci/team_structure
+
+src/drt_fem_general/				@baci/team_discretization
+
+src/drt_fiber/					@baci/team_discretization
+
+src/drt_fluid/					@baci/team_fluid
+
+src/drt_fluid_ele/				@baci/team_fluid
+
+src/drt_fluid_turbulence/			@baci/team_fluid
+
+src/drt_fluid_xfluid/				@baci/team_fluid
+
+src/drt_fpsi/					@baci/team_fsi
+
+src/drt_fs3i/					@baci/team_fsi
+
+src/drt_fsi/					@baci/team_fsi
+
+src/drt_fsi_xfem/				@baci/team_fsi
+
+src/drt_geometry/				@baci/team_discretization
+
+src/drt_geometry_pair/				@baci/team_structure
+
+src/drt_immersed_problem/			@baci/team_fsi
+
+src/drt_inpar/					@baci/team_input
+
+src/drt_inv_analysis/				@baci/team_queens
+
+src/drt_io/					@baci/team_input @baci/team_output
+
+src/drt_levelset/				@baci/team_fluid
+
+src/drt_lib/					@baci/team_discretization
+
+src/drt_loma/					@baci/team_fluid
+
+src/drt_lubrication/				@baci/team_scatra
+
+src/drt_lubrication_ele/			@baci/team_scatra
+
+src/drt_mat/					@baci/team_material
+
+src/drt_matelast/				@baci/team_material
+
+src/drt_membrane/				@baci/team_structure
+
+src/drt_mixture/				@baci/team_material
+
+src/drt_mlmc/					@baci/team_queens
+
+src/drt_mor/					@baci/team_structure
+
+src/drt_mortar/					@baci/team_contact
+
+src/drt_nurbs_discret/				@baci/team_discretization
+
+src/drt_opti/					@baci/team_fluid
+
+src/drt_particle_algorithm/			@baci/team_particle
+
+src/drt_particle_engine/			@baci/team_particle
+
+src/drt_particle_interaction/			@baci/team_particle
+
+src/drt_particle_wall/				@baci/team_particle
+
+src/drt_pasi/					@baci/team_particle
+
+src/drt_patspec/				@baci/baci_maintainer # todo: ask Jonas Biehler
+
+src/drt_poroelast/				@baci/team_poro
+
+src/drt_porofluidmultiphase/			@baci/team_poro
+
+src/drt_porofluidmultiphase_ele/		@baci/team_poro
+
+src/drt_poromultiphase/				@baci/team_poro
+
+src/drt_poromultiphase_scatra/			@baci/team_poro
+
+src/drt_red_airways/				@baci/team_reduced_fluid_models
+
+src/drt_rigidsphere/				@baci/team_structure
+
+src/drt_s8/					@baci/team_structure
+
+src/drt_scatra/					@baci/team_scatra
+
+src/drt_scatra_ele/				@baci/team_scatra
+
+src/drt_so3/					@baci/team_structure
+
+src/drt_spring3/				@baci/team_structure
+
+src/drt_ssi/					@baci/team_scatra
+
+src/drt_sti/					@baci/team_scatra
+
+src/drt_stru_multi/				@baci/team_discretization # todo
+
+src/drt_struct_ale/				@baci/team_structure
+
+src/drt_structure/				@baci/team_structure
+
+src/drt_structure_new/				@baci/team_structure
+
+src/drt_structure_xstructure/			@baci/team_structure
+
+src/drt_surfstress/				@baci/team_discretization
+
+src/drt_thermo/					@baci/team_thermo
+
+src/drt_timestepping/				@baci/team_discretization
+
+src/drt_torsion3/				@baci/team_structure
+
+src/drt_truss3/					@baci/team_structure
+
+src/drt_truss3cl/				@baci/team_structure
+
+src/drt_tsi/					@baci/team_thermo
+
+src/drt_tutorial/				@baci/team_infrastructure
+
+src/drt_two_phase_flow/				@baci/team_fluid
+
+src/drt_volmortar/				@baci/team_contact
+
+src/drt_w1/					@baci/team_structure
+
+src/drt_wear/					@baci/team_contact
+
+src/drt_xfem/					@baci/team_fluid
+
+src/filter_common/				@baci/team_scatra
+
+src/fortran/					@baci/team_discretization
+
+src/global_full/				@baci/team_discretization
+
+src/headers/					@baci/team_discretization
+
+src/linalg/					@baci/team_solver
+
+src/loca_continuation/				@baci/team_solver
+
+src/post_drt_common/				@baci/team_output
+
+src/post_ensight/				@baci/team_output
+
+src/post_monitor/				@baci/team_output
+
+src/post_s8convert/				@baci/team_output
+
+src/post_vtk/					@baci/team_output
+
+src/pre_exodus/					@baci/team_input
+
+src/pre_locsys/					@baci/team_input
+
+src/pss_full/					@baci/team_discretization
+
+src/solver/					@baci/team_solvers
+
+src/solver_nonlin_nox/				@baci/team_solvers
+
+
+
+# --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
+
+# todo
