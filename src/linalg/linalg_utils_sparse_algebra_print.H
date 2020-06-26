@@ -16,7 +16,12 @@
 #include "Epetra_Vector.h"
 #include "Epetra_MultiVector.h"
 #include "../drt_lib/drt_exporter.H"
-#include "linalg_blocksparsematrix.H"
+
+// Forward declarations
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+}  // namespace LINALG
 
 namespace LINALG
 {

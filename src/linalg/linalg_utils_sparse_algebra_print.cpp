@@ -9,6 +9,8 @@
 #include <fstream>
 
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
+
+#include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_print.H"
 #include "../drt_lib/drt_dserror.H"
 #include <Ifpack_AdditiveSchwarz.h>
