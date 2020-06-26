@@ -36,7 +36,7 @@ USE_TRILINOS_Q1_2019=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,ide:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
