@@ -196,10 +196,13 @@ ENDFOREACH()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-#
-### TRILINOS
+# Use Trilinos_PREFIX, if the user set it, to help find Trilinos.
+# The final location will actually be held in Trilinos_DIR which must
+# point at "<prefix>/lib/cmake/Trilinos", but this helps the search.
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-find_package(Trilinos REQUIRED)
+
+# Get Trilinos as one entity
+FIND_PACKAGE(Trilinos REQUIRED)
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
