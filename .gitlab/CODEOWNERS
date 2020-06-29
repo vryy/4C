@@ -283,7 +283,7 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/fsi_*                       @baci/team_fsi
 
-/Input/homogenized-constrained-mixture @agebauer
+/Input/homogenized-constrained-mixture* @agebauer
 
 /Input/membrane*                   @sfuchs @baci/team_structure
 
@@ -298,6 +298,6 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/prestress*                  @agebauer
 
-/Input/spring_dashpot              @agebauer @baci/team_discretization
+/Input/spring_dashpot*             @agebauer @baci/team_discretization
 
 /Input/wear*                       @baci/team_contact
