@@ -50,6 +50,12 @@ UnittestingFramework.cmake         @baci/team_testing
 # Note: stick to alphabetical order
 
 src/drt_adapter/                   @baci/team_discretization
+src/drt_adapter/ad_art_net.H                   @baci/team_reduced_fluid_models
+src/drt_adapter/adapter_coupling_poro_mortar*  @baci/team_poro
+src/drt_adapter/ad_fld_poro*                   @baci/team_poro
+src/drt_adapter/ad_poro*                       @baci/team_poro
+src/drt_adapter/ad_str_fpsiwrapper*            @baci/team_poro @baci/team_fluid
+src/drt_adapter/ad_str_poro_wrapper*           @baci/team_poro
 
 src/drt_ale/                       @baci/team_fluid
 
@@ -79,6 +85,10 @@ src/drt_constraint/                @baci/team_discretization
 src/drt_constraint/springdashpot*  @agebauer @baci/team_discretization
 
 src/drt_contact/                   @baci/team_contact
+src/drt_contact/contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
+src/drt_contact/contact_nitsche_strategy_poro*    @baci/team_poro @baci/team_contact
+src/drt_contact/contact_poro_*                    @baci/team_poro @baci/team_contact
+src/drt_contact/meshtying_poro_*                  @baci/team_poro @baci/team_contact
 
 src/drt_contact_aug/               @baci/team_contact
 
@@ -103,14 +113,19 @@ src/drt_fem_general/               @baci/team_discretization
 src/drt_fiber/                     @baci/team_discretization
 
 src/drt_fluid/                     @baci/team_fluid
+src/drt_fluid/fluid_timint_poro*   @baci/team_poro @baci/team_fluid
 
 src/drt_fluid_ele/                 @baci/team_fluid
+src/drt_fluid_ele/fluid_ele_boundary_calc_poro*  @baci/team_poro @baci/team_fluid
+src/drt_fluid_ele/fluid_ele_calc_poro*           @baci/team_poro @baci/team_fluid
+src/drt_fluid_ele/fluid_ele_parameter_poro*      @baci/team_poro @baci/team_fluid
+src/drt_fluid_ele/fluid_ele_poro*                @baci/team_poro @baci/team_fluid
 
 src/drt_fluid_turbulence/          @baci/team_fluid
 
 src/drt_fluid_xfluid/              @baci/team_fluid
 
-src/drt_fpsi/                      @baci/team_fsi
+src/drt_fpsi/                      @baci/team_fsi @baci/team_poro
 
 src/drt_fs3i/                      @baci/team_fsi
 
@@ -125,8 +140,11 @@ src/drt_geometry_pair/             @baci/team_structure
 src/drt_immersed_problem/          @baci/team_fsi
 
 src/drt_inpar/                     @baci/team_input
+src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
+src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
 src/drt_inpar/inpar_particle*      @sfuchs
 src/drt_inpar/inpar_pasi*          @sfuchs
+src/drt_inpar/inpar_poro*          @baci/team_poro
 
 
 src/drt_inv_analysis/              @baci/team_queens
@@ -146,9 +164,15 @@ src/drt_lubrication_ele/           @baci/team_scatra
 
 src/drt_mat/                       @baci/team_material
 src/drt_mat/anisotropy*            @agebauer
+src/drt_mat/cnst_1d_art*           @baci/team_reduced_fluid_models
+src/drt_mat/fluidporo*             @baci/team_poro
 src/drt_mat/membrane_elasthyper*   @sfuchs @baci/team_material
 src/drt_mat/mixture_elasthyper*    @agebauer
 src/drt_mat/particle_material*     @sfuchs
+src/drt_mat/poro*                  @baci/team_poro
+src/drt_mat/scatra_mat_multiporo*  @baci/team_poro @baci/team_scatra
+src/drt_mat/scatra_mat_poro*       @baci/team_poro @baci/team_scatra
+src/drt_mat/structporo*            @baci/team_poro
 
 src/drt_matelast/                  @baci/team_material
 
@@ -195,10 +219,18 @@ src/drt_rigidsphere/               @baci/team_structure
 src/drt_s8/                        @baci/team_structure
 
 src/drt_scatra/                    @baci/team_scatra
+src/drt_scatra/scatra_timint_meshtying_strategy_artery*  @baci/team_scatra @baci/team_reduced_fluid_models
+src/drt_scatra/scatra_timint_poro*                       @baci/team_scatra @baci/team_poro
+
 
 src/drt_scatra_ele/                @baci/team_scatra
+src/drt_scatra_ele/scatra_ele_boundary_calc_poro*  @baci/team_scatra @baci/team_poro
+src/drt_scatra_ele/scatra_ele_calc_artery*         @baci/team_scatra @baci/team_reduced_fluid_models
+src/drt_scatra_ele/scatra_ele_calc_multiporo*      @baci/team_scatra @baci/team_poro
+src/drt_scatra_ele/scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 
 src/drt_so3/                       @baci/team_structure
+src/drt_so3/so3_poro*              @baci/team_structure @baci/team_poro
 
 src/drt_spring3/                   @baci/team_structure
 
@@ -237,6 +269,7 @@ src/drt_two_phase_flow/            @baci/team_fluid
 src/drt_volmortar/                 @baci/team_contact
 
 src/drt_w1/                        @baci/team_structure
+src/drt_w1/wall1_poro*             @baci/team_structure @baci/team_poro
 
 src/drt_wear/                      @baci/team_contact
 
@@ -286,7 +319,7 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/f2_*                        @baci/team_fluid
 /Input/f3_*                        @baci/team_fluid
 
-/Input/fpsi_*                      @baci/team_fsi
+/Input/fpsi_*                      @baci/team_fsi @baci/team_poro
 
 /Input/fsi_*                       @baci/team_fsi
 
@@ -298,12 +331,16 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/mixture*                    @agebauer
 
+/Input/one_d_3_artery*             @baci/team_reduced_fluid_models
+
 /Input/particle_nointer*           @sfuchs
 /Input/particle_dem*               @sfuchs @chrmeier
 /Input/particle_sph*               @sfuchs @chrmeier
 /Input/pasi*                       @sfuchs
 
-/Input/poro*                       @baci/team_poro
+/Input/poro_*                      @baci/team_poro
+/Input/porofluidmulti*             @jkremheller @b.wirthl
+/Input/poromultielast*             @jkremheller @b.wirthl
 
 /Input/prestress*                  @agebauer
 
