@@ -221,17 +221,6 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
   "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H")
 
-# test for git executable
-FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
-  DOC "git command line client")
-MARK_AS_ADVANCED(Git_EXECUTABLE)
-
-IF(Git_EXECUTABLE)
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
-  #MESSAGE(${Trilinos_GIT_VERSION})
-  string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
-  ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
 set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
