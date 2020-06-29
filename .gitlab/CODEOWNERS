@@ -76,6 +76,7 @@ src/drt_cardiovascular0d/          @baci/team_reduced_fluid_models
 src/drt_comm/                      @baci/team_discretization
 
 src/drt_constraint/                @baci/team_discretization
+src/drt_constraint/springdashpot*  @agebauer @baci/team_discretization
 
 src/drt_contact/                   @baci/team_contact
 
@@ -144,14 +145,16 @@ src/drt_lubrication/               @baci/team_scatra
 src/drt_lubrication_ele/           @baci/team_scatra
 
 src/drt_mat/                       @baci/team_material
+src/drt_mat/anisotropy*            @agebauer
 src/drt_mat/membrane_elasthyper*   @sfuchs @baci/team_material
+src/drt_mat/mixture_elasthyper*    @agebauer
 src/drt_mat/particle_material*     @sfuchs
 
 src/drt_matelast/                  @baci/team_material
 
 src/drt_membrane/                  @sfuchs @baci/team_structure
 
-src/drt_mixture/                   @baci/team_material
+src/drt_mixture/                   @agebauer
 
 src/drt_mlmc/                      @baci/team_queens
 
@@ -274,17 +277,27 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
+/Input/cardiovascular0d*           @baci/team_reduced_fluid_models
+
 /Input/contact*                    @baci/team_contact
 
 /Input/fsi_*                       @baci/team_fsi
+
+/Input/homogenized-constrained-mixture @agebauer
 
 /Input/membrane*                   @sfuchs @baci/team_structure
 
 /Input/meshtying*                  @baci/team_contact
 
+/Input/mixture*                    @agebauer
+
 /Input/particle_nointer*           @sfuchs
 /Input/particle_dem*               @sfuchs @chrmeier
 /Input/particle_sph*               @sfuchs @chrmeier
 /Input/pasi*                       @sfuchs
+
+/Input/prestress*                  @agebauer
+
+/Input/spring_dashpot              @agebauer @baci/team_discretization
 
 /Input/wear*                       @baci/team_contact
