@@ -196,10 +196,13 @@ ENDFOREACH()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-#
-### TRILINOS
+# Use Trilinos_PREFIX, if the user set it, to help find Trilinos.
+# The final location will actually be held in Trilinos_DIR which must
+# point at "<prefix>/lib/cmake/Trilinos", but this helps the search.
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-find_package(Trilinos REQUIRED)
+
+# Get Trilinos as one entity
+FIND_PACKAGE(Trilinos REQUIRED)
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
@@ -209,17 +212,15 @@ MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
 
-# test for git executable
-FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
-  DOC "git command line client")
-MARK_AS_ADVANCED(Git_EXECUTABLE)
+# get trilinos version information
+include(GetTrilinosVersion)
+get_trilinos_version()
 
-IF(Git_EXECUTABLE)
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
-  #MESSAGE(${Trilinos_GIT_VERSION})
-  string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
-  ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-ENDIF(Git_EXECUTABLE)
+# configure trilinos version file to pass information to the source code
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
+  "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H")
+
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
 set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
