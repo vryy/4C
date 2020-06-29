@@ -898,15 +898,6 @@ namespace INPAR
   {
   }  // namespace MORTAR
 
-  /*! \brief Input parameters for nonlinear solver
-   *
-   * \warning This is highly experimental!
-   *
-   */
-  namespace NLNSOL
-  {
-  }  // namespace NLNSOL
-
   /*! \brief Input parameters for particle dynamics
    *
    */
