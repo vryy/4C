@@ -45,17 +45,10 @@ def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
 
 #CHECK HEADER
 def check_cpp_files_for_header(look_cmd, allerrors):
-  " Check C/C++ files in this transaction have a maintainer. "
+  " Check C/C++ files in this transaction. "
   headers = dict([(ff,bh.Header(utils.file_contents(ff))) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_source_file(ff)])
 # \brief tag
   cpp_files_wo_brief = []
-# \maintainer tag
-  cpp_files_wo_maint = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
-  if len(cpp_files_wo_maint) > 0:
-    if len(allerrors) > 0:
-      allerrors.append("")
-    allerrors.append("The following files have an incorrect or are missing a \\maintainer tag:")
-    allerrors += cpp_files_wo_maint
 # check for correct start of header
   cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())<1]
   if len(cpp_files_wrong_start) > 0:
@@ -70,46 +63,12 @@ def check_cpp_files_for_header(look_cmd, allerrors):
       allerrors.append("")
     allerrors.append("The following files are missing a \\level tag:")
     allerrors += cpp_files_wo_lvl
-# check compliance of maintainer with the baci_developers.json (List of active BACI developers)
-  cpp_files_uncompliant_maintainer = [ff for ff,hdr in headers.items() if len(hdr.get_compliant_maintainer())<1]
-  if len(cpp_files_uncompliant_maintainer) > 0:
-    if len(allerrors) > 0:
-        allerrors.append("")
-    allerrors.append("The following files contain an uncompliant maintainer. Please check './utilities/code_checks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
-    allerrors += cpp_files_uncompliant_maintainer
 
 #print example header
-  if len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0 or len(cpp_files_uncompliant_maintainer):
+  if len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_lvl) > 0:
     allerrors += bh.Header.get_example()
 
-  return len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)+len(cpp_files_uncompliant_maintainer)
-
-
-#CHECK INPUT FILE HEADERS
-def check_input_files_for_header(look_cmd, allerrors):
-  " Check .dat file in the Input folder for a proper header. "
-  headers = dict([(ff,ih.Header(utils.file_contents(ff))) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)])
-  datfiles_without_header = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
-  if len(datfiles_without_header) > 0:
-    if len(allerrors) > 0:
-      allerrors.append("")
-    allerrors.append("The following files are missing a maintainer:")
-    allerrors += datfiles_without_header
-
-# check compliance of maintainer in input files with the baci_developers.json (List of active BACI developers)
-  dat_files_uncompliant_maintainer = [ff for ff,hdr in headers.items() if len(hdr.get_compliant_maintainer())<1]
-
-  if len(dat_files_uncompliant_maintainer) > 0:
-    if len(allerrors) > 0:
-        allerrors.append("")
-    allerrors.append("The following input files (.dat) contain an uncompliant maintainer. Please check './utilities/code_checks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
-    allerrors += dat_files_uncompliant_maintainer
-
-#print example header
-  if len(datfiles_without_header) > 0 or len(dat_files_uncompliant_maintainer)>0:
-    allerrors += ih.Header.get_example()
-
-  return len(datfiles_without_header)+len(dat_files_uncompliant_maintainer)
+  return len(cpp_files_wo_brief)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)
 
 #CHECK FOR.GITIGNORE FILES
 
@@ -154,7 +113,6 @@ def main():
     else:
       look_cmd = "find ./ -type f"
     errors += check_cpp_files_for_header(look_cmd, allerrors)
-    errors += check_input_files_for_header(look_cmd, allerrors)
     errors += check_support_files_for_tabs(look_cmd, allerrors)
     errors += check_support_files_for_trailing_whitespace(look_cmd, allerrors)
     #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
