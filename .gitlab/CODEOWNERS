@@ -274,11 +274,17 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
+/Input/contact*                    @baci/team_contact
+
+/Input/fsi_*                       @baci/team_fsi
 
 /Input/membrane*                   @sfuchs @baci/team_structure
+
+/Input/meshtying*                  @baci/team_contact
 
 /Input/particle_nointer*           @sfuchs
 /Input/particle_dem*               @sfuchs @chrmeier
 /Input/particle_sph*               @sfuchs @chrmeier
 /Input/pasi*                       @sfuchs
 
+/Input/wear*                       @baci/team_contact
