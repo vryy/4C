@@ -277,9 +277,16 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
+/Input/ale*                        @baci/team_fluid
+
 /Input/cardiovascular0d*           @baci/team_reduced_fluid_models
 
 /Input/contact*                    @baci/team_contact
+
+/Input/f2_*                        @baci/team_fluid
+/Input/f3_*                        @baci/team_fluid
+
+/Input/fpsi_*                      @baci/team_fsi
 
 /Input/fsi_*                       @baci/team_fsi
 
@@ -296,8 +303,20 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/particle_sph*               @sfuchs @chrmeier
 /Input/pasi*                       @sfuchs
 
+/Input/poro*                       @baci/team_poro
+
 /Input/prestress*                  @agebauer
+
+/Input/scatra*                     @baci/team_scatra
 
 /Input/spring_dashpot*             @agebauer @baci/team_discretization
 
+/Input/thermo*                     @baci/team_thermo
+
+/Input/tsi*                        @baci/team_thermo
+
+/Input/volmortar*                  @baci/team_contact
+
 /Input/wear*                       @baci/team_contact
+
+/Input/xfluid_*                    @baci/team_fluid
