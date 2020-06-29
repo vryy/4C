@@ -49,7 +49,7 @@ old particle framework including dependent modules (by Georg Hammerl)
 
 NLNSOL nonlinear solver framework (by Matthias Mayr)
 - removed in commit 01ad0f4967da827bb7e6759dda442dbc3d96fa57 on 2019-07-30
-- furthre removal of some relicts in commit 4910ef6e0fa5fc2fe450921e99ece34e90ff3e70 on 2020-06-26
+- further removal of some relicts in commit 4910ef6e0fa5fc2fe450921e99ece34e90ff3e70 on 2020-06-26
 - reasons: it was purely experimental and never worked properly. Removing it reduces the amount of code to be maintained as well as reduces the number of interfaces to MueLu to be kept up-to-date.
 - if you need it: Implement it from scratch (recommended) or check out commit 01ad0f4967da827bb7e6759dda442dbc3d96fa57
 - mainly deleted src/solver_nonlin/
