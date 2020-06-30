@@ -283,8 +283,6 @@ src/drt_wear/                      @baci/team_contact
 
 src/drt_xfem/                      @baci/team_fluid
 
-src/filter_common/                 @baci/team_scatra
-
 src/fortran/                       @baci/team_discretization
 
 src/global_full/                   @baci/team_discretization
