@@ -114,7 +114,7 @@ src/drt_elch/                      @baci/team_scatra
 
 src/drt_elemag/                    @baci/team_scatra
 
-src/drt_fbi/                       @baci/team_fluid @baci/team_structure
+src/drt_fbi/                       @NHagmeyer
 
 src/drt_fem_general/               @baci/team_discretization
 
@@ -143,7 +143,7 @@ src/drt_fsi_xfem/                  @baci/team_fsi
 
 src/drt_geometry/                  @baci/team_discretization
 
-src/drt_geometry_pair/             @baci/team_structure
+src/drt_geometry_pair/             @istein @NHagmeyer @baci/team_discretization
 
 src/drt_immersed_problem/          @baci/team_fsi
 
@@ -326,6 +326,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/f2_*                        @baci/team_fluid
 /Input/f3_*                        @baci/team_fluid
+
+/Input/fbi_*                       @NHagmeyer
 
 /Input/fpsi_*                      @baci/team_fsi @baci/team_poro
 
