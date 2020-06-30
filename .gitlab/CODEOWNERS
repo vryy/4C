@@ -50,12 +50,20 @@ UnittestingFramework.cmake         @baci/team_testing
 # Note: stick to alphabetical order
 
 src/drt_adapter/                   @baci/team_discretization
+src/drt_adapter/ad_ale*                        @baci/team_fluid
+src/drt_adapter/ad_ale_wear*                   @baci/team_contact
 src/drt_adapter/ad_art_net.H                   @baci/team_reduced_fluid_models
-src/drt_adapter/adapter_coupling_poro_mortar*  @baci/team_poro
+src/drt_adapter/ad_fld_*                       @baci/team_fluid
 src/drt_adapter/ad_fld_poro*                   @baci/team_poro
 src/drt_adapter/ad_poro*                       @baci/team_poro
+src/drt_adapter/ad_scatra_*                    @baci/team_scatra
+src/drt_adapter/ad_str_*                       @baci/team_structure
 src/drt_adapter/ad_str_fpsiwrapper*            @baci/team_poro @baci/team_fluid
 src/drt_adapter/ad_str_poro_wrapper*           @baci/team_poro
+src/drt_adapter/adapter_coupling*              @baci/team_contact
+src/drt_adapter/adapter_coupling_poro_mortar*  @baci/team_poro
+src/drt_adapter/adapter_scatra_*               @baci/team_scatra
+src/drt_adapter/adapter_thermo*                @baci/team_thermo
 
 src/drt_ale/                       @baci/team_fluid
 
