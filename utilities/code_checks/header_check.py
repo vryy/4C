@@ -4,7 +4,6 @@
 import os
 import argparse
 import baciheader as bh
-import inputheader as ih
 import subprocess
 import common_utils as utils
 
