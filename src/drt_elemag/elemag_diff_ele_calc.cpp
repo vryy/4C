@@ -1049,14 +1049,14 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     Epetra_SerialDenseVector temptrace(nsd_ * shapesface_->nfdofs_);
 
     // The dimension of the coordinate matrix is now nsd_ times the number of nodes in the face.
-    LINALG::Matrix<nsd_, nfn> xsishuffle(true);
+    LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
     // Cycling throught the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
     for (int i = 0; i < nfn; ++i)
     {
       // cycling through the spatial dimensions
-      for (unsigned int idim = 0; idim < nsd_; idim++)
+      for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
       {
         // If the face belongs to the element being considered
         if (ele->Faces()[f]->ParentMasterElement() == ele)
@@ -1092,7 +1092,8 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     for (int i = 0; i < nfn; ++i)
     {
       // Storing the actual coordinates of the current node
-      for (unsigned int idim = 0; idim < nsd_; idim++) shapesface_->xsi(idim) = xsishuffle(idim, i);
+      for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
+        shapesface_->xsi(idim) = xsishuffle(idim, i);
 
       // Actually evaluating shape polynomials in node
       shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
