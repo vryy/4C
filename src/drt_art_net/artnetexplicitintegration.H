@@ -8,7 +8,6 @@
 
 \level 2
 
-\maintainer Johannes Kremheller
 
 
 
@@ -46,7 +45,6 @@ namespace ART
   /*!
   \brief time integration for arterial network problems
 
-  \author ismail (ismail@lnm.mw.tum.de)
   */
   class ArtNetExplicitTimeInt : public TimInt
   {

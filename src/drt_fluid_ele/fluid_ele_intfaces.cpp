@@ -3,7 +3,6 @@
 
 \brief Fluid internal faces elements
 
-\maintainer Martin Kronbichler
 
 \level 2
 

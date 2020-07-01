@@ -3,7 +3,6 @@
 
 \brief Input/output routines for the multi discretization wrapper
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

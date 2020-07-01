@@ -3,7 +3,6 @@
 \brief Structural time integration with Adams-Bashforth 2nd order (explicit)
 \level 1
 
-\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

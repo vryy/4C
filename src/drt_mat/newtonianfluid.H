@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef NEWTONIANFLUID_H

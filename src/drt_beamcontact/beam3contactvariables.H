@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 #ifndef BEAM3CV_H
@@ -30,7 +29,6 @@ namespace CONTACT
 
    Refer also to the Semesterarbeit of Matthias Mayr, 2010
 
-   \author meier (meier@lnm.mw.tum.de)
    */
 
   template <const int numnodes, const int numnodalvalues>

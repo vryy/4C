@@ -5,7 +5,6 @@
 \brief Determinant functions for dense matrices up to 4x4 and LU determinant.
 
 \level 0
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/

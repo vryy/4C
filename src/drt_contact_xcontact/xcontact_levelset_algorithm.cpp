@@ -2,7 +2,6 @@
 /** \file
 \brief level-set algorithm for the extended contact formulation
 
-\maintainer Matthias Mayr
 
 \level 3
 */

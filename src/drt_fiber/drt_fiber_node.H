@@ -4,7 +4,6 @@
 \brief   This is basically a (3d-) node with an additional fiber direction.
 
 
-\maintainer Amadeus Gebauer
 
 \level 2
 

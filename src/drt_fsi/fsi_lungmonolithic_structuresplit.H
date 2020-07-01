@@ -2,7 +2,6 @@
 /*! \file
 \brief Volume-coupled FSI (structure-split)
 
-\maintainer Matthias Mayr
 
 \level 3
 */

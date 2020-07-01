@@ -3,7 +3,6 @@
 
 \brief General input parameters
 
-\maintainer Martin Kronbichler
 
 \level 1
 */

@@ -3,7 +3,6 @@
 
 \brief Utility methods for the structural time integration.
 
-\maintainer Matthias Mayr
 
 \level 3
 

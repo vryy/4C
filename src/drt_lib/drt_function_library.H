@@ -5,7 +5,6 @@
 
 The functions in this file are not problem-specific and may be useful for a number of applications.
 
-\maintainer Sebastian Proell
 
 \level 3
 

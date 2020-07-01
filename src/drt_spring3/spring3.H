@@ -2,7 +2,6 @@
 /*! \file
 \brief three dimensional spring element
 
-\maintainer Christoph Meier
 
 \level 3
 */
@@ -59,7 +58,6 @@ namespace DRT
     /*!
      \brief three dimensional total Lagrange truss element
 
-     \author mukherjee (mukherjee @lnm.mw.tum.de)
      */
     class Spring3 : public DRT::Element
     {

@@ -3,7 +3,6 @@
 
 \brief Generic class for all explicit time integrators
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

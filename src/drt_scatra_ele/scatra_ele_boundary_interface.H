@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Anh-Tu Vuong
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_BOUNDARY_INTERFACE_H

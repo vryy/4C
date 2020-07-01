@@ -11,7 +11,6 @@ the input line should read
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 #ifndef AAANEOHOOKE_H_

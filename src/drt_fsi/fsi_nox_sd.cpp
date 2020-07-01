@@ -3,7 +3,6 @@
 
 \brief Solve FSI problems using NonlinearCG
 
-\maintainer Matthias Mayr
 
 \level 1
 

@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Matthias Mayr
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed structure interface displacements

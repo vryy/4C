@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -692,11 +691,9 @@ namespace CONTACT
    *
    * \remark Please add no new member variables to the abstract strategy! Use
    * the corresponding data container instead (--> CONTACT::AbstractStratDataContainer).
-   * If you have any questions concerning this, do not hesitate to ask the maintainer.
    *
    * Refer also to the Semesterarbeit of Bernd Budich, 2009
    *
-   * \author popp(popp @lnm.mw.tum.de)
    */
   class CoAbstractStrategy : public MORTAR::StrategyBase
   {

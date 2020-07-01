@@ -3,7 +3,6 @@
 
 \brief Internal implementation of LinExp artery element
 
-\maintainer Johannes Kremheller
 
 \level 3
 */

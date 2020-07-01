@@ -3,7 +3,6 @@
 
 \brief Utils methods to apply DBCs to the system-vectors of a discretization
 
-\maintainer Martin Kronbichler
 
 \level 2
 

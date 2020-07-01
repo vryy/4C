@@ -3,7 +3,6 @@
 
 \brief Generic class for all beaminteraction submodel evaluators.
 
-\maintainer Jonas Eichinger
 
 \level 3
 

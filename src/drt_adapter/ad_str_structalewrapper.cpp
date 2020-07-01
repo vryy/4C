@@ -3,7 +3,6 @@
 
 \brief Structural adapter for Structure-ALE problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

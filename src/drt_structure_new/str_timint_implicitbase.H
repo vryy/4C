@@ -5,7 +5,6 @@
        implicit time integration strategies share and have in
        common.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

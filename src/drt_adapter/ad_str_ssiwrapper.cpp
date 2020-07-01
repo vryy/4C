@@ -3,7 +3,6 @@
 
 \brief Structural adapter for SSI problems.
 
-\maintainer Christoph Schmidt
 
 \level 1
 */

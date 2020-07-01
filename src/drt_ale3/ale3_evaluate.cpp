@@ -3,7 +3,6 @@
 
 \brief Evaluate routines of ALE element for 3D case
 
-\maintainer Matthias Mayr
 
 \level 1
 */

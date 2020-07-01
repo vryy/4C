@@ -5,7 +5,6 @@ of two MortarElements in 1D and 2D
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

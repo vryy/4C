@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -24,7 +23,6 @@ namespace CONTACT
    This is a specialization of the abstract meshtying algorithm as defined in MtAbstractStrategy.
    For a more general documentation of the involved functions refer to MtAbstractStrategy.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class MtPenaltyStrategy : public MtAbstractStrategy
   {

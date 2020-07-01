@@ -4,7 +4,6 @@
 
 
 \level 2
-\maintainer Sebastian Proell
 */
 
 

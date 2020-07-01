@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief interface to provide restricted access to particle wall handler
-
 \level 2
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

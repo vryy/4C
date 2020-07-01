@@ -3,7 +3,6 @@
 
 \brief Special version of block matrix that includes the AMGnxn preconditioner
 
-\maintainer Matthias Mayr
 
 \level 2
 

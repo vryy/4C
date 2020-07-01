@@ -6,7 +6,6 @@ The current implementation does not scale at all!
 
 \level 3
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/searchtree.H"

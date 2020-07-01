@@ -4,7 +4,6 @@
 \brief Input parameter for geometry pairs.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

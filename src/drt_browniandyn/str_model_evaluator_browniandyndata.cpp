@@ -3,7 +3,6 @@
 
 \brief Concrete implementation of the brownian dynamic parameter interface
 
-\maintainer Jonas Eichinger
 
 \date Jun 22, 2016
 

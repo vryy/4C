@@ -3,7 +3,6 @@
 
 \brief Result test for optimization algorithms
 
-\maintainer Martin Kronbichler
 
 \level 3
 

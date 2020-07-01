@@ -1,4 +1,3 @@
-// Maintainer: Christoph Meier
 // tests scaling of linear system with STC (scaled thickness conditioning) for solid shell elements
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        192

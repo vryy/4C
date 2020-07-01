@@ -3,7 +3,6 @@
 
 \brief Base class for all structural time integration strategies.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

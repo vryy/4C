@@ -3,7 +3,6 @@
 
 \brief Result test for the adjoint fluid equations
 
-\maintainer Martin Kronbichler
 
 \level 3
 

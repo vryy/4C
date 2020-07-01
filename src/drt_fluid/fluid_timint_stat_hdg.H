@@ -3,7 +3,6 @@
 
 \brief Stationary fluid problem with HDG discretization
 
-\maintainer Andrea La Spina
 
 \level 2
 

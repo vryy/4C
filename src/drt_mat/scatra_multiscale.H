@@ -5,7 +5,6 @@ problems
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_MULTISCALE_H

@@ -3,7 +3,6 @@
 
 \brief student's c++/baci tutorial element implementation
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

@@ -1,7 +1,3 @@
-#
-# Maintainer: Amadeus Gebauer
-#
-
 from readutils import read_string, read_int, read_ints, read_floats
 
 KNOWN_ELEMENTS = {

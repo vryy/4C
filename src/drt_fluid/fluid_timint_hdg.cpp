@@ -3,7 +3,6 @@
 
 \brief Basic HDG time-integration scheme
 
-\maintainer Martin Kronbichler
 
 \level 2
 

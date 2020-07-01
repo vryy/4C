@@ -2,7 +2,6 @@
 /*! \file
 \brief 3d TSI silid element
 \level 1
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef SO3_THERMO_ELETYPES_H_

@@ -7,7 +7,6 @@ the input line should read
   MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 
 \level 1
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

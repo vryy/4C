@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 
@@ -33,7 +32,6 @@ namespace MORTAR
   /*!
   \brief A base class for binary tree nodes
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   */
   class BaseBinaryTreeNode : public AbstractBinaryTreeNode
   {
@@ -216,7 +214,6 @@ namespace MORTAR
   /*!
   \brief A base class for binary trees
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   */
   class BaseBinaryTree : public AbstractBinaryTree
   {

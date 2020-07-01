@@ -4,7 +4,6 @@
 \brief Factory to create appropriate constraint enforcement implementations for Fluid-beam
 interaction
 
-\maintainer Nora Hagmeyer
 
 \level 1
 */

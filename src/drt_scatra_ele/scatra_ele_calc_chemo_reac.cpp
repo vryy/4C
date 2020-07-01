@@ -5,7 +5,6 @@ reactive scalars
 
 \level 2
 
-   \maintainer Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_chemo_reac.H"

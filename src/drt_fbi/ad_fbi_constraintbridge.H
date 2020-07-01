@@ -6,7 +6,6 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
 #ifndef AD_FBI_CONSTRAINTBRIDGE_H_

@@ -16,7 +16,6 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 1 RED_ACINUS LINE2 2 3 MAT 3 TYPE VolumetricOgden AcinusVolume 300 AlveolarDuctVolume 0.03711 KAPPA
 2000.0 BETA -3.1
 
-\maintainer Carolin Geitner
 
 \level 3
 

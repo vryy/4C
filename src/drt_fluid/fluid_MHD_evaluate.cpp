@@ -3,7 +3,6 @@
 
 \brief Evaluate calls for magno-hydrodynamics
 
-\maintainer Martin Kronbichler
 
 \level 2
 

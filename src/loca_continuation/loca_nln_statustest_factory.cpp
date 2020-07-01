@@ -3,7 +3,6 @@
 
 \brief LOCA status test factory
 
-\maintainer Martin Kronbichler
 
 \level 3
 

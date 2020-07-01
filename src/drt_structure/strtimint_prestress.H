@@ -3,7 +3,6 @@
 \brief Static Prestress  analysis
 \level 2
 
-\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

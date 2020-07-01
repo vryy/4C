@@ -2,7 +2,6 @@
 /*! \file
 \brief Control routine for arterial network stationary formulation.
 
-\maintainer Johannes Kremheller
 
 \level 3
 

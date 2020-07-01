@@ -3,7 +3,6 @@
 
 \brief pre_exodus bc-file reader
 
-\maintainer Martin Kronbichler
 
 \level 1
 

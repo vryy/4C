@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fsi.H"

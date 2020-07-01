@@ -1,7 +1,3 @@
-#
-# Maintainer: Amadeus Gebauer
-#
-
 import argparse
 from datfile_reader import read_result_description
 from casefile_reader import read_case

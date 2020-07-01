@@ -14,7 +14,6 @@ finite element method E.Burman, M.A.Fernandez and P.Hansbo (2006)
 convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods Appl. Mech. Engrg.
 198 (2009) 2508-2519
 
-\maintainer Martin Kronbichler
 
 \level 2
 
@@ -50,7 +49,6 @@ namespace DRT
            for every surface element distype this class allocates one
            instance of the edge-oriented stabilization implementation
 
-    \author schott (schott@lnm.mw.tum.de), 02/12
 
     -----------------------------------------------------------------*/
     class FluidIntFaceStab : DRT::SingletonDestruction
@@ -67,7 +65,6 @@ namespace DRT
         This class does not provide a definition for this function, it
         is defined in the implementation.
 
-        \author schott (schott@lnm.mw.tum.de), 02/12
 
       */
       virtual int EvaluateEdgeBasedStabilization(
@@ -96,7 +93,6 @@ namespace DRT
                implementation class for edge oriented stabilization and
                return pointer to it
 
-        \author schott (schott@lnm.mw.tum.de), 02/12
 
         \param surfele (in):   fluid internal surface element
 

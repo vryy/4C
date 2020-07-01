@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Christoph Meier
 */
 /*-----------------------------------------------------------*/
 // header file only included if not yet included!
@@ -84,7 +83,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the DiscSh3 element
 
-    \author mukherjee (mukherjee@lnm.mw.tum.de)
     */
     class DiscSh3 : public DRT::Element
     {
@@ -758,7 +756,6 @@ namespace DRT
           adjacent to a parent shell8 element. It therefore does not implement
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class DiscSh3Line : public DRT::FaceElement
     {

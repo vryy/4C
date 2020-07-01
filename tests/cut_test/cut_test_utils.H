@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 #ifndef GEOMETRY_TEST_UTILS_H
 #define GEOMETRY_TEST_UTILS_H

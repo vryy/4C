@@ -3,7 +3,6 @@
 
 \brief Stationary problem driver for porous fluid
 
-\maintainer Johannes Kremheller
 
 \level 2
 

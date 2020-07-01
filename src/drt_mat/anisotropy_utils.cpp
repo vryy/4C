@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #include "anisotropy_utils.H"

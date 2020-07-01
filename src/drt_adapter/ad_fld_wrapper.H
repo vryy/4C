@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer  Martin Kronbichler
 */
 /*---------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_WRAPPER_H

@@ -3,7 +3,6 @@
 
 \brief Enumeration of actions provided by the fluid element
 
-\maintainer Martin Kronbichler
 
 \level 1
 

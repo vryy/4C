@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Christoph Schmidt
 */
 
 #ifndef INELASTIC_DEFGRAD_FACTORS_H

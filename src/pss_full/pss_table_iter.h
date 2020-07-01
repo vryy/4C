@@ -2,7 +2,6 @@
 /*! \file
 \brief Iterators for the symbol table.
 
-\maintainer Martin Kronbichler
 
 \level 1
 

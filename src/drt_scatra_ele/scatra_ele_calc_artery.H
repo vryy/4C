@@ -6,7 +6,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_

@@ -4,7 +4,6 @@
 \brief list of important enumerators ( used for the necessary header inclusions
        till C++11 )
 
-\maintainer Matthias Mayr
 
 \level 3
 

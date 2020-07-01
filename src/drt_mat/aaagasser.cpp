@@ -12,7 +12,6 @@ CABLUM 1.98e-3
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 
 */

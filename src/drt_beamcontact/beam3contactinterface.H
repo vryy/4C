@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 #ifndef BEAM3CIF_H
@@ -26,7 +25,6 @@ namespace CONTACT
   /*!
    \brief interface class for templated classes beam3contact and beam3contactnew
 
-   \author meier (meier@lnm.mw.tum.de)
    */
 
   class Beam3contactinterface

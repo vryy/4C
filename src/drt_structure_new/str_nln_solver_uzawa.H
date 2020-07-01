@@ -3,7 +3,6 @@
 
 \brief uzawa (DEPRECATED)
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

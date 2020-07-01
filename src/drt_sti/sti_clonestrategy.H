@@ -3,10 +3,6 @@
 
 \brief strategy for cloning thermo discretization from scatra discretization
 
-\maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 \level 2
 */
@@ -37,7 +33,6 @@ namespace STI
   not in a subsequent loop after the cloning itself. We can do this because the physical
   implementation type of the cloned elements is unique and known a priori.
 
-  \author fang (fang@lnm.mw.tum.de)
   \date 04/15
   */
 

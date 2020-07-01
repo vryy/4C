@@ -4,7 +4,6 @@
 \brief %NOX::NLN extension of the %NOX::Epetra required
        interface.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

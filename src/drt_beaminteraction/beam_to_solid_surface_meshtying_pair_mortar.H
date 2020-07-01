@@ -4,7 +4,6 @@
 \brief Mortar mesh tying element for between a 3D beam and a surface element.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

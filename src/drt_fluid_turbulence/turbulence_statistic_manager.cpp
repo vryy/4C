@@ -8,7 +8,6 @@ cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

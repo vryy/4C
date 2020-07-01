@@ -2,7 +2,6 @@
 /*! \file
 \brief class to modify wall thickness of cardiovascular structures on the fly
 
-\maintainer Jonas Nitzler
 
 \level 2
 

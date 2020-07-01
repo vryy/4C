@@ -6,7 +6,6 @@ interaction.
 
 \level 3
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
 #include "constraintenforcer_fbi.H"

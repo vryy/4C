@@ -3,7 +3,6 @@
 
 \brief ALE time integration
 
-\maintainer Matthias Mayr
 
 \level 1
 */

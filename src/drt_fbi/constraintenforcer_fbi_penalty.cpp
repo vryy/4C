@@ -6,7 +6,6 @@ fluid-beam interaction)
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
 #include "ad_fbi_constraintbridge_penalty.H"

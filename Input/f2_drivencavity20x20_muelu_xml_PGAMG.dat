@@ -1,7 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
-// kronbichler@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
 //
 // needs Trilinos Q2/2013 or newer
 // depends on f2_drivencavity20x20_muelu_xml_PGAMG.xml

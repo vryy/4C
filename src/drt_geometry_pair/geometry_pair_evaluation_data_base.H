@@ -4,7 +4,6 @@
 \brief base class for geometry pair evaluation data subcontainers.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

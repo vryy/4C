@@ -3,7 +3,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 
 \brief Preconditioner for FSI problems with additional constraints
 */

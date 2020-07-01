@@ -4,7 +4,6 @@
 \brief Unit tests for line to surface geometry pairs that rely on averaged nodal normals.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

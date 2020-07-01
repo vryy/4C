@@ -3,7 +3,6 @@
 
 \brief Factory to create the desired Line Search object.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

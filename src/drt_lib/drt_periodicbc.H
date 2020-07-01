@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -51,13 +50,6 @@ namespace DRT
 
 
 \author gammi
-
-
-
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
 
 */
 class PeriodicBoundaryConditions

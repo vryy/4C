@@ -3,7 +3,6 @@
 
 \brief Definition of the serial node type for MueLu
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

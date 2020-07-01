@@ -5,7 +5,6 @@
 periodic boundary condition) separate domain to a name Dirichlet
 boundary of the actual domain
 
-\maintainer Martin Kronbichler
 
 \level 2
 

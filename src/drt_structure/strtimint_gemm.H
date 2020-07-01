@@ -2,7 +2,6 @@
 /*! \file
 \brief Structural time integration with generalised energy-momentum method
 \level 1
-\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

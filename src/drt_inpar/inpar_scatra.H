@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer  Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_SCATRA_H

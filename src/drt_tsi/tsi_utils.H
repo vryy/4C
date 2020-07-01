@@ -4,7 +4,6 @@
 \brief utility functions for tsi problems
 
 \level 2
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

@@ -8,7 +8,6 @@ comparison instead of a cumbersome std::string compare.
 
 \level 3
 
-\maintainer Mostafa Faraji
 
 */
 /*--------------------------------------------------------------------------*/

@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 #ifndef SO_HEX8P1J1_H

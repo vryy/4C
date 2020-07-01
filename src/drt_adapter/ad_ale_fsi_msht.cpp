@@ -3,7 +3,6 @@
 
 \brief FSI Wrapper for the ALE time integration with internal mesh tying or mesh sliding interface
 
-\maintainer Matthias Mayr
 
 \level 3
 

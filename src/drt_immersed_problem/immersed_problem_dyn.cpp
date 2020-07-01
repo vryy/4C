@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Jonas Eichinger
 */
 /*---------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>

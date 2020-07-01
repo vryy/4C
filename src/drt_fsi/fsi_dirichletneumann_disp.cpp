@@ -4,7 +4,6 @@
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 based on the interface displacements
 
-\maintainer Matthias Mayr
 
 \level 1
 */

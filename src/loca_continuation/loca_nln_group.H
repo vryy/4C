@@ -3,7 +3,6 @@
 
 \brief LOCA specific group
 
-\maintainer Martin Kronbichler
 
 \level 3
 

@@ -4,7 +4,6 @@
 \brief Implementation of the infeasibility merit function for
        constrained problems. Especially useful for the filter method.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

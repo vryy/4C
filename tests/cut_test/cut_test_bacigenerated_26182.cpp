@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 // This test is tests the triangulation by EarClipping

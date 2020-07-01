@@ -5,7 +5,6 @@ material
 
 \level 3
 
-\maintainer Amadeus Gebauer
 */
 /*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOPOW_H_

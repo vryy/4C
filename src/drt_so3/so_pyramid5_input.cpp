@@ -3,7 +3,6 @@
 \brief pyramid shaped solid element
 \level 2
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

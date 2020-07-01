@@ -5,7 +5,6 @@
  *
  *\level 3
  *
- * \maintainer Nora Hagmeyer
  */
 /*----------------------------------------------------------------------*/
 #include "fbi_calc_utils.H"

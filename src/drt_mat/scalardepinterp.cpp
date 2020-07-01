@@ -13,7 +13,6 @@ The input line should read
 MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 
 
-\maintainer Christoph Schmidt
 
 */
 

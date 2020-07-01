@@ -3,7 +3,6 @@
 
 \brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

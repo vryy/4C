@@ -8,7 +8,6 @@ The originally linear spring (Stiffness1) of the 4-element Maxwell model is subs
 non-linear pressure-volume relation derived from the Ogden strain energy function considering pure
 volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
 
-\maintainer Carolin Geitner
 
 \level 3
 */

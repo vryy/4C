@@ -1,8 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
-// kronbichler@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15249
 //
 // Axel's fluidpusher test case
 // this test case only tests if constant velocity fields are continued exactly

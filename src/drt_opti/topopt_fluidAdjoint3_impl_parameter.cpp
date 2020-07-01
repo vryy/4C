@@ -3,7 +3,6 @@
 
 \brief general element parameter for fluid adjoint equations for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

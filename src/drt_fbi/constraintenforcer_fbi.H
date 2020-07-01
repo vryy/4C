@@ -6,7 +6,6 @@ interaction.
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #ifndef CONSTRAINTENFORCER_FBI_H
 #define CONSTRAINTENFORCER_FBI_H

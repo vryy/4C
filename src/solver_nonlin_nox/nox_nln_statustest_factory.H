@@ -3,7 +3,6 @@
 
 \brief Create the desired outer status test.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

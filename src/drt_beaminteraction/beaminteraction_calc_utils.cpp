@@ -2,7 +2,6 @@
 /*! \file
 \brief calc utils for beam interaction framework
 
-\maintainer Jonas Eichinger
 
 \level 3
 */

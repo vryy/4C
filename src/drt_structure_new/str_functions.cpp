@@ -3,7 +3,6 @@
 
 \brief Managing and evaluating of functions for structure problems
 
-\maintainer Andrea La Spina
 
 \level 2
 

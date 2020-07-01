@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_std.H"

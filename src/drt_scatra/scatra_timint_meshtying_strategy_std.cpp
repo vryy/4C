@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std.H"

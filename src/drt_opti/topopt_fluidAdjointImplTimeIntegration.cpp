@@ -3,7 +3,6 @@
 
 \brief fluid adjoint implicit time integration for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

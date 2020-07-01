@@ -3,7 +3,6 @@
 
 \brief 2D boundary elment
 
-\maintainer Amadeus Gebauer
 
 \level 2
 */

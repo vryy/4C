@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /** \file
 \brief special element adaptions for inverse design
-\maintainer Christoph Meier
 \level 2
 */
 /*----------------------------------------------------------------------*/
@@ -40,7 +39,6 @@ namespace DRT
     /*!
     \brief A class for handling the prestressing in finite deformations
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class InvDesign : public DRT::ParObject
     {

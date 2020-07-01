@@ -3,7 +3,6 @@
 
 \brief Fluid field adapter for moving boundary problems
 
-\maintainer  Martin Kronbichler
 
 \level 2
 */

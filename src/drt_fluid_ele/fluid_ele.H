@@ -11,7 +11,6 @@ and Gauss point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
-\maintainer Martin Kronbichler
 
 \level 1
 

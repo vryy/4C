@@ -3,7 +3,6 @@
 
 \brief Any data container based on vectors of Teuchos::any data.
 
-\maintainer Martin Kronbichler
 
 \level 1
 */

@@ -1,7 +1,3 @@
-#
-# Maintainer: Amadeus Gebauer
-#
-
 import numpy as np
 from readutils import read_string, read_int, read_ints, read_floats
 import os

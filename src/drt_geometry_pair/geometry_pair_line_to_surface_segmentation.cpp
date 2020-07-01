@@ -4,7 +4,6 @@
 \brief Line to surface interaction with segmentation at the boundaries.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 
 

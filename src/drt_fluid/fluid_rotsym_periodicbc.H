@@ -4,7 +4,6 @@
 \brief Methods to apply rotationally symmetric periodic boundary
        conditions for fluid problems on element level
 
-\maintainer Martin Kronbichler
 
 \level 1
 

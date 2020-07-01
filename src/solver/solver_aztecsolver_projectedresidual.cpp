@@ -4,8 +4,6 @@
 
 \brief Declaration
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 
 Created on: Mar 4, 2013
 

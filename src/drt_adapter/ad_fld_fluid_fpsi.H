@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer  Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_FPSI_H

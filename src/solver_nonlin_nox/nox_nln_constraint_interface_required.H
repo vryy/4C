@@ -6,7 +6,6 @@
         and the evaluation of special constraint status
         tests)
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

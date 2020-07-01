@@ -4,7 +4,6 @@
 \brief Unit tests for line to surface geometry pairs.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

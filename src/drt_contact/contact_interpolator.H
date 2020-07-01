@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\maintainer Matthias Mayr
 
 \level 2
 
@@ -192,7 +191,7 @@ namespace NTS
   /*!
   \brief A class to implement MTInterpolator
 
-  \author farah (farah@lnm.mw.tum.de)
+  \author farah
   */
   class MTInterpolator : DRT::SingletonDestruction
   {
@@ -216,7 +215,7 @@ namespace NTS
 
 
   /*!
-  \author farah (farah@lnm.mw.tum.de)
+  \author farah
   */
   template <DRT::Element::DiscretizationType distypeM>
   class MTInterpolatorCalc : public MTInterpolator

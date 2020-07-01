@@ -6,7 +6,6 @@ materials with @MAT::Anisotropy
 
 \level 3
 
-\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------*/

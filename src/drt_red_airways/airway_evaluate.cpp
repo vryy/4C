@@ -6,7 +6,6 @@
        implementation of the routines called during the possible actions
        is contained in airway_impl.cpp
 
-\maintainer Carolin Geitner
 
 \level 3
 

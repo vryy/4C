@@ -3,7 +3,6 @@
 \brief Unit tests for linalg routines.
 
 \level 0
-\maintainer Ivo Steinbrecher
 */
 
 

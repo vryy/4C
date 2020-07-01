@@ -3,7 +3,6 @@
 \brief Input parameters for inverse analysis
 
 \level 2
-\maintainer Harald Willmann
 
 */
 

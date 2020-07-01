@@ -3,7 +3,6 @@
 
 \brief input parameter for beaminteraction
 
-\maintainer Maximilian Grill
 
 \level 2
 

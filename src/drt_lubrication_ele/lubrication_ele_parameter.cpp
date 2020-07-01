@@ -11,7 +11,6 @@ parameters required for Lubrication element evaluation.
 
 \level 3
 
-\maintainer Mostafa Faraji
 
 */
 /*--------------------------------------------------------------------------*/

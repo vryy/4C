@@ -2,7 +2,6 @@
 /** \file
 \brief xcontact level-set generic reinitialization algorithm
 
-\maintainer Matthias Mayr
 
 \level 3
 */

@@ -2,7 +2,6 @@
 /** \file
 \brief debug output methods for the xcontact cutwizard
 
-\maintainer Matthias Mayr
 
 \level 3
 */

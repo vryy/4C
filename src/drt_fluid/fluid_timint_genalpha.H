@@ -3,7 +3,6 @@
 
 \brief Generalized-alpha time-integration scheme
 
-\maintainer Martin Kronbichler
 
 \level 2
 

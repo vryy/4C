@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_GEOMETRY_SERVICE_H_

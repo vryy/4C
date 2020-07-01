@@ -7,7 +7,6 @@ This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
 \level 1
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*
@@ -71,7 +70,6 @@ namespace DRT
     //!
     //! \brief A C++ wrapper for the thermo element
     //!
-    //! \author danowski (danowski@lnm.mw.tum.de)
     class Thermo : public DRT::Element
     {
      public:

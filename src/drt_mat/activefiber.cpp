@@ -26,7 +26,6 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 
 *----------------------------------------------------------------------*/

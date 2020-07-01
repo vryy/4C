@@ -1,4 +1,3 @@
-// Maintainer: Ivo Steinbrecher
 ---------------------------------------------------------------------------TITLE
 Test that unused face elements are not used to create output on,
 because this would lead to floating point errors.

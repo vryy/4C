@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H"  // for splitter

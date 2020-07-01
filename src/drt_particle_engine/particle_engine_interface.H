@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief interface to provide restricted access to particle engine
-
 \level 1
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

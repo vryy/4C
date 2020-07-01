@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\maintainer Christoph Meier
 
 \brief TSI input parameters
 \level 1

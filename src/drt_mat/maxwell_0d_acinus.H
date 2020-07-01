@@ -8,7 +8,6 @@ Four-element Maxwell model consists of a parallel configuration of a spring (Sti
 spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 (derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
 
-\maintainer Carolin Geitner
 
 \level 3
 */

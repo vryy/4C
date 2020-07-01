@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Johannes Kremheller
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_artery.H"

@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 */
 #ifndef ADAPTER_FLUID_H
 #define ADAPTER_FLUID_H

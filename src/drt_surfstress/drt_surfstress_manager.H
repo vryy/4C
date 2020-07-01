@@ -3,7 +3,6 @@
 
 \brief surface stresses due to interfacial phenomena
 
-\maintainer Martin Kronbichler
 
 \level 2
 
@@ -43,7 +42,6 @@ namespace UTILS
   \brief Class controlling surface stresses due to interfacial phenomena
   and containing all necessary history data
 
-  \author wiechert (yoshihara@lnm.mw.tum.de)
   */
   class SurfStressManager
   {

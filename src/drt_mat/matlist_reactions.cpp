@@ -7,7 +7,6 @@ is just a "control instance".
 
 \level 2
 
-\maintainer Johannes Kremheller
 *----------------------------------------------------------------------*/
 
 

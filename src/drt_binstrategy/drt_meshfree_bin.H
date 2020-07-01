@@ -3,7 +3,6 @@
 
 \brief
 
-\maintainer Jonas Eichinger
 
 \level 2
 
@@ -30,7 +29,6 @@ namespace DRT
      * single inheritance for making the meshfree boundary elements aware of the
      * parent relations.
      *
-     * \author Georg Hammerl (hammerl@lnm.mw.tum.de)
      *
      * \date November, 2012
      */

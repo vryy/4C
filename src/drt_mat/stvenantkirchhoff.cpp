@@ -5,7 +5,6 @@ St. Venant-Kirchhoff material
 
 \level 2
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 

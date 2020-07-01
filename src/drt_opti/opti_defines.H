@@ -30,7 +30,6 @@
       tau_old_(2) = 1.0+10*(fldAdPara_->Time()+fldAdPara_->Dt());
  #endif
 
-\maintainer Martin Kronbichler
 
 \level 3
 

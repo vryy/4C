@@ -4,9 +4,6 @@
 \brief Specification of wrapper to a serial vector
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 */
 /*----------------------------------------------------------------------*/
 #ifndef SERIALDENSEVECTOR_H

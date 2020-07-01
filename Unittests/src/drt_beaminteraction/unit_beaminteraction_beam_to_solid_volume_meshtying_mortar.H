@@ -4,7 +4,6 @@
 \brief Unit tests for the beam to volume meshtying mortar pair.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

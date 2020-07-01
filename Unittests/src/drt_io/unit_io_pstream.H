@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_IO_PSTREAM_H_

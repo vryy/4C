@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer  Sebastian Proell
 */
 
 #ifndef UNIT_VOIGT_NOTATION_H

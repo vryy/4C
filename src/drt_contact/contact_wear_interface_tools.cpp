@@ -2,7 +2,6 @@
 /*! \file
 \level 2
 
-\maintainer Matthias Mayr
 
 \brief Some tools for wear problems
 */

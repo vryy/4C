@@ -5,7 +5,6 @@
 
 \brief Meshtying of porous media using Lagrange multipliers
 
-\maintainer Matthias Mayr
 
 \level 3
 */

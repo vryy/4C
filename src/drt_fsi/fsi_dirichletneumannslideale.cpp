@@ -5,7 +5,6 @@
        with sliding ALE-structure interfaces
 
 
-\maintainer Matthias Mayr
 
 \level 1
 

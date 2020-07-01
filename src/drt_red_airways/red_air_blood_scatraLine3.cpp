@@ -3,7 +3,6 @@
 
 \brief Incomplete! - Purpose: Implements RedAirBloodScatraLine3 element
 
-\maintainer Carolin Geitner
 
 \level 3
 

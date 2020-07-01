@@ -3,7 +3,6 @@
 
 \brief Concrete implementation of the contact parameter interfaces.
 
-\maintainer Matthias Mayr
 
 \level 3
 

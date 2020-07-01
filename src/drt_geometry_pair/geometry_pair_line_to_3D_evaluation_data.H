@@ -4,7 +4,6 @@
 \brief Container for parameters for line to 3D pairs, as well as global evaluation data.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

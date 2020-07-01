@@ -3,7 +3,6 @@
 
 \brief Implicit structural time integration strategy.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

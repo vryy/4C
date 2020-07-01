@@ -4,7 +4,6 @@
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
 
-\maintainer Matthias Mayr
 
 \level 1
 */

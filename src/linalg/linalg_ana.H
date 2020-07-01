@@ -4,9 +4,6 @@
 \brief A family of abstract nice algebra operations (ANA)
 
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 */
 /*----------------------------------------------------------------------*/
 #ifndef LINALG_ANA_H
@@ -34,7 +31,6 @@ namespace LINALG
     \brief A virtual class implementing an abstract implicit linear combination
            on a vector-valued quantity.
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LCBase
     {
@@ -80,7 +76,6 @@ namespace LINALG
     \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
           an Epetra_Operator has as well.
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LightWeightOperatorBase
     {
@@ -168,7 +163,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LightWeightOperator : public LightWeightOperatorBase
     {
@@ -232,7 +226,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class OperatorTransposed : public LightWeightOperatorBase
     {
@@ -307,7 +300,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class OperatorScaled : public LightWeightOperatorBase
     {
@@ -383,7 +375,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class OperatorProduct : public LightWeightOperatorBase
     {
@@ -467,7 +458,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class OperatorSum : public LightWeightOperatorBase
     {
@@ -563,7 +553,6 @@ namespace LINALG
 
      \sa LightWeightOperatorBase, LINALG::ANA::inverse
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class OperatorInverse : public LightWeightOperatorBase
     {
@@ -671,7 +660,6 @@ namespace LINALG
 
     \sa LightWeightOperatorBase, Epetra_Vector
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class Vector : public Epetra_Vector
     {
@@ -841,7 +829,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lc_plus_lc : public LCBase
     {
@@ -891,7 +878,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lc_minus_lc : public LCBase
     {
@@ -940,7 +926,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_plus_lc : public LCBase
     {
@@ -990,7 +975,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_minus_lc : public LCBase
     {
@@ -1040,7 +1024,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lc_minus_vec : public LCBase
     {
@@ -1090,7 +1073,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_s_times_vec : public LCBase
     {
@@ -1143,7 +1125,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_s_times_lc : public LCBase
     {
@@ -1193,7 +1174,6 @@ namespace LINALG
 
     \sa LCBase, LC_lc_plus_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lcsv_plus_lcsv : public LCBase
     {
@@ -1246,7 +1226,6 @@ namespace LINALG
 
     \sa LCBase, LC_vec_plus_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_plus_lcsv : public LCBase
     {
@@ -1296,7 +1275,6 @@ namespace LINALG
 
     \sa LCBase, LC_lc_minus_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lcsv_minus_lcsv : public LCBase
     {
@@ -1348,7 +1326,6 @@ namespace LINALG
 
     \sa LCBase, LC_vec_minus_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_minus_lcsv : public LCBase
     {
@@ -1398,7 +1375,6 @@ namespace LINALG
 
     \sa LCBase, LC_lc_minus_vec
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lcsv_minus_vec : public LCBase
     {
@@ -1450,7 +1426,6 @@ namespace LINALG
 
     \sa LCBase
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_pointwise_vec : public LCBase
     {
@@ -1502,7 +1477,6 @@ namespace LINALG
 
     \sa LCBase, LC_vec_pointwise_vec
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_pointwise_lc : public LCBase
     {
@@ -1554,7 +1528,6 @@ namespace LINALG
 
     \sa LCBase, LC_vec_pointwise_vec, LC_vec_pointwise_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_vec_pointwise_lcsv : public LCBase
     {
@@ -1608,7 +1581,6 @@ namespace LINALG
 
     \sa LCBase, LC_vec_pointwise_vec
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lc_pointwise_lc : public LCBase
     {
@@ -1655,7 +1627,6 @@ namespace LINALG
 
     \sa LCBase, LC_lc_pointwise_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_lcsv_pointwise_lcsv : public LCBase
     {
@@ -1707,7 +1678,6 @@ namespace LINALG
 
     \sa LCBase, LC_Operator_times_lc
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_Operator_times_lcsv : public LCBase
     {
@@ -1753,7 +1723,6 @@ namespace LINALG
 
     \sa LCBase, LC_Operator_times_lcsv
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class LC_Operator_times_lc : public LCBase
     {

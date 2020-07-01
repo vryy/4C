@@ -2,7 +2,6 @@
 /*! \file
 \brief A class for a frictional contact node
 \level 2
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 

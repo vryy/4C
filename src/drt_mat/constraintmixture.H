@@ -19,7 +19,6 @@ For a detailed description see:
 
 \level 2
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------------*/
 

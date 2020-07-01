@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 #ifndef BEAMLINKRIGIDJOINTED_H

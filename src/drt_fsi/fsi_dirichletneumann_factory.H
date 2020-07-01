@@ -3,7 +3,6 @@
 
 \brief Factory to create appropriate DirichletNeumann Algorithm
 
-\maintainer Nora Hagmeyer
 
 \level 1
 */

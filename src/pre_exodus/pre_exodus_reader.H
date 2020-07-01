@@ -3,7 +3,6 @@
 
 \brief preprocessor reader for exodusII format
 
-\maintainer Martin Kronbichler
 
 \level 1
 
@@ -30,7 +29,6 @@ namespace EXODUS
   /*!
   \brief Mesh will in future store all information necessary to build a mesh
 
-  \author maf (frenzel@lnm.mw.tum.de)
   */
   class Mesh
   {
@@ -204,7 +202,6 @@ namespace EXODUS
   A Element Block is a tiny class storing element-type, name, etc. of a ElementBlock
   It implements its printout.
 
-  \author maf (frenzel@lnm.mw.tum.de)
   */
   class ElementBlock
   {

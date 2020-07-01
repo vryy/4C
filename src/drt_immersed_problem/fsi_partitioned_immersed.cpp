@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #include "fsi_partitioned_immersed.H"

@@ -23,7 +23,6 @@ Reference:
     rows and colums of the jacobian alphaij are swapped in comparison
     to the jacobian velderxy used in baciroutines for bfda test case
 
-\maintainer Martin Kronbichler
 
 \level 2
 

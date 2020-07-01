@@ -5,7 +5,6 @@ material according to
 
 \level 3
 
-\maintainer Amadeus Gebauer
 */
 /*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISONEOHOOKE_VARPROP_H_

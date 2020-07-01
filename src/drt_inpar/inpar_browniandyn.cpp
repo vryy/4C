@@ -2,7 +2,6 @@
 /*! \file
 \brief input parameter for Brownian dynamics simulation
 
-\maintainer Jonas Eichinger
 
 \level 2
 

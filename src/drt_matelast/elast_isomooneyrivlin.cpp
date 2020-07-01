@@ -8,7 +8,6 @@ MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 /* macros */

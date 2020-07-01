@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_

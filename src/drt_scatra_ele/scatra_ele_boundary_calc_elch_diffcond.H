@@ -3,7 +3,6 @@
 
 \brief evaluation of ScaTra boundary elements for diffusion-conduction formulation
 
-\maintainer Christoph Schmidt
 
 \level 2
  */

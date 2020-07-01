@@ -4,7 +4,6 @@
 \brief %NOX::NLN implementation of a pseudo transient non-linear
        solver.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

@@ -3,7 +3,6 @@
 
 \brief Basic fluid driver for stationary problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -5,7 +5,6 @@ concentrations and with advanced reaction terms
 
 \level 3
 
-   \maintainer Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_H

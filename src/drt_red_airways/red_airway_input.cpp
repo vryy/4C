@@ -4,7 +4,6 @@
 \brief Input for RedAirway, RedAcinus, RedInterAcinarDep, RedAirBloodScatra and
 RedAirBloodScatraLine3 elements
 
-\maintainer Carolin Geitner
 
 \level 3
 

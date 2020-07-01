@@ -6,7 +6,6 @@ with condensed structure interface displacements
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

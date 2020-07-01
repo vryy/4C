@@ -3,7 +3,6 @@
 
 \brief Standard solution strategy for electrochemistry problems (without meshtying)
 
-\maintainer Christoph Schmidt
 
 \level 2
 

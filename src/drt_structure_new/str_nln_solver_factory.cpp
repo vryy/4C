@@ -3,7 +3,6 @@
 
 \brief Factory for nonlinear solvers in structural dynamics
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

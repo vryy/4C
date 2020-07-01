@@ -9,7 +9,6 @@ The input line should read
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISONEOHOOKE_H_

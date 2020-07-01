@@ -3,7 +3,6 @@
 
 \brief Structural adapter for Structure-ALE problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3
@@ -42,7 +41,7 @@ namespace ADAPTER
    *  and biofilm.
    *
    * \date 12/2016
-   * \author rauch (rauch@lnm.mw.tum.de)          */
+   */
   class StructAleWrapper : public StructureWrapper
   {
    public:

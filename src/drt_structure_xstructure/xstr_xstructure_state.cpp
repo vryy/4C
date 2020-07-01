@@ -3,7 +3,6 @@
 
 \brief XStructure state handling ( only one single XFEM-discretization )
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

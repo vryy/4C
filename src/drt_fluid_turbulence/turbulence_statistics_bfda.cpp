@@ -3,7 +3,6 @@
 
 \brief routines for bfda test case
 
-\maintainer Martin Kronbichler
 
 \level 2
 

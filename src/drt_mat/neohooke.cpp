@@ -8,7 +8,6 @@
        MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
 \level 3
 
-\maintainer Amadeus Gebauer
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector
 \param  Epetra_SerialDenseMatrix* cmat          (o) constitutive matrix

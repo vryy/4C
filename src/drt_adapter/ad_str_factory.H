@@ -1,7 +1,6 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\maintainer  Anh-Tu Vuong
 
 \brief factory for structure adapters
 

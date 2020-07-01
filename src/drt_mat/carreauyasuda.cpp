@@ -5,7 +5,6 @@ Former file of Ursula Mayer
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/

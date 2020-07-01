@@ -2,7 +2,6 @@
 /*! \file
 \brief Solid Tet10 Element
 \level 1
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_TET10_H
 #define SO_TET10_H

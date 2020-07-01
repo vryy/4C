@@ -5,7 +5,6 @@
        into the header files, if necessary and till the C++11 standard is
        available in BACI.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

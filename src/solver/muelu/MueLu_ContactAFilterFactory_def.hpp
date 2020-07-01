@@ -3,7 +3,6 @@
 
 \brief MueLu factory class for BACI
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTAFILTERFACTORY_DEF_HPP_

@@ -2,7 +2,6 @@
 /*! \file
 \level 2
 
-\maintainer Matthias Mayr
 
 \brief Bridge for accessing meshtying & contact from STR time integration
 */

@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer  Matthias Mayr
 *----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_NONOX_H

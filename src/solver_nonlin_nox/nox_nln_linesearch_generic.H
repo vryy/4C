@@ -3,7 +3,6 @@
 
 \brief generic class for %NOX::NLN backtracking line search
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

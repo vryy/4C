@@ -2,7 +2,6 @@
 /*! \file
 \brief Generic class for all mortar solution strategies
 
-\maintainer Matthias Mayr
 
 \level 2
 */

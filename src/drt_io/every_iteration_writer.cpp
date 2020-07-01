@@ -2,7 +2,6 @@
 /*! \file
 \brief Write output for each Newton step during one load step in an extra output file.
 
-\maintainer Martin Kronbichler
 
 \level 3
 */

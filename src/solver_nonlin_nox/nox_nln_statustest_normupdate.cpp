@@ -5,7 +5,6 @@
        test can be used to check the solution increment \f$\Delta x\f$
        for convergence.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

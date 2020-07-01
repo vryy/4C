@@ -2,7 +2,6 @@
 /*! \file
 
 \level 0
-\maintainer Martin Kronbichler
 
 \brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */

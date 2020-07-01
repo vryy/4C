@@ -3,7 +3,6 @@
 
 \brief Interface for element level of adjoint fluid equations
 
-\maintainer Martin Kronbichler
 
 \level 3
 

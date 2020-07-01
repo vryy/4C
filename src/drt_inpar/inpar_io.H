@@ -4,7 +4,6 @@
 
 \brief Input parameters for global IO section
 
-\maintainer Matthias Mayr
 
 \level 1
 */

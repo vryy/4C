@@ -2,7 +2,6 @@
 /*! \file
 \brief quadratic nonlinear tetrahedron
 \level 1
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "so_tet10.H"

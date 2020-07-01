@@ -3,7 +3,6 @@
 
 \brief boundary element for the wall-enrichment elements
 
-\maintainer Martin Kronbichler
 
 \level 2
 

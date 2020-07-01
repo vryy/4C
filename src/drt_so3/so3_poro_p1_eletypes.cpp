@@ -5,7 +5,6 @@
 
  \level 2
 
-\maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "so3_poro_p1_eletypes.H"

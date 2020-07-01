@@ -3,7 +3,6 @@
 
 \brief MueLu repartition algorithm for contact
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_

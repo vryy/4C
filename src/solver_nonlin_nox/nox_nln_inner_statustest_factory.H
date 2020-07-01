@@ -3,7 +3,6 @@
 
 \brief factory for user defined NOX inner status tests
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

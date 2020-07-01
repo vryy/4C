@@ -4,7 +4,6 @@
 \brief Line to surface interaction with simple Gauss point projection and boundary segmentation.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

@@ -3,7 +3,6 @@
 
 \brief volume element
 
-\maintainer Jonas Eichinger
 
 \level 2
 */

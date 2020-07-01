@@ -8,7 +8,6 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 
 \level 3
 
-\maintainer Johannes Kremheller
 
 */
 /*---------------------------------------------------------------------*/

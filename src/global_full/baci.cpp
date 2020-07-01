@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Martin Kronbichler
 
 \brief Main routine
 

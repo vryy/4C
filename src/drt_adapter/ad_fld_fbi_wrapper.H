@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #ifndef AD_FLD_FBI_WRAPPER_H

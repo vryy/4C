@@ -3,7 +3,6 @@
 
 \brief Static (time) integrator.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

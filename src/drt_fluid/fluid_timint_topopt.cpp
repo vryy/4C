@@ -3,7 +3,6 @@
 
 \brief Basic time integration driver for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

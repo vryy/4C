@@ -1,8 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
-// kronbichler@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15249
 //
 // Check the SpecialCheck_InterfaceTips-Check for ALE! --> for this testcase does not matter as
 // nodes are not move a lot, where the dofsets change !!!

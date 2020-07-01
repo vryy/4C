@@ -4,7 +4,6 @@
 \brief Implementation of the Lagrangian merit function for
        constrained problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

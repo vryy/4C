@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_H

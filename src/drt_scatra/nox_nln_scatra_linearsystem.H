@@ -4,7 +4,6 @@
 \brief Derived class which manages the special requirements to the linear
        solver for scatra problems.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,5 +1,4 @@
 /*! \file
-\maintainer Nora Hagmeyer
 
 \brief Setup of the list of valid contact constitutive laws for input
 

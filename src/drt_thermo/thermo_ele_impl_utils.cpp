@@ -2,7 +2,6 @@
 /*! \file
 
 \level 1
-\maintainer Sebastian Proell
 */
 
 #ifdef D_THERMO

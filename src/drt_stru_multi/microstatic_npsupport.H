@@ -3,7 +3,6 @@
 
 \brief Service for microstructural problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

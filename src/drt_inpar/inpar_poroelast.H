@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Johannes Kremheller
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef INPAR_POROELAST_H_

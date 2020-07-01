@@ -3,7 +3,6 @@
 
 \brief Structure field adapter for coupling with reduced-D airway trees
 
-\maintainer Carolin Geitner
 
 \level 3
 

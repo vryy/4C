@@ -2,7 +2,6 @@
 /*! \file
 \brief Control routine for structural dynamics (outsourced to adapter layer)
 
-\maintainer Matthias Mayr
 
 \level 1
 */

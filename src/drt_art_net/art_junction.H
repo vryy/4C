@@ -2,7 +2,6 @@
 /*! \file
 \brief Method to deal with one dimensional artery juction bcs
 
-\maintainer Johannes Kremheller
 
 \level 3
 
@@ -37,7 +36,6 @@ namespace ART
     /*!
     \brief structure of required nodal information at a junction
     this structure is meant to do some organisation stuff
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     struct JunctionNodeParams
@@ -58,7 +56,6 @@ namespace ART
     /*!
     \brief 1d-artery junction boundary condition wrapper
     this class is meant to do some organisation stuff
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class ArtJunctionWrapper
     {
@@ -123,7 +120,6 @@ namespace ART
     /*!
     \brief 1d-artery junction boundary condition
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class ArtJunctionBc

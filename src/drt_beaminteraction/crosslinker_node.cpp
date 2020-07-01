@@ -3,7 +3,6 @@
 
 \brief A class for a crosslinker node
 
-\maintainer Jonas Eichinger
 
 \date Oct, 2016
 

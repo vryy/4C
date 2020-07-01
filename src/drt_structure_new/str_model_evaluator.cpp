@@ -3,7 +3,6 @@
 
 \brief Manager of the model evaluator calls.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

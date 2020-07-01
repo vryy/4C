@@ -4,7 +4,6 @@
 \brief Fluid field adapter for AC-FS3I problems
 
 
-\maintainer Matthias Mayr
 
 \level 3
 */

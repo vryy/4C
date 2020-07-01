@@ -2,7 +2,6 @@
 /*! \file
 \brief A class for a crosslinker material
 
-\maintainer Jonas Eichinger
 
 \level 3
 

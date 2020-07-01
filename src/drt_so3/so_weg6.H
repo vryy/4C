@@ -3,7 +3,6 @@
 \brief Solid Wedge6 Element
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef SO_WEG6_H_
@@ -69,7 +68,6 @@ namespace DRT
     /*!
     \brief A C++ version of the 6-node wedge solid element
 
-    \author frenzel (frenzel@lnm.mw.tum.de)
     */
     class So_weg6 : public So_base
     {

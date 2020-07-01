@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -69,7 +68,6 @@ namespace DRT
   of the time, but it does have additional query methods for the parent element
   and other connectivity information.
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Element : public DRT::ParObject
   {
@@ -1299,7 +1297,6 @@ namespace DRT
   return the same element. The parent slave element is the element on the other
   side that usually has a different orientation of nodes.
 
-  \author kronbichler (kronbichler@lnm.mw.tum.de)
   */
 
   class FaceElement : public Element

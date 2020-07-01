@@ -3,7 +3,6 @@
 
 \brief Basic time integration driver for reduced models
 
-\maintainer Martin Kronbichler
 
 \level 2
 

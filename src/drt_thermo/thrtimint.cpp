@@ -2,7 +2,6 @@
 /*! \file
 \brief Time integration for spatially discretised thermal dynamics
 \level 1
-\maintainer Sebastian Proell
 */
 
 

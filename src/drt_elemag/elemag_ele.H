@@ -9,9 +9,6 @@ Pack, Unpack, NumDofPerNode etc.
 
 \level 2
 
-\maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
 */
 /*----------------------------------------------------------------------*/
 

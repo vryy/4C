@@ -3,7 +3,6 @@
 
 \brief Control routine for coupled reduced airways and continuum tissue models
 
-\maintainer Carolin Geitner
 
 \level 3
 

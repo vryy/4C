@@ -6,7 +6,6 @@ This particular type of expansion is taken from the PhD Thesis from Tamellini
   "Polynomial approximation of PDEs with stochastic coefficients"
 The correlation structure is based on squared exponential kernel
 
-\maintainer Jonas Nitzler
 
 \level 3
 */

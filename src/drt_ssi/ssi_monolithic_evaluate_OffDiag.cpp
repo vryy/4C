@@ -3,7 +3,6 @@
 \brief Evaluation of off-diagonal blocks for monolithic SSI
 \level 2
 
-\maintainer Stephan Sinzig
 
  */
 /*----------------------------------------------------------------------*/

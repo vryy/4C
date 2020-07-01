@@ -46,7 +46,6 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

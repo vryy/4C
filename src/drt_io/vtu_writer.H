@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef IO_VTU_WRITER_H

@@ -4,7 +4,6 @@
 \brief A collection of sparse matrix printing methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

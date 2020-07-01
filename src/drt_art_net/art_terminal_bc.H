@@ -2,7 +2,6 @@
 /*! \file
 \brief Method to deal with one dimensional artery inlet bcs
 
-\maintainer Johannes Kremheller
 
 \level 3
 
@@ -37,7 +36,6 @@ namespace ART
     /*!
     \brief 1d-artery inlet boundary condition, this class is meant to do
      solve the bc at the inlet of a one-dimensional arterial network
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     /*

@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_UNBIASED_H
@@ -18,7 +17,6 @@ namespace CONTACT
   \brief A class for performing unbiased self contact search in 2D / 3D based on a binary search
   tree and processor specific dual graphs to enhance parallel search
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   */
 
   class UnbiasedSelfBinaryTree : public SelfBinaryTree

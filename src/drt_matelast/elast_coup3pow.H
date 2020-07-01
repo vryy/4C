@@ -5,7 +5,6 @@ of a general power-type material.
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUP3POW_H_

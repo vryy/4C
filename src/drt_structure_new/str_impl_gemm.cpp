@@ -3,7 +3,6 @@
 
 \brief Generalized Energy Momentum time integrator.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

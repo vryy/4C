@@ -3,7 +3,6 @@
 
 \brief Basis of all FSI algorithms
 
-\maintainer Matthias Mayr
 
 \level 1
 */

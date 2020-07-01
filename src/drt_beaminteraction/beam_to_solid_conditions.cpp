@@ -4,7 +4,6 @@
 \brief Manage the beam-to-solid conditions.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 
 

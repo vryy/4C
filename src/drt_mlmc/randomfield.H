@@ -2,7 +2,6 @@
 /*! \file
 \brief Interface class for random fields using FFT algorithms
 
-\maintainer Jonas Nitzler
 
 \level 2
 */

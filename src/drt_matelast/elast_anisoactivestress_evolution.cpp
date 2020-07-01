@@ -2,7 +2,6 @@
 /*! \file
 \brief Active stress material
 
-\maintainer Amadeus Gebauer
 
 \level 2
 */

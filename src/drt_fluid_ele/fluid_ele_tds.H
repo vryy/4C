@@ -3,7 +3,6 @@
 
 \brief time-dependent subgrid scale functionality
 
-\maintainer Martin Kronbichler
 
 \level 3
 

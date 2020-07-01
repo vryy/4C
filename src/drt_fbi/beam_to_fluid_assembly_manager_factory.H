@@ -4,7 +4,6 @@
 \brief Factory to create appropriate beam to fluid meshtying assembly managers for the desired
 constraint discretization approach
 
-\maintainer Nora Hagmeyer
 
 \level 2
 */

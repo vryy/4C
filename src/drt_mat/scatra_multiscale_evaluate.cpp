@@ -18,7 +18,6 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_multiscale.H"

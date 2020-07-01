@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_H
 #define SCATRA_MAT_H

@@ -3,7 +3,6 @@
 
 \brief computes Vreman constant C_v dynamically
 
-\maintainer Martin Kronbichler
 
 \level 2
 

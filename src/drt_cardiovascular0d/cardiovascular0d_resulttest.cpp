@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 *----------------------------------------------------------------------*/
 
 #include <string>

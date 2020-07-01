@@ -22,7 +22,6 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
   | !!! ATTENTION !!! Many major mistakes in literature that were corrected here !!!!  |
   |____________________________________________________________________________________|
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

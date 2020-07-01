@@ -8,8 +8,6 @@
        or zero pressure) modes.
 
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 */
 /*----------------------------------------------------------------------*/
 

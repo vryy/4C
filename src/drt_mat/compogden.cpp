@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector

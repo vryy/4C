@@ -5,7 +5,6 @@
 projection.
 
 \level 1
-\maintainer Nora Hagmeyer
 */
 
 #ifndef BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H_

@@ -3,7 +3,6 @@
 
 \brief implementation of enrichment-based wall model for turbulence
 
-\maintainer Martin Kronbichler
 
 \level 2
 

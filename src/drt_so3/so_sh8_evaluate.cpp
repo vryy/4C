@@ -3,7 +3,6 @@
 \brief some element evaluate
 \level 1
 
-\maintainer Christoph Meier
 
 */
 /*----------------------------------------------------------------------*/

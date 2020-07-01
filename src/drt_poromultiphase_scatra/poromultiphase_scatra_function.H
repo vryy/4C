@@ -8,7 +8,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"

@@ -4,7 +4,6 @@
 \brief Base element for interactions between a beam and a solid.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

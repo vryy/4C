@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 Here is everything related with writing a dat-file
  */

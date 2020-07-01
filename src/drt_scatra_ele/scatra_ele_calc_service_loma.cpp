@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Anh-Tu Vuong
 */
 /*--------------------------------------------------------------------------*/
 #include "../drt_geometry/position_array.H"

@@ -4,9 +4,6 @@
 \brief structs to store integration points and weights together
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 *----------------------------------------------------------------------*/
 #ifndef UTILS_INTEGRATION_H

@@ -4,7 +4,6 @@
 \brief Unit tests for line to volume geometry pairs with the segmentation algorithm.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

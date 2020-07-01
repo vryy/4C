@@ -10,7 +10,6 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 
 \level 3
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 /* headers */

@@ -10,7 +10,6 @@ parameters or totally different strain energy function).
 \level 2
 
 
-\maintainer Christoph Schmidt
 
 */
 

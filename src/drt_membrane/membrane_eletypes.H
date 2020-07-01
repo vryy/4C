@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Sebastian Fuchs
 
 \brief Nonlinear Membrane Finite Element Type
 

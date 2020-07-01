@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch.H"

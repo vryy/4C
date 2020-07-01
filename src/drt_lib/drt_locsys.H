@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------------*/
@@ -71,7 +70,6 @@ namespace DRT
     don't solve the original but an algebraic manipulated system of equations. Nevertheless we still
     solve for the original, non-rotated DoFs D.
 
-    \author meier (meier@lnm.mw.tum.de)
     */
     class LocsysManager
     {

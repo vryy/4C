@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #ifndef GEOMETRYCOUPLER_FBI_H
 #define GEOMETRYCOUPLER_FBI_H

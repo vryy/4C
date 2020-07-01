@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #ifndef ELECTRODE_H

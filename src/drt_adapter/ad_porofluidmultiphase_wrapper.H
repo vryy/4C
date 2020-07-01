@@ -4,7 +4,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ADAPTER_AD_POROFLUIDMULTIPHASE_WRAPPER_H_

@@ -6,7 +6,6 @@ approach for Fluid-beam interaction.
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
 #ifndef AD_FBI_CONSTRAINTBRIDGE_PENALTY_H_

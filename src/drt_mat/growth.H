@@ -5,7 +5,6 @@ growth laws.
 
 \level 2
 
-   \maintainer Amadeus Gebauer
  *----------------------------------------------------------------------*/
 #ifndef GROWTH_H
 #define GROWTH_H

@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -41,7 +40,6 @@ namespace CONTACT
    node's processor (ColMap). The class CoNodeDataContainer must be declared
    before the CoNode itself.
 
-   \author gitterle (gitterle@lnm.mw.tum.de)
    */
   class CoNodeDataContainer
   {
@@ -719,7 +717,6 @@ namespace CONTACT
   are not needed for normal contact nodes.
   CoNodePoroDataContainer must be declared before the CoNode itself.
 
-  \author ager (ager@lnm.mw.tum.de)
   */
   class CoNodePoroDataContainer
   {
@@ -838,7 +835,6 @@ namespace CONTACT
   This class contains additional information from tsi contact nodes which are
   are not needed for normal contact nodes.
 
-  \author seitz (seitz@lnm.mw.tum.de)
   */
   class CoNodeTSIDataContainer
   {
@@ -939,7 +935,6 @@ namespace CONTACT
   This class contains additional information from EHL contact nodes which are
   are not needed for normal contact nodes.
 
-  \author seitz (seitz@lnm.mw.tum.de)
   */
   class CoNodeEhlDataContainer
   {
@@ -1010,7 +1005,6 @@ namespace CONTACT
 
    This class represents a finite element node capable of contact.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class CoNode : public MORTAR::MortarNode
   {

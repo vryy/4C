@@ -5,7 +5,6 @@
 constraint discretization approach
 
 \level 2
-\maintainer Nora Hagmeyer
 */
 
 #include "beam_to_fluid_assembly_manager_factory.H"

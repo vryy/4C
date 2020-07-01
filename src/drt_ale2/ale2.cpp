@@ -3,7 +3,6 @@
 
 \brief ALE element for 2D case
 
-\maintainer Matthias Mayr
 
 \level 1
 */

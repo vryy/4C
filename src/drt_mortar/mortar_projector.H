@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_PROJECTOR_H
@@ -24,7 +23,6 @@ namespace MORTAR
   /*!
   \brief A class to perform projections of nodes onto opposing elements
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class MortarProjector : DRT::SingletonDestruction
@@ -74,7 +72,6 @@ namespace MORTAR
   /*!
   \brief A class to perform projections of nodes onto opposing elements
 
-  \author farah (farah@lnm.mw.tum.de)
   */
   template <DRT::Element::DiscretizationType distype>
   class MortarProjectorCalc : public MortarProjector
@@ -280,7 +277,6 @@ namespace MORTAR
   /*!
   \brief A class to perform element based projections of nodes onto opposing elements
 
-  \author farah (farah@lnm.mw.tum.de)
   */
   template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
   class MortarProjectorCalc_EleBased : public MortarProjector

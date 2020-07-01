@@ -2,7 +2,6 @@
 /*! \file
 \brief tri-quadratic displacement based solid element
 \level 1
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

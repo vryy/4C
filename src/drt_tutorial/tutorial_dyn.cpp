@@ -3,7 +3,6 @@
 
 \brief student's c++/baci tutorial control algorithm
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

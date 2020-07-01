@@ -3,7 +3,6 @@
 
 \brief BDF-2 time integration for reduced models
 
-\maintainer Martin Kronbichler
 
 \level 2
 

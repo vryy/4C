@@ -4,7 +4,6 @@
 \brief Unit tests for the beam to fluid meshtying gpts pair.
 
 \level 3
-\maintainer Nora Hagmeyer
 */
 // End doxygen header.
 

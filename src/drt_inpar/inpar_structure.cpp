@@ -3,7 +3,6 @@
 
 \brief Input parameters for structure
 
-\maintainer Matthias Mayr
 
 \level 1
 */

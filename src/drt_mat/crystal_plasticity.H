@@ -89,7 +89,6 @@ HPCOEFF			- vector containing NUMSUBSETS entries for the Hall-Petch coefficients
 
 \level 3
 
-\maintainer Jan Schnabel
 */
 
 /*----------------------------------------------------------------------*

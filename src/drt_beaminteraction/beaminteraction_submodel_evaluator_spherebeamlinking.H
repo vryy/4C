@@ -3,7 +3,6 @@
 
 \brief class for managing rigid sphere to beam crosslinking
 
-\maintainer Jonas Eichinger
 
 \level 3
 

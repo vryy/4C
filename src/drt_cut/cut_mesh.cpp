@@ -5,10 +5,6 @@
 mesh
 
 \level 3
-\maintainer  Martin Kronbichler
-             kronbichler@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 

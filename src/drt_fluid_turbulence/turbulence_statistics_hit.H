@@ -3,7 +3,6 @@
 
 \brief routines for homogeneous isotropic turbulence
 
-\maintainer Martin Kronbichler
 
 \level 2
 

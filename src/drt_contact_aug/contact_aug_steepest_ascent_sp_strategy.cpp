@@ -2,7 +2,6 @@
 /*! \file
 \brief Some special solution strategy
 
-\maintainer Matthias Mayr
 
 \level 3
 */

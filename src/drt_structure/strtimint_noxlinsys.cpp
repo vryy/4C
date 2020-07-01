@@ -3,7 +3,6 @@
 \brief Use #NOX as non-linear solution technique for implicit
        structureal time integration
 
-\maintainer Matthias Mayr
 
 \level 3
 */

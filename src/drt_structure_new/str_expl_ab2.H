@@ -3,7 +3,6 @@
 
 \brief Adams-Bashforth-2 time integration for solid dynamics
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

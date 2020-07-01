@@ -3,7 +3,6 @@
 
  \brief evaluate routines for the artery element
 
-\maintainer Johannes Kremheller
 
 \level 3
 

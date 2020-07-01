@@ -6,7 +6,6 @@ growth, e.g., lithium plating
 
 \level 2
 
-\maintainer Christoph Schmidt
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_H

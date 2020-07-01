@@ -3,7 +3,6 @@
 
 \brief Class to assemble pair based contributions into global matrices.
 
-\maintainer Ivo Steinbrecher
 
 \level 3
 

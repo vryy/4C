@@ -2,7 +2,6 @@
 /*! \file
 \brief Main control routine for all arterial network solvers.
 
-\maintainer Johannes Kremheller
 
 \level 3
 

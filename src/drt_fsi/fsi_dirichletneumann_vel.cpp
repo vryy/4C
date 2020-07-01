@@ -4,7 +4,6 @@
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 
-\maintainer Nora Hagmeyer
 
 \level 3
 */

@@ -3,7 +3,6 @@
 
 \brief base class for a triad interpolation scheme
 
-\maintainer Maximilian Grill
 
 \level 3
 */

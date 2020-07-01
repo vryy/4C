@@ -7,7 +7,6 @@ Integrate internal face terms on an internal faces element
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>

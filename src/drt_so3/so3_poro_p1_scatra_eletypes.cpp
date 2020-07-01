@@ -6,10 +6,6 @@
 
  \level 2
 
- \maintainer Christoph Schmidt
-             schmidt@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 15251
  *----------------------------------------------------------------------*/
 
 #include "so3_poro_p1_scatra.H"

@@ -4,7 +4,6 @@
 \brief Class for interaction of lines and other geometry types.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

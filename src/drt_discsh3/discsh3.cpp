@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 #include "discsh3.H"

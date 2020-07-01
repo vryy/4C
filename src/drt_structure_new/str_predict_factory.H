@@ -3,7 +3,6 @@
 
 \brief Factory class to build predictor objects
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

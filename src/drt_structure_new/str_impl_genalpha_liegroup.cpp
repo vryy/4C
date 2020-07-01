@@ -4,7 +4,6 @@
 \brief Modified Generalized Alpha time integrator for Lie groups
       (can handle non-additive rotational pseudo-vector DoFs)
 
-\maintainer Maximilian Grill
 
 \level 3
 

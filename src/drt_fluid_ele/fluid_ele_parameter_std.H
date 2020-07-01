@@ -3,7 +3,6 @@
 
 \brief Setting of general fluid parameter for element evaluation
 
-\maintainer Martin Kronbichler
 
 \level 1
 

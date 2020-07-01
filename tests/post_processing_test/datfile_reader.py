@@ -1,7 +1,3 @@
-#
-# Maintainer: Amadeus Gebauer
-#
-
 import re
 
 

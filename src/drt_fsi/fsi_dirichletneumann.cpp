@@ -3,7 +3,6 @@
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 
-\maintainer Matthias Mayr
 
 \level 1
 */

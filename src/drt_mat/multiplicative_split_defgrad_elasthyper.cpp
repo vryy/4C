@@ -5,7 +5,6 @@ multiplicatively into elastic and inelastic parts
 
 \level 3
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 

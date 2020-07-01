@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -39,7 +38,6 @@ namespace DRT
   an individual way. Whenever you need explicit communication, check this class first before
   implementing your own mpi stuff.
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Exporter
   {

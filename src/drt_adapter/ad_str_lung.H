@@ -4,7 +4,6 @@
 \brief Structure field adapter for fsi airway simulations with
 attached parenchyma balloon
 
-\maintainer Carolin Geitner
 
 \level 3
 

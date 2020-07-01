@@ -5,7 +5,6 @@
             intersection interface has to know
 \level 2
 
-\maintainer Martin Kronbichler
 */
 
 

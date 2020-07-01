@@ -2,7 +2,6 @@
 /*! \file
 \brief base class for all implicit time integrators in thermo-field
 \level 1
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

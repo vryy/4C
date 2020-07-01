@@ -6,7 +6,6 @@ transport within electrochemical substances
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_sti_elch.H"

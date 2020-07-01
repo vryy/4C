@@ -2,7 +2,6 @@
 /*! \file
 \brief Contains a summary of contact utility functions
 
-\maintainer Matthias Mayr
 
 \level 2
 

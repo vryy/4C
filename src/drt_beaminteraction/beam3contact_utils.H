@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_UTILS_H

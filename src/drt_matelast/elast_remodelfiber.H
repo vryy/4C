@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_REMODELFIBER_H_

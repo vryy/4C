@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Amadeus Gebauer
 
 \brief Input parameters for model order reduction
 

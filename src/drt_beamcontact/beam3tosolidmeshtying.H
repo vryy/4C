@@ -6,7 +6,6 @@ element
 
 \level 3
 
-\maintainer Ivo Steinbrecher
 
 *----------------------------------------------------------------------*/
 #ifndef BEAM3TSMT_H
@@ -23,7 +22,6 @@ namespace CONTACT
    \brief meshtying element for meshtying between a 3D beam and several 2D surface (belonging to 3D
    solid) elements
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Beam3tosolidmeshtyinginterface

@@ -6,7 +6,6 @@ within isothermal electrodes
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_CALC_ELCH_ELECTRODE_H

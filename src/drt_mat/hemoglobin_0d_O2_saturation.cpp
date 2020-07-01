@@ -3,7 +3,6 @@
 \brief Gives relevant quantities of O2 saturation of blood (hemoglobin), used for scatra in reduced
 dimensional airway elements framework (transport in elements and between air and blood)
 
-\maintainer Carolin Geitner
 
 \level 3
 */

@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Amadeus Gebauer
 */
 
 #ifndef UNIT_SPECIAL_ASSERTIONS_H_

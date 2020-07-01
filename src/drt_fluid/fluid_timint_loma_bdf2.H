@@ -3,7 +3,6 @@
 
 \brief BDF2 time integrator for Low Mach number problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

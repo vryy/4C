@@ -3,7 +3,6 @@
 
 \brief Method to deal with womersley flow profiles
 
-\maintainer Martin Kronbichler
 
 \level 3
 
@@ -163,7 +162,6 @@ namespace FLD
     /*!
     \brief Womersley boundary condition
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class FluidVolumetricSurfaceFlowBc
     {

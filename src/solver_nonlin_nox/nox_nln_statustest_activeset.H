@@ -4,7 +4,6 @@
 \brief Check the active set for convergence. Only meaningful for
        inequality constrained problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

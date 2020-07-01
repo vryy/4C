@@ -2,7 +2,6 @@
 /*! \file
 \brief integrate mortar terms
 \level 1
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_INTEGRATOR_H
@@ -38,7 +37,6 @@ namespace MORTAR
   /*!
   \brief A class to implement MortarIntegratorCalc
 
-  \author farah (farah@lnm.mw.tum.de)
   */
   class MortarIntegrator : DRT::SingletonDestruction
   {
@@ -86,7 +84,6 @@ namespace MORTAR
          in 1D (which is equivalent to a 2D coupling problem) and in 2D
          (which is equivalent to a 3D coupling problem)
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
   class MortarIntegratorCalc : public MortarIntegrator

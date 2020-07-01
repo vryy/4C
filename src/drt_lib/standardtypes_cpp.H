@@ -3,7 +3,6 @@
 
 \brief include standardtypes header
 
-\maintainer Martin Kronbichler
 
 \level 0
 

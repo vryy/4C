@@ -5,7 +5,6 @@
 not be directly assembled into the global matrices. They have to be assembled into the global
 coupling matrices M and D first.
 
-\maintainer Nora Hagmeyer
 
 \level 3
 

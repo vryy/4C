@@ -1,5 +1,4 @@
 //
-// Maintainer: Matthias Mayr
 //
 // simple two rigid-body contact example
 // use saddle point multigrid solver

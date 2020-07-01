@@ -2,7 +2,6 @@
 /*! \file
 \brief Statics analysis
 \level 1
-\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

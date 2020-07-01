@@ -3,7 +3,6 @@
 
 \brief Utility routines for the structural non-linear solver classes.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -2,7 +2,6 @@
 /*! \file
 \brief Thermal time integration with forward Euler order (explicit)
 \level 3
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

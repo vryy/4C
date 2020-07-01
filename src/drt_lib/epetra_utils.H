@@ -3,7 +3,6 @@
 
 \brief General utility methods for all Epetra objects
 
-\maintainer Martin Kronbichler
 
 \level 1
 

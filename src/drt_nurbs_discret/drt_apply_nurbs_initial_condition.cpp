@@ -4,7 +4,6 @@
 \brief A service method allowing the application of initial conditions
        for nurbs discretisations.
 
-\maintainer Martin Kronbichler
 
 \level 2
 */

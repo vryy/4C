@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_CARDIAC_MONODOMAIN_H

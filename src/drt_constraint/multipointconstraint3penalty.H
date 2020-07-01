@@ -3,7 +3,6 @@
 \brief Basic constraint class, dealing with multi point constraints
 \level 2
 
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

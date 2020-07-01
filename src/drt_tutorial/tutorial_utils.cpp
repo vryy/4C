@@ -3,7 +3,6 @@
 
 \brief student's c++/baci tutorial utility methods
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

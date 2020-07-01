@@ -4,10 +4,6 @@
 \brief A set of integration routines for faces on elements
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089-289-15235
-
 *----------------------------------------------------------------------*/
 
 #include "drt_utils_boundary_integration.H"
