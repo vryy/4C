@@ -27,28 +27,26 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> interface_map_thermo,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
-    : block_map_thermo_(block_map_thermo),
-      block_map_thermo_interface_(block_map_thermo_interface),
-      full_map_scatra_(full_map_scatra),
-      full_map_thermo_(full_map_thermo),
-      interface_map_scatra_(interface_map_scatra),
-      interface_map_thermo_(interface_map_thermo),
-      meshtying_strategy_scatra_(meshtying_strategy_scatra),
-      meshtying_strategy_thermo_(meshtying_strategy_thermo),
-      scatra_(scatra),
-      thermo_(thermo)
+    : block_map_thermo_(std::move(block_map_thermo)),
+      block_map_thermo_interface_(std::move(block_map_thermo_interface)),
+      full_map_scatra_(std::move(full_map_scatra)),
+      full_map_thermo_(std::move(full_map_thermo)),
+      interface_map_scatra_(std::move(interface_map_scatra)),
+      interface_map_thermo_(std::move(interface_map_thermo)),
+      meshtying_strategy_scatra_(std::move(meshtying_strategy_scatra)),
+      meshtying_strategy_thermo_(std::move(meshtying_strategy_thermo)),
+      scatra_(std::move(scatra)),
+      thermo_(std::move(thermo))
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -181,21 +179,21 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchingNodes(
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> interface_map_thermo,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
-    : ScatraThermoOffDiagCoupling(block_map_thermo, block_map_thermo_interface, full_map_scatra,
-          full_map_thermo, interface_map_scatra, interface_map_thermo, meshtying_strategy_scatra,
-          meshtying_strategy_thermo, scatra, thermo)
+    : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
+          std::move(block_map_thermo_interface), std::move(full_map_scatra),
+          std::move(full_map_thermo), std::move(interface_map_scatra),
+          std::move(interface_map_thermo), std::move(meshtying_strategy_scatra),
+          std::move(meshtying_strategy_thermo), std::move(scatra), std::move(thermo))
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -558,21 +556,21 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMortarStandard(
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> interface_map_thermo,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
-    : ScatraThermoOffDiagCoupling(block_map_thermo, block_map_thermo_interface, full_map_scatra,
-          full_map_thermo, interface_map_scatra, interface_map_thermo, meshtying_strategy_scatra,
-          meshtying_strategy_thermo, scatra, thermo)
+    : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
+          std::move(block_map_thermo_interface), std::move(full_map_scatra),
+          std::move(full_map_thermo), std::move(interface_map_scatra),
+          std::move(interface_map_thermo), std::move(meshtying_strategy_scatra),
+          std::move(meshtying_strategy_thermo), std::move(scatra), std::move(thermo))
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

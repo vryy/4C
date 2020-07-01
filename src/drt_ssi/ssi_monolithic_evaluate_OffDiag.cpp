@@ -30,24 +30,23 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> full_map_structure,
-    const Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra,
+    Teuchos::RCP<const Epetra_Map> full_map_structure,
+    Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
-    : block_map_structure_(block_map_structure),
-      full_map_scatra_(full_map_scatra),
-      full_map_structure_(full_map_structure),
-      interface_coupling_structure_(interface_coupling_structure),
-      interface_map_scatra_(interface_map_scatra),
-      meshtying_strategy_s2i_(meshtying_strategy_s2i),
-      scatra_(scatra),
-      structure_(structure)
+    : block_map_structure_(std::move(block_map_structure)),
+      full_map_scatra_(std::move(full_map_scatra)),
+      full_map_structure_(std::move(full_map_structure)),
+      interface_coupling_structure_(std::move(interface_coupling_structure)),
+      interface_map_scatra_(std::move(interface_map_scatra)),
+      meshtying_strategy_s2i_(std::move(meshtying_strategy_s2i)),
+      scatra_(std::move(scatra)),
+      structure_(std::move(structure))
 {
-  return;
 }
 
 

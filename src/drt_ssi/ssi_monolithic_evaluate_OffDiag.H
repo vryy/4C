@@ -39,12 +39,12 @@ namespace SSI
    public:
     //! constructor
     explicit ScatraStructureOffDiagCoupling(
-        const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-        const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-        const Teuchos::RCP<const Epetra_Map> full_map_structure,
-        const Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
-        const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-        const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+        Teuchos::RCP<const Epetra_Map> full_map_scatra,
+        Teuchos::RCP<const Epetra_Map> full_map_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
+        Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
@@ -89,10 +89,10 @@ namespace SSI
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! scatra problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
     //! structure problem
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H
