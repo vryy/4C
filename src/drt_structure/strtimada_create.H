@@ -2,7 +2,6 @@
 /*! \file
 \brief Creation of auxiliary time integration scheme for time step size adaptivity
 \level 1
-\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

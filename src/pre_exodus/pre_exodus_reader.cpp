@@ -3,7 +3,6 @@
 
 \brief preprocessor reader for exodusII format
 
-\maintainer Martin Kronbichler
 
 \level 1
 

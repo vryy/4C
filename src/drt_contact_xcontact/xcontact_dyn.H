@@ -2,7 +2,6 @@
 /** \file
 \brief inequality level-set approach a.k.a. xcontact or extended contact
 
-\maintainer Matthias Mayr
 
 \level 3
 */

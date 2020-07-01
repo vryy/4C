@@ -3,7 +3,6 @@
 
 \brief Implements an inter-acinar dependency (element)
 
-\maintainer Carolin Geitner
 
 \level 3
 

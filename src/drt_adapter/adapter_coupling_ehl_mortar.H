@@ -3,7 +3,6 @@
 \brief mortar coupling terms of ehl
 
 \level 3
-\maintainer Mostafa Faraji
 
 *----------------------------------------------------------------------*/
 

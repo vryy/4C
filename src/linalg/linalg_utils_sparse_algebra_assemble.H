@@ -4,7 +4,6 @@
 \brief A collection of algebraic assemble methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

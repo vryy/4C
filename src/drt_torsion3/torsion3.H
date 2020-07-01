@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 #ifndef TORSION3_H
@@ -63,7 +62,6 @@ namespace DRT
     /*!
     \brief three dimensional torsion element
 
-    \author cyron (cyron @lnm.mw.tum.de)
     */
     class Torsion3 : public DRT::Element
     {

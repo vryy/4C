@@ -3,7 +3,6 @@
 
 \brief calc class for immersed problems
 
-\maintainer Martin Kronbichler
 
 \level 3
 

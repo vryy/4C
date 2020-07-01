@@ -3,7 +3,6 @@
 
 \brief Base class for the immersed fluid elements
 
-\maintainer Martin Kronbichler
 
 \level 3
 

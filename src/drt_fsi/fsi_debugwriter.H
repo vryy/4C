@@ -2,7 +2,6 @@
 /*! \file
 \brief write debug information for fsi applications
 \level 2
-\maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 
 #ifndef FSI_DEBUGWRITER_H

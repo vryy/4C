@@ -3,7 +3,6 @@
 
 \brief Generic class for all predictors.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

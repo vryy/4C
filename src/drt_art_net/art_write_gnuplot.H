@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Johannes Kremheller
 
 *----------------------------------------------------------------------*/
 
@@ -35,7 +34,6 @@ namespace ART
     /*!
     \brief 1d-artery gnuplot output condition wrapper
     this class is meant to do some organisation stuff
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class ArtWriteGnuplotWrapper
     {
@@ -81,7 +79,6 @@ namespace ART
     /*!
     \brief 1d-artery gnuplot output condition
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class ArtWriteGnuplot

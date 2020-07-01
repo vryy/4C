@@ -3,7 +3,6 @@
 
 \brief Calculates vector extrapolation via epsilon algorithm.
 
-\maintainer Matthias Mayr
 
 \level 1
 */

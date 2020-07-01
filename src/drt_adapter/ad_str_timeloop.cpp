@@ -4,7 +4,6 @@
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
-\maintainer Anh-Tu Vuong
 
 \level 1
 

@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -29,7 +28,6 @@ namespace CONTACT
 
    Refer also to the Semesterarbeit of Bernd Budich, 2009
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class CoPenaltyStrategy : public CoAbstractStrategy
   {

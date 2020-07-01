@@ -3,7 +3,6 @@
 
 \brief tutorial input parameters
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

@@ -9,7 +9,6 @@ C = Exponent D
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOEXPOPOW_H_

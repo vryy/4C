@@ -3,7 +3,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 \brief Parallel Domain Redistribution of monolithic FSI
 */

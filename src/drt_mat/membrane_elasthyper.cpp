@@ -7,7 +7,6 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 
 \level 3
 
-\maintainer  Sebastian Fuchs
 
 *----------------------------------------------------------------------*/
 

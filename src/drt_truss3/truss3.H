@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 
 */
 /*---------------------------------------------------------------------------*/
@@ -69,7 +68,6 @@ namespace DRT
     /*!
      \brief three dimensional total Lagrange truss element
 
-     \author cyron (cyron @lnm.mw.tum.de)
      */
     class Truss3 : public DRT::Element
     {

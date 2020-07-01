@@ -5,7 +5,6 @@ using XFEM
 
 \level 3
 
-\maintainer  Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"

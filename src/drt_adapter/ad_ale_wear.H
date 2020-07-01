@@ -3,7 +3,6 @@
 
  \brief Wrapper for the ALE time integration
 
- \maintainer Matthias Mayr
 
  \level 2
  */

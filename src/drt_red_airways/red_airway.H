@@ -3,7 +3,6 @@
 
 \brief Header for implementations of the various reduced elements
 
-\maintainer Carolin Geitner
 
 \level 3
 
@@ -71,7 +70,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the airway element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class RedAirway : public DRT::Element
     {
@@ -466,7 +464,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the acinus element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class RedAcinus : public DRT::Element
     {
@@ -832,7 +829,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the inter acinar dependency element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class RedInterAcinarDepType : public DRT::ElementType
@@ -869,7 +865,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the inter acinar dependency element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class RedInterAcinarDep : public DRT::Element
     {
@@ -1210,7 +1205,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the Air/Blood diffusion element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class RedAirBloodScatraType : public DRT::ElementType
@@ -1584,7 +1578,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the Air/Blood diffusion element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class RedAirBloodScatraLine3Type : public DRT::ElementType
     {
@@ -1621,7 +1614,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the inter acinar dependency element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class RedAirBloodScatraLine3 : public DRT::Element
     {

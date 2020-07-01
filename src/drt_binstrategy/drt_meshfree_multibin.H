@@ -3,7 +3,6 @@
 
 \brief element type class of meshfree multibin, creating the same
 
-\maintainer Jonas Eichinger
 
 \level 2
 
@@ -25,7 +24,6 @@ namespace DRT
     /*!
      * \brief The element type class of meshfree multibin, creating the same
      *
-     * \author Georg Hammerl (hammerl@lnm.mw.tum.de)
      *
      * \date April, 2013
      */
@@ -69,7 +67,6 @@ namespace DRT
      * \brief A meshfree multibin holds information about associated fluid and wall
      *        elements which can be added and deleted dynamically
      *
-     * \author Georg Hammerl (hammerl@lnm.mw.tum.de)
      *
      * \date April, 2013
      */

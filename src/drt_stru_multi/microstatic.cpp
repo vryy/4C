@@ -3,7 +3,6 @@
 
 \brief Quasi-static control for microstructural analysis
 
-\maintainer Martin Kronbichler
 
 \level 2
 

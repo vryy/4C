@@ -6,9 +6,6 @@ copied and adapted from
 Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
 
 \level 2
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 *----------------------------------------------------------------------*/
 

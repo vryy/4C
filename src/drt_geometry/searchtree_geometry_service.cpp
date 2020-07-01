@@ -5,7 +5,6 @@
 
  \level 1
 
- \maintainer Martin Kronbichler
  */
 
 #include "element_coordtrafo.H"

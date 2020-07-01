@@ -3,7 +3,6 @@
 
 \brief Base class for modelevaluators in partitioned algorithms.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

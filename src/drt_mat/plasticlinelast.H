@@ -20,7 +20,6 @@
          YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 
 \level 2
-\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*
  | definitions                                               dano 04/11 |

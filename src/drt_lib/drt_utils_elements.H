@@ -3,7 +3,6 @@
 
 \brief Collection of general element utility functions
 
-\maintainer Martin Kronbichler
 
 \level 1
 

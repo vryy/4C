@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_STRATEGY_BASE_H
@@ -158,7 +157,6 @@ namespace MORTAR
   mortar meshtying with penalty method) has to be specified in a corresponding derived
   subclass defining the concrete algorithmic steps.
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
   {

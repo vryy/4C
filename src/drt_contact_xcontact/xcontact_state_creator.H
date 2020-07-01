@@ -2,7 +2,6 @@
 /** \file
 \brief State creator for the xcontact simulation
 
-\maintainer Matthias Mayr
 
 \level 3
 */

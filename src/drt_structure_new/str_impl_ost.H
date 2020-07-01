@@ -3,7 +3,6 @@
 
 \brief One step theta time integrator.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

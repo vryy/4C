@@ -6,7 +6,6 @@
 
 \level 2
 
-\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_poro.H"

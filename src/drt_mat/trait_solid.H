@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Sebastian Proell
 */
 
 #ifndef TRAIT_SOLID_H

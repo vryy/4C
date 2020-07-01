@@ -3,7 +3,6 @@
 
 \brief Utility routines for ale mesh tying
 
-\maintainer Matthias Mayr
 
 \level 2
 */

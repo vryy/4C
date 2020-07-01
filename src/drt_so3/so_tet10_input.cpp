@@ -2,7 +2,6 @@
 /*! \file
 \brief Solid Tet10 Element
 \level 2
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_tet10.H"

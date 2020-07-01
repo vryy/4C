@@ -15,7 +15,6 @@ MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

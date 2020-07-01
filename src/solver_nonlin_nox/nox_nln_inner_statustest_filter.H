@@ -9,7 +9,6 @@
 
        - Unlike merit functions, filter methods keep these two goals separate
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

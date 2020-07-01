@@ -2,7 +2,6 @@
 /*! \file
 \brief Control routine for arterial network (time) integration.
 
-\maintainer Johannes Kremheller
 
 \level 3
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\maintainer Martin Kronbichler
 
 \brief Setup of the list of valid input parameters
 

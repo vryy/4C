@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
 #ifndef CHOL_FACTORY_H

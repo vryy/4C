@@ -3,7 +3,6 @@
 
 \brief surface stresses due to interfacial phenomena
 
-\maintainer Martin Kronbichler
 
 \level 2
 

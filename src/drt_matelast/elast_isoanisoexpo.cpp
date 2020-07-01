@@ -6,7 +6,6 @@ The input line should read
 
 \level 1
 
-\maintainer Amadeus Gebauer
 */
 
 

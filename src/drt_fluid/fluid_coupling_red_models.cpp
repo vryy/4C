@@ -3,7 +3,6 @@
 
 \brief evaluation of 3D/redD coupled vascular bc
 
-\maintainer Martin Kronbichler
 
 \level 3
 */

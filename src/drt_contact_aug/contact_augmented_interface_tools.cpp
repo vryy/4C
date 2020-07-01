@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"

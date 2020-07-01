@@ -3,7 +3,6 @@
 
 \brief student's c++/baci nonlinear truss tutorial
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

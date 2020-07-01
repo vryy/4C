@@ -3,7 +3,6 @@
 
 \brief Stationary driver for reduced models
 
-\maintainer Martin Kronbichler
 
 \level 2
 

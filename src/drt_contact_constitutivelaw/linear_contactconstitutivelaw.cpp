@@ -3,7 +3,6 @@
 \brief implements a linear contact constitutive law
 \level 3
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 
 

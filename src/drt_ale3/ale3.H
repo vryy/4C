@@ -3,7 +3,6 @@
 
 \brief ALE element for 3D case
 
-\maintainer Matthias Mayr
 
 \level 1
 */
@@ -586,7 +585,6 @@ namespace DRT
           adjacent to a parent ale3 element. It therefore does not implement
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class Ale3Surface : public DRT::FaceElement
     {

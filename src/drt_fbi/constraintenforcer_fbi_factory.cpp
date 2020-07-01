@@ -3,7 +3,6 @@
 
 \brief Factory to create the appropriate constraint enforcement strategy for fluid-beam interaction
 
-\maintainer Nora Hagmeyer
 
 \level 1
 */

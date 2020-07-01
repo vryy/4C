@@ -7,7 +7,6 @@ vectors and matrices.
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------------*/

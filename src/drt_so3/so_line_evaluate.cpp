@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_line.H"

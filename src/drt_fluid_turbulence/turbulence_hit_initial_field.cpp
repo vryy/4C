@@ -6,7 +6,6 @@
 References are S. Collis, Multiscale methods for turbulence simulation and control.
 Technical Report 034, MEMS, Rice University (2002) 16.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -6,7 +6,6 @@
        implementation of the routines called during the possible actions
        is contained in acinus_impl.cpp
 
-\maintainer Carolin Geitner
 
 \level 3
 

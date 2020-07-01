@@ -6,7 +6,6 @@ elements
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 #ifndef BeamLinkBeam3rLine2RigidJointed_H

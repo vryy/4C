@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #ifndef LINEAR_COCONSTLAW_H_

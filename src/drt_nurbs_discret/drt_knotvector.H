@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef KNOTVECTOR_H
@@ -44,7 +43,6 @@ namespace DRT
 
     ParObject is implemented to be able to write the knotvector to disc for I/O.
 
-    \author gammi (gamnitzer@lnm.mw.tum.de)
     */
     class Knotvector : public DRT::ParObject
     {

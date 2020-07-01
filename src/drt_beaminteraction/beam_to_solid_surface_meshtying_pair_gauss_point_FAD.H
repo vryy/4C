@@ -5,7 +5,6 @@
 coupling terms are evaluated using FAD.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

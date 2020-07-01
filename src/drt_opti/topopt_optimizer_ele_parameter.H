@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -29,7 +28,6 @@ namespace DRT
     This class just sets most of the element parameter of the topopt-element in a
     pre-evaluation step due to performance reasons
 
-    \author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
     */
     class TopOptParam
     {

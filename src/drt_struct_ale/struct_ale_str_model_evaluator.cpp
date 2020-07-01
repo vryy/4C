@@ -2,7 +2,6 @@
 /*! \file
 \brief Model evaluator for Structure-ALE problems.
 
-\maintainer Matthias Mayr
 
 \level 3
 */

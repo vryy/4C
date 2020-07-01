@@ -2,7 +2,6 @@
 /*! \file
 \brief Class for generating samples of random fields based on spectral representation
 
-\maintainer Jonas Nitzler
 
 \level 3
 */

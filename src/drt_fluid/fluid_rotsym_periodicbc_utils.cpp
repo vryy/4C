@@ -4,7 +4,6 @@
 \brief Methods needed to apply rotationally symmetric periodic boundary
        conditions for fluid problems
 
-\maintainer Martin Kronbichler
 
 \level 1
 

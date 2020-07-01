@@ -4,7 +4,6 @@
 \brief A collection of communication methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

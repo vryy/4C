@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #include "so_nurbs27.H"
 #include "../drt_lib/drt_discret.H"

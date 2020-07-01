@@ -2,7 +2,6 @@
 /*! \file
 \brief fpsi parameters
 \level 1
-\maintainer  Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 

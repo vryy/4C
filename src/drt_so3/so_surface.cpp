@@ -4,7 +4,6 @@
 \brief class for evaluation of equations on the structural surface
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

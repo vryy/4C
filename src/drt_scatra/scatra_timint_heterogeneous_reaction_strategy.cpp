@@ -5,7 +5,6 @@
 
   \level 3
 
- \maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_heterogeneous_reaction_strategy.H"

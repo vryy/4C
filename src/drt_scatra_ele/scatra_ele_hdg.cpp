@@ -4,7 +4,6 @@
 \brief Routines for ScaTraHDG element
 
 \level 3
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

@@ -3,7 +3,6 @@
 
 \brief Incomplete! - Purpose: Internal implementation of RedAirBloodScatra element
 
-\maintainer Carolin Geitner
 
 \level 3
 

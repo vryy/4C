@@ -7,7 +7,6 @@ spring with exponential behaviour, inherits from Maxwell_0d_acinus
 The originally linear spring (Stiffness1) of the 4-element Maxwell model is substituted by an
 exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
 
-\maintainer Carolin Geitner
 
 \level 3
 */

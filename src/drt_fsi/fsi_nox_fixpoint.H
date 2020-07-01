@@ -3,7 +3,6 @@
 
 \brief Calculates the fix point direction.
 
-\maintainer Matthias Mayr
 
 \level 1
 */

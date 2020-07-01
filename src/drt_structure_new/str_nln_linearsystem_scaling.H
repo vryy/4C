@@ -3,7 +3,6 @@
 
 \brief
 
-\maintainer Amadeus Gebauer
 
 \level 3
 

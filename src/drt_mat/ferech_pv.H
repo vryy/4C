@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 #ifndef FERECH_PV_H

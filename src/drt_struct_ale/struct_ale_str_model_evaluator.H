@@ -2,7 +2,6 @@
 /*! \file
 \brief Model evaluator for Structure-ALE problems.
 
-\maintainer Matthias Mayr
 
 \level 3
 */
@@ -36,7 +35,7 @@ namespace STR
         BuildStructureModelEvaluator() .
      *
      * \date 12/2016
-     * \author rauch (rauch@lnm.mw.tum.de)          */
+     */
     class StructAle : public Structure
     {
      public:

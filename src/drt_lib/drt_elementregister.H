@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 /*---------------------------------------------------------------------*/
 
@@ -54,7 +53,6 @@ namespace DRT
   this base class as its ElementRegister as this base class implements a
   dummy Initialize method.
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class ElementRegister : public DRT::ParObject
   {

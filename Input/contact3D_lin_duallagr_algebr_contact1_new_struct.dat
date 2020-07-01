@@ -1,5 +1,4 @@
 //
-// Maintainer: Matthias Mayr
 // simple two rigid-body contact example
 // use "algebraic permutation" for contact solver
 // with MueLu_contact2 preconditioner

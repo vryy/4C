@@ -4,7 +4,6 @@
 \brief A collection of algebraic creation methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_

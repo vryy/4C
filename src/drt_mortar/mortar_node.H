@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef MORTAR_NODE_H
@@ -41,7 +40,6 @@ namespace MORTAR
    node's processor (ColMap). The class MortarNodeDataContainer must be declared
    before the MortarNode itself.
 
-   \author gitterle (gitterle@lnm.mw.tum.de)
    */
   class MortarNodeDataContainer
   {
@@ -280,7 +278,6 @@ namespace MORTAR
 
    This class represents a finite element node capable of mortar coupling.
 
-   \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
    */
   class MortarNode : public DRT::Node
   {

@@ -5,7 +5,6 @@
        test can be used to check the solution increment \f$\Delta x\f$
        for convergence.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3
@@ -192,7 +191,6 @@ namespace NOX
        * the plain Newton-Raphson method, are employed, but one should still be aware thereof.
        *
        * \date 01/2018
-       * \author fang (fang@lnm.mw.tum.de)
        */
       class NormUpdateSkipFirstIter : public NormUpdate
       {

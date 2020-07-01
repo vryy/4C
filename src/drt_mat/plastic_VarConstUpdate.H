@@ -3,7 +3,6 @@
 \level 3
 \brief finite deformation plasticity algorithm based on
        variational constitutive update
-\maintainer Jan Schnabel
 */
 
 /*----------------------------------------------------------------------*/

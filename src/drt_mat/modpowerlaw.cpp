@@ -3,7 +3,6 @@
 \brief
 Nonlinear viscosity according to a modified power law
 
-\maintainer Martin Kronbichler
 
 \level 3
 */

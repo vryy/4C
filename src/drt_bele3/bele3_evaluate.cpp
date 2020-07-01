@@ -3,7 +3,6 @@
 
 \brief dummy 3D boundary element without any physics
 
-\maintainer Amadeus Gebauer
 
 \level 2
 */

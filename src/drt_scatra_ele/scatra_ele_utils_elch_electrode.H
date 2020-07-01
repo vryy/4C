@@ -3,7 +3,6 @@
 
 \brief utility class supporting element evaluation for electrodes
 
-\maintainer Christoph Schmidt
 
 \level 2
  */

@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_

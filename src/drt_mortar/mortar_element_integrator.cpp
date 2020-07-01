@@ -2,7 +2,6 @@
 /*! \file
 \level 2
 
-\maintainer Matthias Mayr
 
 \brief A class to perform Gaussian integration on a mortar element
 */

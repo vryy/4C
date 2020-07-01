@@ -6,7 +6,6 @@
 
 \level 3
 
-\maintainer Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 #ifndef CNST_1D_ART_H

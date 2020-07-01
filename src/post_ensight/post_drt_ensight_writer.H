@@ -3,7 +3,6 @@
 
  \brief contains basis class for the Ensight filter
 
- \maintainer Martin Kronbichler
 
  \level 1
  */

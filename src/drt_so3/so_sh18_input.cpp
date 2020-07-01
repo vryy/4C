@@ -2,7 +2,6 @@
 /*! \file
 \brief Input for solid shell 18
 \level 3
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

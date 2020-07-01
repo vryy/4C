@@ -3,7 +3,6 @@
 
 \brief calculate mean values and fluctuations for turbulent channel
 
-\maintainer Martin Kronbichler
 
 \level 2
 

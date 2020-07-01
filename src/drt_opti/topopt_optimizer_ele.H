@@ -3,7 +3,6 @@
 
 \brief element routines of the topology optimizer
 
-\maintainer Martin Kronbichler
 
 \level 3
 
@@ -70,7 +69,6 @@ namespace DRT
     for topology optimization for flow problems). These are the objective value, the constraint
     value(s) and potentially their derivatives.
 
-    \author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
     */
     class TopOpt : public DRT::Element
     {
@@ -368,7 +366,6 @@ namespace DRT
           purpose is to evaluate certain boundary conditions that might be
           adjacent to a parent topology optimization element.
 
-    \author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
     */
     class TopOptBoundary : public DRT::FaceElement
     {

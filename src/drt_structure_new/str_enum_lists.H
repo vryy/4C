@@ -4,7 +4,6 @@
 \brief Contains ONLY lists of enumerators and is supposed to be included
        in the header files if required
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

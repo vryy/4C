@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef PRESTRESS_H
 #define PRESTRESS_H
@@ -31,7 +30,6 @@ namespace DRT
     /*!
     \brief A class for handling the prestressing in finite deformations
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class PreStress : public DRT::ParObject
     {

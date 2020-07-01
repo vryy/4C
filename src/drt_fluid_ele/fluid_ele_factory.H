@@ -6,7 +6,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
@@ -26,7 +25,6 @@ namespace DRT
     /*!
      * \brief to do
      *
-     * \author Ursula Rasthofer (rasthofer@lnm.mw.tum.de)
      *
      * \date March, 2012
      */

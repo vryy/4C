@@ -4,7 +4,6 @@
 \brief Concrete implementation of the Jacobian, Required and
        Preconditioner %NOX::NLN interfaces.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

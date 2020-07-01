@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_utils_elch_diffcond.H"

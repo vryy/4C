@@ -12,7 +12,6 @@ or
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_LOGMIXNEOHOOKE_H_

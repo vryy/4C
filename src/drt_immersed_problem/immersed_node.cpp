@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 
 #include "immersed_node.H"

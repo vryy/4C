@@ -2,7 +2,6 @@
 /*! \file
 \brief Interface for all scatra adapters.
 \level 1
-\maintainer Anh-Tu Vuong
  */
 /*----------------------------------------------------------------------*/
 
@@ -38,7 +37,7 @@ namespace ADAPTER
    *
    * \sa ScaTraTimIntImpl
    * \date 12/2016
-   * \author rauch (rauch@lnm.mw.tum.de)    */
+   */
   class ScatraInterface
   {
    public:

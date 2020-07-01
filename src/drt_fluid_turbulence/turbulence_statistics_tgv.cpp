@@ -4,7 +4,6 @@
 \brief Compute dissipation rates for Taylor-Green vortex
        and write them to files.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

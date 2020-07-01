@@ -6,7 +6,6 @@
 
 \level 3
 
-\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
 #ifndef BeamLinkBeam3rLine2PinJointed_H

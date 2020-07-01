@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Anh-Tu Vuong
 *-----------------------------------------------------------------------*/
 
 #ifndef UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_

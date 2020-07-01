@@ -5,7 +5,6 @@ sparse matrices and parallel distributed vectors
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

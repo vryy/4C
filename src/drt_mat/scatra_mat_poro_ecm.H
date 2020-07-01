@@ -3,7 +3,6 @@
  \brief scatra material for transport within porous model with special implementations
         for ECM model
 
-\maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

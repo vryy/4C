@@ -3,7 +3,6 @@
 
 \brief Generic class of the non-linear structural solvers.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

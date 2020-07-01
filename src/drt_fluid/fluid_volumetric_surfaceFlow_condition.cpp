@@ -3,7 +3,6 @@
 
 \brief evaluation of womersley flow bc
 
-\maintainer Martin Kronbichler
 
 \level 3
 

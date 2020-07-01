@@ -4,7 +4,6 @@
 \brief model evaluator for brownian (stochastic and damping)
        forces
 
-\maintainer Jonas Eichinger
 
 \date May, 2016
 

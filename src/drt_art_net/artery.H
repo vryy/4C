@@ -2,7 +2,6 @@
 /*! \file
 \brief One-dimensional artery element
 
-\maintainer Johannes Kremheller
 
 \level 3
 
@@ -72,7 +71,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the artery element
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
     class Artery : public DRT::Element
     {

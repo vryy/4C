@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -24,7 +23,6 @@ namespace CONTACT
 
    \sa MtAbstractStrategy
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class MtLagrangeStrategy : public MtAbstractStrategy
   {

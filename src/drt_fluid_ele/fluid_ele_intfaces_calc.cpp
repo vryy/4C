@@ -3,7 +3,6 @@
 
 \brief Integrate internal faces (stabilization) terms on an internal face element
 
-\maintainer Martin Kronbichler
 
 \level 2
 

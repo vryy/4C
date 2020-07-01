@@ -5,7 +5,6 @@
        increment. A detailed description can be found in the NOX
        documentation.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

@@ -3,7 +3,6 @@
 
 \brief Evaluation of all beam interaction terms
 
-\maintainer Maximilian Grill
 
 \level 3
 */

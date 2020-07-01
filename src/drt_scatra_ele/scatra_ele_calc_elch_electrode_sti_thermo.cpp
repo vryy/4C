@@ -6,7 +6,6 @@ within thermodynamic electrodes
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode_sti_thermo.H"

@@ -4,7 +4,6 @@
 \brief Manage the creation of additional DOFs for mortar couplings between beams and solids.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 
 

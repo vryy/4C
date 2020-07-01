@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPO_H_

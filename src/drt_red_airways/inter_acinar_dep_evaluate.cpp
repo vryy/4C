@@ -6,7 +6,6 @@
        RedInterAcinarDep. The actual implementation of the routines called
        during the possible actions is contained in inter_acinar_dep_impl.cpp
 
-\maintainer Carolin Geitner
 
 \level 3
 

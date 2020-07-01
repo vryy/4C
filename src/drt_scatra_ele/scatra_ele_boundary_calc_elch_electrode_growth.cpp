@@ -6,7 +6,6 @@ growth, e.g., lithium plating
 
 \level 2
 
-\maintainer Christoph Schmidt
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch_electrode_growth.H"

@@ -4,7 +4,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_PARTITIONED_H_

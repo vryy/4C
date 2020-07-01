@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -293,7 +292,6 @@ namespace CONTACT
   /*!
   \brief One contact interface
 
-  \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
   */
   class CoInterface : public MORTAR::MortarInterface
   {

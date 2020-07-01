@@ -3,7 +3,6 @@
 \brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
 function)
 
-\maintainer Maximilian Grill
 
 \level 3
 */

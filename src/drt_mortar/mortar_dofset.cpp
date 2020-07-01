@@ -2,7 +2,6 @@
 /*! \file
 \brief A set of degrees of freedom special for mortar coupling
 
-\maintainer Matthias Mayr
 
 \level 1
 */

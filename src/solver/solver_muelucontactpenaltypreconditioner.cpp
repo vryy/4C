@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #ifdef TRILINOS_Q1_2015

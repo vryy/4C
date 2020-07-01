@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_BELOSSOLVER_H_

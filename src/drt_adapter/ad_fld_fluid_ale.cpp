@@ -3,7 +3,6 @@
 
 \brief Solver for fluid field on a moving ALE mesh
 
-\maintainer Matthias Mayr
 
 \level 1
 */

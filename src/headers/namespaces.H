@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -1809,7 +1808,6 @@ namespace STR
 
 /*! \brief Structural multi-scale related algorithms
  *
- * \author yoshihara (yoshihara@lnm.mw.tum.de)
  */
 namespace STRUMULTI
 {

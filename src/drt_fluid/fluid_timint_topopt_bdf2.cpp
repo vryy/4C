@@ -3,7 +3,6 @@
 
 \brief BDF-2 time integration for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

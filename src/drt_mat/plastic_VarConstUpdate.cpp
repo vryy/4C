@@ -9,7 +9,6 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 \level 3
 
-\maintainer Jan Schnabel
  */
 
 /*----------------------------------------------------------------------*/

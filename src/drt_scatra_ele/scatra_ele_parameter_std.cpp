@@ -15,7 +15,6 @@ coexist with this general class.
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_parameter_std.H"

@@ -5,7 +5,6 @@ This file contains the base material for chemotactic scalars.
 
 \level 3
 
-\maintainer Christoph Schmidt
 *----------------------------------------------------------------------*/
 
 #include <vector>

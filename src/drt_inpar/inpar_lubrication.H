@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Mostafa Faraji
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_INPAR_INPAR_LUBRICATION_H_

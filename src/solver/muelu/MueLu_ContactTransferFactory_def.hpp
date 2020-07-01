@@ -3,7 +3,6 @@
 
 \brief MueLu transfer factory class for contact
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

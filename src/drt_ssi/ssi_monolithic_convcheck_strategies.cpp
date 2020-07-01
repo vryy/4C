@@ -12,7 +12,6 @@ derived from an abstract, purely virtual interface class.
 
 \level 2
 
-\maintainer Christoph Schmidt
 
  */
 /*----------------------------------------------------------------------*/

@@ -3,7 +3,6 @@
 
 \brief MueLu contact aggregation factory class for saddle point formulations
 \level 2
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifdef TRILINOS_Q1_2015

@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Jan Schnabel
             jan-eike.schnabel@hzg.de
 */
 /*----------------------------------------------------------------------*/

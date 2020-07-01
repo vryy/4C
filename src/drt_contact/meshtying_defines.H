@@ -2,7 +2,6 @@
 /*! \file
 \brief A set of preprocessor defines for meshtying methods
 
-\maintainer Matthias Mayr
 
 \level 1
 */

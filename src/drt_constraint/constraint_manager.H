@@ -4,7 +4,6 @@
 \brief Class controlling constraints and containing the necessary data, code originally by Thomas
 Kloeppel
 
-\maintainer Amadeus Gebauer
 
 \level 2
 

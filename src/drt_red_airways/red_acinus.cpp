@@ -3,7 +3,6 @@
 
 \brief Implements an acinus element
 
-\maintainer Carolin Geitner
 
 \level 3
 

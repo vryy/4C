@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Andrea La Spina
 */
 /*----------------------------------------------------------------------------*/
 
@@ -21,7 +20,6 @@ namespace FLD
   /*!
   \brief time integration for HDG fluid (only gen-alpha implemented)
 
-  \author laspina (laspina@lnm.mw.tum.de)
   */
   class TimIntHDGWeakComp : public TimIntGenAlpha
   {

@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_CALC_STI_ELECTRODE_H

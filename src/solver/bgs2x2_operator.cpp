@@ -3,7 +3,6 @@
 
 \brief Declaration
 \level 1
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

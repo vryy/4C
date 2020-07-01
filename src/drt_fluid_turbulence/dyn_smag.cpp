@@ -3,7 +3,6 @@
 
 \brief Filter routines for dynamic Smagorinsky model
 
-\maintainer Martin Kronbichler
 
 \level 2
 

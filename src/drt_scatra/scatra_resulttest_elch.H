@@ -3,7 +3,6 @@
 
 \brief result tests for electrochemistry problems
 
-\maintainer Christoph Schmidt
 
 \level 2
 

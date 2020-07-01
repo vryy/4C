@@ -3,7 +3,6 @@
 
 \brief base class of time integration schemes for porous fluid
 
-\maintainer Johannes Kremheller
 
 \level 2
 

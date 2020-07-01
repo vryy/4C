@@ -3,7 +3,6 @@
 
 \brief Generic class for all model evaluators.
 
-\maintainer Matthias Mayr
 
 \level 3
 */

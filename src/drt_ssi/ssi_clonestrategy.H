@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------*/
@@ -28,7 +27,6 @@ namespace SSI
   For some scatra-structure interaction problems, the scatra discretization is obtained through
   cloning from the structure discretization.
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   \date 09/17
   */
 

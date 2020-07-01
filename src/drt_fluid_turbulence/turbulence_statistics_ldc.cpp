@@ -4,7 +4,6 @@
 \brief calculate mean values and fluctuations for turbulent flow in a
 lid-driven cavity.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

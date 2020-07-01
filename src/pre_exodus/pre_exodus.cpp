@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 Pre_exodus contains classes to open and preprocess exodusII files into the
 drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing

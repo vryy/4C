@@ -3,7 +3,6 @@
 
 \brief VTI filter
 
-\maintainer Martin Kronbichler
 
 \level 2
 */

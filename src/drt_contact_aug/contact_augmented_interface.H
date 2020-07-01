@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef CONTACT_AUGMENTED_INTERFACE_H_

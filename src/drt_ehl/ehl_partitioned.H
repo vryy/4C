@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Mostafa Faraji
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_EHL_EHL_PARTITIONED_H_

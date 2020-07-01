@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #include "nox_nln_contact_linearsystem.H"  // base class

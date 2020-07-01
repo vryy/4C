@@ -3,7 +3,6 @@
 
 \brief student's c++/baci tutorial material St.Venant-Kirchhoff
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

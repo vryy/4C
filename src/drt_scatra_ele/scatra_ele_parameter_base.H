@@ -9,7 +9,6 @@ evaluation, e.g., general parameters, turbulence parameters, and problem specifi
 parameters are usually set only once at the beginning of a simulation, namely during initialization
 of the global time integrator, and then never touched again throughout the simulation.
 
-\maintainer Anh-Tu Vuong
 
 \level 1
 */

@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief wall data state container for particle wall handler
-
 \level 2
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

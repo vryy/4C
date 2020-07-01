@@ -8,7 +8,6 @@ Pack, Unpack, NumDofPerNode etc.
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 #ifndef DRT_SCATRA_ELEMENT_H
 #define DRT_SCATRA_ELEMENT_H

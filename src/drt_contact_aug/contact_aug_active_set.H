@@ -2,7 +2,6 @@
 /*! \file
 \brief Identify the correct active set.
 
-\maintainer Matthias Mayr
 
 \level 2
 */

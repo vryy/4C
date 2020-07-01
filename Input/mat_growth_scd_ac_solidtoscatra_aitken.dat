@@ -1,5 +1,4 @@
 //
-// Maintainer: Amadeus Gebauer
 // scalar dependent growth of a quadratic block
 // Testing: materials MAT_MAT_GrowthVolumetricScd and MAT_GrowthAC
 //

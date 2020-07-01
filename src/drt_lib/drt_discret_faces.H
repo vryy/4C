@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -37,7 +36,6 @@ namespace DRT
     /*!
      * \brief internal class that holds the information used to create face elements
      *
-     * \author Benedikt Schott (schott@lnm.mw.tum.de)
      */
     class InternalFacesData
     {

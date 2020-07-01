@@ -5,8 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 
 Created on: Jul 13, 2011
 *----------------------------------------------------------------------*/

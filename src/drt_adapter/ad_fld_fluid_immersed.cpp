@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"

@@ -2,7 +2,6 @@
 /*! \file
 \level 1
 
-\maintainer Matthias Mayr
 
 \brief BACI implementation of main class to control all meshtying
 */
@@ -26,7 +25,6 @@ namespace CONTACT
   /*!
   \brief BACI implementation of main class to control all meshtying
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class MtManager : public MORTAR::ManagerBase
   {

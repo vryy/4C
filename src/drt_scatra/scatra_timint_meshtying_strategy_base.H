@@ -6,7 +6,6 @@ strategy without meshtying)
 
 \level 2
 
-\maintainer Anh-Tu Vuong
 
 
 *----------------------------------------------------------------------*/

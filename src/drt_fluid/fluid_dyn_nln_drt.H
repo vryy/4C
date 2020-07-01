@@ -14,7 +14,6 @@
 
      and stationary solver.
 
-\maintainer Martin Kronbichler
 
 \level 1
 

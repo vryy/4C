@@ -5,7 +5,6 @@
 
 \brief forward declarations of discretisation types
 
-\maintainer Christoph Meier
  *
  */
 

@@ -3,7 +3,6 @@
 
 \brief Interface between the xcontact algorithm and the structure algorithm
 
-\maintainer Matthias Mayr
 
 
 \level 3

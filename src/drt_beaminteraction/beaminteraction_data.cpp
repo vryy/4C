@@ -3,7 +3,6 @@
 
 \brief small data containers for beam interaction framework
 
-\maintainer Jonas Eichinger
 
 \level 3
 

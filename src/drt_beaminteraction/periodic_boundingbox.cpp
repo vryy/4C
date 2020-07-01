@@ -3,7 +3,6 @@
 
 \brief A class handling a (periodic) bounding box as simulation volume
 
-\maintainer Jonas Eichinger
 
 \level 3
 

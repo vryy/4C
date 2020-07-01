@@ -5,7 +5,6 @@
        discretizations )
 
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

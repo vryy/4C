@@ -6,7 +6,6 @@ fluid-beam interaction).
 
 \level 3
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #ifndef CONSTRAINTENFORCER_FBI_PENALTY_H
 #define CONSTRAINTENFORCER_FBI_PENALTY_H

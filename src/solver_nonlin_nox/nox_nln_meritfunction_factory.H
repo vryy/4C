@@ -3,7 +3,6 @@
 
 \brief Factory to create a merit function evaluation object.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

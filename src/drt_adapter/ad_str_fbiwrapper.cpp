@@ -3,7 +3,6 @@
 
 \brief Structural adapter for Fluid-beam interaction problems
 
-\maintainer Nora Hagmeyer
 
 \level 2
 */

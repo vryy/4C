@@ -3,8 +3,6 @@
 
 \brief Declaration
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_CHEAPSIMPLE_H
@@ -51,7 +49,6 @@ namespace LINALG
     A Multigrid Preconditioned Newton-Krylov method for the incomp.
     Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)
 
-    \author gee (gee@lnm.mw.tum.de)
      */
     class CheapSIMPLE_BlockPreconditioner : public virtual Epetra_Operator
     {

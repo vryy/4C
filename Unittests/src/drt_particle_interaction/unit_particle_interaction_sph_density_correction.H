@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief unittests for density correction handler in smoothed particle hydrodynamics (SPH)
-
 \level 3
-
-\maintainer  Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

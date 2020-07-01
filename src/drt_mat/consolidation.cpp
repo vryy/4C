@@ -3,7 +3,6 @@
 \brief managing common consolidation methods
 
 \level 3
-\maintainer Sebastian Proell
  */
 
 /*----------------------------------------------------------------------*

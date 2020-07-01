@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -55,7 +54,6 @@ namespace DRT
   the protected methods dealing with the discretization of this condition.
   (I guess this whole comment is not very helpful)
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Condition : public DRT::Container
   {

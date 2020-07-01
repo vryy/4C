@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 *----------------------------------------------------------------------*/
 
 #include "cardiovascular0d_4elementwindkessel.H"

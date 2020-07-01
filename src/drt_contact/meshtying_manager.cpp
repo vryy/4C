@@ -2,7 +2,6 @@
 /*! \file
 \level 1
 
-\maintainer Matthias Mayr
 
 \brief BACI implementation of main class to control all solid meshtying
 */

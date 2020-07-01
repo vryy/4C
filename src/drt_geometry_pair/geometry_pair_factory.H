@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

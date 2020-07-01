@@ -2,7 +2,6 @@
 /*! \file
 \brief Uncertainty Quantification
 
-\maintainer Jonas Nitzler
 
 \level 3
 */

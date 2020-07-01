@@ -2,7 +2,6 @@
 /*! \file
 \brief
 
-\maintainer Jonas Eichinger
 
 \level 2
 

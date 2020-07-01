@@ -10,7 +10,6 @@
  (Origin of coordinate system is marked by O)
 
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -3,7 +3,6 @@
 
 \brief control routine of topology optimization for fluid domains
 
-\maintainer Martin Kronbichler
 
 \level 3
 

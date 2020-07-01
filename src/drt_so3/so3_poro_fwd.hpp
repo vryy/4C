@@ -2,13 +2,7 @@
 /*! \file
 \brief forward declarations (explicit instantiation) of the templated poro elements
 
-\maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
-
 \level 2
-
 *----------------------------------------------------------------------*/
 // template classes
 template class DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;

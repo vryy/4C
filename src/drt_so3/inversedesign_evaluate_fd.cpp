@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief special element adaptions for inverse design
-\maintainer Christoph Meier
 \level 2
 
 *----------------------------------------------------------------------*/

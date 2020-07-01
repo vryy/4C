@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>

@@ -3,7 +3,6 @@
 
 \brief drt binary filter library
 
-\maintainer Martin Kronbichler
 
 \level 2
 

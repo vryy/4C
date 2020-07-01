@@ -4,7 +4,6 @@
 \brief Element classes that represent faces, i.e. surface elements.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

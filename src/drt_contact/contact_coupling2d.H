@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -23,7 +22,6 @@ namespace CONTACT
          2D. This is a derived class from MORTAR::Coupling2d which does
          the contact-specific stuff for 2d mortar coupling.
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class CoCoupling2d : public MORTAR::Coupling2d
@@ -98,7 +96,6 @@ namespace CONTACT
          slave element and SEVERAL master elements of a mortar interface in
          2D. Concretely, this class simply stores several Coupling2d objects.
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class CoCoupling2dManager : public MORTAR::Coupling2dManager

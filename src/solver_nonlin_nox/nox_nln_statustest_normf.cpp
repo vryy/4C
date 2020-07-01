@@ -5,7 +5,6 @@
        test can be used to check the residual (right-hand-side)
        for convergence.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

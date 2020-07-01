@@ -3,7 +3,6 @@
 
 \brief Utils methods concerning the discretization
 
-\maintainer Martin Kronbichler
 
 \level 1
 

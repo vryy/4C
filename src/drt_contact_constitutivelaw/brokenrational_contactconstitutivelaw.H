@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #ifndef BROKENRATIONAL_COCONSTLAW_H_

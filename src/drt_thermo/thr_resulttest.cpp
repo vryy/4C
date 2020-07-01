@@ -4,7 +4,6 @@
 \brief testing of structure calculation results
 
 \level 1
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

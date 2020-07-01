@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 */
 /*---------------------------------------------------------------------*/
 #ifndef SOLVER_AZTECSOLVER_H_

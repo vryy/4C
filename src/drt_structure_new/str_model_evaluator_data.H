@@ -3,7 +3,6 @@
 
 \brief Concrete implementation of the structural and all related parameter interfaces.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

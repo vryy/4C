@@ -4,7 +4,6 @@
 \brief Implementation of a multi discretization wrapper for eXtended structural
        problems
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

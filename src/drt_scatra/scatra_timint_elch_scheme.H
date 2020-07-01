@@ -5,7 +5,6 @@
         elch-specific implementation (class ScaTraTimIntElch)
 \level 2
 
-\maintainer Christoph Schmidt
 
 
 *----------------------------------------------------------------------*/

@@ -4,7 +4,6 @@
 \brief supplementary element calculation class providing general utility for evaluation of heat
 transport within electrochemical substances
 
-\maintainer Christoph Schmidt
 
 \level 2
 */

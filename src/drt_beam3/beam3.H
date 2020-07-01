@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 
@@ -74,7 +73,6 @@ namespace DRT
     you put the nodes in the right order in the input file. LINE2  1---2 LINE3  1---3---2 LINE4
     1---4---2---3 LINE5  1---5---2---3---4 LINE6  1---6---2---3---4---5
 
-    author cyron (cyron @lnm.mw.tum.de)
     */
     class Beam3 : public Beam3Base
     {

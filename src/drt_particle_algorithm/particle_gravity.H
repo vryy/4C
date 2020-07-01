@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief gravity acceleration handler for particle simulations
-
 \level 2
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

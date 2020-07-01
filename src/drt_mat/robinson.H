@@ -20,7 +20,6 @@
 
 \level 2
 
-\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*/
 #ifndef VISCOPLASTICROBINSON_H_

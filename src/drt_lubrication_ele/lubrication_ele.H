@@ -8,7 +8,6 @@ Pack, Unpack, NumDofPerNode etc.
 
 \level 3
 
-\maintainer Mostafa Faraji
 
 */
 /*--------------------------------------------------------------------------*/

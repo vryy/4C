@@ -3,7 +3,6 @@
 \brief scalar transport control algorithm
 \level 1
 
-\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 

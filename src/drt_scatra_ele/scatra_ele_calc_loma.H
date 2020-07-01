@@ -18,7 +18,6 @@ list, where a dserror() should be provided.
 
 \level 2
 
-\maintainer Anh-Tu Vuong
 */
 /*--------------------------------------------------------------------------*/
 

@@ -4,7 +4,6 @@
 \brief Line to volume interaction with full segmentation of the line.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

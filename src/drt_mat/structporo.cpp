@@ -2,7 +2,6 @@
 /*! \file
  \brief wrapper for structure material of porous media
 
-\maintainer Johannes Kremheller
 
 \level 2
  *-----------------------------------------------------------------------*/

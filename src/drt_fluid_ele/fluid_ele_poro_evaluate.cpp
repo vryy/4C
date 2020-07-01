@@ -3,7 +3,6 @@
 
 \brief evaluation routines for the fluid poro element
 
-\maintainer Johannes Kremheller
 
 \level 2
 

@@ -3,7 +3,6 @@
 \brief Evaluation of off-diagonal blocks for monolithic STI
 \level 2
 
-\maintainer Stephan Sinzig
 
  */
 /*----------------------------------------------------------------------*/

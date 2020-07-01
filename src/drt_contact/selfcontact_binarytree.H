@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
@@ -41,7 +40,6 @@ namespace CONTACT
 
   Refer also to the Semesterarbeit of Anh-Tu Vuong, 2009
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class SelfBinaryTreeNode : public MORTAR::BaseBinaryTreeNode
   {
@@ -318,7 +316,6 @@ namespace CONTACT
 
   Refer also to the Semesterarbeit of Anh-Tu Vuong, 2009
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class SelfDualEdge
   {
@@ -495,7 +492,6 @@ namespace CONTACT
 
   Refer also to the Semesterarbeit of Anh-Tu Vuong, 2009
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class SelfBinaryTree : public MORTAR::BaseBinaryTree

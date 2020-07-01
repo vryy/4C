@@ -6,7 +6,6 @@ in the inverse analysis
 
 \level 2
 
-\maintainer Harald Willmann
 
 */
 /*----------------------------------------------------------------------*/

@@ -3,10 +3,6 @@
 
 \brief Evaluation methods for the 3D structural poro element
 
-\maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
 
 \level 2
 

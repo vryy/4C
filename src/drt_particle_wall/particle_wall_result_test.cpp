@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief particle wall result test for particle simulations
-
 \level 2
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

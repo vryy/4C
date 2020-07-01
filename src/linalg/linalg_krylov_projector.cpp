@@ -6,8 +6,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 
 *---------------------------------------------------------------------------*/
 

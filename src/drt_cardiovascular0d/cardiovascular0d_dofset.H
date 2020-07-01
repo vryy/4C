@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef CARDIOVASCULAR0D_DOFSET_H

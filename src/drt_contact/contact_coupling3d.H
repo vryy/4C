@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -35,7 +34,6 @@ namespace CONTACT
    This is a derived class from MORTAR::Coupling3d which does the
    contact-specific stuff for 3d mortar coupling.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class CoCoupling3d : public MORTAR::Coupling3d
@@ -196,7 +194,6 @@ namespace CONTACT
    This is a derived class from MORTAR::CoCoupling3d which does the
    contact-specific stuff for 3d quadratic mortar coupling.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class CoCoupling3dQuad : public CoCoupling3d
@@ -260,7 +257,6 @@ namespace CONTACT
    slave element and SEVERAL master elements of a contact interface in
    3D. Concretely, this class simply stores several CoCoupling3d objects.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class CoCoupling3dManager

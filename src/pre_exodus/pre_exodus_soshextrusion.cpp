@@ -3,7 +3,6 @@
 
 \brief solid-shell body creation by extruding surface
 
-\maintainer Martin Kronbichler
 
 \level 1
 

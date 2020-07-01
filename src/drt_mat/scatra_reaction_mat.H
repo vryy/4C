@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Johannes Kremheller
 *----------------------------------------------------------------------*/
 
 
@@ -190,8 +189,6 @@ namespace MAT
     0 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE -1 0 0 MAT 4 MAT_scatra_reaction NUMSCAL 3
     STOICH -1 0 3 REACCOEFF 4.0 COUPLING simple_multiplicative ROLE -1 -1 0 REACSTART 0.0 2.0 0.0
 
-    \author thon (thon@mhpc.mw.tum.de)
-
     <h3>DISTRFUNCT Feature</h3>
 
     spatially varying reaction coefficient
@@ -227,7 +224,6 @@ namespace MAT
     define explicitly define a reaction coefficient as spatially constant by stating
     <CODE>DISTRFUNCT 0</CODE>. Stating <CODE>DISTRFUNCT 0</CODE> may be omitted.
 
-    \author Sebastian Brandstaeter (brandstaeter@lnm.mw.tum.de)
     */
 
     /*----------------------------------------------------------------------*/

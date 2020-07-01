@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -37,7 +36,6 @@ namespace DRT
       correct memory handling at the end of a BACI run.
       (correctly delete allocated TopOptImplInterface instances)
 
-      /author winklmaier (winklmaier@lnm.mw.tum.de)
      */
     class TopOptImplInterface : public DRT::SingletonDestruction
     {

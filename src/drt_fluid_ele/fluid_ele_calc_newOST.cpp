@@ -4,7 +4,6 @@
 \brief main file containing routines for calculation of fluid element
        new one-step theta time integration variant
 
-\maintainer Martin Kronbichler
 
 \level 3
 

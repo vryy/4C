@@ -5,7 +5,6 @@
 evaluated with FAD.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

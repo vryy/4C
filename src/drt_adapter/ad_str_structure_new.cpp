@@ -3,7 +3,6 @@
 
 \brief Adapter for the new structural time integration framework.
 
-\maintainer  Anh-Tu Vuong
 
 \level 3
 

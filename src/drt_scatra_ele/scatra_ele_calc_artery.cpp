@@ -6,7 +6,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_artery.H"

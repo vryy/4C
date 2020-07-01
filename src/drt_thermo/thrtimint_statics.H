@@ -2,7 +2,6 @@
 /*! \file
 \brief Statics analysis, i.e. no capacity terms
 \level 1
-\maintainer Sebastian Proell
 */
 
 

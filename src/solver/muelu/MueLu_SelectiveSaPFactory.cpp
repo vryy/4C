@@ -3,7 +3,6 @@
 
 \brief Factory class for MueLu
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

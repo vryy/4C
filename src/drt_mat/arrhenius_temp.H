@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 #ifndef ARRHENIUS_TEMP_H

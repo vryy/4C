@@ -3,7 +3,6 @@
 
 \brief base algorithm for topology optimization of fluid domains
 
-\maintainer Martin Kronbichler
 
 \level 3
 

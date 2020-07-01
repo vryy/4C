@@ -3,7 +3,6 @@
 
  \brief Free-surface flow as monolithic problem
 
- \maintainer Matthias Mayr
 
  \level 3
  */

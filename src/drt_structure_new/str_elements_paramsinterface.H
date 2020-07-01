@@ -5,7 +5,6 @@
        to pass information down to the structural elements and
        vice versa
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

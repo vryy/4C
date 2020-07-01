@@ -3,7 +3,6 @@
 
 \brief Solve FSI problems using minimal polynomial vector extrapolation
 
-\maintainer Matthias Mayr
 
 \level 1
 

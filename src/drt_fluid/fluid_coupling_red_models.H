@@ -4,7 +4,6 @@
 \brief Method to deal with coupling between 3D fluid and 0/1D vascular
 problem
 
-\maintainer Martin Kronbichler
 
 \level 3
 */
@@ -41,7 +40,6 @@ namespace FLD
     \brief coupling boundary condition wrapper
     this class is meant to do some organisation stuff
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class Fluid_couplingBc;
@@ -186,7 +184,6 @@ namespace FLD
     /*!
     \brief coupling boundary condition for vascular outflow boundaries
 
-    \author ismail (ismail@lnm.mw.tum.de)
     */
 
     class Fluid_couplingBc

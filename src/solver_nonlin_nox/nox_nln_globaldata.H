@@ -5,7 +5,6 @@
        and objects, which are necessary to setup a NOX::NLN
        solution strategy.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

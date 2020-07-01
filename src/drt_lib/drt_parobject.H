@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
@@ -123,7 +122,6 @@ namespace DRT
    extremely hard to find.... <br><br> Of course, you are welcome to add more specializations to the
    existing AddtoPack and ExtractfromPack templates. If you do so, please update this documentation.
 
-   \author gee (gee@lnm.mw.tum.de)
    */
   class ParObject
   {

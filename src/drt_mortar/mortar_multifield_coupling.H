@@ -7,7 +7,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef MORTAR_MULTIFIELD_COUPLING_H

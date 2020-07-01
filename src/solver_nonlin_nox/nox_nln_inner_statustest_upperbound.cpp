@@ -3,7 +3,6 @@
 
 \brief inner status test that restricts value of update vector
 
-\maintainer Maximilian Grill
 
 
 \level 3

@@ -3,7 +3,6 @@
 
 \brief Evaluation and assembly of all constraint terms
 
-\maintainer Amadeus Gebauer
 
 \level 3
 */

@@ -3,7 +3,6 @@
 
 \brief creates a second discretization as part of the complete discretization for inflow generation
 
-\maintainer Martin Kronbichler
 
 \level 1
 

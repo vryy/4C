@@ -3,7 +3,6 @@
 
 \brief One-step theta time integration for two-phase flow
 
-\maintainer Martin Kronbichler
 
 \level 2
 

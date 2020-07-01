@@ -5,7 +5,6 @@
        and scalar transport equations including deforming meshes
 \level 2
 
-\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------*/

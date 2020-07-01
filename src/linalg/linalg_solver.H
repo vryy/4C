@@ -4,9 +4,6 @@
 \brief Declaration of basic solver interface
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 *----------------------------------------------------------------------*/
 #ifndef LINALG_SOLVER_H
@@ -44,7 +41,6 @@ namespace LINALG
 
   - This class should implement Epetra_Operator in the future
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Solver
   {

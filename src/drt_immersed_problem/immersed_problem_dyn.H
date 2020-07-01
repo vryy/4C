@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PROBLEM_DYN_H

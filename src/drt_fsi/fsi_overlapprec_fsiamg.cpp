@@ -3,7 +3,6 @@
 
 \brief Special version of block matrix that includes the FSI block preconditioner
 
-\maintainer Matthias Mayr
 
 \level 1
 */

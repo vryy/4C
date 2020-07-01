@@ -8,7 +8,6 @@ of the usual Lagrangian polynomials for standard transport elements
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 */
 #ifndef DRT_SCATRA_ELE_HDG_H

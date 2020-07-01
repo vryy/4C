@@ -4,7 +4,6 @@
 \brief Low-Mach-number flow service routines for calculation of fluid
        element
 
-\maintainer Martin Kronbichler
 
 \level 2
 

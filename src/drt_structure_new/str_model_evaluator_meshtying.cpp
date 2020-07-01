@@ -3,7 +3,6 @@
 
 \brief Evaluation and assembly of all contact terms
 
-\maintainer Matthias Mayr
 
 \level 3
 

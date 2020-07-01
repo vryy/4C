@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*! \file
-\maintainer Matthias Mayr
 
 \level 2
 
@@ -46,7 +45,6 @@ namespace MORTAR
   /*!
   \brief Abstract base class to control all mortar coupling
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class ManagerBase
   {

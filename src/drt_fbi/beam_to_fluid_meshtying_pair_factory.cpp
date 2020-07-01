@@ -4,7 +4,6 @@
 \brief Create the pairs for beam to fluid meshtying depending on the input parameters..
 
 \level 2
-\maintainer Nora Hagmeyer
 */
 
 

@@ -3,7 +3,6 @@
 
 \brief Internal implementation of airway_impl element
 
-\maintainer Carolin Geitner
 
 \level 3
 

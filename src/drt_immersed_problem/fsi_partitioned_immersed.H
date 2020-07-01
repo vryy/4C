@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef FSI_PARTITIONED_IMMERSED_H

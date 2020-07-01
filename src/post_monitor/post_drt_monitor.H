@@ -3,7 +3,6 @@
 
 \brief monitoring filter for one data
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #ifndef CUT_TEST_LOADER_H

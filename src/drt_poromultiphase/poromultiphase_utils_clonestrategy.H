@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_CLONESTRATEGY_H_

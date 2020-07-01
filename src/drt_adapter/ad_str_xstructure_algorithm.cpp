@@ -3,7 +3,6 @@
 
 \brief Adaption for the xstructure case
 
-\maintainer Matthias Mayr
 
 
 \level 3

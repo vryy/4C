@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
 #ifndef OPTIMIZER_LBFGS_H

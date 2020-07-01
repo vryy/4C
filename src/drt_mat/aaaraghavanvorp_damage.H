@@ -16,7 +16,6 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 #ifndef AAARAGHAVANVORP_DAMAGE_H

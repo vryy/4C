@@ -4,7 +4,6 @@
 \brief Base data container holding data for beam-to-solid interactions.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

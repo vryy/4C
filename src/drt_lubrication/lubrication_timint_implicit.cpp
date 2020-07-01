@@ -5,7 +5,6 @@
 
      including stationary solver.
 
-\maintainer Mostafa Faraji
 
 \level 3
 

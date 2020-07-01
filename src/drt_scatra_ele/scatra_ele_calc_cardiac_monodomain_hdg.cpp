@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_cardiac_monodomain_hdg.H"

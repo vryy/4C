@@ -2,7 +2,6 @@
 /*! \file
 \brief contains memory managing functions
 
-\maintainer Martin Kronbichler
 
 \level 1
 

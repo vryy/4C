@@ -2,7 +2,6 @@
 /*! \file
 \brief Creation of structural time integrators in accordance with user's wishes
 
-\maintainer Matthias Mayr
 
 \level 1
 */

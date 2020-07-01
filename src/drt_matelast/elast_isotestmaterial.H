@@ -8,7 +8,6 @@ isochoric parts of the Elasthyper-Toolbox.
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 
 *----------------------------------------------------------------------*/

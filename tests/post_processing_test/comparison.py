@@ -1,6 +1,4 @@
 # Script for comparing result of the parallel and serial post processing by the post_drt_ensight filter
-#
-# Maintainer: A. Nagler
 
 from paraview import servermanager as sm
 import sys

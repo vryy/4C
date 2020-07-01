@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 
 */
 /*---------------------------------------------------------------------------*/
@@ -77,7 +76,6 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the shell8 element
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class Shell8 : public DRT::Element
     {
@@ -592,7 +590,6 @@ namespace DRT
           adjacent to a parent shell8 element. It therefore does not implement
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class Shell8Line : public DRT::FaceElement
     {

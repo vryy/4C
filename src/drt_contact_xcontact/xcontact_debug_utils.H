@@ -2,7 +2,6 @@
 /** \file
 \brief contains mainly debugging methods for the xcontact contact classes
 
-\maintainer Matthias Mayr
 
 \level 3
 */

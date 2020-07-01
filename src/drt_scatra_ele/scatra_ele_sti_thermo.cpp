@@ -6,7 +6,6 @@ transport
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_sti_thermo.H"

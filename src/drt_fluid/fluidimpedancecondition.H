@@ -3,7 +3,6 @@
 
 \brief method to deal with three-element windkessel and other flow dependent pressure conditions
 
-\maintainer Martin Kronbichler
 
 \level 3
 
@@ -105,7 +104,6 @@ namespace FLD
     /*!
     \brief impedance boundary condition for vascular outflow boundaries
 
-    \author chfoe (foerster@lnm.mw.tum.de)
     */
     class FluidImpedanceBc
     {

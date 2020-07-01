@@ -2,7 +2,6 @@
 /*! \file
 \brief Contact interface capable of TSI
 
-\maintainer Matthias Mayr
 
 \level 3
 */

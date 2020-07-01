@@ -3,7 +3,6 @@
 
 \brief routines to calculate forcing for homogeneous isotropic turbulence simulations
 
-\maintainer Martin Kronbichler
 
 \level 2
 

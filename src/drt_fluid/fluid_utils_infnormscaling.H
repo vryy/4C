@@ -3,7 +3,6 @@
 
 \brief infnorm-scaling utility class for preconditioning of fluid problems
 
-\maintainer Martin Kronbichler
 
 \level 3
 

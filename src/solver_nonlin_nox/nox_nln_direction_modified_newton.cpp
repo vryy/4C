@@ -3,7 +3,6 @@
 
 \brief Implementation of a modified Newton approach
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

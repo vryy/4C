@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Christoph Schmidt
 */
 /*---------------------------------------------------------------------*/
 #ifndef ABSTRACT_BINARYTREE_H
@@ -17,7 +16,6 @@ namespace MORTAR
   /*!
   \brief An abstract interface for binary trees
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   */
   class AbstractBinaryTreeNode
   {
@@ -59,7 +57,6 @@ namespace MORTAR
   /*!
   \brief An abstract interface for binary trees
 
-  \author schmidt (schmidt@lnm.mw.tum.de)
   */
   class AbstractBinaryTree
   {

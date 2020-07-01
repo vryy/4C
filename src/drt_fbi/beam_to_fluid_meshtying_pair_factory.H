@@ -4,7 +4,6 @@
 \brief Factory to create appropriate beam to fluid meshtying pair for the desired discretization
 approach
 
-\maintainer Nora Hagmeyer
 
 \level 2
 */

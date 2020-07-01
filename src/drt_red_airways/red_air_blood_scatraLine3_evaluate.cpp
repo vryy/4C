@@ -5,7 +5,6 @@
 action types for a reduced blood scatra element RedAirBloodScatraLine3. The actual implementation of
 the routines called during the possible actions is contained in red_air_blood_scatraLine3_impl.cpp
 
-\maintainer Carolin Geitner
 
 \level 3
 

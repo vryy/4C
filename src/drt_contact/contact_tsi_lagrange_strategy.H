@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -48,7 +47,6 @@ namespace CONTACT
    This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
    For a more general documentation of the involved functions refer to CoAbstract Strategy.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class CoTSILagrangeStrategy : public CoLagrangeStrategy
   {

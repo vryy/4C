@@ -3,7 +3,6 @@
 
 \brief Optimization algorithm Globally Convergent Method of Moving Asyptotes (GCMMA)
 
-\maintainer Martin Kronbichler
 
 \level 3
 

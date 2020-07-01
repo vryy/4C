@@ -6,7 +6,6 @@ contact pressure based on micro interactions
 
 \level 1
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 

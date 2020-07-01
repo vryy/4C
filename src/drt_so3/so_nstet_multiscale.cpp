@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_nstet.H"

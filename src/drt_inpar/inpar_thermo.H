@@ -3,7 +3,6 @@
 \brief list of input parameters
 \level 1
 
-\maintainer Christoph Meier
 
 */
 

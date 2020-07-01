@@ -3,7 +3,6 @@
 
 \brief Auxiliary methods.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

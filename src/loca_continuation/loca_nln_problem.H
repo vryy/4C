@@ -3,7 +3,6 @@
 
 \brief LOCA nonlinear problem definition interface
 
-\maintainer Martin Kronbichler
 
 \level 3
 

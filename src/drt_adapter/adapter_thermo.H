@@ -4,7 +4,6 @@
 \brief Thermo field adapter
 \level 1
 
-\maintainer Christoph Meier
 
 
 */

@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_discret.H"

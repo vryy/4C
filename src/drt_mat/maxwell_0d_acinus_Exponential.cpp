@@ -15,7 +15,6 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 1 RED_ACINUS  MAT 3 TYPE Exponential AcinusVolume 300 AlveolarDuctVolume 0.03711 E1_0 0 E1_EXP 0
 E1_LIN 0 TAU 0
 
-\maintainer Carolin Geitner
 
 \level 3
 */

@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief model evaluator for structure part of partitioned pasi
-
 \level 3
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

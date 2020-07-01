@@ -3,7 +3,6 @@
  \brief solid material for  porous model with special implementations
         for ECM model (dissolution of ECM)
 
-   \maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

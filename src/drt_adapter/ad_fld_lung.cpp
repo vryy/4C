@@ -6,7 +6,6 @@ parenchyma balloon
 
 \level 2
 
-\maintainer Carolin Geitner
 
 
 

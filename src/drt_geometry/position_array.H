@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 #ifndef POSITION_ARRAY_H
 #define POSITION_ARRAY_H

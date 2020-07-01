@@ -3,7 +3,6 @@
 
 \brief evaluation of scalar transport elements for standard scalar transport problems
 
-\maintainer Anh-Tu Vuong
 
 \level 1
 */

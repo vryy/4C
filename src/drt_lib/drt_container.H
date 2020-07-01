@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -55,7 +54,6 @@ namespace DRT
   vectors of system length. It does therefore not support any Epetra_Vector
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Container : public DRT::ParObject
   {

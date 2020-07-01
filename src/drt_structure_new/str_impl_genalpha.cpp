@@ -3,7 +3,6 @@
 
 \brief Generalized Alpha time integrator.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

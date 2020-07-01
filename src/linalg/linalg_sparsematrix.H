@@ -5,9 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 */
 /*----------------------------------------------------------------------*/
 #ifndef LINALG_SPARSEMATRIX_H_

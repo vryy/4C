@@ -3,7 +3,6 @@
 \brief A set of degrees of freedom for constraint problems
 \level 2
 
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifndef CONSTRAINTDOFSET_H

@@ -7,7 +7,6 @@ The slave boundary must have an additional Dirichlet condition, the
 master boundary will usually be a periodic boundary (but is not required
 to)
 
-\maintainer Martin Kronbichler
 
 \level 2
 

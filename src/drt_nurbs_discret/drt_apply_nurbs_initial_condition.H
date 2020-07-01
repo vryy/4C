@@ -13,7 +13,6 @@ position since dofs associated with neighbouring control points influence
 the function value as well)
 
 
-\maintainer Martin Kronbichler
 
 \level 2
 */

@@ -3,7 +3,6 @@
 
 \brief Factory to create the desired model evaluators.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

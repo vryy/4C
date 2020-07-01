@@ -3,7 +3,6 @@
 
 \brief pseudo transient solution method
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

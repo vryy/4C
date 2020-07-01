@@ -5,9 +5,6 @@
 
 \level 2
 
-\maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
 *---------------------------------------------------------------------------*/
 
 #ifndef ELEMAG_ELE_ACTION_H

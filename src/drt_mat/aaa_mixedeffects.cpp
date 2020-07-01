@@ -9,7 +9,6 @@ The input line should read
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

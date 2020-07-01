@@ -2,7 +2,6 @@
 /*! \file
   \brief control routine of fluid-porous-structure-interaction problems
  \level 2
-\maintainer  Johannes Kremheller
  *------------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

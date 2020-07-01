@@ -4,7 +4,6 @@
 \brief Fill arrays with the results for the tests.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

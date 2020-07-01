@@ -3,7 +3,6 @@
 
 \brief Input parameter for beam-to-solid interaction.
 
-\maintainer Ivo Steinbrecher
 
 \level 2
 

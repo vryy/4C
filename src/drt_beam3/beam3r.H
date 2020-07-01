@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 
@@ -99,7 +98,6 @@ namespace DRT
     application to finite element models of geometrically exact rods", Crisfield, 2003, "Non-linear
     Finite Element Analysis of Solids and Structures", Volume 2
 
-    author cyron (cyron @lnm.mw.tum.de)
     */
     class Beam3r : public Beam3Base
     {

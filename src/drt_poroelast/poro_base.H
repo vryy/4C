@@ -5,10 +5,6 @@
 
  \level 2
 
-\maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
  *-----------------------------------------------------------------------*/
 #ifndef PORO_BASE_H_
 #define PORO_BASE_H_

@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief particle input generator for particle simulations
-
 \level 3
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

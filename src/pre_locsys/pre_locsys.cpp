@@ -3,7 +3,6 @@
 
 \brief Run time for locsys
 \level 2
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

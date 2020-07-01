@@ -3,7 +3,6 @@
 
 \brief LOCA stepper interface
 
-\maintainer Martin Kronbichler
 
 \level 3
 

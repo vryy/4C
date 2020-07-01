@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer  Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fpsi.H"

@@ -7,7 +7,6 @@ This class provides the fluid element parameter for the time integration,
 which are unique and equal for every fluid in the problem. Time integration
 with different parameters in more than one fluid field is not yet supported.
 
-\maintainer Martin Kronbichler
 
 \level 1
 
