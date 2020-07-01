@@ -846,9 +846,6 @@ set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery_input.cpp
   src/drt_art_net/artery_resulttest.cpp
 )
-set(OBJS_FILTER_COMMON
-  src/filter_common/filter_evaluation.cpp
-)
 set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
@@ -2869,7 +2866,6 @@ add_library(drt_error ${OBJS_DRT_ERROR})
 
 # filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
-add_library(filter_common ${OBJS_FILTER_COMMON})
 add_library(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
 add_library(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
 
@@ -2923,7 +2919,6 @@ target_link_libraries (${baciname} ${BACI_LIBRARIES} ${LIBRARIES} drt_error)
 
 set(FILTER_LIBRARIES
   post_drt_common
-  filter_common
   -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
   ${LIBRARIES}
   drt_error)
