@@ -1021,9 +1021,9 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize object, that performs evaluations of OD coupling
-  scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-      maps_scatra_, maps_structure_, maps_->Map(0), maps_->Map(1), icoup_structure_,
-      interface_map_scatra, meshtying_strategy_s2i_, scatra_, structure_));
+  scatrastructureOffDiagcoupling_ = Teuchos::rcp(
+      new SSI::ScatraStructureOffDiagCoupling(maps_structure_, maps_->Map(0), maps_->Map(1),
+          icoup_structure_, interface_map_scatra, meshtying_strategy_s2i_, scatra_, structure_));
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1157,7 +1157,7 @@ void SSI::SSI_Mono::Timeloop()
   }  // while(NotFinished())
 }
 
-/*------------------------------------------------------------------------s--------------*
+/*--------------------------------------------------------------------------------------*
  | update scalar transport and structure fields after time step evaluation   fang 08/17 |
  *--------------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Update()

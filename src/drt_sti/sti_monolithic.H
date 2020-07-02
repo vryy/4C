@@ -206,7 +206,7 @@ namespace STI
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
     Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
-    //! evaluation of OD blocks for scatra-structure coupling
+    //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
