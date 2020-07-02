@@ -275,7 +275,7 @@ In the case any configuration on the `master` branch of the nightly pipeline is 
 * All **developer(s)** and **reviewer(s)** who merged into the `master` branch since the last nightly pipeline passed are **responsible** for fixing the reason for the failing pipeline.
 * This responsible group coordinates this bug-fixing process independently.
 * If you are member of the responsible group, open an issue using the `TEST_FAILING` template if not yet done (can be skipped for immediately fixed trivial bugs).
-* The file maintainers and other developers support this process if requested but are not leading this process.
+* The code owners and other developers support this process if requested but are not leading this process.
 * If a merge request has to be reverted is decided by the reviewer (in discussion with the developer), depending on the expected time to fix the issue and how critical the problem is.
 
 [↑ Contents](#contents)
