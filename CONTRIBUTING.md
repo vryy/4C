@@ -76,6 +76,7 @@ Then the workflow to use is the following:
 > **Note:** It is important to keep your local `master` branch in `baci` up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
 First, update the `master` branch:
+
 ```bash
 cd <path/to/baci-source-code>
 git checkout master
@@ -85,12 +86,14 @@ git pull
 where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
 
 Then, create a local branch off of `master` in `baci` on which to make your changes:
+
 ```bash
 git branch <branchName>
 git checkout <branchName>
 ```
 
 The branch name `<branchName>` can be whatever you like, though we have some recommendations:
+
 *  Include the issue number in it in some way, for instance, `123-<restOfBranchName>`, or `<restOfBranchName>-123`.
 *  Make the branch name descriptive; that is, avoid `fixSomeStuff`, `performanceTweaks`, and generic names along those lines.
 *  To indicate your branch is intended solely for your own use, include your username in the branch name somehow, as in `<username>-<restOfBranchName>` or `<restOfBranchName>-<username>`.
@@ -119,6 +122,7 @@ Commit messages must be detailed and directly include all necessary information.
 To differentiate from the documentation in GitLab: Commit messages are for the developers of the affected code parts, whereas issue and merge requests descriptions are meant for reviewers.
 
 Commit messages should meet the following points:
+
 * The **first line** of the commit message should be a descriptive title, **limited to 50 characters**.
 * This is then followed by a blank line, and then the rest of the commit message is a description of the changes,
 limited to 72 characters wide.
@@ -137,12 +141,14 @@ Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for o
 #### Integrate changes from `master` into your feature branch
 
 While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
+
 ```bash
 git checkout master
 git pull
 git checkout <branchName>
 git merge master
 ```
+
 though there are others that are equally valid.
 
 > **Note:** It might happen that conflicts arise during the `git merge master` operation. After seeing a conflict, you can do two things:
@@ -164,6 +170,7 @@ A small set of test cases can be run via `ctest -L minimal`.
 ### Merging Changes into `master`
 
 To merge changes into `master`, a feature branch needs to satisfy these conditions:
+
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
 * No build errors and warnings
 * All tests are passing
@@ -174,6 +181,7 @@ To merge changes into `master`, a feature branch needs to satisfy these conditio
 To publish your changes and make them available to others, you have to push them to GitLab. Before pushing your branch to GitLab, use interactive rebasing via `git rebase -i` to squash the commits on your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
 Push your local feature branch up to the remote with:
+
 ```bash
 git push --set-upstream origin <branchName>
 ```
@@ -240,16 +248,19 @@ If your merge request *Description* has some form of "closes #\<issueNumber\>" i
 ### Final Clean-Up
 
 To keep the repository clean, delete your feature branch *after* merging it into `master`.  When you merge a merge request, GitLab will give you the option to click a button to remove the source branch.  If you click this, then
+
 ```bash
 git fetch --prune
 ```
 
 will remove the remote tracking information from your local repository.  Alternatively, you could skip the GitLab button and use
+
 ```bash
 git push origin --delete <branchName>
 ```
 
 Either way is completely fine.  After that you can remove your local branch with
+
 ```bash
 git branch -D <branchName>
 ```
@@ -260,10 +271,11 @@ git branch -D <branchName>
 
 After your merge request was merged into the `master` branch, actively watch the nightly pipeline which is executed in the following night.
 In the case any configuration on the `master` branch of the nightly pipeline is failing (this can happen as we do not test the same/all configurations before the merge):
+
 * All **developer(s)** and **reviewer(s)** who merged into the `master` branch since the last nightly pipeline passed are **responsible** for fixing the reason for the failing pipeline.
 * This responsible group coordinates this bug-fixing process independently.
 * If you are member of the responsible group, open an issue using the `TEST_FAILING` template if not yet done (can be skipped for immediately fixed trivial bugs).
-* The file maintainers and other developers support this process if requested but are not leading this process.
+* The code owners and other developers support this process if requested but are not leading this process.
 * If a merge request has to be reverted is decided by the reviewer (in discussion with the developer), depending on the expected time to fix the issue and how critical the problem is.
 
 [↑ Contents](#contents)
