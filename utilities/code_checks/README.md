@@ -105,7 +105,6 @@ Afterwards the user gets a short terminal output of the changes done by clang fo
 * level tag
 * input files:
   * check .dat-files for header
-  * check for maintainer
 
 ## Setup in GitLab
 Taken from, [GitLab website](https://docs.gitlab.com/ee/administration/custom_hooks.html):
