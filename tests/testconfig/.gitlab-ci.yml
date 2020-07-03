@@ -574,6 +574,8 @@ pages: # job name needs to be pages
         # print the weekly measured coverage rate
         - "echo 'Weekly measured'"
         - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
+        # Create directory that will be published
+        - mkdir -p public
         # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
         - mv coverage_report public/coverage_report
         # Move most recent doxygen to public folder
