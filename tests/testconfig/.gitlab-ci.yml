@@ -358,6 +358,8 @@ variables:
         - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
         # Copy final doxygen files to pre-defined location
         - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $DOXYGEN_PATH"
+        # Move final doxygen into the base folder for the next stage
+        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
@@ -369,12 +371,13 @@ variables:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
             - doxygen.log
-        when: on_failure
-        expire_in: 4 weeks
+            - doxygen/
+        when: always
+        expire_in: 1 day
     only:
-        variables:
-            # Only build doxygen during nightly tests.
-            - $GITLAB_SCHEDULER_TYPE == "1"
+        # Build doxygen only on master builds
+        refs:
+            - master
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -564,14 +567,17 @@ pages: # job name needs to be pages
     variables:
         # stage operates exclusively on artifacts. No need for source code.
         GIT_STRATEGY: fetch
-    # skip the download of artifacts from previous stages. Rely solely on cache
-    dependencies: []
+    # Download Doxygen from previous lnm-doxygen stage
+    dependencies:
+        - lnm-doxygen
     script:
         # print the weekly measured coverage rate
         - "echo 'Weekly measured'"
         - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
         # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
-        - mv coverage_report/ public/
+        - mv coverage_report public/coverage_report
+        # Move most recent doxygen to public folder
+        - mv doxygen public/doxygen
     cache:
         key: cache-weekly-coverage-report
         paths:
