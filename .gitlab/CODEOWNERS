@@ -78,6 +78,10 @@ src/drt_beam3/                     @baci/team_structure
 src/drt_beamcontact/               @baci/team_structure
 
 src/drt_beaminteraction/           @baci/team_structure
+src/drt_beaminteraction/beam_link*                            @jeichinger
+src/drt_beaminteraction/beaminteraction_geometry_utils*       @jeichinger
+src/drt_beaminteraction/str_model_evaluator_beamdata*         @jeichinger
+src/drt_beaminteraction/str_model_evaluator_beaminteraction*  @jeichinger
 
 src/drt_bele3/                     @baci/team_discretization
 
@@ -148,12 +152,15 @@ src/drt_geometry_pair/             @istein @NHagmeyer @baci/team_discretization
 src/drt_immersed_problem/          @baci/team_fsi
 
 src/drt_inpar/                     @baci/team_input
+src/drt_inpar/inpar_beam*          @baci/team_input @baci/team_structure
+src/drt_inpar/inpar_beaminteraction.H @jeichinger
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
 src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
+src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @baci/team_output
+src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams* @jeichinger
 src/drt_inpar/inpar_particle*      @sfuchs
 src/drt_inpar/inpar_pasi*          @sfuchs
 src/drt_inpar/inpar_poro*          @baci/team_poro
-
 
 src/drt_inv_analysis/              @baci/team_queens
 
@@ -172,6 +179,7 @@ src/drt_lubrication_ele/           @baci/team_scatra
 
 src/drt_mat/                       @baci/team_material
 src/drt_mat/anisotropy*            @agebauer
+src/drt_mat/beam_elasthyper*       @baci/team_structure @baci/team_material
 src/drt_mat/cnst_1d_art*           @baci/team_reduced_fluid_models
 src/drt_mat/fluidporo*             @baci/team_poro
 src/drt_mat/membrane_elasthyper*   @sfuchs @baci/team_material
@@ -222,7 +230,7 @@ src/drt_poromultiphase_scatra/     @baci/team_poro
 
 src/drt_red_airways/               @baci/team_reduced_fluid_models
 
-src/drt_rigidsphere/               @baci/team_structure
+src/drt_rigidsphere/               @jeichinger
 
 src/drt_s8/                        @baci/team_structure
 
@@ -318,6 +326,10 @@ src/solver_nonlin_nox/             @baci/team_solvers
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
 /Input/ale*                        @baci/team_fluid
 
+/Input/beam3*                      @baci/team_structure
+/Input/beam3*crosslinking*                                @jeichinger
+/Input/beam3r_line2_backweuler_browndyn_largesys.dat      @jeichinger
+
 /Input/cardiovascular0d*           @baci/team_reduced_fluid_models
 
 /Input/contact*                    @baci/team_contact
@@ -352,11 +364,15 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/prestress*                  @agebauer
 
+Input/rigidsphere*                 @baci/team_structure
+
 /Input/scatra*                     @baci/team_scatra
 
 /Input/spring_dashpot*             @agebauer @baci/team_discretization
 
 /Input/thermo*                     @baci/team_thermo
+
+/Input/truss3*                     @baci/team_structure
 
 /Input/tsi*                        @baci/team_thermo
 
