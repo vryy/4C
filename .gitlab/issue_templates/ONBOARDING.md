@@ -54,7 +54,6 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
 - [ ] Add new team member to the GitLab group baci_developers
-- [ ] Update the [baci_developers.json](https://gitlab.lrz.de/baci/baci/blob/master/utilities/git_hooks/baci_developers.json) file of all valid file maintainers
 - [ ] Assign and @mention an experienced "Baci buddy" to help with git, the first issue, first commit, ...
 
 

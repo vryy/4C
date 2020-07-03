@@ -30,7 +30,7 @@ Feel free to leave a personal email address if you want to stay reachable.
 <!---
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
-- [ ] Re-assign source and input file maintainership to another developer
+- [ ] Change ownership of source and input files to another developer or a team.
 
 
 ## Checklist for the BACI group owners
@@ -42,7 +42,6 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] If applicable, remove the leaving team member from the GitLab group baci_maintainers.
 - [ ] If applicable, remove the leaving team member from the list of maintainers in #336.
 - [ ] Add leaving team member to the GitLab group baci_collaborators.
-- [ ] Update the [baci_developers.json](https://gitlab.lrz.de/baci/baci/blob/master/utilities/git_hooks/baci_developers.json) file of all valid file maintainers.
 
 ## Interested Parties
 <!---
