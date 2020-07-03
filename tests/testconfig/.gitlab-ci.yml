@@ -578,6 +578,12 @@ pages: # job name needs to be pages
         - mv coverage_report public/coverage_report
         # Move most recent doxygen to public folder
         - mv doxygen public/doxygen
+        # Create python venv to create badges
+        - python3 -m venv venv
+        - . venv/bin/activate
+        - pip install anybadge
+        # Create doxygen badge
+        - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
     cache:
         key: cache-weekly-coverage-report
         paths:
