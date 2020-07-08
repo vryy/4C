@@ -235,6 +235,13 @@ namespace PASI
     //! destructor
     ~PASI_PartTwoWayCoup_DispRelax() override{};
 
+    /*!
+     * \brief init pasi algorithm
+     *
+     * \author Sebastian Fuchs \date 07/2020
+     */
+    void Init() override;
+
    protected:
     /*!
      * \brief iteration loop between coupled fields with relaxed displacements
@@ -255,21 +262,32 @@ namespace PASI
      */
     virtual void CalcOmega(double& omega, const int itnum);
 
+    //! relaxed interface displacement
+    Teuchos::RCP<Epetra_Vector> relaxintfdispnp_;
+
+    //! relaxed interface velocity
+    Teuchos::RCP<Epetra_Vector> relaxintfvelnp_;
+
+    //! relaxed interface acceleration
+    Teuchos::RCP<Epetra_Vector> relaxintfaccnp_;
+
     //! relaxation parameter
     double omega_;
 
    private:
     /*!
+     * \brief init relaxation of interface states
+     *
+     * \author Sebastian Fuchs \date 07/2020
+     */
+    void InitRelaxationInterfaceStates();
+
+    /*!
      * \brief perform relaxation of interface states
      *
      * \author Sebastian Fuchs \date 11/2019
-     *
-     * \param[in,out] intfdispnp relaxed interface displacement
-     * \param[out]    intfvelnp  relaxed interface velocity
-     * \param[out]    intfaccnp  relaxed interface acceleration
      */
-    void PerformRelaxationInterfaceStates(Teuchos::RCP<Epetra_Vector> intfdispnp,
-        Teuchos::RCP<Epetra_Vector> intfvelnp, Teuchos::RCP<Epetra_Vector> intfaccnp);
+    void PerformRelaxationInterfaceStates();
   };
 
   /*!

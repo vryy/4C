@@ -145,9 +145,6 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     // reset increment states
     ResetIncrementStates(intfdispnp_, intfforcenp_);
 
-    // set interface states
-    SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
-
     // reset particle states
     ResetParticleStates();
 
@@ -174,6 +171,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
 
     // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
+
+    // set interface states
+    SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
   }
 }
 
@@ -476,6 +476,17 @@ PASI::PASI_PartTwoWayCoup_DispRelax::PASI_PartTwoWayCoup_DispRelax(
   // empty constructor
 }
 
+void PASI::PASI_PartTwoWayCoup_DispRelax::Init()
+{
+  // call base class init
+  PASI::PASI_PartTwoWayCoup::Init();
+
+  // construct relaxed interface states
+  relaxintfdispnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfvelnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfaccnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+}
+
 void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
 {
   int itnum = 0;
@@ -490,15 +501,11 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
     // clang-format on
   }
 
-  // construct and init relaxed interface states
-  Teuchos::RCP<Epetra_Vector> intfdispnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfdispnp->Update(1.0, *intfdispnp_, 0.0);
+  // init relaxation of interface states
+  InitRelaxationInterfaceStates();
 
-  Teuchos::RCP<Epetra_Vector> intfvelnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfvelnp->Update(1.0, *intfvelnp_, 0.0);
-
-  Teuchos::RCP<Epetra_Vector> intfaccnp = LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfaccnp->Update(1.0, *intfaccnp_, 0.0);
+  // set interface states
+  SetInterfaceStates(relaxintfdispnp_, relaxintfvelnp_, relaxintfaccnp_);
 
   // save particle states
   SaveParticleStates();
@@ -509,10 +516,7 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
     ++itnum;
 
     // reset increment states
-    ResetIncrementStates(intfdispnp, intfforcenp_);
-
-    // set interface states
-    SetInterfaceStates(intfdispnp, intfvelnp, intfaccnp);
+    ResetIncrementStates(relaxintfdispnp_, intfforcenp_);
 
     // reset particle states
     ResetParticleStates();
@@ -545,7 +549,10 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::Outerloop()
     CalcOmega(omega_, itnum);
 
     // perform relaxation of interface states
-    PerformRelaxationInterfaceStates(intfdispnp, intfvelnp, intfaccnp);
+    PerformRelaxationInterfaceStates();
+
+    // set interface states
+    SetInterfaceStates(relaxintfdispnp_, relaxintfvelnp_, relaxintfaccnp_);
   }
 }
 
@@ -556,19 +563,22 @@ void PASI::PASI_PartTwoWayCoup_DispRelax::CalcOmega(double& omega, const int itn
     std::cout << "Fixed relaxation parameter: " << omega << std::endl;
 }
 
-void PASI::PASI_PartTwoWayCoup_DispRelax::PerformRelaxationInterfaceStates(
-    Teuchos::RCP<Epetra_Vector> intfdispnp, Teuchos::RCP<Epetra_Vector> intfvelnp,
-    Teuchos::RCP<Epetra_Vector> intfaccnp)
+void PASI::PASI_PartTwoWayCoup_DispRelax::InitRelaxationInterfaceStates()
 {
-  // displacement relaxation
-  intfdispnp->Update(omega_, *intfdispincnp_, 1.0);
+  relaxintfdispnp_->Update(1.0, *intfdispnp_, 0.0);
+  relaxintfvelnp_->Update(1.0, *intfvelnp_, 0.0);
+  relaxintfaccnp_->Update(1.0, *intfaccnp_, 0.0);
+}
 
-  // velocities and accelerations consistent to relaxed displacements
-  intfvelnp->Update(1.0, *intfdispnp_, 0.0);
-  intfvelnp->Update(1.0 / Dt(), *intfdispnp, -1.0 / Dt());
+void PASI::PASI_PartTwoWayCoup_DispRelax::PerformRelaxationInterfaceStates()
+{
+  relaxintfdispnp_->Update(omega_, *intfdispincnp_, 1.0);
 
-  intfaccnp->Update(1.0, *intfvelnp_, 0.0);
-  intfaccnp->Update(1.0 / Dt(), *intfvelnp, -1.0 / Dt());
+  relaxintfvelnp_->Update(1.0, *intfdispnp_, 0.0);
+  relaxintfvelnp_->Update(1.0 / Dt(), *relaxintfdispnp_, -1.0 / Dt());
+
+  relaxintfaccnp_->Update(1.0, *intfvelnp_, 0.0);
+  relaxintfaccnp_->Update(1.0 / Dt(), *relaxintfvelnp_, -1.0 / Dt());
 }
 
 PASI::PASI_PartTwoWayCoup_DispRelaxAitken::PASI_PartTwoWayCoup_DispRelaxAitken(
@@ -585,7 +595,7 @@ void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::Init()
   // call base class init
   PASI::PASI_PartTwoWayCoup_DispRelax::Init();
 
-  // construct interface states
+  // construct old interface increment state
   intfdispincnpold_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
 }
 
