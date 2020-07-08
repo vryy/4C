@@ -210,7 +210,7 @@ src/drt_particle_algorithm/        @sfuchs
 
 src/drt_particle_engine/           @sfuchs
 
-src/drt_particle_interaction/      @sfuchs @baci/team_particle
+src/drt_particle_interaction/      @sfuchs
 
 src/drt_particle_wall/             @sfuchs
 
@@ -354,8 +354,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/one_d_3_artery*             @baci/team_reduced_fluid_models
 
 /Input/particle_nointer*           @sfuchs
-/Input/particle_dem*               @sfuchs @chrmeier
-/Input/particle_sph*               @sfuchs @chrmeier
+/Input/particle_dem*               @sfuchs
+/Input/particle_sph*               @sfuchs
 /Input/pasi*                       @sfuchs
 
 /Input/poro_*                      @baci/team_poro
