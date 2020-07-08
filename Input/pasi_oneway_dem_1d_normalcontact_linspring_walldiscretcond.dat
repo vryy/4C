@@ -54,7 +54,7 @@ SOLVER                          UMFPACK
 ---------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = No
-Outer Iteration                 = Yes
+Outer Iteration                 = No
 Inner Iteration                 = No
 Parameters                      = No
 Details                         = No
