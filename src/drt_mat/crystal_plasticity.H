@@ -392,10 +392,10 @@ namespace MAT
         int eleGID) override;
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
-    void MillerBravaisToMiller(
-        std::vector<LINALG::Matrix<4, 1>>& NorHex,  //!< [IN] vector of slip/twinning plane normals
-                                                    //!< in Miller-Bravais index notation
-        std::vector<LINALG::Matrix<4,
+    void MillerBravaisToMiller(const std::vector<LINALG::Matrix<4, 1>>&
+                                   NorHex,  //!< [IN] vector of slip/twinning plane normals
+                                            //!< in Miller-Bravais index notation
+        const std::vector<LINALG::Matrix<4,
             1>>& DirHex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais index
                           //!< notation
         std::vector<LINALG::Matrix<3, 1>>&
@@ -405,12 +405,12 @@ namespace MAT
     );
 
     //! check if two vectors are parallel by checking the angle between them
-    bool CheckParallel(LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
+    bool CheckParallel(const LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
+        const LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
     );
     //! check if two vectors are orthogonal by checking the angle between them
-    bool CheckOrthogonal(LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
+    bool CheckOrthogonal(const LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
+        const LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
     );
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res

@@ -15,6 +15,7 @@ See the header file for a detailed description.
 #include "matpar_bundle.H"
 #include "material_service.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/voigt_notation.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|
@@ -437,8 +438,8 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   defect_densities_current_->resize(numgp);
 
   // set initial values
-  std::vector<double> emptyvect_(def_system_count_);
-  for (int i = 0; i < def_system_count_; i++) emptyvect_[i] = 0.0;
+  std::vector<double> emptyvect(def_system_count_);
+  for (int i = 0; i < def_system_count_; i++) emptyvect[i] = 0.0;
 
   for (int i = 0; i < numgp; i++)
   {
@@ -451,8 +452,8 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
     (*gamma_last_)[i].resize(def_system_count_);
     (*gamma_current_)[i].resize(def_system_count_);
 
-    (*gamma_last_)[i] = emptyvect_;
-    (*gamma_current_)[i] = emptyvect_;
+    (*gamma_last_)[i] = emptyvect;
+    (*gamma_current_)[i] = emptyvect;
 
     (*defect_densities_last_)[i].resize(def_system_count_);
     (*defect_densities_current_)[i].resize(def_system_count_);
@@ -476,7 +477,7 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
       }
     }
 
-    (*defect_densities_current_)[i] = emptyvect_;
+    (*defect_densities_current_)[i] = emptyvect;
   }
 
   isinit_ = true;
@@ -1138,19 +1139,20 @@ void MAT::CrystalPlasticity::SetupLatticeOrientation(DRT::INPUT::LineDefinition*
  *---------------------------------------------------------------------------------*/
 
 void MAT::CrystalPlasticity::MillerBravaisToMiller(
-    std::vector<LINALG::Matrix<4, 1>>& plane_normal_hex,
-    std::vector<LINALG::Matrix<4, 1>>& direction_hex,
+    const std::vector<LINALG::Matrix<4, 1>>& plane_normal_hex,
+    const std::vector<LINALG::Matrix<4, 1>>& direction_hex,
     std::vector<LINALG::Matrix<3, 1>>& plane_normal, std::vector<LINALG::Matrix<3, 1>>& direction)
 {
   for (int unsigned i = 0; i < plane_normal_hex.size(); i++)
   {
     plane_normal[i](0, 0) = plane_normal_hex.at(i)(0, 0);
     plane_normal[i](1, 0) =
-        (plane_normal_hex.at(i)(0, 0) + 2.0 * plane_normal_hex.at(i)(1, 0)) / sqrt(3.0);
+        (plane_normal_hex.at(i)(0, 0) + 2.0 * plane_normal_hex.at(i)(1, 0)) / std::sqrt(3.0);
     plane_normal[i](2, 0) = plane_normal_hex.at(i)(3, 0) / c_to_a_ratio_;
 
     direction[i](0, 0) = 1.5 * direction_hex.at(i)(0, 0);
-    direction[i](1, 0) = sqrt(3.0) * (0.5 * direction_hex.at(i)(0, 0) + direction_hex.at(i)(1, 0));
+    direction[i](1, 0) =
+        std::sqrt(3.0) * (0.5 * direction_hex.at(i)(0, 0) + direction_hex.at(i)(1, 0));
     direction[i](2, 0) = direction_hex.at(i)(3, 0) * c_to_a_ratio_;
   }
   return;
@@ -1161,7 +1163,7 @@ void MAT::CrystalPlasticity::MillerBravaisToMiller(
  *---------------------------------------------------------------------------------*/
 
 bool MAT::CrystalPlasticity::CheckParallel(
-    LINALG::Matrix<3, 1>& vector_1, LINALG::Matrix<3, 1>& vector_2)
+    const LINALG::Matrix<3, 1>& vector_1, const LINALG::Matrix<3, 1>& vector_2)
 {
   LINALG::Matrix<1, 1> parallel_test;
   parallel_test.MultiplyTN(vector_1, vector_2);
@@ -1176,7 +1178,7 @@ bool MAT::CrystalPlasticity::CheckParallel(
  *---------------------------------------------------------------------------------*/
 
 bool MAT::CrystalPlasticity::CheckOrthogonal(
-    LINALG::Matrix<3, 1>& vector_1, LINALG::Matrix<3, 1>& vector_2)
+    const LINALG::Matrix<3, 1>& vector_1, const LINALG::Matrix<3, 1>& vector_2)
 {
   LINALG::Matrix<1, 1> ortho_test;
   ortho_test.MultiplyTN(vector_1, vector_2);
@@ -1236,10 +1238,10 @@ void MAT::CrystalPlasticity::NewtonRaphson(LINALG::Matrix<3, 3>& deform_grad,
     // determine total residuum as norm of the vector of slip and twinning system residuals
     for (int i = 0; i < def_system_count_; i++)
     {
-      total_residual += pow(residuals_trial.at(i), 2.0);
+      total_residual += std::pow(residuals_trial.at(i), 2.0);
     }
 
-    total_residual = sqrt(total_residual);
+    total_residual = std::sqrt(total_residual);
 
     // convergence check
     if (total_residual < newton_tolerance_)
@@ -1456,11 +1458,11 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
     defect_densities_trial[i] =
         (*defect_densities_last_)[gp][i] +
         (1.0 / (slip_burgers_mag_[i] * dislocation_generation_coeff_[ind])) *
-            sqrt(total_dislocation_densitiy_last) * abs(delta_gamma_trial[i]);
+            std::sqrt(total_dislocation_densitiy_last) * std::abs(delta_gamma_trial[i]);
 
     // dynamic recovery
     defect_densities_trial[i] -= dislocation_dyn_recovery_coeff_[ind] *
-                                 (*defect_densities_last_)[gp][i] * abs(delta_gamma_trial[i]);
+                                 (*defect_densities_last_)[gp][i] * std::abs(delta_gamma_trial[i]);
     // determine updated total dislocation density
     total_dislocation_density_curr += defect_densities_trial[i];
   }
@@ -1474,7 +1476,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
       // TODO INCLUDE TWINNING SHEAR OF RESPECTIVE LATTICE HERE!!! BEST IN SETUP LAZTTICE
       // VECTORS!
       defect_densities_trial[i] =
-          (*defect_densities_last_)[gp][i] + abs(delta_gamma_trial[i]) * sqrt(2.0);
+          (*defect_densities_last_)[gp][i] + std::abs(delta_gamma_trial[i]) * std::sqrt(2.0);
 
       // determine updated total twinned volume fraction
       total_twinned_volume_curr += defect_densities_trial[i];
@@ -1512,7 +1514,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
 
   unimod_identity_plus_plastic_velocity_grad_trial.Update(identity3, plastic_velocity_grad_trial);
   unimod_identity_plus_plastic_velocity_grad_trial.Scale(
-      pow(unimod_identity_plus_plastic_velocity_grad_trial.Determinant(), -1.0 / 3.0));
+      std::pow(unimod_identity_plus_plastic_velocity_grad_trial.Determinant(), -1.0 / 3.0));
 
   // determine trial plastic deformation gradient
   plastic_deform_grad_trial.MultiplyNN(
@@ -1529,7 +1531,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
 
   // calculate the Jacobi-determinant J = det(FE_{n+1}) and the logarithm of it
   double jacobi_det_trial = elastic_deform_grad_trial.Determinant();
-  double ln_jacobi_det_trial = log(jacobi_det_trial);
+  double ln_jacobi_det_trial = std::log(jacobi_det_trial);
 
   // set up elastic right cauchy green and its inverse
   LINALG::Matrix<3, 3> elastic_right_cauchy_green;
@@ -1561,13 +1563,13 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
 
     // Hall-Petch strengthening term
     double hall_petch_strengthening =
-        hall_petch_coeffs_slip_[ind] * (1.0 / sqrt(micro_boundary_distance_slip_[ind]));
+        hall_petch_coeffs_slip_[ind] * (1.0 / std::sqrt(micro_boundary_distance_slip_[ind]));
 
     // work hardening increment
     double delta_tau_y = 0.0;
 
     // work hardening hardening increment of slip systems due to accumulated dislocation density
-    delta_tau_y = 0.5 * mue_ * slip_burgers_mag_[i] * sqrt(total_dislocation_density_curr);
+    delta_tau_y = 0.5 * mue_ * slip_burgers_mag_[i] * std::sqrt(total_dislocation_density_curr);
 
     // additional hardening due to non-coplanar twins
     if (is_twinning_)
@@ -1606,8 +1608,8 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
     // shear rate as determined from the flow rule
     double gamma_dot = 0.0;
 
-    gamma_dot = abs(resolved_shear_stress(0, 0)) / tau_y;
-    gamma_dot = pow(gamma_dot, n_slip_[ind]);
+    gamma_dot = std::abs(resolved_shear_stress(0, 0)) / tau_y;
+    gamma_dot = std::pow(gamma_dot, n_slip_[ind]);
     gamma_dot = gamma_dot * gamma_dot_0_slip_[ind];
     gamma_dot = std::copysign(gamma_dot, resolved_shear_stress(0, 0));
 
@@ -1628,7 +1630,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
 
       // Hall-Petch strengthening term
       double hall_petch_strengthening =
-          hall_petch_coeffs_twin_[ind] * (1.0 / sqrt(micro_boundary_distance_twin_[ind]));
+          hall_petch_coeffs_twin_[ind] * (1.0 / std::sqrt(micro_boundary_distance_twin_[ind]));
 
       // work hardening increment
       double delta_tau_t = 0.0;
@@ -1681,7 +1683,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(LINALG::Matrix<3, 3> deform_grad,
       if ((resolved_shear_stress(0, 0) > 0.0) && (total_twinned_volume_curr < 1.0))
       {
         gamma_dot = resolved_shear_stress(0, 0) / tau_t;
-        gamma_dot = pow(gamma_dot, n_twin_[ind]);
+        gamma_dot = std::pow(gamma_dot, n_twin_[ind]);
         gamma_dot = gamma_dot * gamma_dot_0_twin_[ind];
       }
       // set up corresponding residual
@@ -1771,7 +1773,7 @@ bool MAT::CrystalPlasticity::VisData(
       gamma_acc = 0.0;
       for (int sys = 0; sys < def_system_count_; sys++)
       {
-        gamma_acc += abs((*gamma_last_)[gp_index][sys]);
+        gamma_acc += std::abs((*gamma_last_)[gp_index][sys]);
       }
       data[0] = gamma_acc;
     }
