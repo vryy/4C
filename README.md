@@ -17,6 +17,7 @@ using modern software design and is parallelized with MPI for distributed memory
    1. [Clone the Repository](#clone-the-repository)
    1. [Set-Up the Environment](#set-up-the-environment)
    1. [Configure and Build](#configure-and-build)
+   1. [Prepare and Run Simulations](#prepare-and-run-simulations)
    1. [Updating BACI](#updating-baci)
 1. [Where to Ask Questions](#where-to-ask-questions)
 1. [Contributing](#contributing)
@@ -164,6 +165,47 @@ or all tests via
 ```bash
 ctest
 ```
+
+[↑ Contents](#contents)
+
+### Prepare and Run Simulations
+
+After sucessfully building BACI, the executable `baci-release` is located in your build directory `<buildDir>/`. 
+It needs to be invoked together with an input (`.dat`) file via
+```bash
+<buildDir>/baci-release <jobName>.dat <outputName>
+```
+
+where `<jobName>` is the name of the simulation file and `<outputName>` denotes the name of the corresponding output file(s). 
+A collection of working `.dat` files is located under `<sourceDir>/Input/`. 
+  
+In case you used the binary output option, your simulation results can be accessed using the `post_processor` 
+script which is located in the build directory. 
+Run 
+```bash
+<buildDir>/post_processor --file=<outputName> [options]
+```
+on the result (`.control`) file of your simulation to make the accessible for visualization tools like `Paraview`. 
+Type
+```bash
+<buildDir>/post_processor --help
+```
+to list all options that are available to filter the output.
+
+If you are using runtime ouput, the simulation results are directly accessible in vtk format. 
+
+The input (`.dat`) file can be created using the `pre_exodus` script which is also located in the BACI build directory. 
+The script is invoked via
+```bash
+<buildDir>/pre_exodus --exo=<problem>.e --head=<problem>.head --bc=<problem>.bc --dat=<inputFileName>.dat
+```
+
+where `<problem>.e` is an exodus file containing the mesh information of your problem, 
+the `<problem>.bc` file contains the boundary conditions and element information and 
+the `<problem>.head` file contains the remaining simulation settings. 
+Prototypes of the `.head` and `.bc` files can be obtained by omitting the `--head=...` and `--bc=...` options in the `pre_exodus` call.
+These prototype files (`default.head` and `default.bc`) contain all currently implemented conditions, element types, material models, 
+simulation settings etc....    
 
 [↑ Contents](#contents)
 
