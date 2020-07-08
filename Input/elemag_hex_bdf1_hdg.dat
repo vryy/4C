@@ -1,7 +1,4 @@
 //
-// Maintainer: Luca Berardocco
-// berardocco@lnm.mw.tum.de
-// 089 - 289-15244
 //
 ==================================================================
                   General Data File BACI
@@ -21,21 +18,24 @@ SHAPEFCT                        HDG
 RANDSEED                        -1
 
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
-TIMESTEP                        0.001
+TIMESTEP                        0.125
 NUMSTEP                         200000
-MAXTIME                         0.005
+MAXTIME                         0.625
+TAU				100
 RESULTSEVRY                     1
-RESTARTEVRY                     5
+RESTARTEVRY                     10
 LINEAR_SOLVER                   1
 STARTFUNCNO                     2
 SOURCEFUNCNO                    1
-TIMEINT                         Implicit_Euler
+TIMEINT                         BDF1
 INITIALFIELD                    field_by_function
 CALCERR                         yes
 ERRORFUNCNO                     2
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
+SOLVER                          Aztec_MSR
+AZSOLVE				GMRES
+AZTOL				1e-6
 
 ----------------------------------------------------------MATERIALS
 
@@ -54,8 +54,9 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.62592871704133875e-02 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 1.51033056601289462e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 4.47464414061249705e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.12129337830154452e-01 TOLERANCE 1e-6
+
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

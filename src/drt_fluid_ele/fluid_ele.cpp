@@ -3,7 +3,6 @@
 
 \brief Implementation of the main fluid element
 
-\maintainer Martin Kronbichler
 
 \level 1
 

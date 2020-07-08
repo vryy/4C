@@ -3,7 +3,6 @@
 
 \brief submodel for potential-based beam interactions
 
-\maintainer Maximilian Grill
 
 \level 3
 */

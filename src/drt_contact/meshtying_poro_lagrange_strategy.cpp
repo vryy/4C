@@ -5,7 +5,6 @@
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Matthias Mayr
 // Originates from contact_poro_lagrange_strategy
 
-\maintainer Matthias Mayr
 
 \level 3
 */

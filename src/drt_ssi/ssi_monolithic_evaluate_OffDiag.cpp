@@ -3,7 +3,6 @@
 \brief Evaluation of off-diagonal blocks for monolithic SSI
 \level 2
 
-\maintainer Stephan Sinzig
 
  */
 /*----------------------------------------------------------------------*/
@@ -30,26 +29,23 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapsscatra,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapstructure,
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    const Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra,
+    Teuchos::RCP<const Epetra_Map> full_map_structure,
+    Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
-    : blockmapsscatra_(blockmapsscatra),
-      blockmapstructure_(blockmapstructure),
-      full_map_scatra_(full_map_scatra),
-      full_map_structure_(full_map_structure),
-      icoup_structure_(icoup_structure),
-      interface_map_scatra_(interface_map_scatra),
-      meshtying_strategy_s2i_(meshtying_strategy_s2i),
-      scatra_(scatra),
-      structure_(structure)
+    : block_map_structure_(std::move(block_map_structure)),
+      full_map_scatra_(std::move(full_map_scatra)),
+      full_map_structure_(std::move(full_map_structure)),
+      interface_coupling_structure_(std::move(interface_coupling_structure)),
+      interface_map_scatra_(std::move(interface_map_scatra)),
+      meshtying_strategy_s2i_(std::move(meshtying_strategy_s2i)),
+      scatra_(std::move(scatra)),
+      structure_(std::move(structure))
 {
-  return;
 }
 
 
@@ -135,9 +131,9 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
     case INPAR::SCATRA::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
+          *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
       mastermatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, meshtying_strategy_s2i_->BlockMapsMaster(), 81, false, true));
+          *block_map_structure_, meshtying_strategy_s2i_->BlockMapsMaster(), 81, false, true));
       break;
     }
     case INPAR::SCATRA::MatrixType::sparse:
@@ -287,15 +283,16 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
         LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-            ADAPTER::CouplingSlaveConverter(*icoup_structure_), mastermatrixsparse, true, true);
+            ADAPTER::CouplingSlaveConverter(*interface_coupling_structure_), mastermatrixsparse,
+            true, true);
 
       // finalize auxiliary system matrix
-      mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
+      mastermatrixsparse.Complete(*interface_coupling_structure_->MasterDofMap(),
           *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, *blockmapsscatra_);
+          *block_map_structure_, scatra_->ScaTraField()->BlockMaps());
       mastermatrix->Complete();
 
       break;
@@ -311,7 +308,8 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       // scatrastructureinterface_sparse
       LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
           ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-          ADAPTER::CouplingSlaveConverter(*icoup_structure_), *sparsemastermatrix, true, true);
+          ADAPTER::CouplingSlaveConverter(*interface_coupling_structure_), *sparsemastermatrix,
+          true, true);
 
       // finalize
       mastermatrix->Complete(

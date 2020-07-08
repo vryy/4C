@@ -3,7 +3,6 @@
 
 \brief boundary element implementation of fluid adjoint equations for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

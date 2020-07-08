@@ -3,7 +3,6 @@
 
 \brief main file containing routines for calculation of HDG fluid element
 
-\maintainer Martin Kronbichler
 
 \level 2
 

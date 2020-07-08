@@ -4,7 +4,6 @@
 
 \brief input parameter for Fluid-Beam Interaction
 
-\maintainer Nora Hagmeyer
 
 \level 3
 

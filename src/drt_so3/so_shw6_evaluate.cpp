@@ -3,7 +3,6 @@
 \brief
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #include "so_shw6.H"

@@ -3,7 +3,6 @@
 
 \brief adapter for element routines of fluid adjoint equations in topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

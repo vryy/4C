@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Johannes Kremheller
 */
 /*--------------------------------------------------------------------------*/
 #include "artery_ele_factory.H"

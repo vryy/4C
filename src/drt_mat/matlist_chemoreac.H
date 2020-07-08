@@ -7,7 +7,6 @@ in diamond inheritance with MatListReactions and MatListChemotaxis,
 which govern the actual doings
 
 \level 3
-\maintainer Christoph Schmidt
 *----------------------------------------------------------------------*/
 
 

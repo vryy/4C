@@ -3,7 +3,6 @@
 \brief multiscale functionality for pyramid shaped solid element
 \level 2
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

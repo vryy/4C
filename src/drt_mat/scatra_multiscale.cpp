@@ -5,7 +5,6 @@ problems
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_multiscale.H"

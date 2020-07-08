@@ -11,7 +11,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_FLUIDPORO_MULTIPHASE_H_

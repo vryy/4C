@@ -4,7 +4,6 @@
 \brief Associated with control routine for reduced dimensional airways
   solvers
 
-\maintainer Carolin Geitner
 
 \level 3
 

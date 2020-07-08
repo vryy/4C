@@ -9,7 +9,6 @@ is just a "control instance".
 
 
 \level 3
-\maintainer Christoph Schmidt
 *----------------------------------------------------------------------*/
 
 

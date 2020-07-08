@@ -3,7 +3,6 @@
 \brief multiscale variant of 3D quadratic serendipity element
 \level 2
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

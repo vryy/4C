@@ -10,9 +10,6 @@
     dirichlet boundary conditions).
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089-289-15235
 */
 
 #ifndef UTILS_BOUNDARY_INTEGRATION_H
@@ -53,7 +50,6 @@ namespace DRT
     \param distype    (i) discretisation type of boundary element
     \param lineid     (i) local id of boundary element
 
-    \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
       -----------------------------------------------------------------*/
     template <class V, class W, typename IntegrationPoints>
@@ -496,7 +492,6 @@ namespace DRT
     \param distype    (i) discretisation type of boundary element
     \param lineid     (i) local id of boundary element
 
-    \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
       -----------------------------------------------------------------*/
     template <class V, class W, typename IntegrationPoints>

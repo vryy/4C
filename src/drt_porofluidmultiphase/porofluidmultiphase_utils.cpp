@@ -4,7 +4,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_utils.H"

@@ -7,7 +7,6 @@ See the header file for a detailed description.
 
 \level 3
 
-\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*
  | headers                                                              |

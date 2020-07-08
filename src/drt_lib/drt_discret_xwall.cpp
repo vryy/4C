@@ -5,7 +5,6 @@ of dofs per node on a fluid discretization for xwall
 
 \level 2
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/

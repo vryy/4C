@@ -3,7 +3,6 @@
 
 \brief Find connectivities in a discretization.
 
-\maintainer Martin Kronbichler
 
 \level 3
 

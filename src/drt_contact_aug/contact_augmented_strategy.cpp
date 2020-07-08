@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #include "contact_augmented_strategy.H"

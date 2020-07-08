@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_BINARYTREE_H
@@ -46,7 +45,6 @@ namespace MORTAR
 
   Refer also to the Semesterarbeit of Thomas Eberl, 2009
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class BinaryTreeNode : public BaseBinaryTreeNode
   {
@@ -175,7 +173,6 @@ namespace MORTAR
 
   Refer also to the Semesterarbeit of Thomas Eberl, 2009
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class BinaryTree : public BaseBinaryTree
   {

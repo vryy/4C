@@ -4,9 +4,6 @@
 
 \level 2
 
-\maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
  */
 /*--------------------------------------------------------------------------*/
 
@@ -89,7 +86,6 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
   {
     case ELEMAG::project_field:
     {
-      ElementInit(ele, params);
       localSolver_->ProjectField(ele, params, elevec1, elevec2);
       break;
     }
@@ -105,7 +101,6 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     }
     case ELEMAG::project_field_test_trace:
     {
-      // ElementInit(ele, params);
       localSolver_->ProjectFieldTestTrace(ele, params, elevec1);
 
       break;
@@ -135,7 +130,6 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     }
     case ELEMAG::ele_init_from_restart:
     {
-      ElementInit(ele, params);
       ElementInitFromRestart(ele, discretization);
       break;
     }
@@ -178,12 +172,13 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     {
       // const bool resonly = params.get<bool>("resonly");
       // const bool padapty = params.get<bool>("padaptivity");
-      double dt = params.get<double>("dt");
+      const double dt = params.get<double>("dt");
+      const double tau = params.get<double>("tau");
       dyna_ = params.get<INPAR::ELEMAG::DynamicType>("dynamic type");
 
       ReadGlobalVectors(ele, discretization, lm);
       zeroMatrix(elevec1);
-      localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_);
+      localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_, tau);
 
       // if (!resonly)
       localSolver_->CondenseLocalPart(elemat1);
@@ -200,13 +195,14 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
       bool errormaps = false;
       // const bool allelesequal = params.get<bool>("allelesequal");
 
-      double dt = params.get<double>("dt");
+      const double dt = params.get<double>("dt");
+      const double tau = params.get<double>("tau");
       dyna_ = params.get<INPAR::ELEMAG::DynamicType>("dynamic type");
 
       ReadGlobalVectors(ele, discretization, lm);
 
       zeroMatrix(elevec1);
-      localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_);
+      localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_, tau);
       /* Could be useful for optimization purposes
       if(!allelesequal)
         localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_);
@@ -304,18 +300,18 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::ReadGlobalVectors(
   // read vectors from element storage
   reshapeMatrixIfNecessary(interiorElectricnp_, elemagele->eleinteriorElectric_.M(), 1);
   reshapeMatrixIfNecessary(interiorMagneticnp_, elemagele->eleinteriorMagnetic_.M(), 1);
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm_.M(), 1);
-    reshapeMatrixIfNecessary(interiorMagneticnm_, elemagele->eleinteriorMagneticnm_.M(), 1);
-    interiorElectricnm_ = elemagele->eleinteriorElectricnm_;
-    interiorMagneticnm_ = elemagele->eleinteriorMagneticnm_;
+    reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm1_.M(), 1);
+    reshapeMatrixIfNecessary(interiorMagneticnm_, elemagele->eleinteriorMagneticnm1_.M(), 1);
+    interiorElectricnm_ = elemagele->eleinteriorElectricnm1_;
+    interiorMagneticnm_ = elemagele->eleinteriorMagneticnm1_;
   }
 
-  reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm_.M(), 1);
-  reshapeMatrixIfNecessary(interiorMagneticnm_, elemagele->eleinteriorMagneticnm_.M(), 1);
-  interiorElectricnm_ = elemagele->eleinteriorElectricnm_;
-  interiorMagneticnm_ = elemagele->eleinteriorMagneticnm_;
+  reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm1_.M(), 1);
+  reshapeMatrixIfNecessary(interiorMagneticnm_, elemagele->eleinteriorMagneticnm1_.M(), 1);
+  interiorElectricnm_ = elemagele->eleinteriorElectricnm1_;
+  interiorMagneticnm_ = elemagele->eleinteriorMagneticnm1_;
 
   interiorElectricnp_ = elemagele->eleinteriorElectric_;
   interiorMagneticnp_ = elemagele->eleinteriorMagnetic_;
@@ -407,8 +403,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::ElementInitFromRestart(
   DRT::UTILS::ExtractMyValues(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
   {
-    elemagele->eleinteriorMagneticnm_(i) = interiorVarnm[i];
-    elemagele->eleinteriorElectricnm_(i) = interiorVarnm[shapes_->ndofs_ * nsd_ + i];
+    elemagele->eleinteriorMagneticnm1_(i) = interiorVarnm[i];
+    elemagele->eleinteriorElectricnm1_(i) = interiorVarnm[shapes_->ndofs_ * nsd_ + i];
   }
 
   return;
@@ -423,12 +419,19 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::ElementInit(
 {
   // each element has to store the interior vectors by itseld, p-adaptivity or not
   // so, shape it, as you need it
-  dyna_ = params.get<INPAR::ELEMAG::DynamicType>("dynamic type");
-
-  ele->eleinteriorElectricnm_.Shape(shapes_->ndofs_ * nsd_, 1);
-  ele->eleinteriorMagneticnm_.Shape(shapes_->ndofs_ * nsd_, 1);
+  ele->eleinteriorElectricnm1_.Shape(shapes_->ndofs_ * nsd_, 1);
+  ele->eleinteriorMagneticnm1_.Shape(shapes_->ndofs_ * nsd_, 1);
   ele->eleinteriorElectric_.Shape(shapes_->ndofs_ * nsd_, 1);
   ele->eleinteriorMagnetic_.Shape(shapes_->ndofs_ * nsd_, 1);
+
+  dyna_ = params.get<INPAR::ELEMAG::DynamicType>("dyna");
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
+  {
+    ele->eleinteriorElectricnm2_.Shape(shapes_->ndofs_ * nsd_, 1);
+    ele->eleinteriorMagneticnm2_.Shape(shapes_->ndofs_ * nsd_, 1);
+    ele->eleinteriorElectricnm3_.Shape(shapes_->ndofs_ * nsd_, 1);
+    ele->eleinteriorMagneticnm3_.Shape(shapes_->ndofs_ * nsd_, 1);
+  }
 
   // ele->elenodeTrace_.Shape(ele->NumFace() * shapesface_->nfdofs_ * nsd_, 1);
   ele->elenodeTrace2d_.Shape(ele->NumFace() * shapesface_->nfdofs_ * (nsd_ - 1), 1);
@@ -506,57 +509,56 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
     }
   }
 
-  // If BDF2 more than one step is necessary
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
-  {
-    const double dt = params.get<double>("dt");
-    localMat.Scale(0.0);
-    for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
+    for (int s = 1; s < 4; s++)
     {
-      // Storing the values of the coordinates for the current quadrature point
-      // and of the jacobian computed in that point
-      const double fac = shapes_.jfac(q);
-      LINALG::Matrix<nsd_, 1> xyz;
-      for (unsigned int d = 0; d < nsd_; ++d)
-        xyz(d) = shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
-      // Creating the temporary electric and magnetic field vector intVal
-      // The vector is going to contain first the electric and then the magnetic
-      // field such that the field will be initialized as first tree component
-      // of the specified function as electric field, last three components as
-      // magnetic field. If there is only one component all the components will
-      // be initialized to the same value.
-      Epetra_SerialDenseVector intVal(2 * nsd_);
-      dsassert(start_func != NULL, "funct not set for initial value");
-      EvaluateAll(*start_func, time - dt, xyz, intVal);
-      // now fill the components in the one-sided mass matrix and the right hand side
-      for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+      localMat.Scale(0.0);
+      const double dt = params.get<double>("dt");
+      for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
       {
-        // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
-          localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
-      }
-    }
-    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
-    {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
-    }
+        const double fac = shapes_.jfac(q);
+        LINALG::Matrix<nsd_, 1> xyz;
+        for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
 
-    // Here we move the values from the temporary variable to the variable
-    // contained in the element
-    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
-    {
-      // Now we are storing the variables by component, meaning that we save for
-      // each component the value for each dof and then we move to the next component.
-      for (unsigned int d = 0; d < nsd_; ++d)
-      {
-        ele->eleinteriorElectricnm_(d * shapes_.ndofs_ + r) = localMat(r, d);  // Electric field
-        ele->eleinteriorMagneticnm_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);  // magnetic
+        Epetra_SerialDenseVector intVal(nsd_ * 2);
+
+        EvaluateAll(*start_func, time - s * dt, xyz, intVal);
+        for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+        {
+          massPart(i, q) = shapes_.shfunct(i, q);
+          massPartW(i, q) = shapes_.shfunct(i, q) * fac;
+          for (int j = 0; j < intVal.M(); ++j)
+            localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
+        }
       }
+
+
+      // The integration is made by computing the matrix product
+      massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+      {
+        Epetra_SerialDenseSolver inverseMass;
+        inverseMass.SetMatrix(massMat);
+        inverseMass.SetVectors(localMat, localMat);
+        inverseMass.Solve();
+      }
+
+      for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+        for (unsigned int d = 0; d < nsd_; ++d) switch (s)
+          {
+            case 1:
+              ele->eleinteriorElectricnm1_(d * shapes_.ndofs_ + r) = localMat(r, d);
+              ele->eleinteriorMagneticnm1_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);
+              break;
+            case 2:
+              ele->eleinteriorElectricnm2_(d * shapes_.ndofs_ + r) = localMat(r, d);
+              ele->eleinteriorMagneticnm2_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);
+              break;
+            case 3:
+              ele->eleinteriorElectricnm3_(d * shapes_.ndofs_ + r) = localMat(r, d);
+              ele->eleinteriorMagneticnm3_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);
+              break;
+          }
     }
-  }
 
   return 0;
 }
@@ -1228,34 +1230,49 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   localSolver_->ComputeSource(params, tempVec2, xVec);
 
-  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
+    tempVec1.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_,
+        0.0);  //  4/3AH^{n−1} - 1/3AH^{n−2}
     tempVec1.Multiply(
-        'N', 'N', 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  4/3AH^{n−1}
-    tempVec1.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm_,
-        1.0);  //  4/3AH^{n−1} - 1/3AH^{n−2}
-    tempVec1.Multiply('N', 'N', -1.0, localSolver_->Dmat, ele.elenodeTrace2d_,
-        1.0);  //  h = 4/3AH^{n−1} - 1/3AH^{n−2} - D\lambda^{n}
-    tempVec2.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm_,
+        'N', 'N', 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 1.0);  //  4/3AH^{n−1}
+    tempVec2.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_,
         -1.0);  // -1/3EE^{n-2} - I_s
     tempVec2.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_,
         1.0);  // 4/3EE^{n-1} - 1/3EE^{n-2} - I_s
-    tempVec2.Multiply('N', 'N', -1.0, localSolver_->Hmat, ele.elenodeTrace2d_,
-        1.0);  // e = 4/3EE^{n-1} - 1/3EE^{n-2} - I_s - H\lambda^{n}
+  }
+  else if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf4)
+  {
+    tempVec1.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm3_,
+        0.0);  // (1/3)E E^{n} + I_s
+    tempVec1.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    tempVec1.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_, 1.0);
+    tempVec1.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 1.0);
+    tempVec2.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm3_,
+        -1.0);  // (1/3)E E^{n} + I_s
+    tempVec2.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    tempVec2.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, 1.0);
+    tempVec2.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_, 1.0);
   }
   else
   {
     tempVec1.Multiply(
         'N', 'N', 1.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  AH^{n−1}
-    tempVec1.Multiply('N', 'N', -1.0, localSolver_->Dmat, ele.elenodeTrace2d_,
-        1.0);  //  h = AH^{n−1} - D\lambda^{n}
     tempVec2.Multiply(
         'N', 'N', 1.0, localSolver_->Emat, ele.eleinteriorElectric_, -1.0);  // EE^{n-1} - I_s
-    tempVec2.Multiply('N', 'N', -1.0, localSolver_->Hmat, ele.elenodeTrace2d_,
-        1.0);  // e = EE^{n-1} - I_s - H\lambda^{n}
   }
-  ele.eleinteriorMagneticnm_ = ele.eleinteriorMagnetic_;
-  ele.eleinteriorElectricnm_ = ele.eleinteriorElectric_;
+  ele.eleinteriorMagneticnm3_ = ele.eleinteriorMagneticnm2_;
+  ele.eleinteriorMagneticnm2_ = ele.eleinteriorMagneticnm1_;
+  ele.eleinteriorMagneticnm1_ = ele.eleinteriorMagnetic_;
+  ele.eleinteriorElectricnm3_ = ele.eleinteriorElectricnm2_;
+  ele.eleinteriorElectricnm2_ = ele.eleinteriorElectricnm1_;
+  ele.eleinteriorElectricnm1_ = ele.eleinteriorElectric_;
+
+  // Add the trace component
+  tempVec1.Multiply('N', 'N', -1.0, localSolver_->Dmat, ele.elenodeTrace2d_, 1.0);
+  tempVec2.Multiply('N', 'N', -1.0, localSolver_->Hmat, ele.elenodeTrace2d_, 1.0);
 
   tempMat.Multiply('N', 'N', 1.0, localSolver_->Fmat, localSolver_->invAmat, 0.0);  // FA^{-1}
 
@@ -1284,23 +1301,42 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   // Updateresidual
 
-  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     xVec.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_,
         -1.0);  //  = 4/3EE^{n} - I_s
-    xVec.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm_,
+    xVec.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_,
         1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s
     xVec.Multiply('N', 'N', -4.0 / 3.0, localSolver_->Fmat, ele.eleinteriorMagnetic_,
         1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n}
-    xVec.Multiply('N', 'N', 1.0 / 3.0, localSolver_->Fmat, ele.eleinteriorMagneticnm_,
+    xVec.Multiply('N', 'N', 1.0 / 3.0, localSolver_->Fmat, ele.eleinteriorMagneticnm1_,
         1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n} + 1/3FH^{n-1}
-    yVec.Multiply('N', 'N', 1.0, tempMat2, xVec,
-        0.0);  //  = [(E + G) - FA^{-1}C]^{-1}(EE^{n} - I_s^{n} - FH^{n})
-    elevec.Multiply('N', 'N', 1.0, localSolver_->Jmat, yVec, 0.0);  //  = Jy
-    xVec.Multiply(
+    tempVec1.Multiply(
         'N', 'N', 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  = 4/3AH^{n}
-    xVec.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm_,
+    tempVec1.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_,
         1.0);  //  = 4/3AH^{n} - 1/3AH^{n-1}
+  }
+  else if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf4)
+  {
+    xVec.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm3_,
+        -1.0);  // (1/3)E E^{n} + I_s
+    xVec.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    xVec.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, 1.0);
+    xVec.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_, 1.0);
+    xVec.Multiply('N', 'N', 3.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagneticnm3_,
+        1.0);  // (1/3)E E^{n} + I_s
+    xVec.Multiply('N', 'N', -16.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagneticnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    xVec.Multiply('N', 'N', 36.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagneticnm1_, 1.0);
+    xVec.Multiply('N', 'N', -48.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagnetic_, 1.0);
+    tempVec1.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm3_,
+        0.0);  // (1/3)E E^{n} + I_s
+    tempVec1.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    tempVec1.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_, 1.0);
+    tempVec1.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 1.0);
+    // dserror("Not implemented");
   }
   else
   {
@@ -1308,14 +1344,15 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
         'N', 'N', -1.0, localSolver_->Fmat, ele.eleinteriorMagnetic_, -1.0);  //  = -FH^{n} - I_s
     xVec.Multiply('N', 'N', 1.0, localSolver_->Emat, ele.eleinteriorElectric_,
         1.0);  //  = EE^{n} -I_s - FH^{n}
-    yVec.Multiply('N', 'N', 1.0, tempMat2, xVec,
-        0.0);  //  = [(E + G) - FA^{-1}C]^{-1}(EE^{n} - I_s^{n} - FH^{n})
-    elevec.Multiply('N', 'N', 1.0, localSolver_->Jmat, yVec, 0.0);                    //  = Jy
-    xVec.Multiply('N', 'N', 1.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  = AH^{n}
+    tempVec1.Multiply(
+        'N', 'N', 1.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  = AH^{n}
   }
 
-  xVec.Multiply('N', 'N', -1.0, localSolver_->Cmat, yVec, 1.0);    //  = AH^{n} - Cy
-  yVec.Multiply('N', 'N', 1.0, localSolver_->invAmat, xVec, 0.0);  //  = A^{-1}(AH^{n} - Cy)
+  yVec.Multiply('N', 'N', 1.0, tempMat2, xVec,
+      0.0);  //  = [(E + G) - FA^{-1}C]^{-1}(EE^{n} - I_s^{n} - FH^{n})
+  elevec.Multiply('N', 'N', 1.0, localSolver_->Jmat, yVec, 0.0);
+  tempVec1.Multiply('N', 'N', -1.0, localSolver_->Cmat, yVec, 1.0);    //  = AH^{n} - Cy
+  yVec.Multiply('N', 'N', 1.0, localSolver_->invAmat, tempVec1, 0.0);  //  = A^{-1}(AH^{n} - Cy)
 
   elevec.Multiply('N', 'N', -1.0, localSolver_->Imat, yVec, -1.0);  //  = -Ix -Jy
 
@@ -1573,10 +1610,15 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeInteriorMatrices
         Gmat(d * ndofs_ + i, d * ndofs_ + j) = sigma * tmpMat(i, j);
       }
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     Amat.Scale(3.0 / (2.0 * dt));
     Emat.Scale(3.0 / (2.0 * dt));
+  }
+  else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
+  {
+    Amat.Scale(25.0 / (12.0 * dt));
+    Emat.Scale(25.0 / (12.0 * dt));
   }
   else
   {
@@ -1655,15 +1697,30 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
   // The ComputeSource is necesessary to include the forcing terms
   ComputeSource(params, tempVec2, tempVec3);
 
-  if (dyna_ == INPAR::ELEMAG::elemag_bdf)
+  if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     tempVec1.Multiply('N', 'N', 4.0 / 3.0, Amat, ele.eleinteriorMagnetic_, 0.0);  // 4/3AH^{n-1}
-    tempVec1.Multiply(
-        'N', 'N', -1.0 / 3.0, Amat, ele.eleinteriorMagneticnm_, 1.0);  // 4/3AH^{n-1} - 1/3AH^{n-2}
+    tempVec1.Multiply('N', 'N', -1.0 / 3.0, Amat, ele.eleinteriorMagneticnm1_,
+        1.0);  // 4/3AH^{n-1} - 1/3AH^{n-2}
     tempVec2.Multiply(
         'N', 'N', 4.0 / 3.0, Emat, ele.eleinteriorElectric_, -1.0);  // 4/3E E^{n-1} - I_s^{n-1}
-    tempVec2.Multiply('N', 'N', -1.0 / 3.0, Emat, ele.eleinteriorElectricnm_,
+    tempVec2.Multiply('N', 'N', -1.0 / 3.0, Emat, ele.eleinteriorElectricnm1_,
         1.0);  // 4/3E E^{n-1} - 1/3EE^{n-2} - I_s^{n-1}
+  }
+  else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
+  {
+    tempVec1.Multiply(
+        'N', 'N', -3.0 / 25.0, Amat, ele.eleinteriorMagneticnm3_, 0.0);  // (1/3)E E^{n} + I_s
+    tempVec1.Multiply('N', 'N', 16.0 / 25.0, Amat, ele.eleinteriorMagneticnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    tempVec1.Multiply('N', 'N', -36.0 / 25.0, Amat, ele.eleinteriorMagneticnm1_, 1.0);
+    tempVec1.Multiply('N', 'N', 48.0 / 25.0, Amat, ele.eleinteriorMagnetic_, 1.0);
+    tempVec2.Multiply(
+        'N', 'N', -3.0 / 25.0, Emat, ele.eleinteriorElectricnm3_, -1.0);  // (1/3)E E^{n} + I_s
+    tempVec2.Multiply('N', 'N', 16.0 / 25.0, Emat, ele.eleinteriorElectricnm2_,
+        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    tempVec2.Multiply('N', 'N', -36.0 / 25.0, Emat, ele.eleinteriorElectricnm1_, 1.0);
+    tempVec2.Multiply('N', 'N', 48.0 / 25.0, Emat, ele.eleinteriorElectric_, 1.0);
   }
   else
   {
@@ -1705,15 +1762,15 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
  * ComputeFaceMatrices
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
-    const int face, double dt, int indexstart, int newindex, double sigma, double mu)
+void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeFaceMatrices(const int face,
+    double dt, int indexstart, int newindex, double sigma, double mu, const double tau)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagEleCalc::ComputeFaceMatrices");
 
   // Tau is defined as (\frac{|sigma|}{\mu t_c})^0.5 where t_c is a
   // characteristic time scale
-  const double tau = 2000.0;  // sqrt(sigma/mu/dt);
-
+  // const double stabilization = tau ? tau : mu / dt;
+  // const double stabilization = tau ? tau : 2.0;
   // This routine seems complex but it's not (well, it is just as the others)
   // It is divided in three parts:
   //  o   Mixed shape functions integration
@@ -1976,7 +2033,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
     DRT::Discretization& discretization, const Teuchos::RCP<MAT::Material>& mat,
-    DRT::ELEMENTS::Elemag& ele, double dt, INPAR::ELEMAG::DynamicType dyna)
+    DRT::ELEMENTS::Elemag& ele, double dt, INPAR::ELEMAG::DynamicType dyna, const double tau)
 {
   // The material properties change elementwise or can also be computed pointwise?
   // Check current_informations, \chapter{Elements and materials for electromagnetics},
@@ -2021,7 +2078,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
     shapesface_->EvaluateFace(ele, face);
 
     // Here are the matrices for the boundary integrals
-    ComputeFaceMatrices(face, dt, sumindex, newindex, sigma, mu);
+    ComputeFaceMatrices(face, dt, sumindex, newindex, sigma, mu, tau);
     sumindex += nsd_ * shapesface_->nfdofs_;
     newindex += (nsd_ - 1) * shapesface_->nfdofs_;
   }

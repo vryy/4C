@@ -4,7 +4,6 @@
 \brief Data container holding all beam to solid volume meshtying input parameters.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 
 

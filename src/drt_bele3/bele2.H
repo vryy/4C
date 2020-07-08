@@ -3,7 +3,6 @@
 
 \brief 2D boundary elment
 
-\maintainer Amadeus Gebauer
 
 \level 2
 */
@@ -67,7 +66,6 @@ namespace DRT
      * The number of dof per node is set to 2, so we can define displacement vectors by
      * using FillComplete on the boundary discretization.
      *
-     * \author mayer (mayer@lnm.mw.tum.de)
      */
     class Bele2 : public DRT::Element
     {

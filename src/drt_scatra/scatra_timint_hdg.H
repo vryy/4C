@@ -3,7 +3,6 @@
 \brief Time integration class for HDG discretization for scalar transport
 
 \level 3
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 
@@ -151,7 +150,6 @@ namespace DRT
     /*!
     \brief 3D nonlinear Kirchhoff-like beam element that can display initially curved beams.
 
-    author meier (meier@lnm.mw.tum.de)
     */
     class Beam3k : public Beam3Base
     {

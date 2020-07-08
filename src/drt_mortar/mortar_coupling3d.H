@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_H
@@ -40,7 +39,6 @@ namespace MORTAR
    on the slave surface without any auxiliary plane). The boolean class
    variable auxplane_ decides about this (true = auxiliary plane).
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Coupling3d
@@ -473,7 +471,6 @@ namespace MORTAR
    on which the geometrical coupling is performed. Thus, we additionally
    hand in in two IntElements to Coupling3dQuad.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Coupling3dQuad : public Coupling3d
@@ -526,7 +523,6 @@ namespace MORTAR
    slave element and SEVERAL master elements of a mortar interface in
    3D. Concretely, this class simply stores several Coupling3d objects.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Coupling3dManager
@@ -654,7 +650,6 @@ namespace MORTAR
    3D with QUADRATIC ELEMENTS. Concretely, this class simply sub-divides
    elements and then stores several Coupling3d objects.
 
-   \author popp (popp@lnm.mw.tum.de)
   */
 
   class Coupling3dQuadManager : public Coupling3dManager

@@ -4,7 +4,6 @@
 \brief Data container holding all beam to fluid volume meshtying input parameters.
 
 \level 1
-\maintainer Nora Hagmeyer
 */
 
 

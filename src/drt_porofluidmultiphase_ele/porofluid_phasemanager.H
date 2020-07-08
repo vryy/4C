@@ -4,7 +4,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_

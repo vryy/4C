@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_LINE_H
 #define SO_LINE_H
@@ -49,7 +48,6 @@ namespace DRT
     \brief An element representing a line edge of any 3D structural element
            Note that this element should not be used in 2D cases!
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class StructuralLine : public DRT::FaceElement
     {

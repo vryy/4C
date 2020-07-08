@@ -3,7 +3,6 @@
 
 \brief MueLu repartition algorithm for contact
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

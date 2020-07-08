@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef NOX_NLN_CONTACT_LINEARSYSTEM_H_

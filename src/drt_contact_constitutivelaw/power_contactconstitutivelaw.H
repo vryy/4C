@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #ifndef POWER_COCONSTLAW_H_

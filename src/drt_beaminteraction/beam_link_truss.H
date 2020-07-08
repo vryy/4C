@@ -6,7 +6,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 #ifndef BeamLinkTruss_H

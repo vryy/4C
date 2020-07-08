@@ -3,7 +3,6 @@
 
 \brief Bundle the floating point exception handling in one class.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

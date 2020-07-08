@@ -4,12 +4,6 @@
 \brief unittests for utils of poromultiphase_scatra-framework
 
 \level 3
-
-\maintainer  Johannes Kremheller
-             kremheller@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 
 // definitions

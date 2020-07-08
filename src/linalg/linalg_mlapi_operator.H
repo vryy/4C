@@ -4,9 +4,6 @@
 \brief Declaration of MLAPI interface to ML
 
 \level 2
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 */
 /*----------------------------------------------------------------------*/
 #ifndef LINALG_MLAPI_OPERATOR_H
@@ -49,7 +46,6 @@ namespace LINALG
   multipurpose development object for amg ideas that shall be tested in
   the baci framework
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class AMG_Operator : public virtual Epetra_Operator
   {

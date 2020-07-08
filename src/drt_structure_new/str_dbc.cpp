@@ -3,7 +3,6 @@
 
 \brief Wrapper for all Dirichlet boundary condition tasks.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

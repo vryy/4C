@@ -4,7 +4,6 @@
 \brief Structural dynamics data container for the structural (time)
        integration
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

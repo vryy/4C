@@ -3,8 +3,6 @@
 
 \brief Declaration
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 
 Created on: Sep 7, 2012
 Author: wiesner

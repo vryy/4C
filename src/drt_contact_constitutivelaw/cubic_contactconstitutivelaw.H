@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #ifndef Cubic_ConstitutiveLaw_H_

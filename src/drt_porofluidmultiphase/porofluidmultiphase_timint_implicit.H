@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_

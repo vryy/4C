@@ -3,7 +3,6 @@
 \brief Class containing Uzawa algorithm to solve linear system.
 \level 2
 
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

@@ -3,7 +3,6 @@
 
 \brief wrapper class around the epetra operator in baci for use with teko
 \level 2
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

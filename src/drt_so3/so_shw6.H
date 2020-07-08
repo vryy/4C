@@ -3,7 +3,6 @@
 \brief
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 
@@ -58,7 +57,6 @@ namespace DRT
 
     See Diss. Frank Koschnick for details.
 
-    \author frenzel (frenzel@lnm.mw.tum.de)
     */
     class So_shw6 : public So_weg6
     {

@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 #ifndef IO_DISCRETIZATION_RUNTIME_VTU_WRITER_H

@@ -3,7 +3,6 @@
 
 \brief Internal implementation of fluid internal faces elements
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

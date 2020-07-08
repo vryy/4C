@@ -2,7 +2,6 @@
 /*! \file
 \brief A very simple symbol table implementation.
 
-\maintainer Martin Kronbichler
 
 \level 1
 

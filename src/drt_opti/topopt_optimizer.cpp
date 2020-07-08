@@ -3,7 +3,6 @@
 
 \brief optimizer of the topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

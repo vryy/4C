@@ -3,7 +3,6 @@
 
 \brief Factory to create the desired subemodel evaluators.
 
-\maintainer Jonas Eichinger
 
 \level 3
 

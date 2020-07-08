@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #include "mortar_strategy_factory.H"

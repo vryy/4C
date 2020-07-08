@@ -3,7 +3,6 @@
 
 \brief Implementation of enrichment-based wall model
 
-\maintainer Martin Kronbichler
 
 \level 2
 

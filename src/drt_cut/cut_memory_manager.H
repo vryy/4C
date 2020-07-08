@@ -5,8 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
 
 *----------------------------------------------------------------------*/
 

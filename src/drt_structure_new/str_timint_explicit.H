@@ -3,7 +3,6 @@
 
 \brief explicit structural time integration
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -3,7 +3,6 @@
 \brief Cutwizard of the xcontact algorithm ( level-set cut of the structural
        XFEM discretization )
 
-\maintainer Matthias Mayr
 
 \level 3
 */

@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Harald Willmann
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H

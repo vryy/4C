@@ -5,7 +5,6 @@ adapts assembly automatically according to the thereby changed number of nodal d
 
 \level 3
 
-\maintainer Maximilian Grill
 
 */
 /*---------------------------------------------------------------------------*/

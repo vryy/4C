@@ -5,7 +5,6 @@
        are called by acinus_evaluate.cpp by DRT::ELEMENTS::RedAcinus::Evaluate()
        with the corresponding action.
 
-\maintainer Carolin Geitner
 
 \level 3
 

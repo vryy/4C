@@ -5,7 +5,6 @@ MATLAB, PGFPlot or other tools.
 
 \level 3
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

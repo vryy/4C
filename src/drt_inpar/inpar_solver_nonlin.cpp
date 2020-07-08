@@ -2,7 +2,6 @@
 /*! \file
 \brief Input parameters for nonlinear solvers
 
-\maintainer Matthias Mayr
 
 \level 1
 */

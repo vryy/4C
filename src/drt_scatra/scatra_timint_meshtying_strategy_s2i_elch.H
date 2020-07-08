@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

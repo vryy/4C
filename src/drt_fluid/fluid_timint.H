@@ -3,7 +3,6 @@
 
 \brief Base class for all fluid time integrations
 
-\maintainer Martin Kronbichler
 
 \level 1
 

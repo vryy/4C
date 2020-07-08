@@ -6,7 +6,6 @@ simulations
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_

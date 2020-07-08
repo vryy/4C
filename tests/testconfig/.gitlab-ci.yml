@@ -37,6 +37,13 @@ variables:
     GITLAB_SCHEDULER_LNM_DEEP: "0"
     GITLAB_SCHEDULER_LNM_BRUTEFORCE: "0"
 
+    # Flags for entering interactive mode on specific machines # (0: off, 1: on)
+    GITLAB_INTERACTIVE_MODE: "0"
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs)
+    GITLAB_INTERACTIVE_MACHINE: "none"
+    # Flags for doing a clean build in interactive mode # (0: off, 1: on)
+    GITLAB_INTERACTIVE_CLEAN: "0"
+
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
@@ -63,7 +70,7 @@ variables:
         paths:
             - buildtest_minimal.log
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         - master
     except:
@@ -106,7 +113,7 @@ variables:
         paths:
             - buildtest_full.log
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         refs:
             - web
@@ -115,6 +122,42 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_INTERACTIVE_MODE == "1"
+
+# This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
+.buildtest_interactive: &buildtest_interactive
+    stage: buildtest
+    script:
+        # Specify which configuration is tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # clear cache only if specified
+        - 'if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then'
+        - "echo Cleaning old build files"
+        # Delete old build files.
+        - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
+        - "fi"
+        # Output to log because it is too much for the gitlab console.
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_interactive.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        # Output 200 lines for any failing test
+        - grep -B 200 '*Failed\|*Timeout' ../buildtest_interactive.log || true
+        - sed -n '/tests passed,/,//p' ../buildtest_interactive.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_interactive.log buildtest_interactive.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_interactive.log
+        expire_in: 5 days
 
 # This kind of job is started by a weekly scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "3"
@@ -182,7 +225,7 @@ variables:
         # currently there is no option to have multiple artifacts with different when: options
         # -> always upload artifacts of this job
         when: always
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
@@ -220,7 +263,7 @@ variables:
         paths:
             - buildtest_daily.log
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
@@ -258,7 +301,7 @@ variables:
         paths:
             - buildtest_daily_debug.log
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
@@ -288,13 +331,14 @@ variables:
         paths:
             - doxygen.log
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         refs:
             - web
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_INTERACTIVE_MODE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -314,6 +358,8 @@ variables:
         - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
         # Copy final doxygen files to pre-defined location
         - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $DOXYGEN_PATH"
+        # Move final doxygen into the base folder for the next stage
+        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
@@ -325,12 +371,13 @@ variables:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
             - doxygen.log
-        when: on_failure
-        expire_in: 4 weeks
+            - doxygen/
+        when: always
+        expire_in: 1 day
     only:
-        variables:
-            # Only build doxygen during nightly tests.
-            - $GITLAB_SCHEDULER_TYPE == "1"
+        # Build doxygen only on master builds
+        refs:
+            - master
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -360,7 +407,7 @@ checkcode:
             - wrong_clang_format.txt
             - wrong_headers.txt
         when: on_failure
-        expire_in: 4 weeks
+        expire_in: 5 days
     only:
         - master
         - web
@@ -368,6 +415,7 @@ checkcode:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_INTERACTIVE_MODE == "1"
     tags:
         - all
 
@@ -396,6 +444,23 @@ imcs-buildtest_full:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-full
+
+imcs-buildtest_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-interactive-baci-Q1-2015-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    tags:
+        - imcs-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
+          when: always
 
 imcs-buildtest_daily:
     <<: *buildtest_daily
@@ -462,11 +527,28 @@ lnm-buildtest_full:
     tags:
         - lnm-release-user-full
 
+lnm-workstation-buildtest_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-interactive-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    tags:
+        - lnm-workstation-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_workstation"'
+          when: always
+
 lnm-buildtest_coverage_weekly:
     <<: *buildtest_coverage_weekly
     variables:
         # increase the global test timeout
-        GLOBAL_TEST_TIMEOUT: "4000"
+        GLOBAL_TEST_TIMEOUT: "4500"
         # increase the unit test timeout
         UNITTEST_TIMEOUT: "50"
         # enable coverage option of ctest
@@ -485,14 +567,25 @@ pages: # job name needs to be pages
     variables:
         # stage operates exclusively on artifacts. No need for source code.
         GIT_STRATEGY: fetch
-    # skip the download of artifacts from previous stages. Rely solely on cache
-    dependencies: []
+    # Download Doxygen from previous lnm-doxygen stage
+    dependencies:
+        - lnm-doxygen
     script:
         # print the weekly measured coverage rate
         - "echo 'Weekly measured'"
         - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
+        # Create directory that will be published
+        - mkdir -p public
         # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
-        - mv coverage_report/ public/
+        - mv coverage_report public/coverage_report
+        # Move most recent doxygen to public folder
+        - mv doxygen public/doxygen
+        # Create python venv to create badges
+        - python3 -m venv venv
+        - . venv/bin/activate
+        - pip install anybadge
+        # Create doxygen badge
+        - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
     cache:
         key: cache-weekly-coverage-report
         paths:
@@ -523,7 +616,7 @@ lnm-buildtest_daily:
     tags:
         - lnm-release-nightly-full
 
-lnm-buildtest_daily_bruteforce:
+lnm-buildtest_daily_bruteforce_icc:
     <<: *buildtest_daily
     variables:
         TEST_TAG: ""
@@ -540,14 +633,71 @@ lnm-buildtest_daily_bruteforce:
         variables:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
 
+lnm-buildtest_daily_bruteforce_gcc:
+    <<: *buildtest_daily
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GCC-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    before_script:
+        - module load comp/gcc/5.3.0
+    tags:
+        - lnm-release-nightly-build-bruteforce
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
+
+lnm-buildtest-bruteforce-icc_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-BruteForce-icc-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    tags:
+        - lnm-bruteforce-icc-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce_icc"'
+          when: always
+
+lnm-buildtest-bruteforce-gcc_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-BruteForce-gcc-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    before_script:
+        - module load comp/gcc/5.3.0
+    tags:
+        - lnm-bruteforce-gcc-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce_gcc"'
+          when: always
+
 lnm-buildtest_daily_deep:
     <<: *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Deep-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "deep_cluster_Q12015_gcc48.config"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Deep-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
@@ -556,6 +706,24 @@ lnm-buildtest_daily_deep:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_DEEP == "1"
+
+lnm-buildtest-deep_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Deep-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    tags:
+        - lnm-deep-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_deep"'
+          when: always
 
 lnm-buildtest_daily_schmarrn:
     <<: *buildtest_daily
@@ -573,6 +741,24 @@ lnm-buildtest_daily_schmarrn:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
+
+lnm-buildtest-schmarrn_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-Kaiser-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        GIT_STRATEGY: fetch
+    tags:
+        - lnm-schmarrn-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_schmarrn"'
+          when: always
 
 lnm-buildtest_daily_debug:
     <<: *buildtest_daily_debug

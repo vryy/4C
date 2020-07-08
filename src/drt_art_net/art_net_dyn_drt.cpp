@@ -6,7 +6,6 @@
 
      o
 
-\maintainer Johannes Kremheller
 
 \level 3
 

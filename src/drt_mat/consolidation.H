@@ -3,7 +3,6 @@
 \brief material managing consolidation or other phase change
 
 \level 3
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

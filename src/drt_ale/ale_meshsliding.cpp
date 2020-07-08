@@ -3,7 +3,6 @@
 
 \brief Mesh sliding for ale problems
 
-\maintainer Matthias Mayr
 
 \level 3
 */

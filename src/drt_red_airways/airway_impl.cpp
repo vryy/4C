@@ -5,7 +5,6 @@
        are called by airway_evaluate.cpp by DRT::ELEMENTS::RedAirway::Evaluate()
        with the corresponding action.
 
-\maintainer Carolin Geitner
 
 \level 3
 

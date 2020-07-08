@@ -148,7 +148,6 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 
 \level 3
 
-\maintainer Jan Schnabel
 */
 
 /*----------------------------------------------------------------------*

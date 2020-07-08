@@ -4,7 +4,6 @@
 \brief Implementation of LOCA::MultiContinuation::ConstraintInterfaceMVDX for arc-length
 continuation.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

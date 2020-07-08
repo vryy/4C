@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H_

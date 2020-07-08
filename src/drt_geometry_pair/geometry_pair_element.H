@@ -4,7 +4,6 @@
 \brief Element types that can be part of a pair. This types can be used as a template argument.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

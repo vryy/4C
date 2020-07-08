@@ -3,7 +3,6 @@
 
 \brief Base class for all structural time integration strategies.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 
@@ -1158,3 +1157,6 @@ void STR::TIMINT::Base::OutputErrorNorms()
 
   return;
 }
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }

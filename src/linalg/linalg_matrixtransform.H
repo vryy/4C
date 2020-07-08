@@ -3,7 +3,6 @@
 
 \brief Utilities for matrix transformations
 
-\maintainer Martin Kronbichler
 
 \level 1
 */

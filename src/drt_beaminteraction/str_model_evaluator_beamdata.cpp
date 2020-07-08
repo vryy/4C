@@ -3,7 +3,6 @@
 
 \brief Concrete implementation of the beam parameter interface
 
-\maintainer Maximilian Grill
 
 \level 3
 */

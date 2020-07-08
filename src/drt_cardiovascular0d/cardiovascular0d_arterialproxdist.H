@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 An arterial 0D flow model derived from physical considerations of mass and momentum balance in the
 proximal and distal arterial part, incl. valves (formulation proposed by Cristobal Bertoglio)

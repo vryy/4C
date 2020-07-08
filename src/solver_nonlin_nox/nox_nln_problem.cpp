@@ -5,7 +5,6 @@
        if a %NOX::NLN solver is supposed to be used. Therefore a
        lean function call becomes possible.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

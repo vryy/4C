@@ -3,7 +3,6 @@
 
 \brief Model evaluator for structure part of partitioned fsi
 
-\maintainer Nora Hagmeyer
 
 \level 3
 

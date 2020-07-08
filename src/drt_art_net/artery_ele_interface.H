@@ -6,7 +6,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ART_NET_ARTERY_ELE_INTERFACE_H_

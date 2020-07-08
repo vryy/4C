@@ -3,7 +3,6 @@
 
 \brief %NOX::NLN factory to create a %NOX::Epetra::LinearSystem.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

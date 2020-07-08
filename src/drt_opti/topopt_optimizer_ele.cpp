@@ -3,7 +3,6 @@
 
 \brief element routines of the topology optimizer
 
-\maintainer Martin Kronbichler
 
 \level 3
 

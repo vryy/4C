@@ -1,4 +1,3 @@
-// Maintainer: Ivo Steinbrecher
 ---------------------------------------------------------------------------TITLE
 First part of a simulation where a beam is moved inside of a solid and then
 the coupling is activated, i.e. the restart state is coupled.

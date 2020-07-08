@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief unittests for kernel handler for smoothed particle hydrodynamics (SPH) interactions
-
 \level 3
-
-\maintainer  Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

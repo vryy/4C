@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTU_NODE_H

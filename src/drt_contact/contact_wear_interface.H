@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef CONTACT_WEAR_INTERFACE_H_

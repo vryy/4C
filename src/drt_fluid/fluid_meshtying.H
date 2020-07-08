@@ -3,7 +3,6 @@
 
 \brief Methods to apply meshtying to fluid and scatra systems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

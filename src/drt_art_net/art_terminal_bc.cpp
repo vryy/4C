@@ -2,7 +2,6 @@
 /*! \file
 \brief evaluation of 1d-artery inlet bc
 
-\maintainer Johannes Kremheller
 
 \level 3
 

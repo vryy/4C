@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifndef MIXFRAC_H
 #define MIXFRAC_H

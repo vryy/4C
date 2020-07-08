@@ -5,7 +5,6 @@ class for handling of micro-macro transitions
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

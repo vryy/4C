@@ -10,7 +10,6 @@ initialization of the global time integrator, and then never touched again throu
 simulation. This parameter class needs to coexist with the general parameter class holding all
 general static parameters required for scalar transport element evaluation.
 
-\maintainer Anh-Tu Vuong
 
 \level 2
 */

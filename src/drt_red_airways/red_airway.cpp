@@ -3,7 +3,6 @@
 
 \brief Implements an airway element
 
-\maintainer Carolin Geitner
 
 \level 3
 

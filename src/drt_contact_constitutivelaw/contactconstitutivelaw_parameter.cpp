@@ -6,7 +6,6 @@ file as well as a quick access wrapper for those parameters
 
 \level 1
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 

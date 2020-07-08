@@ -5,10 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 */
 /*----------------------------------------------------------------------*/
 #ifndef STI_MONOLITHIC_H
@@ -210,7 +206,7 @@ namespace STI
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
     Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
-    //! evaluation of OD blocks for scatra-structure coupling
+    //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI

@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief particle unique global identifier handler for particle simulations
-
 \level 1
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

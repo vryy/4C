@@ -3,7 +3,6 @@
 
 \brief MueLu amalgamation factory for meshtying
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

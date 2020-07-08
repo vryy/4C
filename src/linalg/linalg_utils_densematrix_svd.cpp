@@ -4,7 +4,6 @@
 \brief A collection of singular value decomposition (SVD) methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

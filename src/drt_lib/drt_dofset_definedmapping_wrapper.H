@@ -6,7 +6,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
@@ -69,7 +68,6 @@ namespace DRT
   See also the example '.dat'-file 'immersed_cell_biochemo_mechano_pureProtrusion_h8' in
   the BACI 'Input' folder.
 
-  \note Date of this documentation 08/16 by author rauch ( rauch@lnm.mw.tum.de )
 
   \date 08/2016
   \author rauch

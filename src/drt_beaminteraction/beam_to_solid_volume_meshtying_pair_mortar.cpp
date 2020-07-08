@@ -5,7 +5,6 @@
 functions for the traction.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 
 

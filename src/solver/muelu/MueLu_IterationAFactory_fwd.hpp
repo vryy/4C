@@ -3,7 +3,6 @@
 
 \brief MueLu iteration factory class
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

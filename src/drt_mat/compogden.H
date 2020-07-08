@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef COMPOGDEN_H_

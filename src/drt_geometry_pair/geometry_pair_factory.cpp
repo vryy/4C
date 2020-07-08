@@ -4,7 +4,6 @@
 \brief functions to create geometry pairs.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 
 

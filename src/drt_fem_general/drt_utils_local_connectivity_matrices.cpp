@@ -16,9 +16,6 @@ in the Baci guide in the Convention chapter.
 !!!!
 
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 *----------------------------------------------------------------------*/
 #include "drt_utils_local_connectivity_matrices.H"

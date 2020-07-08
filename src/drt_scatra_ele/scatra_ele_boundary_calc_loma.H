@@ -3,7 +3,6 @@
 
 \brief evaluation of ScaTra boundary elements for low Mach number problems
 
-\maintainer Anh-Tu Vuong
 
 \level 2
  */

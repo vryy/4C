@@ -6,7 +6,6 @@ turbulent flow over a periodic hill
 literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer Manhart Peller
 (2010) created in a Semesterarbeit by Stephan Jaeger 2015
 
-\maintainer Martin Kronbichler
 
 \level 2
 

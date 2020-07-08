@@ -3,7 +3,6 @@
 
 \brief testing of fluid calculation results
 
-\maintainer Martin Kronbichler
 
 \level 1
 

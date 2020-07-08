@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"

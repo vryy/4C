@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_INTERFACE_H
@@ -530,7 +529,6 @@ namespace MORTAR
   /*!
   \brief One mortar coupling interface
 
-  \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
   */
   class MortarInterface
   {

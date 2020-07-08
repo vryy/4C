@@ -3,7 +3,6 @@
 \brief abstract interface for electrode and electrolyte materials carrying concentration and
 electric potential as degrees of freedom
 
-\maintainer Christoph Schmidt
 
 \level 2
 */

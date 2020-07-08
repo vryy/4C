@@ -3,7 +3,6 @@
 
 \brief MueLu smoother interface
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

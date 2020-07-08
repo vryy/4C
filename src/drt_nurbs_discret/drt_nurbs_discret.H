@@ -6,7 +6,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
@@ -38,7 +37,6 @@ namespace DRT
     The nodes are replaced by control points on construction/input; the control points are
     derived from the node class and are hence managed by the original discretisation
 
-    \author gammi (gamnitzer@lnm.mw.tum.de)
     */
     class NurbsDiscretization : public DRT::Discretization
     {

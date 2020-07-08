@@ -2,7 +2,6 @@
 /** \file
 \brief Service functionality for the solid shell8 elements
 
-\maintainer Christoph Meier
 \level 1
 */
 /*----------------------------------------------------------------------*/

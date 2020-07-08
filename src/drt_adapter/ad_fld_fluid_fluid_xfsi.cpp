@@ -6,7 +6,6 @@ conjunction with XFluidFluid!
 
 \level 2
 
-\maintainer  Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/

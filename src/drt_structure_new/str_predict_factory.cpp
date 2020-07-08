@@ -1,7 +1,6 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\maintainer Anh-Tu Vuong
 
 \brief Factory class to build predictor objects
 

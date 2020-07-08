@@ -5,7 +5,6 @@
 \level 3
 
 
-\maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
 #include "optimizer_factory.H"

@@ -2,7 +2,6 @@
 /*! \file
 \brief scatra time integration for loma
 \level 2
-\maintainer Anh-Tu Vuong
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_LOMA_H

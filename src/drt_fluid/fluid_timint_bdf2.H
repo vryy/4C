@@ -3,7 +3,6 @@
 
 \brief BDF-2 time-integration scheme
 
-\maintainer Martin Kronbichler
 
 \level 2
 

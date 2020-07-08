@@ -2,7 +2,6 @@
 /*! \file
 \brief 3d TSI solid element
 \level 1
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

@@ -3,7 +3,6 @@
 
 \brief control routine of topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

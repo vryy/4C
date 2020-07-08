@@ -3,7 +3,6 @@
 \brief Assemble strategy for monolithic SSI
 \level 2
 
-\maintainer Stephan Sinzig
 
  */
 /*----------------------------------------------------------------------*/

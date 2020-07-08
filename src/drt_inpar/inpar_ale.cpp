@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Matthias Mayr
 
 \brief Input parameters for ALE mesh motion
 

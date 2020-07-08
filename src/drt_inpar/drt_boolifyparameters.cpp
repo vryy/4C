@@ -3,7 +3,6 @@
 
 \brief Auxiliar routine to boolify integral Yes/No data
 
-\maintainer Martin Kronbichler
 
 \level 0
 */

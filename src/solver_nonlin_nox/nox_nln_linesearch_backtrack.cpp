@@ -3,7 +3,6 @@
 
 \brief %NOX::NLN backtracking line search implementation.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

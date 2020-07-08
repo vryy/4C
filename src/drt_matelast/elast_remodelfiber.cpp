@@ -7,7 +7,6 @@ COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 /* headers */

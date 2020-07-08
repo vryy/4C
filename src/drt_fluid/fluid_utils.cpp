@@ -3,7 +3,6 @@
 
 \brief utility functions for fluid problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

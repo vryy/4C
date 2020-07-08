@@ -5,10 +5,6 @@
 
 \level 2
 
-\maintainer  Martin Kronbichler
-             kronbichler@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
 */
 
 #include "../drt_fsi_xfem/fsi_xfem_fluid.H"

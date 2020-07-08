@@ -10,7 +10,6 @@ The input line should read
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPSIMOPISTER_H_

@@ -8,7 +8,6 @@
 
 \level 2
 
-\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_CUT_CUT_POINTGRAPH_SIMPLE_H_

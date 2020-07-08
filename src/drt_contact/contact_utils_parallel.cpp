@@ -2,7 +2,6 @@
 /*! \file
 \brief Contact utility functions related to parallel runs
 
-\maintainer Matthias Mayr
 
 \level 1
 

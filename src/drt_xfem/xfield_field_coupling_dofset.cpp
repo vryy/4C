@@ -4,7 +4,6 @@
 \brief DoF set for coupling a xfield and a field discretization at a common
        interface
 
-\maintainer Matthias Mayr
 
 \level 3
 

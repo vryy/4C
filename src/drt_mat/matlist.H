@@ -5,7 +5,6 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 \level 1
 
-\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------------*/

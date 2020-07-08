@@ -6,10 +6,6 @@ coordinate system
 
 \level 2
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
  *------------------------------------------------------------------------------------------------*/
 #ifndef DIRECT_DIVERGENCE_REFPLANE_H_
 #define DIRECT_DIVERGENCE_REFPLANE_H_

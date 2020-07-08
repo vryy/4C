@@ -5,7 +5,6 @@
 line.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 
 

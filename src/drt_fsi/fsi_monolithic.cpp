@@ -3,7 +3,6 @@
 
 \brief General framework for monolithic fsi solution schemes
 
-\maintainer Matthias Mayr
 
 \level 1
 */

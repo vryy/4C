@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief write visualization output for particle wall discretization in vtk/vtu format at runtime
-
 \level 2
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

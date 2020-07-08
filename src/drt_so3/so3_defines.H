@@ -3,7 +3,6 @@
 
 \brief A set of preprocessor defines for solid element methods
 
-\maintainer Christoph Meier
 
 \level 3
 *-----------------------------------------------------------------------*/

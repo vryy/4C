@@ -99,14 +99,12 @@ autocmd BufWritePre *.h,*.cc,*.cpp call Formatonsave()
 ## Git-hook configuration in repository
 Currently two different client-side hooks are used in the work-flow. A *pre-commit* hook and a *commit-msg* hook. See [Client-side hooks](Client-side hooks) for reference. Both files can be found in `utilities/code_checks`. It was decided to check the code style in the pre-commit hook that consists of two parts: The clang-format style changes and a subsequent check for correct header format. After the user types `git commit` the hook gets activated. First clang-format is called and the code style formation is done automatically. The program clang format is shared in the repository and is located in `utilities/code_checks`. The associated format file *.clang-format* is located in the top level folder. For the code style the *Google-style template* is used with some slight modifications that can be seen when opening the file itself.
 
-Afterwards the user gets a short terminal output of the changes done by clang format. If the code was already compliant to the defined clang style no extra output is given. For the header checks three different Python files namely *baciheader.py*, *header-check.py* and *inputheader.py* are called. Headers are checked for cpp-files and input-files, separately:
-* cpp-files:
-  * file tag
-  * maintainer tag
-  * level tag
+Afterwards the user gets a short terminal output of the changes done by clang format. If the code was already compliant to the defined clang style no extra output is given. For the header checks a Python file namely *header_check.py* is called. Headers are checked for cpp-files:
+
+* file tag
+* level tag
 * input files:
   * check .dat-files for header
-  * check for maintainer
 
 ## Setup in GitLab
 Taken from, [GitLab website](https://docs.gitlab.com/ee/administration/custom_hooks.html):
@@ -118,19 +116,3 @@ Standard Git hooks are located in project `hook` directory and GitLab automatica
 1. Write the code to make the Git hook function as expected. Hooks can be in any language. Ensure the 'shebang' at the top properly reflects the language type. For example, if the script is in Ruby the shebang will probably be `#!/usr/bin/env ruby`
 
 Custom Git hooks must be configured on the file-system of the GitLab server. Only GitLab server administrators will be able to complete these tasks.
-
-## Compliant file-maintainers in Baci
-Our Git-hooks check for compliant file-maintainers in source and input files and will reject commits with incompliant file-maintainters. A definition of the latter is given in the following:
-- A **file-maintainer** (not to be confused with **baci_maintainers**) is the person responsible for a specific source or input file in Baci
-- A file-maintainer is assigned in the header declaration of a file via a:
-  - `\maintainer` tag in **source-files**, followed by the name of the file-maintainer
-  - `// Maintainer:` tag in **input-files**, followed by the name of the file-maintainer
-
-  which has to be compliant with names listed in `utilities/code_checks/baci_developers.json`
-- All members of the Gitlab **baci_developers** group are compliant file-maintainers
-- We only allow for one compliant file-maintainer per file
-- An up-to-date `baci_developers.json` list can be created by the following steps:
-    1. Create a personal access token for your Baci Gitlab repository as described in the [gitlab documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
-    1. Download the list of all members of the **baci_developers** group using the command
-`curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" | python -m json.tool > baci_developers.json`. Note that Python 2.6+ is used for formating the json-file.
-    1. Commit and merge the changes in `utilities/code_checks/baci_developers.json`

@@ -4,7 +4,6 @@
 \brief Four-element Maxwell material model for reduced dimensional acinus elements simplified to
 linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
 
-\maintainer Carolin Geitner
 
 \level 3
 */

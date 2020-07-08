@@ -3,7 +3,6 @@
 
 \brief factory for time integrator
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

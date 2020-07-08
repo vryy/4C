@@ -4,7 +4,6 @@
 \brief Utility functions for the geometry pairs elements.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

@@ -3,7 +3,6 @@
 
 \brief class for submodel beam contact
 
-\maintainer Maximilian Grill
 
 \level 3
 

@@ -8,7 +8,6 @@
    note that X() is not the coordinate of some grid point
    anymore, it's just the control point position
 
-\maintainer Martin Kronbichler
 
 \level 2
 
@@ -49,7 +48,6 @@ namespace DRT
     their coordinate is just a control point coordinate and
     not a mesh point coordinate.
 
-    \author gammi (gamnitzer@lnm.mw.tum.de)
     */
     class ControlPoint : public DRT::Node
     {

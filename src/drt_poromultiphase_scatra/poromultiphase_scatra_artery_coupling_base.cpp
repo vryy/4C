@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_base.H"

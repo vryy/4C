@@ -6,7 +6,6 @@ approach for Fluid-beam interaction.
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "partitioned_penaltycoupling_assembly_manager_direct.H"

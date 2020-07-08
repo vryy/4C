@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 */
 /*---------------------------------------------------------------------*/
 
@@ -111,7 +110,6 @@ namespace DRT
 
   The \ref DRT::Discretization class supports the ostream& operator <<
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Discretization : public DiscretizationInterface
   {

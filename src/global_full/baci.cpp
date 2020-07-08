@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Martin Kronbichler
 
 \brief Main routine
 
@@ -29,6 +28,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include <revision.H>
+#include <trilinos_version.H>
 
 #ifdef TRAP_FE
 #include <fenv.h>
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
         "*                                            *\n"
         "**********************************************\n\n",
         BaciGitHash.c_str());
-    printf("Trilinos SHA1: %s\n", Trilinos_SHA1);
+    printf("Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 

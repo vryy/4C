@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief utility methods for particle structure interaction
-
 \level 3
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

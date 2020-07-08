@@ -15,7 +15,6 @@ coexist with this general class.
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_STD_H

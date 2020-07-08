@@ -3,7 +3,6 @@
 
 \brief Evaluation and assembly of all 0D cardiovascular model terms
 
-\maintainer Amadeus Gebauer
 
 \level 3
 

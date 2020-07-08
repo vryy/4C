@@ -3,7 +3,6 @@
 
 \brief Functionality of the element level of the fluid adjoint equations
 
-\maintainer Martin Kronbichler
 
 \level 3
 

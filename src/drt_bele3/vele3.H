@@ -3,7 +3,6 @@
 
 \brief volume element
 
-\maintainer Jonas Eichinger
 
 \level 2
 */
@@ -68,14 +67,12 @@ namespace DRT
      * The number of dof per node is set to 3, so we can define displacement vectors by
      * using FillComplete on the discretization.
      *
-     * \author u.may (mayer@lnm.mw.tum.de)
      */
 
 
     /*!
     \brief A register for bele3 element
 
-    \author u.may (mayer@lnm.mw.tum.de)
     */
     class Vele3 : public DRT::Element
     {
@@ -475,7 +472,6 @@ namespace DRT
     /*!
     \brief An element representing a line of a vele3 element
 
-    \author mayer (mayer@lnm.mw.tum.de)
     */
     class Vele3Line : public DRT::FaceElement
     {

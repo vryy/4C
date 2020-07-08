@@ -3,7 +3,6 @@
 
 \brief Implementation of a boundary element for fluid poro problems
 
-\maintainer Johannes Kremheller
 
 \level 2
 

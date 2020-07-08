@@ -1,10 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
 \brief control routine for particle structure interaction problems
-
 \level 3
-
-\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 

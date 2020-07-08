@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_CLASSES_H
@@ -32,7 +31,6 @@ namespace MORTAR
          Note that this is a derived class from MORTAR::MortarElement, with the
          only difference that we explicitly set the node pointers here!
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class IntElement : public MortarElement
@@ -150,7 +148,6 @@ namespace MORTAR
          on the slave surface without any auxiliary plane). Of course, in the
          2nd case the third coordinate of all intcell points is zero!
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class IntCell
@@ -362,7 +359,6 @@ namespace MORTAR
          on the slave surface without any auxiliary plane). Of course, in the
          2nd case the third coordinate of all vertices is zero!
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class Vertex

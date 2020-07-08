@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #ifndef GROWTHREMODEL_ELASTHYPER_H

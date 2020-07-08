@@ -3,7 +3,6 @@
 
 \brief student's c++/baci tutorial simple fixed-point problem
 
-\maintainer  Martin Kronbichler
 
 \level 2
 

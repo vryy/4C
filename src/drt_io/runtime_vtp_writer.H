@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 #ifndef IO_RUNTIME_VTP_WRITER_H

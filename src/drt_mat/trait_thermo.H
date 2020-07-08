@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Sebastian Proell
 */
 
 #ifndef TRAIT_THERMO_H

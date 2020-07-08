@@ -1,4 +1,3 @@
-// Maintainer: Ivo Steinbrecher
 ---------------------------------------------------------------------------TITLE
 Test beam-to-surface coupling with hex8, hex20, hex27, tet4 and tet10 elements.
 The coupling terms are evaluated with the "reference_forced_fad" option.

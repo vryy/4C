@@ -6,7 +6,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef DRT_NURBS_UTILS_H

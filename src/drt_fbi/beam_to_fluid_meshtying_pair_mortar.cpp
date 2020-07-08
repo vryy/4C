@@ -4,7 +4,6 @@
 functions.
 
 \level 3
-\maintainer Nora Hagmeyer
 */
 
 

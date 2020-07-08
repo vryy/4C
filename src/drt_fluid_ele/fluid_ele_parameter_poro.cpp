@@ -8,7 +8,6 @@ set all general porofluid parameter once for all elements.
 
 \level 2
 
-\maintainer  Johannes Kremheller
 
 */
 /*----------------------------------------------------------------------*/

@@ -2,7 +2,6 @@
 /*! \file
 \brief averaged nodal volume tet4
 \level 3
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #include "so_tet4av.H"
 #include "../drt_lib/drt_discret.H"

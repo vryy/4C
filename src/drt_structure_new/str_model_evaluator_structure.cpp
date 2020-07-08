@@ -3,7 +3,6 @@
 
 \brief Evaluation and assembly of all structure terms
 
-\maintainer Matthias Mayr
 
 \level 3
 

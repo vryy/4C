@@ -3,7 +3,6 @@
 \brief 18-node hexahedral (bi-quadratic linear)
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

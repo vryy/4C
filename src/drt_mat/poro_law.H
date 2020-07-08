@@ -2,7 +2,6 @@
 /*! \file
  \brief calculation classes for evaluation of constitutive relation for porosity
 
-\maintainer Johannes Kremheller
 
 \level 2
  *----------------------------------------------------------------------*/

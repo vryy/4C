@@ -3,7 +3,6 @@
 
   \brief postprocessing of thermal heatfluxes
 
-  \maintainer Christoph Meier
 
   \level 1
 */

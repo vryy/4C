@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef INTERSECTION_SERVICE_H_

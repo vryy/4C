@@ -2,7 +2,6 @@
 /*! \file
 \brief Solid Wedge6 Element
 \level 1
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

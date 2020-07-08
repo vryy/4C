@@ -3,7 +3,6 @@
 
 \brief Merge the mutual functionality of the XCONTACT state creators.
 
-\maintainer Matthias Mayr
 
 \level 3
 

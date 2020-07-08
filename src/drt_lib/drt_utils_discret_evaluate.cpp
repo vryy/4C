@@ -3,7 +3,6 @@
 
 \brief Utils methods concerning the discretization evaluation
 
-\maintainer Martin Kronbichler
 
 \level 2
 

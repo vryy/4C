@@ -3,7 +3,6 @@
 
 \brief NOX's Newton with full step
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

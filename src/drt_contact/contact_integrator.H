@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -39,7 +38,6 @@ namespace CONTACT
    This is a derived class from MORTAR::MortarIntegrator which does
    the contact-specific stuff for 3d mortar coupling.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class CoIntegrator

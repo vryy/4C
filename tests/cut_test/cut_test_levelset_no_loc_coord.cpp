@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 // Issues with non-local cut!
 // Tried to be resolved here (Only for small deformation created from cubit).

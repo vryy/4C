@@ -3,7 +3,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_WEAR_H

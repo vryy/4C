@@ -5,7 +5,6 @@
  (time) integration. Includes routines for pure reduced modeling and for
  reduced_airway-tissue coupling.
 
-\maintainer Carolin Geitner
 
 \level 3
 

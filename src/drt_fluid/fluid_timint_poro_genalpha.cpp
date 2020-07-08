@@ -3,7 +3,6 @@
 
 \brief generalized alpha time integration scheme for porous fluid
 
-\maintainer Johannes Kremheller
 
 \level 2
 

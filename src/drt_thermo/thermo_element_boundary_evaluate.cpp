@@ -6,7 +6,6 @@ Evaluate boundary conditions for thermo problems
 
 \level 1
 
-\maintainer Sebastian Proell
 */
 
 /*----------------------------------------------------------------------*

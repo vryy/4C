@@ -2,7 +2,6 @@
 /*! \file
 \brief 18 node solid shell with plasticity
 \level 3
-\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 

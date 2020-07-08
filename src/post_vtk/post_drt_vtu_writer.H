@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTU_H

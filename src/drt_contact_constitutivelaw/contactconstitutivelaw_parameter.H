@@ -6,7 +6,6 @@ relate the contact gap to the contact pressure based on micro interactions
 
 \level 3
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 /* macros */

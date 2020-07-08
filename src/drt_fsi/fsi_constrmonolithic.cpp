@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
 
-\maintainer Matthias Mayr
 
 \brief Solve FSI problem with volume constraints
 

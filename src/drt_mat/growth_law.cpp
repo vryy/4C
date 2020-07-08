@@ -7,7 +7,6 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 
 \level 2
 
-   \maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

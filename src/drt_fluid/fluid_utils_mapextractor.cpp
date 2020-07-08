@@ -3,7 +3,6 @@
 
 \brief extracting maps of fluid discretizations
 
-\maintainer Martin Kronbichler
 
 \level 1
 

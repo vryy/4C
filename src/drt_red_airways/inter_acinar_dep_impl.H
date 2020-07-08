@@ -3,7 +3,6 @@
 
 \brief Internal implementation of inter_acinar_dep_impl element
 
-\maintainer Carolin Geitner
 
 \level 3
 

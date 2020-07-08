@@ -3,7 +3,6 @@
 
 \brief testing of artery calculation results
 
-\maintainer Johannes Kremheller
 
 \level 3
 */

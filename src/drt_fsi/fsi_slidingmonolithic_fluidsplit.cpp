@@ -6,7 +6,6 @@ with condensed fluid interface velocities
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*--------------------------------------------------------------------------*/
 

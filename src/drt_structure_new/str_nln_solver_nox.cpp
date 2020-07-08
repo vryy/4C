@@ -3,7 +3,6 @@
 
 \brief Structural non-linear %NOX::NLN solver.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

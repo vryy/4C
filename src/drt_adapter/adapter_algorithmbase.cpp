@@ -3,7 +3,6 @@
 
 \brief Base algorithm for all kinds of coupled problems
 
-\maintainer Martin Kronbichler
 
 \level 1
 */

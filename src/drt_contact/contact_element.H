@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef CONTACT_ELEMENT_H
@@ -43,7 +42,6 @@ namespace CONTACT
    \brief A contact element
 
 
-   \author popp (popp@lnm.mw.tum.de)
    */
   class CoElement : public MORTAR::MortarElement
   {

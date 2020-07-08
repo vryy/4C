@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -28,7 +27,6 @@ namespace CONTACT
   /*!
   \brief BACI implementation of main class to control all contact
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class CoManager : public MORTAR::ManagerBase

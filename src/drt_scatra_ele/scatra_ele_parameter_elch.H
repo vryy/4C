@@ -12,7 +12,6 @@ general static parameters required for scalar transport element evaluation.
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_ELCH_H

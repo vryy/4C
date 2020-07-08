@@ -3,7 +3,6 @@
 
 \brief LOCA nonlinear interface required defintion
 
-\maintainer Martin Kronbichler
 
 \level 3
 

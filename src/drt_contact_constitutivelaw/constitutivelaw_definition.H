@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Nora Hagmeyer
 */
 /*---------------------------------------------------------------------*/
 #ifndef CONTACT_COCONSTLAW_DEFINITION_H

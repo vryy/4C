@@ -3,7 +3,6 @@
 
 \brief Gen-alpha time integration for two-phase flow
 
-\maintainer Martin Kronbichler
 
 \level 2
 

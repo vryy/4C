@@ -3,7 +3,6 @@
 \brief multiscale functionality for tri-quadratic displacement based solid element
 \level 2
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

@@ -3,7 +3,6 @@
 \brief Solid Wedge6 Element
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #include "so_weg6.H"

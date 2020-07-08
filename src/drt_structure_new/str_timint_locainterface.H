@@ -3,7 +3,6 @@
 
 \brief  interface to Nox and LOCA for structural dynamics
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

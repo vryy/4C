@@ -4,7 +4,6 @@
 \brief Computation of mean values of nodal/cp quantities. The
 means are computed as time averages
 
-\maintainer Martin Kronbichler
 
 \level 2
 

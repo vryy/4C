@@ -196,10 +196,13 @@ ENDFOREACH()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-#
-### TRILINOS
+# Use Trilinos_PREFIX, if the user set it, to help find Trilinos.
+# The final location will actually be held in Trilinos_DIR which must
+# point at "<prefix>/lib/cmake/Trilinos", but this helps the search.
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-find_package(Trilinos REQUIRED)
+
+# Get Trilinos as one entity
+FIND_PACKAGE(Trilinos REQUIRED)
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
@@ -209,17 +212,15 @@ MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
 
-# test for git executable
-FIND_PROGRAM(Git_EXECUTABLE git PATHS ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR}
-  DOC "git command line client")
-MARK_AS_ADVANCED(Git_EXECUTABLE)
+# get trilinos version information
+include(GetTrilinosVersion)
+get_trilinos_version()
 
-IF(Git_EXECUTABLE)
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR}"/"${SEARCH_Trilinos_SOURCE_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
-  #MESSAGE(${Trilinos_GIT_VERSION})
-  string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
-  ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-ENDIF(Git_EXECUTABLE)
+# configure trilinos version file to pass information to the source code
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
+  "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H")
+
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
 set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
@@ -845,9 +846,6 @@ set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery_input.cpp
   src/drt_art_net/artery_resulttest.cpp
 )
-set(OBJS_FILTER_COMMON
-  src/filter_common/filter_evaluation.cpp
-)
 set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
@@ -1163,6 +1161,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_artery.cpp
   src/drt_scatra/scatra_timint_elch.cpp
   src/drt_scatra/scatra_timint_elch_scheme.cpp
+  src/drt_scatra/scatra_timint_elch_service.cpp
   src/drt_scatra/scatra_timint_poromulti.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/scatra_utils.cpp
@@ -2867,7 +2866,6 @@ add_library(drt_error ${OBJS_DRT_ERROR})
 
 # filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
-add_library(filter_common ${OBJS_FILTER_COMMON})
 add_library(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
 add_library(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
 
@@ -2921,7 +2919,6 @@ target_link_libraries (${baciname} ${BACI_LIBRARIES} ${LIBRARIES} drt_error)
 
 set(FILTER_LIBRARIES
   post_drt_common
-  filter_common
   -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
   ${LIBRARIES}
   drt_error)

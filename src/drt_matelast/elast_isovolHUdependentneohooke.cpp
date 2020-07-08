@@ -6,7 +6,6 @@ CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 
 \level 2
 
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"

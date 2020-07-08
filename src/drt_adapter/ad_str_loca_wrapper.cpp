@@ -1,7 +1,6 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\maintainer Anh-Tu Vuong
 
 \brief wrapper for structure adapter using the LOCA library
 

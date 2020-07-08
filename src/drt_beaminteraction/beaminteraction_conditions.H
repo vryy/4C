@@ -4,7 +4,6 @@
 \brief Base classes to manage the beam interactions defined by conditions.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

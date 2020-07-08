@@ -2,7 +2,6 @@
 /*! \file
 \brief
 \level 1
-\maintainer Sebastian Proell
 */
 /*----------------------------------------------------------------------*/
 #ifndef THR_DYN_H

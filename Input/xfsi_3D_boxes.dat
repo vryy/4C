@@ -1,5 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
 //
 // Fluid domain defined by a box geometry with rotated solid also
 // defined by a box geometry inside

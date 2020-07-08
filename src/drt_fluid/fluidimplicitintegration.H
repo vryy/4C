@@ -14,7 +14,6 @@
 
      and a stationary solver.
 
-\maintainer Martin Kronbichler
 
 \level 1
 
@@ -98,7 +97,6 @@ namespace FLD
   /*!
   \brief time integration for fluid problems
 
-  \author gammi (gamnitzer@lnm.mw.tum.de)
   */
   class FluidImplicitTimeInt : public TimInt
   {

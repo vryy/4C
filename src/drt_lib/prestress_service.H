@@ -4,7 +4,6 @@
 
 \brief Common service function for prestress
 
-\maintainer Amadeus Gebauer
 
 */
 

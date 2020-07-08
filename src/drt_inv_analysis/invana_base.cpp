@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
 #include "invana_base.H"

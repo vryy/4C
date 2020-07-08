@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_FSI_H

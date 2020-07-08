@@ -9,10 +9,6 @@
 
 \level 3
 
-\maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
 *----------------------------------------------------------------------*/
 
 #ifndef ADAPTER_COUPLING_PORO_MORTAR_H_

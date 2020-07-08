@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 
@@ -76,7 +75,6 @@ namespace DRT
     /*!
     \brief Spherical particle element for brownian dynamics
 
-    author meier (meier@lnm.mw.tum.de)
     */
     class Rigidsphere : public DRT::Element
     {

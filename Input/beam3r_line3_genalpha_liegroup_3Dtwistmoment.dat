@@ -1,5 +1,4 @@
 //
-// Maintainer: Maximilian Grill
 //
 //For better Newton convergence the cross-section value has been scaled
 //from A=0.1 to A=CROSSAREA 0.0000001. This does not influence the result

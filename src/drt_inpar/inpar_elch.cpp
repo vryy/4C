@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------*/
@@ -550,6 +549,10 @@ void INPAR::ELCH::SetValidConditions(
       cccvcyclingcomponents.push_back(
           Teuchos::rcp(new SeparatorConditionComponent("InitRelaxTime")));
       cccvcyclingcomponents.push_back(Teuchos::rcp(new RealConditionComponent("InitRelaxTime")));
+      cccvcyclingcomponents.push_back(
+          Teuchos::rcp(new SeparatorConditionComponent("AdaptiveTimeSteppingInitRelax")));
+      cccvcyclingcomponents.push_back(
+          Teuchos::rcp(new IntConditionComponent("AdaptiveTimeSteppingInitRelax")));
     }
 
     // insert input file line components into condition definitions
@@ -594,6 +597,12 @@ void INPAR::ELCH::SetValidConditions(
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("CutoffCRate")));
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("RelaxTime")));
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("RelaxTime")));
+      // switch adaptive time stepping on for different phases of half cycle: 1st: end of constant
+      // current, 2nd: end of constant voltage, 3rd: end of relaxation
+      cccvhalfcyclecomponents.push_back(
+          Teuchos::rcp(new SeparatorConditionComponent("AdaptiveTimeSteppingPhaseOnOff")));
+      cccvhalfcyclecomponents.push_back(
+          Teuchos::rcp(new IntVectorConditionComponent("AdaptiveTimeSteppingPhaseOnOff", 3)));
     }
 
     // insert input file line components into condition definitions

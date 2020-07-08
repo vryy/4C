@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 
 */
 /*----------------------------------------------------------------------*/
@@ -102,7 +101,6 @@ namespace DRT
     There are 2 sets of EAS enhancements for GL-strains to alleviate locking
     (see DRT::ELEMENTS::So_hex8::EASType).
 
-    \author frenzel (frenzel@lnm.mw.tum.de)
     */
     class So_hex8 : public So_base
     {

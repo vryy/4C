@@ -5,7 +5,6 @@
        and (active or passive) scalar transport equations
 \level 2
 
-\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------*/

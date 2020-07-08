@@ -3,7 +3,6 @@
 
 \brief Preconditioner interface for constrained problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

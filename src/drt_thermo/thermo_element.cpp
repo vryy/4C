@@ -3,7 +3,6 @@
 \brief basic thermo element
 
 \level 1
-\maintainer Sebastian Proell
 */
 
 

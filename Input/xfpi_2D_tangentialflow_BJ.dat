@@ -1,7 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
-// kronbichler@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
 //
 // XFluid_Poroelastic_Interaction (Poro is cut out)
 // Simple Flow parallell to the interface with Beavers-Joseph interface law

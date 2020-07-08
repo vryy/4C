@@ -3,7 +3,6 @@
 
 \brief Library of Continuation Algorithms (LOCA) implementation.
 
-\maintainer Anh-Tu Vuong
 
 \date Nov 18, 2015
 

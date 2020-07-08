@@ -3,7 +3,6 @@
 \brief A 2D constraint element with no physics attached
 \level 2
 
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

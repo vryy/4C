@@ -3,7 +3,6 @@
 
 \brief A collection of methods to modify patient specific geometries
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -3,7 +3,6 @@
 
 \brief Quasi-static control for microstructural analysis
 
-\maintainer Martin Kronbichler
 
 \level 2
 
@@ -64,7 +63,6 @@ namespace STRUMULTI
   but also calls to SurfaceStressManager!) need to be adapted accordingly
   if usage of other time integration schemes should be enabled.
 
-  \author yoshihara (yoshihara@lnm.mw.tum.de)
   */
 
   class MicroStatic

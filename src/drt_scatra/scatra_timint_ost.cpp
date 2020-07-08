@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_ost.H"

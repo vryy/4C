@@ -12,7 +12,6 @@ derived from an abstract, purely virtual interface class.
 
 \level 2
 
-\maintainer Christoph Schmidt
 
  */
 /*----------------------------------------------------------------------*/
@@ -27,7 +26,6 @@ namespace SSI
   \brief abstract strategy for Newton-Raphson convergence check for monolithic scalar-structure
   interaction problems
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class SSI_Mono::ConvCheckStrategyBase
@@ -66,7 +64,6 @@ namespace SSI
   \brief specific strategy for Newton-Raphson convergence check for monolithic scalar-structure
   interaction problems involving standard scalar transport
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class SSI_Mono::ConvCheckStrategyStd : public SSI_Mono::ConvCheckStrategyBase
@@ -99,7 +96,6 @@ namespace SSI
   \brief specific strategy for Newton-Raphson convergence check for monolithic scalar-structure
   interaction problems involving electrochemistry
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class SSI_Mono::ConvCheckStrategyElch : public SSI_Mono::ConvCheckStrategyBase

@@ -22,7 +22,6 @@ References are
     flows with a stabilized finite element method
     (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -3,7 +3,6 @@
 
 \brief Interface class for the evaluation routines of the fluid element
 
-\maintainer Martin Kronbichler
 
 \level 1
 

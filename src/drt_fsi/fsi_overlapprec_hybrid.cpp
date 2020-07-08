@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 
 \brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
 */

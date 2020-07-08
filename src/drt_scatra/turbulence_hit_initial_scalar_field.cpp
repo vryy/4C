@@ -7,7 +7,6 @@ transport
 
 \level 2
 
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

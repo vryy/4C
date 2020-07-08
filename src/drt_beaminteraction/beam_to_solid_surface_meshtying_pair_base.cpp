@@ -4,7 +4,6 @@
 \brief Base meshtying element for meshtying between a 3D beam and a surface element.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 
 

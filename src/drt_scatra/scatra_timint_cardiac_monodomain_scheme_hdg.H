@@ -5,7 +5,6 @@
         cardiac-monodomain-specific implementation
 
 \level 3
-\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

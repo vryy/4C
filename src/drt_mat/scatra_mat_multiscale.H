@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_MULTISCALE_H

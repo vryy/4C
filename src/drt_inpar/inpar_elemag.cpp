@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Luca Berardocco
 
 */
 /*----------------------------------------------------------------------*/
@@ -24,6 +23,7 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // general settings for time-integration scheme
   DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
+  DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
   IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
   DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
 
@@ -41,20 +41,24 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   {
     // time integration
 
-    Teuchos::Tuple<std::string, 6> name;
-    Teuchos::Tuple<int, 6> label;
+    Teuchos::Tuple<std::string, 8> name;
+    Teuchos::Tuple<int, 8> label;
     name[0] = "One_Step_Theta";
     label[0] = elemag_ost;
-    name[1] = "Implicit_Euler";
-    label[1] = elemag_implicit_euler;
+    name[1] = "BDF1";
+    label[1] = elemag_bdf1;
     name[2] = "BDF2";
-    label[2] = elemag_bdf;
-    name[3] = "Explicit_Euler";
-    label[3] = elemag_explicit_euler;
-    name[4] = "Runge_Kutta";
-    label[4] = elemag_rk;
-    name[5] = "Crank_Nicolson";
-    label[5] = elemag_cn;
+    label[2] = elemag_bdf2;
+    name[3] = "BDF4";
+    label[3] = elemag_bdf4;
+    name[4] = "GenAlpha";
+    label[4] = elemag_genAlpha;
+    name[5] = "Explicit_Euler";
+    label[5] = elemag_explicit_euler;
+    name[6] = "Runge_Kutta";
+    label[6] = elemag_rk;
+    name[7] = "Crank_Nicolson";
+    label[7] = elemag_cn;
 
     setStringToIntegralParameter<int>("TIMEINT", "One_Step_Theta",
         "Type of time integration scheme", name, label, &electromagneticdyn);

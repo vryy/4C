@@ -7,7 +7,6 @@ do nothing, as they are called directly in the structure. To use the contact
 the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
 to be called!
 
-\maintainer Matthias Mayr
 
 \level 3
 

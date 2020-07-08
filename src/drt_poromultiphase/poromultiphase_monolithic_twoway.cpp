@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_monolithic_twoway.H"

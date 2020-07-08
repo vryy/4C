@@ -4,10 +4,6 @@
 
 \level 2
 
-\maintainer  Martin Kronbichler
-             kronbichler@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
 
 */
 /*----------------------------------------------------------------------*/

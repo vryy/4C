@@ -5,7 +5,6 @@
        are called by inter_acinar_dep_evaluate.cpp by DRT::ELEMENTS::RedInterAcinarDep::Evaluate()
        with the corresponding action.
 
-\maintainer Carolin Geitner
 
 \level 3
 

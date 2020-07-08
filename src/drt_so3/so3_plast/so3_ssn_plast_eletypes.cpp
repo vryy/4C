@@ -2,7 +2,6 @@
 /*! \file
 \brief so3_plast element types
 \level 2
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so3_ssn_plast_eletypes.H"

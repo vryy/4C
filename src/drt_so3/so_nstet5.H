@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H

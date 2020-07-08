@@ -4,7 +4,6 @@
 \brief Create the geometry for the unit tests.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

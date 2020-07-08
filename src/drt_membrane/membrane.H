@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Sebastian Fuchs
 
 \brief Nonlinear Membrane Finite Element
 
@@ -590,7 +589,6 @@ namespace DRT
           adjacent to a parent membrane element. It therefore does not implement
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
-    \author braeu (braeu@lnm.mw.tum.de)
     */
     template <DRT::Element::DiscretizationType distype2>
     class MembraneLine : public DRT::FaceElement

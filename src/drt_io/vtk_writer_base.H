@@ -3,7 +3,6 @@
 
 \brief VTK writer base class
 
-\maintainer Martin Kronbichler
 
 \level 2
 */

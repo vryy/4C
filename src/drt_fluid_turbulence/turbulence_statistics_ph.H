@@ -26,7 +26,6 @@ and the basename of the statistics outfile. These parameters are
 expected to be contained in the fluid time integration parameter list
 given on input.
 
-\maintainer Martin Kronbichler
 
 \level 2
 

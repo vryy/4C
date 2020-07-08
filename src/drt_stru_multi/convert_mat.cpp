@@ -3,7 +3,6 @@
 
 \brief Material conversion
 
-\maintainer Martin Kronbichler
 
 \level 2
 

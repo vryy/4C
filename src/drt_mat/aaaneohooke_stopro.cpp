@@ -18,7 +18,6 @@ CORRLENGTH 5.0
 
 \level 3
 
-\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

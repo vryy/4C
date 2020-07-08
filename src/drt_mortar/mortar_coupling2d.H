@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING2D_H
@@ -33,7 +32,6 @@ namespace MORTAR
    and finally integration of the mortar coupling matrices D and M
    and possibly of the weighted gap vector g~.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Coupling2d
@@ -211,7 +209,6 @@ namespace MORTAR
    slave element and SEVERAL master elements of a mortar interface in
    2D. This class simply stores and manages several Coupling2d objects.
 
-   \author popp (popp@lnm.mw.tum.de)
    */
 
   class Coupling2dManager

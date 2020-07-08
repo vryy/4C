@@ -3,7 +3,6 @@
 
 \brief Input parameters for linear solvers
 
-\maintainer Martin Kronbichler
 
 \level 1
 */

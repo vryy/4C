@@ -4,7 +4,6 @@
 \brief %NOX::NLN implementation of a %NOX::Epetra::Group
        to handle constrained problems.
 
-\maintainer Anh-Tu Vuong
 
 
 \level 3

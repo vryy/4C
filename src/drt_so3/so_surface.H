@@ -4,7 +4,6 @@
 \brief class for evaluation of equations on the structural surface
 \level 1
 
-\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef SO_SURFACE_H
@@ -52,7 +51,6 @@ namespace DRT
     This element implements all common shapes. It also implements all
     common types of loads currently demanded in baci
 
-    \author gee (gee@lnm.mw.tum.de)
     */
     class StructuralSurface : public DRT::FaceElement
     {

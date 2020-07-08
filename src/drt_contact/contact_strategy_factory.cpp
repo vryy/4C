@@ -2,7 +2,6 @@
 /*! \file
 \brief Factory to create the desired contact strategy
 
-\maintainer Matthias Mayr
 
 \level 3
 

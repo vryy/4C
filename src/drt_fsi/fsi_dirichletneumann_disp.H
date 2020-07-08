@@ -4,7 +4,6 @@
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 coupling the displacements
 
-\maintainer Matthias Mayr
 
 \level 1
 */

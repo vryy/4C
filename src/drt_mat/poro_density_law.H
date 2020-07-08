@@ -5,7 +5,6 @@
 
    \level 3
 
-   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_PORO_DENSITY_LAW_H_

@@ -6,7 +6,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 #include "ale_utils_mapextractor.H"

@@ -5,9 +5,6 @@
 
 \level 3
 
-\maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
 */
 /*----------------------------------------------------------------------*/
 
@@ -48,6 +45,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       upres_(params_->get<int>("RESULTSEVRY", -1)),
       numdim_(DRT::Problem::Instance()->NDim()),
       dtp_(params_->get<double>("TIMESTEP")),
+      tau_(params_->get<double>("TAU")),
       dtele_(0.0),
       dtsolve_(0.0),
       calcerr_(DRT::INPUT::IntegralValue<bool>(*params_, "CALCERR")),
@@ -99,6 +97,9 @@ void ELEMAG::ElemagTimeInt::Init()
     discret_->EvaluateDirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);
+
+    // Initialize elements
+    ElementsInit();
   }
 
   // create system matrix and set to zero
@@ -133,6 +134,7 @@ void ELEMAG::ElemagTimeInt::PrintInformationToScreen()
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
+    std::cout << "DISCRETIZATION PARAMETERS:" << std::endl;
     std::cout << "number of DoF sets          " << discret_->NumDofSets() << std::endl;
     std::cout << "number of nodes             " << discret_->NumGlobalNodes() << std::endl;
     std::cout << "number of elements          " << discret_->NumGlobalElements() << std::endl;
@@ -141,8 +143,11 @@ void ELEMAG::ElemagTimeInt::PrintInformationToScreen()
               << std::endl;
     std::cout << "number of interior unknowns " << discret_->DofRowMap(1)->NumGlobalElements()
               << std::endl;
+    std::cout << std::endl;
+    std::cout << "SIMULATION PARAMETERS: " << std::endl;
     std::cout << "time step size              " << dtp_ << std::endl;
     std::cout << "time integration scheme     " << Name() << std::endl;
+    std::cout << "tau                         " << tau_ << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
@@ -171,38 +176,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::Integrate");
 
-  // In case of BDF2 the first step has to be computed with BDF1
-  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf && restart_ == 0)
-  {
-    // First step with a BDF1
-    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_implicit_euler;
-
-    // call elements to calculate system matrix/rhs and assemble
-    AssembleMatAndRHS();
-
-    // Compute matrix for ABC boundary conditions
-    ComputeSilverMueller(false);
-
-    // increment time and step
-    IncrementTimeAndStep();
-
-    ApplyDirichletToSystem();
-    ComputeSilverMueller(true);
-    Solve();
-
-    UpdateInteriorVariablesAndAssembleRHS();
-
-    // The output to file only once in a while
-    if (step_ % upres_ == 0)
-    {
-      Output();
-      // Output to screen
-      OutputToScreen();
-    }
-
-    // Set the dynamics to BDF2 again
-    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_bdf;
-  }
+  InitializeAlgorithm();
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
@@ -242,12 +216,43 @@ void ELEMAG::ElemagTimeInt::Integrate()
   return;
 }  // Integrate
 
+void ELEMAG::ElemagTimeInt::ElementsInit()
+{
+  // Initializing siome vectors and parameters
+  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
+  Epetra_SerialDenseMatrix elemat1, elemat2;
+  Teuchos::ParameterList initParams;
+
+  // loop over all elements on the processor
+  DRT::Element::LocationArray la(2);
+  for (int el = 0; el < discret_->NumMyColElements(); ++el)
+  {
+    // Selecting the elements
+    DRT::Element *ele = discret_->lColElement(el);
+
+    // This function is a void function and therefore the input goes to the vector "la"
+    ele->LocationVector(*discret_, la, true);
+
+    // This is needed to store the dirichlet dofs in the
+    if (std::find(la[0].lmdirich_.begin(), la[0].lmdirich_.end(), 1) != la[0].lmdirich_.end())
+      initParams.set<std::vector<int> *>("dirichdof", &la[0].lmdirich_);
+    else
+      initParams.remove("dirichdof", false);
+
+    initParams.set<int>("action", ELEMAG::ele_init);
+    initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
+    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
+    Epetra_SerialDenseMatrix elemat1, elemat2;
+    ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Set initial field by given function (public)       berardocco 03/18 |
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::SetInitialField(
-    const INPAR::ELEMAG::InitialField init, const int startfuncno)
+    const INPAR::ELEMAG::InitialField init, Teuchos::ParameterList &start_params)
 {
 // time measurement: SetInitialField just in the debug phase
 #ifdef DEBUG
@@ -269,64 +274,29 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
   {
     case INPAR::ELEMAG::initfield_zero_field:
     {
-      // This map contains the trace values
-      const Epetra_Map *dofrowmap = discret_->DofRowMap();
-
-      // Declaration of useful quantities
-      Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-      Epetra_SerialDenseMatrix elemat;
-      DRT::Element::LocationArray la(2);
-
       // Fancy printing to help debugging
       if (!myrank_)
       {
         std::cout << "Initializing a zero field." << std::endl;
       }
 
-      // Beginning of the real algorithm
-      Teuchos::ParameterList initParams;
-      initParams.set<int>("action", ELEMAG::ele_init);
-      initParams.set<double>("time", 0.0);
-      initParams.set<bool>("padaptivity", false);
-      initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
-
-      // Cycling through the entire set of elements to fill them with zeros
-      for (int el = 0; el < discret_->NumMyColElements(); ++el)
-      {
-        DRT::Element *ele = discret_->lColElement(el);
-        ele->Evaluate(initParams, *discret_, la[0].lm_, elemat, elemat, elevec1, elevec2, elevec3);
-        ele->LocationVector(*discret_, la, false);
-
-        // Resizing of the vectors
-        if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-          elevec1.Shape(la[0].lm_.size(), 1);
-
-        // now fill the ele vector into the discretization (this part has been only copied and
-        // therefore not yet tested)
-        for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
-        {
-          const int lid = dofrowmap->LID(la[0].lm_[i]);
-          if (lid >= 0) (*trace_)[lid] = elevec1(i);
-        }
-      }
       break;
     }
     case INPAR::ELEMAG::initfield_field_by_function:
     {
       if (!myrank_)
       {
-        std::cout << "Initializing field as specified by STARTFUNCNO " << startfuncno << std::endl;
+        std::cout << "Initializing field as specified by STARTFUNCNO "
+                  << start_params.get<int>("startfuncno") << std::endl;
       }
 
       // Initializing siome vectors and parameters
       Epetra_SerialDenseVector elevec1, elevec2, elevec3;
       Epetra_SerialDenseMatrix elemat1, elemat2;
-      Teuchos::ParameterList initParams;
-      initParams.set<int>("action", ELEMAG::project_field);
-      initParams.set("startfuncno", startfuncno);
-      initParams.set<double>("time", time_);
-      initParams.set<double>("dt", dtp_);
-      initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+      start_params.set<int>("action", ELEMAG::project_field);
+      start_params.set<double>("time", time_);
+      start_params.set<double>("dt", dtp_);
+      start_params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
       DRT::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyColElements(); ++el)
@@ -342,7 +312,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
           elevec1.Shape(la[0].lm_.size(), 1);
         if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
         ele->Evaluate(
-            initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+            start_params, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       break;
     }  // case INPAR::ELEMAG::initfield_field_by_function
@@ -355,7 +325,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
   Output();
   if (!myrank_)
   {
-    std::cout << "Written initial condition." << std::endl;
+    std::cout << "Initial condition projected." << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
@@ -407,10 +377,10 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
 
   // loop over all elements on the processor
   DRT::Element::LocationArray la(2);
-  for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+  for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    DRT::Element *ele = discret_->lRowElement(el);
+    DRT::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -443,10 +413,10 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
   initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
   // loop over all elements on the processor
   DRT::Element::LocationArray la(2);
-  for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+  for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    DRT::Element *ele = discret_->lRowElement(el);
+    DRT::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -464,6 +434,48 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
       const int lid = dofrowmap->LID(la[0].lm_[i]);
       if (lid >= 0) (*trace_)[lid] = elevec1(i);
     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Run the first step with BDF1 (public)              berardocco 10/19 |
+ *----------------------------------------------------------------------*/
+void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
+{
+  // In case We don't have BDF1 we initialize the method with BDF1 and then go back
+  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf2 && restart_ == 0)
+  {
+    INPAR::ELEMAG::DynamicType temp_dyna = elemagdyna_;
+    // First step with a BDF1
+    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_bdf1;
+
+    // call elements to calculate system matrix/rhs and assemble
+    AssembleMatAndRHS();
+
+    // Compute matrix for ABC boundary conditions
+    ComputeSilverMueller(false);
+
+    // increment time and step
+    IncrementTimeAndStep();
+
+    ApplyDirichletToSystem();
+    ComputeSilverMueller(true);
+    Solve();
+
+    UpdateInteriorVariablesAndAssembleRHS();
+
+    // The output to file only once in a while
+    if (step_ % upres_ == 0)
+    {
+      Output();
+      // Output to screen
+      OutputToScreen();
+    }
+
+    // Set the dynamics back to the original
+    elemagdyna_ = temp_dyna;
   }
 
   return;
@@ -501,6 +513,7 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
 
   // set time step size
   eleparams.set<double>("dt", dtp_);
+  eleparams.set<double>("tau", tau_);
 
   bool resonly = false;
 
@@ -533,6 +546,7 @@ void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("sourcefuncno", sourcefuncno_);
   eleparams.set<double>("dt", dtp_);
+  eleparams.set<double>("tau", tau_);
   eleparams.set<double>("time", time_);
   eleparams.set<double>("timep", time_ + dtp_);
   eleparams.set<int>("action", ELEMAG::update_secondary_solution_and_calc_residual);
@@ -601,19 +615,8 @@ void ELEMAG::ElemagTimeInt::Solve()
 {
   // This part has only been copied from the fluid part to be able to use algebraic multigrid
   // solvers and has to be checked
-  if (solver_->Params().isSublist("ML Parameters"))
-  {
-    Teuchos::ParameterList &mlparams = solver_->Params().sublist("ML Parameters");
-    // compute the null space,
-    discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
 
-    // get nullspace parameters
-    double *nullspace = mlparams.get("null space: vectors", (double *)NULL);
-    if (!nullspace) dserror("No nullspace supplied in parameter list");
-    int nsdim = mlparams.get("null space: dimension", 1);
-    if (nsdim != 4)
-      dserror("The calculation of mean WSS is only tested for three space dimensions!");
-  }
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
   // solve for trace
   solver_->Solve(sysmat_->EpetraOperator(), trace_, residual_, true, false, Teuchos::null);
 
@@ -877,7 +880,7 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
     //  std::cout << "=========== Only one time step was found. Switch to BDF1." << std::endl;
     //}
     // eleparams.set<INPAR::ELEMAG::DynamicType>(
-    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_implicit_euler);
+    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_bdf1);
     dserror(
         "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");

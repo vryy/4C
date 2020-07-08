@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------*/
@@ -73,12 +72,13 @@ namespace INPAR
       approxelctresist_efflenintegcond
     };
 
-    enum CCCVCyclingMode
+    enum class CCCVHalfCyclePhase
     {
-      cccv_undefined,  //!< undefined mode
-      cccv_cc,         //!< constant-current (CC) mode
-      cccv_cv,         //!< constant-voltage (CV) mode
-      cccv_rx          //!< relaxation (RX) mode
+      undefined,           //!< undefined mode
+      constant_current,    //!< constant-current (CC) mode
+      constant_voltage,    //!< constant-voltage (CV) mode
+      relaxation,          //!< relaxation (RX) mode
+      initital_relaxation  //!< initial relaxation mode
     };
 
     // permittivität (not a general definition, but only once used)

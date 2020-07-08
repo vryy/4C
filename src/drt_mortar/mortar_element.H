@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_ELEMENT_H
@@ -62,7 +61,6 @@ namespace MORTAR
   only needed for contact evaluation. Thus, in order to save memory, it is
   sufficient to have this data available only on the slave element column map.
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class MortarEleDataContainer
   {
@@ -266,7 +264,6 @@ namespace MORTAR
   /*!
   \brief A mortar coupling element
 
-  \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
   */
   class MortarElement : public DRT::FaceElement
   {
@@ -1044,7 +1041,6 @@ namespace MORTAR
   /*!
   \brief A class to perform Gaussian integration on a mortar element
 
-  \author popp (popp@lnm.mw.tum.de)
   */
 
   class ElementIntegrator

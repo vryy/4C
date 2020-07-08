@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Jan Schnabel
 *----------------------------------------------------------------------*/
 #ifndef SPRING_H
 #define SPRING_H

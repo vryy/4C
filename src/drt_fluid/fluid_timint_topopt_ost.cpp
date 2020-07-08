@@ -3,7 +3,6 @@
 
 \brief One-step theta time integration for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

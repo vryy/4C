@@ -3,7 +3,6 @@
 
 \brief Base class for all structural time integration strategies.
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 
@@ -166,7 +165,7 @@ namespace STR
       virtual void UpdateStepTime();
 
       /// wrapper for things that should be done after solving the update
-      virtual void PostUpdate(){};
+      virtual void PostUpdate();
       /// @}
 
       /// @name Access global state from outside via adapter (needed for coupled problems)

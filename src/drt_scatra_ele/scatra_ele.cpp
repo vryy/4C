@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"

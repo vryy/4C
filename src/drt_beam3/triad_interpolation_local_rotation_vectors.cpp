@@ -3,7 +3,6 @@
 
 \brief a triad interpolation scheme based on local rotation vectors
 
-\maintainer Maximilian Grill
 
 \level 3
 */

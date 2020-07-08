@@ -2,7 +2,6 @@
 /*! \file
 \brief 8-node solid shell element evaluate
 \level 3
-\maintainer Christoph Meier
 
 */
 

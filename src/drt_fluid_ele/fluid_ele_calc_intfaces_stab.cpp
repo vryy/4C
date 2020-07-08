@@ -14,7 +14,6 @@ finite element method E.Burman, M.A.Fernandez and P.Hansbo (2006)
 convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods Appl. Mech. Engrg.
 198 (2009) 2508-2519
 
-\maintainer Martin Kronbichler
 
 \level 2
 

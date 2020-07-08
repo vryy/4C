@@ -4,7 +4,6 @@
 \brief Write (time and space) averaged values to file for
 turbulent flow past a square cylinder
 
-\maintainer Martin Kronbichler
 
 \level 2
 

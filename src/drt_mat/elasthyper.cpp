@@ -10,7 +10,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 \level 1
 
-\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------*/

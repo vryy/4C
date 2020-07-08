@@ -3,7 +3,6 @@
 
 \brief ReadElement method of the fluid element implementation
 
-\maintainer Martin Kronbichler
 
 \level 1
 

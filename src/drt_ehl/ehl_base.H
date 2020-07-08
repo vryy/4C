@@ -6,7 +6,6 @@ algorithms
 
 \level 3
 
-\maintainer Mostafa Faraji
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_EHL_EHL_BASE_H_

@@ -6,7 +6,6 @@ comparison instead of a cumbersome std::string compare.
 
 \level 1
 
-\maintainer Anh-Tu Vuong
 
 *---------------------------------------------------------------------------*/
 

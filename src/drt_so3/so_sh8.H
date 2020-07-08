@@ -2,7 +2,6 @@
 /*! \file
 \brief solid shell8 element formulation
 
-\maintainer Christoph Meier
 
 \level 1
 */
@@ -62,7 +61,6 @@ namespace DRT
 
     Refer also to the Semesterarbeit of Alexander Popp, 2006
 
-    \author frenzel (frenzel@lnm.mw.tum.de)
     */
     class So_sh8 : public So_hex8
     {

@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -897,15 +896,6 @@ namespace INPAR
   namespace MORTAR
   {
   }  // namespace MORTAR
-
-  /*! \brief Input parameters for nonlinear solver
-   *
-   * \warning This is highly experimental!
-   *
-   */
-  namespace NLNSOL
-  {
-  }  // namespace NLNSOL
 
   /*! \brief Input parameters for particle dynamics
    *
@@ -1818,7 +1808,6 @@ namespace STR
 
 /*! \brief Structural multi-scale related algorithms
  *
- * \author yoshihara (yoshihara@lnm.mw.tum.de)
  */
 namespace STRUMULTI
 {

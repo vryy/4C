@@ -3,7 +3,6 @@
 
 \brief implementation of predictor for either constant displacement, velocity or acceleration
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -6,7 +6,6 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 \level 2
 
-\maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/
 #include "ad_fbi_constraintbridge.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"

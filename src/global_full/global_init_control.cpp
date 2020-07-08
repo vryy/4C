@@ -3,7 +3,6 @@
 
 \brief general initialization routine of BACI
 
-\maintainer Martin Kronbichler
 
 \level 0
 */

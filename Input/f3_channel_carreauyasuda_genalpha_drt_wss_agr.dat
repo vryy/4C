@@ -1,5 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
 //
 // testing: Stress calculation via ML agreagtion
 // hint: This does give different results in parallel, since the ML agreagtion Matrix does

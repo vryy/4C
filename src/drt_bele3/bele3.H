@@ -3,7 +3,6 @@
 
 \brief dummy 3D boundary element without any physics
 
-\maintainer Amadeus Gebauer
 
 \level 2
 */
@@ -68,7 +67,6 @@ namespace DRT
      * using FillComplete on the boundary discretization. Furthermore numdofpernode can be adapted
      * if necessary.
      *
-     * \author kruse (kruse@lnm.mw.tum.de)
      */
     class Bele3 : public DRT::Element
     {
@@ -284,7 +282,6 @@ namespace DRT
     /*!
     \brief An element representing a line of a bele3 element
 
-    \author gerstenberger (gerstenberger@lnm.mw.tum.de)
     */
     class Bele3Line : public DRT::FaceElement
     {

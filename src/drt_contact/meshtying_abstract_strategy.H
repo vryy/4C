@@ -4,7 +4,6 @@
 
 \level 2
 
-\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -55,7 +54,6 @@ namespace CONTACT
   This class it itself derived from the MORTAR::StrategyBase class, which is an even
   more abstract framework for any solution strategies involving mortar coupling.
 
-  \author popp (popp@lnm.mw.tum.de)
   */
   class MtAbstractStrategy : public MORTAR::StrategyBase
   {

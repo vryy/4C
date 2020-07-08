@@ -3,7 +3,6 @@
 \brief heat conduction according to fourier's law with variable conductivity and capacity
 
 \level 2
-\maintainer Sebastian Proell
 */
 
 

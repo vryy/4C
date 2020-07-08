@@ -4,7 +4,6 @@
 
 \level 3
 
-\maintainer Luca Berardocco
 */
 /*----------------------------------------------------------------------*/
 
@@ -35,9 +34,13 @@ namespace INPAR
       /// explicit euler method
       elemag_explicit_euler,
       /// implicit euler method
-      elemag_implicit_euler,
-      /// backward differentiation formula
-      elemag_bdf,
+      elemag_bdf1,
+      /// BDF2
+      elemag_bdf2,
+      /// BDF4
+      elemag_bdf4,
+      /// Generalized-Alpha method
+      elemag_genAlpha,
       /// runge-kutta method
       elemag_rk,
       /// crank-nicolson method

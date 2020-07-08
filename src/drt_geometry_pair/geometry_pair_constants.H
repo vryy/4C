@@ -4,7 +4,6 @@
 \brief Constants used in the geometry pair namespace.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

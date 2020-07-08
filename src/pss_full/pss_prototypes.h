@@ -2,7 +2,6 @@
 /*! \file
 \brief Prototype classes
 
-\maintainer Martin Kronbichler
 
 \level 1
 

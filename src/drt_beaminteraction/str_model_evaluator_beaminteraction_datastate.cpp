@@ -4,7 +4,6 @@
 \brief Global state data container for the structural (time)
        integration
 
-\maintainer Jonas Eichinger
 
 \level 3
 

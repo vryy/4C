@@ -5,7 +5,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOH8FBAR_H
@@ -63,7 +62,6 @@ namespace DRT
 
     Refer also to the HiWi report of Stefanos Tsoukalas, 2010
 
-    \author popp (popp@lnm.mw.tum,de)
     */
     class So_hex8fbar : public So_hex8
     {

@@ -1,8 +1,4 @@
 //
-// Maintainer: Martin Kronbichler
-// kronbichler@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15249
 //
 // monolithic xfsi fluid pusher with one hex8 structure element,
 // 2nd order flag for FSI-theta and fld_theta=0.5

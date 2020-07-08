@@ -4,7 +4,6 @@
 \brief Meshtying element for meshtying between a 1D beam and a 3D fluid element.
 
 \level 1
-\maintainer Nora Hagmeyer
 */
 
 

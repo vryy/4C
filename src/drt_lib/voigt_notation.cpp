@@ -1,7 +1,6 @@
 /*! \file
 \brief Voigt notation definition and utilities
 \level 1
-\maintainer Sebastian Proell
 */
 
 #include "voigt_notation.H"

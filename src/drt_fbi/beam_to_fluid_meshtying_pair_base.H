@@ -4,7 +4,6 @@
 \brief Base meshtying element for meshtying between a 1D beam and a 3D fluid element.
 
 \level 2
-\maintainer Nora Hagmeyer
 */
 
 #ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_

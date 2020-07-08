@@ -3,7 +3,6 @@
 
 \brief Internal implementation of poro Fluid element (p1 poro fluid)
 
-\maintainer Johannes Kremheller
 
 \level 2
 

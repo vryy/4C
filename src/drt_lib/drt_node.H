@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 
 */
 /*---------------------------------------------------------------------*/
@@ -43,7 +42,6 @@ namespace DRT
   /*!
   \brief A virtual class all nodes that are used in DRT have to implement
 
-  \author gee (gee@lnm.mw.tum.de)
   */
   class Node : public DRT::ParObject
   {

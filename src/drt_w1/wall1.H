@@ -4,7 +4,6 @@
 
 \level 1
 
-\maintainer Christoph Meier
 
 */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +73,6 @@ namespace DRT
      *
      * A planar solid element for geometrically non-linear analyses.
      *
-     * \author gitterle (gitterle@lnm.mw.tum.de)
      *
      * <b>Typical quantities and their storage pattern</b>
      * - Green-Lagrange strain vector
@@ -810,7 +808,6 @@ namespace DRT
      *      adjacent to a parent wall1 element. It therefore does not implement
      *      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
      *
-     * \author gitterle (gitterle@lnm.mw.tum.de)
      */
     class Wall1Line : public DRT::FaceElement
     {

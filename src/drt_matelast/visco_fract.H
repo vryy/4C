@@ -9,7 +9,6 @@ the same tau, alpha and beta.
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_

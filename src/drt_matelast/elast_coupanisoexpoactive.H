@@ -6,7 +6,6 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOACTIVE_H_

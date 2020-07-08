@@ -3,7 +3,6 @@
 
 \brief Stationary problem setup for topology optimization
 
-\maintainer Martin Kronbichler
 
 \level 3
 

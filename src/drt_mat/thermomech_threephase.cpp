@@ -3,7 +3,6 @@
 
 \level 3
 
-\maintainer Sebastian Proell
 */
 
 #include "thermomech_threephase.H"

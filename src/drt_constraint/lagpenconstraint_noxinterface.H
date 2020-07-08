@@ -6,7 +6,6 @@
 
 \level 3
 
-\maintainer Amadeus Gebauer
 
 \date July 29, 2016
 

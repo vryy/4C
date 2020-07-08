@@ -3,7 +3,6 @@
 
 \brief Gen-alpha time integrator for Low Mach number problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

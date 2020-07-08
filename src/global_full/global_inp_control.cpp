@@ -5,7 +5,6 @@
 
 \level 0
 
-\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_globalproblem.H"

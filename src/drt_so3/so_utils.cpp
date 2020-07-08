@@ -4,7 +4,6 @@
 \brief A collection of helper methods for solid elements
 
 \level 1
-\maintainer Amadeus Gebauer
  *-----------------------------------------------------------------------*/
 
 #include "so_utils.H"

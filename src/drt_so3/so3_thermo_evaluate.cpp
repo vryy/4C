@@ -3,7 +3,6 @@
 \brief Evaluation of thermo-structure-interaction elements
        (structural part of coupling matrices)
 \level 1
-\maintainer Christoph Meier
 */
 
 

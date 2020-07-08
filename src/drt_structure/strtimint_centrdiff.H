@@ -3,7 +3,6 @@
 \brief Structural time integration with central difference scheme 2nd order (explicit)
 \level 1
 
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef STRTIMINT_CENTRDIFF_H

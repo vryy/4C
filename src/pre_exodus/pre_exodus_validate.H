@@ -3,7 +3,6 @@
 
 \brief validate a given .dat-file
 
-\maintainer Martin Kronbichler
 
 \level 1
 

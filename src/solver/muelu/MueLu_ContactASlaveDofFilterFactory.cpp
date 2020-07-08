@@ -3,7 +3,6 @@
 
 \brief MueLu contact filter factory class
 \level 2
-\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifdef TRILINOS_Q1_2015

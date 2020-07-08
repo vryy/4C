@@ -5,7 +5,6 @@
 on the surface of the (circular) beam cross section.
 
 \level 3
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

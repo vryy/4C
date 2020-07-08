@@ -3,8 +3,6 @@
 
 \brief MueLu contact preconditioner class
 \level 1
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
 
 Created on: Aug 2, 2012
 Author: wiesner

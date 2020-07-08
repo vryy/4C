@@ -3,7 +3,6 @@
 
 \brief input parameter for binning strategy
 
-\maintainer Jonas Eichinger
 
 \level 2
 

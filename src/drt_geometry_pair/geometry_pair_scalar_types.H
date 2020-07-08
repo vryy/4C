@@ -4,7 +4,6 @@
 \brief Scalar types for different kind of geometry pairs.
 
 \level 1
-\maintainer Ivo Steinbrecher
 */
 // End doxygen header.
 

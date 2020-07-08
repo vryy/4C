@@ -3,7 +3,6 @@
 
 \brief Low-Mach-number flow routines for calculation of fluid element
 
-\maintainer Martin Kronbichler
 
 \level 2
 

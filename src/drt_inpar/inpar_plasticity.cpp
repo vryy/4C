@@ -2,7 +2,6 @@
 /*! \file
 \brief Input parameters for plasticity
 \level 2
-\maintainer Jan Schnabel
 */
 
 /*----------------------------------------------------------------------*/

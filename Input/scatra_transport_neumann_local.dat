@@ -1,5 +1,4 @@
 //
-// Maintainer: Johannes Kremheller
 //
 // scalar dependent growth of a quadratic block
 // Testing: (transport) neumann condition with option LOCAL and more than 6 dofs and varying curves

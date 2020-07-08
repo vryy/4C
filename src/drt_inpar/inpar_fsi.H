@@ -3,7 +3,6 @@
 
 \level 1
 
-\maintainer Matthias Mayr
 
 \brief Input parameters for fluid structure interaction
 */

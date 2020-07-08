@@ -13,7 +13,6 @@ Input line reads:
 MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 3221.86 Viscosity2
 1000.0 // acinus properties;
 
-\maintainer Carolin Geitner
 
 \level 3
 */

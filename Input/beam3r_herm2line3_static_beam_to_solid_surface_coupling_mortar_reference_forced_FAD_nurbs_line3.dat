@@ -1,4 +1,3 @@
-// Maintainer: Ivo Steinbrecher
 ---------------------------------------------------------------------------TITLE
 Test beam-to-surface coupling with nurbs27 elements.
 The coupling terms are evaluated with the "reference_forced_fad" option.

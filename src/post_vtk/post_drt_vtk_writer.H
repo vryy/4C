@@ -3,7 +3,6 @@
 
 \brief VTK filter
 
-\maintainer Martin Kronbichler
 
 \level 2
 */

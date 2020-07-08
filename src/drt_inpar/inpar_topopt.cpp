@@ -4,7 +4,6 @@
 
 \brief Input parameters for topopt
 
-\maintainer Martin Kronbichler
 
 */
 

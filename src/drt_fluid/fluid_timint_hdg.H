@@ -3,7 +3,6 @@
 
 \brief Basic HDG time-integration scheme
 
-\maintainer Martin Kronbichler
 
 \level 2
 
@@ -23,7 +22,6 @@ namespace FLD
   /*!
   \brief time integration for HDG fluid (only gen-alpha implemented)
 
-  \author kronbichler (kronbichler@lnm.mw.tum.de)
   */
   class TimIntHDG : public TimIntGenAlpha
   {

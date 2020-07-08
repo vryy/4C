@@ -3,7 +3,6 @@
 
 \brief factory for time integration base strategy and data container
 
-\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -3,7 +3,6 @@
 
 \brief One-step theta time integrator for Low Mach number problems
 
-\maintainer Martin Kronbichler
 
 \level 2
 

@@ -3,7 +3,6 @@
 
 \brief element type class of meshfree multibin, creating the same
 
-\maintainer Jonas Eichinger
 
 \level 2
 

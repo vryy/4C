@@ -5,7 +5,6 @@
 
 \level 2
 
-\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 
@@ -178,7 +177,6 @@ namespace DRT
     straight beam. There is no shear deformation and no torsion. Refer to 'beam3k' for a full
     Kirchhoff type element.
 
-    author meier (meier@lnm.mw.tum.de)
     */
     class Beam3eb : public Beam3Base
     {

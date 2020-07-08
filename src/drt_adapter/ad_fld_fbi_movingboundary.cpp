@@ -5,7 +5,6 @@
 
 \level 3
 
-\maintainer Nora Hagmeyer
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fbi_wrapper.H"

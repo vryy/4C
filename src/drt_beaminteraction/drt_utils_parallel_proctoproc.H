@@ -3,7 +3,6 @@
 
 \brief utils for proc to proc communication
 
-\maintainer Jonas Eichinger
 
 \level 3
 

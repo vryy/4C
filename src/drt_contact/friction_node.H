@@ -2,7 +2,6 @@
 /*! \file
 \brief A class for a frictional contact node
 \level 2
-\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef FRICTION_NODE_H
@@ -33,7 +32,6 @@ namespace CONTACT
    node's processor (ColMap). The class FriNodeDataContainer must be declared
    before the FriNode itself.
 
-   \author gitterle (gitterle@lnm.mw.tum.de)
    */
   class FriNodeDataContainer
   {
@@ -248,7 +246,6 @@ namespace CONTACT
    frictional node. These additional data are needed only for contact
    problems with wear and thermo-structure-interaction problems with contact.
 
-   \author gitterle (gitterle@lnm.mw.tum.de)
    */
   class FriNodeWearDataContainer
   {
@@ -370,7 +367,6 @@ namespace CONTACT
 
    This class represents a finite element node capable of frictional contact.
 
-   \author gitterle (gitterle@lnm.mw.tum.de)
    */
   class FriNode : public CoNode
   {

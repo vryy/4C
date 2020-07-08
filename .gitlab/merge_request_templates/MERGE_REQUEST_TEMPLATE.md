@@ -71,10 +71,3 @@ If there's any team or developer, who you think should be looped in on this merg
 Possible reviewers:
 
 Other interested parties/teams:
-
-<!-- 
-DO NOT TOUCH SECTION BELOW. LIST WILL BE GENERATED AUTOMATICALLY!
--->
-## Maintainers of modified files:
-<!-- begin maintainer list -->
-<!-- end maintainer list -->
