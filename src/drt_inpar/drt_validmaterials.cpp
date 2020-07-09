@@ -559,8 +559,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "BURSHC", "specific heat capacity of burnt phase (J/(kg*K))");
     AddNamedReal(m, "UNBTEMP", "temperature of unburnt phase (K)");
     AddNamedReal(m, "BURTEMP", "temperature of burnt phase (K)");
-    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m�)");
-    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m�)");
+    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m^3)");
+    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m^3)");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -584,8 +584,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "BURSHC", "specific heat capacity of burnt phase (J/(kg*K))");
     AddNamedReal(m, "UNBTEMP", "temperature of unburnt phase (K)");
     AddNamedReal(m, "BURTEMP", "temperature of burnt phase (K)");
-    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m�)");
-    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m�)");
+    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m^3)");
+    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m^3)");
     AddNamedReal(m, "MOD", "modification factor (0.0=original, 1.0=modified)");
 
     AppendMaterialDefinition(matlist, m);
@@ -2329,7 +2329,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB
+  // anisotropic strain-dependent growth law (Goektepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
@@ -3563,40 +3563,84 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_crystal_plasticity", " Crystal plasticity ", INPAR::MAT::m_crystplast));
-    AddNamedReal(m, "TOL", "tolerance for local Newton iteration");
+    AddNamedReal(m, "TOL", "tolerance for internal Newton iteration");
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "Density");
+    AddNamedReal(m, "DENS", "Mass density");
     AddNamedString(m, "LAT", "lattice type: FCC, BCC, HCP, D019 or L10", "FCC");
     AddNamedReal(m, "CTOA", "c to a ratio of crystal unit cell");
     AddNamedReal(m, "ABASE", "base length a of the crystal unit cell");
-    AddNamedInt(m, "NUMSLIPSYS", "number of slip and twinning systems");
-    AddNamedInt(m, "NUMSUBSETS", "number of subsets");
-    AddNamedIntVector(m, "SUBSETMEMBERS",
-        "vector of indices that indicate to which subset each slip/twinning system belongs",
+    AddNamedInt(m, "NUMSLIPSYS", "number of slip systems");
+    AddNamedInt(m, "NUMSLIPSETS", "number of slip system sets");
+    AddNamedIntVector(m, "SLIPSETMEMBERS",
+        "vector of NUMSLIPSYS indices ranging from 1 to NUMSLIPSETS that indicate to which set "
+        "each slip system belongs",
         "NUMSLIPSYS");
-    AddNamedIntVector(m, "RATEEXP",
-        "vector containing NUMSUBSETS entries for the rate sensitivity exponent", "NUMSUBSETS");
-    AddNamedRealVector(m, "GAMMADOTREF",
-        "vector containing NUMSUBSETS entries for the reference shear rate", "NUMSUBSETS");
+    AddNamedIntVector(m, "SLIPRATEEXP",
+        "vector containing NUMSLIPSETS entries for the rate sensitivity exponent", "NUMSLIPSETS");
+    AddNamedRealVector(m, "GAMMADOTSLIPREF",
+        "vector containing NUMSLIPSETS entries for the reference slip shear rate", "NUMSLIPSETS");
+    AddNamedRealVector(m, "DISDENSINIT",
+        "vector containing NUMSLIPSETS entries for the initial dislocation density", "NUMSLIPSETS");
     AddNamedRealVector(m, "DISGENCOEFF",
-        "vector containing NUMSUBSETS entries for the dislocation generation coefficients",
-        "NUMSUBSETS");
+        "vector containing NUMSLIPSETS entries for the dislocation generation coefficients",
+        "NUMSLIPSETS");
     AddNamedRealVector(m, "DISDYNRECCOEFF",
-        "vector containing NUMSUBSETS entries for the coefficients for dynamic dislocation removal",
-        "NUMSUBSETS");
+        "vector containing NUMSLIPSETS entries for the coefficients for dynamic dislocation "
+        "removal",
+        "NUMSLIPSETS");
     AddNamedRealVector(m, "TAUY0",
-        "vector containing NUMSUBSETS entries for the lattice resistance to slip, i.e. the Peierls "
+        "vector containing NUMSLIPSETS entries for the lattice resistance to slip, e.g. the "
+        "Peierls barrier",
+        "NUMSLIPSETS");
+    AddNamedRealVector(m, "MFPSLIP",
+        "vector containing NUMSLIPSETS microstructural parameters that are relevant for Hall-Petch "
+        "strengthening, e.g., grain size",
+        "NUMSLIPSETS");
+    AddNamedRealVector(m, "SLIPHPCOEFF",
+        "vector containing NUMSLIPSETS entries for the Hall-Petch coefficients corresponding to "
+        "the "
+        "microstructural parameters given in MFPSLIP",
+        "NUMSLIPSETS");
+    AddNamedRealVector(m, "SLIPBYTWIN",
+        "(optional) vector containing NUMSLIPSETS entries for the work hardening coefficients by "
+        "twinning on non-coplanar systems",
+        "NUMSLIPSETS", 0., true);
+    AddNamedInt(m, "NUMTWINSYS", "(optional) number of twinning systems", 0, true);
+    AddNamedInt(m, "NUMTWINSETS", "(optional) number of sets of twinning systems", 0, true);
+    AddNamedIntVector(m, "TWINSETMEMBERS",
+        "(optional) vector of NUMTWINSYS indices ranging from 1 to NUMTWINSETS that indicate to "
+        "which set each slip system belongs",
+        "NUMTWINSYS", 0, true);
+    AddNamedIntVector(m, "TWINRATEEXP",
+        "(optional) vector containing NUMTWINSETS entries for the rate sensitivity exponent",
+        "NUMTWINSETS", 0, true);
+    AddNamedRealVector(m, "GAMMADOTTWINREF",
+        "(optional) vector containing NUMTWINSETS entries for the reference slip shear rate",
+        "NUMTWINSETS", 0., true);
+    AddNamedRealVector(m, "TAUT0",
+        "(optional) vector containing NUMTWINSETS entries for the lattice resistance to twinning, "
+        "e.g. the Peierls "
         "barrier",
-        "NUMSUBSETS");
-    AddNamedRealVector(m, "GBS",
-        "vector conatining NUMSUBSETS microstructural parameters that are relevant for Hall-Petch "
-        "strengthening, e.g., grain boundaries",
-        "NUMSUBSETS");
-    AddNamedRealVector(m, "HPCOEFF",
-        "vector containing NUMSUBSETS entries for the Hall-Petch coefficients corresponding to the "
-        "microstructural parameters given in GBS",
-        "NUMSUBSETS");
+        "NUMTWINSETS", 0., true);
+    AddNamedRealVector(m, "MFPTWIN",
+        "(optional) vector containing NUMTWINSETS microstructural parameters that are relevant for "
+        "Hall-Petch "
+        "strengthening of twins, e.g., grain size",
+        "NUMTWINSETS", 0., true);
+    AddNamedRealVector(m, "TWINHPCOEFF",
+        "(optional) vector containing NUMTWINSETS entries for the Hall-Petch coefficients "
+        "corresponding to the "
+        "microstructural parameters given in MFPTWIN",
+        "NUMTWINSETS", 0., true);
+    AddNamedRealVector(m, "TWINBYSLIP",
+        "(optional) vector containing NUMTWINSETS entries for the work hardening coefficients by "
+        "slip",
+        "NUMTWINSETS", 0., true);
+    AddNamedRealVector(m, "TWINBYTWIN",
+        "(optional) vector containing NUMTWINSETS entries for the work hardening coefficients by "
+        "twins on non-coplanar systems",
+        "NUMTWINSETS", 0., true);
     AppendMaterialDefinition(matlist, m);
   }
 
