@@ -1016,7 +1016,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
       dserror(
           "Warning, slip direction and slip plane normal of slip system "
           "%s are not perpendicular! Check implementation of lattice vectors.",
-          def_system_id_[i]);
+          def_system_id_[i].c_str());
   }
   if (is_twinning_)
   {
@@ -1030,7 +1030,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
         dserror(
             "Warning, twinning direction and twinning plane normal of twinning system "
             "%s are not perpendicular! Check implementation of lattice vectors.",
-            def_system_id_[i]);
+            def_system_id_[i].c_str());
 
       is_non_coplanar_[i].resize(def_system_count_);
 
