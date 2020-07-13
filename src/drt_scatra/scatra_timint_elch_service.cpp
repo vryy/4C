@@ -50,11 +50,12 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
     if (condition->GetInt("ConditionID") == cccvcyclingcondition.GetInt("ConditionIDForCharge"))
       halfcycle_charge_ =
           Teuchos::rcp(new SCATRA::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
-    else if (condition->GetInt("ConditionID") ==
-             cccvcyclingcondition.GetInt("ConditionIDForDischarge"))
+    if (condition->GetInt("ConditionID") == cccvcyclingcondition.GetInt("ConditionIDForDischarge"))
       halfcycle_discharge_ =
           Teuchos::rcp(new SCATRA::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
   }
+  if (halfcycle_charge_ == Teuchos::null) dserror("Invalid halfcycle for charge!");
+  if (halfcycle_discharge_ == Teuchos::null) dserror("Invalid halfcycle for discharge!");
 
   // activate first half cycle depending on initial relaxation
   if (initrelaxtime_ < 0.0)
