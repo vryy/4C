@@ -33,12 +33,18 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLEWALL
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
   class MaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
+  class SPHVirtualWallParticle;
   class SPHDensityCorrectionBase;
 }  // namespace PARTICLEINTERACTION
 
@@ -62,10 +68,12 @@ namespace PARTICLEINTERACTION
     //! setup density handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
 
     //! write restart of density handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -97,6 +105,9 @@ namespace PARTICLEINTERACTION
     //! sum weighted mass (particle contribution)
     virtual void SumWeightedMassParticleContribution() const final;
 
+    //! sum weighted mass (particle-wall contribution)
+    virtual void SumWeightedMassParticleWallContribution() const final;
+
     //! evaluate sum of colorfield
     virtual void SumColorfield() const final;
 
@@ -109,6 +120,9 @@ namespace PARTICLEINTERACTION
     //! sum colorfield (particle contribution)
     virtual void SumColorfieldParticleContribution() const final;
 
+    //! sum colorfield (particle-wall contribution)
+    virtual void SumColorfieldParticleWallContribution() const final;
+
     //! evaluate continuity equation
     virtual void ContinuityEquation() const final;
 
@@ -117,6 +131,9 @@ namespace PARTICLEINTERACTION
 
     //! continuity equation (particle contribution)
     virtual void ContinuityEquationParticleContribution() const final;
+
+    //! continuity equation (particle-wall contribution)
+    virtual void ContinuityEquationParticleWallContribution() const final;
 
     //! set density sum to density field
     virtual void SetDensitySum() const final;
@@ -133,6 +150,9 @@ namespace PARTICLEINTERACTION
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
+
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
 
@@ -144,6 +164,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! virtual wall particle handler
+    std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle_;
 
     //! density of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
@@ -203,10 +226,13 @@ namespace PARTICLEINTERACTION
     //! setup density handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle)
+        override;
 
     //! write restart of density handler
     void WriteRestart(const int step, const double time) const override;

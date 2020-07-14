@@ -767,6 +767,78 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   MPI_Allreduce(MPI_IN_PLACE, &particlestoproc[0], vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
 }
 
+void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* position,
+    const double radius, std::vector<LocalIndexTuple>& neighboringparticles) const
+{
+  // safety check
+  if ((not validownedparticles_) or (not validghostedparticles_))
+    dserror("invalid relation of particles to bins!");
+
+  // get global id of bin
+  const int gidofbin = binstrategy_->ConvertPosToGid(position);
+
+#ifdef DEBUG
+  // position outside computational domain
+  if (gidofbin == -1) dserror("position outside of computational domain!");
+
+  // bin not owned or ghosted by this processor
+  if (bincolmap_->LID(gidofbin) < 0)
+    dserror("position not in owned or ghosted bin on this processor!");
+#endif
+
+  // get neighboring bins to current bin
+  std::vector<int> binvec;
+  binstrategy_->GetNeighborAndOwnBinIds(gidofbin, binvec);
+
+  // iterate over neighboring bins
+  for (int gidofneighborbin : binvec)
+  {
+    // get local id of neighboring bin
+    const int collidofneighboringbin = bincolmap_->LID(gidofneighborbin);
+
+    // neighboring bin not ghosted by this processor
+    if (collidofneighboringbin < 0) continue;
+
+    // check if current neighboring bin contains particles
+    if (particlestobins_[collidofneighboringbin].empty()) continue;
+
+    // get status of neighboring particles
+    StatusEnum neighborStatusEnum =
+        (binrowmap_->LID(gidofneighborbin) < 0) ? PARTICLEENGINE::Ghosted : PARTICLEENGINE::Owned;
+
+    // iterate over particles in current neighboring bin
+    for (auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
+    {
+      // get type of neighboring particle
+      TypeEnum neighborTypeEnum = neighborParticleIt.first;
+
+      // get local index of neighboring particle
+      const int neighborindex = neighborParticleIt.second;
+
+      // get container of neighboring particle of current particle type
+      ParticleContainer* neighborcontainer =
+          particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
+
+      // get position of neighboring particle
+      const double* neighborpos =
+          neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
+
+      // distance vector from position to neighboring particle
+      double dist[3];
+
+      // distance between position and neighboring particle considering periodic boundaries
+      DistanceBetweenParticles(position, neighborpos, dist);
+
+      // distance between position and neighboring particle larger than radius
+      if (dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2] > (radius * radius)) continue;
+
+      // append neighboring particle
+      neighboringparticles.push_back(
+          std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex));
+    }
+  }
+}
+
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
 
 bool PARTICLEENGINE::ParticleEngine::HavePeriodicBoundaryConditions() const

@@ -162,6 +162,31 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
 
     TS_ASSERT_DELTA(UTILS::vec_norm2(a), a_norm2, 1.0e-14);
   }
+
+  void test_unitsurfacetangents()
+  {
+    double n[3] = {1.0, -2.0, 4.25};
+    UTILS::vec_scale(n, 1.0 / UTILS::vec_norm2(n));
+
+    double t1[3] = {0.0};
+    double t2[3] = {0.0};
+
+    UTILS::unitsurfacetangents(n, t1, t2);
+
+    TS_ASSERT_DELTA(UTILS::vec_norm2(t1), 1.0, 1.0e-14);
+    TS_ASSERT_DELTA(UTILS::vec_norm2(t2), 1.0, 1.0e-14);
+
+    TS_ASSERT_DELTA(UTILS::vec_dot(n, t1), 0.0, 1.0e-14);
+    TS_ASSERT_DELTA(UTILS::vec_dot(n, t2), 0.0, 1.0e-14);
+    TS_ASSERT_DELTA(UTILS::vec_dot(t1, t2), 0.0, 1.0e-14);
+
+    double n_ref[3] = {0.0};
+    vec_setcross(n_ref, t1, t2);
+
+    TS_ASSERT_DELTA(n_ref[0], n[0], 1.0e-14);
+    TS_ASSERT_DELTA(n_ref[1], n[1], 1.0e-14);
+    TS_ASSERT_DELTA(n_ref[2], n[2], 1.0e-14);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
