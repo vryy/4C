@@ -40,7 +40,7 @@ namespace PARTICLEINTERACTION
     explicit SPHKernelBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHKernelBase(){};
+    virtual ~SPHKernelBase() = default;
 
     //! init kernel handler
     virtual void Init();
@@ -90,9 +90,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHKernelCubicSpline(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~SPHKernelCubicSpline() override{};
-
     //! get smoothing length from kernel support radius
     double SmoothingLength(const double& support) const override;
 
@@ -117,9 +114,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHKernelQuinticSpline(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHKernelQuinticSpline() override{};
 
     //! get smoothing length from kernel support radius
     double SmoothingLength(const double& support) const override;

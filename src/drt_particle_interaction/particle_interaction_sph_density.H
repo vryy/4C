@@ -60,7 +60,7 @@ namespace PARTICLEINTERACTION
     explicit SPHDensityBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHDensityBase(){};
+    virtual ~SPHDensityBase() = default;
 
     //! init density handler
     virtual void Init();
@@ -181,9 +181,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensitySummation(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~SPHDensitySummation() override{};
-
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
@@ -198,9 +195,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHDensityIntegration(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHDensityIntegration() override{};
 
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
@@ -217,7 +211,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityPredictCorrect(const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~SPHDensityPredictCorrect() override;
 
     //! init density handler

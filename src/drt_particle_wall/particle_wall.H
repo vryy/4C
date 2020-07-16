@@ -79,7 +79,14 @@ namespace PARTICLEWALL
      */
     explicit WallHandlerBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~WallHandlerBase() override;
 
     /*!
@@ -319,9 +326,6 @@ namespace PARTICLEWALL
     explicit WallHandlerDiscretCondition(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~WallHandlerDiscretCondition() override{};
-
     /*!
      * \brief distribute wall elements and nodes
      *
@@ -380,9 +384,6 @@ namespace PARTICLEWALL
      * \param[in] params particle simulation parameter list
      */
     explicit WallHandlerBoundingBox(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~WallHandlerBoundingBox() override{};
 
     /*!
      * \brief distribute wall elements and nodes

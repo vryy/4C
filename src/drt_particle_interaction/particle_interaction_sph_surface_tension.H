@@ -52,7 +52,7 @@ namespace PARTICLEINTERACTION
     explicit SPHSurfaceTensionBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHSurfaceTensionBase(){};
+    virtual ~SPHSurfaceTensionBase() = default;
 
     //! init surface tension handler
     virtual void Init();
@@ -118,9 +118,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHSurfaceTensionContinuumSurfaceForce(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHSurfaceTensionContinuumSurfaceForce() override{};
 
     //! init surface tension handler
     void Init() override;

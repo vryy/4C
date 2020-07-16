@@ -52,11 +52,7 @@ PARTICLEWALL::WallHandlerBase::WallHandlerBase(
   // empty constructor
 }
 
-PARTICLEWALL::WallHandlerBase::~WallHandlerBase()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEWALL::WallHandlerBase::~WallHandlerBase() = default;
 
 void PARTICLEWALL::WallHandlerBase::Init(
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)

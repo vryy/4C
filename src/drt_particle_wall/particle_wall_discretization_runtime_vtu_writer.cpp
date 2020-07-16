@@ -27,11 +27,7 @@ PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWr
   // empty constructor
 }
 
-PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::~WallDiscretizationRuntimeVtuWriter()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::~WallDiscretizationRuntimeVtuWriter() = default;
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
     const Teuchos::RCP<DRT::Discretization> walldiscretization,

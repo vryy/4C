@@ -42,9 +42,6 @@ namespace PASI
      */
     explicit PASI_PartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~PASI_PartOneWayCoup() override{};
-
     /*!
      * \brief setup pasi algorithm
      *

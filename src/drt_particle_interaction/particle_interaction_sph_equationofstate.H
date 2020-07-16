@@ -36,7 +36,7 @@ namespace PARTICLEINTERACTION
     explicit SPHEquationOfStateBase();
 
     //! virtual destructor
-    virtual ~SPHEquationOfStateBase(){};
+    virtual ~SPHEquationOfStateBase() = default;
 
     //! init equation of state handler
     virtual void Init();
@@ -68,9 +68,6 @@ namespace PARTICLEINTERACTION
     explicit SPHEquationOfStateGenTait(
         const double& speedofsound, const double& refdensfac, const double& exponent);
 
-    //! destructor
-    ~SPHEquationOfStateGenTait() override{};
-
     //! determine the pressure
     double DensityToPressure(const double& density, const double& density0) const override;
 
@@ -97,9 +94,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHEquationOfStateIdealGas(const double& speedofsound);
-
-    //! destructor
-    ~SPHEquationOfStateIdealGas() override{};
 
     //! determine the pressure
     double DensityToPressure(const double& density, const double& density0) const override;

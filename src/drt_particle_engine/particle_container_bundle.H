@@ -48,7 +48,7 @@ namespace PARTICLEENGINE
     explicit ParticleContainerBundle();
 
     //! destructor
-    ~ParticleContainerBundle(){};
+    ~ParticleContainerBundle() = default;
 
     /*!
      * \brief init particle container bundle

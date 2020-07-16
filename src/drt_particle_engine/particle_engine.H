@@ -72,7 +72,14 @@ namespace PARTICLEENGINE
      */
     explicit ParticleEngine(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~ParticleEngine() override;
 
     /*!

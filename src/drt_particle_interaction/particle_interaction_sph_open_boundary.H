@@ -53,7 +53,7 @@ namespace PARTICLEINTERACTION
     explicit SPHOpenBoundaryBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHOpenBoundaryBase(){};
+    virtual ~SPHOpenBoundaryBase() = default;
 
     //! init open boundary handler
     virtual void Init();
@@ -128,9 +128,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHOpenBoundaryDirichlet(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~SPHOpenBoundaryDirichlet() override{};
-
     //! init open boundary handler
     void Init() override;
 
@@ -154,9 +151,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHOpenBoundaryNeumann(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHOpenBoundaryNeumann() override{};
 
     //! init open boundary handler
     void Init() override;

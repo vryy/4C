@@ -60,7 +60,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContact(const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~DEMContact();
 
     //! init contact handler

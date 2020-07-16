@@ -67,7 +67,7 @@ namespace PARTICLEINTERACTION
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
 
     //! destructor
-    ~DEMHistoryPairs(){};
+    ~DEMHistoryPairs() = default;
 
     //! init history pair handler
     void Init();

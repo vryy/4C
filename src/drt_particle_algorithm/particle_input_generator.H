@@ -56,7 +56,7 @@ namespace PARTICLEALGORITHM
     explicit InputGenerator(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~InputGenerator(){};
+    ~InputGenerator() = default;
 
     /*!
      * \brief init input generator

@@ -56,7 +56,7 @@ namespace PARTICLEWALL
   {
    public:
     //! virtual destructor
-    virtual ~WallHandlerInterface(){};
+    virtual ~WallHandlerInterface() = default;
 
     /*!
      * \brief get wall discretization

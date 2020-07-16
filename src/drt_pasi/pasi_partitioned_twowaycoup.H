@@ -43,9 +43,6 @@ namespace PASI
      */
     explicit PASI_PartTwoWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~PASI_PartTwoWayCoup() override{};
-
     /*!
      * \brief init pasi algorithm
      *
@@ -232,9 +229,6 @@ namespace PASI
     explicit PASI_PartTwoWayCoup_DispRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~PASI_PartTwoWayCoup_DispRelax() override{};
-
     /*!
      * \brief init pasi algorithm
      *
@@ -313,9 +307,6 @@ namespace PASI
      */
     PASI_PartTwoWayCoup_DispRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~PASI_PartTwoWayCoup_DispRelaxAitken() override{};
 
     /*!
      * \brief init pasi algorithm

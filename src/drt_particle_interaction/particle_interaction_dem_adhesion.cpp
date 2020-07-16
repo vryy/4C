@@ -48,11 +48,7 @@ PARTICLEINTERACTION::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& para
   // empty constructor
 }
 
-PARTICLEINTERACTION::DEMAdhesion::~DEMAdhesion()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEINTERACTION::DEMAdhesion::~DEMAdhesion() = default;
 
 void PARTICLEINTERACTION::DEMAdhesion::Init()
 {

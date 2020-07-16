@@ -56,7 +56,7 @@ namespace PARTICLEINTERACTION
     explicit SPHVirtualWallParticle(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHVirtualWallParticle(){};
+    ~SPHVirtualWallParticle() = default;
 
     //! init virtual wall particle handler
     void Init();

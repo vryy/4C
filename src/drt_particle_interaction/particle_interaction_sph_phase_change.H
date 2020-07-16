@@ -51,7 +51,7 @@ namespace PARTICLEINTERACTION
     explicit SPHPhaseChangeBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHPhaseChangeBase(){};
+    virtual ~SPHPhaseChangeBase() = default;
 
     //! init phase change handler
     virtual void Init();
@@ -93,9 +93,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHPhaseChangeTwoWayScalar() override{};
 
     //! init phase change handler
     void Init() override;

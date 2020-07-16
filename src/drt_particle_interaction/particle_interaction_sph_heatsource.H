@@ -59,7 +59,7 @@ namespace PARTICLEINTERACTION
     explicit SPHHeatSourceBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHHeatSourceBase(){};
+    virtual ~SPHHeatSourceBase() = default;
 
     //! init heat source handler
     virtual void Init();
@@ -111,9 +111,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHHeatSourceVolume(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~SPHHeatSourceVolume() override{};
-
     //! evaluate heat source
     void EvaluateHeatSource(const double& evaltime) const override;
   };
@@ -123,9 +120,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHHeatSourceSurface(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHHeatSourceSurface() override{};
 
     //! init heat source handler
     void Init() override;

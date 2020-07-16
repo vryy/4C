@@ -65,7 +65,7 @@ namespace PARTICLEINTERACTION
     explicit SPHNeighborPairs();
 
     //! destructor
-    ~SPHNeighborPairs(){};
+    ~SPHNeighborPairs() = default;
 
     //! init neighbor pair handler
     void Init();

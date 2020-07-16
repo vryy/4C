@@ -38,7 +38,7 @@ namespace PARTICLEINTERACTION
     explicit DEMContactTangentialBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~DEMContactTangentialBase(){};
+    virtual ~DEMContactTangentialBase() = default;
 
     //! init tangential contact handler
     virtual void Init();
@@ -74,9 +74,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMContactTangentialLinearSpringDamp(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DEMContactTangentialLinearSpringDamp() override{};
 
     //! init tangential contact handler
     void Init() override;

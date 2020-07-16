@@ -38,7 +38,7 @@ namespace PARTICLEINTERACTION
     explicit DEMContactRollingBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~DEMContactRollingBase(){};
+    virtual ~DEMContactRollingBase() = default;
 
     //! init rolling contact handler
     virtual void Init();
@@ -92,9 +92,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactRollingViscous(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactRollingViscous() override{};
-
     //! init rolling contact handler
     void Init() override;
 
@@ -128,9 +125,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMContactRollingCoulomb(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DEMContactRollingCoulomb() override{};
 
     //! setup rolling contact handler
     void Setup(const double& k_normal) override;
