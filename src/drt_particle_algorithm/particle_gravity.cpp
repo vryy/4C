@@ -27,8 +27,9 @@ void PARTICLEALGORITHM::GravityHandler::Init(const std::vector<double>& gravity)
   gravity_ = gravity;
 
   // safety check
-  if ((int)gravity_.size() != 3)
-    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!", (int)gravity_.size());
+  if (static_cast<int>(gravity_.size()) != 3)
+    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!",
+        static_cast<int>(gravity_.size()));
 }
 
 void PARTICLEALGORITHM::GravityHandler::Setup()

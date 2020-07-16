@@ -193,7 +193,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
 #ifdef DEBUG
           // safety check
-          if ((int)positiondata.size() != statedim * particlestored)
+          if (static_cast<int>(positiondata.size()) != statedim * particlestored)
             dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
 #endif

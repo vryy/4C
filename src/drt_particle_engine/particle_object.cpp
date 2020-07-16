@@ -94,5 +94,5 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, containerindex_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }

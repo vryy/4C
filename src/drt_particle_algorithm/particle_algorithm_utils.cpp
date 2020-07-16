@@ -29,13 +29,13 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
   if (typetoval.size() == 1 and typetoval[0] == "none") return;
 
   // safety check
-  if ((int)typetoval.size() % 2)
+  if (static_cast<int>(typetoval.size()) % 2)
     dserror("input of '%s' (size = %d) relating particle type to value is odd!", name.c_str(),
         typetoval.size());
 
   std::string typestring;
   std::string valstring;
-  for (int i = 0; i < (int)(typetoval.size() / 2); ++i)
+  for (int i = 0; i < static_cast<int>(typetoval.size() / 2); ++i)
   {
     typestring = typetoval[2 * i];
     valstring = typetoval[2 * i + 1];

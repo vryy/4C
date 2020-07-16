@@ -179,7 +179,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
   std::vector<std::vector<int>> particletargets(comm_.NumProc());
 
   // iterate over all particle global ids
-  for (int gid = 0; gid < (int)particlestoproc.size(); ++gid)
+  for (int gid = 0; gid < static_cast<int>(particlestoproc.size()); ++gid)
   {
     // processor id of current particle
     const int currproc = particlestoproc[gid];

@@ -463,12 +463,13 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   while (gravitystream >> value) gravity.push_back(std::atof(value.c_str()));
 
   // safety check
-  if ((int)gravity.size() != 3)
-    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!", (int)gravity.size());
+  if (static_cast<int>(gravity.size()) != 3)
+    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!",
+        static_cast<int>(gravity.size()));
 
   // get magnitude of gravity
   double temp = 0.0;
-  for (int i = 0; i < (int)gravity.size(); ++i) temp += gravity[i] * gravity[i];
+  for (int i = 0; i < static_cast<int>(gravity.size()); ++i) temp += gravity[i] * gravity[i];
   const double gravity_norm = std::sqrt(temp);
 
   // no gravity defined

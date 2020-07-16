@@ -183,18 +183,18 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
   while (amplitudestream >> value) amplitude.push_back(value);
 
   // safety check
-  if ((int)amplitude.size() != 3)
+  if (static_cast<int>(amplitude.size()) != 3)
     dserror("dimension (dim = %d) of initial position amplitude vector is wrong!",
-        (int)amplitude.size());
+        static_cast<int>(amplitude.size()));
 
   // safety check
-  for (int i = 0; i < (int)amplitude.size(); ++i)
+  for (int i = 0; i < static_cast<int>(amplitude.size()); ++i)
     if (amplitude[i] < 0.0)
       dserror("no negative initial position amplitude allowed (set a positive or zero value)!");
 
   // get magnitude of initial position amplitude
   double temp = 0.0;
-  for (int i = 0; i < (int)amplitude.size(); ++i) temp += amplitude[i] * amplitude[i];
+  for (int i = 0; i < static_cast<int>(amplitude.size()); ++i) temp += amplitude[i] * amplitude[i];
   const double amplitude_norm = std::sqrt(temp);
 
   // no initial position amplitude defined

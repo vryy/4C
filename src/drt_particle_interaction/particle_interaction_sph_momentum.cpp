@@ -568,7 +568,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
       (boundaryparticleinteraction_ == INPAR::PARTICLE::FreeSlipBoundaryParticle) ? false : true;
 
   // iterate over particle-wall pairs
-  for (int i = 0; i < (int)particlewallpairdata.size(); ++i)
+  for (int i = 0; i < static_cast<int>(particlewallpairdata.size()); ++i)
   {
     const SPHParticleWallPair& particlewallpair = particlewallpairdata[i];
 

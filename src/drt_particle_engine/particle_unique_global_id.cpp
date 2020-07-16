@@ -112,7 +112,7 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::DrawRequestedNumberOfGlobalI
   DistributeRequestedGlobalIdsFromMasterProcToAllProcs(preparedglobalids, requesteduniqueglobalids);
 
 #ifdef DEBUG
-  if (numberofrequestedgids != (int)requesteduniqueglobalids.size())
+  if (numberofrequestedgids != static_cast<int>(requesteduniqueglobalids.size()))
     dserror("requested %d global ids on processor %d but received only %d global ids!",
         numberofrequestedgids, myrank_, requesteduniqueglobalids.size());
 #endif
@@ -213,7 +213,7 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::PrepareRequestedGlobalIdsFor
     allrequestedglobalids.reserve(totalnumberofrequestedgids);
 
     // enough global ids can be reused
-    if ((int)reusableglobalids_.size() >= totalnumberofrequestedgids)
+    if (static_cast<int>(reusableglobalids_.size()) >= totalnumberofrequestedgids)
     {
       allrequestedglobalids.insert(allrequestedglobalids.begin(), reusableglobalids_.begin(),
           reusableglobalids_.begin() + totalnumberofrequestedgids);

@@ -578,7 +578,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
   structurediscretization->GetCondition("ParticleWall", conditions);
 
   // iterate over particle wall conditions
-  for (int i = 0; i < (int)conditions.size(); ++i)
+  for (int i = 0; i < static_cast<int>(conditions.size()); ++i)
   {
     // set current particle wall condition
     std::vector<DRT::Condition*> currcondition(0);

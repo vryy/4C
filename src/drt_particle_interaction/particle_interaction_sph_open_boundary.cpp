@@ -237,8 +237,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
     while (stream >> value) outwardnormal_.push_back(value);
 
     // safety check
-    if ((int)outwardnormal_.size() != 3)
-      dserror("dimension (dim = %d) of outward normal is wrong!", (int)outwardnormal_.size());
+    if (static_cast<int>(outwardnormal_.size()) != 3)
+      dserror("dimension (dim = %d) of outward normal is wrong!",
+          static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
     const double norm = UTILS::vec_norm2(&outwardnormal_[0]);
@@ -254,8 +255,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
     while (stream >> value) planepoint_.push_back(value);
 
     // safety check
-    if ((int)planepoint_.size() != 3)
-      dserror("dimension (dim = %d) of plane point is wrong!", (int)planepoint_.size());
+    if (static_cast<int>(planepoint_.size()) != 3)
+      dserror(
+          "dimension (dim = %d) of plane point is wrong!", static_cast<int>(planepoint_.size()));
   }
 
   // init fluid phase and open boundary phase
@@ -447,8 +449,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
     while (stream >> value) outwardnormal_.push_back(value);
 
     // safety check
-    if ((int)outwardnormal_.size() != 3)
-      dserror("dimension (dim = %d) of outward normal is wrong!", (int)outwardnormal_.size());
+    if (static_cast<int>(outwardnormal_.size()) != 3)
+      dserror("dimension (dim = %d) of outward normal is wrong!",
+          static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
     const double direction_norm = UTILS::vec_norm2(&outwardnormal_[0]);
@@ -464,8 +467,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
     while (stream >> value) planepoint_.push_back(value);
 
     // safety check
-    if ((int)planepoint_.size() != 3)
-      dserror("dimension (dim = %d) of plane point is wrong!", (int)planepoint_.size());
+    if (static_cast<int>(planepoint_.size()) != 3)
+      dserror(
+          "dimension (dim = %d) of plane point is wrong!", static_cast<int>(planepoint_.size()));
   }
 
   // init fluid phase and open boundary phase
