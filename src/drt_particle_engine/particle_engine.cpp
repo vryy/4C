@@ -53,11 +53,7 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
   // empty constructor
 }
 
-PARTICLEENGINE::ParticleEngine::~ParticleEngine()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEENGINE::ParticleEngine::~ParticleEngine() = default;
 
 void PARTICLEENGINE::ParticleEngine::Init()
 {

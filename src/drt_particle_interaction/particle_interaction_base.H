@@ -63,7 +63,7 @@ namespace PARTICLEINTERACTION
     explicit ParticleInteractionBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~ParticleInteractionBase(){};
+    virtual ~ParticleInteractionBase() = default;
 
     //! init particle interaction handler
     virtual void Init();

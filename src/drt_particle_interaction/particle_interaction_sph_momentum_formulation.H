@@ -36,7 +36,7 @@ namespace PARTICLEINTERACTION
     explicit SPHMomentumFormulationBase();
 
     //! virtual destructor
-    virtual ~SPHMomentumFormulationBase(){};
+    virtual ~SPHMomentumFormulationBase() = default;
 
     //! init momentum formulation handler
     virtual void Init();
@@ -92,9 +92,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHMomentumFormulationMonaghan();
 
-    //! destructor
-    ~SPHMomentumFormulationMonaghan() override{};
-
     //! evaluate specific coefficient
     void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,
         const double* mass_j, const double& dWdrij, const double& dWdrji, double* speccoeff_ij,
@@ -136,9 +133,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHMomentumFormulationAdami();
-
-    //! destructor
-    ~SPHMomentumFormulationAdami() override{};
 
     //! evaluate specific coefficient
     void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,

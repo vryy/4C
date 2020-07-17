@@ -38,7 +38,7 @@ namespace PARTICLEINTERACTION
     explicit DEMContactNormalBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~DEMContactNormalBase(){};
+    virtual ~DEMContactNormalBase() = default;
 
     //! init normal contact handler
     virtual void Init();
@@ -86,9 +86,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalLinearSpring(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactNormalLinearSpring() override{};
-
     //! setup normal contact handler
     void Setup(const double& dens_max) override;
 
@@ -108,9 +105,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMContactNormalLinearSpringDamp(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DEMContactNormalLinearSpringDamp() override{};
 
     //! init normal contact handler
     void Init() override;
@@ -142,9 +136,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalNonlinearBase(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactNormalNonlinearBase() override{};
-
     //! setup normal contact handler
     void Setup(const double& dens_max) override;
 
@@ -170,9 +161,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalHertz(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactNormalHertz() override{};
-
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
@@ -183,9 +171,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMContactNormalNonlinearDampBase(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DEMContactNormalNonlinearDampBase() override{};
 
     //! init normal contact handler
     void Init() override;
@@ -209,9 +194,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalLeeHerrmann(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactNormalLeeHerrmann() override{};
-
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
@@ -223,9 +205,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalKuwabaraKono(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DEMContactNormalKuwabaraKono() override{};
-
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
@@ -236,9 +215,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMContactNormalTsuji(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DEMContactNormalTsuji() override{};
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,

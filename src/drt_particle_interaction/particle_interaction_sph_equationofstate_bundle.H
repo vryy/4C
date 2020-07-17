@@ -45,7 +45,7 @@ namespace PARTICLEINTERACTION
     explicit SPHEquationOfStateBundle(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHEquationOfStateBundle(){};
+    ~SPHEquationOfStateBundle() = default;
 
     //! init equation of state bundle
     void Init(const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);

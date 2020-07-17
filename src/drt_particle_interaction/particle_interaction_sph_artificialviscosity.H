@@ -36,7 +36,7 @@ namespace PARTICLEINTERACTION
     explicit SPHArtificialViscosity();
 
     //! destructor
-    ~SPHArtificialViscosity(){};
+    ~SPHArtificialViscosity() = default;
 
     //! init artificial viscosity handler
     void Init();

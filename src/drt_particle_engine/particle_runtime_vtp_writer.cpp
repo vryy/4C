@@ -26,12 +26,6 @@ PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_
   // empty constructor
 }
 
-PARTICLEENGINE::ParticleRuntimeVtpWriter::~ParticleRuntimeVtpWriter()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
-
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
     const ParticleContainerBundleShrdPtr particlecontainerbundle)
 {
@@ -199,7 +193,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
 #ifdef DEBUG
           // safety check
-          if ((int)positiondata.size() != statedim * particlestored)
+          if (static_cast<int>(positiondata.size()) != statedim * particlestored)
             dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
 #endif

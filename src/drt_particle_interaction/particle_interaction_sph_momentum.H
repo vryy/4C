@@ -69,7 +69,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHMomentum(const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~SPHMomentum();
 
     //! init momentum handler

@@ -60,7 +60,14 @@ namespace PARTICLEWALL
      */
     explicit WallDiscretizationRuntimeVtuWriter();
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~WallDiscretizationRuntimeVtuWriter();
 
     /*!

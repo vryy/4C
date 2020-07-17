@@ -50,7 +50,7 @@ namespace PARTICLEINTERACTION
     explicit SPHBoundaryParticleBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHBoundaryParticleBase(){};
+    virtual ~SPHBoundaryParticleBase() = default;
 
     //! init boundary particle handler
     virtual void Init();
@@ -91,9 +91,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHBoundaryParticleAdami(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHBoundaryParticleAdami() override{};
 
     //! setup boundary particle handler
     void Setup(

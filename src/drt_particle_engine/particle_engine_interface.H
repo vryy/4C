@@ -52,7 +52,7 @@ namespace PARTICLEENGINE
   {
    public:
     //! virtual destructor
-    virtual ~ParticleEngineInterface(){};
+    virtual ~ParticleEngineInterface() = default;
 
     /*!
      * \brief free unique global ids

@@ -162,9 +162,9 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
   while (directionstream >> value) direction_.push_back(value);
 
   // safety check
-  if ((int)direction_.size() != 3)
-    dserror(
-        "dimension (dim = %d) of heat source direction vector is wrong!", (int)direction_.size());
+  if (static_cast<int>(direction_.size()) != 3)
+    dserror("dimension (dim = %d) of heat source direction vector is wrong!",
+        static_cast<int>(direction_.size()));
 
   // normalize heat source direction vector
   const double direction_norm = UTILS::vec_norm2(&direction_[0]);

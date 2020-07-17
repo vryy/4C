@@ -47,9 +47,6 @@ namespace PARTICLEWALL
     //! constructor
     explicit WallResultTest();
 
-    //! destructor
-    ~WallResultTest() override{};
-
     /*!
      * \brief init wall result test
      *

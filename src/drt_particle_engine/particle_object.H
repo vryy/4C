@@ -101,9 +101,6 @@ namespace PARTICLEENGINE
     ParticleObject(TypeEnum particletype, int particleglobalid,
         const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
 
-    //! destructor
-    ~ParticleObject() override{};
-
     int UniqueParObjectId() const override
     {
       return ParticleObjectType::Instance().UniqueParObjectId();

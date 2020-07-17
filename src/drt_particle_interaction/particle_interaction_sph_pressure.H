@@ -49,7 +49,7 @@ namespace PARTICLEINTERACTION
     explicit SPHPressure();
 
     //! destructor
-    ~SPHPressure(){};
+    ~SPHPressure() = default;
 
     //! init pressure handler
     void Init();

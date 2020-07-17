@@ -56,7 +56,7 @@ namespace PARTICLEWALL
     explicit WallDataState(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~WallDataState(){};
+    ~WallDataState() = default;
 
     /*!
      * \brief init wall data state container

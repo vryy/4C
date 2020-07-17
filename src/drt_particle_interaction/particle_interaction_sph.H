@@ -53,7 +53,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit ParticleInteractionSPH(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     ~ParticleInteractionSPH() override;
 
     //! init particle interaction handler

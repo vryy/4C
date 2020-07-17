@@ -42,9 +42,6 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit ParticleResultTest();
 
-    //! destructor
-    ~ParticleResultTest() override{};
-
     /*!
      * \brief init particle result test
      *

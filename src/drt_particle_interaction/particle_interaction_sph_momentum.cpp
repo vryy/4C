@@ -58,11 +58,7 @@ PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
   // empty constructor
 }
 
-PARTICLEINTERACTION::SPHMomentum::~SPHMomentum()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEINTERACTION::SPHMomentum::~SPHMomentum() = default;
 
 void PARTICLEINTERACTION::SPHMomentum::Init()
 {
@@ -572,7 +568,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
       (boundaryparticleinteraction_ == INPAR::PARTICLE::FreeSlipBoundaryParticle) ? false : true;
 
   // iterate over particle-wall pairs
-  for (int i = 0; i < (int)particlewallpairdata.size(); ++i)
+  for (int i = 0; i < static_cast<int>(particlewallpairdata.size()); ++i)
   {
     const SPHParticleWallPair& particlewallpair = particlewallpairdata[i];
 

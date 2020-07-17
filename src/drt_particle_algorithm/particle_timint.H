@@ -59,7 +59,14 @@ namespace PARTICLEALGORITHM
      */
     explicit TimInt(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
     virtual ~TimInt();
 
     /*!
@@ -207,9 +214,6 @@ namespace PARTICLEALGORITHM
      */
     TimIntSemiImplicitEuler(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~TimIntSemiImplicitEuler() override{};
-
     /*!
      * \brief time integration scheme specific initialization routine
      *
@@ -257,9 +261,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     TimIntVelocityVerlet(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~TimIntVelocityVerlet() override{};
 
     /*!
      * \brief time integration scheme specific initialization routine

@@ -69,9 +69,6 @@ namespace PASI
      */
     explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~PartitionedAlgo() override{};
-
     /*!
      * \brief init pasi algorithm
      *

@@ -60,11 +60,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
   // empty constructor
 }
 
-PARTICLEALGORITHM::ParticleAlgorithm::~ParticleAlgorithm()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEALGORITHM::ParticleAlgorithm::~ParticleAlgorithm() = default;
 
 void PARTICLEALGORITHM::ParticleAlgorithm::Init(
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles)
@@ -467,12 +463,13 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   while (gravitystream >> value) gravity.push_back(std::atof(value.c_str()));
 
   // safety check
-  if ((int)gravity.size() != 3)
-    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!", (int)gravity.size());
+  if (static_cast<int>(gravity.size()) != 3)
+    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!",
+        static_cast<int>(gravity.size()));
 
   // get magnitude of gravity
   double temp = 0.0;
-  for (int i = 0; i < (int)gravity.size(); ++i) temp += gravity[i] * gravity[i];
+  for (double g : gravity) temp += g * g;
   const double gravity_norm = std::sqrt(temp);
 
   // no gravity defined

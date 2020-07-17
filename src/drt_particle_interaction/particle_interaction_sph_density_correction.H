@@ -36,7 +36,7 @@ namespace PARTICLEINTERACTION
     explicit SPHDensityCorrectionBase();
 
     //! virtual destructor
-    virtual ~SPHDensityCorrectionBase(){};
+    virtual ~SPHDensityCorrectionBase() = default;
 
     //! init density correction handler
     virtual void Init();
@@ -67,9 +67,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityCorrectionInterior();
 
-    //! destructor
-    ~SPHDensityCorrectionInterior() override{};
-
     //! density boundary condition is needed
     bool ComputeDensityBC() const override;
 
@@ -84,9 +81,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityCorrectionNormalized();
 
-    //! destructor
-    ~SPHDensityCorrectionNormalized() override{};
-
     //! density boundary condition is needed
     bool ComputeDensityBC() const override;
 
@@ -100,9 +94,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHDensityCorrectionRandles();
-
-    //! destructor
-    ~SPHDensityCorrectionRandles() override{};
 
     //! density boundary condition is needed
     bool ComputeDensityBC() const override;

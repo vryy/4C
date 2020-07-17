@@ -36,11 +36,7 @@ PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
   // empty constructor
 }
 
-PARTICLEINTERACTION::SPHTemperature::~SPHTemperature()
-{
-  // note: destructor declaration here since at compile-time a complete type
-  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
-}
+PARTICLEINTERACTION::SPHTemperature::~SPHTemperature() = default;
 
 void PARTICLEINTERACTION::SPHTemperature::Init()
 {
