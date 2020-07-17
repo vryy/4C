@@ -188,8 +188,8 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
         static_cast<int>(amplitude.size()));
 
   // safety check
-  for (int i = 0; i < static_cast<int>(amplitude.size()); ++i)
-    if (amplitude[i] < 0.0)
+  for (double a : amplitude)
+    if (a < 0.0)
       dserror("no negative initial position amplitude allowed (set a positive or zero value)!");
 
   // get magnitude of initial position amplitude
