@@ -194,7 +194,7 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
 
   // get magnitude of initial position amplitude
   double temp = 0.0;
-  for (int i = 0; i < static_cast<int>(amplitude.size()); ++i) temp += amplitude[i] * amplitude[i];
+  for (double a : amplitude) temp += a * a;
   const double amplitude_norm = std::sqrt(temp);
 
   // no initial position amplitude defined

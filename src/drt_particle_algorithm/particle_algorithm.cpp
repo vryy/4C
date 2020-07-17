@@ -469,7 +469,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 
   // get magnitude of gravity
   double temp = 0.0;
-  for (int i = 0; i < static_cast<int>(gravity.size()); ++i) temp += gravity[i] * gravity[i];
+  for (double g : gravity) temp += g * g;
   const double gravity_norm = std::sqrt(temp);
 
   // no gravity defined
