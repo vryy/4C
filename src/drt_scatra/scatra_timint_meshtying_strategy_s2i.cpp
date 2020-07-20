@@ -48,6 +48,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_equilibrate.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -91,8 +92,6 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islaveresidual_(Teuchos::null),
       imasterresidual_(Teuchos::null),
       imasterphinp_(Teuchos::null),
-      invrowsums_(Teuchos::null),
-      invcolsums_(Teuchos::null),
       lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
       matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(parameters, "MATRIXTYPE")),
@@ -118,6 +117,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       scatragrowthblock_(Teuchos::null),
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
+      equilibration_(Teuchos::null),
       slaveconditions_(),
       slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY"))
 {
@@ -2816,22 +2816,56 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
           ? *extendedmaps_->FullMap()
           : *scatratimint_->Discretization()->DofRowMap();
-  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
-      scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-    invrowsums_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, false));
-  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-    invcolsums_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, false));
+
+  // which equiliration method should be applied
+  LINALG::EquilibrationMethod matrixequilibrationmethod;
+  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::none)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::none;
+  else if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_full;
+  else if (scatratimint_->EquilibrationMethod() ==
+           INPAR::SCATRA::EquilibrationMethod::rows_maindiag)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_maindiag;
+  else if (scatratimint_->EquilibrationMethod() ==
+           INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::rowsandcolumns_full;
+  else if (scatratimint_->EquilibrationMethod() ==
+           INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::rowsandcolumns_maindiag;
+
+  else if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::columns_full;
+  else if (scatratimint_->EquilibrationMethod() ==
+           INPAR::SCATRA::EquilibrationMethod::columns_maindiag)
+    matrixequilibrationmethod = LINALG::EquilibrationMethod::columns_maindiag;
+  else
+    dserror("Unsupported type of equilibration method");
+
+  // instantiate appropriate equilibration class
+  switch (matrixtype_)
+  {
+    case INPAR::SCATRA::MatrixType::sparse:
+    {
+      equilibration_ =
+          Teuchos::rcp(new LINALG::EquilibrationSparse(matrixequilibrationmethod, dofrowmap));
+      break;
+    }
+    case INPAR::SCATRA::MatrixType::block_condition:
+    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    case INPAR::SCATRA::MatrixType::block_meshtying:
+    {
+      equilibration_ =
+          Teuchos::rcp(new LINALG::EquilibrationBlock(matrixequilibrationmethod, dofrowmap));
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of global system matrix");
+      break;
+    }
+  }
 }  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
+
 
 
 /*----------------------------------------------------------------------*
@@ -2882,8 +2916,8 @@ void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
   // parameter list
   parameters.set<double>("intlayergrowth_convtol", intlayergrowth_convtol_);
 
-  // add maximum number of local Newton-Raphson iterations for scatra-scatra interface layer growth
-  // to parameter list
+  // add maximum number of local Newton-Raphson iterations for scatra-scatra interface layer
+  // growth to parameter list
   parameters.set<unsigned>("intlayergrowth_itemax", intlayergrowth_itemax_);
 
   return;
@@ -3084,7 +3118,8 @@ void SCATRA::MeshtyingStrategyS2I::ReadRestart(const int step,  //!< restart ste
 
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
-      // read state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
+      // read state vector of time derivatives of discrete scatra-scatra interface layer
+      // thicknesses
       reader->ReadVector(growthdtn_, "growthdtn");
 
       // copy restart state
@@ -3116,8 +3151,8 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or
       intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
   {
-    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses based on
-    // map of scatra-scatra interface layer thickness variables
+    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses based
+    // on map of scatra-scatra interface layer thickness variables
     const Epetra_Vector& growth =
         intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic ? *growthnp_
                                                                                : *growthn_;
@@ -3176,10 +3211,9 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
 }
 
 
-/*---------------------------------------------------------------------------------------------------*
- | explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang 01/17
- |
- *---------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*
+ | explicit predictor step to obtain better starting value for Newton-Raphson iteration  fang 01/17|
+ *-------------------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
@@ -3295,8 +3329,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // safety checks
     if (conditions.size() != 1)
       dserror(
-          "Can't have more than one boundary condition for scatra-scatra interface layer growth at "
-          "the moment!");
+          "Can't have more than one boundary condition for scatra-scatra interface layer growth "
+          "at the moment!");
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_none)
       dserror(
           "Invalid flag for evaluation of scatra-scatra interface coupling involving interface "
@@ -3331,8 +3365,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     if (scatratimint_->Discretization()->AddDofSet(dofset) != 2)
       dserror("Scalar transport discretization exhibits invalid number of dofsets!");
 
-    // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
-    // layer growth
+    // initialize linear solver for monolithic scatra-scatra interface coupling involving
+    // interface layer growth
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
       const int extendedsolver = DRT::Problem::Instance()
@@ -3341,8 +3375,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
       if (extendedsolver < 1)
         dserror(
-            "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
-            "interface layer growth!");
+            "Invalid ID of linear solver for monolithic scatra-scatra interface coupling "
+            "involving interface layer growth!");
       extendedsolver_ =
           Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(extendedsolver),
               scatratimint_->Discretization()->Comm(),
@@ -3353,8 +3387,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // safety check
   else if (intlayergrowth_evaluation_ != INPAR::S2I::growth_evaluation_none)
     dserror(
-        "Cannot evaluate scatra-scatra interface coupling involving interface layer growth without "
-        "specifying a corresponding boundary condition!");
+        "Cannot evaluate scatra-scatra interface coupling involving interface layer growth "
+        "without specifying a corresponding boundary condition!");
 
   // safety checks associated with adaptive time stepping for scatra-scatra interface layer growth
   if (intlayergrowth_timestep_ > 0.)
@@ -3366,8 +3400,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     if (not scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth"))
       dserror(
-          "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
-          "boundary condition!");
+          "Adaptive time stepping for scatra-scatra interface layer growth requires "
+          "corresponding boundary condition!");
     if (not(intlayergrowth_timestep_ < scatratimint_->Dt()))
       dserror(
           "Adaptive time stepping for scatra-scatra interface layer growth requires that the "
@@ -3434,8 +3468,8 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
     std::stringstream iblockstr;
     iblockstr << scatratimint_->BlockMaps().NumMaps() + 1;
 
-    // equip smoother for extra matrix block with null space associated with all degrees of freedom
-    // for scatra-scatra interface layer growth
+    // equip smoother for extra matrix block with null space associated with all degrees of
+    // freedom for scatra-scatra interface layer growth
     Teuchos::ParameterList& mllist =
         extendedsolver_->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
     mllist.set("PDE equations", 1);
@@ -3477,14 +3511,14 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
         case INPAR::S2I::coupling_nts_standard:
         {
           // equilibrate global system of equations if necessary
-          EquilibrateSystem(systemmatrix, residual, scatratimint_->BlockMaps());
+          equilibration_->EquilibrateSystem(systemmatrix, residual, scatratimint_->BlockMaps());
 
           // solve global system of equations
           solver->Solve(
               systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
 
           // unequilibrate global increment vector if necessary
-          UnequilibrateIncrement(increment);
+          equilibration_->UnequilibrateIncrement(increment);
 
           break;
         }
@@ -3648,14 +3682,15 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
           extendedmaps_->InsertVector(growthincrement_, 1, extendedincrement);
 
           // equilibrate global system of equations if necessary
-          EquilibrateSystem(extendedsystemmatrix_, extendedresidual, *extendedblockmaps_);
+          equilibration_->EquilibrateSystem(
+              extendedsystemmatrix_, extendedresidual, *extendedblockmaps_);
 
           // solve extended system of equations
           extendedsolver_->Solve(extendedsystemmatrix_->EpetraOperator(), extendedincrement,
               extendedresidual, true, iteration == 1, projector);
 
           // unequilibrate global increment vector if necessary
-          UnequilibrateIncrement(extendedincrement);
+          equilibration_->UnequilibrateIncrement(extendedincrement);
 
           // store solution
           extendedmaps_->ExtractVector(extendedincrement, 0, increment);
@@ -3712,258 +3747,9 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
   return *solver;
 }  // SCATRA::MeshtyingStrategyS2I::Solver()
 
-
-/*----------------------------------------------------------------------*
- | equilibrate global system of equations if necessary       fang 05/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Epetra_Vector>& residual, const LINALG::MultiMapExtractor& blockmaps) const
-{
-  if (scatratimint_->EquilibrationMethod() != INPAR::SCATRA::EquilibrationMethod::none)
-  {
-    // perform equilibration depending on type of global system matrix
-    switch (matrixtype_)
-    {
-      case INPAR::SCATRA::MatrixType::sparse:
-      {
-        // check matrix
-        Teuchos::RCP<LINALG::SparseMatrix> sparsematrix =
-            Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
-        if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
-
-        // perform row equilibration
-        if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-        {
-          // compute inverse row sums of global system matrix
-          ComputeInvRowSums(*sparsematrix, invrowsums_);
-
-          // perform row equilibration of global system matrix
-          EquilibrateMatrixRows(*sparsematrix, invrowsums_);
-        }
-
-        // perform column equilibration
-        if (scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::columns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-        {
-          // compute inverse column sums of global system matrix
-          ComputeInvColSums(*sparsematrix, invcolsums_);
-
-          // perform column equilibration of global system matrix
-          EquilibrateMatrixColumns(*sparsematrix, invcolsums_);
-        }
-
-        break;
-      }
-
-      case INPAR::SCATRA::MatrixType::block_condition:
-      case INPAR::SCATRA::MatrixType::block_condition_dof:
-      case INPAR::SCATRA::MatrixType::block_meshtying:
-      {
-        // check matrix
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
-            Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
-        if (blocksparsematrix == Teuchos::null)
-          dserror("System matrix is not a block sparse matrix!");
-
-        // perform row equilibration
-        if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-        {
-          for (int i = 0; i < blocksparsematrix->Rows(); ++i)
-          {
-            // initialize vector for inverse row sums
-            Teuchos::RCP<Epetra_Vector> invrowsums(
-                Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap())));
-
-            // compute inverse row sums of current main diagonal matrix block
-            if (scatratimint_->EquilibrationMethod() ==
-                    INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
-                scatratimint_->EquilibrationMethod() ==
-                    INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-              ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums);
-
-            // compute inverse row sums of current row block of global system matrix
-            else
-            {
-              // loop over all column blocks of global system matrix
-              for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-              {
-                // extract current block of global system matrix
-                const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
-
-                // loop over all rows of current matrix block
-                for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
-                {
-                  // determine length of current matrix row
-                  const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
-
-                  if (length > 0)
-                  {
-                    // extract current matrix row from matrix block
-                    int numentries(0);
-                    std::vector<double> values(length, 0.);
-                    if (matrix.EpetraMatrix()->ExtractMyRowCopy(
-                            irow, length, numentries, &values[0]))
-                      dserror(
-                          "Cannot extract matrix row with local ID %d from matrix block!", irow);
-
-                    // compute and store current row sum
-                    double rowsum(0.);
-                    for (int ientry = 0; ientry < numentries; ++ientry)
-                      rowsum += std::abs(values[ientry]);
-                    (*invrowsums)[irow] += rowsum;
-                  }
-                }
-              }
-
-              // invert row sums
-              if (invrowsums->Reciprocal(*invrowsums)) dserror("Vector could not be inverted!");
-
-              // take square root of inverse row sums if matrix is scaled from left and right
-              if (scatratimint_->EquilibrationMethod() ==
-                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-                  scatratimint_->EquilibrationMethod() ==
-                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-                for (int i = 0; i < invrowsums->MyLength(); ++i)
-                  (*invrowsums)[i] = sqrt((*invrowsums)[i]);
-            }
-
-            // perform row equilibration of matrix blocks in current row block of global system
-            // matrix
-            for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-              EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums);
-
-            // insert inverse row sums of current main diagonal matrix block into global vector
-            blockmaps.InsertVector(invrowsums, i, invrowsums_);
-          }
-        }
-
-        // perform column equilibration
-        if (scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::columns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-            scatratimint_->EquilibrationMethod() ==
-                INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-        {
-          for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-          {
-            // initialize vector for inverse column sums
-            Teuchos::RCP<Epetra_Vector> invcolsums(
-                Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(j, j).DomainMap())));
-
-            // compute inverse column sums of current main diagonal matrix block
-            if (scatratimint_->EquilibrationMethod() ==
-                    INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
-                scatratimint_->EquilibrationMethod() ==
-                    INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-              ComputeInvColSums(blocksparsematrix->Matrix(j, j), invcolsums);
-
-            // compute inverse column sums of current column block of global system matrix
-            else
-            {
-              // loop over all row blocks of global system matrix
-              for (int i = 0; i < blocksparsematrix->Rows(); ++i)
-              {
-                // extract current block of global system matrix
-                const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
-
-                // loop over all rows of current matrix block
-                for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
-                {
-                  // determine length of current matrix row
-                  const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
-
-                  if (length > 0)
-                  {
-                    // extract current matrix row from matrix block
-                    int numentries(0);
-                    std::vector<double> values(length, 0.);
-                    std::vector<int> indices(length, 0);
-                    if (matrix.EpetraMatrix()->ExtractMyRowCopy(
-                            irow, length, numentries, &values[0], &indices[0]))
-                      dserror(
-                          "Cannot extract matrix row with local ID %d from matrix block!", irow);
-
-                    // add entries of current matrix row to column sums
-                    for (int ientry = 0; ientry < numentries; ++ientry)
-                      invcolsums->SumIntoGlobalValue(
-                          matrix.ColMap().GID(indices[ientry]), 0, std::abs(values[ientry]));
-                  }
-                }
-              }
-
-              // invert column sums
-              if (invcolsums->Reciprocal(*invcolsums)) dserror("Vector could not be inverted!");
-
-              // take square root of inverse column sums if matrix is scaled from left and right
-              if (scatratimint_->EquilibrationMethod() ==
-                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-                  scatratimint_->EquilibrationMethod() ==
-                      INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-                for (int i = 0; i < invcolsums->MyLength(); ++i)
-                  (*invcolsums)[i] = sqrt((*invcolsums)[i]);
-            }
-
-            // perform column equilibration of matrix blocks in current column block of global
-            // system matrix
-            for (int i = 0; i < blocksparsematrix->Rows(); ++i)
-              EquilibrateMatrixColumns(blocksparsematrix->Matrix(i, j), invcolsums);
-
-            // insert inverse column sums of current main diagonal matrix block into global vector
-            blockmaps.InsertVector(invcolsums, j, invcolsums_);
-          }
-        }
-
-        break;
-      }
-
-      default:
-      {
-        dserror(
-            "Equilibration of global system of equations for scatra-scatra interface coupling is "
-            "not implemented for chosen type of global system matrix!");
-        break;
-      }
-    }
-
-    // perform equilibration of global residual vector
-    if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full or
-        scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_maindiag or
-        scatratimint_->EquilibrationMethod() ==
-            INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-        scatratimint_->EquilibrationMethod() ==
-            INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-      if (residual->Multiply(1., *invrowsums_, *residual, 0.))
-        dserror("Equilibration of global residual vector failed!");
-  }
-
-}  // SCATRA::MeshtyingStrategyS2I::EquilibrateSystem
-
-
 /*-------------------------------------------------------------------------------------------------------------------------------------*
- | finite difference check for extended system matrix involving scatra-scatra interface layer growth
- (for debugging only)   fang 01/17 |
+ | finite difference check for extended system matrix involving scatra-scatra interface layer
+ growth (for debugging only)   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::FDCheck(
     const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,  //!< global system matrix
@@ -4040,8 +3826,8 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
     // entries + residual_original / epsilon ?= residual_perturbed / epsilon
 
     // Note that we still need to evaluate the first comparison as well. For small entries in the
-    // system matrix, the second comparison might yield good agreement in spite of the entries being
-    // wrong!
+    // system matrix, the second comparison might yield good agreement in spite of the entries
+    // being wrong!
     for (int rowlid = 0; rowlid < extendedmaps_->FullMap()->NumMyElements(); ++rowlid)
     {
       // get global index of current matrix row
@@ -4064,7 +3850,8 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
         }
       }
 
-      // finite difference suggestion (first divide by epsilon and then add for better conditioning)
+      // finite difference suggestion (first divide by epsilon and then add for better
+      // conditioning)
       const double fdval =
           -(*extendedresidual)[rowlid] / fdcheckeps + rhs_original[rowlid] / fdcheckeps;
 
@@ -4159,102 +3946,6 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
 
   return;
 }
-
-
-/*----------------------------------------------------------------------------*
- | compute inverse sums of absolute values of matrix row entries   fang 06/15 |
- *----------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums(
-    const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< inverse sums of absolute values of row entries in matrix
-    ) const
-{
-  // compute inverse row sums of matrix
-  if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
-    dserror("Inverse row sums of matrix could not be successfully computed!");
-
-  // take square root of inverse row sums if matrix is scaled from left and right
-  if (scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-    for (int i = 0; i < invrowsums->MyLength(); ++i) (*invrowsums)[i] = sqrt((*invrowsums)[i]);
-}  // SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums
-
-
-/*-------------------------------------------------------------------------------*
- | compute inverse sums of absolute values of matrix column entries   fang 06/15 |
- *-------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::ComputeInvColSums(
-    const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invcolsums  //!< inverse sums of absolute values of column entries in matrix
-    ) const
-{
-  // compute inverse column sums of matrix
-  if (matrix.EpetraMatrix()->InvColSums(*invcolsums))
-    dserror("Inverse column sums of matrix could not be successfully computed!");
-
-  // take square root of inverse column sums if matrix is scaled from left and right
-  if (scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-    for (int i = 0; i < invcolsums->MyLength(); ++i) (*invcolsums)[i] = sqrt((*invcolsums)[i]);
-}  // SCATRA::MeshtyingStrategyS2I::ComputeInvColSums
-
-
-/*----------------------------------------------------------------------*
- | equilibrate matrix rows                                   fang 06/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< sums of absolute values of row entries in matrix
-    ) const
-{
-  if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
-}  // SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows
-
-
-/*----------------------------------------------------------------------*
- | equilibrate matrix columns                                fang 06/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns(
-    LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invcolsums  //!< sums of absolute values of column entries in matrix
-    ) const
-{
-  if (matrix.RightScale(*invcolsums)) dserror("Column equilibration of matrix failed!");
-
-  return;
-}  // SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns
-
-
-/*----------------------------------------------------------------------*
- | unequilibrate global increment vector if necessary        fang 05/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement(
-    const Teuchos::RCP<Epetra_Vector>& increment  //!< increment vector
-    ) const
-{
-  // unequilibrate global increment vector if necessary
-  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::columns_maindiag or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full or
-      scatratimint_->EquilibrationMethod() ==
-          INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-  {
-    if (increment->Multiply(1., *invcolsums_, *increment, 0.))
-      dserror("Unequilibration of global increment vector failed!");
-  }
-}  // SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement
-
 
 /*--------------------------------------------------------------------------------------*
  | protected constructor for singletons                                      fang 01/16 |
@@ -4971,7 +4662,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
 
 
 /*--------------------------------------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals for node-to-segment coupling   fang
+ | evaluate and assemble interface linearizations and residuals for node-to-segment coupling fang
  08/16 |
  *--------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
@@ -5031,9 +4722,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
  *-------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
-    MORTAR::MortarElement& slaveelement,  //!< slave-side mortar element
-    Epetra_SerialDenseVector&
-        areafractions  //!< lumped interface area fractions associated with slave-side element nodes
+    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
+    Epetra_SerialDenseVector& areafractions  //!< lumped interface area fractions associated with
+                                             //!< slave-side element nodes
 )
 {
   // integration points and weights
@@ -5118,8 +4809,8 @@ SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
 void SCATRA::MortarCellAssemblyStrategy::AssembleCellMatricesAndVectors(
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const int
-        assembler_pid_master  //!< ID of processor performing master-side matrix and vector assembly
+    const int assembler_pid_master  //!< ID of processor performing master-side matrix and vector
+                                    //!< assembly
     ) const
 {
   // assemble cell matrix 1 into system matrix 1

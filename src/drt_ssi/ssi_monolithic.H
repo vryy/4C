@@ -24,6 +24,7 @@ namespace LINALG
   class MultiMapExtractor;
   class Solver;
   class SparseMatrix;
+  class Equilibration;
 }  // namespace LINALG
 
 namespace SCATRA
@@ -105,26 +106,8 @@ namespace SSI
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
-    //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< inverse sums of absolute values of row entries in matrix
-        ) const;
-
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
-
-    //! equilibrate matrix rows
-    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< sums of absolute values of row entries in matrix
-        ) const;
-
-    //! equilibrate global system of equations if necessary
-    void EquilibrateSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
-        ) const;
 
     //! finite difference check for global system matrix
     void FDCheck();
@@ -164,6 +147,9 @@ namespace SSI
 
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
+
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
     const INPAR::SSI::EquilibrationMethod equilibration_method_;
