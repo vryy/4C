@@ -217,8 +217,11 @@ void PASI::PartitionedAlgo::StructOutput()
 
 void PASI::PartitionedAlgo::ParticleOutput()
 {
-  // write output to files
-  particlealgorithm_->Output();
+  // write output
+  particlealgorithm_->WriteOutput();
+
+  // write restart information
+  particlealgorithm_->WriteRestart();
 }
 
 void PASI::PartitionedAlgo::InitStructureField()

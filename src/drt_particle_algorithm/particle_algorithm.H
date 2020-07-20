@@ -146,11 +146,18 @@ namespace PARTICLEALGORITHM
     void PostEvaluateTimeStep();
 
     /*!
-     * \brief output particle time step
+     * \brief write output
      *
-     * \author Sebastian Fuchs \date 04/2018
+     * \author Sebastian Fuchs \date 07/2020
      */
-    void Output() const;
+    void WriteOutput() const;
+
+    /*!
+     * \brief write restart information
+     *
+     * \author Sebastian Fuchs \date 07/2020
+     */
+    void WriteRestart() const;
 
     /*!
      * \brief create particle field specific result test objects
