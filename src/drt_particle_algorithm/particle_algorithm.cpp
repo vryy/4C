@@ -53,7 +53,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       transferevery_(DRT::INPUT::IntegralValue<int>(params_, "TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
-      writeresultsthisstep_(false),
+      writeresultsthisstep_(true),
       writerestartthisstep_(false),
       isrestarted_(false)
 {
@@ -136,6 +136,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup initial states
   if (not isrestarted_) SetupInitialStates();
+
+  // write initial output
+  if (not isrestarted_) WriteOutput();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)

@@ -4,6 +4,7 @@
 -->
 <VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
   <Collection>
+    <DataSet timestep="0.00000000000000e+00" group="" part="0" file="particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-files/particlewalls-000000.pvtu"/>
     <DataSet timestep="1.00000000000000e-02" group="" part="0" file="particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-files/particlewalls-000010.pvtu"/>
     <DataSet timestep="2.00000000000000e-02" group="" part="0" file="particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-files/particlewalls-000020.pvtu"/>
     <DataSet timestep="3.00000000000000e-02" group="" part="0" file="particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-files/particlewalls-000030.pvtu"/>
