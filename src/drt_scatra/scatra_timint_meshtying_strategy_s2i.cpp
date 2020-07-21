@@ -49,6 +49,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_equilibrate.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -94,7 +95,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       imasterphinp_(Teuchos::null),
       lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
-      matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(parameters, "MATRIXTYPE")),
+      matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(parameters, "MATRIXTYPE")),
       ntsprojtol_(parameters.sublist("S2I COUPLING").get<double>("NTSPROJTOL")),
       intlayergrowth_evaluation_(DRT::INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(
           parameters.sublist("S2I COUPLING"), "INTLAYERGROWTH_EVALUATION")),
@@ -353,7 +354,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       // assemble global system matrix depending on matrix type
       switch (matrixtype_)
       {
-        case INPAR::SCATRA::MatrixType::sparse:
+        case LINALG::MatrixType::sparse:
         {
           // check matrix
           Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
@@ -446,7 +447,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::SCATRA::MatrixType::block_meshtying:
+        case LINALG::MatrixType::block_meshtying:
         {
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -485,8 +486,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::SCATRA::MatrixType::block_condition:
-        case INPAR::SCATRA::MatrixType::block_condition_dof:
+        case LINALG::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition_dof:
         {
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -703,7 +704,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       // assemble global system of equations depending on matrix type
       switch (matrixtype_)
       {
-        case INPAR::SCATRA::MatrixType::sparse:
+        case LINALG::MatrixType::sparse:
         {
           // extract global system matrix from time integrator
           const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
@@ -841,7 +842,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case INPAR::SCATRA::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition:
         {
           // extract global system matrix from time integrator
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -948,7 +949,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         // assemble interface matrices into global system matrix depending on matrix type
         switch (matrixtype_)
         {
-          case INPAR::SCATRA::MatrixType::sparse:
+          case LINALG::MatrixType::sparse:
           {
             // check matrix
             const Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix = scatratimint_->SystemMatrix();
@@ -973,8 +974,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             break;
           }
 
-          case INPAR::SCATRA::MatrixType::block_condition:
-          case INPAR::SCATRA::MatrixType::block_condition_dof:
+          case LINALG::MatrixType::block_condition:
+          case LINALG::MatrixType::block_condition_dof:
           {
             // check matrix
             Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
@@ -1055,7 +1056,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // system matrix
           switch (matrixtype_)
           {
-            case INPAR::SCATRA::MatrixType::sparse:
+            case LINALG::MatrixType::sparse:
             {
               // assemble off-diagonal scatra-growth block of global system matrix, containing
               // derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface
@@ -1183,8 +1184,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
               break;
             }
 
-            case INPAR::SCATRA::MatrixType::block_condition:
-            case INPAR::SCATRA::MatrixType::block_condition_dof:
+            case LINALG::MatrixType::block_condition:
+            case LINALG::MatrixType::block_condition_dof:
             {
               // assemble off-diagonal scatra-growth block of global system matrix, containing
               // derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface
@@ -2617,14 +2618,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   // further initializations depending on type of global system matrix
   switch (matrixtype_)
   {
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       // nothing needs to be done in this case
       break;
     }
-    case INPAR::SCATRA::MatrixType::block_condition:
-    case INPAR::SCATRA::MatrixType::block_condition_dof:
-    case INPAR::SCATRA::MatrixType::block_meshtying:
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    case LINALG::MatrixType::block_meshtying:
     {
       // safety check
       if (!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -2686,7 +2687,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           growthgrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_growth, 81));
           switch (matrixtype_)
           {
-            case INPAR::SCATRA::MatrixType::sparse:
+            case LINALG::MatrixType::sparse:
             {
               // initialize extended map extractor associated with blocks of global system matrix
               extendedblockmaps_ = extendedmaps_;
@@ -2702,8 +2703,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               break;
             }
 
-            case INPAR::SCATRA::MatrixType::block_condition:
-            case INPAR::SCATRA::MatrixType::block_condition_dof:
+            case LINALG::MatrixType::block_condition:
+            case LINALG::MatrixType::block_condition_dof:
             {
               // initialize map extractor associated with all degrees of freedom for scatra-scatra
               // interface layer growth
@@ -2811,59 +2812,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     }
   }
 
-  // initialize vectors for row and column sums of global system matrix if necessary
-  const Epetra_Map& dofrowmap =
-      intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
-          ? *extendedmaps_->FullMap()
-          : *scatratimint_->Discretization()->DofRowMap();
-
-  // which equiliration method should be applied
-  LINALG::EquilibrationMethod matrixequilibrationmethod;
-  if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::none)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::none;
-  else if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::rows_full)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_full;
-  else if (scatratimint_->EquilibrationMethod() ==
-           INPAR::SCATRA::EquilibrationMethod::rows_maindiag)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_maindiag;
-  else if (scatratimint_->EquilibrationMethod() ==
-           INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_full)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rowsandcolumns_full;
-  else if (scatratimint_->EquilibrationMethod() ==
-           INPAR::SCATRA::EquilibrationMethod::rowsandcolumns_maindiag)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rowsandcolumns_maindiag;
-
-  else if (scatratimint_->EquilibrationMethod() == INPAR::SCATRA::EquilibrationMethod::columns_full)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::columns_full;
-  else if (scatratimint_->EquilibrationMethod() ==
-           INPAR::SCATRA::EquilibrationMethod::columns_maindiag)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::columns_maindiag;
-  else
-    dserror("Unsupported type of equilibration method");
-
   // instantiate appropriate equilibration class
-  switch (matrixtype_)
-  {
-    case INPAR::SCATRA::MatrixType::sparse:
-    {
-      equilibration_ =
-          Teuchos::rcp(new LINALG::EquilibrationSparse(matrixequilibrationmethod, dofrowmap));
-      break;
-    }
-    case INPAR::SCATRA::MatrixType::block_condition:
-    case INPAR::SCATRA::MatrixType::block_condition_dof:
-    case INPAR::SCATRA::MatrixType::block_meshtying:
-    {
-      equilibration_ =
-          Teuchos::rcp(new LINALG::EquilibrationBlock(matrixequilibrationmethod, dofrowmap));
-      break;
-    }
-    default:
-    {
-      dserror("Unknown type of global system matrix");
-      break;
-    }
-  }
+  LINALG::EquilibrationFactory equibrilationfactory;
+  equilibration_ =
+      equibrilationfactory.BuildEquilibration(matrixtype_, scatratimint_->EquilibrationMethod(),
+          (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
+                  ? *extendedmaps_->FullMap()
+                  : *scatratimint_->Discretization()->DofRowMap()));
 }  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
 
 
@@ -2916,8 +2871,8 @@ void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
   // parameter list
   parameters.set<double>("intlayergrowth_convtol", intlayergrowth_convtol_);
 
-  // add maximum number of local Newton-Raphson iterations for scatra-scatra interface layer
-  // growth to parameter list
+  // add maximum number of local Newton-Raphson iterations for scatra-scatra interface layer growth
+  // to parameter list
   parameters.set<unsigned>("intlayergrowth_itemax", intlayergrowth_itemax_);
 
   return;
@@ -3118,8 +3073,7 @@ void SCATRA::MeshtyingStrategyS2I::ReadRestart(const int step,  //!< restart ste
 
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
-      // read state vector of time derivatives of discrete scatra-scatra interface layer
-      // thicknesses
+      // read state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
       reader->ReadVector(growthdtn_, "growthdtn");
 
       // copy restart state
@@ -3151,8 +3105,8 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or
       intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
   {
-    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses based
-    // on map of scatra-scatra interface layer thickness variables
+    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses based on
+    // map of scatra-scatra interface layer thickness variables
     const Epetra_Vector& growth =
         intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic ? *growthnp_
                                                                                : *growthn_;
@@ -3211,9 +3165,10 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
 }
 
 
-/*-------------------------------------------------------------------------------------------------*
- | explicit predictor step to obtain better starting value for Newton-Raphson iteration  fang 01/17|
- *-------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*
+ | explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang 01/17
+ |
+ *---------------------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
@@ -3329,8 +3284,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // safety checks
     if (conditions.size() != 1)
       dserror(
-          "Can't have more than one boundary condition for scatra-scatra interface layer growth "
-          "at the moment!");
+          "Can't have more than one boundary condition for scatra-scatra interface layer growth at "
+          "the moment!");
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_none)
       dserror(
           "Invalid flag for evaluation of scatra-scatra interface coupling involving interface "
@@ -3365,8 +3320,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     if (scatratimint_->Discretization()->AddDofSet(dofset) != 2)
       dserror("Scalar transport discretization exhibits invalid number of dofsets!");
 
-    // initialize linear solver for monolithic scatra-scatra interface coupling involving
-    // interface layer growth
+    // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
+    // layer growth
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
       const int extendedsolver = DRT::Problem::Instance()
@@ -3375,8 +3330,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
       if (extendedsolver < 1)
         dserror(
-            "Invalid ID of linear solver for monolithic scatra-scatra interface coupling "
-            "involving interface layer growth!");
+            "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
+            "interface layer growth!");
       extendedsolver_ =
           Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(extendedsolver),
               scatratimint_->Discretization()->Comm(),
@@ -3387,8 +3342,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // safety check
   else if (intlayergrowth_evaluation_ != INPAR::S2I::growth_evaluation_none)
     dserror(
-        "Cannot evaluate scatra-scatra interface coupling involving interface layer growth "
-        "without specifying a corresponding boundary condition!");
+        "Cannot evaluate scatra-scatra interface coupling involving interface layer growth without "
+        "specifying a corresponding boundary condition!");
 
   // safety checks associated with adaptive time stepping for scatra-scatra interface layer growth
   if (intlayergrowth_timestep_ > 0.)
@@ -3400,8 +3355,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     if (not scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth"))
       dserror(
-          "Adaptive time stepping for scatra-scatra interface layer growth requires "
-          "corresponding boundary condition!");
+          "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
+          "boundary condition!");
     if (not(intlayergrowth_timestep_ < scatratimint_->Dt()))
       dserror(
           "Adaptive time stepping for scatra-scatra interface layer growth requires that the "
@@ -3417,8 +3372,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
  *----------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
 {
-  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition or
-      matrixtype_ == INPAR::SCATRA::MatrixType::block_condition_dof)
+  if (matrixtype_ == LINALG::MatrixType::block_condition or
+      matrixtype_ == LINALG::MatrixType::block_condition_dof)
   {
     // initialize reduced interface map extractors associated with blocks of global system matrix
     const int nblocks = scatratimint_->BlockMaps().NumMaps();
@@ -3468,8 +3423,8 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
     std::stringstream iblockstr;
     iblockstr << scatratimint_->BlockMaps().NumMaps() + 1;
 
-    // equip smoother for extra matrix block with null space associated with all degrees of
-    // freedom for scatra-scatra interface layer growth
+    // equip smoother for extra matrix block with null space associated with all degrees of freedom
+    // for scatra-scatra interface layer growth
     Teuchos::ParameterList& mllist =
         extendedsolver_->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
     mllist.set("PDE equations", 1);
@@ -3600,7 +3555,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
         {
           switch (matrixtype_)
           {
-            case INPAR::SCATRA::MatrixType::sparse:
+            case LINALG::MatrixType::sparse:
             {
               // check scalar transport system matrix
               const Teuchos::RCP<const LINALG::SparseMatrix> sparsematrix =
@@ -3619,8 +3574,8 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
               break;
             }
 
-            case INPAR::SCATRA::MatrixType::block_condition:
-            case INPAR::SCATRA::MatrixType::block_condition_dof:
+            case LINALG::MatrixType::block_condition:
+            case LINALG::MatrixType::block_condition_dof:
             {
               // check scalar transport system matrix
               const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocksparsematrix =
@@ -3748,8 +3703,8 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
 }  // SCATRA::MeshtyingStrategyS2I::Solver()
 
 /*-------------------------------------------------------------------------------------------------------------------------------------*
- | finite difference check for extended system matrix involving scatra-scatra interface layer
- growth (for debugging only)   fang 01/17 |
+ | finite difference check for extended system matrix involving scatra-scatra interface layer growth
+ (for debugging only)   fang 01/17 |
  *-------------------------------------------------------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::FDCheck(
     const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,  //!< global system matrix
@@ -3826,8 +3781,8 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
     // entries + residual_original / epsilon ?= residual_perturbed / epsilon
 
     // Note that we still need to evaluate the first comparison as well. For small entries in the
-    // system matrix, the second comparison might yield good agreement in spite of the entries
-    // being wrong!
+    // system matrix, the second comparison might yield good agreement in spite of the entries being
+    // wrong!
     for (int rowlid = 0; rowlid < extendedmaps_->FullMap()->NumMyElements(); ++rowlid)
     {
       // get global index of current matrix row
@@ -3850,8 +3805,7 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
         }
       }
 
-      // finite difference suggestion (first divide by epsilon and then add for better
-      // conditioning)
+      // finite difference suggestion (first divide by epsilon and then add for better conditioning)
       const double fdval =
           -(*extendedresidual)[rowlid] / fdcheckeps + rhs_original[rowlid] / fdcheckeps;
 
@@ -4662,7 +4616,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
 
 
 /*--------------------------------------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals for node-to-segment coupling fang
+ | evaluate and assemble interface linearizations and residuals for node-to-segment coupling   fang
  08/16 |
  *--------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
@@ -4722,9 +4676,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
  *-------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    Epetra_SerialDenseVector& areafractions  //!< lumped interface area fractions associated with
-                                             //!< slave-side element nodes
+    MORTAR::MortarElement& slaveelement,  //!< slave-side mortar element
+    Epetra_SerialDenseVector&
+        areafractions  //!< lumped interface area fractions associated with slave-side element nodes
 )
 {
   // integration points and weights
@@ -4809,8 +4763,8 @@ SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
 void SCATRA::MortarCellAssemblyStrategy::AssembleCellMatricesAndVectors(
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const int assembler_pid_master  //!< ID of processor performing master-side matrix and vector
-                                    //!< assembly
+    const int
+        assembler_pid_master  //!< ID of processor performing master-side matrix and vector assembly
     ) const
 {
   // assemble cell matrix 1 into system matrix 1

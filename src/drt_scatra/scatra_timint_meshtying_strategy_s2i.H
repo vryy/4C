@@ -48,15 +48,12 @@ namespace LINALG
   class MatrixColTransform;
   class MatrixRowTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
-
-namespace LINALG
-{
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
   class Equilibration;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace MORTAR
@@ -206,7 +203,7 @@ namespace SCATRA
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
 
     //! return type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; };
+    const LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;
@@ -369,7 +366,7 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType matrixtype_;
+    const LINALG::MatrixType matrixtype_;
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;

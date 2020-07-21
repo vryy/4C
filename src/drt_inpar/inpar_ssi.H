@@ -54,22 +54,6 @@ namespace INPAR
       coupling_volumeboundary_match
     };
 
-    //! type of global, monolithic system matrix in global system of equations
-    enum MatrixType
-    {
-      matrix_undefined,
-      matrix_block,
-      matrix_sparse
-    };
-
-    //! equilibration methods for global system of equations
-    enum class EquilibrationMethod
-    {
-      none,
-      rows_full,
-      rows_maindiag
-    };
-
     //! type of scalar transport time integration
     enum ScaTraTimIntType
     {

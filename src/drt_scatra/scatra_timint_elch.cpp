@@ -29,6 +29,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
@@ -3207,7 +3208,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
     std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
 {
-  if (MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
+  if (MatrixType() == LINALG::MatrixType::block_condition_dof)
   {
     // safety check
     if (DRT::INPUT::IntegralValue<int>(
@@ -3281,7 +3282,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces() const
   // call base class routine
   SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces();
 
-  if (MatrixType() == INPAR::SCATRA::MatrixType::block_condition_dof)
+  if (MatrixType() == LINALG::MatrixType::block_condition_dof)
   {
     // loop over blocks of global system matrix
     for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)

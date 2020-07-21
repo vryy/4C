@@ -40,6 +40,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 #include <Epetra_Time.h>
 
@@ -58,9 +59,9 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
       maps_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
       equilibration_(Teuchos::null),
-      equilibration_method_(Teuchos::getIntegralValue<INPAR::SSI::EquilibrationMethod>(
+      equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
           globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
-      matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(
+      matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       residual_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
@@ -170,7 +171,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
 {
   switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       // loop over block(s) of global system matrix associated with scalar transport field
       for (int iblock = 0; iblock < scatra_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
@@ -200,7 +201,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null
       // space computation
@@ -600,7 +601,7 @@ void SSI::SSI_Mono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
 
-  if (scatra_->ScaTraField()->EquilibrationMethod() != INPAR::SCATRA::EquilibrationMethod::none)
+  if (scatra_->ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
@@ -667,7 +668,7 @@ void SSI::SSI_Mono::SetupSystem()
   switch (scatra_->ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       maps_systemmatrix_ = maps_;
       if (SSIInterfaceMeshtying())
@@ -680,7 +681,7 @@ void SSI::SSI_Mono::SetupSystem()
     }
 
     // several main-diagonal matrix blocks associated with scalar transport field
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       // store an RCP to the block maps of the scatra field
       maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
@@ -740,7 +741,7 @@ void SSI::SSI_Mono::SetupSystem()
   // perform initializations associated with global system matrix
   switch (matrixtype_)
   {
-    case INPAR::SSI::matrix_block:
+    case LINALG::MatrixType::block_condition:
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
@@ -760,7 +761,7 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
 
-    case INPAR::SSI::matrix_sparse:
+    case LINALG::MatrixType::sparse:
     {
       // safety check
       if (scatra_->ScaTraField()->SystemMatrix() == Teuchos::null)
@@ -782,7 +783,7 @@ void SSI::SSI_Mono::SetupSystem()
   // initialize scatra-structure block and structure-scatra block of global system matrix
   switch (scatra_->ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ =
@@ -803,7 +804,7 @@ void SSI::SSI_Mono::SetupSystem()
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ = Teuchos::rcp(
@@ -833,17 +834,17 @@ void SSI::SSI_Mono::SetupSystem()
   ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
   switch (matrixtype_)
   {
-    case INPAR::SSI::matrix_block:
+    case LINALG::MatrixType::block_condition:
     {
       switch (scatra_->ScaTraField()->MatrixType())
       {
-        case INPAR::SCATRA::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockBlock(Teuchos::rcp(this, false), converter));
           break;
         }
-        case INPAR::SCATRA::MatrixType::sparse:
+        case LINALG::MatrixType::sparse:
         {
           strategy_assemble_ = Teuchos::rcp(
               new SSI::AssembleStrategyBlockSparse(Teuchos::rcp(this, false), converter));
@@ -858,7 +859,7 @@ void SSI::SSI_Mono::SetupSystem()
       }
       break;
     }
-    case INPAR::SSI::matrix_sparse:
+    case LINALG::MatrixType::sparse:
     {
       strategy_assemble_ =
           Teuchos::rcp(new SSI::AssembleStrategySparse(Teuchos::rcp(this, false), converter));
@@ -876,38 +877,10 @@ void SSI::SSI_Mono::SetupSystem()
       new SSI::ScatraStructureOffDiagCoupling(maps_structure_, maps_->Map(0), maps_->Map(1),
           icoup_structure_, interface_map_scatra, meshtying_strategy_s2i_, scatra_, structure_));
 
-  // which equiliration method should be applied
-  LINALG::EquilibrationMethod matrixequilibrationmethod;
-  if (equilibration_method_ == INPAR::SSI::EquilibrationMethod::none)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::none;
-  else if (equilibration_method_ == INPAR::SSI::EquilibrationMethod::rows_full)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_full;
-  else if (equilibration_method_ == INPAR::SSI::EquilibrationMethod::rows_maindiag)
-    matrixequilibrationmethod = LINALG::EquilibrationMethod::rows_maindiag;
-  else
-    dserror("Unsupported type of equilibration method");
-
   // instantiate appropriate equilibration class
-  switch (matrixtype_)
-  {
-    case INPAR::SSI::matrix_sparse:
-    {
-      equilibration_ = Teuchos::rcp(
-          new LINALG::EquilibrationSparse(matrixequilibrationmethod, *maps_->FullMap()));
-      break;
-    }
-    case INPAR::SSI::matrix_block:
-    {
-      equilibration_ = Teuchos::rcp(
-          new LINALG::EquilibrationBlock(matrixequilibrationmethod, *maps_->FullMap()));
-      break;
-    }
-    default:
-    {
-      dserror("Unknown type of global system matrix");
-      break;
-    }
-  }
+  LINALG::EquilibrationFactory equibrilationfactory;
+  equilibration_ = equibrilationfactory.BuildEquilibration(
+      matrixtype_, equilibration_method_, *maps_->FullMap());
 }
 
 /*---------------------------------------------------------------------------------*

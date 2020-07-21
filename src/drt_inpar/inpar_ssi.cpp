@@ -12,6 +12,8 @@
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_equilibrate.H"
 
 void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -118,17 +120,18 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "LINEAR_SOLVER", -1, "ID of linear solver for global system of equations", &ssidynmono);
 
   // type of global system matrix in global system of equations
-  setStringToIntegralParameter<int>("MATRIXTYPE", "undefined",
+  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "undefined",
       "type of global system matrix in global system of equations",
       tuple<std::string>("undefined", "block", "sparse"),
-      tuple<int>(INPAR::SSI::matrix_undefined, INPAR::SSI::matrix_block, INPAR::SSI::matrix_sparse),
+      tuple<LINALG::MatrixType>(LINALG::MatrixType::undefined, LINALG::MatrixType::block_condition,
+          LINALG::MatrixType::sparse),
       &ssidynmono);
 
-  setStringToIntegralParameter<EquilibrationMethod>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag"),
-      tuple<EquilibrationMethod>(EquilibrationMethod::none, EquilibrationMethod::rows_full,
-          EquilibrationMethod::rows_maindiag),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag),
       &ssidynmono);
 }
 

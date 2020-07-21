@@ -54,6 +54,7 @@
 
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 // for the condition writer output
 /*
@@ -119,8 +120,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       isale_(extraparams->get<bool>("isale")),
       solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       equilibrationmethod_(
-          Teuchos::getIntegralValue<INPAR::SCATRA::EquilibrationMethod>(*params, "EQUILIBRATION")),
-      matrixtype_(Teuchos::getIntegralValue<INPAR::SCATRA::MatrixType>(*params, "MATRIXTYPE")),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(*params, "EQUILIBRATION")),
+      matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(*params, "MATRIXTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(INPAR::FLUID::no_model),
@@ -3797,8 +3798,8 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMaps()
 {
-  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition or
-      matrixtype_ == INPAR::SCATRA::MatrixType::block_condition_dof)
+  if (matrixtype_ == LINALG::MatrixType::block_condition or
+      matrixtype_ == LINALG::MatrixType::block_condition_dof)
   {
     // extract domain partitioning conditions from discretization
     std::vector<Teuchos::RCP<DRT::Condition>> partitioningconditions;
@@ -3827,7 +3828,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
     const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
     std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
 {
-  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_condition)
+  if (matrixtype_ == LINALG::MatrixType::block_condition)
   {
     // extract number of domain partitioning conditions
     const unsigned ncond = partitioningconditions.size();
@@ -3885,8 +3886,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
 void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 {
   // matrix block map extractor equals interface map extractor in this case
-  if (matrixtype_ == INPAR::SCATRA::MatrixType::block_meshtying)
-    blockmaps_ = strategy_->InterfaceMaps();
+  if (matrixtype_ == LINALG::MatrixType::block_meshtying) blockmaps_ = strategy_->InterfaceMaps();
 
   // now build the null spaces
   BuildBlockNullSpaces();
@@ -3930,17 +3930,17 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
 {
   switch (MatrixType())
   {
-    // case INPAR::SCATRA::MatrixType::undefined:
-    case INPAR::SCATRA::MatrixType::sparse:
+    // case LINALG::MatrixType::undefined:
+    case LINALG::MatrixType::sparse:
     {
       // only setup the meshtying in this case, as matrix has no block structure
       strategy_->SetupMeshtying();
 
       break;
     }
-    case INPAR::SCATRA::MatrixType::block_condition:
-    case INPAR::SCATRA::MatrixType::block_condition_dof:
-    case INPAR::SCATRA::MatrixType::block_meshtying:
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    case LINALG::MatrixType::block_meshtying:
     {
       // safety check
       if (!Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -3974,7 +3974,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
 
   switch (matrixtype_)
   {
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       // initialize system matrix
       systemmatrix =
@@ -3982,7 +3982,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::block_meshtying:
+    case LINALG::MatrixType::block_meshtying:
     {
       if (S2ICoupling())
       {
@@ -3998,8 +3998,8 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::block_condition:
-    case INPAR::SCATRA::MatrixType::block_condition_dof:
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       // initialize system matrix and associated strategy
       systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(

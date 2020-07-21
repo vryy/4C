@@ -25,6 +25,8 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class Equilibration;
+  enum class EquilibrationMethod;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace SCATRA
@@ -152,10 +154,10 @@ namespace SSI
     Teuchos::RCP<LINALG::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
-    const INPAR::SSI::EquilibrationMethod equilibration_method_;
+    const LINALG::EquilibrationMethod equilibration_method_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::SSI::MatrixType matrixtype_;
+    const LINALG::MatrixType matrixtype_;
 
     //! global residual vector on right-hand side of global system of equations
     Teuchos::RCP<Epetra_Vector> residual_;
