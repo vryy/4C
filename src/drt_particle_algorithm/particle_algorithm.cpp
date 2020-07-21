@@ -53,7 +53,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       transferevery_(DRT::INPUT::IntegralValue<int>(params_, "TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
-      writeresultsthisstep_(false),
+      writeresultsthisstep_(true),
       writerestartthisstep_(false),
       isrestarted_(false)
 {
@@ -136,6 +136,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup initial states
   if (not isrestarted_) SetupInitialStates();
+
+  // write initial output
+  if (not isrestarted_) WriteOutput();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
@@ -196,8 +199,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     // post evaluate time step
     PostEvaluateTimeStep();
 
-    // output particle time step
-    Output();
+    // write output
+    WriteOutput();
+
+    // write restart information
+    WriteRestart();
   }
 }
 
@@ -253,9 +259,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
   if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
+void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::Output");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput");
 
   // write result step
   if (writeresultsthisstep_)
@@ -272,6 +278,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write wall runtime output
     if (particlewall_) particlewall_->WriteWallRuntimeOutput(Step(), Time());
   }
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart");
 
   // write restart step
   if (writerestartthisstep_)

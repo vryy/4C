@@ -4,6 +4,7 @@
 -->
 <VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
   <Collection>
+    <DataSet timestep="0.00000000000000e+00" group="" part="0" file="pasi_twoway_norelax_sph_3d_piston_virtualwall_densitysummation-vtp-files/particle-phase1-owned-000000.pvtp"/>
     <DataSet timestep="6.25000000000000e-02" group="" part="0" file="pasi_twoway_norelax_sph_3d_piston_virtualwall_densitysummation-vtp-files/particle-phase1-owned-000025.pvtp"/>
     <DataSet timestep="1.25000000000000e-01" group="" part="0" file="pasi_twoway_norelax_sph_3d_piston_virtualwall_densitysummation-vtp-files/particle-phase1-owned-000050.pvtp"/>
     <DataSet timestep="1.87500000000000e-01" group="" part="0" file="pasi_twoway_norelax_sph_3d_piston_virtualwall_densitysummation-vtp-files/particle-phase1-owned-000075.pvtp"/>
