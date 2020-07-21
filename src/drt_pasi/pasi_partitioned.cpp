@@ -71,6 +71,9 @@ void PASI::PartitionedAlgo::Setup()
   // setup particle algorithm
   particlealgorithm_->Setup();
 
+  // write initial output
+  structurefield_->Output();
+
   // set setup flag
   SetIsSetup(true);
 }
@@ -211,7 +214,7 @@ void PASI::PartitionedAlgo::StructOutput()
   // update all single field solvers
   structurefield_->Update();
 
-  // write output to files
+  // write output
   structurefield_->Output();
 }
 
