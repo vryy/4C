@@ -53,6 +53,8 @@ namespace LINALG
   {
     undefined,           /*!< Type of system matrix is undefined. */
     sparse,              /*!< System matrix is a sparse matrix. */
+    block_field,         /*!< System matrix is a block matrix that consists of NxN sparse matrices.
+                            Each (physical) field corresponds to one matrix block*/
     block_condition,     /*!< System matrix is a block matrix that consists of NxN sparse matrices.
                             How the system matrix is divided has to be defined by a condition (e.g.
                             \link DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink.)*/

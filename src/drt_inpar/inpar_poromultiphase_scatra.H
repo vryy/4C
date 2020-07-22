@@ -54,18 +54,6 @@ namespace INPAR
       norm_inf         //!< Maximum/infinity norm
     };
 
-    //! equilibration methods for global system of equations (monolithic)
-    enum EquilibrationMethods
-    {
-      equilibration_none,
-      equilibration_rows_full,
-      equilibration_rows_maindiag,
-      equilibration_columns_full,
-      equilibration_columns_maindiag,
-      equilibration_rowsandcolumns_full,
-      equilibration_rowsandcolumns_maindiag
-    };
-
     //! Handling of non-converged nonlinear solver
     enum DivContAct
     {

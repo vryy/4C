@@ -97,10 +97,6 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
     blockrowdofmap_->Setup(*fullmap_, vecSpaces);
   }
 
-  // initialize vectors for row and column sums of global system matrix if necessary
-  if (rowequilibration_)
-    invrowsums_ = Teuchos::rcp(new Epetra_Vector(*blockrowdofmap_->FullMap(), false));
-
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);
 
@@ -109,6 +105,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 
   // build map of dofs subjected to a DBC of whole problem
   BuildCombinedDBCMap();
+
+  SetupEquilibration();
 }  // SetupSystem()
 
 /*----------------------------------------------------------------------*
