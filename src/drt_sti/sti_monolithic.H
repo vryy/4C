@@ -33,6 +33,8 @@ namespace LINALG
   class SparseOperator;
   class MatrixColTransform;
   class MatrixRowTransform;
+  class Equilibration;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace STI
@@ -97,12 +99,6 @@ namespace STI
     //! build null spaces associated with blocks of global system matrix
     void BuildBlockNullSpaces() const;
 
-    //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< inverse sums of absolute values of row entries in matrix
-        ) const;
-
     //! compute null space information associated with global system matrix if applicable
     void ComputeNullSpaceIfNecessary(Teuchos::ParameterList&
             solverparams  //! solver parameter list for scatra-thermo interaction
@@ -110,18 +106,6 @@ namespace STI
 
     //! global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
-
-    //! equilibrate matrix rows
-    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< sums of absolute values of row entries in matrix
-        ) const;
-
-    //! equilibrate global system of equations if necessary
-    void EquilibrateSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
-        ) const;
 
     //! check termination criterion for Newton-Raphson iteration
     bool ExitNewtonRaphson();
@@ -148,7 +132,7 @@ namespace STI
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::STI::MatrixType matrixtype_;
+    const LINALG::MatrixType matrixtype_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
     //! degrees of freedom), domain contributions
@@ -208,6 +192,9 @@ namespace STI
 
     //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
+
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> equilibration_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 #endif

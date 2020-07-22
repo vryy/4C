@@ -14,6 +14,8 @@
 
 #include "../drt_lib/drt_conditiondefinition.H"
 
+#include "../linalg/linalg_sparseoperator.H"
+
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
@@ -78,10 +80,11 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &stidyn_monolithic);
 
   // type of global system matrix in global system of equations
-  setStringToIntegralParameter<MatrixType>("MATRIXTYPE", "block",
+  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "block",
       "type of global system matrix in global system of equations",
       tuple<std::string>("block", "sparse"),
-      tuple<MatrixType>(MatrixType::block, MatrixType::sparse), &stidyn_monolithic);
+      tuple<LINALG::MatrixType>(LINALG::MatrixType::block_condition, LINALG::MatrixType::sparse),
+      &stidyn_monolithic);
 
   /*----------------------------------------------------------------------*/
   // valid parameters for partitioned scatra-thermo interaction

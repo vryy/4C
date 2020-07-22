@@ -48,14 +48,12 @@ namespace LINALG
   class MatrixColTransform;
   class MatrixRowTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
-
-namespace LINALG
-{
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
+  class Equilibration;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace MORTAR
@@ -205,7 +203,7 @@ namespace SCATRA
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
 
     //! return type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType& MatrixType() const { return matrixtype_; };
+    const LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;
@@ -364,17 +362,11 @@ namespace SCATRA
     //! master dofs transformed to slave side of scatra-scatra interface
     Teuchos::RCP<Epetra_Vector> imasterphinp_;
 
-    //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invrowsums_;
-
-    //! inverse sums of absolute values of column entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invcolsums_;
-
     //! flag for interface side underlying Lagrange multiplier definition
     const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType matrixtype_;
+    const LINALG::MatrixType matrixtype_;
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;
@@ -448,20 +440,15 @@ namespace SCATRA
     //! interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
     Teuchos::RCP<LINALG::SparseMatrix> growthgrowthblock_;
 
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+
    private:
     //! copy constructor
     MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
 
     //! build map extractors associated with blocks of global system matrix
     void BuildBlockMapExtractors();
-
-    //! equilibrate global system of equations if necessary
-    void EquilibrateSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const LINALG::MultiMapExtractor&
-            blockmaps  //!< map extractor associated with blocks of global system matrix
-        ) const;
 
     //! evaluate single mortar integration cell
     void EvaluateMortarCell(const DRT::Discretization& idiscret,  //!< interface discretization
@@ -622,33 +609,6 @@ namespace SCATRA
             vector2_side  //!< interface side associated with system vector 2
         ) const;
 
-    //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< inverse sums of absolute values of row entries in matrix
-        ) const;
-
-    //! compute inverse sums of absolute values of matrix column entries
-    void ComputeInvColSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invcolsums  //!< inverse sums of absolute values of column entries in matrix
-        ) const;
-
-    //! equilibrate matrix rows
-    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< sums of absolute values of row entries in matrix
-        ) const;
-
-    //! equilibrate matrix columns
-    void EquilibrateMatrixColumns(LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invcolsums  //!< sums of absolute values of column entries in matrix
-        ) const;
-
-    //! unequilibrate global increment vector if necessary
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment  //!< increment vector
-        ) const;
 
     //! slave-side scatra-scatra interface coupling conditions
     std::map<const int, DRT::Condition* const> slaveconditions_;

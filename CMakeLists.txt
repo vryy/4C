@@ -1918,6 +1918,7 @@ set(OBJS_LINALG
   src/linalg/linalg_blocksparsematrix.cpp
   src/linalg/linalg_condest.cpp
   src/linalg/linalg_downwindmatrix.cpp
+  src/linalg/linalg_equilibrate.cpp
   src/linalg/linalg_fixedsparsematrix.cpp
   src/linalg/linalg_krylov_projector.cpp
   src/linalg/linalg_mapextractor.cpp

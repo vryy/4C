@@ -90,13 +90,13 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
   // finalize scatra-thermo block
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       scatrathermoblock->Complete();
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       scatrathermoblock->Complete(*ThermoField()->Discretization()->DofRowMap(), *FullMapScatra());
       break;
@@ -151,13 +151,13 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
   // finalize thermo-scatra matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       thermoscatrablock->Complete();
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       thermoscatrablock->Complete(*FullMapScatra(), *FullMapThermo());
       break;
@@ -208,7 +208,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockScatraTh
   Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *BlockMapThermo(), MeshtyingStrategyScaTra()->BlockMapsSlave(), 81, false, true));
@@ -216,7 +216,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockScatraTh
           *BlockMapThermo(), MeshtyingStrategyScaTra()->BlockMapsMaster(), 81, false, true));
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix = Teuchos::rcp(new LINALG::SparseMatrix(
           *MeshtyingStrategyScaTra()->CouplingAdapter()->SlaveDofMap(), 27, false, true));
@@ -244,12 +244,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockScatraTh
   // finalize scatra-thermo matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       scatrathermoblockinterface->Complete();
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       scatrathermoblockinterface->Complete(
           *ThermoField()->Discretization()->DofRowMap(), *InterfaceMapScaTra());
@@ -314,12 +314,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   // finalize slave matrix
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix->Complete();
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix->Complete(*ThermoField()->Discretization()->DofRowMap(),
           *MeshtyingStrategyScaTra()->CouplingAdapter()->SlaveDofMap());
@@ -346,7 +346,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
 
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       // cast master and slave matrix
       auto blockslavematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(slavematrix);
@@ -378,7 +378,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
 
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       // cast master and slave matrix
       auto sparseslavematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(slavematrix);
@@ -423,14 +423,14 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   Teuchos::RCP<LINALG::SparseMatrix> mastermatrix = MeshtyingStrategyThermo()->MasterMatrix();
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           MeshtyingStrategyScaTra()->BlockMapsSlave(), *BlockMapThermoInterface(), 81, false,
           true));
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       MeshtyingStrategyThermo()->SlaveMatrix()->Zero();
       slavematrix = MeshtyingStrategyThermo()->SlaveMatrix();
@@ -481,7 +481,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
 
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       // finalize auxiliary system matrices
       slavematrix->Complete();
@@ -517,7 +517,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
 
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix->Complete(*MeshtyingStrategyScaTra()->CouplingAdapter()->SlaveDofMap(),
           *MeshtyingStrategyThermo()->CouplingAdapter()->SlaveDofMap());
@@ -588,14 +588,14 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
       MeshtyingStrategyScaTra()->MasterMatrix();
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *BlockMapThermo(), MeshtyingStrategyScaTra()->BlockMapsSlave(), 81, false, true));
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix = MeshtyingStrategyScaTra()->SlaveMatrix();
       slavematrix->Zero();
@@ -651,7 +651,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
   Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix->Complete();
       mastermatrix =
@@ -661,7 +661,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
 
       break;
     }
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix->Complete(*ThermoField()->Discretization()->DofRowMap(),
           *MeshtyingStrategyScaTra()->InterfaceMaps()->Map(1));
@@ -687,13 +687,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
   // finalize scatra-thermo matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       scatrathermoblockinterface->Complete();
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       scatrathermoblockinterface->Complete(
           *ThermoField()->Discretization()->DofRowMap(), *InterfaceMapScaTra());
@@ -732,14 +732,14 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
   Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           ScaTraField()->BlockMaps(), *BlockMapThermoInterface(), 81, false, true));
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix = MeshtyingStrategyThermo()->SlaveMatrix();
       slavematrix->Zero();
@@ -791,13 +791,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
   // finalize auxiliary system matrix
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       slavematrix->Complete();
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       slavematrix->Complete(*FullMapScatra(), *MeshtyingStrategyThermo()->InterfaceMaps()->Map(1));
       break;
@@ -820,13 +820,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
   // finalize thermo-scatra matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case INPAR::SCATRA::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition:
     {
       thermoscatrablockinterface->Complete();
       break;
     }
 
-    case INPAR::SCATRA::MatrixType::sparse:
+    case LINALG::MatrixType::sparse:
     {
       thermoscatrablockinterface->Complete(*FullMapScatra(), *InterfaceMapThermo());
       break;

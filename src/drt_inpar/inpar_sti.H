@@ -39,13 +39,6 @@ namespace INPAR
       twoway_thermotoscatra_aitken
     };
 
-    //! type of monolithic system matrix in global system of equations
-    enum class MatrixType
-    {
-      block,
-      sparse
-    };
-
     //! type of scalar transport time integration
     enum class ScaTraTimIntType
     {

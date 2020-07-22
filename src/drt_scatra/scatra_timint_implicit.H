@@ -75,6 +75,8 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
+  enum class EquilibrationMethod;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace FLD
@@ -325,10 +327,10 @@ namespace SCATRA
     bool MacroScale() const { return macro_scale_; };
 
     //! return type of equilibration of global system of scalar transport equations
-    INPAR::SCATRA::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
+    LINALG::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
 
     //! return type of global system matrix in global system of equations
-    INPAR::SCATRA::MatrixType MatrixType() const { return matrixtype_; }
+    LINALG::MatrixType MatrixType() const { return matrixtype_; }
 
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
@@ -1066,10 +1068,10 @@ namespace SCATRA
     INPAR::SCATRA::SolverType solvtype_;
 
     //! type of equilibration of global system of scalar transport equations
-    const INPAR::SCATRA::EquilibrationMethod equilibrationmethod_;
+    const LINALG::EquilibrationMethod equilibrationmethod_;
 
     //! type of global system matrix in global system of equations
-    const INPAR::SCATRA::MatrixType matrixtype_;
+    const LINALG::MatrixType matrixtype_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
