@@ -9,7 +9,7 @@
 #
 # note:
 # The order in which the paths are defined is significant: the last pattern that matches a given path will be used to find the code owners.
-# 
+#
 # refer to:
 # https://docs.gitlab.com/ee/user/project/code_owners.html
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -297,9 +297,9 @@ src/global_full/                   @baci/team_discretization
 
 src/headers/                       @baci/team_discretization
 
-src/linalg/                        @baci/team_solver
+src/linalg/                        @baci/team_solvers
 
-src/loca_continuation/             @baci/team_solver
+src/loca_continuation/             @baci/team_solvers
 
 src/post_drt_common/               @baci/team_output
 
