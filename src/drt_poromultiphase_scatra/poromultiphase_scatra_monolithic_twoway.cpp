@@ -46,7 +46,6 @@
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTraMonolithicTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraMonolithic(comm, globaltimeparams),
-      directsolve_(true),
       ittolinc_(0.0),
       ittolres_(0.0),
       itmax_(0),
@@ -275,16 +274,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
   const int solvertype =
       DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
-                  solvertype == INPAR::SOLVER::amesos_klu_nonsym);
-
-  if (directsolve_)
-  {
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
-  }
-  else
-    CreateLinearSolver(solverparams, solvertype);
+  CreateLinearSolver(solverparams, solvertype);
 
   vectornormfres_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
@@ -298,6 +288,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
     const Teuchos::ParameterList& solverparams, const int solvertype)
 {
+  solver_ = Teuchos::rcp(
+      new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  // no need to do the rest for direct solvers
+  if (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
+      solvertype == INPAR::SOLVER::amesos_klu_nonsym)
+    return;
+
   if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
@@ -325,9 +322,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
       dserror("AMGnxn preconditioner expected");
       break;
   }
-
-  solver_ = Teuchos::rcp(
-      new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // build the null spaces of the single blocks
   BuildBlockNullSpaces();
@@ -831,21 +825,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   // equilibrate global system of equations if necessary
   equilibration_->EquilibrateSystem(systemmatrix_, rhs_, *blockrowdofmap_);
 
-  if (directsolve_)
-  {
-    // merge blockmatrix to SparseMatrix
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-
-    // standard solver call
-    // system is ready to solve since Dirichlet Boundary conditions have been applied in
-    // SetupSystemMatrix or Evaluate
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
-  }
-  else
-  {
-    // standard solver call
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
-  }
+  // standard solver call
+  // system is ready to solve since Dirichlet Boundary conditions have been applied in
+  // SetupSystemMatrix or Evaluate
+  solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
 
   equilibration_->UnequilibrateIncrement(iterinc_);
 

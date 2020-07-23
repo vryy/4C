@@ -178,9 +178,6 @@ namespace POROMULTIPHASE
     /// Print user output that structure field is disabled
     void PrintStructureDisabledInfo();
 
-
-    //! linear solver
-    bool directsolve_;
     //! convergence tolerance for increments
     double ittolinc_;
     //! convergence tolerance for residuals
