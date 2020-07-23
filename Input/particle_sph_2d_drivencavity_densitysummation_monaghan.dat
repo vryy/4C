@@ -40,7 +40,6 @@ DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
-NO_RELVEL_TERM                  no
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 DIRICHLET_BOUNDARY_CONDITION    boundaryphase 1
 ----------------------------------------------------------------------FUNCT1

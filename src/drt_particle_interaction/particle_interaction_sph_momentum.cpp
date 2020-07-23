@@ -50,8 +50,6 @@ PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
           DRT::INPUT::IntegralValue<INPAR::PARTICLE::TransportVelocityFormulation>(
               params_sph_, "TRANSPORTVELOCITYFORMULATION")),
       applytransportvelocity_(false),
-      norelativevelocitycontribution_(
-          DRT::INPUT::IntegralValue<int>(params_sph_, "NO_RELVEL_TERM")),
       writeparticlewallinteraction_(
           DRT::INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
@@ -72,12 +70,6 @@ void PARTICLEINTERACTION::SPHMomentum::Init()
   if (transportvelocityformulation_ !=
       INPAR::PARTICLE::TransportVelocityFormulation::NoTransportVelocity)
     applytransportvelocity_ = true;
-
-  // safety checks
-  if ((not applytransportvelocity_) and norelativevelocitycontribution_)
-    dserror(
-        "the parameter 'NO_RELVEL_TERM' only makes sense if transport velocity formulation "
-        "'TRANSPORT_VELOCITY' is applied!");
 }
 
 void PARTICLEINTERACTION::SPHMomentum::Setup(
@@ -478,12 +470,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
       }
 
       // evaluate convection of momentum with relative velocity
-      if (not norelativevelocitycontribution_)
-      {
-        // evaluate modified velocity contribution
-        momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
-            mod_vel_j, speccoeff_ij, speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
-      }
+      momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
+          mod_vel_j, speccoeff_ij, speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
     }
 
     // evaluate artificial viscosity
@@ -778,12 +766,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
           }
 
           // evaluate convection of momentum with relative velocity
-          if (not norelativevelocitycontribution_)
-          {
-            // evaluate modified velocity contribution
-            momentumformulation_->ModifiedVelocityContribution(dens_i, dens_k, vel_i, vel_k,
-                mod_vel_i, nullptr, speccoeff_ik, 0.0, e_ik, sumk_acc_ik, nullptr);
-          }
+          momentumformulation_->ModifiedVelocityContribution(dens_i, dens_k, vel_i, vel_k,
+              mod_vel_i, nullptr, speccoeff_ik, 0.0, e_ik, sumk_acc_ik, nullptr);
         }
 
         // evaluate artificial viscosity

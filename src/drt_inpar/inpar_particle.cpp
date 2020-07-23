@@ -220,11 +220,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::GeneralizedTransportVelocity),
       &particledynsph);
 
-  BoolParameter("NO_RELVEL_TERM", "no",
-      "do not apply convection of momentum with relative velocity in case of transport velocity "
-      "formulation",
-      &particledynsph);
-
   // type of temperature evaluation scheme
   setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",
       "type of temperature evaluation scheme",
