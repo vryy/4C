@@ -82,6 +82,8 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       artscatradis_, scatradis_, myscatraparams.sublist("ARTERY COUPLING"), "ArtScatraCouplCon",
       "COUPLEDDOFS_ARTSCATRA", "COUPLEDDOFS_SCATRA");
 
+  InitializeLinearSolver(myscatraparams);
+
   return;
 }
 
@@ -105,6 +107,57 @@ void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
   arttoscatracoupling_->Setup();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | initialize the linear solver                        kremheller 07/20 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
+    const Teuchos::ParameterList& scatraparams)
+{
+  const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
+  const Teuchos::ParameterList& solverparams =
+      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+  const int solvertype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  // no need to do the rest for direct solvers
+  if (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
+      solvertype == INPAR::SOLVER::amesos_klu_nonsym)
+    return;
+
+  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
+    dserror("aztec solver expected");
+
+  const int azprectype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams, "AZPREC");
+
+  // plausibility check
+  switch (azprectype)
+  {
+    case INPAR::SOLVER::azprec_AMGnxn:
+    {
+      // no plausibility checks here
+      // if you forget to declare an xml file you will get an error message anyway
+    }
+    break;
+    default:
+      dserror("AMGnxn preconditioner expected");
+      break;
+  }
+
+  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
+  // computation
+  Teuchos::ParameterList& blocksmootherparams1 = Solver().Params().sublist("Inverse1");
+  blocksmootherparams1.sublist("Aztec Parameters");
+  blocksmootherparams1.sublist("MueLu Parameters");
+
+  scatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams1);
+
+  Teuchos::ParameterList& blocksmootherparams2 = Solver().Params().sublist("Inverse2");
+  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("MueLu Parameters");
+
+  artscatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams2);
 }
 
 /*-----------------------------------------------------------------------*
