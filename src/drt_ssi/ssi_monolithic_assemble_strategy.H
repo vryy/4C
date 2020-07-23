@@ -269,5 +269,10 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix_sparse);
   };
 
+  //! build specifc assemble strategy
+  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
+      Teuchos::RCP<const SSI::SSI_Mono> ssi_mono, ADAPTER::CouplingSlaveConverter converter,
+      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
+
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H

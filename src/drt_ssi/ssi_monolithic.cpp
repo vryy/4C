@@ -741,7 +741,7 @@ void SSI::SSI_Mono::SetupSystem()
   // perform initializations associated with global system matrix
   switch (matrixtype_)
   {
-    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_field:
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
@@ -832,45 +832,9 @@ void SSI::SSI_Mono::SetupSystem()
   // initialize strategy for assembly
   // create converter
   ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-  switch (matrixtype_)
-  {
-    case LINALG::MatrixType::block_condition:
-    {
-      switch (scatra_->ScaTraField()->MatrixType())
-      {
-        case LINALG::MatrixType::block_condition:
-        {
-          strategy_assemble_ = Teuchos::rcp(
-              new SSI::AssembleStrategyBlockBlock(Teuchos::rcp(this, false), converter));
-          break;
-        }
-        case LINALG::MatrixType::sparse:
-        {
-          strategy_assemble_ = Teuchos::rcp(
-              new SSI::AssembleStrategyBlockSparse(Teuchos::rcp(this, false), converter));
-          break;
-        }
 
-        default:
-        {
-          dserror("unknown matrix type");
-          break;
-        }
-      }
-      break;
-    }
-    case LINALG::MatrixType::sparse:
-    {
-      strategy_assemble_ =
-          Teuchos::rcp(new SSI::AssembleStrategySparse(Teuchos::rcp(this, false), converter));
-      break;
-    }
-    default:
-    {
-      dserror("unknown matrix type");
-      break;
-    }
-  }
+  strategy_assemble_ = SSI::BuildAssembleStrategy(
+      Teuchos::rcp(this, false), converter, matrixtype_, scatra_->ScaTraField()->MatrixType());
 
   // initialize object, that performs evaluations of OD coupling
   scatrastructureOffDiagcoupling_ = Teuchos::rcp(

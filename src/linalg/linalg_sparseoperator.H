@@ -53,8 +53,11 @@ namespace LINALG
   {
     undefined,           /*!< Type of system matrix is undefined. */
     sparse,              /*!< System matrix is a sparse matrix. */
-    block_field,         /*!< System matrix is a block matrix that consists of NxN sparse matrices.
-                            Each (physical) field corresponds to one matrix block*/
+    block_field,         /*!< System matrix is a block matrix that consists of NxN matrices.
+                            In the simplest case, where each (physical) field is represented by just one
+                            sparse matrix, N equals the number of (physical) fields of your problem.
+                            However, it is also possible that the matrix of each (physical) field itself is
+                            a block matrix, then of course N is the number of all sub matrix blocks*/
     block_condition,     /*!< System matrix is a block matrix that consists of NxN sparse matrices.
                             How the system matrix is divided has to be defined by a condition (e.g.
                             \link DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink.)*/

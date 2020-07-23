@@ -755,3 +755,52 @@ void SSI::AssembleStrategySparse::CastSystemMatrixSparse(
 
   return;
 }
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
+    Teuchos::RCP<const SSI::SSI_Mono> ssi_mono, ADAPTER::CouplingSlaveConverter converter,
+    LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra)
+{
+  Teuchos::RCP<SSI::AssembleStrategyBase> assemblestrategy = Teuchos::null;
+
+  switch (matrixtype_ssi)
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      switch (matrixtype_scatra)
+      {
+        case LINALG::MatrixType::block_condition:
+        {
+          assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategyBlockBlock(ssi_mono, converter));
+          break;
+        }
+        case LINALG::MatrixType::sparse:
+        {
+          assemblestrategy =
+              Teuchos::rcp(new SSI::AssembleStrategyBlockSparse(ssi_mono, converter));
+          break;
+        }
+
+        default:
+        {
+          dserror("unknown matrix type of ScaTra field");
+          break;
+        }
+      }
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategySparse(ssi_mono, converter));
+      break;
+    }
+    default:
+    {
+      dserror("unknown matrix type of SSI problem");
+      break;
+    }
+  }
+
+  return assemblestrategy;
+}
