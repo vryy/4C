@@ -226,7 +226,7 @@ namespace GEOMETRYPAIR
    * \brief Evaluate a position on the surface.
    *
    * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-   * parameter coordiantes, the third one is in the normal direction).
+   * parameter coordinates, the third one is in the normal direction).
    * @param q_surface (in) Degrees of freedom for the surface.
    * @param r (out) Position on the surface.
    * @param element (in) Pointer to the element object.
@@ -252,6 +252,75 @@ namespace GEOMETRYPAIR
     // Add the normal part to the position.
     normal.Scale(xi(2));
     r += normal;
+  }
+
+  /**
+   * \brief Evaluate the Jacobi matrix for a volume element.
+   *
+   * @param xi (in) Parameter coordinate on the element.
+   * @param X_volume (in) Reference positions for the element.
+   * @param J (out) 3D Jacobi matrix.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename volume, typename scalar_type>
+  void EvaluateJacobian(const LINALG::Matrix<3, 1, scalar_type>& xi,
+      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      LINALG::Matrix<3, 3, scalar_type>& J, const DRT::Element* element)
+  {
+    // Check at compile time if a volume (3D) element is given.
+    static_assert(volume::dim_ == 3, "EvaluateJacobian can only be called for 3D elements!");
+
+    // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
+    // transposed Jacobi matrix.
+    LINALG::Matrix<3, 3, scalar_type> dXdxi(true);
+    EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi, element);
+    J.Clear();
+    J.UpdateT(dXdxi);
+  }
+
+  /**
+   * \brief Evaluate the 3D deformation gradient F in a volume element.
+   *
+   * @param xi (in) Parameter coordinate on the element.
+   * @param X_volume (in) Reference positions for the element.
+   * @param q_volume (in) Degrees of freedom for the element.
+   * @param F (out) 3D deformation gradient.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename volume, typename scalar_type_xi, typename scalar_type_dof,
+      typename scalar_type_result>
+  void EvaluateDeformationGradient(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      const LINALG::Matrix<volume::n_dof_, 1, scalar_type_dof>& q_volume,
+      LINALG::Matrix<3, 3, scalar_type_result>& F, const DRT::Element* element)
+  {
+    // Check at compile time if a volume (3D) element is given.
+    static_assert(
+        volume::dim_ == 3, "EvaluateDeformationGradient can only be called for 3D elements!");
+
+    // Get the inverse of the Jacobian.
+    LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
+    EvaluateJacobian<volume>(xi, X_volume, inv_J, element);
+    LINALG::Inverse(inv_J);
+
+    // Get the derivatives of the shape functions w.r.t to the parameter coordinates.
+    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdxi(true);
+    volume::EvaluateShapeFunctionDeriv1(
+        dNdxi, xi, std::integral_constant<unsigned int, volume::dim_>{}, element);
+
+    // Transform to derivatives w.r.t physical coordinates.
+    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdX(true);
+    for (unsigned int i_row = 0; i_row < 3; i_row++)
+      for (unsigned int i_col = 0; i_col < volume::n_nodes_ * volume::n_val_; i_col++)
+        for (unsigned int i_sum = 0; i_sum < 3; i_sum++)
+          dNdX(i_row, i_col) += inv_J(i_row, i_sum) * dNdxi(i_sum, i_col);
+
+    // Calculate F.
+    F.Clear();
+    for (unsigned int i_row = 0; i_row < 3; i_row++)
+      for (unsigned int i_col = 0; i_col < 3; i_col++)
+        for (unsigned int i_sum = 0; i_sum < volume::n_nodes_ * volume::n_val_; i_sum++)
+          F(i_col, i_row) += dNdX(i_row, i_sum) * q_volume(3 * i_sum + i_col);
   }
 
   /**
