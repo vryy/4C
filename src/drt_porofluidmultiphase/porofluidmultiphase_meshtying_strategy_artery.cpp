@@ -122,6 +122,59 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Update()
 }
 
 /*--------------------------------------------------------------------------*
+ | initialize the linear solver                            kremheller 07/20 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
+    Teuchos::RCP<LINALG::Solver> solver)
+{
+  const Teuchos::ParameterList& porofluidparams =
+      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams();
+  const int linsolvernumber = porofluidparams.get<int>("LINEAR_SOLVER");
+  const Teuchos::ParameterList& solverparams =
+      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+  const int solvertype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  // no need to do the rest for direct solvers
+  if (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
+      solvertype == INPAR::SOLVER::amesos_klu_nonsym)
+    return;
+
+  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
+    dserror("aztec solver expected");
+
+  const int azprectype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams, "AZPREC");
+
+  // plausibility check
+  switch (azprectype)
+  {
+    case INPAR::SOLVER::azprec_AMGnxn:
+    {
+      // no plausibility checks here
+      // if you forget to declare an xml file you will get an error message anyway
+    }
+    break;
+    default:
+      dserror("AMGnxn preconditioner expected");
+      break;
+  }
+
+  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
+  // computation
+  Teuchos::ParameterList& blocksmootherparams1 = solver->Params().sublist("Inverse1");
+  blocksmootherparams1.sublist("Aztec Parameters");
+  blocksmootherparams1.sublist("MueLu Parameters");
+
+  porofluidmultitimint_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams1);
+
+  Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
+  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("MueLu Parameters");
+
+  arterydis_->ComputeNullSpaceIfNecessary(blocksmootherparams2);
+}
+
+/*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
@@ -141,14 +194,12 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINA
 
   comb_systemmatrix_->Complete();
 
-  // merge blockmatrix to SparseMatrix
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = comb_systemmatrix_->Merge();
   comb_increment_->PutScalar(0.0);
 
   // standard solver call
   // system is ready to solve since Dirichlet Boundary conditions have been applied in
   // SetupSystemMatrix or Evaluate
-  solver->Solve(sparse->EpetraOperator(), comb_increment_, rhs_, true, false);
+  solver->Solve(comb_systemmatrix_->EpetraOperator(), comb_increment_, rhs_, true, false);
 
   return;
 }

@@ -154,13 +154,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   if (nds_solidpressure_ < 0 or nds_solidpressure_ > discret_->NumDofSets() - 1)
     dserror("invalid number of dofset for solid pressure!");
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  solver_ = Teuchos::rcp(new LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
-
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->FillComplete();
 
@@ -283,6 +276,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   strategy_->SetNearbyElePairs(nearbyelepairs);
   // setup the strategy
   strategy_->Setup();
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  solver_ = Teuchos::rcp(new LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
+  strategy_->InitializeLinearSolver(solver_);
 
   return;
 }  // TimIntImpl::Init()
