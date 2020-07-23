@@ -69,6 +69,7 @@ REACFUNCT_ART                   0
 SCALEREAC_CONT                  1 0 0 0 0
 REACFUNCT_CONT                  6 0 0 0 0
 EVALUATE_IN_REF_CONFIG          no
+PRINT_OUT_SUMMARY_PAIRS         yes
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Stationary

@@ -213,4 +213,8 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
       "Flag if output of blood vessel volume fraction should be calculated",
       &porofluidmultiphasemshtdyn);
+
+  // Flag if summary of coupling-pairs should be printed
+  BoolParameter("PRINT_OUT_SUMMARY_PAIRS", "no",
+      "Flag if summary of coupling-pairs should be printed", &porofluidmultiphasemshtdyn);
 }

@@ -59,6 +59,7 @@ SCALEREAC_CONT                  0 0
 REACFUNCT_CONT                  0 0
 MAXNUMSEGPERARTELE              7
 OUTPUT_BLOODVESSELVOLFRAC       yes
+PRINT_OUT_SUMMARY_PAIRS         yes
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
