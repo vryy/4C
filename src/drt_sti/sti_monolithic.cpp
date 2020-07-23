@@ -302,30 +302,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   }
 
   // initialize OD evaluation strategy
-  switch (strategyscatra_->CouplingType())
-  {
-    case INPAR::S2I::coupling_matching_nodes:
-    {
-      scatrathermooffdiagcoupling_ =
-          Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(blockmapthermo_,
-              blockmapthermointerface, maps_->Map(0), maps_->Map(1), interface_map_scatra,
-              interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_));
-      break;
-    }
-    case INPAR::S2I::coupling_mortar_standard:
-    {
-      scatrathermooffdiagcoupling_ =
-          Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMortarStandard(blockmapthermo_,
-              blockmapthermointerface, maps_->Map(0), maps_->Map(1), interface_map_scatra,
-              interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_));
-      break;
-    }
-    default:
-    {
-      dserror("Not supported coupling type");
-      break;
-    }
-  }
+  scatrathermooffdiagcoupling_ =
+      STI::BuildScatraThermoOffDiagCoupling(strategyscatra_->CouplingType(), blockmapthermo_,
+          blockmapthermointerface, maps_->Map(0), maps_->Map(1), interface_map_scatra,
+          interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
   LINALG::EquilibrationFactory equibrilationfactory;
