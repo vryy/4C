@@ -16,6 +16,7 @@
 #include "inpar_poroelast.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
+#include "../linalg/linalg_equilibrate.H"
 
 
 void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -108,13 +109,15 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       tuple<int>(fdcheck_none, fdcheck_global), &poromultiphasescatradynmono);
 
   // flag for equilibration of global system of equations
-  setStringToIntegralParameter<int>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
           "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<int>(equilibration_none, equilibration_rows_full, equilibration_rows_maindiag,
-          equilibration_columns_full, equilibration_columns_maindiag,
-          equilibration_rowsandcolumns_full, equilibration_rowsandcolumns_maindiag),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
+          LINALG::EquilibrationMethod::columns_full, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_full,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
       &poromultiphasescatradynmono);
 
   // ----------------------------------------------------------------------

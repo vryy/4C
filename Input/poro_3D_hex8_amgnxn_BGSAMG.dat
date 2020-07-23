@@ -41,7 +41,7 @@ SECONDORDER                     Yes
 CONTIPARTINT                    yes
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Poro
-EQUILIBRATION                   rows
+EQUILIBRATION                   rows_full
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary

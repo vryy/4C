@@ -81,13 +81,6 @@ namespace INPAR
       //   initfield_field_by_condition
     };
 
-    /// equilibration methods for global system of equations
-    enum EquilibrationMethods
-    {
-      equilibration_none,
-      equilibration_rows
-    };
-
     //! map enum term to std::string
     static inline const std::string VectorNormString(
         const enum VectorNorm norm  //!< input enum term

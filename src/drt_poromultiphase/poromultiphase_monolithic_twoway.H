@@ -23,6 +23,8 @@ namespace LINALG
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class Solver;
+  class Equilibration;
+  enum class EquilibrationMethod;
 }  // namespace LINALG
 
 namespace DRT
@@ -151,21 +153,6 @@ namespace POROMULTIPHASE
     //! Solve the linear system of equations
     void LinearSolve();
 
-    //! equilibrate the system of equations
-    void EquilibrateSystem();
-
-    //! equilibrate matrix rows
-    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< sums of absolute values of row entries in matrix
-        ) const;
-
-    //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //!< inverse sums of absolute values of row entries in matrix
-        ) const;
-
     //! Create the linear solver
     virtual void CreateLinearSolver(
         const Teuchos::ParameterList& solverparams, const int solvertype);
@@ -237,11 +224,11 @@ namespace POROMULTIPHASE
     //! dof row map splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
-    //! flag for equilibration of global system of equations
-    INPAR::POROMULTIPHASE::EquilibrationMethods equilibration_;
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> equilibration_;
 
-    //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invrowsums_;
+    //! equilibration method applied to system matrix
+    LINALG::EquilibrationMethod equilibration_method_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;

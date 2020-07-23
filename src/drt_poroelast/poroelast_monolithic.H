@@ -28,6 +28,9 @@ namespace LINALG
 
   class BlockSparseMatrixBase;
   class Solver;
+
+  class Equilibration;
+  enum class EquilibrationMethod;
 }  // namespace LINALG
 
 namespace POROELAST
@@ -69,6 +72,9 @@ namespace POROELAST
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+
+    /// setup equilibration of system matrix
+    void SetupEquilibration();
 
     //! setup newton solver
     virtual void SetupNewton();
@@ -269,24 +275,6 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         bool firstcall = false);
 
-    //! equilibrate global system of equations if necessary
-    void EquilibrateSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //! system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual                //! residual vector
-    );
-
-    //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //! matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //! inverse sums of absolute values of row entries in matrix
-    );
-
-    //! equilibrate matrix rows
-    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //! matrix
-        const Teuchos::RCP<Epetra_Vector>&
-            invrowsums  //! sums of absolute values of row entries in matrix
-    );
-
     //! @name General purpose algorithm members
     //@{
 
@@ -440,11 +428,11 @@ namespace POROELAST
 
     //! @name matrix equilibration
 
-    //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invrowsums_;
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> equilibration_;
 
-    //! flag for row equilibration of global system of equations
-    bool rowequilibration_;
+    //! equilibration method applied to system matrix
+    LINALG::EquilibrationMethod equilibration_method_;
     //@}
 
     //@}

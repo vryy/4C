@@ -53,6 +53,7 @@
 
 #include "../drt_mortar/mortar_manager_base.H"
 
+#include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -108,7 +109,8 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       del_(Teuchos::null),
       delhist_(Teuchos::null),
       mu_(0.0),
-      invrowsums_(Teuchos::null)
+      equilibration_(Teuchos::null),
+      equilibration_method_(LINALG::EquilibrationMethod::none)
 {
   const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -118,8 +120,8 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   const Teuchos::ParameterList& poroparams = DRT::Problem::Instance()->PoroelastDynamicParams();
-  rowequilibration_ = (DRT::INPUT::IntegralValue<INPAR::POROELAST::EquilibrationMethods>(
-                           poroparams, "EQUILIBRATION") == INPAR::POROELAST::equilibration_rows);
+  equilibration_method_ =
+      Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
   strmethodname_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
@@ -491,10 +493,19 @@ void POROELAST::Monolithic::SetupSystem()
 
   noPenHandle_->Setup(DofRowMap(), (FluidField()->Discretization()->DofRowMap(0)));
 
-  // initialize vectors for row sums of global system matrix if necessary
-  if (rowequilibration_)
-    invrowsums_ = Teuchos::rcp(new Epetra_Vector(*blockrowdofmap_->FullMap(), false));
+  SetupEquilibration();
 }  // SetupSystem()
+
+/*----------------------------------------------------------------------*
+ | setup equilibration of system matrix               kremheller 07/20  |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::SetupEquilibration()
+{
+  // instantiate appropriate equilibration class
+  LINALG::EquilibrationFactory equibrilationfactory;
+  equilibration_ = equibrilationfactory.BuildEquilibration(
+      LINALG::MatrixType::block_field, equilibration_method_, *fullmap_);
+}
 
 /*----------------------------------------------------------------------*
  | setup system matrix of poroelasticity                   vuong 01/12  |
@@ -623,7 +634,7 @@ void POROELAST::Monolithic::LinearSolve()
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
   // equilibrate global system of equations if necessary
-  EquilibrateSystem(systemmatrix_, rhs_);
+  equilibration_->EquilibrateSystem(systemmatrix_, rhs_, *blockrowdofmap_);
 
   if (directsolve_)
   {
@@ -646,6 +657,8 @@ void POROELAST::Monolithic::LinearSolve()
     // standard solver call
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
   }
+
+  equilibration_->UnequilibrateIncrement(iterinc_);
 }
 
 /*----------------------------------------------------------------------*
@@ -2168,73 +2181,6 @@ void POROELAST::Monolithic::BuildCombinedDBCMap()
 }
 
 /*----------------------------------------------------------------------*
- | copy from scatra meshtying   fang 06/15                              |
- | equilibrate global system of equations if necessary     vuong 10/15  |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::EquilibrateSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //! system matrix
-    const Teuchos::RCP<Epetra_Vector>& residual                //! residual vector
-)
-{
-  if (rowequilibration_)
-  {
-    {
-      // check matrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
-      if (blocksparsematrix == Teuchos::null)
-        dserror("System matrix is not a block sparse matrix!");
-
-      // perform row equilibration
-      if (rowequilibration_)
-      {
-        // savety
-        if (invrowsums_ == Teuchos::null)
-          dserror("Epetra vector 'invrowsums_' is not initialized!");
-
-        for (int i = 0; i < blocksparsematrix->Rows(); ++i)
-        {
-          // compute inverse row sums of current main diagonal matrix block
-          Teuchos::RCP<Epetra_Vector> invrowsums(
-              Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RangeMap())));
-          ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums);
-
-          // perform row equilibration of matrix blocks in current row block of global system matrix
-          for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-            EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums);
-
-          // insert inverse row sums of current main diagonal matrix block into global vector
-          Extractor()->InsertVector(invrowsums, i, invrowsums_);
-        }
-      }
-    }
-
-    // perform equilibration of global residual vector
-    if (rowequilibration_)
-      if (residual->Multiply(1., *invrowsums_, *residual, 0.))
-        dserror("Equilibration of global residual vector failed!");
-  }
-
-  return;
-}  // POROELAST::Monolithic::EquilibrateSystem
-
-/*----------------------------------------------------------------------------*
- | copy from scatra meshtying   fang 06/15                                    |
- | compute inverse sums of absolute values of matrix row entries  vuong 10/15 |
- *----------------------------------------------------------------------------*/
-void POROELAST::Monolithic::ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //! matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //! inverse sums of absolute values of row entries in matrix
-)
-{
-  // compute inverse row sums of matrix
-  if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
-    dserror("Inverse row sums of matrix could not be successfully computed!");
-
-  return;
-}  // POROELAST::Monolithic::ComputeInvRowSums
-
-/*----------------------------------------------------------------------*
  | read restart information for given time step (public)    ager 12/16  |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::ReadRestart(const int step)
@@ -2247,17 +2193,3 @@ void POROELAST::Monolithic::ReadRestart(const int step)
   if (no_penetration_) SetPoroContactStates();
 
 }  // POROELAST::Monolithic::ReadRestart
-
-/*----------------------------------------------------------------------*
- | copy from scatra meshtying   fang 06/15                              |
- | equilibrate matrix rows                                 vuong 10/15  |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //! matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //! sums of absolute values of row entries in matrix
-)
-{
-  if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
-}  // POROELAST::Monolithic::EquilibrateMatrixRows

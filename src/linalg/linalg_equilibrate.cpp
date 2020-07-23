@@ -322,6 +322,7 @@ Teuchos::RCP<LINALG::Equilibration> LINALG::EquilibrationFactory::BuildEquilibra
         equilibration = Teuchos::rcp(new LINALG::EquilibrationSparse(method, dofrowmap));
         break;
       }
+      case LINALG::MatrixType::block_field:
       case LINALG::MatrixType::block_condition:
       case LINALG::MatrixType::block_condition_dof:
       case LINALG::MatrixType::block_meshtying:

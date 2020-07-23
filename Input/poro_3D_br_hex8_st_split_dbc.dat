@@ -28,7 +28,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -38,7 +38,7 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB rstab_gls //no_rstab
+RSTAB                           rstab_gls //no_rstab
 STABTYPE                        residual_based//no_stabilization
 SUPG                            no
 TDS                             quasistatic
@@ -60,9 +60,10 @@ TOLINC_GLOBAL                   1e-06
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   1
 CONTIPARTINT                    yes
+EQUILIBRATION                   rowsandcolumns_full
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK                       // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2

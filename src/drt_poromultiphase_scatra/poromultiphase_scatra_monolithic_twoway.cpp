@@ -34,6 +34,7 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
 #include "../drt_adapter/ad_art_net.H"
 
+#include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -52,8 +53,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
       itmin_(1),
       itnum_(0),
       blockrowdofmap_(Teuchos::null),
-      equilibration_(INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none),
-      invrowsums_(Teuchos::null),
+      equilibration_(Teuchos::null),
+      equilibration_method_(LINALG::EquilibrationMethod::none),
       solveradaptolbetter_(0.0),
       solveradapttol_(false),
       solve_structure_(true),
@@ -110,7 +111,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
   fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
-  equilibration_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::EquilibrationMethods>(
+  equilibration_method_ = Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
@@ -158,29 +159,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
           //*(FluidField()->DofRowMap()),
           81, true, true));
 
-  // perform initialization associated with equilibration of global system of equations
-  switch (equilibration_)
-  {
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none:
-    {
-      // do nothing
-      break;
-    }
-
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_full:
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag:
-    {
-      // initialize vector for row sums of global system matrix if necessary
-      invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), false));
-      break;
-    }
-
-    default:
-    {
-      dserror("Equilibration method not yet implemented!");
-      break;
-    }
-  }
+  // instantiate appropriate equilibration class
+  LINALG::EquilibrationFactory equibrilationfactory;
+  equilibration_ = equibrilationfactory.BuildEquilibration(
+      LINALG::MatrixType::block_field, equilibration_method_, *fullmap_);
 
   return;
 }
@@ -824,128 +806,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVec
 }
 
 /*----------------------------------------------------------------------*
- | equilibrate global system of equations if necessary kremheller 08/17 |
- | (adapated from sti_algorithm.cpp)                                    |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateSystem()
-{
-  switch (equilibration_)
-  {
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none:
-    {
-      // do nothing
-      break;
-    }
-
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_full:
-    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag:
-    {
-      // perform row equilibration
-      for (int i = 0; i < systemmatrix_->Rows(); ++i)
-      {
-        // initialize vector for inverse row sums
-        const Teuchos::RCP<Epetra_Vector> invrowsums(
-            Teuchos::rcp(new Epetra_Vector(systemmatrix_->Matrix(i, i).RowMap())));
-
-        // compute inverse row sums of current main diagonal matrix block
-        if (equilibration_ ==
-            INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag)
-          ComputeInvRowSums(systemmatrix_->Matrix(i, i), invrowsums);
-
-        // compute inverse row sums of current row block of global system matrix
-        else
-        {
-          // loop over all column blocks of global system matrix
-          for (int j = 0; j < systemmatrix_->Cols(); ++j)
-          {
-            // extract current block of global system matrix
-            const LINALG::SparseMatrix& matrix = systemmatrix_->Matrix(i, j);
-
-            // loop over all rows of current matrix block
-            for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
-            {
-              // determine length of current matrix row
-              const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
-
-              if (length > 0)
-              {
-                // extract current matrix row from matrix block
-                int numentries(0);
-                std::vector<double> values(length, 0.);
-                if (matrix.EpetraMatrix()->ExtractMyRowCopy(irow, length, numentries, &values[0]))
-                  dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
-
-                // compute and store current row sum
-                double rowsum(0.);
-                for (int ientry = 0; ientry < numentries; ++ientry)
-                  rowsum += std::abs(values[ientry]);
-                (*invrowsums)[irow] += rowsum;
-              }
-            }
-          }
-
-          // invert row sums
-          if (invrowsums->Reciprocal(*invrowsums)) dserror("Vector could not be inverted!");
-        }
-
-        // perform row equilibration of matrix blocks in current row block of global system matrix
-        for (int j = 0; j < systemmatrix_->Cols(); ++j)
-          EquilibrateMatrixRows(systemmatrix_->Matrix(i, j), invrowsums);
-
-        // insert inverse row sums of current main diagonal matrix block into global vector
-        Extractor()->InsertVector(invrowsums, i, invrowsums_);
-      }
-
-      // perform equilibration of global residual vector
-      if (rhs_->Multiply(1., *invrowsums_, *rhs_, 0.))
-        dserror("Equilibration of global residual vector failed!");
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Equilibration method not yet implemented!");
-      break;
-    }
-  }
-
-  return;
-}
-
-/*--------------------------------------------------------------------------------*
- | compute inverse sums of absolute values of matrix row entries kremheller 08/17 |
- | (copy from sti_algorithm.cpp)                                                  |
- *--------------------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ComputeInvRowSums(
-    const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< inverse sums of absolute values of row entries in matrix
-    ) const
-{
-  // compute inverse row sums of matrix
-  if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
-    dserror("Inverse row sums of matrix could not be successfully computed!");
-
-  return;
-}  // POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ComputeInvRowSums
-
-/*----------------------------------------------------------------------*
- | equilibrate matrix rows                             kremheller 08/17 |
- | (copy from sti_algorithm.cpp)                                        |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateMatrixRows(
-    LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< sums of absolute values of row entries in matrix
-    ) const
-{
-  if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
-}  // POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateMatrixRows
-
-/*----------------------------------------------------------------------*
  | Solve linear Poromultiphase-elasticity system     kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
@@ -969,7 +829,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
   // equilibrate global system of equations if necessary
-  EquilibrateSystem();
+  equilibration_->EquilibrateSystem(systemmatrix_, rhs_, *blockrowdofmap_);
 
   if (directsolve_)
   {
@@ -986,6 +846,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
     // standard solver call
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
   }
+
+  equilibration_->UnequilibrateIncrement(iterinc_);
 
   // *********** time measurement ***********
   double mydtsolve = timernewton_.WallTime() - dtcpu;
