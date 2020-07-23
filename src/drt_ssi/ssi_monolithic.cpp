@@ -86,34 +86,11 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 {
   // pass scalar transport degrees of freedom to structural discretization
   SetScatraSolution(scatra_->ScaTraField()->Phinp());
-
   // build system matrix and residual for structure field
-  if (iter_ == 1)
-    structure_->Evaluate();
-  else
-  {
-    // set up structural increment vector
-    const Teuchos::RCP<Epetra_Vector> increment_structure = maps_->ExtractVector(increment_, 1);
-
-    // consider structural meshtying if applicable
-    if (SSIInterfaceMeshtying())
-    {
-      maps_structure_->InsertVector(
-          icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(structure_->Dispnp(), 2)),
-          1, structure_->WriteAccessDispnp());
-      structure_->SetState(structure_->WriteAccessDispnp());
-      maps_structure_->InsertVector(
-          icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(increment_structure, 2)),
-          1, increment_structure);
-    }
-
-    // evaluate structural field
-    structure_->Evaluate(increment_structure);
-  }
+  structure_->Evaluate();
 
   // pass structural degrees of freedom to scalar transport discretization
   SetStructSolution(structure_->Dispnp(), structure_->Velnp());
-
   // build system matrix and residual for scalar transport field
   scatra_->ScaTraField()->PrepareLinearSolve();
 
@@ -329,6 +306,7 @@ void SSI::SSI_Mono::FDCheck()
     structure_->SetState(maps_->ExtractVector(statenp, 1));
 
     // calculate element right-hand side vector for perturbed state
+    if (iter_ != 1) UpdateIterStructure();
     AssembleMatAndRHS();
 
     // Now we compare the difference between the current entries in the system matrix
@@ -489,6 +467,7 @@ void SSI::SSI_Mono::FDCheck()
   structure_->SetState(maps_->ExtractVector(statenp_original, 1));
 
   // recompute system matrix and right-hand side vector based on original state variables
+  if (iter_ != 1) UpdateIterStructure();
   AssembleMatAndRHS();
 
   // restore system increment vector if necessary
@@ -962,11 +941,10 @@ void SSI::SSI_Mono::Solve()
       scatra_->ScaTraField()->OutputLinSolverStats(
           *solver_, dtsolve_, Step(), iter_, residual_->Map().NumGlobalElements());
 
-    // update scalar transport field
-    scatra_->ScaTraField()->UpdateIter(maps_->ExtractVector(increment_, 0));
-    scatra_->ScaTraField()->ComputeIntermediateValues();
+    // update states for next Newton iteration
+    UpdateIterScaTra();
+    UpdateIterStructure();
 
-    // structure field is updated during the next Newton-Raphson iteration step
   }  // Newton-Raphson iteration
 }
 
@@ -1026,4 +1004,36 @@ void SSI::SSI_Mono::Update()
 
   // update structure field
   structure_->Update();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSI_Mono::UpdateIterScaTra()
+{
+  // update scalar transport field
+  scatra_->ScaTraField()->UpdateIter(maps_->ExtractVector(increment_, 0));
+  scatra_->ScaTraField()->ComputeIntermediateValues();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSI_Mono::UpdateIterStructure()
+{
+  // set up structural increment vector
+  const Teuchos::RCP<Epetra_Vector> increment_structure = maps_->ExtractVector(increment_, 1);
+
+  // consider structural meshtying. Copy master increments and displacements to slave side.
+  if (SSIInterfaceMeshtying())
+  {
+    maps_structure_->InsertVector(
+        icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(structure_->Dispnp(), 2)), 1,
+        structure_->WriteAccessDispnp());
+    structure_->SetState(structure_->WriteAccessDispnp());
+    maps_structure_->InsertVector(
+        icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(increment_structure, 2)), 1,
+        increment_structure);
+  }
+
+  // update displacement of structure field
+  structure_->UpdateStateIncrementally(increment_structure);
 }
