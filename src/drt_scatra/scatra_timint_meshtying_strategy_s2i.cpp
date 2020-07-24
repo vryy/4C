@@ -2813,12 +2813,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   }
 
   // instantiate appropriate equilibration class
-  LINALG::EquilibrationFactory equibrilationfactory;
-  equilibration_ =
-      equibrilationfactory.BuildEquilibration(matrixtype_, scatratimint_->EquilibrationMethod(),
-          (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
-                  ? *extendedmaps_->FullMap()
-                  : *scatratimint_->Discretization()->DofRowMap()));
+  equilibration_ = LINALG::BuildEquilibration(matrixtype_, scatratimint_->EquilibrationMethod(),
+      (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
+              ? extendedmaps_->FullMap()
+              : Teuchos::rcp(new const Epetra_Map(*scatratimint_->Discretization()->DofRowMap()))));
 }  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
 
 
