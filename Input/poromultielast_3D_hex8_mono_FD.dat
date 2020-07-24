@@ -17,7 +17,7 @@ PROBLEMTYP                      Multiphase_Poroelasticity
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -42,7 +42,7 @@ TOLINC_GLOBAL                   1e-06
 FDCHECK                         global
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 20 30 40 NUMFLUIDPHASES 4 END
 

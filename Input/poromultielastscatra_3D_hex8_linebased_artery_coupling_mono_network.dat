@@ -16,7 +16,7 @@ https://physiology.arizona.edu/people/secomb/network/rattum98
 //NODES       2874
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra // Multiphase_Porous_Flow Multiphase_Poroelasticity Structure_Scalar_Interaction
+PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     2
@@ -35,7 +35,7 @@ TOLINC_GLOBAL                   1e-07
 FDCHECK                         none
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -105,7 +105,7 @@ INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 50 END
 

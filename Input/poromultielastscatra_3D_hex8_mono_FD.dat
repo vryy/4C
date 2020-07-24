@@ -14,7 +14,7 @@ of monolithic system matrix
 //NODES       8
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra // Multiphase_Porous_Flow Multiphase_Poroelasticity Structure_Scalar_Interaction
+PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     10
@@ -33,7 +33,7 @@ LINEAR_SOLVER                   1
 FDCHECK                         global
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -73,7 +73,7 @@ ITEMAX                          10
 CONVTOL                         1e-8
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 NUMFLUIDPHASES 3 END
 
