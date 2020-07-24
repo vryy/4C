@@ -147,6 +147,8 @@ namespace SCATRA
     void UpdateArtScatraIter(Teuchos::RCP<const Epetra_Vector> combined_inc);
 
    private:
+    //! initialize the linear solver
+    void InitializeLinearSolver(const Teuchos::ParameterList& scatraparams);
     //! time integrators
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint_;
     Teuchos::RCP<ADAPTER::ArtNet> arttimint_;

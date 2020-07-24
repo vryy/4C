@@ -44,6 +44,15 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::PrepareTimeStep() { return; }
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
 
 /*--------------------------------------------------------------------------*
+ | initialize the linear solver                            kremheller 07/20 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::InitializeLinearSolver(
+    Teuchos::RCP<LINALG::Solver> solver)
+{
+  porofluidmultitimint_->Discretization()->ComputeNullSpaceIfNecessary(solver->Params());
+}
+
+/*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(Teuchos::RCP<LINALG::Solver> solver,

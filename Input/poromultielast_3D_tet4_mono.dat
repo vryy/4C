@@ -15,11 +15,11 @@ only with TET4 elements
 //NODES       1122
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity // Multiphase_Porous_Flow Multiphase_Poroelasticity Structure_Scalar_Interaction
+PROBLEMTYP                      Multiphase_Poroelasticity
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -44,12 +44,12 @@ TOLINC_GLOBAL                   1e-06
 EQUILIBRATION                   rows_full
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_poromultiphase_solver
 SOLVER                          Aztec_MSR
 AZTOL                           1e-10
-AZOUTPUT                        10                             // output every so often, 0 no output
+AZOUTPUT                        10
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 poromultielast_3D_hex8_mono_BGS-AMG_2x2.xml

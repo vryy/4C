@@ -22,8 +22,8 @@ RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     10
 RESTARTEVRY                     8
-NUMSTEP                         10 // 4320
-MAXTIME                         3000 //1296000  // 180 hours
+NUMSTEP                         10
+MAXTIME                         3000 //  50 mins
 TIMESTEP                        300  //  5 mins
 COUPALGO                        twoway_monolithic
 ------------------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC
@@ -34,7 +34,7 @@ EQUILIBRATION                   rows_maindiag
 ADAPTCONV                       yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 TOLDISP                         1e-8
 TOLRES                          1e-3
@@ -82,11 +82,11 @@ CONVTOL                         1e-10
 ABSTOLRES                       -1
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_poromultiphasescatra_solver
 SOLVER                          Aztec_MSR
-AZOUTPUT                        10                             // output every so often, 0 no output
+AZOUTPUT                        10
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_mono_tumor_BGS-AMG_2x2.xml

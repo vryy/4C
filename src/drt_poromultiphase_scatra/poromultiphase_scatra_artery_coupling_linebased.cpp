@@ -146,7 +146,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
     CalculateBloodVesselVolumeFraction();
 
   // print out summary of pairs
-  OutputSummary();
+  if (contdis_->Name() == "porofluid" &&
+      (DRT::INPUT::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+    OutputSummary();
 
   issetup_ = true;
 

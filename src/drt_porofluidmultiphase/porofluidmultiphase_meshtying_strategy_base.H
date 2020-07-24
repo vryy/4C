@@ -51,6 +51,9 @@ namespace POROFLUIDMULTIPHASE
     //! output
     virtual void Output() = 0;
 
+    //! Initialize the linear solver
+    virtual void InitializeLinearSolver(Teuchos::RCP<LINALG::Solver> solver) = 0;
+
     //! solve linear system of equations
     virtual void LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,

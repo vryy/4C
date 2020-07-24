@@ -162,8 +162,6 @@ namespace POROMULTIPHASESCATRA
     //! FD-Check
     void PoroMultiPhaseScaTraFDCheck();
 
-    //! linear solver
-    bool directsolve_;
     //! convergence tolerance (increment)
     double ittolinc_;
     //! convergence tolerance (residual)

@@ -16,7 +16,7 @@ https://physiology.arizona.edu/people/secomb/network/rattum98
 //NODES       2874
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra // Multiphase_Porous_Flow Multiphase_Poroelasticity Structure_Scalar_Interaction
+PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     2
@@ -35,7 +35,7 @@ TOLINC_GLOBAL                   1e-07
 FDCHECK                         none
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta // OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -59,6 +59,7 @@ SCALEREAC_CONT                  0 0
 REACFUNCT_CONT                  0 0
 MAXNUMSEGPERARTELE              7
 OUTPUT_BLOODVESSELVOLFRAC       yes
+PRINT_OUT_SUMMARY_PAIRS         yes
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
@@ -107,7 +108,7 @@ SOLVESCATRA                     yes
 INITIALFIELD                    field_by_condition
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 2 MATIDS 14 15 NUMFLUIDPHASES 0 NUMREAC 1 REACIDS 50 END
 MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 2 NUMVOLFRAC 1 SCALE 1 -1 COUPLING scalar_by_function FUNCTID 7

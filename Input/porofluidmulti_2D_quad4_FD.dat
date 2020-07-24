@@ -17,14 +17,14 @@ PROBLEMTYP                      Multiphase_Porous_Flow
 RESTART                         0
 ---------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
 LINEAR_SOLVER                   1
-FDCHECK                         global //none
+FDCHECK                         global
 FDCHECKTOL                      1e-5
 FDCHECKEPS                      1e-6
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 NUMFLUIDPHASES 3 END
 
