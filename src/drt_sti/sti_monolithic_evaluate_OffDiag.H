@@ -14,6 +14,7 @@
 #include <Epetra_Vector.h>
 
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_inpar/inpar_s2i.H"
 
 namespace ADAPTER
 {
@@ -152,8 +153,8 @@ namespace STI
    public:
     //! constructor
     explicit ScatraThermoOffDiagCouplingMatchingNodes(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermointerface,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -213,6 +214,20 @@ namespace STI
     void EvaluateOffDiagBlockThermoScatraInterface(
         Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface) override;
   };
+
+  //! build specific off diagonal coupling object
+  Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> BuildScatraThermoOffDiagCoupling(
+      const INPAR::S2I::CouplingType& couplingtype,
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+      Teuchos::RCP<const Epetra_Map> full_map_scatra,
+      Teuchos::RCP<const Epetra_Map> full_map_thermo,
+      Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+      Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+      Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+      Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
 }  // namespace STI
 #endif  // #ifndef STI_MONOLITHIC_EVALUATE_OffDiag_H

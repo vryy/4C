@@ -844,3 +844,47 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoupling(
+    const INPAR::S2I::CouplingType& couplingtype,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+{
+  Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling = Teuchos::null;
+
+  switch (couplingtype)
+  {
+    case INPAR::S2I::coupling_matching_nodes:
+    {
+      scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
+          block_map_thermo, block_map_thermo_interface, full_map_scatra, full_map_thermo,
+          interface_map_scatra, interface_map_thermo, meshtying_strategy_scatra,
+          meshtying_strategy_thermo, scatra, thermo));
+      break;
+    }
+    case INPAR::S2I::coupling_mortar_standard:
+    {
+      scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMortarStandard(
+          block_map_thermo, block_map_thermo_interface, full_map_scatra, full_map_thermo,
+          interface_map_scatra, interface_map_thermo, meshtying_strategy_scatra,
+          meshtying_strategy_thermo, scatra, thermo));
+      break;
+    }
+    default:
+    {
+      dserror("Not supported coupling type");
+      break;
+    }
+  }
+
+  return scatrathermooffdiagcoupling;
+}
