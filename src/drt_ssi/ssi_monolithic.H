@@ -129,6 +129,12 @@ namespace SSI
     //! update scalar transport and structure fields after time step evaluation
     void Update();
 
+    //! update ScaTra state within Newton iteration
+    void UpdateIterScaTra();
+
+    //! update structure state within Newton iteration
+    void UpdateIterStructure();
+
     //! time for element evaluation and assembly of global system of equations
     double dtele_;
 
