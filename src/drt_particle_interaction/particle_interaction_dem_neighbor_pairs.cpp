@@ -132,6 +132,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
     // absolute distance between particles
     const double absdist = UTILS::vec_norm2(r_ji);
 
+#ifdef DEBUG
+    if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
+      dserror("absolute distance %f between particles close to zero!", absdist);
+#endif
+
     // gap between particles
     const double gap = absdist - rad_i[0] - rad_j[0];
 
@@ -218,6 +223,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
 
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::vec_norm2(r_ji);
+
+#ifdef DEBUG
+    if (absdist < (1.0e-10 * rad_i[0]))
+      dserror("absolute distance %f between particle and wall close to zero!", absdist);
+#endif
 
     // gap between particle and wall contact point
     const double gap = absdist - rad_i[0];
@@ -419,6 +429,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
     // absolute distance between particles
     const double absdist = UTILS::vec_norm2(r_ji);
 
+#ifdef DEBUG
+    if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
+      dserror("absolute distance %f between particles close to zero!", absdist);
+#endif
+
     // gap between particles
     const double gap = absdist - rad_i[0] - rad_j[0];
 
@@ -525,6 +540,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
 
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::vec_norm2(r_ji);
+
+#ifdef DEBUG
+    if (absdist < (1.0e-10 * rad_i[0]))
+      dserror("absolute distance %f between particle and wall close to zero!", absdist);
+#endif
 
     // gap between particle and wall contact point
     const double gap = absdist - rad_i[0];
