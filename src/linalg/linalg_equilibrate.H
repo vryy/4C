@@ -41,10 +41,11 @@ namespace LINALG
    * - By column means scaling each column of the matrix with a scalar (inverse of sum of matrix
    * entries of the column). This could be seen as defining an individual system of units for each
    * dof. Thus, after solving the solution vector has to be rescaled (in UnequilibrateIncrement()).
-   * - Combining equilibration of rows and colums is possible.
+   * - Combining equilibration of rows and columns is possible.
    *
    * In case of block matrices the inverse of the scale factor can be calculated from the rows /
-   * colums of main-diagonal block or of the entire matrix (EquilibrationMethod xxx_full/main_diag).
+   * columns of main-diagonal block or of the entire matrix (EquilibrationMethod
+   * xxx_full/main_diag).
    *
    * Note: Call EquilibrateSystem() before Solve() and UnequilibrateIncrement() after Solve() within
    * specific problem
@@ -53,37 +54,71 @@ namespace LINALG
   {
    public:
     //! constructor
-    Equilibration(EquilibrationMethod method, Epetra_Map dofrowmap);
+    Equilibration(EquilibrationMethod method, const Epetra_Map& dofrowmap);
 
     //! destructor
     virtual ~Equilibration() = default;
 
-    //! equilibrate global system of equations if necessary
+    /*!
+     * @brief equilibrate global system of equations if necessary
+     *
+     * @param[in,out] systemmatrix  system matrix
+     * @param[in,out] residual      residual vector
+     * @param[in]     blockmaps     (block) map(s) of system matrix
+     */
     virtual void EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const LINALG::MultiMapExtractor& blockmaps) const = 0;
 
-    //! unequilibrate global increment vector if necessary
+    /*!
+     * @brief unequilibrate global increment vector if necessary
+     *
+     * @param[in,out] increment  increment vector
+     */
     virtual void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const;
 
    protected:
-    //! compute inverse sums of absolute values of matrix column entries
+    /*!
+     * @brief compute inverse sums of absolute values of matrix column entries
+     *
+     * @param[in]  matrix      matrix
+     * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
+     */
     void ComputeInvColSums(
         const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invcolsums) const;
 
-    //! compute inverse sums of absolute values of matrix row entries
+    /*!
+     * @brief compute inverse sums of absolute values of matrix row entries
+     *
+     * @param[in]  matrix      matrix
+     * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
+     */
     void ComputeInvRowSums(
         const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const;
 
-    //! equilibrate matrix columns
+    /*!
+     * @brief equilibrate matrix columns
+     *
+     * @param[in,out] matrix      matrix
+     * @param[in]     invcolsums  sums of absolute values of column entries in matrix
+     */
     void EquilibrateMatrixColumns(
         LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invcolsums) const;
 
-    //! equilibrate matrix rows
+    /*!
+     * @brief equilibrate matrix rows
+     *
+     * @param[in,out] matrix      matrix
+     * @param[in]     invrowsums  sums of absolute values of row entries in matrix
+     */
     void EquilibrateMatrixRows(
         LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const;
 
-    //! equilibrate right hand side
+    /*!
+     * @brief equilibrate right hand side
+     *
+     * @param[in,out] residual  residual vector
+     */
     void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const;
 
     //! return equilibration method
@@ -105,16 +140,13 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationSparse(EquilibrationMethod method, Epetra_Map dofrowmap)
+    EquilibrationSparse(EquilibrationMethod method, const Epetra_Map& dofrowmap)
         : Equilibration(method, dofrowmap)
     {
-      return;
     }
 
-    //! destructor
     ~EquilibrationSparse() override = default;
 
-    //! equilibrate global system of equations if necessary
     void EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const LINALG::MultiMapExtractor& blockmaps) const override;
@@ -125,48 +157,37 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationBlock(EquilibrationMethod method, Epetra_Map dofrowmap)
+    EquilibrationBlock(EquilibrationMethod method, const Epetra_Map& dofrowmap)
         : Equilibration(method, dofrowmap)
     {
-      return;
     }
 
-    //! destructor
     ~EquilibrationBlock() override = default;
 
-    //! equilibrate global system of equations if necessary
     void EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const LINALG::MultiMapExtractor& blockmaps) const override;
   };
 
-  //! System matrix is a block matrix
+  //! System matrix can be a sparse or block matrix
   class EquilibrationNone : public Equilibration
   {
    public:
     //! constructor
-    EquilibrationNone(EquilibrationMethod method, Epetra_Map dofrowmap)
+    EquilibrationNone(EquilibrationMethod method, const Epetra_Map& dofrowmap)
         : Equilibration(method, dofrowmap)
     {
-      return;
     }
 
-    //! destructor
     ~EquilibrationNone() override = default;
 
-    //! equilibrate global system of equations if necessary
     void EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const LINALG::MultiMapExtractor& blockmaps) const override
     {
-      return;
     }
 
-    //! unequilibrate global increment vector if necessary
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override
-    {
-      return;
-    }
+    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override {}
   };
 
   //! Factory for equilibration
@@ -174,11 +195,19 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationFactory() { return; }
+    EquilibrationFactory() = default;
 
-    //! build specifc equilibration type
+    /*!
+     * @brief build specific equilibration method
+     *
+     * @param[in] type   type of matrix
+     * @param[in] method equilibration method
+     * @param dofrowmap  degree of freedom row map
+     *
+     * @return equilibration method
+     */
     Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(
-        MatrixType type, EquilibrationMethod method, Epetra_Map dofrowmap);
+        MatrixType type, EquilibrationMethod method, const Epetra_Map& dofrowmap);
   };
 
 }  // namespace LINALG
