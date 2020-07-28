@@ -29,7 +29,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_sparseoperator.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
@@ -3277,10 +3276,10 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces() const
+void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
 {
   // call base class routine
-  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces();
+  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver);
 
   if (MatrixType() == LINALG::MatrixType::block_condition_dof)
   {
@@ -3293,7 +3292,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces() const
 
       // access parameter sublist associated with smoother for current matrix block
       Teuchos::ParameterList& mueluparams =
-          Solver()->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
+          solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
       // extract already reduced null space associated with current matrix block
       std::vector<double>& nullspace =

@@ -93,6 +93,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       scatrastructureblock->Complete();
       break;
@@ -129,6 +130,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
@@ -165,6 +167,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       scatrastructureinterface->Complete();
       break;
@@ -233,6 +236,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       structurescatradomain->Complete();
       break;
@@ -264,6 +268,7 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       const int numberscatrablocks = scatra_->ScaTraField()->BlockMaps().NumMaps();
 
@@ -374,6 +379,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       slavematrix->Complete();
       break;

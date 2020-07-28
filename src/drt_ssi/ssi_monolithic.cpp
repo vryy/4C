@@ -31,8 +31,6 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_matrixtransform.H"
 #include "../linalg/linalg_equilibrate.H"
@@ -40,7 +38,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_sparseoperator.H"
 
 #include <Epetra_Time.h>
 
@@ -142,46 +139,24 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 }
 
 /*-------------------------------------------------------------------------------*
- | build null spaces associated with blocks of global system matrix   fang 01/18 |
  *-------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::BuildNullSpaces() const
 {
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
-      // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < scatra_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
-      {
-        // store number of current block as string, starting from 1
-        std::stringstream iblockstr;
-        iblockstr << iblock + 1;
-
-        // equip smoother for current matrix block with empty parameter sublists to trigger null
-        // space computation
-        Teuchos::ParameterList& blocksmootherparams =
-            solver_->Params().sublist("Inverse" + iblockstr.str());
-        blocksmootherparams.sublist("Aztec Parameters");
-        blocksmootherparams.sublist("MueLu Parameters");
-
-        // equip smoother for current matrix block with null space associated with all degrees
-        // of freedom on scalar transport discretization
-        scatra_->ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
-
-        // reduce full null space to match degrees of freedom associated with current matrix
-        // block
-        LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
-            *scatra_->ScaTraField()->Discretization()->DofRowMap(),
-            *scatra_->ScaTraField()->BlockMaps().Map(iblock), blocksmootherparams);
-      }
+      // equip smoother for scatra matrix blocks with null space
+      scatra_->ScaTraField()->BuildBlockNullSpaces(solver_);
 
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      // equip smoother for scatra matrix block with empty parameter sublists to trigger null
-      // space computation
+      // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
+      // computation
       Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
       blocksmootherparams.sublist("Aztec Parameters");
       blocksmootherparams.sublist("MueLu Parameters");
@@ -204,8 +179,8 @@ void SSI::SSI_Mono::BuildNullSpaces() const
   std::stringstream iblockstr;
   iblockstr << maps_systemmatrix_->NumMaps();
 
-  // equip smoother for structural matrix block with empty parameter sublists to trigger null
-  // space computation
+  // equip smoother for structural matrix block with empty parameter sub lists to trigger null space
+  // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + iblockstr.str());
   blocksmootherparams.sublist("Aztec Parameters");
@@ -615,6 +590,7 @@ void SSI::SSI_Mono::SetupSystem()
   // merge slave and master side block maps for interface matrix for thermo and scatra
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
+
   if (SSIInterfaceMeshtying())
   {
     // check whether slave-side degrees of freedom are Dirichlet-free
@@ -661,6 +637,7 @@ void SSI::SSI_Mono::SetupSystem()
 
     // several main-diagonal matrix blocks associated with scalar transport field
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       // store an RCP to the block maps of the scatra field
       maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
@@ -674,22 +651,21 @@ void SSI::SSI_Mono::SetupSystem()
       for (int imap = 0; imap < maps_systemmatrix_scatra; ++imap)
         maps_systemmatrix[imap] = maps_scatra_->Map(imap);
 
-      // extract map underlying single main-diagonal matrix block associated with structural
-      // field
+      // extract map underlying single main-diagonal matrix block associated with structural field
       maps_systemmatrix[maps_systemmatrix_scatra] = structure_->DofRowMap();
 
       // initialize map extractor associated with blocks of global system matrix
       maps_systemmatrix_ =
           Teuchos::rcp(new LINALG::MultiMapExtractor(*DofRowMap(), maps_systemmatrix));
 
-      // initialize map extractor associated with all degrees of freedom inside structural
-      // field
+      // initialize map extractor associated with all degrees of freedom inside structural field
       map_structure_ =
           Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(1, structure_->DofRowMap())));
 
       // safety check
       map_structure_->CheckForValidMapExtractor();
+
       if (SSIInterfaceMeshtying())
       {
         // build block map for scatra interface by merging slave and master side for each block
@@ -724,17 +700,15 @@ void SSI::SSI_Mono::SetupSystem()
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
-        dserror(
-            "Global system matrix with block structure requires AMGnxn block "
-            "preconditioner!");
+        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
 
       // initialize global system matrix
       systemmatrix_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
               *maps_systemmatrix_, *maps_systemmatrix_, 81, false, true));
 
-      // feed AMGnxn block preconditioner with null space information for each block of global
-      // block system matrix
+      // feed AMGnxn block preconditioner with null space information for each block of global block
+      // system matrix
       BuildNullSpaces();
 
       break;
@@ -763,6 +737,7 @@ void SSI::SSI_Mono::SetupSystem()
   switch (scatra_->ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
       // initialize scatra-structure block
       scatrastructuredomain_ =

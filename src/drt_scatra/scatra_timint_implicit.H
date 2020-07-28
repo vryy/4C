@@ -524,7 +524,7 @@ namespace SCATRA
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
 
     //! build null spaces associated with blocks of global system matrix
-    virtual void BuildBlockNullSpaces() const;
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
