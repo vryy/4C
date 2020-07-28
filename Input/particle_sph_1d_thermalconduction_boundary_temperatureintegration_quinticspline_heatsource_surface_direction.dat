@@ -42,7 +42,7 @@ BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TEMPERATUREEVALUATION           TemperatureIntegration
 HEATSOURCETYPE                  SurfaceHeatSource
 HEATSOURCE_FUNCT                1
-HEATSOURCE_DIRECTION            0.8 0.5 0.0
+HEATSOURCE_DIRECTION            -0.8 -0.5 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.04*a*exp(-x^2)
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1.0 10.0 DESCRIPTION t 1.0

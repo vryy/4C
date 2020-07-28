@@ -45,7 +45,7 @@ PHASECHANGETYPE                 TwoWayScalarPhaseChange
 PHASECHANGEDEFINITION           rigidphase phase1 temperature 0.5
 HEATSOURCETYPE                  SurfaceHeatSource
 HEATSOURCE_FUNCT                1
-HEATSOURCE_DIRECTION            0.6 1.0 0.0
+HEATSOURCE_DIRECTION            -0.6 -1.0 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 500.0/9.0*exp(-50.0*x^2)
 -------------------------------------------------------------------MATERIALS

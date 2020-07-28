@@ -314,7 +314,10 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
       // projection of colorfield gradient with heat source direction
       const double f_i_proj =
-          eval_direction_ ? UTILS::vec_dot(&direction_[0], &cfg_i[type_i][particle_i][0]) : f_i;
+          eval_direction_ ? -UTILS::vec_dot(&direction_[0], &cfg_i[type_i][particle_i][0]) : f_i;
+
+      // heat source contribution only for surface opposing heat source
+      if (f_i_proj < 0.0) continue;
 
       // declare pointer variables for particle i
       const double* pos_i;
