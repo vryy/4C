@@ -46,7 +46,7 @@ namespace SSI
 
    protected:
     //! maximum number of Newton-Raphson iteration steps
-    const unsigned itermax_;
+    const int itermax_;
 
     //! relative tolerance for Newton-Raphson iteration
     const double itertol_;
