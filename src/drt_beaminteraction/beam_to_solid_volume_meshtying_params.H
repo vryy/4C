@@ -56,6 +56,22 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the type of rotational coupling to be used.
+     */
+    inline INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling GetRotationalCouplingType() const
+    {
+      return rotation_coupling_;
+    }
+
+    /**
+     * \brief Returns the penalty parameter for rotational coupling.
+     */
+    inline double GetRotationalCouplingPenaltyParameter() const
+    {
+      return rotational_coupling_penalty_parameter_;
+    }
+
+    /**
      * \brief Returns a pointer to the vtk output parameters.
      * @return Pointer to vtk output parameters.
      */
@@ -70,6 +86,12 @@ namespace BEAMINTERACTION
     //! Number of integration points along the circumferencial direction in the cross section
     //! projection.
     unsigned int integration_points_circumference_;
+
+    //! Type of rotational coupling.
+    INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling rotation_coupling_;
+
+    //! Penalty parameter for rotational coupling.
+    double rotational_coupling_penalty_parameter_;
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;

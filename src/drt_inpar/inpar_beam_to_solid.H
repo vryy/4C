@@ -73,6 +73,31 @@ namespace INPAR
     };
 
     /**
+     * \brief Contact discretization for beam to solid interactions.
+     */
+    enum class BeamToSolidRotationCoupling
+    {
+      //! Default value.
+      none,
+      //! Polar decomposition of the deformation gradient.
+      polar_decomposition_2d,
+      //! Deformed y basis vector.
+      deformation_gradient_y_2d,
+      //! Deformed z basis vector.
+      deformation_gradient_z_2d,
+      //! Average of first and second basis vector of Deformation gradient.
+      deformation_gradient_average_2d,
+      //! Fix the beam crosssection triad to the solid triad.
+      fix_triad_2d,
+      //! 3D case where the triad construction starts with the local e1 vector.
+      deformation_gradient_3d_local_1,
+      //! 3D case where the triad construction starts with the local e2 vector.
+      deformation_gradient_3d_local_2,
+      //! 3D case where the triad construction starts with the local e3 vector.
+      deformation_gradient_3d_local_3
+    };
+
+    /**
      * \brief Shape function for the mortar Lagrange-multiplicators
      */
     enum class BeamToSolidMortarShapefunctions
