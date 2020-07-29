@@ -72,8 +72,7 @@ void SSI::SSI_Part::SetupModelEvaluator() const
   // build and register ssi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
       Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this, false)));
-  StructureBaseAlgorithmPointer()->RegisterModelEvaluator(
-      "Partitioned Coupling Model", ssi_model_ptr);
+  StructureBaseAlgorithm()->RegisterModelEvaluator("Partitioned Coupling Model", ssi_model_ptr);
 
   return;
 }

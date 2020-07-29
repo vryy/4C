@@ -794,7 +794,7 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
   if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
           DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none and
       SSIInterfaceMeshtying())
-    StructureBaseAlgorithmPointer()->RegisterModelEvaluator("Monolithic Coupling Model",
+    StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
 }
 

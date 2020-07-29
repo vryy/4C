@@ -67,7 +67,7 @@ namespace SSI
       return icoup_structure_;
     };
 
-    //! return scatra-scatra interface coupling adapter for structure field
+    //! return scatra-scatra interface coupling adapter slave converter for structure field
     ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const
     {
       return *icoup_structure_slave_converter_;
@@ -186,8 +186,8 @@ namespace SSI
       return structure_;
     };
 
-    /// ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithmPointer() const
+    /// pointer to the underlying structure problem base algorithm
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithm() const
     {
       return struct_adapterbase_ptr_;
     }
