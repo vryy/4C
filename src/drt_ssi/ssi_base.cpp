@@ -35,21 +35,18 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       icoup_structure_(Teuchos::null),
+      icoup_structure_slave_converter_(Teuchos::null),
       iter_(0),
       map_structure_condensed_(Teuchos::null),
       maps_structure_(Teuchos::null),
       struct_adapterbase_ptr_(Teuchos::null),
       structure_(Teuchos::null),
-      scatra_(Teuchos::null),
+      scatra_base_algorithm_(Teuchos::null),
       ssicoupling_(Teuchos::null),
       use_old_structure_(false),  // todo temporary flag
       zeros_(Teuchos::null),
@@ -66,27 +63,6 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
   // is called during Setup() in a base class.
-}
-
-/*----------------------------------------------------------------------*
- | Special Init in case adapter needs to be set from outside            |
- |                                                          rauch 11/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetStructureAdapterBase(
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr)
-{
-  struct_adapterbase_ptr_ = struct_adapterbase_ptr;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Special init in case adapter needs to be set from outside            |
- |                                                          rauch 11/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetStructureWrapper(Teuchos::RCP<ADAPTER::Structure> struct_wrapper)
-{
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(struct_wrapper);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -175,7 +151,7 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   }  // if structure_ not set from outside
 
   // create scatra field
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
   InitDiscretizations(comm, struct_disname, scatra_disname);
@@ -183,8 +159,8 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
-  scatra_->Init(*scatratimeparams, scatraparams, problem->SolverParams(linsolvernumber),
-      scatra_disname, isAle);
+  ScaTraBaseAlgorithm()->Init(*scatratimeparams, scatraparams,
+      problem->SolverParams(linsolvernumber), scatra_disname, isAle);
 
   int redistribute = InitFieldCoupling(comm, struct_disname, scatra_disname);
 
@@ -221,7 +197,7 @@ void SSI::SSI_Base::Setup()
   ssicoupling_->Setup();
 
   // set up scalar transport field
-  scatra_->ScaTraField()->Setup();
+  ScaTraField()->Setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -236,7 +212,7 @@ void SSI::SSI_Base::Setup()
             DRT::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
         INPAR::SSI::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
-          *DRT::Problem::Instance()->GetDis("structure"), scatra_->ScaTraField()->Phinp());
+          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp());
 
     // set up structural base algorithm
     struct_adapterbase_ptr_->Setup();
@@ -258,7 +234,7 @@ void SSI::SSI_Base::Setup()
     structure_->Setup();
 
   // check maps from scalar transport and structure discretizations
-  if (scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
+  if (ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
     dserror("Scalar transport discretization does not have any degrees of freedom!");
   if (structure_->DofRowMap()->NumGlobalElements() == 0)
     dserror("Structure discretization does not have any degrees of freedom!");
@@ -268,7 +244,7 @@ void SSI::SSI_Base::Setup()
 
   // set up materials
   ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(), scatra_->ScaTraField()->Discretization());
+      structure_->Discretization(), ScaTraField()->Discretization());
 
   // set up scatra-scatra interface coupling
   if (SSIInterfaceMeshtying())
@@ -277,17 +253,18 @@ void SSI::SSI_Base::Setup()
     CheckConsistencySSIInterfaceMeshtyingCondition();
 
     // set up scatra-scatra interface coupling adapter for structure field
-    SetupCouplingAdapterStructure();
+    SetupInterfaceCouplingAdapterStructure();
 
     // set up map for interior and master-side structural degrees of freedom
-    map_structure_condensed_ = LINALG::SplitMap(
-        *structure_->Discretization()->DofRowMap(), *icoup_structure_->SlaveDofMap());
+    map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),
+        *InterfaceCouplingAdapterStructure()->SlaveDofMap());
 
     // set up structural map extractor holding interior and interface maps of degrees of freedom
     std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
-    maps.push_back(LINALG::SplitMap(*map_structure_condensed_, *icoup_structure_->MasterDofMap()));
-    maps.push_back(icoup_structure_->SlaveDofMap());
-    maps.push_back(icoup_structure_->MasterDofMap());
+    maps.push_back(LINALG::SplitMap(
+        *map_structure_condensed_, *InterfaceCouplingAdapterStructure()->MasterDofMap()));
+    maps.push_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    maps.push_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
     maps_structure_ = Teuchos::rcp(
         new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps));
     maps_structure_->CheckForValidMapExtractor();
@@ -302,7 +279,7 @@ void SSI::SSI_Base::Setup()
 /*----------------------------------------------------------------------------------*
  | set up scatra-scatra interface coupling adapter for structure field   fang 08/17 |
  *----------------------------------------------------------------------------------*/
-void SSI::SSI_Base::SetupCouplingAdapterStructure()
+void SSI::SSI_Base::SetupInterfaceCouplingAdapterStructure()
 {
   // initialize integer vectors for global IDs of master-side and slave-side interface nodes on
   // structure discretization
@@ -355,7 +332,9 @@ void SSI::SSI_Base::SetupCouplingAdapterStructure()
   icoup_structure_->SetupCoupling(*structure_->Discretization(), *structure_->Discretization(),
       inodegidvec_master, inodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.e-8);
 
-  return;
+  // setup the scatra-scatra interface coupling slave converter for structure field
+  icoup_structure_slave_converter_ =
+      Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*InterfaceCouplingAdapterStructure()));
 }
 
 /*----------------------------------------------------------------------*
@@ -509,13 +488,13 @@ void SSI::SSI_Base::ReadRestart(int restart)
 
     if (not restartfromstructure)  // standard restart
     {
-      scatra_->ScaTraField()->ReadRestart(restart);
+      ScaTraField()->ReadRestart(restart);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra fiels available, we only have to fix the
       // time and step counter
-      scatra_->ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
+      ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
     }
 
     SetTimeStep(structure_->TimeOld(), restart);
@@ -524,7 +503,7 @@ void SSI::SSI_Base::ReadRestart(int restart)
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
   ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(), scatra_->ScaTraField()->Discretization());
+      structure_->Discretization(), ScaTraField()->Discretization());
 
   return;
 }
@@ -537,8 +516,7 @@ void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
   if (restarttime > 0.0)
   {
     const int restartstructure = SSI::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
-    const int restartscatra =
-        SSI::Utils::CheckTimeStepping(scatra_->ScaTraField()->Dt(), restarttime);
+    const int restartscatra = SSI::Utils::CheckTimeStepping(ScaTraField()->Dt(), restarttime);
 
     structure_->ReadRestart(restartstructure);
 
@@ -548,13 +526,13 @@ void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
 
     if (not restartfromstructure)  // standard restart
     {
-      scatra_->ScaTraField()->ReadRestart(restartscatra);
+      ScaTraField()->ReadRestart(restartscatra);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra fiels available, we only have to fix the
       // time and step counter
-      scatra_->ScaTraField()->SetTimeStep(structure_->TimeOld(), restartscatra);
+      ScaTraField()->SetTimeStep(structure_->TimeOld(), restartscatra);
     }
 
     SetTimeStep(structure_->TimeOld(), restartstructure);
@@ -563,7 +541,7 @@ void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
   ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(), scatra_->ScaTraField()->Discretization());
+      structure_->Discretization(), ScaTraField()->Discretization());
 
   return;
 }
@@ -575,7 +553,7 @@ void SSI::SSI_Base::TestResults(const Epetra_Comm& comm) const
   DRT::Problem* problem = DRT::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
+  problem->AddFieldTest(ScaTraBaseAlgorithm()->CreateScaTraFieldTest());
   problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
   problem->TestAll(comm);
 }
@@ -612,7 +590,7 @@ void SSI::SSI_Base::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetVelocityFields(scatra_, zeros_, vel);
+  ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_, vel);
 }
 
 /*----------------------------------------------------------------------*/
@@ -623,7 +601,7 @@ void SSI::SSI_Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetMeshDisp(scatra_, disp);
+  ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -690,7 +668,7 @@ void SSI::SSI_Base::CheckConsistencySSIInterfaceMeshtyingCondition()
       }
     }
 
-    if (matchingconditions == false)
+    if (!matchingconditions)
       dserror(
           "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
           "the 'SSIInterfaceMeshtying' condition",
@@ -705,13 +683,20 @@ void SSI::SSI_Base::CheckConsistencySSIInterfaceMeshtyingCondition()
 void SSI::SSI_Base::SetDtFromScaTraToStructure()
 {
   // change current time and time step of structure according to ScaTra
-  StructureField()->SetDt(scatra_->ScaTraField()->Dt());
-  StructureField()->SetTimen(scatra_->ScaTraField()->Time());
+  StructureField()->SetDt(ScaTraField()->Dt());
+  StructureField()->SetTimen(ScaTraField()->Time());
   StructureField()->PostUpdate();
 
   // change current time and time step of this algorithm according to ScaTra
-  SetTimeStep(scatra_->ScaTraField()->Time(), Step());
-  SetDt(scatra_->ScaTraField()->Dt());
+  SetTimeStep(ScaTraField()->Time(), Step());
+  SetDt(ScaTraField()->Dt());
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSI_Base::ScaTraField() const
+{
+  return scatra_base_algorithm_->ScaTraField();
 }

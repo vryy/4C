@@ -50,27 +50,27 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   //! compute L2 norm of scalar transport state vector
   double scatradofnorm(0.);
-  timint.scatra_->ScaTraField()->Phinp()->Norm2(&scatradofnorm);
+  timint.ScaTraField()->Phinp()->Norm2(&scatradofnorm);
 
   //! compute L2 norm of scalar transport increment vector
   double scatraincnorm(0.);
-  timint.maps_->ExtractVector(timint.increment_, 0)->Norm2(&scatraincnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.increment_, 0)->Norm2(&scatraincnorm);
 
   //! compute L2 norm of scalar transport residual vector
   double scatraresnorm(0.);
-  timint.maps_->ExtractVector(timint.residual_, 0)->Norm2(&scatraresnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.residual_, 0)->Norm2(&scatraresnorm);
 
   //! compute L2 norm of structural state vector
   double structuredofnorm(0.);
-  timint.structure_->Dispnp()->Norm2(&structuredofnorm);
+  timint.StructureField()->Dispnp()->Norm2(&structuredofnorm);
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.maps_->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.maps_->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
 
   // safety checks
   if (std::isnan(scatradofnorm) or std::isnan(scatraresnorm) or std::isnan(scatraincnorm) or
@@ -85,7 +85,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
   if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
 
   // first Newton-Raphson iteration
-  if (timint.iter_ == 1)
+  if (timint.IterationCount() == 1)
   {
     if (timint.Comm().MyPID() == 0)
     {
@@ -99,11 +99,12 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
       // print first line of convergence table to screen
       // solution increment not yet available during first Newton-Raphson iteration
-      std::cout << "|  " << std::setw(3) << timint.iter_ << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatraresnorm << "   |      --      | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << structureresnorm << "   |      --      | "
+      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatraresnorm << "   |      --      | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << structureresnorm
+                << "   |      --      | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
                 << timint.dtele_ << ")" << std::endl;
     }
@@ -114,16 +115,17 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
   {
     // print current line of convergence table to screen
     if (timint.Comm().MyPID() == 0)
-      std::cout << "|  " << std::setw(3) << timint.iter_ << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatraresnorm << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatraincnorm / scatradofnorm << "   | " << std::setw(10)
-                << std::setprecision(3) << std::scientific << structureresnorm << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific
-                << structureincnorm / structuredofnorm << "   | (ts = " << std::setw(10)
-                << std::setprecision(3) << timint.dtsolve_ << ", te = " << std::setw(10)
-                << std::setprecision(3) << timint.dtele_ << ")" << std::endl;
+      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatraresnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << scatraincnorm / scatradofnorm
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << structureresnorm << "   | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << structureincnorm / structuredofnorm
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
+                << std::endl;
 
     // convergence check
     if (scatraresnorm <= itertol_ and structureresnorm <= itertol_ and
@@ -139,7 +141,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (timint.iter_ == itermax_)
+  if (timint.IterationCount() == itermax_)
   {
     if (timint.Comm().MyPID() == 0)
     {
@@ -167,66 +169,64 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 11/17 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(
-    const SSI::SSI_Mono& timint  //!< time integrator for monolithic scalar-structure interaction
-    ) const
+bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono& timint) const
 {
   // initialize exit flag
   bool exit(false);
 
   //! compute L2 norm of concentration state vector
   double concdofnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.scatra_->ScaTraField()->Phinp())
+      ->ExtractOtherVector(timint.ScaTraField()->Phinp())
       ->Norm2(&concdofnorm);
 
   //! compute L2 norm of concentration increment vector
   double concincnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.maps_->ExtractVector(timint.increment_, 0))
+      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(timint.increment_, 0))
       ->Norm2(&concincnorm);
 
   //! compute L2 norm of concentration residual vector
   double concresnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.maps_->ExtractVector(timint.residual_, 0))
+      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(timint.residual_, 0))
       ->Norm2(&concresnorm);
 
   //! compute L2 norm of potential state vector
   double potdofnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.scatra_->ScaTraField()->Phinp())
+      ->ExtractCondVector(timint.ScaTraField()->Phinp())
       ->Norm2(&potdofnorm);
 
   //! compute L2 norm of potential increment vector
   double potincnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.maps_->ExtractVector(timint.increment_, 0))
+      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(timint.increment_, 0))
       ->Norm2(&potincnorm);
 
   //! compute L2 norm of potential residual vector
   double potresnorm(0.);
-  timint.scatra_->ScaTraField()
+  timint.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.maps_->ExtractVector(timint.residual_, 0))
+      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(timint.residual_, 0))
       ->Norm2(&potresnorm);
 
   //! compute L2 norm of structural state vector
   double structuredofnorm(0.);
-  timint.structure_->Dispnp()->Norm2(&structuredofnorm);
+  timint.StructureField()->Dispnp()->Norm2(&structuredofnorm);
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.maps_->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.maps_->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
+  timint.MapsSubProblems()->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
 
   // safety checks
   if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
@@ -244,7 +244,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(
   if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
 
   // first Newton-Raphson iteration
-  if (timint.iter_ == 1)
+  if (timint.IterationCount() == 1)
   {
     if (timint.Comm().MyPID() == 0)
     {
@@ -258,12 +258,12 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(
 
       // print first line of convergence table to screen
       // solution increment not yet available during first Newton-Raphson iteration
-      std::cout << "|  " << std::setw(3) << timint.iter_ << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << concresnorm << "   |      --      | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << potresnorm << "   |      --      | " << std::setw(10)
-                << std::setprecision(3) << std::scientific << structureresnorm
+      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << concresnorm << "   |      --      | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << potresnorm << "   |      --      | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << structureresnorm
                 << "   |      --      | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
                 << timint.dtele_ << ")" << std::endl;
@@ -275,18 +275,19 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(
   {
     // print current line of convergence table to screen
     if (timint.Comm().MyPID() == 0)
-      std::cout << "|  " << std::setw(3) << timint.iter_ << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << concresnorm << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << concincnorm / concdofnorm << "   | " << std::setw(10)
-                << std::setprecision(3) << std::scientific << potresnorm << "   | " << std::setw(10)
-                << std::setprecision(3) << std::scientific << potincnorm / potdofnorm << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << structureresnorm
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << structureincnorm / structuredofnorm << "   | (ts = " << std::setw(10)
-                << std::setprecision(3) << timint.dtsolve_ << ", te = " << std::setw(10)
-                << std::setprecision(3) << timint.dtele_ << ")" << std::endl;
+      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << concresnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << concincnorm / concdofnorm << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific
+                << potincnorm / potdofnorm << "   | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << structureresnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << structureincnorm / structuredofnorm
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
+                << std::endl;
 
     // convergence check
     if (concresnorm <= itertol_ and potresnorm <= itertol_ and structureresnorm <= itertol_ and
@@ -302,7 +303,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (timint.iter_ == itermax_)
+  if (timint.IterationCount() == itermax_)
   {
     if (timint.Comm().MyPID() == 0)
     {

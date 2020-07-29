@@ -57,17 +57,17 @@ void SSI::SSI_Part1WC::DoStructStep()
   }
 
   // Newton-Raphson iteration
-  structure_->Solve();
+  StructureField()->Solve();
   // calculate stresses, strains, energies
-  structure_->PrepareOutput();
+  StructureField()->PrepareOutput();
   // update all single field solvers
-  structure_->Update();
+  StructureField()->Update();
   // write output to files
-  structure_->Output();
+  StructureField()->Output();
   // write output to screen
-  structure_->PrintStep();
+  StructureField()->PrintStep();
   // clean up
-  structure_->Discretization()->ClearState(true);
+  StructureField()->Discretization()->ClearState(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -84,15 +84,15 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   if (isscatrafromfile_)
   {
-    int diffsteps = structure_->Dt() / scatra_->ScaTraField()->Dt();
-    if (scatra_->ScaTraField()->Step() % diffsteps == 0)
+    int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
+    if (ScaTraField()->Step() % diffsteps == 0)
     {
-      Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(
-          scatra_->ScaTraField()->Discretization(), scatra_->ScaTraField()->Step()));
+      Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(
+          new IO::DiscretizationReader(ScaTraField()->Discretization(), ScaTraField()->Step()));
 
       // check if this is a cardiac monodomain problem
       Teuchos::RCP<SCATRA::TimIntCardiacMonodomain> cardmono =
-          Teuchos::rcp_dynamic_cast<SCATRA::TimIntCardiacMonodomain>(scatra_->ScaTraField());
+          Teuchos::rcp_dynamic_cast<SCATRA::TimIntCardiacMonodomain>(ScaTraField());
 
       if (cardmono == Teuchos::null)
       {
@@ -100,11 +100,11 @@ void SSI::SSI_Part1WC::DoScatraStep()
         Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->ReadVector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
         if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
-        scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
+        ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
       }
       else
       {
@@ -115,11 +115,11 @@ void SSI::SSI_Part1WC::DoScatraStep()
         reader->ReadVector(phinptemp, "phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
         if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
-        scatra_->ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
+        ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
       }
     }
   }
@@ -127,27 +127,27 @@ void SSI::SSI_Part1WC::DoScatraStep()
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
   else
-    scatra_->ScaTraField()->Solve();
+    ScaTraField()->Solve();
 
 
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->Update();
+  ScaTraField()->Update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->Output();
+  ScaTraField()->Output();
 
   // cleanup
-  scatra_->ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*/
@@ -161,16 +161,16 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
 
   // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
   // to structure
-  if (scatra_->ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
-  structure_->PrepareTimeStep();
+  StructureField()->PrepareTimeStep();
 
-  const int diffsteps = scatra_->ScaTraField()->Dt() / structure_->Dt();
+  const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
 
-  if (structure_->Step() % diffsteps == 0)
+  if (StructureField()->Step() % diffsteps == 0)
   {
-    SetStructSolution(structure_->Dispn(), structure_->Veln());
-    scatra_->ScaTraField()->PrepareTimeStep();
+    SetStructSolution(StructureField()->Dispn(), StructureField()->Veln());
+    ScaTraField()->PrepareTimeStep();
   }
 }
 
@@ -224,21 +224,21 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
   CheckIsInit();
   CheckIsSetup();
 
-  if (structure_->Dt() > scatra_->ScaTraField()->Dt())
+  if (StructureField()->Dt() > ScaTraField()->Dt())
     dserror(
         "Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra "
         "interaction");
 
-  const int diffsteps = scatra_->ScaTraField()->Dt() / structure_->Dt();
+  const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
 
   while (NotFinished())
   {
     PrepareTimeStep(false);
     DoStructStep();  // It has its own time and timestep variables, and it increments them by
                      // itself.
-    if (structure_->Step() % diffsteps == 0)
+    if (StructureField()->Step() % diffsteps == 0)
     {
-      SetStructSolution(structure_->Dispnp(), structure_->Velnp());
+      SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by
                        // itself.
     }
@@ -283,7 +283,7 @@ int SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
 {
-  if (structure_->Dt() < scatra_->ScaTraField()->Dt())
+  if (StructureField()->Dt() < ScaTraField()->Dt())
   {
     dserror(
         "Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid "
@@ -291,20 +291,20 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   }
 
   // set zero velocity field for scatra
-  scatra_->ScaTraField()->SetVelocityField(1);
+  ScaTraField()->SetVelocityField(1);
 
-  const int diffsteps = structure_->Dt() / scatra_->ScaTraField()->Dt();
+  const int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
   while (NotFinished())
   {
     PrepareTimeStep();
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by
                      // itself.
-    if (scatra_->ScaTraField()->Step() % diffsteps == 0)
+    if (ScaTraField()->Step() % diffsteps == 0)
     {
-      SetScatraSolution(scatra_->ScaTraField()->Phinp());
+      SetScatraSolution(ScaTraField()->Phinp());
       // PrepareTimeStep() is called after solving the scalar transport, because then the predictor
       // will include the new scalar solution
-      structure_->PrepareTimeStep();
+      StructureField()->PrepareTimeStep();
       DoStructStep();  // It has its own time and timestep variables, and it increments them by
                        // itself.
     }
@@ -319,6 +319,6 @@ void SSI::SSI_Part1WC_ScatraToSolid::PrepareTimeStep(bool printheader)
   IncrementTimeAndStep();
   // PrintHeader();
 
-  scatra_->ScaTraField()->PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
   // PrepareTimeStep of structure field is called later
 }

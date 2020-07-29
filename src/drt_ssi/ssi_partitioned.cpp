@@ -4,7 +4,6 @@
 
  \level 2
 
-
  *------------------------------------------------------------------------------------------------*/
 #include "ssi_partitioned.H"
 
@@ -67,14 +66,14 @@ void SSI::SSI_Part::Setup()
 }
 
 /*---------------------------------------------------------------------------------*
- | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
  *---------------------------------------------------------------------------------*/
 void SSI::SSI_Part::SetupModelEvaluator() const
 {
   // build and register ssi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
       Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this, false)));
-  struct_adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", ssi_model_ptr);
+  StructureBaseAlgorithmPointer()->RegisterModelEvaluator(
+      "Partitioned Coupling Model", ssi_model_ptr);
 
   return;
 }

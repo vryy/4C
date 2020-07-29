@@ -22,6 +22,7 @@
 namespace ADAPTER
 {
   class Coupling;
+  class CouplingSlaveConverter;
   class Structure;
   class ScaTraTimIntImpl;
   class ScaTraBaseAlgorithm;
@@ -34,6 +35,11 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
+namespace SCATRA
+{
+  class ScaTraTimIntImpl;
+}
+
 namespace SSI
 {
   // forward declaration
@@ -41,9 +47,9 @@ namespace SSI
 
   enum RedistributionType
   {
-    none,     // unknown redistribution type
-    binning,  // redistribute by binning
-    match     // redistribute by node matching
+    none,     //!< unknown redistribution type
+    binning,  //!< redistribute by binning
+    match     //!< redistribute by node matching
   };
 
   //! Base class of all solid-scatra algorithms
@@ -53,35 +59,31 @@ namespace SSI
     /// create using a Epetra_Comm
     explicit SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    virtual ~SSI_Base(){};
+    ~SSI_Base() override = default;
 
     //! return scatra-scatra interface coupling adapter for structure field
-    const Teuchos::RCP<ADAPTER::Coupling>& CouplingAdapterStructure() const
+    const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure() const
     {
       return icoup_structure_;
     };
 
+    //! return scatra-scatra interface coupling adapter for structure field
+    ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const
+    {
+      return *icoup_structure_slave_converter_;
+    }
+
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
-    const unsigned& Iter() const { return iter_; };
+    int IterationCount() const { return iter_; }
 
-    /*! \brief Allows to set structure adapter base from outside (multiphysics).
-     *
-    \date 11/16
-    \author rauch  */
-    virtual void SetStructureAdapterBase(
-        Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr);
+    //! reset the counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm)
+    void ResetIterationCount() { iter_ = 0; }
 
-    /*! \brief Allows to set structure wrapper from outside (multiphysics).
-     *
-     *  In case of multiphysics it is not always possible to make a problem type
-     *  based unique decision for a special structure wrapper. The wrapper is
-     *  constructed in \ref ADAPTER::StructureBaseAlgorithmNew::CreateWrapper .
-     *
-    \date 11/16
-    \author rauch  */
-    virtual void SetStructureWrapper(Teuchos::RCP<ADAPTER::Structure> struct_adapterbase_ptr);
+    //! increment the counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm) by 1
+    void IncrementIterationCount() { iter_ += 1; }
 
     /*! \brief Initialize this object
 
@@ -173,10 +175,10 @@ namespace SSI
     virtual void TestResults(const Epetra_Comm& comm) const;
 
     /// read restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     /// read restart from given time
-    void ReadRestartfromTime(double restarttime);
+    void ReadRestartfromTime(double restarttime) override;
 
     //! access to structural field
     const Teuchos::RCP<::ADAPTER::SSIStructureWrapper>& StructureField() const
@@ -184,8 +186,20 @@ namespace SSI
       return structure_;
     };
 
-    //! access to scatra field
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraField() const { return scatra_; };
+    /// ptr to the underlying structure problem base algorithm
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithmPointer() const
+    {
+      return struct_adapterbase_ptr_;
+    }
+
+    //! access the scalar transport base algorithm
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraBaseAlgorithm() const
+    {
+      return scatra_base_algorithm_;
+    }
+
+    //! access the scalar transport field
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
 
     /// set structure solution on scatra field
     void SetStructSolution(
@@ -198,14 +212,17 @@ namespace SSI
     bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
 
    protected:
+    //! get bool indicating if old structural time integration is used
+    bool UseOldStructureTimeInt() const { return use_old_structure_; }
+
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void CheckIsSetup() const
     {
       if (not IsSetup()) dserror("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void CheckIsInit() const
     {
       if (not IsInit()) dserror("Init(...) was not called.");
     };
@@ -220,25 +237,33 @@ namespace SSI
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
     //! set up scatra-scatra interface coupling adapter for structure field
-    void SetupCouplingAdapterStructure();
+    void SetupInterfaceCouplingAdapterStructure();
 
     //! set up structural model evaluator for scalar-structure interaction
     virtual void SetupModelEvaluator() const = 0;
 
-    /// interpolate structure quantity to a scatra one (e.g. via volmortar or meshtying)
-    const Teuchos::RCP<const Epetra_Vector> StructureToScatra(
-        const Teuchos::RCP<const Epetra_Vector> structurevector) const;
+   private:
+    /// check for a consistent input file definition of the SSIInterfaceMeshtying condition
+    void CheckConsistencySSIInterfaceMeshtyingCondition();
 
-    /// interpolate scatra quantity to a structure one (e.g. via volmortar or meshtying)
-    const Teuchos::RCP<const Epetra_Vector> ScatraToStructure(
-        const Teuchos::RCP<const Epetra_Vector> scatravector) const;
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit() const { return isinit_; }
+
+    /// set structure mesh displacement on scatra field
+    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
+
+    /// set structure velocity field on scatra field
+    void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
 
     //! scatra-scatra interface coupling adapter for structure field
     Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
 
+    //! scatra-scatra interface coupling adapter for structure field
+    Teuchos::RCP<ADAPTER::CouplingSlaveConverter> icoup_structure_slave_converter_;
+
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
     //! (partitioned algorithm)
-    unsigned int iter_;
+    int iter_;
 
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
@@ -254,7 +279,7 @@ namespace SSI
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
 
     /// ptr underlying scatra problem base algorithm
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
@@ -266,25 +291,8 @@ namespace SSI
     /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
-   private:
-    /// check for a consistent input file definition of the SSIInterfaceMeshtying condition
-    void CheckConsistencySSIInterfaceMeshtyingCondition();
-
-    /// Set material pointers for matching structure and scatra grids
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
-        Teuchos::RCP<const DRT::Discretization> targetdis);
-
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
-
-    /// set structure mesh displacement on scatra field
-    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
-
-    /// set structure velocity field on scatra field
-    void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
-
-    //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
 
     //! flag indicating if class is setup
     bool issetup_;

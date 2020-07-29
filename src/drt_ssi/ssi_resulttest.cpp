@@ -40,10 +40,7 @@ SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 12/17 |
  *----------------------------------------------------------------------*/
-double SSI::SSIResultTest::ResultNode(
-    const std::string quantity,  //!< name of quantity to be tested
-    DRT::Node* node              //!< node carrying the result to be tested
-    ) const
+double SSI::SSIResultTest::ResultNode(const std::string quantity, DRT::Node* node) const
 {
   // initialize variable for result
   double result(0.);
@@ -88,16 +85,14 @@ double SSI::SSIResultTest::ResultNode(
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 11/17 |
  *----------------------------------------------------------------------*/
-double SSI::SSIResultTest::ResultSpecial(
-    const std::string& quantity  //!< name of quantity to be tested
-    ) const
+double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
 {
   // initialize variable for result
   double result(0.);
 
   // number of outer coupling iterations (partitioned SSI) or Newton-Raphson iterations (monolithic
   // SSI) in last time step
-  if (quantity == "numiterlastnonlinearsolve") result = (double)ssi_base_->Iter();
+  if (quantity == "numiterlastnonlinearsolve") result = (double)ssi_base_->IterationCount();
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   // (monolithic SSI only)
@@ -151,8 +146,8 @@ void SSI::SSIResultTest::TestNode(
   std::string dis;
   res.ExtractString("DIS", dis);
   const DRT::Discretization* discretization(NULL);
-  if (dis == ssi_base_->ScaTraField()->ScaTraField()->Discretization()->Name())
-    discretization = ssi_base_->ScaTraField()->ScaTraField()->Discretization().get();
+  if (dis == ssi_base_->ScaTraField()->Discretization()->Name())
+    discretization = ssi_base_->ScaTraField()->Discretization().get();
   else if (dis == ssi_base_->StructureField()->Discretization()->Name())
     discretization = ssi_base_->StructureField()->Discretization().get();
   else

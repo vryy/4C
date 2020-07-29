@@ -47,10 +47,8 @@ namespace SSI
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
-    //! destructor
-    virtual ~SSI_Mono() { return; };
+    ~SSI_Mono() override = default;
 
-    //! initialize monolithic algorithm
     int Init(const Epetra_Comm& comm,                    //!< communicator
         const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
         const Teuchos::ParameterList& scatraparams,      //!< parameter list for scalar transport
@@ -58,13 +56,10 @@ namespace SSI
         const std::string struct_disname,                //!< name of structural discretization
         const std::string scatra_disname,  //!< name of scalar transport discretization
         bool isAle                         //!< flag for ALE
-    );
-
-    //! return counter for Newton-Raphson iterations
-    const unsigned& Iter() const { return iter_; };
+        ) override;
 
     //! return global map extractor (0: scalar transport, 1: structure)
-    const Teuchos::RCP<LINALG::MapExtractor>& Maps() const { return maps_; }
+    const Teuchos::RCP<LINALG::MapExtractor>& MapsSubProblems() const { return maps_sub_problems_; }
 
     //! return map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; }
@@ -84,17 +79,14 @@ namespace SSI
       return meshtying_strategy_s2i_;
     }
 
-    //! setup monolithic algorithm
-    void Setup();
+    void Setup() override;
 
-    //! setup global system of equations
-    void SetupSystem();
+    void SetupSystem() override;
 
     //! return algebraic solver for global system of equations
     const LINALG::Solver& Solver() const { return *solver_; };
 
-    //! time loop
-    void Timeloop();
+    void Timeloop() override;
 
    private:
     // strategies for Newton-Raphson convergence check
@@ -114,20 +106,16 @@ namespace SSI
     //! finite difference check for global system matrix
     void FDCheck();
 
-    //! output solution to screen and files
-    void Output();
+    void Output() override;
 
-    //! prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
-    //! set up structural model evaluator for scalar-structure interaction
-    void SetupModelEvaluator() const;
+    void SetupModelEvaluator() const override;
 
     //! evaluate time step using Newton-Raphson iteration
-    void Solve();
+    void NewtonLoop();
 
-    //! update scalar transport and structure fields after time step evaluation
-    void Update();
+    void Update() override;
 
     //! update ScaTra state within Newton iteration
     void UpdateIterScaTra();
@@ -151,7 +139,7 @@ namespace SSI
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
 
     //! global map extractor (0: scalar transport, 1: structure)
-    Teuchos::RCP<LINALG::MapExtractor> maps_;
+    Teuchos::RCP<LINALG::MapExtractor> maps_sub_problems_;
 
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
