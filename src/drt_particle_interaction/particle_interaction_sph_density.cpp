@@ -248,6 +248,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
     // no evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
+    // no evaluation for open boundary particles
+    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
+      continue;
+
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -447,6 +451,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
     // no evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
+    // no evaluation for open boundary particles
+    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
+      continue;
+
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -640,6 +648,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
 
     // no evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
+
+    // no evaluation for open boundary particles
+    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
+      continue;
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
