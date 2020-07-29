@@ -3889,7 +3889,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
   if (matrixtype_ == LINALG::MatrixType::block_meshtying) blockmaps_ = strategy_->InterfaceMaps();
 
   // now build the null spaces
-  BuildBlockNullSpaces();
+  BuildBlockNullSpaces(Solver());
 
   // in case of an extended solver for scatra-scatra interface meshtying including interface growth
   // we need to equip it with the null space information generated above
@@ -3898,7 +3898,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces() const
+void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
 {
   // loop over blocks of global system matrix
   for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
@@ -3910,7 +3910,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces() const
     // equip smoother for current matrix block with empty parameter sublists to trigger null space
     // computation
     Teuchos::ParameterList& blocksmootherparams =
-        Solver()->Params().sublist("Inverse" + iblockstr.str());
+        solver->Params().sublist("Inverse" + iblockstr.str());
     blocksmootherparams.sublist("Aztec Parameters");
     blocksmootherparams.sublist("MueLu Parameters");
 

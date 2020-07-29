@@ -2211,6 +2211,7 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_trig_BGS-AMG_4x4 
 # scalar-structure interaction using the MueLu/AMGnxn framework
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_2x2 3 "")
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_4x4 3 "")
+baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_7x7 3 "")
 
 # scatra-thermo interaction using the MueLu/AMGnxn framework
 baci_test(sti_mono_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased 3 "")

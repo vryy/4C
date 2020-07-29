@@ -13,21 +13,18 @@
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-LINALG::Equilibration::Equilibration(EquilibrationMethod method, Epetra_Map dofrowmap)
+LINALG::Equilibration::Equilibration(EquilibrationMethod method, const Epetra_Map& dofrowmap)
     : invcolsums_(Teuchos::rcp(new Epetra_Vector(dofrowmap, false))),
       invrowsums_(Teuchos::rcp(new Epetra_Vector(dofrowmap, false))),
       method_(method)
 
 {
-  return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LINALG::Equilibration::ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< inverse sums of absolute values of row entries in matrix
-    ) const
+void LINALG::Equilibration::ComputeInvRowSums(
+    const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   // compute inverse row sums of matrix
   if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
@@ -36,16 +33,14 @@ void LINALG::Equilibration::ComputeInvRowSums(const LINALG::SparseMatrix& matrix
   // take square root of inverse row sums if matrix is scaled from left and right
   if (Method() == EquilibrationMethod::rowsandcolumns_full or
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
-    for (int i = 0; i < invrowsums->MyLength(); ++i) (*invrowsums)[i] = sqrt((*invrowsums)[i]);
+    for (int i = 0; i < invrowsums->MyLength(); ++i) (*invrowsums)[i] = std::sqrt((*invrowsums)[i]);
 }
 
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void LINALG::Equilibration::ComputeInvColSums(const LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invcolsums  //!< inverse sums of absolute values of column entries in matrix
-    ) const
+void LINALG::Equilibration::ComputeInvColSums(
+    const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invcolsums) const
 {
   // compute inverse column sums of matrix
   if (matrix.EpetraMatrix()->InvColSums(*invcolsums))
@@ -54,39 +49,30 @@ void LINALG::Equilibration::ComputeInvColSums(const LINALG::SparseMatrix& matrix
   // take square root of inverse column sums if matrix is scaled from left and right
   if (Method() == EquilibrationMethod::rowsandcolumns_full or
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
-    for (int i = 0; i < invcolsums->MyLength(); ++i) (*invcolsums)[i] = sqrt((*invcolsums)[i]);
+    for (int i = 0; i < invcolsums->MyLength(); ++i) (*invcolsums)[i] = std::sqrt((*invcolsums)[i]);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Equilibration::EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invrowsums  //!< sums of absolute values of row entries in matrix
-    ) const
+void LINALG::Equilibration::EquilibrateMatrixRows(
+    LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Equilibration::EquilibrateMatrixColumns(LINALG::SparseMatrix& matrix,  //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&
-        invcolsums  //!< sums of absolute values of column entries in matrix
-    ) const
+void LINALG::Equilibration::EquilibrateMatrixColumns(
+    LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invcolsums) const
 {
   if (matrix.RightScale(*invcolsums)) dserror("Column equilibration of matrix failed!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::Equilibration::UnequilibrateIncrement(
-    const Teuchos::RCP<Epetra_Vector>& increment  //!< increment vector
-    ) const
+    const Teuchos::RCP<Epetra_Vector>& increment) const
 {
   // unequilibrate global increment vector if necessary
   if (Method() == EquilibrationMethod::columns_full or
@@ -218,8 +204,8 @@ void LINALG::EquilibrationBlock::EquilibrateSystem(
         // take square root of inverse row sums if matrix is scaled from left and right
         if (Method() == EquilibrationMethod::rowsandcolumns_full or
             Method() == EquilibrationMethod::rowsandcolumns_maindiag)
-          for (int i = 0; i < invrowsums->MyLength(); ++i)
-            (*invrowsums)[i] = sqrt((*invrowsums)[i]);
+          for (int j = 0; j < invrowsums->MyLength(); ++j)
+            (*invrowsums)[j] = std::sqrt((*invrowsums)[j]);
       }
 
       // perform row equilibration of matrix blocks in current row block of global system
@@ -289,7 +275,7 @@ void LINALG::EquilibrationBlock::EquilibrateSystem(
         if (Method() == EquilibrationMethod::rowsandcolumns_full or
             Method() == EquilibrationMethod::rowsandcolumns_maindiag)
           for (int i = 0; i < invcolsums->MyLength(); ++i)
-            (*invcolsums)[i] = sqrt((*invcolsums)[i]);
+            (*invcolsums)[i] = std::sqrt((*invcolsums)[i]);
       }
 
       // perform column equilibration of matrix blocks in current column block of global
@@ -308,7 +294,7 @@ void LINALG::EquilibrationBlock::EquilibrateSystem(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Equilibration> LINALG::EquilibrationFactory::BuildEquilibration(
-    MatrixType type, EquilibrationMethod method, Epetra_Map dofrowmap)
+    MatrixType type, EquilibrationMethod method, const Epetra_Map& dofrowmap)
 {
   Teuchos::RCP<LINALG::Equilibration> equilibration = Teuchos::null;
 

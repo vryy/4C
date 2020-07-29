@@ -771,6 +771,7 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
       switch (matrixtype_scatra)
       {
         case LINALG::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition_dof:
         {
           assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategyBlockBlock(ssi_mono, converter));
           break;
