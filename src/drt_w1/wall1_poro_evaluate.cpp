@@ -1853,6 +1853,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
     // evaluate shape functions and derivatives at integration point
     ComputeShapeFunctionsAndDerivatives(gp, shapefct, deriv, N_XYZ);
 
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
     // volume change (used for porosity law). Same as J in nonlinear theory.
@@ -1860,9 +1863,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
 
     // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
     ComputeJacobianDeterminantVolumeChange(J, volchange, defgrd, N_XYZ, disp);
-
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
 
     //----------------------------------------------------
     // pressure at integration point
