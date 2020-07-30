@@ -22,8 +22,6 @@
 #include "../drt_structure_new/str_dbc.H"
 #include "../drt_structure_new/str_impl_generic.H"
 #include "../drt_structure_new/str_timint_implicit.H"
-#include "../drt_structure_new/str_nln_solver_generic.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
 
@@ -63,26 +61,27 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
         *ssi_part_->MapStructureCondensed(), 1., NULL, NULL, jac_new);
 
     // transform and assemble slave-side rows of original Jacobian into new Jacobian
-    ADAPTER::CouplingSlaveConverter converter(*ssi_part_->CouplingAdapterStructure());
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), *ssi_part_->MapStructureCondensed(),
-        1., &converter, NULL, jac_new, true, true);
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        *ssi_part_->MapStructureCondensed(), 1.0,
+        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), NULL, jac_new, true, true);
 
     // transform and assemble slave-side columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., NULL, &converter, jac_new, true,
-        true);
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0, NULL,
+        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), jac_new, true, true);
 
     // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., &converter, &converter, jac_new,
-        true, true);
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0,
+        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(),
+        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), jac_new, true, true);
 
     // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize structural
     // meshtying
     jac_new.Complete();
-    jac_new.ApplyDirichlet(*ssi_part_->CouplingAdapterStructure()->SlaveDofMap());
+    jac_new.ApplyDirichlet(*ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
 
     // replace old Jacobian by new one
     jac_sparse.Assign(LINALG::View, jac_new);
@@ -101,7 +100,7 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
   if (ssi_part_->SSIInterfaceMeshtying())
     // transform and assemble master-side part of structural increment vector to slave side
     ssi_part_->MapsStructure()->InsertVector(
-        *ssi_part_->CouplingAdapterStructure()->MasterToSlave(
+        *ssi_part_->InterfaceCouplingAdapterStructure()->MasterToSlave(
             ssi_part_->MapsStructure()->ExtractVector(dir_mutable, 2)),
         1, dir_mutable);
 
@@ -154,8 +153,9 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
   if (ssi_part_->SSIInterfaceMeshtying() and ssi_part_->IsSetup())
   {
     // transform and assemble slave-side part of structural right-hand side vector to master side
-    ssi_part_->MapsStructure()->AddVector(*ssi_part_->CouplingAdapterStructure()->SlaveToMaster(
-                                              ssi_part_->MapsStructure()->ExtractVector(f, 1)),
+    ssi_part_->MapsStructure()->AddVector(
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveToMaster(
+            ssi_part_->MapsStructure()->ExtractVector(f, 1)),
         2, f);
 
     // zero out slave-side part of structural right-hand side vector

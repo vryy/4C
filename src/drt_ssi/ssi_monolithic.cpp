@@ -4,7 +4,6 @@
 
 \level 2
 
-
 */
 /*--------------------------------------------------------------------------*/
 #include "ssi_monolithic.H"
@@ -43,17 +42,14 @@
 
 
 /*--------------------------------------------------------------------------*
- | constructor                                                   fang 08/17 |
  *--------------------------------------------------------------------------*/
-SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
-    const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
-    )
+SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSI_Base(comm, globaltimeparams),
       dtele_(0.0),
       dtsolve_(0.0),
       maps_scatra_(Teuchos::null),
       map_structure_(Teuchos::null),
-      maps_(Teuchos::null),
+      maps_sub_problems_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
       equilibration_(Teuchos::null),
       equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
@@ -77,19 +73,18 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm,    //!< communicator
 }
 
 /*--------------------------------------------------------------------------*
- | assemble global system of equations                           fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::AssembleMatAndRHS()
 {
   // pass scalar transport degrees of freedom to structural discretization
-  SetScatraSolution(scatra_->ScaTraField()->Phinp());
+  SetScatraSolution(ScaTraField()->Phinp());
   // build system matrix and residual for structure field
-  structure_->Evaluate();
+  StructureField()->Evaluate();
 
   // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(structure_->Dispnp(), structure_->Velnp());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   // build system matrix and residual for scalar transport field
-  scatra_->ScaTraField()->PrepareLinearSolve();
+  ScaTraField()->PrepareLinearSolve();
 
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
@@ -106,8 +101,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
       structurescatradomain_);
 
   // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatraDomain(
-      systemmatrix_, scatra_->ScaTraField()->SystemMatrixOperator());
+  strategy_assemble_->AssembleScatraDomain(systemmatrix_, ScaTraField()->SystemMatrixOperator());
 
   // assemble scatra-strucutre block (domain contributions) into system matrix
   strategy_assemble_->AssembleScatraStructureDomain(systemmatrix_, scatrastructuredomain_);
@@ -120,7 +114,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   strategy_assemble_->AssembleStructureScatraDomain(systemmatrix_, structurescatradomain_);
 
   // assemble strucutre block into system matrix
-  strategy_assemble_->AssembleStructureDomain(systemmatrix_, structure_->SystemMatrix());
+  strategy_assemble_->AssembleStructureDomain(systemmatrix_, StructureField()->SystemMatrix());
 
   // apply meshtying
   strategy_assemble_->ApplyMeshtyingSystemMatrix(systemmatrix_);
@@ -129,26 +123,26 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   systemmatrix_->Complete();
 
   // apply scatra Dirichlet
-  systemmatrix_->ApplyDirichlet(*scatra_->ScaTraField()->DirichMaps()->CondMap(), true);
+  systemmatrix_->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
 
   // apply structural Dirichlet conditions
   strategy_assemble_->ApplyStructuralDBCSystemMatrix(systemmatrix_);
 
   // assemble monolithic RHS
-  strategy_assemble_->AssembleRHS(residual_, scatra_->ScaTraField()->Residual(), structure_->RHS());
+  strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS());
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::BuildNullSpaces() const
 {
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
-      scatra_->ScaTraField()->BuildBlockNullSpaces(solver_);
+      ScaTraField()->BuildBlockNullSpaces(solver_);
 
       break;
     }
@@ -163,7 +157,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      scatra_->ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 
       break;
     }
@@ -177,7 +171,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
 
   // store number of matrix block associated with structural field as string
   std::stringstream iblockstr;
-  iblockstr << maps_systemmatrix_->NumMaps();
+  iblockstr << MapsSystemMatrix()->NumMaps();
 
   // equip smoother for structural matrix block with empty parameter sub lists to trigger null space
   // computation
@@ -188,18 +182,19 @@ void SSI::SSI_Mono::BuildNullSpaces() const
 
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
-  structure_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+  StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 }  // SSI::SSI_Mono::BuildNullSpaces
 
 
 /*--------------------------------------------------------------------------*
- | return global map of degrees of freedom                       fang 08/17 |
  *--------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const { return maps_->FullMap(); }
+const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const
+{
+  return MapsSubProblems()->FullMap();
+}
 
 
 /*--------------------------------------------------------------------------*
- | finite difference check for global system matrix              fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::FDCheck()
 {
@@ -209,8 +204,8 @@ void SSI::SSI_Mono::FDCheck()
 
   // create global state vector
   Teuchos::RCP<Epetra_Vector> statenp(LINALG::CreateVector(*DofRowMap(), true));
-  maps_->InsertVector(scatra_->ScaTraField()->Phinp(), 0, statenp);
-  maps_->InsertVector(structure_->Dispnp(), 1, statenp);
+  MapsSubProblems()->InsertVector(ScaTraField()->Phinp(), 0, statenp);
+  MapsSubProblems()->InsertVector(StructureField()->Dispnp(), 1, statenp);
 
   // make a copy of global state vector to undo perturbations later
   Teuchos::RCP<Epetra_Vector> statenp_original = Teuchos::rcp(new Epetra_Vector(*statenp));
@@ -235,10 +230,10 @@ void SSI::SSI_Mono::FDCheck()
 
   // copy and zero out system increment vector if necessary
   Teuchos::RCP<Epetra_Vector> increment_original(Teuchos::null);
-  if (iter_ != 1)
+  if (IterationCount() != 1)
   {
     increment_original = Teuchos::rcp(new Epetra_Vector(*increment_));
-    increment_->PutScalar(0.);
+    increment_->PutScalar(0.0);
   }
 
   // initialize counter for system matrix entries with failing finite difference check
@@ -260,7 +255,7 @@ void SSI::SSI_Mono::FDCheck()
     // meshtying interface
     if (SSIInterfaceMeshtying())
     {
-      collid = icoup_structure_->SlaveDofMap()->LID(colgid);
+      collid = InterfaceCouplingAdapterStructure()->SlaveDofMap()->LID(colgid);
       Comm().MaxAll(&collid, &maxcollid, 1);
       if (maxcollid >= 0) continue;
     }
@@ -270,18 +265,20 @@ void SSI::SSI_Mono::FDCheck()
 
     // impose perturbation
     if (statenp->Map().MyGID(colgid))
-      if (statenp->SumIntoGlobalValue(colgid, 0, scatra_->ScaTraField()->FDCheckEps()))
+      if (statenp->SumIntoGlobalValue(colgid, 0, ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
-    if (SSIInterfaceMeshtying() and icoup_structure_->PermMasterDofMap()->MyGID(colgid))
-      if (statenp->SumIntoGlobalValue(icoup_structure_->SlaveDofMap()->GID(
-                                          icoup_structure_->PermMasterDofMap()->LID(colgid)),
-              0, scatra_->ScaTraField()->FDCheckEps()))
+    if (SSIInterfaceMeshtying() and
+        InterfaceCouplingAdapterStructure()->PermMasterDofMap()->MyGID(colgid))
+      if (statenp->SumIntoGlobalValue(
+              InterfaceCouplingAdapterStructure()->SlaveDofMap()->GID(
+                  InterfaceCouplingAdapterStructure()->PermMasterDofMap()->LID(colgid)),
+              0, ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
-    scatra_->ScaTraField()->Phinp()->Update(1., *maps_->ExtractVector(statenp, 0), 0.);
-    structure_->SetState(maps_->ExtractVector(statenp, 1));
+    ScaTraField()->Phinp()->Update(1., *MapsSubProblems()->ExtractVector(statenp, 0), 0.);
+    StructureField()->SetState(MapsSubProblems()->ExtractVector(statenp, 1));
 
     // calculate element right-hand side vector for perturbed state
-    if (iter_ != 1) UpdateIterStructure();
+    if (IterationCount() != 1) UpdateIterStructure();
     AssembleMatAndRHS();
 
     // Now we compare the difference between the current entries in the system matrix
@@ -304,9 +301,10 @@ void SSI::SSI_Mono::FDCheck()
 
       // skip matrix rows associated with Dirichlet boundary conditions and slave side of
       // structural meshtying interface
-      if (scatra_->ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or
-          structure_->GetDBCMapExtractor()->CondMap()->MyGID(rowgid) or
-          (SSIInterfaceMeshtying() and icoup_structure_->SlaveDofMap()->MyGID(rowgid)))
+      if (ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or
+          StructureField()->GetDBCMapExtractor()->CondMap()->MyGID(rowgid) or
+          (SSIInterfaceMeshtying() and
+              InterfaceCouplingAdapterStructure()->SlaveDofMap()->MyGID(rowgid)))
         continue;
 
       // get relevant entry in current row of original system matrix
@@ -327,8 +325,8 @@ void SSI::SSI_Mono::FDCheck()
 
       // finite difference suggestion (first divide by epsilon and then add for better
       // conditioning)
-      const double fdval = -(*residual_)[rowlid] / scatra_->ScaTraField()->FDCheckEps() +
-                           (*rhs_original)[rowlid] / scatra_->ScaTraField()->FDCheckEps();
+      const double fdval = -(*residual_)[rowlid] / ScaTraField()->FDCheckEps() +
+                           (*rhs_original)[rowlid] / ScaTraField()->FDCheckEps();
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-20 and abs(fdval) < 1.e-15)
@@ -353,7 +351,7 @@ void SSI::SSI_Mono::FDCheck()
       if (abs(relerr1) > maxrelerr) maxrelerr = abs(relerr1);
 
       // evaluate first comparison
-      if (abs(relerr1) > scatra_->ScaTraField()->FDCheckTol())
+      if (abs(relerr1) > ScaTraField()->FDCheckTol())
       {
         std::cout << "sysmat[" << rowgid << "," << colgid << "]:  " << entry << "   ";
         std::cout << "finite difference suggestion:  " << fdval << "   ";
@@ -367,10 +365,10 @@ void SSI::SSI_Mono::FDCheck()
       else
       {
         // left-hand side in second comparison
-        const double left = entry - (*rhs_original)[rowlid] / scatra_->ScaTraField()->FDCheckEps();
+        const double left = entry - (*rhs_original)[rowlid] / ScaTraField()->FDCheckEps();
 
         // right-hand side in second comparison
-        const double right = -(*residual_)[rowlid] / scatra_->ScaTraField()->FDCheckEps();
+        const double right = -(*residual_)[rowlid] / ScaTraField()->FDCheckEps();
 
         // confirm accuracy of second comparison
         if (abs(right) > 1.e-20 and abs(right) < 1.e-15)
@@ -395,7 +393,7 @@ void SSI::SSI_Mono::FDCheck()
         if (abs(relerr2) > maxrelerr) maxrelerr = abs(relerr2);
 
         // evaluate second comparison
-        if (abs(relerr2) > scatra_->ScaTraField()->FDCheckTol())
+        if (abs(relerr2) > ScaTraField()->FDCheckTol())
         {
           std::cout << "sysmat[" << rowgid << "," << colgid << "]-rhs[" << rowgid
                     << "]/eps:  " << left << "   ";
@@ -438,11 +436,11 @@ void SSI::SSI_Mono::FDCheck()
   }
 
   // undo perturbations of state variables
-  scatra_->ScaTraField()->Phinp()->Update(1., *maps_->ExtractVector(statenp_original, 0), 0.);
-  structure_->SetState(maps_->ExtractVector(statenp_original, 1));
+  ScaTraField()->Phinp()->Update(1., *MapsSubProblems()->ExtractVector(statenp_original, 0), 0.0);
+  StructureField()->SetState(MapsSubProblems()->ExtractVector(statenp_original, 1));
 
   // recompute system matrix and right-hand side vector based on original state variables
-  if (iter_ != 1) UpdateIterStructure();
+  if (IterationCount() != 1) UpdateIterStructure();
   AssembleMatAndRHS();
 
   // restore system increment vector if necessary
@@ -450,16 +448,10 @@ void SSI::SSI_Mono::FDCheck()
 }
 
 /*--------------------------------------------------------------------------*
- | initialize monolithic algorithm                               fang 08/17 |
  *--------------------------------------------------------------------------*/
-int SSI::SSI_Mono::Init(const Epetra_Comm& comm,     //!< communicator
-    const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
-    const Teuchos::ParameterList& scatraparams,      //!< parameter list for scalar transport
-    const Teuchos::ParameterList& structparams,      //!< parameter list for structure
-    const std::string struct_disname,                //!< name of structural discretization
-    const std::string scatra_disname,                //!< name of scalar transport discretization
-    bool isAle                                       //!< flag for ALE
-)
+int SSI::SSI_Mono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+    const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
   // check input parameters for scalar transport field
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
@@ -497,19 +489,17 @@ int SSI::SSI_Mono::Init(const Epetra_Comm& comm,     //!< communicator
 
 
 /*--------------------------------------------------------------------------*
- | output solution to screen and files                           fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Output()
 {
   // output scalar transport field
-  scatra_->ScaTraField()->Output();
+  ScaTraField()->Output();
 
   // output structure field
-  structure_->Output();
+  StructureField()->Output();
 }
 
 /*--------------------------------------------------------------------------*
- | prepare time step                                             fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::PrepareTimeStep()
 {
@@ -517,29 +507,28 @@ void SSI::SSI_Mono::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(structure_->Dispnp(), structure_->Velnp());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
 
   // prepare time step for scalar transport field
-  scatra_->ScaTraField()->PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to structure
-  if (scatra_->ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
   // pass scalar transport degrees of freedom to structural discretization
-  // has to be called AFTER scatra_->ScaTraField()->PrepareTimeStep() to ensure
+  // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
-  SetScatraSolution(scatra_->ScaTraField()->Phinp());
+  SetScatraSolution(ScaTraField()->Phinp());
 
   // prepare time step for structural field
-  structure_->PrepareTimeStep();
+  StructureField()->PrepareTimeStep();
 
   // print time step information to screen
-  scatra_->ScaTraField()->PrintTimeStepInfo();
+  ScaTraField()->PrintTimeStepInfo();
 }
 
 /*--------------------------------------------------------------------------*
- | setup monolithic algorithm                                    fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Setup()
 {
@@ -547,7 +536,7 @@ void SSI::SSI_Mono::Setup()
   SSI_Base::Setup();
 
   // safety checks
-  if (scatra_->ScaTraField()->NumScal() != 1)
+  if (ScaTraField()->NumScal() != 1)
     dserror(
         "Since the ssi_monolithic framework is only implemented for usage in combination with "
         "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
@@ -555,21 +544,21 @@ void SSI::SSI_Mono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
 
-  if (scatra_->ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
 
-  if (!scatra_->ScaTraField()->IsIncremental())
+  if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 
   // set up scatra-scatra interface meshtying if set in input file
   if (SSIInterfaceMeshtying())
   {
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    meshtying_strategy_s2i_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
-        scatra_->ScaTraField()->Strategy());
+    meshtying_strategy_s2i_ =
+        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
 
     // safety checks
     if (meshtying_strategy_s2i_ == Teuchos::null)
@@ -577,17 +566,15 @@ void SSI::SSI_Mono::Setup()
     if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror(
           "Monolithic scalar-structure interaction only implemented for scatra-scatra "
-          "interface "
-          "coupling with matching interface nodes!");
+          "interface coupling with matching interface nodes!");
   }
 }
 
 /*--------------------------------------------------------------------------*
- | setup global system of equations                              fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SetupSystem()
 {
-  // merge slave and master side block maps for interface matrix for thermo and scatra
+  // merge slave and master side block maps for interface matrix for scatra
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
 
@@ -595,8 +582,8 @@ void SSI::SSI_Mono::SetupSystem()
   {
     // check whether slave-side degrees of freedom are Dirichlet-free
     std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
-    maps[0] = icoup_structure_->SlaveDofMap();
-    maps[1] = structure_->GetDBCMapExtractor()->CondMap();
+    maps[0] = InterfaceCouplingAdapterStructure()->SlaveDofMap();
+    maps[1] = StructureField()->GetDBCMapExtractor()->CondMap();
     if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
 
@@ -606,12 +593,12 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize global map extractor
-  maps_ = Teuchos::rcp(new LINALG::MapExtractor(
-      *LINALG::MergeMap(*scatra_->ScaTraField()->DofRowMap(), *structure_->DofRowMap(), false),
-      structure_->DofRowMap(), scatra_->ScaTraField()->DofRowMap()));
+  maps_sub_problems_ = Teuchos::rcp(new LINALG::MapExtractor(
+      *LINALG::MergeMap(*ScaTraField()->DofRowMap(), *StructureField()->DofRowMap(), false),
+      StructureField()->DofRowMap(), ScaTraField()->DofRowMap()));
 
   // check global map extractor
-  maps_->CheckForValidMapExtractor();
+  maps_sub_problems_->CheckForValidMapExtractor();
 
   // initialize global increment vector for Newton-Raphson iteration
   increment_ = LINALG::CreateVector(*DofRowMap(), true);
@@ -620,12 +607,12 @@ void SSI::SSI_Mono::SetupSystem()
   residual_ = LINALG::CreateVector(*DofRowMap(), true);
 
   // initialize map extractors associated with blocks of global system matrix
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
     case LINALG::MatrixType::sparse:
     {
-      maps_systemmatrix_ = maps_;
+      maps_systemmatrix_ = MapsSubProblems();
       if (SSIInterfaceMeshtying())
       {
         blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
@@ -640,7 +627,7 @@ void SSI::SSI_Mono::SetupSystem()
     case LINALG::MatrixType::block_condition_dof:
     {
       // store an RCP to the block maps of the scatra field
-      maps_scatra_ = Teuchos::rcpFromRef(scatra_->ScaTraField()->BlockMaps());
+      maps_scatra_ = Teuchos::rcpFromRef(ScaTraField()->BlockMaps());
 
       // safety check
       maps_scatra_->CheckForValidMapExtractor();
@@ -652,16 +639,16 @@ void SSI::SSI_Mono::SetupSystem()
         maps_systemmatrix[imap] = maps_scatra_->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural field
-      maps_systemmatrix[maps_systemmatrix_scatra] = structure_->DofRowMap();
+      maps_systemmatrix[maps_systemmatrix_scatra] = StructureField()->DofRowMap();
 
       // initialize map extractor associated with blocks of global system matrix
       maps_systemmatrix_ =
           Teuchos::rcp(new LINALG::MultiMapExtractor(*DofRowMap(), maps_systemmatrix));
 
       // initialize map extractor associated with all degrees of freedom inside structural field
-      map_structure_ =
-          Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),
-              std::vector<Teuchos::RCP<const Epetra_Map>>(1, structure_->DofRowMap())));
+      map_structure_ = Teuchos::rcp(
+          new LINALG::MultiMapExtractor(*StructureField()->Discretization()->DofRowMap(),
+              std::vector<Teuchos::RCP<const Epetra_Map>>(1, StructureField()->DofRowMap())));
 
       // safety check
       map_structure_->CheckForValidMapExtractor();
@@ -705,7 +692,7 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize global system matrix
       systemmatrix_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *maps_systemmatrix_, *maps_systemmatrix_, 81, false, true));
+              *MapsSystemMatrix(), *MapsSystemMatrix(), 81, false, true));
 
       // feed AMGnxn block preconditioner with null space information for each block of global block
       // system matrix
@@ -717,7 +704,7 @@ void SSI::SSI_Mono::SetupSystem()
     case LINALG::MatrixType::sparse:
     {
       // safety check
-      if (scatra_->ScaTraField()->SystemMatrix() == Teuchos::null)
+      if (ScaTraField()->SystemMatrix() == Teuchos::null)
         dserror("Incompatible matrix type associated with scalar transport field!");
 
       // initialize global system matrix
@@ -734,7 +721,7 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize scatra-structure block and structure-scatra block of global system matrix
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
@@ -742,18 +729,18 @@ void SSI::SSI_Mono::SetupSystem()
       // initialize scatra-structure block
       scatrastructuredomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *map_structure_, scatra_->ScaTraField()->BlockMaps(), 81, false, true));
+              *MapStructure(), ScaTraField()->BlockMaps(), 81, false, true));
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
         scatrastructureinterface_ =
             Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *map_structure_, *blockmapscatrainterface, 81, false, true));
+                *MapStructure(), *blockmapscatrainterface, 81, false, true));
 
       // initialize structure-scatra block
       structurescatradomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              scatra_->ScaTraField()->BlockMaps(), *map_structure_, 81, false, true));
+              ScaTraField()->BlockMaps(), *MapStructure(), 81, false, true));
 
       break;
     }
@@ -761,8 +748,8 @@ void SSI::SSI_Mono::SetupSystem()
     case LINALG::MatrixType::sparse:
     {
       // initialize scatra-structure block
-      scatrastructuredomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*scatra_->ScaTraField()->DofRowMap(), 27, false, true));
+      scatrastructuredomain_ =
+          Teuchos::rcp(new LINALG::SparseMatrix(*ScaTraField()->DofRowMap(), 27, false, true));
 
       // initialize scatra-structure block
       if (SSIInterfaceMeshtying())
@@ -771,7 +758,7 @@ void SSI::SSI_Mono::SetupSystem()
 
       // initialize structure-scatra block
       structurescatradomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*structure_->DofRowMap(), 27, false, true));
+          Teuchos::rcp(new LINALG::SparseMatrix(*StructureField()->DofRowMap(), 27, false, true));
 
       break;
     }
@@ -784,25 +771,22 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize strategy for assembly
-  // create converter
-  ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-
   strategy_assemble_ = SSI::BuildAssembleStrategy(
-      Teuchos::rcp(this, false), converter, matrixtype_, scatra_->ScaTraField()->MatrixType());
+      Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize object, that performs evaluations of OD coupling
-  scatrastructureOffDiagcoupling_ = Teuchos::rcp(
-      new SSI::ScatraStructureOffDiagCoupling(maps_structure_, maps_->Map(0), maps_->Map(1),
-          icoup_structure_, interface_map_scatra, meshtying_strategy_s2i_, scatra_, structure_));
+  scatrastructureOffDiagcoupling_ =
+      Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(MapsStructure(),
+          MapsSubProblems()->Map(0), MapsSubProblems()->Map(1), InterfaceCouplingAdapterStructure(),
+          interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField()));
 
   // instantiate appropriate equilibration class
   LINALG::EquilibrationFactory equibrilationfactory;
   equilibration_ = equibrilationfactory.BuildEquilibration(
-      matrixtype_, equilibration_method_, *maps_->FullMap());
+      matrixtype_, equilibration_method_, *MapsSubProblems()->FullMap());
 }
 
 /*---------------------------------------------------------------------------------*
- | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
  *---------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SetupModelEvaluator() const
 {
@@ -810,23 +794,22 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
   if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
           DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none and
       SSIInterfaceMeshtying())
-    struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",
+    StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
 }
 
 /*--------------------------------------------------------------------------*
- | evaluate time step using Newton-Raphson iteration             fang 08/17 |
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::Solve()
+void SSI::SSI_Mono::NewtonLoop()
 {
-  // initialize counter for Newton-Raphson iteration
-  iter_ = 0;
+  // reset counter for Newton-Raphson iteration
+  ResetIterationCount();
 
   // start Newton-Raphson iteration
   while (true)
   {
     // update iteration counter
-    ++iter_;
+    IncrementIterationCount();
 
     // reset timer
     timer_->ResetStartTime();
@@ -847,24 +830,24 @@ void SSI::SSI_Mono::Solve()
       dserror("Complete() has not been called on global system matrix yet!");
 
     // perform finite difference check on time integrator level
-    if ((scatra_->ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global) and (Step() > 1))
-      FDCheck();
+    if ((ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global) and (Step() > 1)) FDCheck();
 
     // check termination criterion for Newton-Raphson iteration
     if (strategy_convcheck_->ExitNewtonRaphson(*this)) break;
 
     // initialize global increment vector
-    increment_->PutScalar(0.);
+    increment_->PutScalar(0.0);
 
     // store time before solving global system of equations
     time = timer_->WallTime();
 
     // equilibrate global system of equations if necessary
-    equilibration_->EquilibrateSystem(systemmatrix_, residual_, *maps_systemmatrix_);
+    equilibration_->EquilibrateSystem(systemmatrix_, residual_, *MapsSystemMatrix());
 
     // solve global system of equations
     // Dirichlet boundary conditions have already been applied to global system of equations
-    solver_->Solve(systemmatrix_->EpetraOperator(), increment_, residual_, true, iter_ == 1);
+    solver_->Solve(
+        systemmatrix_->EpetraOperator(), increment_, residual_, true, IterationCount() == 1);
 
     equilibration_->UnequilibrateIncrement(increment_);
 
@@ -876,9 +859,9 @@ void SSI::SSI_Mono::Solve()
     // output performance statistics associated with linear solver into text file if
     // applicable
     if (DRT::INPUT::IntegralValue<bool>(
-            *scatra_->ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
-      scatra_->ScaTraField()->OutputLinSolverStats(
-          *solver_, dtsolve_, Step(), iter_, residual_->Map().NumGlobalElements());
+            *ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
+      ScaTraField()->OutputLinSolverStats(
+          *solver_, dtsolve_, Step(), IterationCount(), residual_->Map().NumGlobalElements());
 
     // update states for next Newton iteration
     UpdateIterScaTra();
@@ -888,19 +871,18 @@ void SSI::SSI_Mono::Solve()
 }
 
 /*--------------------------------------------------------------------------*
- | time loop                                                     fang 08/17 |
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Timeloop()
 {
   // output initial scalar transport solution to screen and files
   if (Step() == 0)
   {
-    SetStructSolution(structure_->Dispnp(), structure_->Velnp());
-    scatra_->ScaTraField()->Output();
+    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+    ScaTraField()->Output();
   }
 
   // time loop
-  while (NotFinished() and scatra_->ScaTraField()->NotFinished())
+  while (NotFinished() and ScaTraField()->NotFinished())
   {
     // prepare time step
     PrepareTimeStep();
@@ -909,7 +891,7 @@ void SSI::SSI_Mono::Timeloop()
     const double time = timer_->WallTime();
 
     // evaluate time step
-    Solve();
+    NewtonLoop();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
@@ -919,30 +901,29 @@ void SSI::SSI_Mono::Timeloop()
     // output performance statistics associated with nonlinear solver into *.csv file if
     // applicable
     if (DRT::INPUT::IntegralValue<int>(
-            *scatra_->ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
-      scatra_->ScaTraField()->OutputNonlinSolverStats(iter_, dtnonlinsolve, Step(), Comm());
+            *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
+      ScaTraField()->OutputNonlinSolverStats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
     // prepare structure output
-    structure_->PrepareOutput();
+    StructureField()->PrepareOutput();
 
     // update scalar transport and structure fields
     Update();
 
     // output solution to screen and files
     Output();
-  }  // while(NotFinished())
+  }
 }
 
 /*--------------------------------------------------------------------------------------*
- | update scalar transport and structure fields after time step evaluation   fang 08/17 |
  *--------------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Update()
 {
   // update scalar transport field
-  scatra_->ScaTraField()->Update();
+  ScaTraField()->Update();
 
   // update structure field
-  structure_->Update();
+  StructureField()->Update();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -950,8 +931,8 @@ void SSI::SSI_Mono::Update()
 void SSI::SSI_Mono::UpdateIterScaTra()
 {
   // update scalar transport field
-  scatra_->ScaTraField()->UpdateIter(maps_->ExtractVector(increment_, 0));
-  scatra_->ScaTraField()->ComputeIntermediateValues();
+  ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(increment_, 0));
+  ScaTraField()->ComputeIntermediateValues();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -959,20 +940,22 @@ void SSI::SSI_Mono::UpdateIterScaTra()
 void SSI::SSI_Mono::UpdateIterStructure()
 {
   // set up structural increment vector
-  const Teuchos::RCP<Epetra_Vector> increment_structure = maps_->ExtractVector(increment_, 1);
+  const Teuchos::RCP<Epetra_Vector> increment_structure =
+      MapsSubProblems()->ExtractVector(increment_, 1);
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    maps_structure_->InsertVector(
-        icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(structure_->Dispnp(), 2)), 1,
-        structure_->WriteAccessDispnp());
-    structure_->SetState(structure_->WriteAccessDispnp());
-    maps_structure_->InsertVector(
-        icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(increment_structure, 2)), 1,
-        increment_structure);
+    MapsStructure()->InsertVector(
+        InterfaceCouplingAdapterStructure()->MasterToSlave(
+            MapsStructure()->ExtractVector(StructureField()->Dispnp(), 2)),
+        1, StructureField()->WriteAccessDispnp());
+    StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    MapsStructure()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
+                                      MapsStructure()->ExtractVector(increment_structure, 2)),
+        1, increment_structure);
   }
 
   // update displacement of structure field
-  structure_->UpdateStateIncrementally(increment_structure);
+  StructureField()->UpdateStateIncrementally(increment_structure);
 }
