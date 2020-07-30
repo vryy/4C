@@ -231,16 +231,14 @@ namespace MAT
 
     //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
     void CouplStress(const LINALG::Matrix<3, 3>& defgrad,  ///< (i) deformation gradient
-        const LINALG::Matrix<3, 1>& fluidvel,              ///< (i) fluid velocity in gausspoint
         const double& press,                               ///< (i) pressure in gauss point
         LINALG::Matrix<6, 1>& couplstress                  ///< (o) coupling stress in gauss point
         ) const;
 
     //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
     void CouplStress(const LINALG::Matrix<2, 2>& defgrad,  ///< (i) deformation gradient
-        const LINALG::Matrix<2, 1>& fluidvel,              ///< (i) fluid velocity in gausspoint
         const double& press,                               ///< (i) pressure in gauss point
-        LINALG::Matrix<3, 1>& couplstress                  ///< (o) coupling stress in gauss point
+        LINALG::Matrix<4, 1>& couplstress                  ///< (o) coupling stress in gauss point
         ) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives

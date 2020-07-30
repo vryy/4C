@@ -1265,13 +1265,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::couplstress_poroelast(
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
-    // fluid velocity at integration point
-    LINALG::Matrix<numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
-
     LINALG::Matrix<numstr_, 1> couplstress(true);
 
-    structmat->CouplStress(defgrd, fvelint, press, couplstress);
+    structmat->CouplStress(defgrd, press, couplstress);
 
     // return gp stresses
     switch (iostress)

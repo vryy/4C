@@ -1848,6 +1848,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
   LINALG::Matrix<numdim_, numnod_> N_XYZ;
   LINALG::Matrix<numdim_, numnod_> deriv;
 
+  // get structure material
+  Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  if (structmat->MaterialType() != INPAR::MAT::m_structporo)
+    dserror("invalid structure material for poroelasticity");
+
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // evaluate shape functions and derivatives at integration point
@@ -1856,37 +1861,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     ComputeDefGradient(defgrd, N_XYZ, xcurr);
 
-    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    double J = 0.0;
-    // volume change (used for porosity law). Same as J in nonlinear theory.
-    double volchange = 0.0;
-
-    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
-    ComputeJacobianDeterminantVolumeChange(J, volchange, defgrd, N_XYZ, disp);
-
     //----------------------------------------------------
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
-    // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<numdim_, numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
-
-    // inverse Right Cauchy-Green tensor
-    LINALG::Matrix<numdim_, numdim_> C_inv;
-    C_inv.Invert(cauchygreen);
-
-    // inverse Right Cauchy-Green tensor as vector
-    LINALG::Matrix<numstr_, 1> C_inv_vec;
-    for (int i = 0, k = 0; i < numdim_; i++)
-      for (int j = 0; j < numdim_ - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
-
     LINALG::Matrix<Wall1::numstr_, 1> couplstress(true);
-    couplstress(0) = -1.0 * J * press * C_inv_vec(0);
-    couplstress(1) = -1.0 * J * press * C_inv_vec(1);
-    couplstress(2) =
-        0.0;  // this is needed to be compatible with the implementation of the wall element
-    couplstress(3) = -1.0 * J * press * C_inv_vec(2);
+
+    structmat->CouplStress(defgrd, press, couplstress);
 
     // return gp stresses
     switch (iostress)
