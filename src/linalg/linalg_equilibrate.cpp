@@ -71,6 +71,21 @@ void LINALG::Equilibration::EquilibrateMatrixColumns(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::Equilibration::EquilibrateSystem(
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<Epetra_Vector>& residual, const LINALG::MultiMapExtractor& blockmaps) const
+{
+  // Equilibrate the matrix given the chosen method and matrix type
+  EquilibrateMatrix(systemmatrix, blockmaps);
+
+  // Equilibrate the RHS
+  EquilibrateRHS(residual);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void LINALG::Equilibration::UnequilibrateIncrement(
     const Teuchos::RCP<Epetra_Vector>& increment) const
 {
@@ -100,9 +115,17 @@ void LINALG::Equilibration::EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& re
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void LINALG::EquilibrationSparse::EquilibrateSystem(
+void LINALG::EquilibrationSparse::EquilibrateMatrix(
     const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Epetra_Vector>& residual, const LINALG::MultiMapExtractor& blockmaps) const
+    const LINALG::MultiMapExtractor& blockmaps) const
+{
+  EquilibrateMatrix(systemmatrix);
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+void LINALG::EquilibrationSparse::EquilibrateMatrix(
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix) const
 {
   // check matrix
   Teuchos::RCP<LINALG::SparseMatrix> sparsematrix =
@@ -134,15 +157,13 @@ void LINALG::EquilibrationSparse::EquilibrateSystem(
     // perform column equilibration of global system matrix
     EquilibrateMatrixColumns(*sparsematrix, invcolsums_);
   }
-  // equilibrate residual
-  EquilibrateRHS(residual);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void LINALG::EquilibrationBlock::EquilibrateSystem(
+void LINALG::EquilibrationBlock::EquilibrateMatrix(
     const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Epetra_Vector>& residual, const LINALG::MultiMapExtractor& blockmaps) const
+    const LINALG::MultiMapExtractor& blockmaps) const
 {
   // check matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
@@ -287,8 +308,6 @@ void LINALG::EquilibrationBlock::EquilibrateSystem(
       blockmaps.InsertVector(invcolsums, j, invcolsums_);
     }
   }
-  // equilibrate residual
-  EquilibrateRHS(residual);
 }
 
 /*-------------------------------------------------------------------------*
