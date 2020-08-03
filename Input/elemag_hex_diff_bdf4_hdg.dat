@@ -21,7 +21,7 @@ RANDSEED                        -1
 TIMESTEP                        0.5
 NUMSTEP                         200000
 MAXTIME                         4.99
-TAU				1
+TAU                             1
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 LINEAR_SOLVER                   1
@@ -35,7 +35,7 @@ ERRORFUNCNO                     1
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
-AZTOL				1e-5
+AZTOL                           1e-8
 ----------------------------------------------------------MATERIALS
 
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 50 PERMITTIVITY 0 PERMEABILITY 1
@@ -59,8 +59,12 @@ NDSURF  6
 NDVOL   0
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.55779121961188618e-02 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 8.18316329600480077e-03 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 4.03240553895305783e-04 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 1.15235107426044136e-03 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY Hdiv-electric VALUE 3.04263400067730826e-03 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY Hdiv-magnetic VALUE 1.39749584625199225e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY Hcurl-electric VALUE 1.99697243957233615e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY Hcurl-magnetic VALUE 9.09330561895113285e-03 TOLERANCE 1e-6
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // front_face
