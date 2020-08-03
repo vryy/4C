@@ -405,8 +405,7 @@ double MAT::StructPoro::PorosityAv() const
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
 *----------------------------------------------------------------------*/
-void MAT::StructPoro::CouplStress(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 1>& fluidvel, const double& press,
+void MAT::StructPoro::CouplStress(const LINALG::Matrix<3, 3>& defgrd, const double& press,
     LINALG::Matrix<6, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
@@ -430,9 +429,8 @@ void MAT::StructPoro::CouplStress(const LINALG::Matrix<3, 3>& defgrd,
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
 *----------------------------------------------------------------------*/
-void MAT::StructPoro::CouplStress(const LINALG::Matrix<2, 2>& defgrd,
-    const LINALG::Matrix<2, 1>& fluidvel, const double& press,
-    LINALG::Matrix<3, 1>& couplstress) const
+void MAT::StructPoro::CouplStress(const LINALG::Matrix<2, 2>& defgrd, const double& press,
+    LINALG::Matrix<4, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
 
@@ -449,7 +447,11 @@ void MAT::StructPoro::CouplStress(const LINALG::Matrix<2, 2>& defgrd,
   for (int i = 0, k = 0; i < 2; i++)
     for (int j = 0; j < 2 - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
 
-  for (int i = 0; i < 3; i++) couplstress(i) = -1.0 * J * press * C_inv_vec(i);
+  couplstress(0) = -1.0 * J * press * C_inv_vec(0);
+  couplstress(1) = -1.0 * J * press * C_inv_vec(1);
+  couplstress(2) =
+      0.0;  // this is needed to be compatible with the implementation of the wall element
+  couplstress(3) = -1.0 * J * press * C_inv_vec(2);
 }
 
 /*----------------------------------------------------------------------*
