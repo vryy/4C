@@ -15,6 +15,8 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include <unordered_map>
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
@@ -157,19 +159,34 @@ namespace SCATRA
     }
 
     //! return states of charge of resolved electrodes
-    const Teuchos::RCP<std::vector<double>>& ElectrodeSOC() const { return electrodesoc_; };
+    const Teuchos::RCP<std::unordered_map<int, double>>& ElectrodeSOC() const
+    {
+      return electrodesoc_;
+    };
 
     //! return C rates with respect to resolved electrodes
-    const Teuchos::RCP<std::vector<double>>& ElectrodeCRates() const { return electrodecrates_; };
+    const Teuchos::RCP<std::unordered_map<int, double>>& ElectrodeCRates() const
+    {
+      return electrodecrates_;
+    };
 
     //! return mean reactant concentrations at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeConc() const { return electrodeconc_; };
+    const Teuchos::RCP<std::unordered_map<int, double>>& ElectrodeConc() const
+    {
+      return electrodeconc_;
+    };
 
     //! return mean electric overpotentials at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeEta() const { return electrodeeta_; };
+    const Teuchos::RCP<std::unordered_map<int, double>>& ElectrodeEta() const
+    {
+      return electrodeeta_;
+    };
 
     //! return total electric currents at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeCurr() const { return electrodecurr_; };
+    const Teuchos::RCP<std::unordered_map<int, double>>& ElectrodeCurr() const
+    {
+      return electrodecurr_;
+    };
 
     //! return cell voltage
     const double& CellVoltage() const { return cellvoltage_; };
@@ -334,22 +351,22 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> dctoggle_;
 
     //! initial volumes of resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodeinitvols_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodeinitvols_;
 
     //! states of charge of resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodesoc_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodesoc_;
 
     //! C rates with respect to resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodecrates_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodecrates_;
 
     //! mean reactant concentrations at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodeconc_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodeconc_;
 
     //! mean electric overpotentials at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodeeta_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodeeta_;
 
     //! total electric currents at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodecurr_;
+    Teuchos::RCP<std::unordered_map<int, double>> electrodecurr_;
 
     //! cell voltage
     double cellvoltage_;

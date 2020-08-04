@@ -227,7 +227,7 @@ void SCATRA::CCCVCondition::ReadRestart(IO::DiscretizationReader& reader)
 
   // check whether number of current charge or discharge half-cycle is even, i.e., whether
   // current half-cycle is opposite to first one w.r.t. charge/discharge
-  if (ihalfcycle_ % 2 == 0) charging_ = !charging_;
+  charging_ = ihalfcycle_ % 2 == 0 ? !beginwithcharge_ : beginwithcharge_;
 
   // phase was changed since last time step adaptivity
   phasechanged_ = static_cast<bool>(reader.ReadInt("phasechanged"));
