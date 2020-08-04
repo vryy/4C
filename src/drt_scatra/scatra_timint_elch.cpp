@@ -50,12 +50,12 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       dlcapexists_(false),
       ektoggle_(Teuchos::null),
       dctoggle_(Teuchos::null),
-      electrodeinitvols_(Teuchos::null),
-      electrodesoc_(Teuchos::null),
-      electrodecrates_(Teuchos::null),
-      electrodeconc_(Teuchos::null),
-      electrodeeta_(Teuchos::null),
-      electrodecurr_(Teuchos::null),
+      electrodeinitvols_(),
+      electrodesoc_(),
+      electrodecrates_(),
+      electrodeconc_(),
+      electrodeeta_(),
+      electrodecurr_(),
       cellvoltage_(0.),
       cellvoltage_old_(-1.),
       cccv_condition_(Teuchos::null),
@@ -150,15 +150,12 @@ void SCATRA::ScaTraTimIntElch::Setup()
   discret_->GetCondition("ElectrodeSOC", electrodesocconditions);
   if (electrodesocconditions.size() > 0)
   {
-    electrodesoc_ = Teuchos::rcp(new std::unordered_map<int, double>);
-    electrodecrates_ = Teuchos::rcp(new std::unordered_map<int, double>);
-    if (isale_) electrodeinitvols_ = Teuchos::rcp(new std::unordered_map<int, double>);
     for (const auto& electrodesoccondition : electrodesocconditions)
     {
-      auto conditioninitpair = std::make_pair(electrodesoccondition->Id(), -1.0);
-      if (isale_) electrodeinitvols_->insert(conditioninitpair);
-      electrodesoc_->insert(conditioninitpair);
-      electrodecrates_->insert(conditioninitpair);
+      auto conditioninitpair = std::make_pair(electrodesoccondition->GetInt("ConditionID"), -1.0);
+      if (isale_) electrodeinitvols_.insert(conditioninitpair);
+      electrodesoc_.insert(conditioninitpair);
+      electrodecrates_.insert(conditioninitpair);
     }
 
     // safety checks
@@ -196,30 +193,17 @@ void SCATRA::ScaTraTimIntElch::Setup()
   else if (electrodedomainconditions.size() > 0 or electrodeboundaryconditions.size() > 0 or
            electrodeboundarypointconditions.size() > 0)
   {
-    electrodeconc_ = Teuchos::rcp(new std::unordered_map<int, double>);
-    electrodeeta_ = Teuchos::rcp(new std::unordered_map<int, double>);
-    electrodecurr_ = Teuchos::rcp(new std::unordered_map<int, double>);
-    for (const auto& electrodedomaincondition : electrodedomainconditions)
-    {
-      auto condition_domain = std::make_pair(electrodedomaincondition->Id(), -1.0);
-      electrodeconc_->insert(condition_domain);
-      electrodeeta_->insert(condition_domain);
-      electrodecurr_->insert(condition_domain);
-    }
-    for (const auto& electrodeboundarycondition : electrodeboundaryconditions)
-    {
-      auto condition_boundary = std::make_pair(electrodeboundarycondition->Id(), -1.0);
-      electrodeconc_->insert(condition_boundary);
-      electrodeeta_->insert(condition_boundary);
-      electrodecurr_->insert(condition_boundary);
-    }
-    for (const auto& electrodeboundarypointcondition : electrodeboundarypointconditions)
-    {
-      auto condition_point = std::make_pair(electrodeboundarypointcondition->Id(), -1.0);
-      electrodeconc_->insert(condition_point);
-      electrodeeta_->insert(condition_point);
-      electrodecurr_->insert(condition_point);
-    }
+    // group electrode conditions from all entities into one vector and loop
+    std::vector<std::vector<DRT::Condition*>> electrodeconditions = {
+        electrodedomainconditions, electrodeboundaryconditions, electrodeboundarypointconditions};
+    for (const auto& electrodeentityconditions : electrodeconditions)
+      for (const auto& electrodedomaincondition : electrodeentityconditions)
+      {
+        auto condition_pair = std::make_pair(electrodedomaincondition->GetInt("ConditionID"), -1.0);
+        electrodeconc_.insert(condition_pair);
+        electrodeeta_.insert(condition_pair);
+        electrodecurr_.insert(condition_pair);
+      }
   }
 
   // extract constant-current constant-voltage (CCCV) cell cycling and half-cycle boundary
@@ -847,18 +831,18 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
   {
     if (isale_)
     {
-      // reconstruct unordered map from two vectors (ID of condition [key], volume [value])
+      // reconstruct map from two vectors (ID of condition [key], volume [value])
       auto conditionid_vec = Teuchos::rcp(new std::vector<int>);
       auto electrodeinitvol_vec = Teuchos::rcp(new std::vector<double>);
       reader.ReadRedundantIntVector(conditionid_vec, "electrodeconditionids");
       reader.ReadRedundantDoubleVector(electrodeinitvol_vec, "electrodeinitvols");
       if (conditionid_vec->size() != electrodeinitvol_vec->size())
         dserror("something went wrong with reading initial volumes of electrodes");
-      electrodeinitvols_->clear();
+      electrodeinitvols_.clear();
       for (unsigned i = 0; i < conditionid_vec->size(); ++i)
       {
         auto condition_volume = std::make_pair(conditionid_vec->at(i), electrodeinitvol_vec->at(i));
-        electrodeinitvols_->insert(condition_volume);
+        electrodeinitvols_.insert(condition_volume);
       }
     }
   }
@@ -1228,9 +1212,9 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
   currentsum += currentdlintegral;
 
   // update vectors
-  (*electrodeconc_)[id] = cint / boundaryint;
-  (*electrodeeta_)[id] = overpotentialint / boundaryint;
-  (*electrodecurr_)[id] = currentintegral + currentdlintegral;
+  electrodeconc_[id] = cint / boundaryint;
+  electrodeeta_[id] = overpotentialint / boundaryint;
+  electrodecurr_[id] = currentintegral + currentdlintegral;
 }  // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
 
 
@@ -1358,10 +1342,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       const double intdomain = (*scalars)(2);
 
       // store initial volume of current electrode
-      if (isale_ and step_ == 0) (*electrodeinitvols_)[condid] = intdomain;
+      if (isale_ and step_ == 0) electrodeinitvols_[condid] = intdomain;
 
       // extract reference concentrations at 0% and 100% state of charge
-      const double volratio = isale_ ? (*electrodeinitvols_)[condid] / intdomain : 1.;
+      const double volratio = isale_ ? electrodeinitvols_[condid] / intdomain : 1.;
       const double c_0 = condition->GetDouble("c_0%") * volratio;
       const double c_100 = condition->GetDouble("c_100%") * volratio;
       const double c_delta_inv = 1. / (c_100 - c_0);
@@ -1388,8 +1372,8 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
         mode.assign(" charge  ");
 
       // update state of charge and C rate for current electrode
-      (*electrodesoc_)[condid] = soc;
-      (*electrodecrates_)[condid] = c_rate;
+      electrodesoc_[condid] = soc;
+      electrodecrates_[condid] = c_rate;
 
       // update cell C rate
       cellcrate_ = std::max(std::abs(c_rate), cellcrate_);
@@ -1608,7 +1592,7 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
       // extract condition ID and volume into two separate std vectors and write out
       auto conditionid_vec = Teuchos::rcp(new std::vector<int>);
       auto electrodeinitvol_vec = Teuchos::rcp(new std::vector<double>);
-      for (const auto& electrodeinitvol : *electrodeinitvols_)
+      for (const auto& electrodeinitvol : electrodeinitvols_)
       {
         conditionid_vec->push_back(electrodeinitvol.first);
         electrodeinitvol_vec->push_back(electrodeinitvol.second);
