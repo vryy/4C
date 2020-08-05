@@ -53,9 +53,9 @@ namespace SSI
         const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
         const Teuchos::ParameterList& scatraparams,      //!< parameter list for scalar transport
         const Teuchos::ParameterList& structparams,      //!< parameter list for structure
-        const std::string struct_disname,                //!< name of structural discretization
-        const std::string scatra_disname,  //!< name of scalar transport discretization
-        bool isAle                         //!< flag for ALE
+        std::string struct_disname,                      //!< name of structural discretization
+        std::string scatra_disname,  //!< name of scalar transport discretization
+        bool isAle                   //!< flag for ALE
         ) override;
 
     //! return global map extractor (0: scalar transport, 1: structure)
@@ -82,6 +82,14 @@ namespace SSI
     void Setup() override;
 
     void SetupSystem() override;
+
+    /*!
+     * @brief solves the linear system
+     *
+     * @note in case an equilibration method (scaling of rows and columns) is defined this is also
+     * performed within this call
+     */
+    void SolveLinearSystem();
 
     //! return algebraic solver for global system of equations
     const LINALG::Solver& Solver() const { return *solver_; };

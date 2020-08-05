@@ -798,6 +798,20 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
         Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
 }
 
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSI_Mono::SolveLinearSystem()
+{
+  equilibration_->EquilibrateSystem(systemmatrix_, residual_, *MapsSystemMatrix());
+
+  // solve global system of equations
+  // Dirichlet boundary conditions have already been applied to global system of equations
+  solver_->Solve(
+      systemmatrix_->EpetraOperator(), increment_, residual_, true, IterationCount() == 1);
+
+  equilibration_->UnequilibrateIncrement(increment_);
+}
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::NewtonLoop()
@@ -841,15 +855,7 @@ void SSI::SSI_Mono::NewtonLoop()
     // store time before solving global system of equations
     time = timer_->WallTime();
 
-    // equilibrate global system of equations if necessary
-    equilibration_->EquilibrateSystem(systemmatrix_, residual_, *MapsSystemMatrix());
-
-    // solve global system of equations
-    // Dirichlet boundary conditions have already been applied to global system of equations
-    solver_->Solve(
-        systemmatrix_->EpetraOperator(), increment_, residual_, true, IterationCount() == 1);
-
-    equilibration_->UnequilibrateIncrement(increment_);
+    SolveLinearSystem();
 
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
