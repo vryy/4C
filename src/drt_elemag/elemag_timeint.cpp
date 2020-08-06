@@ -366,8 +366,8 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
     std::cout << "---------------------------- Result error wrt FUNCT " << errfunct_
               << " -----------------------------" << std::endl;
     std::cout << "ABSOLUTE ERROR:" << std::endl;
-    std::cout << "Electric L2-error: " << sqrt((*errors)[0]) << std::endl;
-    std::cout << "Magnetic L2-error: " << sqrt((*errors)[2]) << std::endl;
+    std::cout << "Electric L2-error: " << std::sqrt((*errors)[0]) << std::endl;
+    std::cout << "Magnetic L2-error: " << std::sqrt((*errors)[2]) << std::endl;
     std::cout << "\nRELATIVE ERROR:" << std::endl;
     if ((*errors)[1] == 0 && (*errors)[3] == 0)
       std::cout << "Impossible to compute relative errors. The L2-norm of the analytical "
@@ -376,7 +376,7 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
     else
     {
       if ((*errors)[1] != 0)
-        std::cout << "Electric relative L2-error: " << sqrt((*errors)[0] / (*errors)[1])
+        std::cout << "Electric relative L2-error: " << std::sqrt((*errors)[0] / (*errors)[1])
                   << std::endl;
       else
         std::cout
@@ -384,7 +384,7 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
                "solution is zero, resulting in a division by zero."
             << std::endl;
       if ((*errors)[3] != 0)
-        std::cout << "Magnetic relative L2-error: " << sqrt((*errors)[2] / (*errors)[3])
+        std::cout << "Magnetic relative L2-error: " << std::sqrt((*errors)[2] / (*errors)[3])
                   << std::endl;
       else
         std::cout
@@ -393,11 +393,11 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
             << std::endl;
     }
     std::cout << "\nHDIV ERROR:" << std::endl;
-    std::cout << "Electric Hdiv-error: " << sqrt((*errors)[4]) << std::endl;
-    std::cout << "Magnetic Hdiv-error: " << sqrt((*errors)[6]) << std::endl;
+    std::cout << "Electric Hdiv-error: " << std::sqrt((*errors)[4]) << std::endl;
+    std::cout << "Magnetic Hdiv-error: " << std::sqrt((*errors)[6]) << std::endl;
     std::cout << "\nHCURL ERROR:" << std::endl;
-    std::cout << "Electric Hcurl-error: " << sqrt((*errors)[5]) << std::endl;
-    std::cout << "Magnetic Hcurl-error: " << sqrt((*errors)[7]) << std::endl;
+    std::cout << "Electric Hcurl-error: " << std::sqrt((*errors)[5]) << std::endl;
+    std::cout << "Magnetic Hcurl-error: " << std::sqrt((*errors)[7]) << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;

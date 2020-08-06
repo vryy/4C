@@ -182,9 +182,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
           static_cast<const MAT::ElectromagneticMat*>(mat.get());
       const double mu = elemagmat->mu(hdgele->Id());
       if (mu < 0.1)
-        params.set<double>("mod_mu", pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
+        params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
-        params.set<double>("mod_mu", pow(mu, 0.0));
+        params.set<double>("mod_mu", std::pow(mu, 0.0));
 
       ReadGlobalVectors(hdgele, discretization, lm);
       zeroMatrix(elevec1);
@@ -217,9 +217,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
           static_cast<const MAT::ElectromagneticMat*>(mat.get());
       const double mu = elemagmat->mu(hdgele->Id());
       if (mu < 0.1)
-        params.set<double>("mod_mu", pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
+        params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
-        params.set<double>("mod_mu", pow(mu, 0.0));
+        params.set<double>("mod_mu", std::pow(mu, 0.0));
 
       ReadGlobalVectors(hdgele, discretization, lm);
 
@@ -634,27 +634,27 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     for (unsigned int d = 0; d < nsd_; ++d)
     {
       // Electric error
-      error_ele += pow((analytical(d) - electric(d)), 2) * highshapes_.jfac(q);
-      exact_ele += pow(analytical(d), 2) * highshapes_.jfac(q);
+      error_ele += std::pow((analytical(d) - electric(d)), 2) * highshapes_.jfac(q);
+      exact_ele += std::pow(analytical(d), 2) * highshapes_.jfac(q);
       // Magnetic error
-      error_mag += pow((analytical(d + nsd_) - magnetic(d)), 2) * highshapes_.jfac(q);
-      exact_mag += pow(analytical(d + nsd_), 2) * highshapes_.jfac(q);
+      error_mag += std::pow((analytical(d + nsd_) - magnetic(d)), 2) * highshapes_.jfac(q);
+      exact_mag += std::pow(analytical(d + nsd_), 2) * highshapes_.jfac(q);
       // Divergence
       error_ele_grad(0) +=
-          pow(analytical_grad(d, d) - electric_grad(d, d), 2) * highshapes_.jfac(q);
+          std::pow(analytical_grad(d, d) - electric_grad(d, d), 2) * highshapes_.jfac(q);
       error_mag_grad(0) +=
-          pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes_.jfac(q);
+          std::pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes_.jfac(q);
       // Rotor
-      error_ele_grad(1) += pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                   analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
-                                   (electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                       electric_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+      error_ele_grad(1) += std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                        analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
+                                        (electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                            electric_grad((d + 1) % nsd_, (d + 2) % nsd_)),
                                2) *
                            highshapes_.jfac(q);
-      error_mag_grad(1) += pow((analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
-                                   analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_)) -
-                                   (magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                       magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+      error_mag_grad(1) += std::pow((analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
+                                        analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_)) -
+                                        (magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                            magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_)),
                                2) *
                            highshapes_.jfac(q);
     }
@@ -1691,9 +1691,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
     for (unsigned int i = 0; i < ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        Amat(d * ndofs_ + i, d * ndofs_ + j) = -pow(mu, 1.0 - alpha) * tmpMat(i, j);
+        Amat(d * ndofs_ + i, d * ndofs_ + j) = -std::pow(mu, 1.0 - alpha) * tmpMat(i, j);
         Dmat(d * ndofs_ + i, d * ndofs_ + j) = epsilon * tmpMat(i, j);
-        Emat(d * ndofs_ + i, d * ndofs_ + j) = sigma * pow(mu, alpha) * tmpMat(i, j);
+        Emat(d * ndofs_ + i, d * ndofs_ + j) = sigma * std::pow(mu, alpha) * tmpMat(i, j);
       }
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
@@ -1969,8 +1969,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
             // Gmat
             // 0 coordinate
             Gmat(d * ndofs_ + i, d * ndofs_ + j) +=
-                temp * (pow(shapesface_->normals(((d + 1) % nsd_), q), 2) +
-                           pow(shapesface_->normals(((d + 2) % nsd_), q), 2));
+                temp * (std::pow(shapesface_->normals(((d + 1) % nsd_), q), 2) +
+                           std::pow(shapesface_->normals(((d + 2) % nsd_), q), 2));
             //+1 coordinate
             Gmat(d * ndofs_ + i, ((d + 1) % nsd_) * ndofs_ + j) -=
                 temp * shapesface_->normals(d, q) * shapesface_->normals(((d + 1) % nsd_), q);
