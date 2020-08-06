@@ -13,7 +13,6 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            1.0
 PERIODICONOFF                   0 0 0
 DOMAINBOUNDINGBOX               -1.0 -1.0 -1.0 1.0 1.0 1.0
-WRITEBINS                       none
 ----------------------------------------------------------------PASI DYNAMIC
 RESULTSEVRY                     10
 RESTARTEVRY                     25
@@ -24,10 +23,7 @@ COUPLING                        partitioned_onewaycoup
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     DEM
-OUTPUT_DATA_FORMAT              Binary
-WRITE_GHOSTED_PARTICLES         no
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
-TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0
 PHASE_TO_MATERIAL_ID            phase1 1
 PARTICLE_WALL_SOURCE            DiscretCondition

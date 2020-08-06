@@ -10,7 +10,6 @@ RESTART                         0
 STDOUTEVRY                      1
 VERBOSITY                       standard
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  25
 EVERY_ITERATION                 No
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
@@ -20,7 +19,6 @@ DISPLACEMENT                    Yes
 BIN_SIZE_LOWER_BOUND            0.33
 PERIODICONOFF                   1 1 0
 DOMAINBOUNDINGBOX               -0.5 -0.5 -0.0001 0.5 0.5 2.2001
-WRITEBINS                       none
 ----------------------------------------------------------------PASI DYNAMIC
 RESULTSEVRY                     25
 RESTARTEVRY                     80
@@ -32,9 +30,6 @@ CONVTOLSCALEDDISP               1.0e-4
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     SPH
-OUTPUT_DATA_FORMAT              Binary
-WRITE_GHOSTED_PARTICLES         no
-TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0
 PHASE_TO_MATERIAL_ID            phase1 1
 PARTICLE_WALL_SOURCE            DiscretCondition

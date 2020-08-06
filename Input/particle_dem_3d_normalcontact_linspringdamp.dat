@@ -13,18 +13,14 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            0.02
 PERIODICONOFF                   1 1 1
 DOMAINBOUNDINGBOX               -0.03 -0.03 -0.03 0.03 0.03 0.03
-WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     DEM
 RESULTSEVRY                     10
 RESTARTEVRY                     500
-OUTPUT_DATA_FORMAT              Binary
-WRITE_GHOSTED_PARTICLES         no
 TIMESTEP                        0.001
 NUMSTEP                         2500
 MAXTIME                         2.5
-TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 phase2 1
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
