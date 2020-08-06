@@ -882,7 +882,7 @@ void CONTACT::CoInterface::Redistribute()
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
   //**********************************************************************
-  // call ZOLTAN for parallel redistribution
+  // call parallel redistribution
   DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveCloseRowEles,
       slaveCloseRowNodes, slaveCloseColNodes, comm, false, scproc, imbalance_tol);
   //**********************************************************************
@@ -904,7 +904,7 @@ void CONTACT::CoInterface::Redistribute()
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
   //**********************************************************************
-  // call ZOLTAN for parallel redistribution
+  // call parallel redistribution
   DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveNonCloseRowEles,
       slaveNonCloseRowNodes, snccolnodes, comm, false, sncproc, imbalance_tol);
   //**********************************************************************

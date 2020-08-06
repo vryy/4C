@@ -1221,7 +1221,7 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 {
   if (not HasMaSharingRefInterface())
   {
-    // call ZOLTAN for parallel redistribution
+    // call parallel redistribution
     DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
         idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
   }
