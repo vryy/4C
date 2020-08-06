@@ -61,7 +61,7 @@ int DRT::Discretization::FillComplete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
-  int myrank = Comm().MyPID();
+  const int myrank = Comm().MyPID();
 
   // print information to screen
   if (myrank == 0)
