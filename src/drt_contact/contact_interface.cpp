@@ -451,6 +451,10 @@ void CONTACT::CoInterface::UpdateParallelLayoutAndDataStructures(const bool perf
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof)
 {
+  std::stringstream ss;
+  ss << "CONTACT::CoInterface::FillCompleteNew of '" << Discret().Name() << "'";
+  TEUCHOS_FUNC_TIME_MONITOR(ss.str());
+
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
   // dof map, which of course must not overlap with existing dof ranges
