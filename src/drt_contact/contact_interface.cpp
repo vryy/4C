@@ -747,7 +747,8 @@ void CONTACT::CoInterface::Redistribute()
 
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
-  for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+  const int numMySlaveColElements = SlaveColElements()->NumMyElements();
+  for (int i = 0; i < numMySlaveColElements; ++i)
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
@@ -838,7 +839,8 @@ void CONTACT::CoInterface::Redistribute()
       Teuchos::rcp(new Epetra_CrsGraph(Copy, *SlaveRowNodes(), 108, false));
 
   // loop over all row nodes to fill graph
-  for (int k = 0; k < SlaveRowNodes()->NumMyElements(); ++k)
+  const int numMySlaveRowNodes = SlaveRowNodes()->NumMyElements();
+  for (int k = 0; k < numMySlaveRowNodes; ++k)
   {
     int gid = SlaveRowNodes()->GID(k);
     DRT::Node* node = Discret().gNode(gid);
@@ -938,15 +940,16 @@ void CONTACT::CoInterface::Redistribute()
     }
 
     // build slave node row map
-    std::vector<int> mygids(
-        slaveCloseRowNodes->NumMyElements() + slaveNonCloseRowNodes->NumMyElements());
+    const int numMySlaveCloseRowNodes = slaveCloseRowNodes->NumMyElements();
+    const int numMySlaveNonCloseRowNodes = slaveNonCloseRowNodes->NumMyElements();
+    std::vector<int> mygids(numMySlaveCloseRowNodes + numMySlaveNonCloseRowNodes);
     int count = slaveCloseRowNodes->NumMyElements();
 
     // first get GIDs of input slaveCloseRowNodes
     for (int i = 0; i < count; ++i) mygids[i] = slaveCloseRowNodes->GID(i);
 
     // then add GIDs of input slaveNonCloseRowNodes (only new ones)
-    for (int i = 0; i < slaveNonCloseRowNodes->NumMyElements(); ++i)
+    for (int i = 0; i < numMySlaveNonCloseRowNodes; ++i)
     {
       // check for intersection gid
       // don't do anything for intersection gids (slaveCloseRowNodes dominates!!!)
