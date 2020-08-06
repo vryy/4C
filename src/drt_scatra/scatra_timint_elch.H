@@ -157,19 +157,19 @@ namespace SCATRA
     }
 
     //! return states of charge of resolved electrodes
-    const Teuchos::RCP<std::vector<double>>& ElectrodeSOC() const { return electrodesoc_; };
+    const std::map<int, double>& ElectrodeSOC() const { return electrodesoc_; };
 
     //! return C rates with respect to resolved electrodes
-    const Teuchos::RCP<std::vector<double>>& ElectrodeCRates() const { return electrodecrates_; };
+    const std::map<int, double>& ElectrodeCRates() const { return electrodecrates_; };
 
     //! return mean reactant concentrations at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeConc() const { return electrodeconc_; };
+    const std::map<int, double>& ElectrodeConc() const { return electrodeconc_; };
 
     //! return mean electric overpotentials at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeEta() const { return electrodeeta_; };
+    const std::map<int, double>& ElectrodeEta() const { return electrodeeta_; };
 
     //! return total electric currents at electrode boundaries
-    const Teuchos::RCP<std::vector<double>>& ElectrodeCurr() const { return electrodecurr_; };
+    const std::map<int, double>& ElectrodeCurr() const { return electrodecurr_; };
 
     //! return cell voltage
     const double& CellVoltage() const { return cellvoltage_; };
@@ -334,22 +334,22 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> dctoggle_;
 
     //! initial volumes of resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodeinitvols_;
+    std::map<int, double> electrodeinitvols_;
 
     //! states of charge of resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodesoc_;
+    std::map<int, double> electrodesoc_;
 
     //! C rates with respect to resolved electrodes
-    Teuchos::RCP<std::vector<double>> electrodecrates_;
+    std::map<int, double> electrodecrates_;
 
     //! mean reactant concentrations at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodeconc_;
+    std::map<int, double> electrodeconc_;
 
     //! mean electric overpotentials at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodeeta_;
+    std::map<int, double> electrodeeta_;
 
     //! total electric currents at electrode boundaries
-    Teuchos::RCP<std::vector<double>> electrodecurr_;
+    std::map<int, double> electrodecurr_;
 
     //! cell voltage
     double cellvoltage_;
