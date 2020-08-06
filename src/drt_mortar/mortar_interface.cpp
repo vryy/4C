@@ -1156,8 +1156,14 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::null;
 
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
+  {
+    std::stringstream ss_slave;
+    ss_slave << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (slave)";
+    TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
+
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
+  }
 
   //**********************************************************************
   // (3) MASTER redistribution
@@ -1165,7 +1171,13 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
+  {
+    std::stringstream ss_master;
+    ss_master << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (master)";
+    TEUCHOS_FUNC_TIME_MONITOR(ss_master.str());
+
+    RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
+  }
 
   //**********************************************************************
   // (4) Merge global interface node row and column map
@@ -1177,19 +1189,26 @@ void MORTAR::MortarInterface::Redistribute()
   //**********************************************************************
   // (5) Get partitioning information into discretization
   //**********************************************************************
-  // build reasonable element maps from the already valid and final node maps
-  // (note that nothing is actually redistributed in here)
-  Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
-  Discret().BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
+  {
+    std::stringstream ss_comm;
+    ss_comm << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name()
+            << "' (communicate)";
+    TEUCHOS_FUNC_TIME_MONITOR(ss_comm.str());
 
-  // export nodes and elements to the row map
-  Discret().ExportRowNodes(*rownodes);
-  Discret().ExportRowElements(*roweles);
+    // build reasonable element maps from the already valid and final node maps
+    // (note that nothing is actually redistributed in here)
+    Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
+    Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
+    Discret().BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
 
-  // export nodes and elements to the column map (create ghosting)
-  Discret().ExportColumnNodes(*colnodes);
-  Discret().ExportColumnElements(*coleles);
+    // export nodes and elements to the row map
+    Discret().ExportRowNodes(*rownodes);
+    Discret().ExportRowElements(*roweles);
+
+    // export nodes and elements to the column map (create ghosting)
+    Discret().ExportColumnNodes(*colnodes);
+    Discret().ExportColumnElements(*coleles);
+  }
 
   return;
 }
