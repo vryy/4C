@@ -443,7 +443,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
 
   // time measurement
   Comm().Barrier();
-  double t_end = Teuchos::Time::wallTime() - t_start;
+  const double t_end = Teuchos::Time::wallTime() - t_start;
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
