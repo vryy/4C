@@ -20,7 +20,7 @@ INTERACTION                     None
 RESULTSEVRY                     10
 RESTARTEVRY                     100
 OUTPUT_DATA_FORMAT              Binary
-WRITE_GHOSTED_PARTICLES         no
+WRITE_GHOSTED_PARTICLES         yes
 TIMESTEP                        1e-3
 NUMSTEP                         400
 MAXTIME                         1.0
