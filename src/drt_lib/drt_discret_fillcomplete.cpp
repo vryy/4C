@@ -89,7 +89,6 @@ int DRT::Discretization::FillComplete(
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
 
-  // bos 12/07
   // (re)construct element -> element pointers for interface-elements
   BuildElementToElementPointers();
 
