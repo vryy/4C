@@ -380,6 +380,7 @@ int main(int argc, char *argv[])
   }
   else
   {
+    gcomm->Barrier();
     printf("processor %d finished normally\n", lcomm->MyPID());
   }
 
