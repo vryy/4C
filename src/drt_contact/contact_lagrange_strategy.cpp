@@ -8,6 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include <Epetra_FEVector.h>
 #include "Epetra_SerialComm.h"
 
 #include <Teuchos_TimeMonitor.hpp>
