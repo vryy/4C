@@ -129,9 +129,13 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
-      tuple<std::string>("none", "rows_full", "rows_maindiag"),
+      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
+          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
       tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
-          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag),
+          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
+          LINALG::EquilibrationMethod::columns_full, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_full,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
       &ssidynmono);
 }
 
