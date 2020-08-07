@@ -39,18 +39,15 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
   issetup_ = false;
 
   // initialize the parameter values
-
   output_displacement_state_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
-
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
   output_element_owner_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
-
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
-
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
   output_stress_strain_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+
   if (output_stress_strain_)
   {
     // If stress / strain data should be output, check that the relevant parameters in the --IO
