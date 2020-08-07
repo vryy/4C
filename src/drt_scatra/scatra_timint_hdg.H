@@ -128,6 +128,9 @@ namespace SCATRA
     //! fd check
     virtual void FDCheck();
 
+    //! calculation of error with reference to analytical solution
+    virtual void EvaluateErrorComparedToAnalyticalSol();
+
     //! adapt degree of test functions and change dofsets accordingly
     virtual void AdaptDegree();
 

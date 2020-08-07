@@ -15,6 +15,7 @@
 
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_assemblestrategy.H"
 
@@ -821,6 +822,105 @@ void SCATRA::TimIntHDG::FDCheck()
   dserror("FD check END");
 }
 
+/*----------------------------------------------------------------------------------*
+ | compute relative error with reference to analytical solution    berardocco 05/20 |
+ *----------------------------------------------------------------------------------*/
+void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
+{
+  switch (calcerror_)
+  {
+    case INPAR::SCATRA::calcerror_byfunction:
+    case INPAR::SCATRA::calcerror_spherediffusion:
+    {
+      // create the parameters for the error calculation
+      Teuchos::ParameterList eleparams;
+      eleparams.set<int>("action", SCATRA::calc_error);
+      eleparams.set<int>("calcerrorflag", calcerror_);
+
+      if (calcerror_ == INPAR::SCATRA::calcerror_byfunction)
+      {
+        const int errorfunctnumber = params_->get<int>("CALCERRORNO");
+        if (errorfunctnumber < 1)
+          dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+
+        eleparams.set<int>("error function number", errorfunctnumber);
+        eleparams.set<double>("time", time_);
+      }
+
+      // provide displacement field in case of ALE
+      if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("phiaf", phinp_);
+      discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+
+      // get (squared) error values
+      // The error is computed for the transported scalar and its gradient. Notice that so far only
+      // the L2 error is computed, feel free to extend the calculations to any error measure needed
+      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+
+      discret_->EvaluateScalars(eleparams, errors);
+      discret_->ClearState();
+
+      if (std::abs((*errors)[1]) > 1e-14)
+        (*relerrors_)[0] = sqrt((*errors)[0]) / sqrt((*errors)[1]);
+      else
+        dserror("Can't compute scalar's relative L2 error due to numerical roundoff sensitivity!");
+      if (std::abs((*errors)[3]) > 1e-14)
+        (*relerrors_)[1] = sqrt((*errors)[2]) / sqrt((*errors)[3]);
+      else
+        dserror(
+            "Can't compute grandient's relative L2 error due to numerical roundoff sensitivity!");
+
+      if (myrank_ == 0)
+      {
+        // print last error in a separate file
+        std::ostringstream temp;
+        const std::string simulation = problem_->OutputControlFile()->FileName();
+        const std::string fname = simulation + "_c" + temp.str() + "_time.relerror";
+        std::ofstream f;
+
+        // create new error file and write initial error
+        if (step_ == 0)
+        {
+          f.open(fname.c_str());
+          f << "| Step | Time | abs. L2-error (phi) | rel. L2-error (phi)| abs. L2-error "
+               "(gradPhi)| rel. L2-error (gradPhi)|"
+            << std::endl;
+        }
+
+        // append error of the last time step to the error file
+        else
+        {
+          f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
+
+          f << step_ << " " << time_ << " " << std::setprecision(6) << sqrt((*errors)[0]) << " "
+            << (*relerrors_)[0] << " " << sqrt((*errors)[2]) << " " << (*relerrors_)[1]
+            << std::endl;
+        }
+
+        f.flush();
+        f.close();
+      }
+
+      break;
+    }
+    case INPAR::SCATRA::calcerror_no:
+    {
+      // do nothing
+      break;
+    }
+
+    default:
+    {
+      dserror("Cannot calculate error. Unknown type of analytical test problem!");
+      break;
+    }
+  }
+
+  return;
+}  // SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol
 
 /*----------------------------------------------------------------------*
  | prepare time loop                                     hoermann 09/15 |

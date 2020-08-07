@@ -115,6 +115,10 @@ namespace DRT
       int CalcPAdaptivity(const DRT::Element* ele, DRT::Discretization& discretization,
           Teuchos::ParameterList& params);
 
+      //! calc error
+      int CalcError(const DRT::Element* ele, Teuchos::ParameterList& params,
+          Epetra_SerialDenseVector& elevec);
+
      protected:
       /// (private) protected constructor, since we are a Singleton.
       /// this constructor is called from a derived class

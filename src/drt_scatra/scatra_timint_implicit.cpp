@@ -646,7 +646,15 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     else if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries)
       relerrors_ = Teuchos::rcp(new std::vector<double>(2));  // TODO: Update two n species
     else
-      relerrors_ = Teuchos::rcp(new std::vector<double>(2 * NumDofPerNode()));
+    {
+      // It is important to make a distinction as HDG always have NumDofPerNode = 0
+      // The vector is therefore sized to contain the errors of one scalar and its gradient
+      if (DRT::Problem::Instance()->SpatialApproximationType() ==
+          ShapeFunctionType::shapefunction_hdg)
+        relerrors_ = Teuchos::rcp(new std::vector<double>(2));  // TODO: update to n species
+      else
+        relerrors_ = Teuchos::rcp(new std::vector<double>(2 * NumDofPerNode()));
+    }
   }
 
   // we have successfully set up this class
