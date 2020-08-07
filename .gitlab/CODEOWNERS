@@ -364,6 +364,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/prestress*                  @agebauer
 
+/Input/ref/                        @baci/team_testing
+
 Input/rigidsphere*                 @baci/team_structure
 
 /Input/scatra*                     @baci/team_scatra
