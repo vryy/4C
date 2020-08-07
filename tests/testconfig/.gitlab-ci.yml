@@ -194,9 +194,6 @@ variables:
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
         - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
         - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
-    # we allow this job to fail since we care more about execution of all tests then passing all tests
-    # passing tests are checked in daily pipelines while here we would like to measure the code covered by the tests
-    allow_failure: true
     # update (push) the cache of the weekly coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
