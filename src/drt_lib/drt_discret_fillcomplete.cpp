@@ -61,7 +61,7 @@ int DRT::Discretization::FillComplete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
-  int myrank = Comm().MyPID();
+  const int myrank = Comm().MyPID();
 
   // print information to screen
   if (myrank == 0)
@@ -89,7 +89,6 @@ int DRT::Discretization::FillComplete(
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
 
-  // bos 12/07
   // (re)construct element -> element pointers for interface-elements
   BuildElementToElementPointers();
 

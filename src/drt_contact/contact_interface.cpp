@@ -451,6 +451,10 @@ void CONTACT::CoInterface::UpdateParallelLayoutAndDataStructures(const bool perf
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof)
 {
+  std::stringstream ss;
+  ss << "CONTACT::CoInterface::FillCompleteNew of '" << Discret().Name() << "'";
+  TEUCHOS_FUNC_TIME_MONITOR(ss.str());
+
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
   // dof map, which of course must not overlap with existing dof ranges
@@ -747,7 +751,8 @@ void CONTACT::CoInterface::Redistribute()
 
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
-  for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+  const int numMySlaveColElements = SlaveColElements()->NumMyElements();
+  for (int i = 0; i < numMySlaveColElements; ++i)
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
@@ -758,14 +763,14 @@ void CONTACT::CoInterface::Redistribute()
   }
 
   // we need an arbitrary preliminary element row map
-  Teuchos::RCP<Epetra_Map> scroweles =
+  Teuchos::RCP<Epetra_Map> slaveCloseRowEles =
       Teuchos::rcp(new Epetra_Map(-1, (int)closeele.size(), &closeele[0], 0, Comm()));
-  Teuchos::RCP<Epetra_Map> sncroweles =
+  Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles =
       Teuchos::rcp(new Epetra_Map(-1, (int)noncloseele.size(), &noncloseele[0], 0, Comm()));
-  Teuchos::RCP<Epetra_Map> mroweles = Teuchos::rcp(new Epetra_Map(*MasterRowElements()));
+  Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::rcp(new Epetra_Map(*MasterRowElements()));
 
   // check for consistency
-  if (scroweles->NumGlobalElements() == 0 && sncroweles->NumGlobalElements() == 0)
+  if (slaveCloseRowEles->NumGlobalElements() == 0 && slaveNonCloseRowEles->NumGlobalElements() == 0)
     dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
@@ -774,9 +779,9 @@ void CONTACT::CoInterface::Redistribute()
   // print element overview
   if (!myrank)
   {
-    int cl = scroweles->NumGlobalElements();
-    int ncl = sncroweles->NumGlobalElements();
-    int ma = mroweles->NumGlobalElements();
+    int cl = slaveCloseRowEles->NumGlobalElements();
+    int ncl = slaveNonCloseRowEles->NumGlobalElements();
+    int ma = masterRowEles->NumGlobalElements();
     std::cout << "Element overview: " << cl << " / " << ncl << " / " << ma
               << "  (close-S / non-close-S / M)";
   }
@@ -788,7 +793,7 @@ void CONTACT::CoInterface::Redistribute()
 
   // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
-  if (scroweles->NumGlobalElements() == 0 || sncroweles->NumGlobalElements() == 0)
+  if (slaveCloseRowEles->NumGlobalElements() == 0 || slaveNonCloseRowEles->NumGlobalElements() == 0)
   {
     MORTAR::MortarInterface::Redistribute();
     return;
@@ -811,12 +816,12 @@ void CONTACT::CoInterface::Redistribute()
   // calculate real number of procs to be used
   if (minele > 0)
   {
-    scproc = static_cast<int>((scroweles->NumGlobalElements()) / minele);
-    sncproc = static_cast<int>((sncroweles->NumGlobalElements()) / minele);
-    mproc = static_cast<int>((mroweles->NumGlobalElements()) / minele);
-    if (scroweles->NumGlobalElements() < 2 * minele) scproc = 1;
-    if (sncroweles->NumGlobalElements() < 2 * minele) sncproc = 1;
-    if (mroweles->NumGlobalElements() < 2 * minele) mproc = 1;
+    scproc = static_cast<int>((slaveCloseRowEles->NumGlobalElements()) / minele);
+    sncproc = static_cast<int>((slaveNonCloseRowEles->NumGlobalElements()) / minele);
+    mproc = static_cast<int>((masterRowEles->NumGlobalElements()) / minele);
+    if (slaveCloseRowEles->NumGlobalElements() < 2 * minele) scproc = 1;
+    if (slaveNonCloseRowEles->NumGlobalElements() < 2 * minele) sncproc = 1;
+    if (masterRowEles->NumGlobalElements() < 2 * minele) mproc = 1;
     if (scproc > numproc) scproc = numproc;
     if (sncproc > numproc) sncproc = numproc;
     if (mproc > numproc) mproc = numproc;
@@ -838,7 +843,8 @@ void CONTACT::CoInterface::Redistribute()
       Teuchos::rcp(new Epetra_CrsGraph(Copy, *SlaveRowNodes(), 108, false));
 
   // loop over all row nodes to fill graph
-  for (int k = 0; k < SlaveRowNodes()->NumMyElements(); ++k)
+  const int numMySlaveRowNodes = SlaveRowNodes()->NumMyElements();
+  for (int k = 0; k < numMySlaveRowNodes; ++k)
   {
     int gid = SlaveRowNodes()->GID(k);
     DRT::Node* node = Discret().gNode(gid);
@@ -866,8 +872,8 @@ void CONTACT::CoInterface::Redistribute()
   //**********************************************************************
   // (4) CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> scrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> sccolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> slaveCloseRowNodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> slaveCloseColNodes = Teuchos::null;
 
   // build redundant vector of all close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
@@ -880,15 +886,15 @@ void CONTACT::CoInterface::Redistribute()
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
   //**********************************************************************
-  // call ZOLTAN for parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc, imbalance_tol);
+  // call parallel redistribution
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveCloseRowEles,
+      slaveCloseRowNodes, slaveCloseColNodes, comm, false, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
   // (5) NON-CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> sncrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> slaveNonCloseRowNodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> snccolnodes = Teuchos::null;
 
   // build redundant vector of all non-close slave node ids on all procs
@@ -902,9 +908,9 @@ void CONTACT::CoInterface::Redistribute()
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
   //**********************************************************************
-  // call ZOLTAN for parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc, imbalance_tol);
+  // call parallel redistribution
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveNonCloseRowEles,
+      slaveNonCloseRowNodes, snccolnodes, comm, false, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -913,7 +919,7 @@ void CONTACT::CoInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
+  RedistributeMasterSide(mrownodes, mcolnodes, masterRowEles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -922,7 +928,7 @@ void CONTACT::CoInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
 
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
-  if (scrownodes == Teuchos::null || sncrownodes == Teuchos::null)
+  if (slaveCloseRowNodes == Teuchos::null || slaveNonCloseRowNodes == Teuchos::null)
   {
     dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
   }
@@ -938,32 +944,34 @@ void CONTACT::CoInterface::Redistribute()
     }
 
     // build slave node row map
-    std::vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
-    int count = scrownodes->NumMyElements();
+    const int numMySlaveCloseRowNodes = slaveCloseRowNodes->NumMyElements();
+    const int numMySlaveNonCloseRowNodes = slaveNonCloseRowNodes->NumMyElements();
+    std::vector<int> mygids(numMySlaveCloseRowNodes + numMySlaveNonCloseRowNodes);
+    int count = slaveCloseRowNodes->NumMyElements();
 
-    // first get GIDs of input scrownodes
-    for (int i = 0; i < count; ++i) mygids[i] = scrownodes->GID(i);
+    // first get GIDs of input slaveCloseRowNodes
+    for (int i = 0; i < count; ++i) mygids[i] = slaveCloseRowNodes->GID(i);
 
-    // then add GIDs of input sncrownodes (only new ones)
-    for (int i = 0; i < sncrownodes->NumMyElements(); ++i)
+    // then add GIDs of input slaveNonCloseRowNodes (only new ones)
+    for (int i = 0; i < numMySlaveNonCloseRowNodes; ++i)
     {
       // check for intersection gid
-      // don't do anything for intersection gids (scrownodes dominates!!!)
-      std::set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
+      // don't do anything for intersection gids (slaveCloseRowNodes dominates!!!)
+      std::set<int>::const_iterator found = intersec.find(slaveNonCloseRowNodes->GID(i));
       if (found != intersec.end()) continue;
 
       // check for overlap
-      if (scrownodes->MyGID(sncrownodes->GID(i)))
+      if (slaveCloseRowNodes->MyGID(slaveNonCloseRowNodes->GID(i)))
         dserror("LINALG::MergeMap: Result map is overlapping");
 
       // add new GIDs to mygids
-      mygids[count] = sncrownodes->GID(i);
+      mygids[count] = slaveNonCloseRowNodes->GID(i);
       ++count;
     }
     mygids.resize(count);
     sort(mygids.begin(), mygids.end());
-    srownodes =
-        Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, scrownodes->Comm()));
+    srownodes = Teuchos::rcp(
+        new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, slaveCloseRowNodes->Comm()));
   }
 
   // merge interface node row map from slave and master parts

@@ -443,7 +443,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
 
   // time measurement
   Comm().Barrier();
-  double t_end = Teuchos::Time::wallTime() - t_start;
+  const double t_end = Teuchos::Time::wallTime() - t_start;
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
@@ -1139,7 +1139,6 @@ void CONTACT::CoAbstractStrategy::UpdateGlobalSelfContactState()
 }
 
 /*----------------------------------------------------------------------*
- | Calculate mean. vel. for bin size                         farah 11/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector& velocity)
 {
@@ -1150,11 +1149,11 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector
   if (alphaf_ != 0.0)  // ToDo Improve this check! alphaf_ = 0 does not guarantee Statics.
   {
     // create vector of interface velocities
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
+    for (const auto& interface : Interfaces())
     {
       // interface node map
       Teuchos::RCP<Epetra_Vector> interfaceVelocity =
-          Teuchos::rcp(new Epetra_Vector(*(Interfaces()[i]->Discret().DofRowMap())));
+          Teuchos::rcp(new Epetra_Vector(*interface->Discret().DofRowMap()));
       LINALG::Export(velocity, *interfaceVelocity);
 
       double meanVelocity = 0.0;
@@ -1162,7 +1161,7 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector
       int err = interfaceVelocity->MeanValue(&meanVelocity);
       if (err)
         dserror("Calculation of mean velocity for interface %s failed.",
-            Interfaces()[i]->Discret().Name().c_str());
+            interface->Discret().Name().c_str());
       meanVelocity = abs(meanVelocity);
 
       ivel_.push_back(meanVelocity);

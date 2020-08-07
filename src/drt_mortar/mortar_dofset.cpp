@@ -46,8 +46,13 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
     const std::size_t numDofsOfNode = gdofs.size();
 
     // get dofs of node as we want them
-    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    MORTAR::MortarNode* mrtrnode =
+#ifndef DEBUG
+        static_cast<MORTAR::MortarNode*>(node);
+#else
+        dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
+#endif
     const int* newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {

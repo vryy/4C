@@ -14,9 +14,10 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include <Epetra_FEVector.h>
 
 // forward declarations
+class Epetra_FEVector;
+
 namespace LINALG
 {
   class SerialDenseMatrix;
