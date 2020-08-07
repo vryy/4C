@@ -569,6 +569,9 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     // no evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
+    // no evaluation for dirichlet open boundary particles
+    if (type_i == PARTICLEENGINE::DirichletPhase) continue;
+
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -594,7 +597,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
     acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
-    if (applytransportvelocity_)
+    if (applytransportvelocity_ and type_i != PARTICLEENGINE::NeumannPhase)
     {
       mod_vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i);
       mod_acc_i =
@@ -792,7 +795,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
 
     // add contribution from neighboring virtual particle k
     UTILS::vec_add(acc_i, sumk_acc_ik);
-    if (applytransportvelocity_) UTILS::vec_add(mod_acc_i, sumk_mod_acc_ik);
+    if (mod_acc_i) UTILS::vec_add(mod_acc_i, sumk_mod_acc_ik);
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0};

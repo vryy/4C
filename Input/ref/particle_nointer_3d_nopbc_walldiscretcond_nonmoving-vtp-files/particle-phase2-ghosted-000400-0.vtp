@@ -1,0 +1,37 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="PolyData" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <PolyData>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+4.000000000000003e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="6" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAJAAAACQAAAALwAAAA==eNpTn3xYTf3feftZM0Hg5H4YrQ4VZ4ACdHEo3x6H+H6YPnRz0MVh5sDEAdgcOd4=
+        </DataArray>
+      </Points>
+
+  <PointData>
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
+AQAAAJAAAACQAAAADAAAAA==eNpjYBhcAAAAkAAB
+        </DataArray>
+        <DataArray type="Float64" Name="globalid" format="binary">
+AQAAADAAAAAwAAAAHAAAAA==eNpjYAABIwcwxWAKpS2gtDGUNoPSlg4AOsICwg==
+        </DataArray>
+        <DataArray type="Float64" Name="owner" format="binary">
+AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        </DataArray>
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
+AQAAAJAAAACQAAAAFgAAAA==eNrb9dfyLwvLfXsGNLBrgMQBwXMYcw==
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </PolyData>
+</VTKFile>

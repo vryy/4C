@@ -158,6 +158,9 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     // no evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
+    // no evaluation for dirichlet open boundary particles
+    if (type_i == PARTICLEENGINE::DirichletPhase) continue;
+
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);

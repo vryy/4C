@@ -13,20 +13,16 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            0.03
 PERIODICONOFF                   1 0 0
 DOMAINBOUNDINGBOX               -0.1 -0.1 -0.025 0.1 0.1 0.025
-WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     SPH
 RESULTSEVRY                     10
 RESTARTEVRY                     400
-OUTPUT_DATA_FORMAT              Binary
-WRITE_GHOSTED_PARTICLES         no
 TIMESTEP                        0.01
 NUMSTEP                         500
 MAXTIME                         5.0
 GRAVITY_ACCELERATION            0.1 0.0 0.0
 GRAVITY_RAMP_FUNCT              1
-TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 boundaryphase 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 boundaryphase 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
