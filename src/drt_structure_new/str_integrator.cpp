@@ -406,6 +406,14 @@ void STR::Integrator::MonitorDbc(IO::DiscretizationWriter& writer) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::Integrator::RuntimePreOutputStepState()
+{
+  CheckInitSetup();
+  ModelEval().RuntimePreOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::Integrator::RuntimeOutputStepState() const
 {
   CheckInitSetup();

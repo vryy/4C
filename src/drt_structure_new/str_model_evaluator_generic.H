@@ -377,6 +377,11 @@ namespace STR
        */
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
+      /**
+       * \brief This method is called before the runtime output method is called.
+       */
+      virtual void RuntimePreOutputStepState() { return; };
+
       //! runtime output routine for model evaluator
       virtual void RuntimeOutputStepState() const { return; };
 

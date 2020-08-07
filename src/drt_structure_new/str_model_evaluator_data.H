@@ -500,6 +500,36 @@ namespace STR
         stressdata_ptr_ = stressdata;
       }
 
+      //! get stress data vector
+      inline const Teuchos::RCP<std::vector<char>>& GetStressData() const
+      {
+        return stressdata_ptr_;
+      }
+
+      //! get nodal postprocessed stress data vector
+      inline const Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessed() const
+      {
+        return stressdata_postprocessed_nodal_ptr_;
+      }
+
+      //! get nodal postprocessed stress data vector
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessedMutable()
+      {
+        return stressdata_postprocessed_nodal_ptr_;
+      }
+
+      //! get element postprocessed stress data vector
+      inline const Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessed() const
+      {
+        return stressdata_postprocessed_element_ptr_;
+      }
+
+      //! get element postprocessed stress data vector
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessedMutable()
+      {
+        return stressdata_postprocessed_element_ptr_;
+      }
+
       //! set element volume data vector
       inline void SetElementVolumeData(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
       {
@@ -516,6 +546,36 @@ namespace STR
       inline void SetStrainData(const Teuchos::RCP<std::vector<char>>& straindata)
       {
         straindata_ptr_ = straindata;
+      }
+
+      //! get strain data vector
+      inline const Teuchos::RCP<std::vector<char>>& GetStrainData() const
+      {
+        return straindata_ptr_;
+      }
+
+      //! get nodal postprocessed strain data vector
+      inline const Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessed() const
+      {
+        return straindata_postprocessed_nodal_ptr_;
+      }
+
+      //! get nodal postprocessed strain data vector
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessedMutable()
+      {
+        return straindata_postprocessed_nodal_ptr_;
+      }
+
+      //! get element postprocessed strain data vector
+      inline const Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessed() const
+      {
+        return straindata_postprocessed_element_ptr_;
+      }
+
+      //! get element postprocessed strain data vector
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessedMutable()
+      {
+        return straindata_postprocessed_element_ptr_;
       }
 
       //! set plastic strain data vector
@@ -795,8 +855,20 @@ namespace STR
       //! stress data vector
       Teuchos::RCP<std::vector<char>> stressdata_ptr_;
 
+      //! postprocessed nodal stress data vector
+      Teuchos::RCP<Epetra_MultiVector> stressdata_postprocessed_nodal_ptr_;
+
+      //! postprocessed element stress data vector
+      Teuchos::RCP<Epetra_MultiVector> stressdata_postprocessed_element_ptr_;
+
       //! strain data vector
       Teuchos::RCP<std::vector<char>> straindata_ptr_;
+
+      //! postprocessed nodal strain data vector
+      Teuchos::RCP<Epetra_MultiVector> straindata_postprocessed_nodal_ptr_;
+
+      //! postprocessed element strain data vector
+      Teuchos::RCP<Epetra_MultiVector> straindata_postprocessed_element_ptr_;
 
       //! strain data vector
       Teuchos::RCP<std::vector<char>> plastic_straindata_ptr_;

@@ -202,7 +202,6 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     }
 
     case ELEMENTS::struct_calc_stress:
-      dserror("No stress output implemented for beam3 elements");
       break;
     case ELEMENTS::struct_calc_update_istep:
       for (int i = 0; i < 3; i++)

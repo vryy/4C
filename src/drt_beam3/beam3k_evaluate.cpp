@@ -201,7 +201,6 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_stress:
     {
-      dserror("No stress output implemented for beam3k elements");
       break;
     }
 

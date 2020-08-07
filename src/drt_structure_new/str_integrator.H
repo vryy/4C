@@ -206,6 +206,11 @@ namespace STR
      *  \author mwgee (originally)                         \date 03/07 */
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+    /**
+     * \brief Do stuff that has to be done before runtime output is written.
+     */
+    void RuntimePreOutputStepState();
+
     /*! \brief Output to file during runtime (no filter necessary)
      *
      *  This routine prints always the last converged state, i.e.

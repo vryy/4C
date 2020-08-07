@@ -146,7 +146,10 @@ namespace STR
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void RuntimeOutputStepState() const;
+      void RuntimePreOutputStepState() override;
+
+      //! derived
+      void RuntimeOutputStepState() const override;
 
       //! derived
       Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
@@ -372,6 +375,11 @@ namespace STR
       void WriteOutputRuntimeVtkStructure(
           const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
           double time) const;
+
+      /**
+       * \brief Calculate the stress and / or strains for runtime output.
+       */
+      void OutputRuntimeVtkStructurePostprocessStressStrain();
 
       /*! \brief writes special output for beam elements in VTK format
        *

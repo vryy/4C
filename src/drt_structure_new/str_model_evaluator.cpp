@@ -769,6 +769,14 @@ void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RuntimePreOutputStepState()
+{
+  CheckInitSetup();
+  for (auto me : *me_vec_ptr_) me->RuntimePreOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::RuntimeOutputStepState() const
 {
   CheckInitSetup();

@@ -56,6 +56,12 @@ namespace INPAR
         // whether to write element GID
         setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
+        // whether to write stress and / or strain data
+        setStringToIntegralParameter<int>("STRESS_STRAIN", "No",
+            "Write element stress and / or strain  data. The type of stress / strain has to be "
+            "selected in the --IO input section",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
       }
 
 

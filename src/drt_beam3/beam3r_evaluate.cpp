@@ -513,8 +513,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     // write stress and strain output
     case ELEMENTS::struct_calc_stress:
     {
-      dserror("stress output for Beam3r not implemented yet!");
-
       //      // nothing to do for ghost elements
       //      if ( discretization.Comm().MyPID() == Owner() )
       //      {

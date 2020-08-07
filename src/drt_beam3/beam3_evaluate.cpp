@@ -492,7 +492,6 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case ELEMENTS::struct_calc_stress:
-      dserror("No stress output implemented for beam3 elements");
       break;
     case ELEMENTS::struct_calc_brownianforce:
     case ELEMENTS::struct_calc_brownianstiff:
