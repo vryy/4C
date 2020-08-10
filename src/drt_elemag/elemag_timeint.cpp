@@ -347,8 +347,9 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   params.set<double>("time", time_);
   params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
 
-  const int numberOfErrorMesaures = 8;
-  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(numberOfErrorMesaures));
+  const int numberOfErrorMeasures = 8;
+  Teuchos::RCP<Epetra_SerialDenseVector> errors =
+      Teuchos::rcp(new Epetra_SerialDenseVector(numberOfErrorMeasures));
 
   // call loop over elements (assemble nothing)
   discret_->EvaluateScalars(params, errors);

@@ -587,9 +587,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   Epetra_SerialDenseVector error_ele_grad(2), error_mag_grad(2);
   shapes_.Evaluate(*ele);
 
-  DRT::UTILS::ShapeValues<distype> highshapes_(
+  DRT::UTILS::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
-  highshapes_.Evaluate(*ele);
+  highshapes.Evaluate(*ele);
 
   // get function
   const int func = params.get<int>("funcno");
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   Epetra_SerialDenseVector analytical(2 * nsd_);
   Epetra_SerialDenseMatrix analytical_grad(2 * nsd_, nsd_);
 
-  for (unsigned int q = 0; q < highshapes_.nqpoints_; ++q)
+  for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
   {
     // Zero all temp vectors
     electric.Scale(0.0), magnetic.Scale(0.0);
@@ -613,50 +613,48 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        electric(d) +=
-            highshapes_.shfunct(i, q) * ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
-        magnetic(d) +=
-            highshapes_.shfunct(i, q) * ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
+        electric(d) += highshapes.shfunct(i, q) * ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
+        magnetic(d) += highshapes.shfunct(i, q) * ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
         for (unsigned int d_grad = 0; d_grad < nsd_; ++d_grad)
         {
-          electric_grad(d, d_grad) += highshapes_.shderxy(i * nsd_ + d_grad, q) *
+          electric_grad(d, d_grad) += highshapes.shderxy(i * nsd_ + d_grad, q) *
                                       ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
-          magnetic_grad(d, d_grad) += highshapes_.shderxy(i * nsd_ + d_grad, q) *
+          magnetic_grad(d, d_grad) += highshapes.shderxy(i * nsd_ + d_grad, q) *
                                       ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
         }
       }
 
     // Evaluate error function and its derivatives in the integration point (real) coordinates
-    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_.xyzreal(idim, q);
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     EvaluateAll(func, time, xsi, analytical);
     ComputeFunctionGradient(func, time, xsi, analytical_grad);
 
     for (unsigned int d = 0; d < nsd_; ++d)
     {
       // Electric error
-      error_ele += std::pow((analytical(d) - electric(d)), 2) * highshapes_.jfac(q);
-      exact_ele += std::pow(analytical(d), 2) * highshapes_.jfac(q);
+      error_ele += std::pow((analytical(d) - electric(d)), 2) * highshapes.jfac(q);
+      exact_ele += std::pow(analytical(d), 2) * highshapes.jfac(q);
       // Magnetic error
-      error_mag += std::pow((analytical(d + nsd_) - magnetic(d)), 2) * highshapes_.jfac(q);
-      exact_mag += std::pow(analytical(d + nsd_), 2) * highshapes_.jfac(q);
+      error_mag += std::pow((analytical(d + nsd_) - magnetic(d)), 2) * highshapes.jfac(q);
+      exact_mag += std::pow(analytical(d + nsd_), 2) * highshapes.jfac(q);
       // Divergence
       error_ele_grad(0) +=
-          std::pow(analytical_grad(d, d) - electric_grad(d, d), 2) * highshapes_.jfac(q);
+          std::pow(analytical_grad(d, d) - electric_grad(d, d), 2) * highshapes.jfac(q);
       error_mag_grad(0) +=
-          std::pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes_.jfac(q);
+          std::pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes.jfac(q);
       // Rotor
       error_ele_grad(1) += std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
                                         analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
                                         (electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
                                             electric_grad((d + 1) % nsd_, (d + 2) % nsd_)),
                                2) *
-                           highshapes_.jfac(q);
+                           highshapes.jfac(q);
       error_mag_grad(1) += std::pow((analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
                                         analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_)) -
                                         (magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
                                             magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_)),
                                2) *
-                           highshapes_.jfac(q);
+                           highshapes.jfac(q);
     }
   }
 

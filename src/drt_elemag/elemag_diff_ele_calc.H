@@ -175,8 +175,8 @@ namespace DRT
             Epetra_SerialDenseVector& v) const;
 
         /// Function gradient evaluation routine
-        void ComputeFunctionGradient(const int start_func, const double t,
-            const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& v) const;
+        void ComputeFunctionGradient(int start_func, double t, const LINALG::Matrix<nsd_, 1>& xyz,
+            Epetra_SerialDenseMatrix& v) const;
 
         // convention: we sort the entries in the matrices the following way:
         // first comes the electric field then the magnetic one.
