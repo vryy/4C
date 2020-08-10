@@ -180,20 +180,7 @@ void electromagnetics_drt()
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))
   {
     Teuchos::RCP<Epetra_SerialDenseVector> errors = elemagalgo->ComputeError();
-    if (comm.MyPID() == 0)
-    {
-      std::cout
-          << "-----------------------------------------------------------------------------------"
-          << std::endl;
-      std::cout << "---------------------------- Result error wrt FUNCT "
-                << elemagparams.get<int>("ERRORFUNCNO") << " -----------------------------"
-                << std::endl;
-      std::cout << "Electric L2-error: " << sqrt((*errors)[0]) << std::endl;
-      std::cout << "Magnetic L2-error: " << sqrt((*errors)[2]) << std::endl;
-      std::cout
-          << "-----------------------------------------------------------------------------------"
-          << std::endl;
-    }
+    elemagalgo->PrintErrors(errors);
   }
 
   // print computing time

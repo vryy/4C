@@ -131,6 +131,10 @@ namespace ELEMAG
     virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError();
 
     /*!
+    \brief Print the computed errors to screen.
+    */
+    virtual void PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector>& errors);
+    /*!
     \brief ProjectfieldTest is used for debugging purposes.
 
     This function projects a defined function to the interior fields and can be used to check if the

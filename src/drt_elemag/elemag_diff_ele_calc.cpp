@@ -182,9 +182,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
           static_cast<const MAT::ElectromagneticMat*>(mat.get());
       const double mu = elemagmat->mu(hdgele->Id());
       if (mu < 0.1)
-        params.set<double>("mod_mu", pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
+        params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
-        params.set<double>("mod_mu", pow(mu, 0.0));
+        params.set<double>("mod_mu", std::pow(mu, 0.0));
 
       ReadGlobalVectors(hdgele, discretization, lm);
       zeroMatrix(elevec1);
@@ -217,9 +217,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
           static_cast<const MAT::ElectromagneticMat*>(mat.get());
       const double mu = elemagmat->mu(hdgele->Id());
       if (mu < 0.1)
-        params.set<double>("mod_mu", pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
+        params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
-        params.set<double>("mod_mu", pow(mu, 0.0));
+        params.set<double>("mod_mu", std::pow(mu, 0.0));
 
       ReadGlobalVectors(hdgele, discretization, lm);
 
@@ -584,68 +584,96 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
 {
   double error_ele = 0.0, error_mag = 0.0;
   double exact_ele = 0.0, exact_mag = 0.0;
+  Epetra_SerialDenseVector error_ele_grad(2), error_mag_grad(2);
   shapes_.Evaluate(*ele);
+
+  DRT::UTILS::ShapeValues<distype> highshapes(
+      ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
+  highshapes.Evaluate(*ele);
 
   // get function
   const int func = params.get<int>("funcno");
   const double time = params.get<double>("time");
   // for the calculation of the error, we use a higher integration rule
-  Teuchos::RCP<DRT::UTILS::GaussPoints> highquad =
-      DRT::UTILS::GaussPointCache::Instance().Create(distype, (ele->Degree() + 2) * 2);
   LINALG::Matrix<nsd_, 1> xsi;
-  Epetra_SerialDenseVector values(shapes_.ndofs_);
-  LINALG::Matrix<nsd_, nen_> deriv;
-  LINALG::Matrix<nsd_, nsd_> xjm;
   Epetra_SerialDenseVector electric(nsd_);
+  Epetra_SerialDenseMatrix electric_grad(nsd_, nsd_);
   Epetra_SerialDenseVector magnetic(nsd_);
+  Epetra_SerialDenseMatrix magnetic_grad(nsd_, nsd_);
   Epetra_SerialDenseVector analytical(2 * nsd_);
+  Epetra_SerialDenseMatrix analytical_grad(2 * nsd_, nsd_);
 
-  for (int q = 0; q < highquad->NumPoints(); ++q)
+  for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
   {
-    const double* gpcoord = highquad->Point(q);
-    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
-    shapes_.polySpace_->Evaluate(xsi, values);
+    // Zero all temp vectors
+    electric.Scale(0.0), magnetic.Scale(0.0);
+    electric_grad.Scale(0.0), magnetic_grad.Scale(0.0);
+    analytical.Scale(0.0), analytical_grad.Scale(0.0);
 
-    DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
-    xjm.MultiplyNT(deriv, shapes_.xyze);
-    double highjfac = xjm.Determinant() * highquad->Weight(q);
-
-    electric.Scale(0.0);
-    magnetic.Scale(0.0);
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        electric(d) += values(i) * ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
-        magnetic(d) += values(i) * ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
+        electric(d) += highshapes.shfunct(i, q) * ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
+        magnetic(d) += highshapes.shfunct(i, q) * ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
+        for (unsigned int d_grad = 0; d_grad < nsd_; ++d_grad)
+        {
+          electric_grad(d, d_grad) += highshapes.shderxy(i * nsd_ + d_grad, q) *
+                                      ele->eleinteriorElectric_(d * shapes_.ndofs_ + i);
+          magnetic_grad(d, d_grad) += highshapes.shderxy(i * nsd_ + d_grad, q) *
+                                      ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
+        }
       }
 
-    LINALG::Matrix<nen_, 1> myfunct;
-    DRT::UTILS::shape_function<distype>(xsi, myfunct);
-    LINALG::Matrix<nsd_, 1> xyzmat;
-    xyzmat.MultiplyNN(shapes_.xyze, myfunct);
-
-    // Creating the temporary electric and magnetic field vector intVal
-    // The vector is going to contain first the electric and then the magnetic
-    // field such that the field will be initialized as first tree component
-    // of the specified function as electric field, last three components as
-    // magnetic field. If there is only one component all the components will
-    // be initialized to the same value.
-    analytical.Scale(0.0);
-    EvaluateAll(func, time, xyzmat, analytical);
+    // Evaluate error function and its derivatives in the integration point (real) coordinates
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
+    EvaluateAll(func, time, xsi, analytical);
+    ComputeFunctionGradient(func, time, xsi, analytical_grad);
 
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      error_ele += pow((analytical(d) - electric(d)), 2) * highjfac;
-      exact_ele += pow(analytical(d), 2) * highjfac;
-      error_mag += pow((analytical(d + nsd_) - magnetic(d)), 2) * highjfac;
-      exact_mag += pow(analytical(d + nsd_), 2) * highjfac;
+      // Electric error
+      error_ele += std::pow((analytical(d) - electric(d)), 2) * highshapes.jfac(q);
+      exact_ele += std::pow(analytical(d), 2) * highshapes.jfac(q);
+      // Magnetic error
+      error_mag += std::pow((analytical(d + nsd_) - magnetic(d)), 2) * highshapes.jfac(q);
+      exact_mag += std::pow(analytical(d + nsd_), 2) * highshapes.jfac(q);
+      // Divergence
+      error_ele_grad(0) +=
+          std::pow(analytical_grad(d, d) - electric_grad(d, d), 2) * highshapes.jfac(q);
+      error_mag_grad(0) +=
+          std::pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes.jfac(q);
+      // Rotor
+      error_ele_grad(1) += std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                        analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
+                                        (electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                            electric_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+                               2) *
+                           highshapes.jfac(q);
+      error_mag_grad(1) += std::pow((analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
+                                        analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_)) -
+                                        (magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                            magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+                               2) *
+                           highshapes.jfac(q);
     }
   }
 
+  // Electric error
   elevec1[0] = error_ele;
+  // Electric analytical reference
   elevec1[1] = exact_ele;
+  // Magnetic error
   elevec1[2] = error_mag;
+  // Magnetic analytical reference
   elevec1[3] = exact_mag;
+  // Electric Hdiv error
+  elevec1[4] = error_ele + error_ele_grad(0);
+  // Electric Hrot error
+  elevec1[5] = error_ele + error_ele_grad(1);
+  // Magnetic Hdiv error
+  elevec1[6] = error_mag + error_mag_grad(0);
+  //// Magnetic Hrot error
+  elevec1[7] = error_mag + error_mag_grad(1);
 
   return;
 }
@@ -926,19 +954,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
 
   // If there is on component for each entry of the vector use une for each
-  if (numComp == v.M())
-  {
-    for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d, xyz.A(), t);
-  }
   // If the vector is half the number of the component only use the firt half
-  else if (numComp == 2 * v.M())
-  {
-    for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d, xyz.A(), t);
-  }
   // If the number of component is half of the vector, repeat the first half twice
-  else if (numComp == v.M() / 2)
+  if (numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2)
   {
     for (int d = 0; d < v.M(); ++d)
       v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d % numComp, xyz.A(), t);
@@ -955,6 +973,50 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
         "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * ComputeFunctionGradient
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGradient(
+    const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
+    Epetra_SerialDenseMatrix& v) const
+{
+  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+
+  // If there is on component for each entry of the vector use une for each
+  // If the vector is half the number of the component only use the firt half
+  // If the number of component is half of the vector, repeat the first half twice
+  if (numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2)
+  {
+    for (int d = 0; d < v.M(); ++d)
+    {
+      std::vector<double> deriv = DRT::Problem::Instance()
+                                      ->Funct(start_func - 1)
+                                      .EvaluateSpatialDerivative(d % numComp, xyz.A(), t);
+      for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
+    }
+  }
+  // If there is only one component always use it
+  else if (numComp == 1)
+  {
+    for (int d = 0; d < v.M(); ++d)
+    {
+      std::vector<double> deriv =
+          DRT::Problem::Instance()->Funct(start_func - 1).EvaluateSpatialDerivative(0, xyz.A(), t);
+      for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
+    }
+  }
+  // If the number is not recognised throw an error
+  else
+    dserror(
+        "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
+        "components the field will be initialized componentwise, if only one component is "
+        "provided, every component of the field will be initialized with the same values.");
+
   return;
 }
 
@@ -1627,9 +1689,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
     for (unsigned int i = 0; i < ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        Amat(d * ndofs_ + i, d * ndofs_ + j) = -pow(mu, 1.0 - alpha) * tmpMat(i, j);
+        Amat(d * ndofs_ + i, d * ndofs_ + j) = -std::pow(mu, 1.0 - alpha) * tmpMat(i, j);
         Dmat(d * ndofs_ + i, d * ndofs_ + j) = epsilon * tmpMat(i, j);
-        Emat(d * ndofs_ + i, d * ndofs_ + j) = sigma * pow(mu, alpha) * tmpMat(i, j);
+        Emat(d * ndofs_ + i, d * ndofs_ + j) = sigma * std::pow(mu, alpha) * tmpMat(i, j);
       }
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
@@ -1905,8 +1967,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
             // Gmat
             // 0 coordinate
             Gmat(d * ndofs_ + i, d * ndofs_ + j) +=
-                temp * (pow(shapesface_->normals(((d + 1) % nsd_), q), 2) +
-                           pow(shapesface_->normals(((d + 2) % nsd_), q), 2));
+                temp * (std::pow(shapesface_->normals(((d + 1) % nsd_), q), 2) +
+                           std::pow(shapesface_->normals(((d + 2) % nsd_), q), 2));
             //+1 coordinate
             Gmat(d * ndofs_ + i, ((d + 1) % nsd_) * ndofs_ + j) -=
                 temp * shapesface_->normals(d, q) * shapesface_->normals(((d + 1) % nsd_), q);

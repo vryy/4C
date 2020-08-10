@@ -347,17 +347,64 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   params.set<double>("time", time_);
   params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
 
-  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+  const int numberOfErrorMeasures = 8;
+  Teuchos::RCP<Epetra_SerialDenseVector> errors =
+      Teuchos::rcp(new Epetra_SerialDenseVector(numberOfErrorMeasures));
 
   // call loop over elements (assemble nothing)
   discret_->EvaluateScalars(params, errors);
   discret_->ClearState(true);
 
-  (*errors)[0] /= (*errors)[1];
-  (*errors)[2] /= (*errors)[3];
-
-
   return errors;
+}
+
+void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &errors)
+{
+  if (myrank_ == 0)
+  {
+    std::cout
+        << "-----------------------------------------------------------------------------------"
+        << std::endl;
+    std::cout << "---------------------------- Result error wrt FUNCT " << errfunct_
+              << " -----------------------------" << std::endl;
+    std::cout << "ABSOLUTE ERROR:" << std::endl;
+    std::cout << "Electric L2-error: " << std::sqrt((*errors)[0]) << std::endl;
+    std::cout << "Magnetic L2-error: " << std::sqrt((*errors)[2]) << std::endl;
+    std::cout << "\nRELATIVE ERROR:" << std::endl;
+    if ((*errors)[1] == 0 && (*errors)[3] == 0)
+      std::cout << "Impossible to compute relative errors. The L2-norm of the analytical "
+                   "solution is zero, resulting in a division by zero."
+                << std::endl;
+    else
+    {
+      if ((*errors)[1] != 0)
+        std::cout << "Electric relative L2-error: " << std::sqrt((*errors)[0] / (*errors)[1])
+                  << std::endl;
+      else
+        std::cout
+            << "Impossible to compute the electric relative error. The L2-norm of the analytical "
+               "solution is zero, resulting in a division by zero."
+            << std::endl;
+      if ((*errors)[3] != 0)
+        std::cout << "Magnetic relative L2-error: " << std::sqrt((*errors)[2] / (*errors)[3])
+                  << std::endl;
+      else
+        std::cout
+            << "Impossible to compute the magnetic relative error. The L2-norm of the analytical "
+               "solution is zero, resulting in a division by zero."
+            << std::endl;
+    }
+    std::cout << "\nHDIV ERROR:" << std::endl;
+    std::cout << "Electric Hdiv-error: " << std::sqrt((*errors)[4]) << std::endl;
+    std::cout << "Magnetic Hdiv-error: " << std::sqrt((*errors)[6]) << std::endl;
+    std::cout << "\nHCURL ERROR:" << std::endl;
+    std::cout << "Electric Hcurl-error: " << std::sqrt((*errors)[5]) << std::endl;
+    std::cout << "Magnetic Hcurl-error: " << std::sqrt((*errors)[7]) << std::endl;
+    std::cout
+        << "-----------------------------------------------------------------------------------"
+        << std::endl;
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
