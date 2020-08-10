@@ -835,11 +835,11 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
       Teuchos::RCP<Epetra_SerialDenseVector> errors = ComputeError();
 
       if (std::abs((*errors)[1]) > 1e-14)
-        (*relerrors_)[0] = sqrt((*errors)[0]) / sqrt((*errors)[1]);
+        (*relerrors_)[0] = std::sqrt((*errors)[0]) / std::sqrt((*errors)[1]);
       else
         dserror("Can't compute scalar's relative L2 error due to numerical roundoff sensitivity!");
       if (std::abs((*errors)[3]) > 1e-14)
-        (*relerrors_)[1] = sqrt((*errors)[2]) / sqrt((*errors)[3]);
+        (*relerrors_)[1] = std::sqrt((*errors)[2]) / std::sqrt((*errors)[3]);
       else
         dserror(
             "Can't compute grandient's relative L2 error due to numerical roundoff sensitivity!");
@@ -865,8 +865,8 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
         {
           f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
-          f << step_ << " " << time_ << " " << std::setprecision(6) << sqrt((*errors)[0]) << " "
-            << (*relerrors_)[0] << " " << sqrt((*errors)[2]) << " " << (*relerrors_)[1]
+          f << step_ << " " << time_ << " " << std::setprecision(6) << std::sqrt((*errors)[0])
+            << " " << (*relerrors_)[0] << " " << std::sqrt((*errors)[2]) << " " << (*relerrors_)[1]
             << std::endl;
         }
 

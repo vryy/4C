@@ -1976,9 +1976,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
   // For the calculation of the error we use a higher integration rule
-  DRT::UTILS::ShapeValues<distype> highshapes_(
+  DRT::UTILS::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_->usescompletepoly_, (ele->Degree() + 2) * 2);
-  highshapes_.Evaluate(*ele);
+  highshapes.Evaluate(*ele);
 
   double error_phi = 0.0, error_grad_phi = 0.0;
   double exact_phi = 0.0, exact_grad_phi = 0.0;
@@ -1996,27 +1996,27 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
   double phi(nsd_);
   Epetra_SerialDenseVector gradPhi(nsd_);
 
-  for (unsigned int q = 0; q < highshapes_.nqpoints_; ++q)
+  for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
   {
     phi = 0;
     gradPhi.Scale(0.0);
     if (hdgele->invdiff_.size() == 1)
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       {
-        phi += highshapes_.shfunct(i, q) * interiorPhinp_(i);
+        phi += highshapes.shfunct(i, q) * interiorPhinp_(i);
         for (unsigned int d = 0; d < nsd_; ++d)
           for (unsigned int e = 0; e < nsd_; ++e)
-            gradPhi(d) += highshapes_.shfunct(i, q) *
-                          interiorPhinp_(i + (e + 1) * shapes_->ndofs_) * hdgele->invdiff_[0](d, e);
+            gradPhi(d) += highshapes.shfunct(i, q) * interiorPhinp_(i + (e + 1) * shapes_->ndofs_) *
+                          hdgele->invdiff_[0](d, e);
       }
-    else if (hdgele->invdiff_.size() == highshapes_.nqpoints_)
+    else if (hdgele->invdiff_.size() == highshapes.nqpoints_)
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       {
-        phi += highshapes_.shfunct(i, q) * interiorPhinp_(i);
+        phi += highshapes.shfunct(i, q) * interiorPhinp_(i);
         for (unsigned int d = 0; d < nsd_; ++d)
           for (unsigned int e = 0; e < nsd_; ++e)
-            gradPhi(d) += highshapes_.shfunct(i, q) *
-                          interiorPhinp_(i + (e + 1) * shapes_->ndofs_) * hdgele->invdiff_[q](d, e);
+            gradPhi(d) += highshapes.shfunct(i, q) * interiorPhinp_(i + (e + 1) * shapes_->ndofs_) *
+                          hdgele->invdiff_[q](d, e);
       }
     else
       dserror("Diffusion tensor not defined properly. Impossible to compute error.");
@@ -2024,17 +2024,17 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
 
     // Analytical function evaluation
     // Evaluate error function and its derivatives in the integration point (real) coordinates
-    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_.xyzreal(idim, q);
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct = DRT::Problem::Instance()->Funct(func - 1).Evaluate(0, xsi.A(), time);
     std::vector<double> deriv =
         DRT::Problem::Instance()->Funct(func - 1).EvaluateSpatialDerivative(0, xsi.A(), time);
 
-    error_phi += pow((funct - phi), 2) * highshapes_.jfac(q);
-    exact_phi += pow(funct, 2) * highshapes_.jfac(q);
+    error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
+    exact_phi += std::pow(funct, 2) * highshapes.jfac(q);
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      error_grad_phi += pow((deriv[d] - gradPhi(d)), 2) * highshapes_.jfac(q);
-      exact_grad_phi += pow(deriv[d], 2) * highshapes_.jfac(q);
+      error_grad_phi += std::pow((deriv[d] - gradPhi(d)), 2) * highshapes.jfac(q);
+      exact_grad_phi += std::pow(deriv[d], 2) * highshapes.jfac(q);
     }
   }
 
