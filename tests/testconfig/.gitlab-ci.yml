@@ -176,7 +176,6 @@ variables:
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
-    after_script:
         # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
         - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory . --output-file baci_coverage_base.info > baci_coverage_base.log
         # generate the baci_coverage_tests.info based on tests run above
@@ -195,9 +194,6 @@ variables:
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
         - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
         - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
-    # we allow this job to fail since we care more about execution of all tests then passing all tests
-    # passing tests are checked in daily pipelines while here we would like to measure the code covered by the tests
-    allow_failure: true
     # update (push) the cache of the weekly coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
@@ -208,7 +204,6 @@ variables:
             # the log is needed to print the weekly value of total line coverage in daily and minimal master pipelines
             - genhtml_weekly_coverage.log
         policy: push
-    # store the coverage report in an artifact so that the subsequent (obligatory) pages job can find it
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
@@ -220,10 +215,6 @@ variables:
             - baci_coverage.log
             - buildtest_weekly_coverage.log
             - genhtml_weekly_coverage.log
-            - coverage_report/
-        # upload .log on_failure and coverage_report/ on_success:
-        # currently there is no option to have multiple artifacts with different when: options
-        # -> always upload artifacts of this job
         when: always
         expire_in: 5 days
     only:
