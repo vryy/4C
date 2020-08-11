@@ -5,7 +5,6 @@
 
 \level 2
 
-
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_ELCH_H
@@ -43,20 +42,20 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! virtual destructor
-    virtual ~ScaTraTimIntElch() { return; };
+    ~ScaTraTimIntElch() override = default;
 
     //! initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     //! initialize algorithm
-    virtual void Setup();
+    void Setup() override;
 
     /*========================================================================*/
     //! @name Preconditioning
     /*========================================================================*/
 
-    //! Setup splitter for concetration and potential dofs
-    void SetupSplitter();
+    //! Setup splitter for concentration and potential dofs
+    void SetupSplitter() override;
 
     //! additional, to standard partitioning in scatra, the global system matrix in elch can be
     //! partitioned into concentration and potential dofs
@@ -71,13 +70,13 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Set elch-specific parameters
-    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
+    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const override;
 
     //! contains the nonlinear iteration loop
-    void NonlinearSolve();
+    void NonlinearSolve() override;
 
     //! calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol();
+    void EvaluateErrorComparedToAnalyticalSol() override;
 
     /*========================================================================*/
     //! @name ELCH methods
@@ -86,27 +85,27 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! setup natural convection
-    void SetupNatConv();
+    void SetupNatConv() override;
 
     /*--- calculate and update -----------------------------------------------*/
 
     //! determine whether there are still time steps to be evaluated
-    bool NotFinished();
+    bool NotFinished() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    virtual void Update(const int num = 0);
+    void Update(int num) override;
 
     /*--- query and output ---------------------------------------------------*/
 
     //! output solution and restart data to file
-    void Output(const int num = 0) final;
+    void Output(int num) final;
 
     //! problem-specific outputs
-    void OutputProblemSpecific();
+    void OutputProblemSpecific() override;
 
     //! read problem-specific restart data
-    void ReadRestartProblemSpecific(const int step, IO::DiscretizationReader& reader);
+    void ReadRestartProblemSpecific(int step, IO::DiscretizationReader& reader) override;
 
     //! output electrode domain status information to screen and file
     void OutputElectrodeInfoDomain();
@@ -116,8 +115,8 @@ namespace SCATRA
 
     //! evaluate status information on single line or surface electrode
     Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfo(
-        const unsigned condid,        //!< ID of condition to be evaluated
-        const std::string condstring  //!< name of condition to be evaluated
+        int condid,                    //!< ID of condition to be evaluated
+        const std::string& condstring  //!< name of condition to be evaluated
     );
 
     //! evaluate status information on single point electrode
@@ -128,9 +127,9 @@ namespace SCATRA
     //! post-process status information on single electrode
     void PostProcessSingleElectrodeInfo(
         Epetra_SerialDenseVector&
-            scalars,        //!< scalar quantities associated with electrode status information (in)
-        const unsigned id,  //!< electrode ID (in)
-        const bool print,   //!< flag for output to screen and file (in)
+            scalars,  //!< scalar quantities associated with electrode status information (in)
+        unsigned id,  //!< electrode ID (in)
+        bool print,   //!< flag for output to screen and file (in)
         double& currentsum,    //!< net current involving all conditions (out)
         double& currtangent,   //!< tangent of current w.r.t. electrode potential (out)
         double& currresidual,  //!< negative residual of current equation (out)
@@ -146,7 +145,7 @@ namespace SCATRA
     void OutputCellVoltage();
 
     //! output restart data
-    virtual void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! output type of closing equation for electric potential
     INPAR::ELCH::EquPot EquPot() const { return equpot_; }
@@ -155,10 +154,7 @@ namespace SCATRA
     double FRT() const { return frt_; }
 
     //! return elch parameter list
-    const Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const
-    {
-      return elchparams_;
-    }
+    Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_; }
 
     //! return states of charge of resolved electrodes
     const std::map<int, double>& ElectrodeSOC() const { return electrodesoc_; };
@@ -190,24 +186,23 @@ namespace SCATRA
     /*========================================================================*/
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params  //!< parameter list
-    );
+    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
 
     /*========================================================================*/
     //! @name general framework
     /*========================================================================*/
 
     //! assemble global system of equations
-    void AssembleMatAndRHS();
+    void AssembleMatAndRHS() override;
 
     //! prepare time loop
-    void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     //! initialization procedure prior to evaluation of first time step
-    void PrepareFirstTimeStep();
+    void PrepareFirstTimeStep() override;
 
     //! initialize meshtying strategy (including standard case without meshtying)
-    virtual void CreateScalarHandler();
+    void CreateScalarHandler() override;
 
     /*========================================================================*/
     //! @name ELCH methods
@@ -228,7 +223,7 @@ namespace SCATRA
     void InitNernstBC();
 
     //! initialize meshtying strategy (including standard case without meshtying)
-    void CreateMeshtyingStrategy();
+    void CreateMeshtyingStrategy() override;
 
     //! set up concentration-potential splitter
     void SetupConcPotSplit();
@@ -264,7 +259,7 @@ namespace SCATRA
     void EvaluateElectrodeKineticsConditions(
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< global system matrix
         Teuchos::RCP<Epetra_Vector> rhs,                    //!< global right-hand side vector
-        const std::string condstring                        //!< name of condition to be evaluated
+        const std::string& condstring                       //!< name of condition to be evaluated
     );
 
     //! evaluate point boundary conditions for electrode kinetics
@@ -279,29 +274,16 @@ namespace SCATRA
     //! update time-dependent electrode state variables at the end of an time step
     virtual void ElectrodeKineticsTimeUpdate() = 0;
 
-    //! compute contributions of solution-depending boundary and interface conditions to global
-    //! system of equations
-    void EvaluateSolutionDependingConditions(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
-    );
+    void EvaluateSolutionDependingConditions(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<Epetra_Vector> rhs) override;
 
-    //! apply Dirichlet boundary conditions to state vectors
-    void ApplyDirichletBC(const double time,  //!< time
-        Teuchos::RCP<Epetra_Vector> phinp,  //!< state vector of scalar transport degrees of freedom
-        Teuchos::RCP<Epetra_Vector>
-            phidt  //!< state vector of time derivatives of scalar transport degrees of freedom
-    );
+    void ApplyDirichletBC(
+        double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt) override;
 
-    //! evaluate Neumann boundary conditions
-    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
-    );
+    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads) override;
 
-    //! perform Aitken relaxation
-    void PerformAitkenRelaxation(Epetra_Vector& phinp,  //!< state vector to be relaxed
-        const Epetra_Vector&
-            phinp_inc_diff  //!< difference between current and previous state vector increments
-    );
+    void PerformAitkenRelaxation(
+        Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff) override;
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -310,10 +292,7 @@ namespace SCATRA
         Teuchos::RCP<Epetra_Vector> vec  //!< current phi vector to be checked
     );
 
-    //! output flux vectors
-    void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
-        const std::string& fluxtype                         //!< flux type ("domain" or "boundary")
-    );
+    void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype) override;
 
     /*========================================================================*/
     //! @name ELCH variables
@@ -406,17 +385,17 @@ namespace SCATRA
     ScalarHandlerElch();
 
     //! Destructor
-    virtual ~ScalarHandlerElch(){};
+    ~ScalarHandlerElch() override = default;
 
     //! initialize time integration
-    void Setup(const ScaTraTimIntImpl* const scatratimint);
+    void Setup(const ScaTraTimIntImpl* scatratimint) override;
 
     /*========================================================================*/
     //! @name Access and Query methods
     /*========================================================================*/
 
     //! return maximum number of dofs per node
-    int NumDofPerNode() const
+    int NumDofPerNode() const override
     {
       CheckIsSetup();
       return *(numdofpernode_.rbegin());
@@ -424,7 +403,7 @@ namespace SCATRA
 
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
-    int NumScal() const
+    int NumScal() const override
     {
       CheckIsSetup();
       return *(numscal_.rbegin());
@@ -433,7 +412,7 @@ namespace SCATRA
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
     int NumScalInCondition(const DRT::Condition& condition,
-        const Teuchos::RCP<const DRT::Discretization>& discret) const;
+        const Teuchos::RCP<const DRT::Discretization>& discret) const override;
 
     /*========================================================================*/
     //! @name Internal variables
@@ -444,5 +423,5 @@ namespace SCATRA
 
   };  // class ScalarHandlerElch
 
-};  // namespace SCATRA
+}  // namespace SCATRA
 #endif
