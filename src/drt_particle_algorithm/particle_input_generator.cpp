@@ -34,7 +34,7 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
 }
 
 void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<double>& position,
-    const PARTICLEENGINE::TypeEnum particletype, int globalid,
+    const PARTICLEENGINE::TypeEnum particletype,
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const
 {
   // safety check
@@ -50,5 +50,5 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
 
   // construct and store generated particle object
   particlesgenerated.emplace_back(
-      std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, globalid, particlestates));
+      std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, -1, particlestates));
 }

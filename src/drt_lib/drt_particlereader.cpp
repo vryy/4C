@@ -111,7 +111,6 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             linestream.str(line);
 
             PARTICLEENGINE::TypeEnum particletype;
-            int globalid(-1);
             PARTICLEENGINE::ParticleStates particlestates;
 
             std::string typelabel;
@@ -161,8 +160,8 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             }
 
             // construct and store read in particle object
-            particles.emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
-                particletype, globalid, particlestates));
+            particles.emplace_back(
+                std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, -1, particlestates));
 
             ++bcount;
             if (block != nblock - 1)  // last block takes all the rest
