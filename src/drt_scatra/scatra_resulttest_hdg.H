@@ -34,6 +34,8 @@ namespace SCATRA
     //! time integrator
     Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
 
+    Teuchos::RCP<Epetra_SerialDenseVector> errors_;
+
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace SCATRA
 #endif

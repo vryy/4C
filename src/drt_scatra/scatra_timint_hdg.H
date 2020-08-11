@@ -72,6 +72,11 @@ namespace SCATRA
     //! prepare time loop
     void PrepareTimeLoop();
 
+    /*!
+    \brief Compare the numerical solution to the analytical one.
+    */
+    virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError() const;
+
    protected:
     //! copy constructor
     TimIntHDG(const TimIntHDG& old);
@@ -127,6 +132,9 @@ namespace SCATRA
 
     //! fd check
     virtual void FDCheck();
+
+    //! calculation of error with reference to analytical solution during the simulation
+    virtual void EvaluateErrorComparedToAnalyticalSol();
 
     //! adapt degree of test functions and change dofsets accordingly
     virtual void AdaptDegree();

@@ -222,6 +222,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     case SCATRA::set_initial_field:
     {
       ElementInit(ele);
+      PrepareMaterialParams(ele);
       // set initial field
       return SetInitialField(ele, params, elevec1_epetra, elevec2_epetra);
 
@@ -295,6 +296,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);
       return CalcPAdaptivity(ele, discretization, params);
+      break;
+    }
+    case SCATRA::calc_error:
+    {
+      shapes_->Evaluate(*ele);
+      ReadGlobalVectors(ele, discretization, la);
+      return CalcError(ele, params, elevec1_epetra);
       break;
     }
     default:
@@ -1957,6 +1965,86 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
   return 0;
 }  // CalcPAdaptivity
 
+/*----------------------------------------------------------------------*
+ * Calc Error
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
+    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec)
+{
+  DRT::ELEMENTS::ScaTraHDG* hdgele =
+      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+
+  // For the calculation of the error we use a higher integration rule
+  DRT::UTILS::ShapeValues<distype> highshapes(
+      ele->Degree(), shapes_->usescompletepoly_, (ele->Degree() + 2) * 2);
+  highshapes.Evaluate(*ele);
+
+  double error_phi = 0.0, error_grad_phi = 0.0;
+  double exact_phi = 0.0, exact_grad_phi = 0.0;
+
+  // get function
+  const int func = params.get<int>("error function number");
+  const double time = params.get<double>("time");
+
+  if (DRT::Problem::Instance()->Funct(func - 1).NumberComponents() != 1)
+    dserror(
+        "The number of component must be one. The grandient is computed with forward auomatic "
+        "differentiation.");
+
+  LINALG::Matrix<nsd_, 1> xsi;
+  double phi(nsd_);
+  Epetra_SerialDenseVector gradPhi(nsd_);
+
+  for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
+  {
+    phi = 0;
+    gradPhi.Scale(0.0);
+    if (hdgele->invdiff_.size() == 1)
+      for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
+      {
+        phi += highshapes.shfunct(i, q) * interiorPhinp_(i);
+        for (unsigned int d = 0; d < nsd_; ++d)
+          for (unsigned int e = 0; e < nsd_; ++e)
+            gradPhi(d) += highshapes.shfunct(i, q) * interiorPhinp_(i + (e + 1) * shapes_->ndofs_) *
+                          hdgele->invdiff_[0](d, e);
+      }
+    else if (hdgele->invdiff_.size() == highshapes.nqpoints_)
+      for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
+      {
+        phi += highshapes.shfunct(i, q) * interiorPhinp_(i);
+        for (unsigned int d = 0; d < nsd_; ++d)
+          for (unsigned int e = 0; e < nsd_; ++e)
+            gradPhi(d) += highshapes.shfunct(i, q) * interiorPhinp_(i + (e + 1) * shapes_->ndofs_) *
+                          hdgele->invdiff_[q](d, e);
+      }
+    else
+      dserror("Diffusion tensor not defined properly. Impossible to compute error.");
+
+
+    // Analytical function evaluation
+    // Evaluate error function and its derivatives in the integration point (real) coordinates
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
+    double funct = DRT::Problem::Instance()->Funct(func - 1).Evaluate(0, xsi.A(), time);
+    std::vector<double> deriv =
+        DRT::Problem::Instance()->Funct(func - 1).EvaluateSpatialDerivative(0, xsi.A(), time);
+
+    error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
+    exact_phi += std::pow(funct, 2) * highshapes.jfac(q);
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      error_grad_phi += std::pow((deriv[d] - gradPhi(d)), 2) * highshapes.jfac(q);
+      exact_grad_phi += std::pow(deriv[d], 2) * highshapes.jfac(q);
+    }
+  }
+
+  elevec[0] = error_phi;
+  elevec[1] = exact_phi;
+  elevec[2] = error_grad_phi;
+  elevec[3] = exact_grad_phi;
+
+  return 0;
+}
 
 // template classes
 // 1D elements

@@ -582,6 +582,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_mat_initial:
     case SCATRA::project_field:
     case SCATRA::calc_padaptivity:
+    case SCATRA::calc_error:
 
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
