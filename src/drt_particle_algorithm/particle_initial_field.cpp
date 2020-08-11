@@ -93,22 +93,12 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       // get reference to function
       DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
-      // get pointer to particle position
+      // get pointer to particle states
       const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-
-      // get particle state dimension
-      int posstatedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
-
-      // get pointer to particle state
       double* state = container->GetPtrToParticleState(particleState, 0);
 
-#ifdef DEBUG
-      if (not container->GetStoredStates().count(particleState))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(particleState).c_str());
-#endif
-
-      // get particle state dimension
+      // get particle state dimensions
+      int posstatedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
       int statedim = container->GetParticleStateDim(particleState);
 
       // safety check

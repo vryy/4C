@@ -122,13 +122,9 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     // get reference to function
     DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
-    // declare pointer variables
-    const double* refpos;
-    double* temp;
-
     // get pointer to particle states
-    refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
-    temp = container->GetPtrToParticleState(PARTICLEENGINE::Temperature, 0);
+    const double* refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
+    double* temp = container->GetPtrToParticleState(PARTICLEENGINE::Temperature, 0);
 
     // get particle state dimension
     int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
