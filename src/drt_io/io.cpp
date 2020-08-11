@@ -356,8 +356,8 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
   {
     dserror(
         "No restart entry for discretization '%s' step %d in symbol table. "
-        "Control file corrupt?",
-        name.c_str(), step);
+        "Control file corrupt?\n\nLooking for control file at: %s",
+        name.c_str(), step, input_->FileName().c_str());
   }
 
   /*--------------------------------------------------------------------*/
