@@ -1754,7 +1754,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
   Epetra_SerialDenseVector tempVec2(intdofs);
   // Once the compute source is ready we will need to delete these
   // The ComputeSource is necesessary to include the forcing terms
-  ComputeSource(params, tempVec1, tempVec2);
+  ComputeSource(params, tempVec2, tempVec1);
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {

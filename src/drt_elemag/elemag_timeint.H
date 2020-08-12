@@ -172,8 +172,11 @@ namespace ELEMAG
 
     /*!
     \brief Apply Dirichlet boudnary conditions to system.
+
+    \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
+    it necessary to compute the matrices AND the RHS (false).
     */
-    void ApplyDirichletToSystem();
+    void ApplyDirichletToSystem(bool resonly);
 
     /*!
     \brief Compute Silver-Mueller boundary conditions.
