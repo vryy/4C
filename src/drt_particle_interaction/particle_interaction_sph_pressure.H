@@ -84,6 +84,9 @@ namespace PARTICLEINTERACTION
 
     //! pressure of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh pressuretorefresh_;
+
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
   };
 
 }  // namespace PARTICLEINTERACTION

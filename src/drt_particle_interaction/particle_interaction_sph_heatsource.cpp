@@ -63,21 +63,32 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-  {
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
         particlematerial_->GetPtrToParticleMatParameter(type_i));
 
+  // set of potential absorbing particle types
+  std::set<PARTICLEENGINE::TypeEnum> potentialabsorbingtypes = {
+      PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // determine absorbing particle types
-    if (thermomaterial_[type_i]->thermalAbsorptivity_ > 0.0) absorbingtypes_.insert(type_i);
+    if (thermomaterial_[type_i]->thermalAbsorptivity_ > 0.0)
+    {
+      // safety check
+      if (not potentialabsorbingtypes.count(type_i))
+        dserror("thermal absorptivity for particles of type '%s' not possible!",
+            PARTICLEENGINE::EnumToTypeName(type_i).c_str());
+
+      absorbingtypes_.insert(type_i);
+    }
+    // determine non-absorbing particle types
+    else if (potentialabsorbingtypes.count(type_i))
+    {
+      nonabsorbingtypes_.insert(type_i);
+    }
   }
-
-  // safety check
-  if (absorbingtypes_.count(PARTICLEENGINE::BoundaryPhase))
-    dserror("no heat source evaluation for boundary particles!");
-
-  if (absorbingtypes_.count(PARTICLEENGINE::DirichletPhase) or
-      absorbingtypes_.count(PARTICLEENGINE::NeumannPhase))
-    dserror("no heat source evaluation for open boundary particles!");
 }
 
 void PARTICLEINTERACTION::SPHHeatSourceBase::WriteRestart(const int step, const double time) const
@@ -124,13 +135,11 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double* pos_i;
-      double* tempdot_i;
-
       // get pointer to particle states
-      pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-      tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);
@@ -199,9 +208,10 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     cfg_i[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // get relevant particle pair indices for particle types
+  // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndices(absorbingtypes_, relindices);
+  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+      absorbingtypes_, nonabsorbingtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
@@ -220,17 +230,6 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // no evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::BoundaryPhase)
-      continue;
-
-    // check for absorbing particles
-    bool isabsorbing_i = absorbingtypes_.count(type_i);
-    bool isabsorbing_j = absorbingtypes_.count(type_j);
-
-    // no evaluation for both absorbing or non-absorbing particles
-    if (not(isabsorbing_i != isabsorbing_j)) continue;
-
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -245,29 +244,27 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     const MAT::PAR::ParticleMaterialBase* material_j =
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i;
-    const double *mass_j, *dens_j;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-                 : &(material_i->initDensity_);
+    const double* dens_i =
+        container_i->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+            : &(material_i->initDensity_);
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-                 : &(material_j->initDensity_);
+    const double* dens_j =
+        container_j->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+            : &(material_j->initDensity_);
 
     const double fac =
         (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) /
         (dens_i[0] + dens_j[0]);
 
     // evaluate contribution of neighboring particle j
-    if (isabsorbing_i)
+    if (absorbingtypes_.count(type_i))
     {
       // sum contribution of neighboring particle j
       UTILS::vec_addscale(&cfg_i[type_i][particle_i][0],
@@ -275,7 +272,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     }
 
     // evaluate contribution of neighboring particle i
-    if (isabsorbing_j and status_j == PARTICLEENGINE::Owned)
+    if (absorbingtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // sum contribution of neighboring particle i
       UTILS::vec_addscale(&cfg_i[type_j][particle_j][0],
@@ -319,13 +316,11 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       // heat source contribution only for surface opposing heat source
       if (f_i_proj < 0.0) continue;
 
-      // declare pointer variables for particle i
-      const double* pos_i;
-      double* tempdot_i;
-
       // get pointer to particle states
-      pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-      tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);

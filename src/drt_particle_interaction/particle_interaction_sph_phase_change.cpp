@@ -131,10 +131,10 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
   SPHPhaseChangeBase::Setup(particleengineinterface, particlematerial, equationofstatebundle);
 
   // safety check
-  for (const auto& typeEnum : {belowphase_, abovephase_})
-    if (not particlecontainerbundle_->GetParticleTypes().count(typeEnum))
+  for (const auto& type_i : {belowphase_, abovephase_})
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       dserror("no particle container for particle type '%s' found!",
-          PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() const

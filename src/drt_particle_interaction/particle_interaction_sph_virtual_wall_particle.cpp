@@ -41,7 +41,10 @@ PARTICLEINTERACTION::SPHVirtualWallParticle::SPHVirtualWallParticle(
 
 void PARTICLEINTERACTION::SPHVirtualWallParticle::Init()
 {
-  // nothing to do
+  // init with potential fluid particle types
+  allfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
+      PARTICLEENGINE::NeumannPhase};
+  intfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::NeumannPhase};
 }
 
 void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
@@ -68,6 +71,15 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
   // safety check
   if (not particlewallinterface_)
     dserror("interface to particle wall handler required in virtual wall particle handler!");
+
+  // update with actual fluid particle types
+  for (const auto& type_i : allfluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      allfluidtypes_.erase(type_i);
+
+  for (const auto& type_i : intfluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      intfluidtypes_.erase(type_i);
 }
 
 void PARTICLEINTERACTION::SPHVirtualWallParticle::WriteRestart(
@@ -144,10 +156,14 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
   weighteddistancevector_.assign(numparticlewallpairs, std::vector<double>(3, 0.0));
   weightedvelocity_.assign(numparticlewallpairs, std::vector<double>(3, 0.0));
 
-  // iterate over particle-wall pairs
-  for (int i = 0; i < numparticlewallpairs; ++i)
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices(intfluidtypes_, relindices);
+
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
   {
-    const SPHParticleWallPair& particlewallpair = particlewallpairdata[i];
+    const SPHParticleWallPair& particlewallpair = particlewallpairdata[particlewallpairindex];
 
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -155,27 +171,15 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     int particle_i;
     std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
 
-    // no evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-    // no evaluation for dirichlet open boundary particles
-    if (type_i == PARTICLEENGINE::DirichletPhase) continue;
-
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // declare pointer variables for particle i
-    const double* pos_i;
-
     // get pointer to particle states
-    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-
-    // declare pointer variables for wall contact point j
-    const double* rad_j;
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
 
     // get pointer to wall contact point states
-    rad_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
@@ -248,21 +252,22 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
       int particle_k;
       std::tie(type_k, status_k, particle_k) = neighboringparticle;
 
-      // no evaluation for boundary or rigid particles
-      if (type_k == PARTICLEENGINE::BoundaryPhase or type_k == PARTICLEENGINE::RigidPhase) continue;
+      // evaluation only for fluid particles
+      if (not allfluidtypes_.count(type_k)) continue;
 
       // get container of particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_k =
           particlecontainerbundle_->GetSpecificContainer(type_k, status_k);
 
-      // declare pointer variables for particle k
-      const double *pos_k, *vel_k, *dens_k, *press_k;
-
       // get pointer to particle states
-      pos_k = container_k->GetPtrToParticleState(PARTICLEENGINE::Position, particle_k);
-      vel_k = container_k->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_k);
-      dens_k = container_k->GetPtrToParticleState(PARTICLEENGINE::Density, particle_k);
-      press_k = container_k->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_k);
+      const double* pos_k =
+          container_k->GetPtrToParticleState(PARTICLEENGINE::Position, particle_k);
+      const double* vel_k =
+          container_k->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_k);
+      const double* dens_k =
+          container_k->GetPtrToParticleState(PARTICLEENGINE::Density, particle_k);
+      const double* press_k =
+          container_k->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_k);
 
       // vector from particle k to wall contact point j
       double r_jk[3];
@@ -297,15 +302,17 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     UTILS::vec_sub(relacc, acc_j);
 
     // set weighted fluid particle pressure
-    weightedpressure_[i] = sumk_press_k_Wjk * inv_sumk_Wjk;
+    weightedpressure_[particlewallpairindex] = sumk_press_k_Wjk * inv_sumk_Wjk;
 
     // set weighted fluid particle pressure gradient
-    UTILS::vec_setscale(&weightedpressuregradient_[i][0], sumk_dens_k_Wjk * inv_sumk_Wjk, relacc);
+    UTILS::vec_setscale(&weightedpressuregradient_[particlewallpairindex][0],
+        sumk_dens_k_Wjk * inv_sumk_Wjk, relacc);
 
     // set weighted fluid particle distance vector
-    UTILS::vec_setscale(&weighteddistancevector_[i][0], inv_sumk_Wjk, sumk_r_jk_Wjk);
+    UTILS::vec_setscale(
+        &weighteddistancevector_[particlewallpairindex][0], inv_sumk_Wjk, sumk_r_jk_Wjk);
 
     // set weighted fluid particle velocity
-    UTILS::vec_setscale(&weightedvelocity_[i][0], inv_sumk_Wjk, sumk_vel_k_Wjk);
+    UTILS::vec_setscale(&weightedvelocity_[particlewallpairindex][0], inv_sumk_Wjk, sumk_vel_k_Wjk);
   }
 }

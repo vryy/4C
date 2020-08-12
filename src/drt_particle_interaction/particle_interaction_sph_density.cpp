@@ -45,7 +45,8 @@ PARTICLEINTERACTION::SPHDensityBase::SPHDensityBase(const Teuchos::ParameterList
 
 void PARTICLEINTERACTION::SPHDensityBase::Init()
 {
-  // nothing to do
+  // init with potential fluid particle types
+  fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 }
 
 void PARTICLEINTERACTION::SPHDensityBase::Setup(
@@ -81,20 +82,16 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   // set virtual wall particle handler
   virtualwallparticle_ = virtualwallparticle;
 
+  // update with actual fluid particle types
+  for (const auto& type_i : fluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+
   // setup density of ghosted particles to refresh
   {
     std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Density};
 
-    for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-      if (container_i->HaveStoredState(PARTICLEENGINE::DensitySum) or
-          container_i->HaveStoredState(PARTICLEENGINE::DensityDot))
-        densitytorefresh_.push_back(std::make_pair(type_i, states));
-    }
+    for (const auto& type_i : fluidtypes_)
+      densitytorefresh_.push_back(std::make_pair(type_i, states));
   }
 }
 
@@ -131,16 +128,15 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMass() const
 
 void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumState() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear density sum state
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensitySum))
-      container_i->ClearState(PARTICLEENGINE::DensitySum);
+    container_i->ClearState(PARTICLEENGINE::DensitySum);
   }
 }
 
@@ -148,26 +144,21 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution() cons
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution");
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
-    if (not container_i->HaveStoredState(PARTICLEENGINE::DensitySum)) continue;
-
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *mass_i;
-      double* denssum_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      double* denssum_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -204,23 +195,20 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() 
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double* mass_i;
-    double* denssum_i = nullptr;
-
-    const double* mass_j;
-    double* denssum_j = nullptr;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensitySum))
-      denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
+    double* denssum_i =
+        container_i->HaveStoredState(PARTICLEENGINE::DensitySum)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i)
+            : nullptr;
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    if (container_j->HaveStoredState(PARTICLEENGINE::DensitySum))
-      denssum_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j);
+    double* denssum_j =
+        container_j->HaveStoredState(PARTICLEENGINE::DensitySum)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j)
+            : nullptr;
 
     // sum contribution of neighboring particle j
     if (denssum_i) denssum_i[0] += particlepair.Wij_ * mass_i[0];
@@ -236,34 +224,30 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContribution");
 
-  // iterate over particle-wall pairs
-  for (auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
   {
+    const SPHParticleWallPair& particlewallpair =
+        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
     std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
 
-    // no evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-    // no evaluation for open boundary particles
-    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
-      continue;
-
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // declare pointer variables for particle i
-    const double *rad_i, *mass_i;
-    double* denssum_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    double* denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
@@ -318,16 +302,15 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfield() const
 
 void PARTICLEINTERACTION::SPHDensityBase::ClearColorfieldState() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear colorfield state
-    if (container_i->HaveStoredState(PARTICLEENGINE::Colorfield))
-      container_i->ClearState(PARTICLEENGINE::Colorfield);
+    container_i->ClearState(PARTICLEENGINE::Colorfield);
   }
 }
 
@@ -335,27 +318,23 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution");
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
-    if (not container_i->HaveStoredState(PARTICLEENGINE::Colorfield)) continue;
-
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *mass_i, *dens_i;
-      double* colorfield_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      double* colorfield_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -399,31 +378,30 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
     const MAT::PAR::ParticleMaterialBase* material_j =
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i;
-    double* colorfield_i = nullptr;
-
-    const double *mass_j, *dens_j;
-    double* colorfield_j = nullptr;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-                 : &(material_j->initDensity_);
+    const double* dens_i =
+        container_i->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+            : &(material_j->initDensity_);
 
-    if (container_i->HaveStoredState(PARTICLEENGINE::Colorfield))
-      colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+    double* colorfield_i =
+        container_i->HaveStoredState(PARTICLEENGINE::Colorfield)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i)
+            : nullptr;
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-                 : &(material_i->initDensity_);
+    const double* dens_j =
+        container_j->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+            : &(material_i->initDensity_);
 
-    if (container_j->HaveStoredState(PARTICLEENGINE::Colorfield))
-      colorfield_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j);
+    double* colorfield_j =
+        container_j->HaveStoredState(PARTICLEENGINE::Colorfield)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j)
+            : nullptr;
 
     // sum contribution of neighboring particle j
     if (colorfield_i) colorfield_i[0] += (particlepair.Wij_ / dens_j[0]) * mass_j[0];
@@ -439,21 +417,21 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution");
 
-  // iterate over particle-wall pairs
-  for (auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
   {
+    const SPHParticleWallPair& particlewallpair =
+        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
     std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
-
-    // no evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-    // no evaluation for open boundary particles
-    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
-      continue;
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -463,20 +441,14 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
     const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-    // declare pointer variables for particle i
-    const double* rad_i;
-    double* colorfield_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
-
-    // declare pointer variables for virtual particle k
-    const double *mass_k, *dens_k;
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    double* colorfield_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
 
     // get pointer to virtual particle states
-    mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_k = &(material_i->initDensity_);
+    const double* mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_k = &(material_i->initDensity_);
 
     // (current) volume of virtual particle k
     const double V_k = mass_k[0] / dens_k[0];
@@ -531,16 +503,15 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 
 void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear density dot state
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensityDot))
-      container_i->ClearState(PARTICLEENGINE::DensityDot);
+    container_i->ClearState(PARTICLEENGINE::DensityDot);
   }
 }
 
@@ -577,39 +548,40 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
     const MAT::PAR::ParticleMaterialBase* material_j =
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-    // declare pointer variables for particle i and j
-    const double *vel_i, *mass_i, *dens_i;
-    double* densdot_i = nullptr;
-
-    const double *vel_j, *mass_j, *dens_j;
-    double* densdot_j = nullptr;
-
     // get pointer to particle states
-    vel_i = (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-                ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-                : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    const double* vel_i =
+        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-                 : &(material_j->initDensity_);
+    const double* dens_i =
+        container_i->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+            : &(material_j->initDensity_);
 
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensityDot))
-      densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
+    double* densdot_i =
+        container_i->HaveStoredState(PARTICLEENGINE::DensityDot)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i)
+            : nullptr;
 
-    vel_j = (container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-                ? container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_j)
-                : container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    const double* vel_j =
+        container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_j)
+            : container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-                 : &(material_i->initDensity_);
+    const double* dens_j =
+        container_j->HaveStoredState(PARTICLEENGINE::Density)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+            : &(material_i->initDensity_);
 
-    if (container_j->HaveStoredState(PARTICLEENGINE::DensityDot))
-      densdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j);
+    double* densdot_j =
+        container_j->HaveStoredState(PARTICLEENGINE::DensityDot)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j)
+            : nullptr;
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
     double vel_ij[3];
@@ -637,21 +609,21 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface_->GetWallDataState();
 
-  // iterate over particle-wall pairs
-  for (auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
   {
+    const SPHParticleWallPair& particlewallpair =
+        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
     std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
-
-    // no evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-    // no evaluation for open boundary particles
-    if (type_i == PARTICLEENGINE::DirichletPhase or type_i == PARTICLEENGINE::NeumannPhase)
-      continue;
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -661,18 +633,15 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-    // declare pointer variables for particle i
-    const double *vel_i, *rad_i, *dens_i;
-    double* densdot_i;
-
     // get pointer to particle states
-    vel_i = (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-                ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-                : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    const double* vel_i =
+        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    double* densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
@@ -712,13 +681,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
         for (int dim = 0; dim < 3; ++dim) vel_j[dim] += funct[node] * nodal_vel[node * 3 + dim];
     }
 
-    // declare pointer variables for virtual particle k
-    const double *vel_k, *mass_k, *dens_k;
-
     // get pointer to virtual particle states
-    mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_k = &(material_i->initDensity_);
-    vel_k = &vel_j[0];
+    const double* mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_k = &(material_i->initDensity_);
+    const double* vel_k = &vel_j[0];
 
     // (current) volume of virtual particle k
     const double V_k = mass_k[0] / dens_k[0];
@@ -768,31 +734,29 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
 
 void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensitySum))
-      container_i->UpdateState(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum);
+    container_i->UpdateState(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum);
   }
 }
 
 void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
-    if (container_i->HaveStoredState(PARTICLEENGINE::DensityDot))
-      container_i->UpdateState(1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot);
+    container_i->UpdateState(1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot);
   }
 }
 
@@ -810,16 +774,13 @@ void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTyp
   for (auto& typeIt : particlestatestotypes)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
-
-    // no states for open boundary particles
-    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+    // current particle type is not a fluid particle type
+    if (not fluidtypes_.count(type_i)) continue;
 
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensitySum);
@@ -855,16 +816,13 @@ void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleT
   for (auto& typeIt : particlestatestotypes)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
-
-    // no states for open boundary particles
-    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+    // current particle type is not a fluid particle type
+    if (not fluidtypes_.count(type_i)) continue;
 
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensityDot);
@@ -948,16 +906,13 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfPartic
   for (auto& typeIt : particlestatestotypes)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
-
-    // no states for open boundary particles
-    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+    // current particle type is not a fluid particle type
+    if (not fluidtypes_.count(type_i)) continue;
 
     // states for density evaluation scheme
     particlestates.insert(
@@ -1032,16 +987,12 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler
 
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    if (not container_i->HaveStoredState(PARTICLEENGINE::DensitySum) or
-        not container_i->HaveStoredState(PARTICLEENGINE::Colorfield))
-      continue;
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -1049,14 +1000,10 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
-    // declare pointer variables for particle
-    const double *denssum, *colorfield;
-    double* dens;
-
     // get pointer to particle state
-    dens = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, 0);
-    denssum = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, 0);
-    colorfield = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, 0);
+    double* dens = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, 0);
+    const double* denssum = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, 0);
+    const double* colorfield = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, 0);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
