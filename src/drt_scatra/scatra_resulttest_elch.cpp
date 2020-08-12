@@ -63,6 +63,8 @@ double SCATRA::ElchResultTest::ResultSpecial(
   }
   else if (quantity == "cellvoltage")
     result = ElchTimInt()->CellVoltage();
+  else if (quantity == "temperature")
+    result = ElchTimInt()->Temperature();
   else
     result = ScaTraResultTest::ResultSpecial(quantity);
 

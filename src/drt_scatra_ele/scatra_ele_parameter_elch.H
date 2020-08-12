@@ -64,6 +64,9 @@ namespace DRT
       //! return constant F/RT
       double FRT() const { return frt_; };
 
+      //! return the homogeneous temperature in the scatra field (can be time dependent)
+      double Temperature() const { return temperature_; }
+
      private:
       //! private constructor for singletons
       ScaTraEleParameterElch(const std::string& disname  //!< name of discretization
@@ -88,6 +91,9 @@ namespace DRT
       //! pre-calculation of regularly used constant F/RT
       //! (a division is much more expensive than a multiplication)
       double frt_;
+
+      //! homogeneous temperature within the scalar transport field (can be time dependent)
+      double temperature_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

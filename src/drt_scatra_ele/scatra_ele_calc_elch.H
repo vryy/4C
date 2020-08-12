@@ -380,9 +380,7 @@ namespace DRT
 
         // set factor F/RT
         SetFRT();
-
-        return;
-      };
+      }
 
       /*========================================================================*/
       //! @name return methods for internal variables
@@ -390,6 +388,9 @@ namespace DRT
 
       //! return factor F/RT
       double FRT() const { return frt_; };
+
+      //! return the homogeneous temperature in the scatra field (can be time dependent)
+      double Temperature() const { return parameters_->Temperature(); }
 
       //! return 1/concentration of species k
       const double& ConIntInv(const int k) const { return conintinv_[k]; };

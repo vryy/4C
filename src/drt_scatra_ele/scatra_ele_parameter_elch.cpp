@@ -78,21 +78,19 @@ DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
     )
     : boundaryfluxcoupling_(true),
       equpot_(INPAR::ELCH::equpot_undefined),
-      faraday_(0.),
-      gas_constant_(0.),
+      faraday_(0.0),
+      gas_constant_(0.0),
       epsilon_(INPAR::ELCH::epsilon_const),
-      frt_(0.)
+      frt_(0.0),
+      temperature_(0.0)
 {
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | set parameters                                            fang 02/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(
-    Teuchos::ParameterList& parameters  //!< parameter list
-)
+void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList& parameters)
 {
   // coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann
   // boundaries
@@ -107,11 +105,11 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(
   faraday_ = parameters.get<double>("faraday", -1.0);
   gas_constant_ = parameters.get<double>("gas_constant", -1.0);
   frt_ = parameters.get<double>("frt", -1.0);
+  temperature_ = parameters.get<double>("temperature", -1.0);
 
   // safety checks
-  if (frt_ <= 0.) dserror("Factor F/RT is non-positive!");
-  if (faraday_ <= 0.) dserror("Faraday constant is non-positive!");
-  if (gas_constant_ <= 0.) dserror("(universal) gas constant is non-positive!");
-
-  return;
+  if (frt_ <= 0.0) dserror("Factor F/RT is non-positive!");
+  if (faraday_ <= 0.0) dserror("Faraday constant is non-positive!");
+  if (gas_constant_ <= 0.0) dserror("(universal) gas constant is non-positive!");
+  if (temperature_ < 0.0) dserror("temperature is non-positive!");
 }
