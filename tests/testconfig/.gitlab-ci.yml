@@ -70,7 +70,7 @@ variables:
         paths:
             - buildtest_minimal.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         - master
     except:
@@ -113,7 +113,7 @@ variables:
         paths:
             - buildtest_full.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         refs:
             - web
@@ -157,7 +157,7 @@ variables:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
             - buildtest_interactive.log
-        expire_in: 5 days
+        expire_in: 1 day
 
 # This kind of job is started by a weekly scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "3"
@@ -216,7 +216,7 @@ variables:
             - buildtest_weekly_coverage.log
             - genhtml_weekly_coverage.log
         when: always
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
@@ -254,7 +254,7 @@ variables:
         paths:
             - buildtest_daily.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
@@ -292,7 +292,7 @@ variables:
         paths:
             - buildtest_daily_debug.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
@@ -322,7 +322,7 @@ variables:
         paths:
             - doxygen.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         refs:
             - web
@@ -398,7 +398,7 @@ checkcode:
             - wrong_clang_format.txt
             - wrong_headers.txt
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         - master
         - web
@@ -589,6 +589,7 @@ pages: # job name needs to be pages
         # the content of the below artifact is published on GitLab Pages
         paths:
             - public
+        expire_in: 1 day
     only:
         refs:
             - master
