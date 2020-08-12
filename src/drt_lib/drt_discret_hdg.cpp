@@ -446,7 +446,9 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
 
-      if (onoff->size() <= component || (*onoff)[component] == 0) pressureDone = true;
+      if (onoff->size() <= component || (*onoff)[component] == 0 ||
+          DRT::Problem::Instance(0)->GetProblemType() != prb_fluid)
+        pressureDone = true;
       if (!pressureDone)
       {
         if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
@@ -607,7 +609,9 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
 
-      if (onoff->size() <= component || (*onoff)[component] == 0) pressureDone = true;
+      if (onoff->size() <= component || (*onoff)[component] == 0 ||
+          DRT::Problem::Instance(0)->GetProblemType() != prb_fluid)
+        pressureDone = true;
       if (!pressureDone)
       {
         if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
