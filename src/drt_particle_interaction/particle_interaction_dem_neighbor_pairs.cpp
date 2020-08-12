@@ -110,18 +110,14 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double *pos_i, *rad_i, *mass_i;
-    const double *pos_j, *rad_j, *mass_j;
-
     // get pointer to particle states
-    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -195,11 +191,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
     // get global id of particle i
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
 
-    // declare pointer variables for particle i
-    const double* rad_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
     const LINALG::Matrix<3, 1> pos_i(
@@ -297,11 +290,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // declare pointer variables for particle i
-    const double* rad_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     // define tolerance dependent on the particle radius
     const double adaptedtol = 1.0e-7 * rad_i[0];
@@ -407,18 +397,14 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double *pos_i, *rad_i, *mass_i;
-    const double *pos_j, *rad_j, *mass_j;
-
     // get pointer to particle states
-    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -494,11 +480,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     // get global id of particle i
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
 
-    // declare pointer variables for particle i
-    const double* rad_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
     const LINALG::Matrix<3, 1> pos_i(
@@ -614,11 +597,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // declare pointer variables for particle i
-    const double* rad_i;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     // define tolerance dependent on the particle radius
     const double adaptedtol = 1.0e-7 * rad_i[0];

@@ -427,13 +427,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
     const MAT::PAR::ParticleMaterialBase* material =
         particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
-    // declare pointer variables
-    const double* radius;
-    double* mass;
-
     // get pointer to particle states
-    radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-    mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+    double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
 
     // compute mass via particle volume and initial density
     const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
@@ -454,8 +450,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceAndMomentStates() co
     container->ClearState(PARTICLEENGINE::Force);
 
     // clear moment of all particles
-    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
-      container->ClearState({PARTICLEENGINE::Moment});
+    if (container->HaveStoredState(PARTICLEENGINE::Moment))
+      container->ClearState(PARTICLEENGINE::Moment);
   }
 }
 
@@ -479,28 +475,26 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     // get particle state dimension
     const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Acceleration);
 
-    // declare pointer variables
-    const double *mass, *radius, *force, *moment;
-    double *acc, *angacc;
-
     // get pointer to particle states
-    mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
-    force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
-    acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
+    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
 
-    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
-    {
-      radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-      moment = container->GetPtrToParticleState(PARTICLEENGINE::Moment, 0);
-      angacc = container->GetPtrToParticleState(PARTICLEENGINE::AngularAcceleration, 0);
-    }
+    const double* moment = container->HaveStoredState(PARTICLEENGINE::Moment)
+                               ? container->GetPtrToParticleState(PARTICLEENGINE::Moment, 0)
+                               : nullptr;
+
+    double* angacc = container->HaveStoredState(PARTICLEENGINE::AngularAcceleration)
+                         ? container->GetPtrToParticleState(PARTICLEENGINE::AngularAcceleration, 0)
+                         : nullptr;
 
     // compute acceleration
     for (int i = 0; i < particlestored; ++i)
       UTILS::vec_addscale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
 
     // compute angular acceleration
-    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
+    if (angacc and moment)
       for (int i = 0; i < particlestored; ++i)
         UTILS::vec_addscale(&angacc[statedim * i],
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);

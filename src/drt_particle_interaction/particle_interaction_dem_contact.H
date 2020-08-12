@@ -99,12 +99,6 @@ namespace PARTICLEINTERACTION
     //! get normal contact stiffness
     double GetNormalContactStiffness() const;
 
-    //! have tangential contact
-    bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
-
-    //! have rolling contact
-    bool HaveRollingContact() const { return contactrolling_ ? true : false; };
-
     //! check critical time step (on this processor)
     void CheckCriticalTimeStep() const;
 
