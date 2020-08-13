@@ -402,14 +402,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
 
-  // init boundary particle states
-  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
-
   // interpolate open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->InterpolateOpenBoundaryStates();
 
   // interpolate open boundary states
   if (neumannopenboundary_) neumannopenboundary_->InterpolateOpenBoundaryStates();
+
+  // init boundary particle states
+  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
 
   // init states at wall contact points
   if (virtualwallparticle_) virtualwallparticle_->InitStatesAtWallContactPoints(gravity_);
