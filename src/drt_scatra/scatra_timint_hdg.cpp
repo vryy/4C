@@ -833,6 +833,8 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
     case INPAR::SCATRA::calcerror_spherediffusion:
     {
       Teuchos::RCP<Epetra_SerialDenseVector> errors = ComputeError();
+      if (errors == Teuchos::null)
+        dserror("It was not possible to compute error. Check the error function number.");
 
       if (std::abs((*errors)[1]) > 1e-14)
         (*relerrors_)[0] = std::sqrt((*errors)[0]) / std::sqrt((*errors)[1]);
@@ -897,24 +899,18 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
  *----------------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
 {
-  if (calcerror_ == INPAR::SCATRA::calcerror_no) return Teuchos::null;
+  // If we are here it means that we either arrived at the end and we are checking the results or
+  // that we specified that we want to compute the error. In any case, if the error function was not
+  // specified, we just return a null pointer.
+  const int errorfunctnumber = params_->get<int>("CALCERRORNO", -1);
+  if (errorfunctnumber < 1) return Teuchos::null;
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", SCATRA::calc_error);
-  eleparams.set<int>("calcerrorflag", calcerror_);
 
-  if (calcerror_ == INPAR::SCATRA::calcerror_byfunction)
-  {
-    const int errorfunctnumber = params_->get<int>("CALCERRORNO");
-    if (errorfunctnumber < 1)
-      dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
-
-    eleparams.set<int>("error function number", errorfunctnumber);
-    eleparams.set<double>("time", time_);
-  }
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  eleparams.set<int>("error function number", errorfunctnumber);
+  eleparams.set<double>("time", time_);
 
   // set vector values needed by elements
   discret_->ClearState();
