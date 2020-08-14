@@ -92,6 +92,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::compute_error:
     {
+      localSolver_->PostProcessing(*hdgele);
       localSolver_->ComputeError(hdgele, params, elevec1);
       break;
     }
@@ -137,6 +138,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::interpolate_hdg_to_node:
     {
       ReadGlobalVectors(hdgele, discretization, lm);
+      // The post processing is only used to compute the error so far as it is computationally
+      // extremely expensive.
+      // TODO: Improve post processing efficiency
+      // localSolver_->PostProcessing(*hdgele);
       InterpolateSolutionToNodes(hdgele, discretization, elevec1);
       break;
     }
@@ -290,8 +295,14 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
     const DRT::ELEMENTS::ElemagDiff* ele)
 {
   if (shapes_ == Teuchos::null)
+  {
     shapes_ = Teuchos::rcp(
         new DRT::UTILS::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
+
+    // TODO: Check wheter 2 * (ele->Degree()+1) is required as exact integration degree
+    postproc_shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+        ele->Degree() + 1, usescompletepoly_, 2 * (ele->Degree() + 1)));
+  }
   else if (shapes_->degree_ != unsigned(ele->Degree()) ||
            shapes_->usescompletepoly_ != usescompletepoly_)
     shapes_ = Teuchos::rcp(
@@ -306,10 +317,12 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
 
   if (localSolver_ == Teuchos::null)
   {
-    localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_));
+    localSolver_ =
+        Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
   }
   else if (localSolver_->ndofs_ != shapes_->ndofs_)
-    localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_));
+    localSolver_ =
+        Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
 }
 
 /*----------------------------------------------------------------------*
@@ -451,6 +464,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
   // ele->elenodeTrace_.Shape(ele->NumFace() * shapesface_->nfdofs_ * nsd_, 1);
   ele->elenodeTrace2d_.Shape(ele->NumFace() * shapesface_->nfdofs_ * (nsd_ - 1), 1);
 
+  // Postproc
+  ele->eleinteriorElectricPost_.Shape(postproc_shapes_->ndofs_ * nsd_, 1);
+
   return;
 }
 
@@ -582,22 +598,28 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1)
 {
-  double error_ele = 0.0, error_mag = 0.0;
+  double error_ele = 0.0, error_ele_post = 0.0, error_mag = 0.0;
   double exact_ele = 0.0, exact_mag = 0.0;
-  Epetra_SerialDenseVector error_ele_grad(2), error_mag_grad(2);
+  Epetra_SerialDenseVector error_ele_grad(2), error_mag_grad(2), error_ele_post_grad(2);
   shapes_.Evaluate(*ele);
+  postproc_shapes_.Evaluate(*ele);
 
   DRT::UTILS::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
   highshapes.Evaluate(*ele);
 
+  DRT::UTILS::ShapeValues<distype> highshapes_post(
+      ele->Degree() + 1, shapes_.usescompletepoly_, (ele->Degree() + 3) * 2);
+  highshapes_post.Evaluate(*ele);
   // get function
   const int func = params.get<int>("funcno");
   const double time = params.get<double>("time");
   // for the calculation of the error, we use a higher integration rule
   LINALG::Matrix<nsd_, 1> xsi;
   Epetra_SerialDenseVector electric(nsd_);
+  Epetra_SerialDenseVector electric_post(nsd_);
   Epetra_SerialDenseMatrix electric_grad(nsd_, nsd_);
+  Epetra_SerialDenseMatrix electric_post_grad(nsd_, nsd_);
   Epetra_SerialDenseVector magnetic(nsd_);
   Epetra_SerialDenseMatrix magnetic_grad(nsd_, nsd_);
   Epetra_SerialDenseVector analytical(2 * nsd_);
@@ -658,6 +680,50 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     }
   }
 
+  // Post-processed quantities
+  for (unsigned int q = 0; q < highshapes_post.nqpoints_; ++q)
+  {
+    // Zero all temp vectors
+    electric_post.Scale(0.0), electric_post_grad.Scale(0.0);
+    analytical.Scale(0.0), analytical_grad.Scale(0.0);
+
+    for (unsigned int i = 0; i < highshapes_post.ndofs_; ++i)
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        electric_post(d) += highshapes_post.shfunct(i, q) *
+                            ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
+        for (unsigned int d_grad = 0; d_grad < nsd_; ++d_grad)
+        {
+          electric_post_grad(d, d_grad) +=
+              highshapes_post.shderxy(i * nsd_ + d_grad, q) *
+              ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
+        }
+      }
+
+    // Evaluate error function and its derivatives in the integration point (real) coordinates
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_post.xyzreal(idim, q);
+    EvaluateAll(func, time, xsi, analytical);
+    ComputeFunctionGradient(func, time, xsi, analytical_grad);
+
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      // Electric error
+      error_ele_post += std::pow((analytical(d) - electric_post(d)), 2) * highshapes_post.jfac(q);
+      exact_ele += std::pow(analytical(d), 2) * highshapes_post.jfac(q);
+      // Divergence
+      error_ele_post_grad(0) +=
+          std::pow(analytical_grad(d, d) - electric_post_grad(d, d), 2) * highshapes_post.jfac(q);
+      // Rotor
+      error_ele_post_grad(1) +=
+          std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                       analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
+                       (electric_post_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                           electric_post_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+              2) *
+          highshapes_post.jfac(q);
+    }
+  }
+
   // Electric error
   elevec1[0] = error_ele;
   // Electric analytical reference
@@ -674,9 +740,126 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   elevec1[6] = error_mag + error_mag_grad(0);
   //// Magnetic Hrot error
   elevec1[7] = error_mag + error_mag_grad(1);
+  // Electric error
+  elevec1[8] = error_ele_post;
+  // Electric Hdiv error
+  elevec1[9] = error_ele_post + error_ele_post_grad(0);
+  // Electric Hrot error
+  elevec1[10] = error_ele_post + error_ele_post_grad(1);
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ * PostProcessing
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
+    DRT::ELEMENTS::ElemagDiff& ele)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::PostProcessing");
+  shapes_.Evaluate(ele);
+  postproc_shapes_.Evaluate(ele);
+
+  DRT::UTILS::ShapeValues<distype> k2_shapes(ele.Degree() + 2, false, 2 * (ele.Degree() + 2));
+  k2_shapes.Evaluate(ele);
+
+  // Build matrix
+  Epetra_SerialDenseMatrix postproc_mat(
+      postproc_shapes_.ndofs_ * nsd_ + k2_shapes.ndofs_ * nsd_, postproc_shapes_.ndofs_ * nsd_);
+  Epetra_SerialDenseVector postproc_rhs(postproc_shapes_.ndofs_ * nsd_ + k2_shapes.ndofs_ * nsd_);
+  for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
+    for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
+      for (unsigned int j = 0; j < postproc_shapes_.ndofs_; ++j)
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          postproc_mat(i + d * postproc_shapes_.ndofs_, j + d * postproc_shapes_.ndofs_) +=
+              (postproc_shapes_.shderxy(i * nsd_ + ((d + 2) % nsd_), q) *
+                      postproc_shapes_.shderxy(j * nsd_ + ((d + 2) % nsd_), q) +
+                  postproc_shapes_.shderxy(i * nsd_ + ((d + 1) % nsd_), q) *
+                      postproc_shapes_.shderxy(j * nsd_ + ((d + 1) % nsd_), q)) *
+              postproc_shapes_.jfac(q);
+          postproc_mat(
+              i + d * postproc_shapes_.ndofs_, j + ((d + 1) % nsd_) * postproc_shapes_.ndofs_) -=
+              postproc_shapes_.shderxy(i * nsd_ + ((d + 1) % nsd_), q) *
+              postproc_shapes_.shderxy(j * nsd_ + d, q) * postproc_shapes_.jfac(q);
+          postproc_mat(
+              i + d * postproc_shapes_.ndofs_, j + ((d + 2) % nsd_) * postproc_shapes_.ndofs_) -=
+              postproc_shapes_.shderxy(i * nsd_ + ((d + 2) % nsd_), q) *
+              postproc_shapes_.shderxy(j * nsd_ + d, q) * postproc_shapes_.jfac(q);
+        }
+
+  for (unsigned int q = 0; q < k2_shapes.nqpoints_; ++q)
+  {
+    LINALG::Matrix<nsd_, 1> xsi;
+    const double* gpcoord = k2_shapes.quadrature_->Point(q);
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
+    Epetra_SerialDenseVector values(postproc_shapes_.ndofs_);
+    postproc_shapes_.polySpace_->Evaluate(xsi, values);
+    for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
+      for (unsigned int j = 0; j < postproc_shapes_.ndofs_; ++j)
+        for (unsigned int d = 0; d < nsd_; ++d)
+          postproc_mat(i + d * k2_shapes.ndofs_ + nsd_ * postproc_shapes_.ndofs_,
+              j + d * postproc_shapes_.ndofs_) +=
+              k2_shapes.shderxy(i * nsd_ + d, q) * values(j) * k2_shapes.jfac(q);
+  }
+
+  // Build RHS
+  for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
+  {
+    LINALG::Matrix<nsd_, 1> xsi;
+    const double* gpcoord = postproc_shapes_.quadrature_->Point(q);
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
+    Epetra_SerialDenseVector values(shapes_.ndofs_);
+    shapes_.polySpace_->Evaluate(xsi, values);
+    for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
+      for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          postproc_rhs(i + d * postproc_shapes_.ndofs_) +=
+              postproc_shapes_.shderxy(i * nsd_ + ((d + 2) % nsd_), q) * values(j) *
+              ele.eleinteriorMagnetic_(j + ((d + 1) % nsd_) * shapes_.ndofs_) *
+              postproc_shapes_.jfac(q);
+          postproc_rhs(i + d * postproc_shapes_.ndofs_) -=
+              postproc_shapes_.shderxy(i * nsd_ + ((d + 1) % nsd_), q) * values(j) *
+              ele.eleinteriorMagnetic_(j + ((d + 2) % nsd_) * shapes_.ndofs_) *
+              postproc_shapes_.jfac(q);
+        }
+  }
+
+  for (unsigned int q = 0; q < k2_shapes.nqpoints_; ++q)
+  {
+    LINALG::Matrix<nsd_, 1> xsi;
+    const double* gpcoord = k2_shapes.quadrature_->Point(q);
+    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
+    Epetra_SerialDenseVector values(shapes_.ndofs_);
+    shapes_.polySpace_->Evaluate(xsi, values);
+    for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
+      for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
+        for (unsigned int d = 0; d < nsd_; ++d)
+          postproc_rhs(i + d * k2_shapes.ndofs_ + nsd_ * postproc_shapes_.ndofs_) +=
+              k2_shapes.shderxy(i * nsd_ + d, q) * values(j) *
+              ele.eleinteriorElectric_(j + d * shapes_.ndofs_) * k2_shapes.jfac(q);
+  }
+
+  {
+    Epetra_SerialDenseSolver solve;
+    Epetra_SerialDenseMatrix tempMat(
+        postproc_shapes_.ndofs_ * nsd_, postproc_shapes_.ndofs_ * nsd_);
+    Epetra_SerialDenseVector tempVec(postproc_shapes_.ndofs_ * nsd_);
+    tempMat.Multiply('T', 'N', 1.0, postproc_mat, postproc_mat, 0.0);
+    tempVec.Multiply('T', 'N', 1.0, postproc_mat, postproc_rhs, 0.0);
+    solve.SetMatrix(tempMat);
+    solve.SetVectors(ele.eleinteriorElectricPost_, tempVec);
+    solve.EquilibrateMatrix();
+    solve.EquilibrateRHS();
+    int err = solve.Solve();
+    if (err) dserror("Post-processing failed with errorcode %d", err);
+    solve.UnequilibrateLHS();
+  }
+
+  return;
+}  // PostProcessing
 
 /*----------------------------------------------------------------------*
  * ProjectFieldTest
@@ -687,6 +870,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
 {
   shapes_.Evaluate(*ele);
+  postproc_shapes_.Evaluate(*ele);
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 || unsigned(elevec2.M()) == nsd_ * shapes_.ndofs_,
@@ -697,7 +881,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
   const double time = params.get<double>("time");
 
   // internal variables
-  if (elevec2.M() > 0)
+  if (0)
   {
     // the RHS matrix has to have the row dimension equal to the number of shape
     // functions(so we have one coefficient for each) and a number of column
@@ -755,6 +939,55 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
       }
     }
   }
+
+  // postproc variables
+  if (1)
+  {
+    Epetra_SerialDenseMatrix localMat(postproc_shapes_.ndofs_, nsd_ * 2);
+    for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
+    {
+      const double fac = postproc_shapes_.jfac(q);
+      LINALG::Matrix<nsd_, 1> xyz;
+      for (unsigned int d = 0; d < nsd_; ++d)
+        xyz(d) =
+            postproc_shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
+
+      Epetra_SerialDenseVector intVal(nsd_);
+      EvaluateAll(*start_func, time, xyz, intVal);
+
+      for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
+      {
+        // Mass matrix
+        massPart(i, q) = postproc_shapes_.shfunct(i, q);
+        massPartW(i, q) = postproc_shapes_.shfunct(i, q) * fac;
+
+        // RHS for the electric and magnetic field
+        for (int j = 0; j < intVal.M(); ++j)
+          localMat(i, j) += postproc_shapes_.shfunct(i, q) * intVal(j) * fac;
+      }
+    }
+    // The integration is made by computing the matrix product
+    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    {
+      Epetra_SerialDenseSolver inverseMass;
+      inverseMass.SetMatrix(massMat);
+      inverseMass.SetVectors(localMat, localMat);
+      inverseMass.Solve();
+    }
+
+    // Here we move the values from the temporary variable to the variable
+    // contained in the element
+    for (unsigned int r = 0; r < postproc_shapes_.ndofs_; ++r)
+    {
+      // Now we are storing the variables by component, meaning that we save for
+      // each component the value for each dof and then we move to the next component.
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        ele->eleinteriorElectricPost_(d * postproc_shapes_.ndofs_ + r) = localMat(r, d);
+      }
+    }
+  }
+
   return 0;
 }
 
@@ -1028,10 +1261,11 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     DRT::ELEMENTS::ElemagDiff* ele, DRT::Discretization& discretization,
     Epetra_SerialDenseVector& elevec1)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::InterpolateSolutionToNodes");
   InitializeShapes(ele);
 
   // Check if the vector has the correct size
-  dsassert(elevec1.M() == (int)nen_ * (3 * nsd_), "Vector does not have correct size");
+  dsassert(elevec1.M() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
@@ -1042,6 +1276,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
   Epetra_SerialDenseVector values(shapes_->ndofs_);
+  Epetra_SerialDenseVector post_values(postproc_shapes_->ndofs_);
 
   // EVALUATE SHAPE POLYNOMIALS IN NODE
   // In hdg we can have several more points inside the element than in the
@@ -1058,11 +1293,13 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     // The polynomials are the internal ones.
     // The result of the evaluation is given in "values".
     shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    postproc_shapes_->polySpace_->Evaluate(shapes_->xsi, post_values);
 
     // compute values for interior unknown by summing over all basis functions
     for (unsigned int d = 0; d < nsd_; ++d)
     {
       double sum_electric = 0.0;
+      double sum_electric_post = 0.0;
       double sum_magnetic = 0.0;
       // Cycling through all the shape functions
       for (unsigned int k = 0; k < shapes_->ndofs_; ++k)
@@ -1072,12 +1309,16 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
         sum_electric += values(k) * ele->eleinteriorElectric_[d * shapes_->ndofs_ + k];
         sum_magnetic += values(k) * ele->eleinteriorMagnetic_[d * shapes_->ndofs_ + k];
       }
+      for (unsigned int k = 0; k < postproc_shapes_->ndofs_; ++k)
+        sum_electric_post +=
+            post_values(k) * ele->eleinteriorElectricPost_[d * postproc_shapes_->ndofs_ + k];
       // sum contains the linear combination of the shape functions times the
       // coefficients and its values are reordered in elevec1 grouped by
       // component: the first component for every node, then the following
       // component for the same nodes and so on for every component.
       elevec1(d * nen_ + i) = sum_electric;
       elevec1(nen_ * nsd_ + d * nen_ + i) = sum_magnetic;
+      elevec1(nen_ * 2 * nsd_ + d * nen_ + i) = sum_electric_post;
     }
   }
 
@@ -1169,15 +1410,15 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
         // about the ordering of the nodes in the faces.
         if (i < ncn[f])
         {
-          elevec1((nsd_ * 2 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / nsd_;
+          elevec1((nsd_ * 3 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / nsd_;
         }
         else if (i < nfn - nin[f])
         {
-          elevec1((nsd_ * 2 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / (nsd_ - 1);
+          elevec1((nsd_ * 3 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / (nsd_ - 1);
         }
         else
         {
-          elevec1((nsd_ * 2 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum;
+          elevec1((nsd_ * 3 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum;
         }
       }
     }
@@ -1223,8 +1464,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
     const DRT::ELEMENTS::ElemagDiff* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
     Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
-    INPAR::ELEMAG::DynamicType& dyna)
-    : ndofs_(shapeValues.ndofs_), shapes_(shapeValues), shapesface_(shapeValuesFace), dyna_(dyna)
+    INPAR::ELEMAG::DynamicType& dyna, DRT::UTILS::ShapeValues<distype>& postproc_shapeValues)
+    : ndofs_(shapeValues.ndofs_),
+      shapes_(shapeValues),
+      shapesface_(shapeValuesFace),
+      postproc_shapes_(postproc_shapeValues),
+      dyna_(dyna)
 {
   // shape all matrices
   // Each one of these matrices is related to one equation of the formulation,

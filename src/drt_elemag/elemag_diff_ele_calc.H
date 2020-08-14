@@ -105,7 +105,8 @@ namespace DRT
         LocalSolver(const DRT::ELEMENTS::ElemagDiff* ele,
             DRT::UTILS::ShapeValues<distype>& shapeValues,
             Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
-            INPAR::ELEMAG::DynamicType& dyna);
+            INPAR::ELEMAG::DynamicType& dyna,
+            DRT::UTILS::ShapeValues<distype>& postproc_shapeValues);
 
         /// Compute the residual
         void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
@@ -158,6 +159,9 @@ namespace DRT
         void ComputeError(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
 
+        /// Postprocess the solution to obtain a better approximation
+        void PostProcessing(DRT::ELEMENTS::ElemagDiff& ele);
+
         /// Projection of a given field on the interior variables for testing purposes.
         int ProjectFieldTest(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
@@ -186,8 +190,12 @@ namespace DRT
 
         /// evaluated shape values
         DRT::UTILS::ShapeValues<distype>& shapes_;
+
         /// evaluated shape values
         Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+
+        /// evaluated higher degree shape values
+        DRT::UTILS::ShapeValues<distype>& postproc_shapes_;
 
         // System matrices
         /// u matrix
@@ -220,7 +228,7 @@ namespace DRT
 
         /// Chosen dynamics/time integrator
         INPAR::ELEMAG::DynamicType& dyna_;
-      };
+      };  // stuct LocalSolver
 
       /// Updates interior variables and calculates residual.
       void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList& params,
@@ -242,6 +250,10 @@ namespace DRT
 
       /// Local data object for element.
       Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
+
+      /// Higher degree local data object for element.
+      Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> postproc_shapes_;
+
       /// Local data object for face element.
       Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
@@ -262,6 +274,7 @@ namespace DRT
       /// Chosen dynamics/time integrator
       INPAR::ELEMAG::DynamicType dyna_;
 
+      /// Use complete polynomial or tensor product
       bool usescompletepoly_;
     };  // class ElemagDiffEleCalc
   }     // namespace ELEMENTS

@@ -348,6 +348,9 @@ namespace DRT
       /// Electric field step n-3 for higher orders BDF
       Epetra_SerialDenseVector eleinteriorElectricnm3_;
 
+      /// Post-processed solution
+      Epetra_SerialDenseVector eleinteriorElectricPost_;
+
       /// Magnetic field current step
       Epetra_SerialDenseVector eleinteriorMagnetic_;
 
@@ -367,10 +370,10 @@ namespace DRT
       DRT::Element::DiscretizationType distype_;
       DRT::Element::DiscretizationType facedis_;
 
-      // stores the degree of the element
+      /// stores the degree of the element
       unsigned char degree_;
 
-      // stores the polynomial type (tensor product or complete polynomial)
+      /// stores the polynomial type (tensor product or complete polynomial)
       bool completepol_;
 
       int fixedPower(const int number, const int pow) const
