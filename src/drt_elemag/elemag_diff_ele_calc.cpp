@@ -740,11 +740,11 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   elevec1[6] = error_mag + error_mag_grad(0);
   //// Magnetic Hrot error
   elevec1[7] = error_mag + error_mag_grad(1);
-  // Electric error
+  // Electric error (post)
   elevec1[8] = error_ele_post;
-  // Electric Hdiv error
+  // Electric Hdiv error (post)
   elevec1[9] = error_ele_post + error_ele_post_grad(0);
-  // Electric Hrot error
+  // Electric Hrot error (post)
   elevec1[10] = error_ele_post + error_ele_post_grad(1);
 
   return;

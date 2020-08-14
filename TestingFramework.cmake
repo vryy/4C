@@ -41,18 +41,18 @@ macro (baci_test_and_post_ensight_test arg nproc restart)
   else ()
     baci_test(${arg} ${nproc} "${restart}")
   endif ()
-  
+
 
   # additionally run postprocessing in serial mode
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --outputtype=bin)
-  
+
   add_test(NAME ${arg}-p${nproc}-post_ensight-ser
     COMMAND sh -c " ${RUNPOSTFILTER_SER} && python\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_SER_structure.case")
   set_tests_properties(${arg}-p${nproc}-post_ensight-ser PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin)
-  
+
   add_test(NAME ${arg}-p${nproc}-post_ensight-par
     COMMAND sh -c " ${RUNPOSTFILTER_PAR} && python\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_PAR_structure.case")
   set_tests_properties(${arg}-p${nproc}-post_ensight-par PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
@@ -749,6 +749,7 @@ baci_test(elemag_abc_sphere_hdg 2 "")
 baci_test(elemag_hex_diff_bdf1_hdg 2 "")
 baci_test(elemag_hex_diff_bdf2_hdg 2 5)
 baci_test(elemag_hex_diff_bdf4_hdg 2 "")
+baci_test(elemag_hex_diff_bdf4_postproc_hdg 2 "")
 baci_test(f2_channel20x20_drt_weak 2 "")
 baci_test(f2_channel20x20_drt_mixhyb 1 "")
 baci_test(f2_channel20x20_drt_mixhyb 2 8)
