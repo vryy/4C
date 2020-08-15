@@ -137,15 +137,11 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     // get reference to function
     DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
-    // declare pointer variables
-    const double* refpos;
-    double *pos, *vel, *acc;
-
     // get pointer to particle states
-    refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
-    if (evalpos) pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    if (evalvel) vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
-    if (evalacc) acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+    const double* refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
+    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    double* vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
+    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
 
     // get particle state dimension
     int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
