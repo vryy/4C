@@ -142,6 +142,23 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
 
     TS_ASSERT_EQUALS(stick_tangential, false);
   }
+
+  void test_TangentialPotentialEnergy()
+  {
+    double gap_tangential[3] = {0.0};
+    gap_tangential[0] = 0.1;
+    gap_tangential[1] = 0.05;
+    gap_tangential[2] = -0.25;
+
+    const double k_tangential = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
+    const double tangentialpotentialenergy_ref =
+        0.5 * k_tangential * UTILS::vec_dot(gap_tangential, gap_tangential);
+
+    double tangentialpotentialenergy = 0.0;
+    contacttangential_->TangentialPotentialEnergy(gap_tangential, tangentialpotentialenergy);
+
+    TS_ASSERT_DELTA(tangentialpotentialenergy, tangentialpotentialenergy_ref, 1.0e-12);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

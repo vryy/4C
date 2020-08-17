@@ -153,3 +153,9 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContac
     UTILS::vec_addscale(gap_tangential, -inv_k_tangential * d_tangential, v_rel_tangential);
   }
 }
+
+void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialPotentialEnergy(
+    const double* gap_tangential, double& tangentialpotentialenergy) const
+{
+  tangentialpotentialenergy = 0.5 * k_tangential_ * UTILS::vec_dot(gap_tangential, gap_tangential);
+}

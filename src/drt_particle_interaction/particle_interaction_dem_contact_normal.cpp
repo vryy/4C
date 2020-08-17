@@ -79,6 +79,12 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const
   normalcontactforce = k_normal_ * gap;
 }
 
+void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalPotentialEnergy(
+    const double& gap, double& normalpotentialenergy) const
+{
+  normalpotentialenergy = 0.5 * k_normal_ * UTILS::pow<2>(gap);
+}
+
 PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::DEMContactNormalLinearSpringDamp(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalLinearSpring(params),
@@ -163,6 +169,12 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
     k_tcrit_ = std::pow(2048.0 / 1875.0 * dens_max * UTILS::pow<2>(v_max_) * M_PI *
                             UTILS::pow<3>(r_max_) * UTILS::pow<4>(k_normal_),
         0.2);
+}
+
+void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::NormalPotentialEnergy(
+    const double& gap, double& normalpotentialenergy) const
+{
+  normalpotentialenergy = 0.4 * k_normal_ * UTILS::pow<2>(gap) * std::sqrt(-gap);
 }
 
 PARTICLEINTERACTION::DEMContactNormalHertz::DEMContactNormalHertz(
