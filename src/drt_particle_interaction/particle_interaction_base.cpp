@@ -163,11 +163,11 @@ double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
   double maxrad = 0.0;
 
   // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get maximum stored value of state
     double currmaxrad = container->GetMaxValueOfState(PARTICLEENGINE::Radius);
