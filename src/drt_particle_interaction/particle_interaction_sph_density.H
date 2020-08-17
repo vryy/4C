@@ -171,6 +171,9 @@ namespace PARTICLEINTERACTION
     //! density of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
 
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
+
     //! time step size
     double dt_;
   };

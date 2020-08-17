@@ -120,6 +120,9 @@ namespace PARTICLEINTERACTION
     //! momentum equation (particle contribution)
     void MomentumEquationParticleContribution() const;
 
+    //! momentum equation (particle-boundary contribution)
+    void MomentumEquationParticleBoundaryContribution() const;
+
     //! momentum equation (particle-wall contribution)
     void MomentumEquationParticleWallContribution() const;
 
@@ -165,14 +168,23 @@ namespace PARTICLEINTERACTION
     //! type of transport velocity formulation
     INPAR::PARTICLE::TransportVelocityFormulation transportvelocityformulation_;
 
-    //! apply transport velocity formulation
-    bool applytransportvelocity_;
-
     //! pointer to fluid material of particle types
     std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
 
     //! write particle-wall interaction output
     const bool writeparticlewallinteraction_;
+
+    //! set of all fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> allfluidtypes_;
+
+    //! set of integrated fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> intfluidtypes_;
+
+    //! set of pure fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> purefluidtypes_;
+
+    //! set of boundary particle types
+    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
   };
 
 }  // namespace PARTICLEINTERACTION

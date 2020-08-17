@@ -42,19 +42,18 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
   phasetypetoequationofstate_.resize(typevectorsize);
 
   // iterate over particle types
-  for (const auto& typeEnum : particlematerial->GetParticleTypes())
+  for (const auto& type_i : particlematerial->GetParticleTypes())
   {
     // no equation of state for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // add to set of particle types of stored equation of state handlers
-    storedtypes_.insert(typeEnum);
+    storedtypes_.insert(type_i);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialSPHFluid* material =
         dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-            particlematerial->GetPtrToParticleMatParameter(typeEnum));
+            particlematerial->GetPtrToParticleMatParameter(type_i));
 
     // create equation of state handler
     switch (equationofstatetype)
@@ -65,7 +64,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
         const double refdensfac = material->refDensFac_;
         const double exponent = material->exponent_;
 
-        phasetypetoequationofstate_[typeEnum] =
+        phasetypetoequationofstate_[type_i] =
             std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
                 new PARTICLEINTERACTION::SPHEquationOfStateGenTait(
                     speedofsound, refdensfac, exponent));
@@ -75,7 +74,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
       {
         const double speedofsound = material->SpeedOfSound();
 
-        phasetypetoequationofstate_[typeEnum] =
+        phasetypetoequationofstate_[type_i] =
             std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(
                 new PARTICLEINTERACTION::SPHEquationOfStateIdealGas(speedofsound));
         break;
@@ -88,26 +87,25 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     }
 
     // init equation of state handler
-    phasetypetoequationofstate_[typeEnum]->Init();
+    phasetypetoequationofstate_[type_i]->Init();
   }
 }
 
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::Setup()
 {
-  for (PARTICLEENGINE::TypeEnum typeEnum : storedtypes_)
-    phasetypetoequationofstate_[typeEnum]->Setup();
+  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->Setup();
 }
 
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::WriteRestart(
     const int step, const double time) const
 {
-  for (PARTICLEENGINE::TypeEnum typeEnum : storedtypes_)
-    phasetypetoequationofstate_[typeEnum]->WriteRestart(step, time);
+  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_)
+    phasetypetoequationofstate_[type_i]->WriteRestart(step, time);
 }
 
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  for (PARTICLEENGINE::TypeEnum typeEnum : storedtypes_)
-    phasetypetoequationofstate_[typeEnum]->ReadRestart(reader);
+  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_)
+    phasetypetoequationofstate_[type_i]->ReadRestart(reader);
 }

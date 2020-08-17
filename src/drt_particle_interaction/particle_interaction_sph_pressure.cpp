@@ -31,7 +31,8 @@ PARTICLEINTERACTION::SPHPressure::SPHPressure()
 
 void PARTICLEINTERACTION::SPHPressure::Init()
 {
-  // nothing to do
+  // init with potential fluid particle types
+  fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 }
 
 void PARTICLEINTERACTION::SPHPressure::Setup(
@@ -51,18 +52,16 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   // set equation of state handler
   equationofstatebundle_ = equationofstatebundle;
 
+  // update with actual fluid particle types
+  for (const auto& type_i : fluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+
   // setup pressure of ghosted particles to refresh
   {
     std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Pressure};
 
-    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-    {
-      // no refreshing of density states for boundary or rigid particles
-      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-        continue;
-
-      pressuretorefresh_.push_back(std::make_pair(typeEnum, states));
-    }
+    for (const auto& type_i : fluidtypes_)
+      pressuretorefresh_.push_back(std::make_pair(type_i, states));
   }
 }
 
@@ -81,20 +80,12 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no pressure computation for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // no pressure computation for open boundary particles
-    if (typeEnum == PARTICLEENGINE::DirichletPhase or typeEnum == PARTICLEENGINE::NeumannPhase)
-      continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -108,11 +99,11 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // get equation of state for current particle type
     const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
-        equationofstatebundle_->GetPtrToSpecificEquationOfState(typeEnum);
+        equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

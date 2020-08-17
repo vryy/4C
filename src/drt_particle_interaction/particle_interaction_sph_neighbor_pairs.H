@@ -50,7 +50,8 @@ namespace PARTICLEINTERACTION
 {
   typedef std::vector<PARTICLEINTERACTION::SPHParticlePair> SPHParticlePairData;
   typedef std::vector<PARTICLEINTERACTION::SPHParticleWallPair> SPHParticleWallPairData;
-  typedef std::vector<std::vector<int>> SPHIndexOfParticlePairs;
+  typedef std::vector<std::vector<std::vector<int>>> SPHIndexOfParticlePairs;
+  typedef std::vector<std::vector<int>> SPHIndexOfParticleWallPairs;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -94,9 +95,18 @@ namespace PARTICLEINTERACTION
       return particlewallpairdata_;
     };
 
-    //! get relevant particle pair indices for particle types
-    void GetRelevantParticlePairIndices(
-        const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
+    //! get relevant particle pair indices for disjoint combination of particle types
+    void GetRelevantParticlePairIndicesForDisjointCombination(
+        const std::set<PARTICLEENGINE::TypeEnum>& types_a,
+        const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const;
+
+    //! get relevant particle pair indices for equal combination of particle types
+    void GetRelevantParticlePairIndicesForEqualCombination(
+        const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const;
+
+    //! get relevant particle wall pair indices for specific particle types
+    void GetRelevantParticleWallPairIndices(
+        const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const;
 
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
@@ -116,6 +126,9 @@ namespace PARTICLEINTERACTION
 
     //! index of particle pairs for each type
     SPHIndexOfParticlePairs indexofparticlepairs_;
+
+    //! index of particle-wall pairs for each type
+    SPHIndexOfParticleWallPairs indexofparticlewallpairs_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

@@ -82,6 +82,9 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
+
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
   };
