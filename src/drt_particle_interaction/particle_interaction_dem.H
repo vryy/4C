@@ -124,6 +124,12 @@ namespace PARTICLEINTERACTION
     //! compute acceleration from force and moment
     void ComputeAcceleration() const;
 
+    //! evaluate particle kinetic energy contribution
+    void EvaluateParticleKineticEnergy(double& kineticenergy) const;
+
+    //! evaluate particle gravitational potential energy contribution
+    void EvaluateParticleGravitationalPotentialEnergy(double& gravitationalpotentialenergy) const;
+
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
 

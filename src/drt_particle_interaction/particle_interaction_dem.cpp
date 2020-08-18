@@ -500,3 +500,78 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
   }
 }
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
+    double& kineticenergy) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy");
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get particle state dimension
+    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+
+    // get pointer to particle states
+    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
+
+    double* angvel = container->HaveStoredState(PARTICLEENGINE::AngularVelocity)
+                         ? container->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, 0)
+                         : nullptr;
+
+    // add translational kinetic energy contribution
+    for (int i = 0; i < particlestored; ++i)
+      kineticenergy += 0.5 * mass[i] * UTILS::vec_dot(&vel[statedim * i], &vel[statedim * i]);
+
+    // add rotational kinetic energy contribution
+    if (angvel)
+      for (int i = 0; i < particlestored; ++i)
+        kineticenergy += 0.5 * (0.4 * mass[i] * UTILS::pow<2>(radius[i])) *
+                         UTILS::vec_dot(&angvel[statedim * i], &angvel[statedim * i]);
+  }
+}
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalPotentialEnergy(
+    double& gravitationalpotentialenergy) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalPotentialEnergy");
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get particle state dimension
+    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+
+    // get pointer to particle states
+    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+
+    // add gravitational potential energy contribution
+    for (int i = 0; i < particlestored; ++i)
+      gravitationalpotentialenergy -= mass[i] * UTILS::vec_dot(&gravity_[0], &pos[statedim * i]);
+  }
+}
