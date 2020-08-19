@@ -308,9 +308,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
           interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
-  LINALG::EquilibrationFactory equibrilationfactory;
-  equilibration_ = equibrilationfactory.BuildEquilibration(
-      matrixtype_, ScaTraField()->EquilibrationMethod(), *maps_->FullMap());
+  equilibration_ = LINALG::BuildEquilibration(
+      matrixtype_, ScaTraField()->EquilibrationMethod(), maps_->FullMap());
 }
 
 /*---------------------------------------------------------------------------------------------*

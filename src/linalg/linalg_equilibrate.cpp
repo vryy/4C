@@ -13,9 +13,10 @@
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-LINALG::Equilibration::Equilibration(EquilibrationMethod method, const Epetra_Map& dofrowmap)
-    : invcolsums_(Teuchos::rcp(new Epetra_Vector(dofrowmap, false))),
-      invrowsums_(Teuchos::rcp(new Epetra_Vector(dofrowmap, false))),
+LINALG::Equilibration::Equilibration(
+    EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
+    : invcolsums_(Teuchos::rcp(new Epetra_Vector(*dofrowmap, false))),
+      invrowsums_(Teuchos::rcp(new Epetra_Vector(*dofrowmap, false))),
       method_(method)
 
 {
@@ -312,8 +313,8 @@ void LINALG::EquilibrationBlock::EquilibrateMatrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Equilibration> LINALG::EquilibrationFactory::BuildEquilibration(
-    MatrixType type, EquilibrationMethod method, const Epetra_Map& dofrowmap)
+Teuchos::RCP<LINALG::Equilibration> LINALG::BuildEquilibration(
+    MatrixType type, EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
 {
   Teuchos::RCP<LINALG::Equilibration> equilibration = Teuchos::null;
 

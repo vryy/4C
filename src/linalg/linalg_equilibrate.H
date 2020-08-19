@@ -55,7 +55,7 @@ namespace LINALG
   {
    public:
     //! constructor
-    Equilibration(EquilibrationMethod method, const Epetra_Map& dofrowmap);
+    Equilibration(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 
     //! destructor
     virtual ~Equilibration() = default;
@@ -150,7 +150,7 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationSparse(EquilibrationMethod method, const Epetra_Map& dofrowmap)
+    EquilibrationSparse(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
         : Equilibration(method, dofrowmap)
     {
     }
@@ -173,7 +173,7 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationBlock(EquilibrationMethod method, const Epetra_Map& dofrowmap)
+    EquilibrationBlock(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
         : Equilibration(method, dofrowmap)
     {
     }
@@ -189,7 +189,7 @@ namespace LINALG
   {
    public:
     //! constructor
-    EquilibrationNone(EquilibrationMethod method, const Epetra_Map& dofrowmap)
+    EquilibrationNone(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
         : Equilibration(method, dofrowmap)
     {
     }
@@ -204,25 +204,15 @@ namespace LINALG
     void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override {}
   };
 
-  //! Factory for equilibration
-  class EquilibrationFactory
-  {
-   public:
-    //! constructor
-    EquilibrationFactory() = default;
-
-    /*!
-     * @brief build specific equilibration method
-     *
-     * @param[in] type   type of matrix
-     * @param[in] method equilibration method
-     * @param dofrowmap  degree of freedom row map
-     *
-     * @return equilibration method
-     */
-    Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(
-        MatrixType type, EquilibrationMethod method, const Epetra_Map& dofrowmap);
-  };
-
+  /*! @brief build specific equilibration method
+   *
+   * @param[in] type   type of matrix
+   * @param[in] method equilibration method
+   * @param dofrowmap  degree of freedom row map
+   *
+   * @return equilibration method
+   */
+  Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(
+      MatrixType type, EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace LINALG
 #endif
