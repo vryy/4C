@@ -57,6 +57,9 @@ namespace MIXTURE
       /// Id of the scaling function of the deposition stretch
       const int deposition_stretch_funct_;
 
+      /// Flag whether growth is enabled
+      const bool growth_enabled_;
+
       // @}
     };
   }  // namespace PAR

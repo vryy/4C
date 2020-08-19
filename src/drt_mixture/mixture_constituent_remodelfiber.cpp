@@ -29,7 +29,8 @@ MIXTURE::PAR::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
       poisson_decay_time_(matdata->GetDouble("DECAY_TIME")),
       growth_constant_(matdata->GetDouble("GROWTH_CONSTANT")),
       deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH")),
-      deposition_stretch_funct_(matdata->GetInt("DEPOSITION_STRETCH_TIMEFUNCT"))
+      deposition_stretch_funct_(matdata->GetInt("DEPOSITION_STRETCH_TIMEFUNCT")),
+      growth_enabled_(static_cast<bool>(matdata->GetInt("GROWTH_ENABLED")))
 {
   if (deposition_stretch_funct_ > 0 && deposition_stretch_ > 0)
   {

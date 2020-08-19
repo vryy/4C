@@ -3564,6 +3564,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
     AddNamedInt(m, "DEPOSITION_STRETCH_TIMEFUNCT",
         "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
+    AddNamedBool(m, "GROWTH_ENABLED", "Switch for the growth (default true)", true, true);
 
     AppendMaterialDefinition(matlist, m);
   }

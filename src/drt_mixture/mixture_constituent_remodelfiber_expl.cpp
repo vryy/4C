@@ -26,7 +26,7 @@ MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl::CreateConstituent()
 
 MIXTURE::MixtureConstituent_RemodelFiberExpl::MixtureConstituent_RemodelFiberExpl(
     MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params)
-    : MixtureConstituent_RemodelFiber(params)
+    : MixtureConstituent_RemodelFiber(params), params_(params)
 {
   // do nothing here, everything will be done in the base class
 }
@@ -43,5 +43,8 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateElasticPart(const LINAL
   MixtureConstituent_RemodelFiber::UpdateElasticPart(F, iFg, params, dt, gp, eleGID);
 
   // Call explicit update of growth and remodel equations
-  UpdateGrowthAndRemodelingExpl(F, iFg, dt, gp, eleGID);
+  if (params_->growth_enabled_)
+  {
+    UpdateGrowthAndRemodelingExpl(F, iFg, dt, gp, eleGID);
+  }
 }
