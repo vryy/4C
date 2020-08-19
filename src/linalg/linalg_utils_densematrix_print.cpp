@@ -4,7 +4,6 @@
 \brief A collection of dense matrix printing methods for namespace LINALG
 
 \level 0
-\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 
