@@ -457,7 +457,7 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    const static std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts = so_tet4_1gp_shapefcts();
+    static const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts = so_tet4_1gp_shapefcts();
 
     // initialize fiber vectors
     std::vector<LINALG::Matrix<NUMDIM_SOTET4, 1>> gpfiber1(
@@ -476,7 +476,6 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     fiberHolder.SetFiber(DRT::FIBER::FiberType::Fiber2, gpfiber2);
 
     params.set("fiberholder", fiberHolder);
-    // params.set("gpfiberlist2", gpfiber2);
   }
 
   // Call super post setup
@@ -485,5 +484,4 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.
   params.remove("fiberholder", false);
-  // params.remove("gpfiber2", false);
 }

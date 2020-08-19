@@ -228,6 +228,12 @@ template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
 template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(DRT::Node**,
     const std::vector<LINALG::Matrix<10, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
     std::vector<LINALG::Matrix<3, 1>>&);
+template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::hex8>(DRT::Node**,
+    const std::vector<LINALG::Matrix<8, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
+    std::vector<LINALG::Matrix<3, 1>>&);
+template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet4>(DRT::Node**,
+    const std::vector<LINALG::Matrix<4, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
+    std::vector<LINALG::Matrix<3, 1>>&);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet4>(
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,

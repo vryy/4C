@@ -16,8 +16,6 @@
 #include "../drt_lib/prestress_service.H"
 #include "../drt_constraint/springdashpot_manager.H"
 
-#include "stru_aux.H"
-
 /*======================================================================*/
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
@@ -38,6 +36,7 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
 
 void STR::TimIntPrestress::Setup()
 {
+  STR::TimIntStatics::Setup();
   // Check for compatible prestressing algorithms
   switch (::UTILS::PRESTRESS::GetType())
   {
@@ -48,7 +47,7 @@ void STR::TimIntPrestress::Setup()
     default:
       dserror(
           "Your prestressing algorithm is not implemented in the old structural time integration "
-          "framework. Possibly you have to use the new structural timeintegration scheme.");
+          "framework. Possibly you have to use the new structural time integration framework.");
   }
 }
 

@@ -299,6 +299,8 @@ namespace DRT
 
       //@}
 
+      void MaterialPostSetup(Teuchos::ParameterList& params) override;
+
       //! @name Input and Creation
 
       /*!
@@ -664,7 +666,13 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
-
+      /*!
+       * \brief Computes the deformation gradient at a Gauss point
+       *
+       * \param defgrd [out] : Deformation gradient
+       * \param xdisp  [in] : Nodal displacements of the element
+       * \param gp  [in] : Id of the Gauss point
+       */
       void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
           const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& xdisp, int gp);
 
