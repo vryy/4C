@@ -204,8 +204,7 @@ namespace LINALG
     void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override {}
   };
 
-  /*! build specifc equilibration type
-   * @brief build specific equilibration method
+  /*! @brief build specific equilibration method
    *
    * @param[in] type   type of matrix
    * @param[in] method equilibration method
