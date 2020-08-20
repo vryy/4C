@@ -11,6 +11,7 @@
 #include "particle_interaction_dem.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
@@ -25,6 +26,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_io/runtime_csv_writer.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
@@ -32,7 +35,9 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionDEM::ParticleInteractionDEM(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::ParticleInteractionBase(comm, params), params_dem_(params.sublist("DEM"))
+    : PARTICLEINTERACTION::ParticleInteractionBase(comm, params),
+      params_dem_(params.sublist("DEM")),
+      writeparticleenergy_(DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
 {
   // empty constructor
 }
@@ -78,6 +83,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   if (adhesion_)
     adhesion_->Setup(particleengineinterface, particlewallinterface, particleinteractionwriter_,
         neighborpairs_, historypairs_, contact_->GetNormalContactStiffness());
+
+  // setup particle interaction writer
+  SetupParticleInteractionWriter();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
@@ -181,6 +189,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 void PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep");
+
+  // evaluate particle energy
+  if (particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticleenergy_)
+    EvaluateParticleEnergy();
 }
 
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
@@ -256,6 +268,27 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
 
   // init adhesion handler
   if (adhesion_) adhesion_->Init();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::SetupParticleInteractionWriter()
+{
+  if (writeparticleenergy_)
+  {
+    // register specific runtime csv writer
+    particleinteractionwriter_->RegisterSpecificRuntimeCsvWriter("particle-energy");
+
+    // get specific runtime csv writer
+    RuntimeCsvWriter* runtime_csv_writer =
+        particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
+
+    // register all data vectors
+    runtime_csv_writer->RegisterDataVector("kin_energy", 1, 10);
+    runtime_csv_writer->RegisterDataVector("grav_pot_energy", 1, 10);
+    runtime_csv_writer->RegisterDataVector("elast_pot_energy", 1, 10);
+
+    // setup the csv writer object
+    runtime_csv_writer->Setup();
+  }
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
@@ -499,6 +532,44 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
         UTILS::vec_addscale(&angacc[statedim * i],
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
   }
+}
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy");
+
+  // evaluate particle kinetic energy contribution
+  std::vector<double> kinenergy(1, 0.0);
+  {
+    std::vector<double> localkinenergy(1, 0.0);
+    EvaluateParticleKineticEnergy(localkinenergy[0]);
+    comm_.SumAll(&localkinenergy[0], &kinenergy[0], 1);
+  }
+
+  // evaluate particle gravitational potential energy contribution
+  std::vector<double> gravpotenergy(1, 0.0);
+  {
+    std::vector<double> localgravpotenergy(1, 0.0);
+    EvaluateParticleGravitationalPotentialEnergy(localgravpotenergy[0]);
+    comm_.SumAll(&localgravpotenergy[0], &gravpotenergy[0], 1);
+  }
+
+  // evaluate elastic potential energy contribution
+  std::vector<double> elastpotenergy(1, 0.0);
+  {
+    std::vector<double> localelastpotenergy(1, 0.0);
+    contact_->EvaluateElasticPotentialEnergy(localelastpotenergy[0]);
+    comm_.SumAll(&localelastpotenergy[0], &elastpotenergy[0], 1);
+  }
+
+  // get specific runtime csv writer
+  RuntimeCsvWriter* runtime_csv_writer =
+      particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
+
+  // append data vector
+  runtime_csv_writer->AppendDataVector("kin_energy", kinenergy);
+  runtime_csv_writer->AppendDataVector("grav_pot_energy", gravpotenergy);
+  runtime_csv_writer->AppendDataVector("elast_pot_energy", elastpotenergy);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
