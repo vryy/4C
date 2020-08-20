@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief write visualization output for particle interaction in vtk/vtp format at runtime
+\brief write output for particle interaction at runtime
 \level 3
 */
 /*---------------------------------------------------------------------------*/
@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_RUNTIME_VTP_WRITER_H
-#define PARTICLE_INTERACTION_RUNTIME_VTP_WRITER_H
+#ifndef PARTICLE_INTERACTION_RUNTIME_WRITER_H
+#define PARTICLE_INTERACTION_RUNTIME_WRITER_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

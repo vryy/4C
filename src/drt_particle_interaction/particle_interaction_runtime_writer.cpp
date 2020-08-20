@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief write visualization output for particle interaction in vtk/vtp format at runtime
+\brief write output for particle interaction at runtime
 \level 3
 */
 /*---------------------------------------------------------------------------*/
@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 
 #include "../drt_inpar/inpar_particle.H"
 

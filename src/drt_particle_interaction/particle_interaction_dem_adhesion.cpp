@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion.H"
 
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
