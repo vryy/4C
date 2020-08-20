@@ -25,6 +25,7 @@
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 class RuntimeVtpWriter;
+class RuntimeCsvWriter;
 
 namespace IO
 {
@@ -60,6 +61,9 @@ namespace PARTICLEINTERACTION
     //! register specific runtime vtp writer
     void RegisterSpecificRuntimeVtpWriter(const std::string& fieldname);
 
+    //! register specific runtime csv writer
+    void RegisterSpecificRuntimeCsvWriter(const std::string& fieldname);
+
     //! set current write result flag
     void SetCurrentWriteResultFlag(bool writeresultsthisstep)
     {
@@ -80,6 +84,17 @@ namespace PARTICLEINTERACTION
       return runtime_vtpwriters_[fieldname].get();
     }
 
+    //! get specific runtime csv writer
+    inline RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
+    {
+#ifdef DEBUG
+      if (not runtime_csvwriters_.count(fieldname))
+        dserror("no runtime csv writer for field '%s' stored!", fieldname.c_str());
+#endif
+
+      return runtime_csvwriters_[fieldname].get();
+    }
+
     // write particle interaction runtime output
     void WriteParticleInteractionRuntimeOutput(const int step, const double time) const;
 
@@ -98,6 +113,9 @@ namespace PARTICLEINTERACTION
 
     //! holds all vtp writer objects
     std::unordered_map<std::string, std::shared_ptr<RuntimeVtpWriter>> runtime_vtpwriters_;
+
+    //! holds all csv writer objects
+    std::unordered_map<std::string, std::shared_ptr<RuntimeCsvWriter>> runtime_csvwriters_;
   };
 
 }  // namespace PARTICLEINTERACTION
