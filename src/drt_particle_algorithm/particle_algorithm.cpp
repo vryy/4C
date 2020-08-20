@@ -602,6 +602,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 
   // evaluate particle interactions
   if (particleinteraction_) particleinteraction_->EvaluateInteractions();
+
+  // post evaluate time step
+  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
