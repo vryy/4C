@@ -55,11 +55,11 @@ class RuntimeCsvWriter
   void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
 
   //! write csv file to filesystem
-  void WriteFile();
+  void WriteFile() const;
 
  private:
   //! write file header
-  void WriteFileHeader();
+  void WriteFileHeader() const;
 
   //! global processor id of this processor
   const unsigned int myrank_;

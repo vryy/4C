@@ -128,12 +128,15 @@ void RuntimeCsvWriter::AppendDataVector(
 #ifdef DEBUG
   if (not data_vectors_.count(dataname))
     dserror("data vector '%s' not registered!", dataname.c_str());
+
+  if ((data_vectors_[dataname].first).size() != datavalues.size())
+    dserror("size of data vector '%s' changed!", dataname.c_str());
 #endif
 
   data_vectors_[dataname].first = datavalues;
 }
 
-void RuntimeCsvWriter::WriteFile()
+void RuntimeCsvWriter::WriteFile() const
 {
 #ifdef DEBUG
   if (myrank_ != 0)
@@ -162,7 +165,7 @@ void RuntimeCsvWriter::WriteFile()
   outputfile.close();
 }
 
-void RuntimeCsvWriter::WriteFileHeader()
+void RuntimeCsvWriter::WriteFileHeader() const
 {
   if (myrank_ != 0) return;
 
