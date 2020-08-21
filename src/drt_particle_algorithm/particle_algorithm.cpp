@@ -31,6 +31,8 @@
 #include "../drt_particle_wall/particle_wall.H"
 #include "../drt_particle_wall/particle_wall_result_test.H"
 
+#include "../drt_particle_rigidbody/particle_rigidbody.H"
+
 #include "../drt_inpar/inpar_particle.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -71,6 +73,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle wall handler
   InitParticleWall();
 
+  // init rigid body handler
+  InitParticleRigidBody();
+
   // init particle time integration
   InitParticleTimeIntegration();
 
@@ -106,6 +111,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup wall handler
   if (particlewall_) particlewall_->Setup(particleengine_);
+
+  // setup rigid body handler
+  if (particlerigidbody_) particlerigidbody_->Setup(particleengine_);
 
   // setup particle time integration
   particletimint_->Setup(particleengine_);
@@ -158,6 +166,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
+
+  // read restart of rigid body handler
+  if (particlerigidbody_) particlerigidbody_->ReadRestart(reader);
 
   // read restart of particle interaction handler
   if (particleinteraction_) particleinteraction_->ReadRestart(reader);
@@ -275,6 +286,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
 
+    // write restart of rigid body handler
+    if (particlerigidbody_) particlerigidbody_->WriteRestart();
+
     // write restart of particle interaction handler
     if (particleinteraction_) particleinteraction_->WriteRestart();
 
@@ -368,6 +382,16 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
 
   // init particle wall handler
   if (particlewall_) particlewall_->Init(particleengine_->GetBinningStrategy());
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleRigidBody()
+{
+  // create rigid body handler
+  if (DRT::INPUT::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
+    particlerigidbody_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyHandler>(Comm(), params_);
+
+  // init rigid body handler
+  if (particlerigidbody_) particlerigidbody_->Init();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()

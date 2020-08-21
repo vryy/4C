@@ -106,6 +106,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter("PARTICLE_WALL_MOVING", "no", "consider a moving particle wall", &particledyn);
   BoolParameter("PARTICLE_WALL_LOADED", "no", "consider loading on particle wall", &particledyn);
 
+  // consider rigid body motion
+  BoolParameter("RIGID_BODY_MOTION", "no", "consider rigid body motion", &particledyn);
+
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
    *-------------------------------------------------------------------------*/

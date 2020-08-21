@@ -41,6 +41,11 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }
 
+namespace PARTICLERIGIDBODY
+{
+  class RigidBodyHandler;
+}
+
 namespace DRT
 {
   class ResultTest;
@@ -218,6 +223,13 @@ namespace PARTICLEALGORITHM
      * \author Sebastian Fuchs \date 10/2018
      */
     void InitParticleWall();
+
+    /*!
+     * \brief init rigid body handler
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     */
+    void InitParticleRigidBody();
 
     /*!
      * \brief init particle time integration
@@ -418,6 +430,9 @@ namespace PARTICLEALGORITHM
 
     //! particle wall handler
     std::shared_ptr<PARTICLEWALL::WallHandlerBase> particlewall_;
+
+    //! rigid body handler
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandler> particlerigidbody_;
 
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;

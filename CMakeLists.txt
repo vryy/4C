@@ -1899,6 +1899,9 @@ set(OBJS_DRT_PARTICLE_WALL
   src/drt_particle_wall/particle_wall_discretization_runtime_vtu_writer.cpp
   src/drt_particle_wall/particle_wall_result_test.cpp
 )
+set(OBJS_DRT_PARTICLE_RIGIDBODY
+  src/drt_particle_rigidbody/particle_rigidbody.cpp
+)
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
   src/drt_elemag/elemag_timeint.cpp
@@ -2764,6 +2767,7 @@ add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
 add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
 add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
+add_library(alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
@@ -2792,6 +2796,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_particle_interaction
   alg_particle_engine
   alg_particle_wall
+  alg_particle_rigidbody
   alg_elemag
   alg_tutorial
   )
