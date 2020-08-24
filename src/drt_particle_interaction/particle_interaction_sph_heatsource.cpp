@@ -130,12 +130,20 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
+    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
+
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
+      const double* dens_i =
+          (container_i->HaveStoredState(PARTICLEENGINE::Density))
+              ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+              : &(basematerial_i->initDensity_);
+
       const double* pos_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
       double* tempdot_i =
@@ -145,8 +153,8 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
       funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);
 
       // add contribution of heat source
-      tempdot_i[0] +=
-          thermomaterial_i->thermalAbsorptivity_ * funct[0] * thermomaterial_i->invThermalCapacity_;
+      tempdot_i[0] += thermomaterial_i->thermalAbsorptivity_ * funct[0] *
+                      thermomaterial_i->invThermalCapacity_ / dens_i[0];
     }
   }
 }
@@ -298,6 +306,9 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
+    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
+
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
@@ -317,6 +328,11 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       if (f_i_proj < 0.0) continue;
 
       // get pointer to particle states
+      const double* dens_i =
+          (container_i->HaveStoredState(PARTICLEENGINE::Density))
+              ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+              : &(basematerial_i->initDensity_);
+
       const double* pos_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
       double* tempdot_i =
@@ -327,7 +343,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
       // add contribution of heat source
       tempdot_i[0] += f_i_proj * thermomaterial_i->thermalAbsorptivity_ * funct[0] *
-                      thermomaterial_i->invThermalCapacity_;
+                      thermomaterial_i->invThermalCapacity_ / dens_i[0];
     }
   }
 }
