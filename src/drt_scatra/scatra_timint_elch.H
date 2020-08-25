@@ -60,7 +60,8 @@ namespace SCATRA
     void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
-    void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const override;
+    void BuildBlockNullSpaces(
+        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const override;
 
     /*========================================================================*/
     //! @name general framework

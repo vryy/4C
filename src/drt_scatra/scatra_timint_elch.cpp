@@ -3300,17 +3300,21 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
+void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
+  if (init_block_number) dserror("In elch problems, system matrix must beign with scatra blocks");
+
   // call base class routine
-  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver);
+  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver, init_block_number);
 
   if (MatrixType() == LINALG::MatrixType::block_condition_dof)
   {
     // loop over blocks of global system matrix
-    for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+    for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number;
+         ++iblock)
     {
-      // store number of current block as string, starting from 1
+      // store number of current block as string
       std::ostringstream iblockstr;
       iblockstr << iblock + 1;
 

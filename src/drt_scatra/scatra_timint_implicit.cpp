@@ -3897,7 +3897,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
   if (matrixtype_ == LINALG::MatrixType::block_meshtying) blockmaps_ = strategy_->InterfaceMaps();
 
   // now build the null spaces
-  BuildBlockNullSpaces(Solver());
+  BuildBlockNullSpaces(Solver(), 0);
 
   // in case of an extended solver for scatra-scatra interface meshtying including interface growth
   // we need to equip it with the null space information generated above
@@ -3906,10 +3906,11 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
+void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
   {
     // store number of current block as string, starting from 1
     std::ostringstream iblockstr;
