@@ -16,6 +16,7 @@
 #include <iostream>
 #include <vector>
 #include <complex>
+#include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -28,15 +29,6 @@ namespace MAT
 {
   class Material;
 }
-
-namespace Sacado
-{
-  namespace Fad
-  {
-    template <typename>
-    class DFad;
-  }
-}  // namespace Sacado
 
 namespace DRT
 {
