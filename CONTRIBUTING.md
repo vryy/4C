@@ -1,7 +1,7 @@
 # Contributing to BACI
 
 Thank you for your willingness to contribute to BACI.
-The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [Baci Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in Baci.
+The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [BACI Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in BACI.
 
 > **Note:**  By contributing to BACI, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
 
@@ -15,7 +15,7 @@ To incorporate a `feature` branch into the `master` branch, BACI employs GitLab'
 
 ### Contents
 1. [Setup and Initial Configuration](#setup-and-initial-configuration)
-1. [The Baci Development Workflow](#the-baci-development-workflow)
+1. [The BACI Development Workflow](#the-baci-development-workflow)
    1. [Create a GitLab Issue](#create-a-gitlab-issue)
    1. [Work an Issue](#work-an-issue)
       1. [Create a Feature Branch](#create-a-feature-branch)
@@ -43,11 +43,11 @@ Double-check that your local Git repository is configured as described in [READM
 We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
 Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
 
-## The Baci Development Workflow
+## The BACI Development Workflow
 
 ### Create a GitLab Issue
 
-It is highly recommended to open an issue, when planning any change to Baci. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
+It is highly recommended to open an issue, when planning any change to BACI. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
 
 Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
@@ -73,7 +73,7 @@ Then the workflow to use is the following:
 
 #### Create a Feature Branch
 
-> **Note:** It is important to keep your local `master` branch in `baci` up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
+> **Note:** It is important to keep your local `master` branch in BACI up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
 First, update the `master` branch:
 
@@ -85,7 +85,7 @@ git pull
 
 where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
 
-Then, create a local branch off of `master` in `baci` on which to make your changes:
+Then, create a local branch off of `master` in BACI on which to make your changes:
 
 ```bash
 git branch <branchName>
@@ -140,7 +140,7 @@ Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for o
 
 #### Integrate changes from `master` into your feature branch
 
-While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
+While working on your feature in your local `<branchName>` branch in BACI, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
 
 ```bash
 git checkout master
@@ -190,11 +190,11 @@ git push --set-upstream origin <branchName>
 
 #### Create a Merge Request
 
-When your changes are ready to be integrated into `baci`'s `master` branch,
+When your changes are ready to be integrated into BACI's `master` branch,
 move the issue card from **In Progress** to **Under Review** on our
 [Kanban board](https://gitlab.lrz.de/baci/baci/boards) and then:
 
-*  Navigate to BACI on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
+*  Navigate to the BACI project on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
    * Be sure you choose:
       * source branch: `<branchName>`
       * target branch: `master`
