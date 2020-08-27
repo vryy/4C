@@ -7,7 +7,7 @@ Note that anything between these delimiters is a comment that will not appear in
 -->
 
 <!--
-Assignees:  If you know anyone who should likely handle bringing this merge request to completion or who should review it, select them from the Assignees drop-down on the right.
+Assignees:  If you know anyone who should likely handle bringing this merge request to completion -- that's usually yourself -- select them from the Assignees drop-down on the right.
 -->
 
 <!--
@@ -63,11 +63,7 @@ Is there anything else your fellow developers need to know in evaluating this me
 Feel free to add supplementary material here (e.g. screen output, log files, screenshots)
 -->
 
-## Interested Parties
+## Interested Parties / Possible Reviewers
 <!--
-If there's any team or developer, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams and possible reviewers.
+If there's any team or developer, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams, such that they will be notified about the approval request.
 -->
-
-Possible reviewers:
-
-Other interested parties/teams:
