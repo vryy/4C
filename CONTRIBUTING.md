@@ -169,12 +169,7 @@ A small set of test cases can be run via `ctest -L minimal`.
 
 ### Merging Changes into `master`
 
-To merge changes into `master`, a feature branch needs to satisfy these conditions:
-
-* Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
-* No build errors and warnings
-* All tests are passing.
-* Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
+To bring changes form a locally developed feature branch into `master` and make them available to everyone, Baci relies on GitLab's _merge request (MR)_ mechanism. Baci's MR workflow is outlined in the following.
 
 #### Push your branch to GitLab
 
@@ -202,7 +197,7 @@ move the issue card from **In Progress** to **Under Review** on our
 
    > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
    
-   * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field. This can be used to notify affected code owners in order to request their review and (required) approval.
+   * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field. This can be used to notify affected code owners in order to request their review and **required** approval.
    * Assign the MR to yourself, as you are probably the person that will work the most on this MR.
    
 * Trigger the execution of the test suite manually:
@@ -236,7 +231,6 @@ rather than having to look at the entire change set at once.
 At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
 If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.  Make sure you don't delete your remote feature branch before your merge request has been merged.
 
-
 > Independent of your level of expertise, experience with BACI, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
 
 To stimulate an open and constructive discussion and to get the MR ready to be merged, this includes:
@@ -257,10 +251,19 @@ Some remarks on code review:
 
 #### Merging a Merge Request
 
-Once the feature branch is ready to be merged and the required approval rules have been met,
-basically every @baci/baci_developers can use the "Merge" button on the merge request page on GitLab to perform the merge.
-However, it is good practice that the MR author triggers the merge,
+To merge changes into `master`, a feature branch needs to satisfy the following conditions:
+
+* Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
+* No build errors and warnings
+* All tests are passing.
+* Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
+
+When these conditions are met,
+the merge can be triggered using the "Merge" button on the merge request page on GitLab.
+It is good practice that the MR author triggers the merge,
 since he/she is in the best position to decide, whether he/she wants to merge right now or maybe wants to include more changes in this MR.
+
+> Yet, basically every @baci/baci_developers can press the "Merge" button.
 
 If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 
