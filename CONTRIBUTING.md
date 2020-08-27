@@ -259,7 +259,7 @@ Some remarks on code review:
 
 Once the feature branch is ready to be merged and the required approval rules have been met,
 basically every @baci/baci_developers can use the "Merge" button on the merge request page on GitLab to perform the merge.
-However, it is good practive that the MR author triggers the merge,
+However, it is good practice that the MR author triggers the merge,
 since he/she is in the best position to decide, whether he/she wants to merge right now or maybe wants to include more changes in this MR.
 
 If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
