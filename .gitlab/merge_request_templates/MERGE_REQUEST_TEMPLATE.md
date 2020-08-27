@@ -25,7 +25,7 @@ Provide a brief and concise description of your proposed change. Why is this cha
 
 ## Related Issues and Merge Requests
 <!--
-If applicable, let us know how this merge request is related to any other open issues or pull requests:
+If applicable, let us know how this merge request is related to any other open issues or merge requests:
 -->
 * Closes
 * Blocks
