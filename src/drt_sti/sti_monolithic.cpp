@@ -225,7 +225,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
 
       // feed AMGnxn block preconditioner with null space information for each block of global block
       // system matrix
-      BuildBlockNullSpaces();
+      BuildNullSpaces();
 
       break;
     }
@@ -1146,38 +1146,14 @@ void STI::Monolithic::AssembleMatAndRHS()
 
 
 /*-------------------------------------------------------------------------------*
- | build null spaces associated with blocks of global system matrix   fang 02/17 |
  *-------------------------------------------------------------------------------*/
-void STI::Monolithic::BuildBlockNullSpaces() const
+void STI::Monolithic::BuildNullSpaces() const
 {
   switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     {
-      // loop over block(s) of global system matrix associated with scalar transport field
-      for (int iblock = 0; iblock < ScaTraField()->BlockMaps().NumMaps(); ++iblock)
-      {
-        // store number of current block as string, starting from 1
-        std::stringstream iblockstr;
-        iblockstr << iblock + 1;
-
-        // equip smoother for current matrix block with empty parameter sublists to trigger null
-        // space computation
-        Teuchos::ParameterList& blocksmootherparams =
-            solver_->Params().sublist("Inverse" + iblockstr.str());
-        blocksmootherparams.sublist("Aztec Parameters");
-        blocksmootherparams.sublist("MueLu Parameters");
-
-        // equip smoother for current matrix block with null space associated with all degrees of
-        // freedom on scalar transport discretization
-        ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
-
-        // reduce full null space to match degrees of freedom associated with current matrix block
-        LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
-            *ScaTraField()->Discretization()->DofRowMap(), *ScaTraField()->BlockMaps().Map(iblock),
-            blocksmootherparams);
-      }
-
+      ScaTraField()->BuildBlockNullSpaces(solver_, 0);
       break;
     }
 

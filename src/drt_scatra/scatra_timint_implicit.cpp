@@ -3929,7 +3929,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
 
     // reduce full null space to match degrees of freedom associated with current matrix block
     LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(), *discret_->DofRowMap(),
-        *BlockMaps().Map(iblock), blocksmootherparams);
+        *BlockMaps().Map(iblock - init_block_number), blocksmootherparams);
   }
 }
 
