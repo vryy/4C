@@ -39,8 +39,10 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 -->
 - [ ] Review open issues assigned to the leaving team member and re-assign or unassign.
 - [ ] Remove leaving team member from the GitLab group baci_developers.
+- [ ] Remove leaving team member from all GitLab groups team_*.
 - [ ] If applicable, remove the leaving team member from the GitLab group baci_maintainers.
 - [ ] If applicable, remove the leaving team member from the list of maintainers in #336.
+- [ ] If applicable, transfer GitLab parent user role to another developer.
 - [ ] Add leaving team member to the GitLab group baci_collaborators.
 
 ## Interested Parties
