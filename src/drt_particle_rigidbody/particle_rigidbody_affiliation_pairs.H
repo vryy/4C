@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief rigid body handler for particle simulations
+\brief affiliation pair handler for rigid bodies
 \level 2
 */
 /*---------------------------------------------------------------------------*/
@@ -8,16 +8,16 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_RIGIDBODY_H
-#define PARTICLE_RIGIDBODY_H
+#ifndef PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_H
+#define PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_rigidbody_interface.H"
-
 #include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
+#include <vector>
+#include <unordered_map>
+#include <memory>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
@@ -30,14 +30,7 @@ namespace IO
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
-  class UniqueGlobalIdHandler;
-}  // namespace PARTICLEENGINE
-
-namespace PARTICLERIGIDBODY
-{
-  class RigidBodyDataState;
-  class RigidBodyAffiliationPairs;
-}  // namespace PARTICLERIGIDBODY
+}
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -45,11 +38,14 @@ namespace PARTICLERIGIDBODY
 namespace PARTICLERIGIDBODY
 {
   /*!
-   * \brief rigid body handler for particle problem
+   * \brief affiliation pair handler for rigid bodies
+   *
+   * The affiliation pair handler relates the global ids of rigid particles to the corresponding
+   * global ids of rigid bodies.
    *
    * \author Sebastian Fuchs \date 08/2020
    */
-  class RigidBodyHandler final : public RigidBodyHandlerInterface
+  class RigidBodyAffiliationPairs final
   {
    public:
     /*!
@@ -58,29 +54,21 @@ namespace PARTICLERIGIDBODY
      * \author Sebastian Fuchs \date 08/2020
      *
      * \param[in] comm   communicator
-     * \param[in] params particle simulation parameter list
      */
-    explicit RigidBodyHandler(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit RigidBodyAffiliationPairs(const Epetra_Comm& comm);
+
+    //! destructor
+    ~RigidBodyAffiliationPairs() = default;
 
     /*!
-     * \brief destructor
-     *
-     * \author Sebastian Fuchs \date 08/2020
-     *
-     * \note At compile-time a complete type of class T as used in class member
-     *       std::unique_ptr<T> ptr_T_ is required
-     */
-    ~RigidBodyHandler() override;
-
-    /*!
-     * \brief init rigid body handler
+     * \brief init affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      */
     void Init();
 
     /*!
-     * \brief setup rigid body handler
+     * \brief setup affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      */
@@ -88,14 +76,14 @@ namespace PARTICLERIGIDBODY
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!
-     * \brief write restart of rigid body handler
+     * \brief write restart of affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      */
     void WriteRestart() const;
 
     /*!
-     * \brief read restart of rigid body handler
+     * \brief read restart of affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      *
@@ -104,45 +92,66 @@ namespace PARTICLERIGIDBODY
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     /*!
-     * \brief distribute rigid body
+     * \brief get reference to affiliation pair data
      *
      * \author Sebastian Fuchs \date 08/2020
+     *
+     * \return reference to affiliation pair data
      */
-    void DistributeRigidBody();
+    inline std::unordered_map<int, int>& GetRefToAffiliationPairData() { return affiliationdata_; };
 
     /*!
-     * \brief communicate rigid body
+     * \brief distribute affiliation pairs
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void CommunicateRigidBody();
+    void DistributeAffiliationPairs();
 
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
-    {
-      return rigidbodydatastate_;
-    }
+    /*!
+     * \brief communicate affiliation pairs
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     */
+    void CommunicateAffiliationPairs();
 
    private:
     /*!
-     * \brief init rigid body unique global identifier handler
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     */
-    void InitRigidBodyUniqueGlobalIdHandler();
-
-    /*!
-     * \brief init rigid body data state container
+     * \brief communicate specific affiliation pairs
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void InitRigidBodyDataState();
+    void CommunicateSpecificAffiliationPairs(const std::vector<std::vector<int>>& particletargets);
 
     /*!
-     * \brief init affiliation pair handler
+     * \brief pack all affiliation pairs
      *
      * \author Sebastian Fuchs \date 08/2020
+     *
+     * \param[in] buffer buffer containing affiliation data
      */
-    void InitAffiliationPairHandler();
+    void PackAllAffiliationPairs(std::vector<char>& buffer) const;
+
+    /*!
+     * \brief unpack affiliation pairs
+     *
+     * Unpack affiliation pairs relating rigid particles to rigid bodies.
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     *
+     * \param[in] buffer buffer containing affiliation data
+     */
+    void UnpackAffiliationPairs(const std::vector<char>& buffer);
+
+    /*!
+     * \brief add affiliation pair to buffer
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     *
+     * \param[in,out] buffer    buffer containing affiliation data
+     * \param[in]     globalid  global id of rigid particle
+     * \param[in]     rigidbody rigid body
+     */
+    void AddAffiliationPairToBuffer(std::vector<char>& buffer, int globalid, int rigidbody) const;
 
     //! communicator
     const Epetra_Comm& comm_;
@@ -150,20 +159,11 @@ namespace PARTICLERIGIDBODY
     //! processor id
     const int myrank_;
 
-    //! particle simulation parameter list
-    const Teuchos::ParameterList& params_;
-
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
-    //! rigid body unique global identifier handler
-    std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> rigidbodyuniqueglobalidhandler_;
-
-    //! rigid body data state container
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
-
-    //! affiliation pair handler
-    std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs> affiliationpairs_;
+    //! affiliation pair data relating rigid particles to rigid bodies
+    std::unordered_map<int, int> affiliationdata_;
   };
 }  // namespace PARTICLERIGIDBODY
 

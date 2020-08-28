@@ -11,12 +11,15 @@
 #include "particle_rigidbody.H"
 
 #include "particle_rigidbody_datastate.H"
+#include "particle_rigidbody_affiliation_pairs.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_unique_global_id.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -37,6 +40,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Init()
 
   // init rigid body data state container
   InitRigidBodyDataState();
+
+  // init affiliation pair handler
+  InitAffiliationPairHandler();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
@@ -50,6 +56,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
 
   // setup rigid body data state container
   rigidbodydatastate_->Setup();
+
+  // setup affiliation pair handler
+  affiliationpairs_->Setup(particleengineinterface);
 
   // safety check
   {
@@ -75,6 +84,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
 
   // write restart of unique global identifier handler
   rigidbodyuniqueglobalidhandler_->WriteRestart(binwriter);
+
+  // write restart of affiliation pair handler
+  affiliationpairs_->WriteRestart();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
@@ -82,6 +94,25 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
 {
   // read restart of unique global identifier handler
   rigidbodyuniqueglobalidhandler_->ReadRestart(reader);
+
+  // read restart of affiliation pair handler
+  affiliationpairs_->ReadRestart(reader);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody");
+
+  // distribute affiliation pairs
+  affiliationpairs_->DistributeAffiliationPairs();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody");
+
+  // communicate affiliation pairs
+  affiliationpairs_->CommunicateAffiliationPairs();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -99,4 +130,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyDataState()
 
   // init rigid body data state container
   rigidbodydatastate_->Init();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
+{
+  // create affiliation pair handler
+  affiliationpairs_ = std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs>(
+      new PARTICLERIGIDBODY::RigidBodyAffiliationPairs(comm_));
+
+  // init affiliation pair handler
+  affiliationpairs_->Init();
 }

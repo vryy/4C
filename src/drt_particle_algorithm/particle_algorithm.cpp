@@ -130,6 +130,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup initial particles
   SetupInitialParticles();
 
+  // setup initial rigid bodies
+  if (particlerigidbody_) SetupInitialRigidBodies();
+
   // distribute load among processors
   DistributeLoadAmongProcs();
 
@@ -578,6 +581,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
 }
 
+void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialRigidBodies()
+{
+  // distribute rigid body
+  particlerigidbody_->DistributeRigidBody();
+}
+
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 {
   // set initial states
@@ -760,6 +769,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs()
   // transfer wall elements and nodes
   if (particlewall_) particlewall_->TransferWallElementsAndNodes();
 
+  // communicate rigid body
+  if (particlerigidbody_) particlerigidbody_->CommunicateRigidBody();
+
   // communicate interaction history
   if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
 
@@ -813,6 +825,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs()
     // distribute wall elements and nodes
     particlewall_->DistributeWallElementsAndNodes();
   }
+
+  // communicate rigid body
+  if (particlerigidbody_) particlerigidbody_->CommunicateRigidBody();
 
   // communicate interaction history
   if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();

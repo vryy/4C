@@ -288,6 +288,13 @@ namespace PARTICLEALGORITHM
     void SetupInitialParticles();
 
     /*!
+     * \brief setup initial rigid bodies
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetupInitialRigidBodies();
+
+    /*!
      * \brief setup initial states
      *
      * \author Sebastian Fuchs \date 07/2018
