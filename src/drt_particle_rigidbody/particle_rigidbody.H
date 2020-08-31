@@ -33,6 +33,11 @@ namespace PARTICLEENGINE
   class UniqueGlobalIdHandler;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLERIGIDBODY
+{
+  class RigidBodyDataState;
+}
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -105,6 +110,13 @@ namespace PARTICLERIGIDBODY
      */
     void InitRigidBodyUniqueGlobalIdHandler();
 
+    /*!
+     * \brief init rigid body data state container
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     */
+    void InitRigidBodyDataState();
+
     //! communicator
     const Epetra_Comm& comm_;
 
@@ -119,6 +131,9 @@ namespace PARTICLERIGIDBODY
 
     //! rigid body unique global identifier handler
     std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> rigidbodyuniqueglobalidhandler_;
+
+    //! rigid body data state container
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
   };
 }  // namespace PARTICLERIGIDBODY
 

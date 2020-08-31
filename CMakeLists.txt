@@ -1901,6 +1901,7 @@ set(OBJS_DRT_PARTICLE_WALL
 )
 set(OBJS_DRT_PARTICLE_RIGIDBODY
   src/drt_particle_rigidbody/particle_rigidbody.cpp
+  src/drt_particle_rigidbody/particle_rigidbody_datastate.cpp
 )
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp

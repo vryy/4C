@@ -10,6 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_rigidbody.H"
 
+#include "particle_rigidbody_datastate.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_unique_global_id.H"
 
@@ -32,6 +34,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Init()
 {
   // init rigid body unique global identifier handler
   InitRigidBodyUniqueGlobalIdHandler();
+
+  // init rigid body data state container
+  InitRigidBodyDataState();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
@@ -42,6 +47,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
 
   // setup unique global identifier handler
   rigidbodyuniqueglobalidhandler_->Setup();
+
+  // setup rigid body data state container
+  rigidbodydatastate_->Setup();
 
   // safety check
   {
@@ -82,4 +90,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
   rigidbodyuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
       new PARTICLEENGINE::UniqueGlobalIdHandler(comm_, "rigidbody"));
   rigidbodyuniqueglobalidhandler_->Init();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyDataState()
+{
+  // create rigid body data state container
+  rigidbodydatastate_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyDataState>();
+
+  // init rigid body data state container
+  rigidbodydatastate_->Init();
 }
