@@ -742,7 +742,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   }
 
   // get maximum global id on this processor
-  int thisprocmaxglobalid = (thisprocglobalids.size() == 0) ? 0 : *thisprocglobalids.rbegin();
+  int thisprocmaxglobalid = (thisprocglobalids.empty()) ? 0 : *thisprocglobalids.rbegin();
 
   // get maximum global id on all processors
   int allprocmaxglobalid(0);

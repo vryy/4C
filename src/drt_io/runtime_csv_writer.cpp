@@ -61,7 +61,7 @@ void RuntimeCsvWriter::Setup()
   if (myrank_ != 0) return;
 
   if (not isinit_) dserror("csv writer not initialized!");
-  if (data_vectors_.size() == 0) dserror("no data vectors registered!");
+  if (data_vectors_.empty()) dserror("no data vectors registered!");
 
   // write file header
   WriteFileHeader();

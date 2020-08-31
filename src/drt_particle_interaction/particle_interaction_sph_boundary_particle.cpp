@@ -64,7 +64,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
       boundarytypes_.erase(type_i);
 
   // safety check
-  if (boundarytypes_.size() == 0)
+  if (boundarytypes_.empty())
     dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 

@@ -111,7 +111,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
   for (auto& stateEnum : storedstates_)
   {
     // state not handed over
-    if (particle.size() <= stateEnum or particle[stateEnum].size() == 0)
+    if (particle.size() <= stateEnum or particle[stateEnum].empty())
     {
       // initialize to zero
       for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
@@ -155,7 +155,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
   for (auto& stateEnum : storedstates_)
   {
     // state not handed over
-    if (particle.size() <= stateEnum or particle[stateEnum].size() == 0)
+    if (particle.size() <= stateEnum or particle[stateEnum].empty())
     {
       // leave state untouched
     }
