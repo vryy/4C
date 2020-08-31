@@ -523,8 +523,10 @@ namespace SCATRA
         const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
 
-    //! build null spaces associated with blocks of global system matrix
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const;
+    //! build null spaces associated with blocks of global system matrix. Hand in solver to access
+    //! parameter list and initial number of block (e.g. for coupled problems)
+    virtual void BuildBlockNullSpaces(
+        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 

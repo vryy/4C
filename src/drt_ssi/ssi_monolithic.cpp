@@ -142,7 +142,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
     case LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
-      ScaTraField()->BuildBlockNullSpaces(solver_);
+      ScaTraField()->BuildBlockNullSpaces(solver_, 0);
 
       break;
     }

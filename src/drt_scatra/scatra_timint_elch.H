@@ -55,12 +55,16 @@ namespace SCATRA
     //! @name Preconditioning
     /*========================================================================*/
 
+    //! Setup splitter for concetration and potential dofs
     void SetupSplitter();
 
+    //! additional, to standard partitioning in scatra, the global system matrix in elch can be
+    //! partitioned into concentration and potential dofs
     void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
-    void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const override;
+    void BuildBlockNullSpaces(
+        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const override;
 
     /*========================================================================*/
     //! @name general framework
@@ -232,6 +236,14 @@ namespace SCATRA
     //! set up concentration-potential-potential splitter for macro scale in multi-scale
     //! simulations
     void SetupConcPotPotSplit();
+
+    //! reduces the dimension of the null space by one (if system matrix is partitioned according to
+    //! concentration and potential). The original full null space was computed for all degrees of
+    //! freedom on the discretization, such that the reduced null spaces still have the full
+    //! dimension. Thus, the dimension of each null space is decreased by one, and the corresponding
+    //! zero null space vector is removed from the null space.
+    void ReduceDimensionNullSpaceBlocks(
+        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
