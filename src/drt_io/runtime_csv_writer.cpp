@@ -82,7 +82,8 @@ void RuntimeCsvWriter::Setup()
     std::ifstream restartfile(fullpathrestartfile, std::ios_base::out);
 
     // check if file was found
-    if (not restartfile) dserror("restart file '%s' could not be found", fullpathrestartfile);
+    if (not restartfile)
+      dserror("restart file '%s' could not be found", fullpathrestartfile.c_str());
 
     std::stringstream sectionpriorrestart;
 
