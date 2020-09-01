@@ -615,10 +615,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "material parameters for ion species in electrolyte solution", INPAR::MAT::m_newman));
 
     AddNamedReal(m, "VALENCE", "valence (= charge number)");
-    AddNamedInt(m, "DIFFCOEF", "curve number for diffusion coefficient");
+    AddNamedInt(m, "DIFF_COEF_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of diffusion coefficient");
     AddNamedInt(m, "TRANSNR", "curve number for transference number");
     AddNamedInt(m, "THERMFAC", "curve number for thermodynamic factor");
-    AddNamedInt(m, "COND", "curve number for conductivity");
+    AddNamedInt(m, "COND_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of conductivity");
     // optional parameter for implemented concentration depending function
     AddNamedInt(m, "DIFF_PARA_NUM", "number of parameters for diffusion coefficient", 0, true);
     AddNamedRealVector(
@@ -645,10 +647,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         INPAR::MAT::m_newman_multiscale));
 
     AddNamedReal(m, "VALENCE", "valence (= charge number)");
-    AddNamedInt(m, "DIFFCOEF", "curve number for diffusion coefficient");
+    AddNamedInt(m, "DIFF_COEF_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of diffusion coefficient");
     AddNamedInt(m, "TRANSNR", "curve number for transference number");
     AddNamedInt(m, "THERMFAC", "curve number for thermodynamic factor");
-    AddNamedInt(m, "COND", "curve number for ionic conductivity");
+    AddNamedInt(m, "COND_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of conductivity");
     AddNamedReal(m, "SIGMA", "electronic conductivity");
     AddNamedReal(m, "A_s", "specific micro-scale surface area");
     AddNamedString(m, "MICROFILE", "input file for micro scale", "filename.dat");
@@ -678,8 +682,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         new MaterialDefinition("MAT_electrode", "electrode material", INPAR::MAT::m_electrode));
 
     // diffusivity and electronic conductivity
-    AddNamedInt(matelectrode, "DIFFCOEF", "curve number for diffusion coefficient");
-    AddNamedInt(matelectrode, "COND", "curve number for electronic conductivity");
+    AddNamedInt(matelectrode, "DIFF_COEF_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of diffusion coefficient");
+    AddNamedInt(matelectrode, "COND_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of conductivity");
 
     // optional parameters for concentration dependency of diffusivity and electronic conductivity
     AddNamedInt(
