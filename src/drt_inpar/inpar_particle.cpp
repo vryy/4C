@@ -307,6 +307,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& particledyndem = particledyn.sublist(
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
+  // write particle energy output
+  BoolParameter("WRITE_PARTICLE_ENERGY", "no", "write particle energy output", &particledyndem);
+
   // write particle-wall interaction output
   BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
       &particledyndem);

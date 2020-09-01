@@ -26,6 +26,7 @@ PARTICLE_WALL_SOURCE            DiscretCondition
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 INITIAL_VELOCITY_FIELD          phase1 1
 --------------------------------------------------------PARTICLE DYNAMIC/DEM
+WRITE_PARTICLE_ENERGY           yes
 NORMALCONTACTLAW                NormalLinearSpringDamp
 TANGENTIALCONTACTLAW            TangentialLinSpringDamp
 ROLLINGCONTACTLAW               RollingCoulomb

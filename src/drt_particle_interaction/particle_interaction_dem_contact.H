@@ -105,6 +105,9 @@ namespace PARTICLEINTERACTION
     //! add contact contribution to force and moment field
     void AddForceAndMomentContribution();
 
+    //! evaluate elastic potential energy contribution
+    void EvaluateElasticPotentialEnergy(double& elasticpotentialenergy) const;
+
    private:
     //! init normal contact handler
     void InitNormalContactHandler();
@@ -126,6 +129,12 @@ namespace PARTICLEINTERACTION
 
     //! evaluate particle-wall contact contribution
     void EvaluateParticleWallContact();
+
+    //! evaluate particle elastic potential energy contribution
+    void EvaluateParticleElasticPotentialEnergy(double& elasticpotentialenergy) const;
+
+    //! evaluate particle-wall elastic potential energy contribution
+    void EvaluateParticleWallElasticPotentialEnergy(double& elasticpotentialenergy) const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

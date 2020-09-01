@@ -112,6 +112,9 @@ namespace PARTICLEINTERACTION
     //! init adhesion handler
     void InitAdhesionHandler();
 
+    //! setup particle interaction writer
+    void SetupParticleInteractionWriter();
+
     //! set initial radius
     void SetInitialRadius();
 
@@ -123,6 +126,15 @@ namespace PARTICLEINTERACTION
 
     //! compute acceleration from force and moment
     void ComputeAcceleration() const;
+
+    //! evaluate particle energy
+    void EvaluateParticleEnergy() const;
+
+    //! evaluate particle kinetic energy contribution
+    void EvaluateParticleKineticEnergy(double& kineticenergy) const;
+
+    //! evaluate particle gravitational potential energy contribution
+    void EvaluateParticleGravitationalPotentialEnergy(double& gravitationalpotentialenergy) const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
@@ -138,6 +150,9 @@ namespace PARTICLEINTERACTION
 
     //! adhesion handler
     std::unique_ptr<PARTICLEINTERACTION::DEMAdhesion> adhesion_;
+
+    //! write particle energy output
+    const bool writeparticleenergy_;
   };
 
 }  // namespace PARTICLEINTERACTION

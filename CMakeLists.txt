@@ -1884,7 +1884,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
-  src/drt_particle_interaction/particle_interaction_runtime_vtp_writer.cpp
+  src/drt_particle_interaction/particle_interaction_runtime_writer.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container.cpp
@@ -2086,6 +2086,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/runtime_vtp_writer.cpp
   src/drt_io/discretization_runtime_vtu_writer.cpp
   src/drt_io/discretization_runtime_vtp_writer.cpp
+  src/drt_io/runtime_csv_writer.cpp
   src/drt_beam3/beam_discretization_runtime_vtu_writer.cpp
   src/drt_io/io_pstream.cpp
   src/drt_lib/drt_domainreader.cpp

@@ -69,6 +69,10 @@ namespace PARTICLEINTERACTION
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const = 0;
 
+    //! evaluate rolling potential energy
+    virtual void RollingPotentialEnergy(
+        const double* gap_rolling, double& rollingpotentialenergy) const = 0;
+
    protected:
     //! discrete element method parameter list
     const Teuchos::ParameterList& params_dem_;
@@ -112,6 +116,10 @@ namespace PARTICLEINTERACTION
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
 
+    //! evaluate rolling potential energy
+    void RollingPotentialEnergy(
+        const double* gap_rolling, double& rollingpotentialenergy) const override;
+
    private:
     //! particle Young's modulus
     const double young_;
@@ -142,6 +150,10 @@ namespace PARTICLEINTERACTION
         const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
+
+    //! evaluate rolling potential energy
+    void RollingPotentialEnergy(
+        const double* gap_rolling, double& rollingpotentialenergy) const override;
 
    private:
     //! rolling contact stiffness

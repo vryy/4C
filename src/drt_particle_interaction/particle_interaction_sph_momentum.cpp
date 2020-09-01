@@ -12,7 +12,7 @@
 
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_material_handler.H"
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_sph_equationofstate_bundle.H"
 #include "particle_interaction_sph_neighbor_pairs.H"

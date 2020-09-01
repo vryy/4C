@@ -11,7 +11,7 @@
 #include "particle_interaction_base.H"
 
 #include "particle_interaction_material_handler.H"
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"

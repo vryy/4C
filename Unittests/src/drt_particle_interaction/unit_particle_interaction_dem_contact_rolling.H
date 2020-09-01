@@ -196,6 +196,18 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::
     for (int i = 0; i < 3; ++i)
       TS_ASSERT_DELTA(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
   }
+
+  void test_RollingPotentialEnergy()
+  {
+    double gap_rolling[3] = {0.0};
+
+    const double rollingpotentialenergy_ref = 0.0;
+
+    double rollingpotentialenergy = 0.0;
+    contactrolling_->RollingPotentialEnergy(gap_rolling, rollingpotentialenergy);
+
+    TS_ASSERT_DELTA(rollingpotentialenergy, rollingpotentialenergy_ref, 1.0e-12);
+  }
 };
 
 class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::TestSuite
@@ -391,6 +403,23 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::
       TS_ASSERT_DELTA(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
 
     TS_ASSERT_EQUALS(stick_rolling, false);
+  }
+
+  void test_RollingPotentialEnergy()
+  {
+    double gap_rolling[3] = {0.0};
+    gap_rolling[0] = 0.1;
+    gap_rolling[1] = 0.05;
+    gap_rolling[2] = -0.25;
+
+    const double k_rolling = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
+    const double rollingpotentialenergy_ref =
+        0.5 * k_rolling * UTILS::vec_dot(gap_rolling, gap_rolling);
+
+    double rollingpotentialenergy = 0.0;
+    contactrolling_->RollingPotentialEnergy(gap_rolling, rollingpotentialenergy);
+
+    TS_ASSERT_DELTA(rollingpotentialenergy, rollingpotentialenergy_ref, 1.0e-12);
   }
 };
 
