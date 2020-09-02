@@ -334,6 +334,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/contact*                    @baci/team_contact
 
+/Input/elch_*                      @cschmidt @ssinzig
+
 /Input/f2_*                        @baci/team_fluid
 /Input/f3_*                        @baci/team_fluid
 
@@ -371,6 +373,9 @@ Input/rigidsphere*                 @baci/team_structure
 /Input/scatra*                     @baci/team_scatra
 
 /Input/spring_dashpot*             @agebauer @baci/team_discretization
+
+/Input/ssi*                        @cschmidt @ssinzig
+/Input/sti*                        @cschmidt @ssinzig
 
 /Input/thermo*                     @baci/team_thermo
 
