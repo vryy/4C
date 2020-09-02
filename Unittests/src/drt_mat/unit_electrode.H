@@ -36,9 +36,11 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // add dummy parameters to container
     container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
+    container->Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
     container->Add("DIFF_PARA_NUM", 0);
     container->Add("DIFF_PARA", std::vector<double>(0, 0.));
     container->Add("COND_CONC_DEP_FUNCT", 0);
+    container->Add("COND_TEMP_SCALE_FUNCT", 0);
     container->Add("COND_PARA_NUM", 0);
     container->Add("COND_PARA", std::vector<double>(0, 0.));
 

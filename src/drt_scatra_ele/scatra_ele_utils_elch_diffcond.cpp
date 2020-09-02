@@ -86,19 +86,14 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
   return;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate electrolyte material                             fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
-    const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte material
-    const std::vector<double>& concentrations,          //!< local concentration values
-    const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
-    const double& ffrt,                 //!< factor F²/RT
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
-    INPAR::ELCH::DiffCondMat& diffcondmat                               //!< ion type
-)
+    const Teuchos::RCP<const MAT::Material>& material, const std::vector<double>& concentrations,
+    const double temperature, const INPAR::ELCH::EquPot equpot, const double ffrt,
+    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,
+    INPAR::ELCH::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte material
   const Teuchos::RCP<const MAT::ElchMat> elchmat =
@@ -112,25 +107,19 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
 
   if (elchphase->MaterialType() == INPAR::MAT::m_elchphase)
     // evaluate electrolyte phase
-    MatElchPhase(elchphase, concentrations, equpot, ffrt, diffmanager, diffcondmat);
+    MatElchPhase(elchphase, concentrations, temperature, equpot, ffrt, diffmanager, diffcondmat);
   else
     dserror("Invalid material type!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate electrolyte phase                                fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
-    const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte phase
-    const std::vector<double>& concentrations,          //!< local concentration values
-    const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
-    const double& ffrt,                 //!< factor F²/RT
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
-    INPAR::ELCH::DiffCondMat& diffcondmat                               //!< ion type
-)
+    const Teuchos::RCP<const MAT::Material>& material, const std::vector<double>& concentrations,
+    const double temperature, const INPAR::ELCH::EquPot& equpot, const double& ffrt,
+    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,
+    INPAR::ELCH::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte phase
   const Teuchos::RCP<const MAT::ElchPhase> matelchphase =
@@ -145,10 +134,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
   // loop over materials within electrolyte phase
   for (int imat = 0; imat < matelchphase->NumMat(); ++imat)
   {
-    const Teuchos::RCP<const MAT::Material> material =
+    const Teuchos::RCP<const MAT::Material> elchPhaseMaterial =
         matelchphase->MatById(matelchphase->MatID(imat));
 
-    switch (material->MaterialType())
+    switch (elchPhaseMaterial->MaterialType())
     {
       case INPAR::MAT::m_newman:
       case INPAR::MAT::m_newman_multiscale:
@@ -161,12 +150,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         diffcondmat = INPAR::ELCH::diffcondmat_newman;
 
         // evaluate standard Newman material
-        if (material->MaterialType() == INPAR::MAT::m_newman)
-          MatNewman(material, concentrations[0], diffmanager);
+        if (elchPhaseMaterial->MaterialType() == INPAR::MAT::m_newman)
+          MatNewman(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
 
         // evaluate multi-scale Newman material
         else
-          MatNewmanMultiScale(material, concentrations[0], diffmanager);
+          MatNewmanMultiScale(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
 
         break;
       }
@@ -176,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         // set ion type
         diffcondmat = INPAR::ELCH::diffcondmat_ion;
 
-        myelch::MatIon(material, imat, equpot, diffmanager);
+        myelch::MatIon(elchPhaseMaterial, imat, equpot, diffmanager);
 
         // calculation of conductivity and transference number based on diffusion coefficient and
         // valence
@@ -196,20 +185,15 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
       }
     }
   }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- | evaluate standard Newman material                         fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
-    const Teuchos::RCP<const MAT::Material>& material,  //!< Newman material
-    const double& concentration,                        //!< local concentration value
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager  //!< diffusion manager
-)
+    const Teuchos::RCP<const MAT::Material>& material, const double concentration,
+    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager)
 {
   // cast material to Newman material
   const Teuchos::RCP<const MAT::Newman> matnewman =
@@ -219,7 +203,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   diffmanager->SetValence(matnewman->Valence(), 0);
 
   // concentration depending diffusion coefficient
-  diffmanager->SetIsotropicDiff(matnewman->ComputeDiffusionCoefficient(concentration), 0);
+  diffmanager->SetIsotropicDiff(
+      matnewman->ComputeDiffusionCoefficient(concentration, temperature), 0);
   // derivation of concentration depending diffusion coefficient wrt all ionic species
   diffmanager->SetDerivIsoDiffCoef(matnewman->ComputeFirstDerivDiffCoeff(concentration), 0, 0);
 
@@ -236,25 +221,20 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // conductivity and first derivative can maximally depend on one concentration
   // since time curve is used as input routine
   // conductivity of electrolyte solution
-  diffmanager->SetCond(matnewman->ComputeConductivity(concentration));
+  diffmanager->SetCond(matnewman->ComputeConductivity(concentration, temperature));
   // derivative of conductivity with respect to concentrations
   diffmanager->SetDerivCond(matnewman->ComputeFirstDerivCond(concentration), 0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate multi-scale Newman material                      fang 07/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewmanMultiScale(
-    const Teuchos::RCP<const MAT::Material>& material,  //!< Newman material
-    const double& concentration,                        //!< local concentration value
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager  //!< diffusion manager
-)
+    const Teuchos::RCP<const MAT::Material>& material, const double concentration,
+    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager)
 {
   // evaluate standard Newman material
-  MatNewman(material, concentration, diffmanager);
+  MatNewman(material, concentration, temperature, diffmanager);
 
   // cast material and diffusion manager
   const Teuchos::RCP<const MAT::NewmanMultiScale> newmanmultiscale =
@@ -266,8 +246,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewmanMultiScale(
 
   // set electronic conductivity
   diffmanagermultiscale->SetSigma(newmanmultiscale->Sigma());
-
-  return;
 }
 
 

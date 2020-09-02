@@ -1281,7 +1281,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
 
 
 /*----------------------------------------------------------------------*
- | evaluate multi-scale scalar transport material            fang 01/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
@@ -1312,22 +1311,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
 
 
 /*----------------------------------------------------------------------*
- | evaluate electrode material                               fang 07/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatElectrode(
-    const Teuchos::RCP<const MAT::Material> material  //!< electrode material
-)
+    const Teuchos::RCP<const MAT::Material> material)
 {
   // set constant diffusivity
   diffmanager_->SetIsotropicDiff(
-      Teuchos::rcp_static_cast<const MAT::Electrode>(material)->ComputeDiffusionCoefficient(
-          scatravarmanager_->Phinp(0)),
+      Teuchos::rcp_static_cast<const MAT::Electrode>(material)
+          ->ComputeDiffusionCoefficientConcentrationDependent(scatravarmanager_->Phinp(0)),
       0);
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatElectrode
-
+}
 
 /*---------------------------------------------------------------------------------------*
  |  calculate the Laplacian in strong form for all shape functions (private)   gjb 04/10 |
