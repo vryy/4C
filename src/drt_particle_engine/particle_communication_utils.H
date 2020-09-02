@@ -14,11 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include <Epetra_Comm.h>
 #include "Epetra_MpiComm.h"
 
-#include <map>
-#include <set>
 #include <vector>
 
 namespace PARTICLEENGINE
