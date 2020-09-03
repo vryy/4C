@@ -422,12 +422,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
     double coordgp[3];  // we always need three coordinates for function evaluation!
     for (int i = 0; i < 3; ++i) coordgp[i] = shapesface_->xyzreal(i, q);
 
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
-
     const double fac = shapesface_->jfac(q);
     // evaluate function at current Gauss point (provide always 3D coordinates!)
     const double functfac =
-        DRT::Problem::Instance()->Funct((*func)[0] - 1).Evaluate(0, coordgpref, time);
+        DRT::Problem::Instance()->Funct((*func)[0] - 1).Evaluate(0, coordgp, time);
 
     // Creating the mass matrix and the RHS vector
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
