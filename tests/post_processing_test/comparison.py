@@ -10,7 +10,7 @@ def isEqual(ref,line,tol):
     print 'check your reference csv-file'
     sys.exit(1)
   for j in range(0,len(ref)):
-    if not (float(line[j]) >= (float(ref[j])-float(tol))) and (float(line[j]) <= (float(ref[j])+float(tol))):
+    if not (float(line[j]) >= (float(ref[j])-float(tol)) and float(line[j]) <= (float(ref[j])+float(tol))):
       return False
   return True
 
