@@ -35,10 +35,10 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
 
     // add dummy parameters to container
-    container->Add("DIFFCOEF", 0);
+    container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
     container->Add("DIFF_PARA_NUM", 0);
     container->Add("DIFF_PARA", std::vector<double>(0, 0.));
-    container->Add("COND", 0);
+    container->Add("COND_CONC_DEP_FUNCT", 0);
     container->Add("COND_PARA_NUM", 0);
     container->Add("COND_PARA", std::vector<double>(0, 0.));
 
