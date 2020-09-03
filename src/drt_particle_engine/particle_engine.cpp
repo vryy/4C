@@ -1050,7 +1050,7 @@ void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
 
 void PARTICLEENGINE::ParticleEngine::SetupParticleUniqueGlobalIdHandler() const
 {
-  // setup particle container bundle
+  // setup particle unique global identifier handler
   particleuniqueglobalidhandler_->Setup();
 }
 
