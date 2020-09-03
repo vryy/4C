@@ -987,6 +987,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
       const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       const double* interfacenormal_i =
@@ -1005,8 +1007,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, interfacenormal_i), interfacenormal_i);
 
       // add contribution to acceleration
-      UTILS::vec_addscale(
-          acc_i, timefac * alphaT_ * UTILS::vec_norm2(colorfieldgrad_i), tempgrad_i_proj);
+      UTILS::vec_addscale(acc_i, timefac * alphaT_ * UTILS::vec_norm2(colorfieldgrad_i) / dens_i[0],
+          tempgrad_i_proj);
     }
   }
 }
