@@ -91,6 +91,8 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       intlayergrowth_convtol_(0.),
       intlayergrowth_itemax_(0),
       partitioned_multiscale_(false),
+      is_emd_(false),
+      emd_source_(-1),
       stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
       whichtau_(INPAR::SCATRA::tau_zero),
       charelelength_(INPAR::SCATRA::streamlength),
@@ -247,6 +249,12 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 
   // set flag for truly partitioned multi-scale simulation
   partitioned_multiscale_ = parameters.get<bool>("partitioned_multiscale", false);
+
+  // set flag for electromagnetic diffusion simulation
+  is_emd_ = parameters.get<bool>("electromagnetic_diffusion", false);
+
+  // electromagnetic diffusion source function
+  emd_source_ = parameters.get<int>("electromagnetic_diffusion_source", -1);
 
   return;
 }

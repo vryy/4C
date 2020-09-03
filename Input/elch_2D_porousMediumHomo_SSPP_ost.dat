@@ -101,7 +101,7 @@ ML_DAMPCOARSE                   0.9                             // damping coars
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 0.363380237 TORTUOSITY 5.4540e-01 NUMMAT 1 MATIDS 3 END
-MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 2 TRANSNR 3 THERMFAC 5 COND 4 END
+MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 2 TRANSNR 3 THERMFAC 5 COND_CONC_DEP_FUNCT 4 END
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
 COMPONENT 1 FUNCTION 0.0    //initial potential field:

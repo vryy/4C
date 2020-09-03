@@ -140,6 +140,9 @@ namespace PARTICLEINTERACTION
 
     //! pointer to thermo material of particle types
     std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
+
+    //! set of integrated thermo particle types
+    std::set<PARTICLEENGINE::TypeEnum> intthermotypes_;
   };
 
 }  // namespace PARTICLEINTERACTION

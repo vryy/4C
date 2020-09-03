@@ -183,17 +183,16 @@ void ELEMAG::ElemagTimeInt::Integrate()
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
 
-  // Compute matrix for ABC boundary conditions
-  ComputeSilverMueller(false);
-
   // time loop
   while (step_ < stepmax_ and time_ < maxtime_)
   {
     // increment time and step
     IncrementTimeAndStep();
 
-    ApplyDirichletToSystem();
+    // Update RHS for boundary conditions
+    ApplyDirichletToSystem(true);
     ComputeSilverMueller(true);
+
     Solve();
 
     UpdateInteriorVariablesAndAssembleRHS();
@@ -516,14 +515,13 @@ void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
     // call elements to calculate system matrix/rhs and assemble
     AssembleMatAndRHS();
 
-    // Compute matrix for ABC boundary conditions
-    ComputeSilverMueller(false);
-
     // increment time and step
     IncrementTimeAndStep();
 
-    ApplyDirichletToSystem();
+    // Update boundary condition RHS
+    ApplyDirichletToSystem(true);
     ComputeSilverMueller(true);
+
     Solve();
 
     UpdateInteriorVariablesAndAssembleRHS();
@@ -594,6 +592,10 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   discret_->ClearState(true);
   sysmat_->Complete();
 
+  // Compute matrices and RHS for boundary conditions
+  ApplyDirichletToSystem(false);
+  ComputeSilverMueller(false);
+
   return;
 }  // AssembleMatAndRHS
 
@@ -631,15 +633,19 @@ void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
 /*----------------------------------------------------------------------*
  |  Apply Dirichlet b.c. to system (public)            gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem()
+void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
   discret_->EvaluateDirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  LINALG::ApplyDirichlettoSystem(
-      sysmat_, trace_, residual_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
+  if (resonly)
+    LINALG::ApplyDirichlettoSystem(residual_, zeros_, *(dbcmaps_->CondMap()));
+  else
+    LINALG::ApplyDirichlettoSystem(
+        sysmat_, trace_, residual_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
+
   return;
 }  // ApplyDirichletToSystem
 

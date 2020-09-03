@@ -1,7 +1,7 @@
 # Contributing to BACI
 
 Thank you for your willingness to contribute to BACI.
-The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [Baci Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in Baci.
+The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [BACI Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in BACI.
 
 > **Note:**  By contributing to BACI, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
 
@@ -15,7 +15,7 @@ To incorporate a `feature` branch into the `master` branch, BACI employs GitLab'
 
 ### Contents
 1. [Setup and Initial Configuration](#setup-and-initial-configuration)
-1. [The Baci Development Workflow](#the-baci-development-workflow)
+1. [The BACI Development Workflow](#the-baci-development-workflow)
    1. [Create a GitLab Issue](#create-a-gitlab-issue)
    1. [Work an Issue](#work-an-issue)
       1. [Create a Feature Branch](#create-a-feature-branch)
@@ -43,11 +43,11 @@ Double-check that your local Git repository is configured as described in [READM
 We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
 Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
 
-## The Baci Development Workflow
+## The BACI Development Workflow
 
 ### Create a GitLab Issue
 
-It is highly recommended to open an issue, when planning any change to Baci. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
+It is highly recommended to open an issue, when planning any change to BACI. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
 
 Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
@@ -73,7 +73,7 @@ Then the workflow to use is the following:
 
 #### Create a Feature Branch
 
-> **Note:** It is important to keep your local `master` branch in `baci` up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
+> **Note:** It is important to keep your local `master` branch in BACI up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
 First, update the `master` branch:
 
@@ -85,7 +85,7 @@ git pull
 
 where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
 
-Then, create a local branch off of `master` in `baci` on which to make your changes:
+Then, create a local branch off of `master` in BACI on which to make your changes:
 
 ```bash
 git branch <branchName>
@@ -140,7 +140,7 @@ Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for o
 
 #### Integrate changes from `master` into your feature branch
 
-While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
+While working on your feature in your local `<branchName>` branch in BACI, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
 
 ```bash
 git checkout master
@@ -169,12 +169,7 @@ A small set of test cases can be run via `ctest -L minimal`.
 
 ### Merging Changes into `master`
 
-To merge changes into `master`, a feature branch needs to satisfy these conditions:
-
-* Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
-* No build errors and warnings
-* All tests are passing
-* Passing code inspection by one of your fellow developers
+To bring changes form a locally developed feature branch into `master` and make them available to everyone, Baci relies on GitLab's _merge request (MR)_ mechanism. Baci's MR workflow is outlined in the following.
 
 #### Push your branch to GitLab
 
@@ -190,25 +185,27 @@ git push --set-upstream origin <branchName>
 
 #### Create a Merge Request
 
-When your changes are ready to be integrated into `baci`'s `master` branch,
+When your changes are ready to be integrated into BACI's `master` branch,
 move the issue card from **In Progress** to **Under Review** on our
 [Kanban board](https://gitlab.lrz.de/baci/baci/boards) and then:
 
-*  Navigate to BACI on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
+*  Navigate to the BACI project on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
    * Be sure you choose:
       * source branch: `<branchName>`
       * target branch: `master`
-   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and accepted as soon as it is practicable.
-   * To notify others about your merge request, @mention possible reviewers, affected teams, and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field.
-   * Assign an available reviewer from the @baci/baci_maintainer group who will take care of the reviewing/merging process (Members of the @baci/baci_maintainer group do not assign themselves).
+   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and merged as soon as it is practicable.
+
    > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
+   
+   * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field. This can be used to notify affected code owners in order to request their review and **required** approval.
+   * Assign the MR to yourself, as you are probably the person that will work the most on this MR.
+   
 * Trigger the execution of the test suite manually:
    * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page and select `Run Pipeline`
    * Select your branch `<branchName>` and start the pipeline
    * A manually triggered pipeline has to pass on the `feature` branch at least once.
-For subsequent minor changes on the `feature` branch, the selected reviewer and the affected developer can agree to reduce the additional testing scope.
+For subsequent minor changes on the `feature` branch, the reviewers and the MR author can agree to reduce the additional testing scope.
    > **Note** This pipeline tests only the standard BACI release configuration for workstations (Not included is testing of the debug version, cluster configurations, ...). In contrast to that, all configurations are tested once a day by the @baci_test_bot. These additional BACI configurations can be tested by setting appropriate variables if desired.
-
 
 
 [↑ Contents](#contents)
@@ -217,7 +214,7 @@ For subsequent minor changes on the `feature` branch, the selected reviewer and 
 
 If work on an issue is not yet complete, but you'd like to get another set of eyes on your work sooner rather than later,
 you can create a "work-in-progress" merge request.
-Simply begin the *Title* with `WIP:` and that will indicate to the team that this is ongoing work
+Simply begin the *Title* with `WIP:` and that will indicate to everybody that this is ongoing work
 that is not necessarily meant for review yet.
 
 If you are working on a feature addition that is fairly substantial (say greater than a month of work),
@@ -229,17 +226,44 @@ rather than having to look at the entire change set at once.
 
 [↑ Contents](#contents)
 
-#### Feedback
+#### Feedback, Review, and Approval
 
-At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in. If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.  Make sure you don't delete your remote feature branch before your merge request has been merged.
+At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
+If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.  Make sure you don't delete your remote feature branch before your merge request has been merged.
+
+> Independent of your level of expertise, experience with BACI, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
+
+To stimulate an open and constructive discussion and to get the MR ready to be merged, this includes:
+
+- _Anybody_ can make comments and/or raise questions about the proposed changes.
+- Code owners have to approve the changes to "their" files, when they agree with them.
+- The MR author will actively join the discussion and respond to comments and questions.
+
+> As always: Be constructive! Appreciate each others work and feedback!
+
+Some remarks on code review:
+
+- Code review is intended to be a constructive discussion about the **Why?** and **How?** of the proposed changes.
+- Recongnizing the fact, that there might be more than one good solution to a given problem, code review is intended to increase overall code quality and hopefully detect some critical points before merging.
+- We have a few mandatory [coding guidelines](https://gitlab.lrz.de/baci/baci/-/wikis/Baci-development-guidelines#coding-guidelines) in place, that need to be enforced during code review.
 
 [↑ Contents](#contents)
 
 #### Merging a Merge Request
 
-Once the feature branch is ready to be merged, use the "Merge" button on the merge request page on GitLab.
+To merge changes into `master`, a feature branch needs to satisfy the following conditions:
 
-> **Note** Only Maintainers can merge into the `master` branch.
+* Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
+* No build errors and warnings
+* All tests are passing.
+* Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
+
+When these conditions are met,
+the merge can be triggered using the "Merge" button on the merge request page on GitLab.
+It is good practice that the MR author triggers the merge,
+since he/she is in the best position to decide, whether he/she wants to merge right now or maybe wants to include more changes in this MR.
+
+> Yet, basically every @baci/baci_developers can press the "Merge" button.
 
 If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 

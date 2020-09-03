@@ -142,7 +142,7 @@ void SSI::SSI_Mono::BuildNullSpaces() const
     case LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
-      ScaTraField()->BuildBlockNullSpaces(solver_);
+      ScaTraField()->BuildBlockNullSpaces(solver_, 0);
 
       break;
     }
@@ -781,9 +781,8 @@ void SSI::SSI_Mono::SetupSystem()
           interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField()));
 
   // instantiate appropriate equilibration class
-  LINALG::EquilibrationFactory equibrilationfactory;
-  equilibration_ = equibrilationfactory.BuildEquilibration(
-      matrixtype_, equilibration_method_, *MapsSubProblems()->FullMap());
+  equilibration_ =
+      LINALG::BuildEquilibration(matrixtype_, equilibration_method_, MapsSubProblems()->FullMap());
 }
 
 /*---------------------------------------------------------------------------------*

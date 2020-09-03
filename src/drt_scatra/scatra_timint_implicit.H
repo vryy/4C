@@ -341,6 +341,12 @@ namespace SCATRA
     //! return flag for micro scale in multi-scale simulations
     bool MicroScale() const { return micro_scale_; };
 
+    //! return flag for electromagnetic diffusion simulations
+    bool IsEMD() const { return isemd_; };
+
+    //! return electromagnetic diffusion current density function
+    int EMDSource() const { return emd_source_; };
+
     //! print information about current time step to screen
     virtual void PrintTimeStepInfo();
 
@@ -523,8 +529,10 @@ namespace SCATRA
         const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
 
-    //! build null spaces associated with blocks of global system matrix
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const;
+    //! build null spaces associated with blocks of global system matrix. Hand in solver to access
+    //! parameter list and initial number of block (e.g. for coupled problems)
+    virtual void BuildBlockNullSpaces(
+        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -1096,6 +1104,12 @@ namespace SCATRA
 
     //! flag for micro scale in multi-scale simulations
     const bool micro_scale_;
+
+    //! flag for electromagnetic diffusion simulations
+    bool isemd_;
+
+    //! electromagnetic diffusion current source function
+    int emd_source_;
 
     /*--- query and output ---------------------------------------------------*/
 

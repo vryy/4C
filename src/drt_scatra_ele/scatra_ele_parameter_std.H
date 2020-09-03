@@ -64,6 +64,8 @@ namespace DRT
       double IntLayerGrowthConvTol() const { return intlayergrowth_convtol_; };
       unsigned IntLayerGrowthIteMax() const { return intlayergrowth_itemax_; };
       bool PartitionedMultiScale() const { return partitioned_multiscale_; };
+      bool IsEMD() const { return is_emd_; };
+      int EMDSource() const { return emd_source_; };
       //! @}
 
       //! @name return stabilization parameters
@@ -130,6 +132,12 @@ namespace DRT
 
       // flag for truly partitioned multi-scale simulation
       bool partitioned_multiscale_;
+
+      /// flag for electromagnetic diffusion simulation
+      bool is_emd_;
+
+      /// electromagnetic diffusion source function
+      int emd_source_;
       //! @}
 
       //! @name stabilization parameters

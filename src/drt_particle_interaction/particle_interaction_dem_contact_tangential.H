@@ -61,6 +61,10 @@ namespace PARTICLEINTERACTION
         const double& mu_tangential, const double& normalcontactforce,
         double* tangentialcontactforce) const = 0;
 
+    //! evaluate tangential potential energy
+    virtual void TangentialPotentialEnergy(
+        const double* gap_tangential, double& tangentialpotentialenergy) const = 0;
+
    protected:
     //! discrete element method parameter list
     const Teuchos::ParameterList& params_dem_;
@@ -86,6 +90,10 @@ namespace PARTICLEINTERACTION
         const double* normal, const double* v_rel_tangential, const double& m_eff,
         const double& mu_tangential, const double& normalcontactforce,
         double* tangentialcontactforce) const override;
+
+    //! evaluate tangential potential energy
+    void TangentialPotentialEnergy(
+        const double* gap_tangential, double& tangentialpotentialenergy) const override;
 
    private:
     //! coefficient of restitution

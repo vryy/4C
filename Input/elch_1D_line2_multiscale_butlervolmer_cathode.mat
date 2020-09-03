@@ -26,7 +26,7 @@ ABSTOLRES                       0.0
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_electrode DIFFCOEF -1 COND 0 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 C_MAX 23.9 CHI_MAX 1.0 OCP_MODEL Redlich-Kister X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
+MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 COND_CONC_DEP_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 C_MAX 23.9 CHI_MAX 1.0 OCP_MODEL Redlich-Kister X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
 -------------------------------------------------------------FUNCT1
 FUNCTION 10.56
 ------------------------------------------------DESIGN DESCRIPTION

@@ -103,6 +103,9 @@ namespace PARTICLEINTERACTION
 
     //! set of absorbing particle types
     std::set<PARTICLEENGINE::TypeEnum> absorbingtypes_;
+
+    //! set of non-absorbing particle types
+    std::set<PARTICLEENGINE::TypeEnum> nonabsorbingtypes_;
   };
 
   class SPHHeatSourceVolume : public SPHHeatSourceBase

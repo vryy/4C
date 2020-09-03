@@ -15,10 +15,13 @@
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
 #include "Epetra_MultiVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 #include "../drt_lib/drt_exporter.H"
-#include "linalg_blocksparsematrix.H"
+
+// Forward declarations
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+}  // namespace LINALG
 
 namespace LINALG
 {
@@ -45,13 +48,6 @@ namespace LINALG
    */
   void PrintMatrixInMatlabFormat(
       std::string fname, const Epetra_CrsMatrix& A, const bool newfile = true);
-
-  /*!
-   \brief Print content of SerialDenseMatrix in Matlab format
-
-   */
-  void PrintSerialDenseMatrixInMatlabFormat(
-      std::string fname, const Epetra_SerialDenseMatrix& A, const bool newfile = true);
 
   /*!
    \brief Print content of a block sparse matrix in Matlab format

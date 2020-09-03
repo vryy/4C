@@ -21,39 +21,33 @@ namespace MAT
     class ElchSingleMat : public Parameter
     {
      public:
-      //! create instance of electrode or electrolyte material
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
-
       //! @name parameters for abstract battery material
       //@{
-      //! curve number for diffusion coefficient
-      const int diffcurve_;
+      //! function number to describe concentration dependence of diffusion coefficient
+      const int diffusion_coefficient_concentration_dependence_funct_;
 
       //! number of parameters for diffusion coefficient
-      const int diffparanum_;
+      const int number_diffusion_coefficent_params_;
 
       //! parameters for diffusion coefficient
-      const std::vector<double> diffpara_;
+      const std::vector<double> diffusion_coefficent_params_;
 
-      //! curve number for conductivity
-      const int condcurve_;
+      //! function number to describe concentration dependence of conductivity
+      const int conductivity_concentration_dependence_funct_;
 
       //! number of parameters for conductivity
-      const int condparanum_;
+      const int number_conductivity_params_;
 
       //! parameters for conductivity
-      const std::vector<double> condpara_;
+      const std::vector<double> conductivity_params_;
       //@}
 
      protected:
       //! constructor
-      ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! destructor
-      virtual ~ElchSingleMat() { return; };
+      explicit ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! check whether number of parameters is consistent with curve number
-      void CheckProvidedParams(const int functnr, const std::vector<double>& functparams);
+      void CheckProvidedParams(int functnr, const std::vector<double>& functparams);
     };  // class MAT::PAR::ElchSingleMat
   }     // namespace PAR
 
@@ -70,7 +64,7 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
@@ -82,7 +76,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const = 0;
+    void Pack(DRT::PackBuffer& data) const override = 0;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -95,53 +89,55 @@ namespace MAT
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    virtual void Unpack(const std::vector<char>& data) = 0;
+    void Unpack(const std::vector<char>& data) override = 0;
     //@}
 
     //! compute diffusion coefficient according to curve number
-    double ComputeDiffusionCoefficient(const double cint) const;
+    double ComputeDiffusionCoefficient(double concentration) const;
 
     //! compute first derivative of diffusion coefficient according to curve number
-    double ComputeFirstDerivDiffCoeff(const double cint) const;
+    double ComputeFirstDerivDiffCoeff(double concentration) const;
 
     //! compute conductivity according to curve number
-    double ComputeConductivity(const double cint) const;
+    double ComputeConductivity(double concentration) const;
 
     //! compute first derivative of conductivity according to curve number
-    double ComputeFirstDerivCond(const double cint) const;
+    double ComputeFirstDerivCond(double concentration) const;
 
    protected:
-    //! return curve number for diffusion coefficient
-    int DiffCurve() const
+    //! return function number describing concentration dependence of diffusion coefficient
+    int DiffusionCoefficientConcentrationDependenceFunct() const
     {
-      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffcurve_;
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+          ->diffusion_coefficient_concentration_dependence_funct_;
     };
 
-    //! return curve number for conductivity
-    int CondCurve() const
+    //! return function number describing concentration dependence of conductivity
+    int ConductivityConcentrationDependenceFunct() const
     {
-      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->condcurve_;
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+          ->conductivity_concentration_dependence_funct_;
     };
 
     //! return parameters for diffusion coefficient
-    const std::vector<double>& DiffParams() const
+    const std::vector<double>& DiffusionCoefficientParams() const
     {
-      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffpara_;
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffusion_coefficent_params_;
     };
 
     //! return parameters for conductivity
-    const std::vector<double>& CondParams() const
+    const std::vector<double>& ConductivityParams() const
     {
-      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->condpara_;
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
     };
 
     //! evaluate value of predefined function
     double EvalFunctValue(
-        const int functnr, const double cint, const std::vector<double>& functparams) const;
+        int functnr, double concentration, const std::vector<double>& functparams) const;
 
     //! evaluate first derivative of predefined function
     double EvalFirstDerivFunctValue(
-        const int functnr, const double cint, const std::vector<double>& functparams) const;
+        int functnr, double concentration, const std::vector<double>& functparams) const;
   };
 }  // namespace MAT
 #endif

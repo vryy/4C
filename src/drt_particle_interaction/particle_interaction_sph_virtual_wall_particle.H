@@ -140,6 +140,12 @@ namespace PARTICLEINTERACTION
 
     //! weighted fluid particle velocity
     std::vector<std::vector<double>> weightedvelocity_;
+
+    //! set of all fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> allfluidtypes_;
+
+    //! set of integrated fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> intfluidtypes_;
   };
 
 }  // namespace PARTICLEINTERACTION

@@ -97,7 +97,7 @@ namespace STI
     void AssembleODBlockThermoScatra();
 
     //! build null spaces associated with blocks of global system matrix
-    void BuildBlockNullSpaces() const;
+    void BuildNullSpaces() const;
 
     //! compute null space information associated with global system matrix if applicable
     void ComputeNullSpaceIfNecessary(Teuchos::ParameterList&

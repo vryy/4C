@@ -35,7 +35,7 @@ VELFUNCNO                       -2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-CALCERROR                       error_by_function
+CALCERROR                       No
 CALCERRORNO                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

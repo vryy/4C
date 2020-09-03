@@ -165,6 +165,13 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           fssugrdiff_smagorinsky_small),
       &scatradyn);
 
+  // flag for output of performance statistics associated with nonlinear solver into *.csv file
+  BoolParameter("ELECTROMAGNETICDIFFUSION", "No",
+      "flag to activate electromagnetic diffusion problems", &scatradyn);
+
+  // Current density source function for EMD problems
+  IntParameter("EMDSOURCE", -1, "Current density source", &scatradyn);
+
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
       tuple<std::string>("no", "Condensed_Smat", "Condensed_Bmat",
           "Condensed_Bmat_merged"),  // use the condensed_bmat_merged strategy

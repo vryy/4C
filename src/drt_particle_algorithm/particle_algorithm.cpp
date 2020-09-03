@@ -240,14 +240,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
   // update connectivity
   UpdateConnectivity();
 
-  // set gravity acceleration
-  if (particlegravity_) SetGravityAcceleration();
-
-  // evaluate particle interactions
-  if (particleinteraction_) particleinteraction_->EvaluateInteractions();
-
-  // apply viscous damping contribution
-  if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
+  // evaluate time step
+  EvaluateTimeStep();
 
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
@@ -597,11 +591,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // update connectivity
   UpdateConnectivity();
 
-  // set gravity acceleration
-  if (particlegravity_) SetGravityAcceleration();
+  // evaluate consistent initial states
+  {
+    // prepare time step
+    if (particleinteraction_) particleinteraction_->PrepareTimeStep();
 
-  // evaluate particle interactions
-  if (particleinteraction_) particleinteraction_->EvaluateInteractions();
+    // evaluate time step
+    EvaluateTimeStep();
+
+    // post evaluate time step
+    if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
+  }
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
@@ -871,6 +871,18 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
 {
   // set current write result flag in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentWriteResultFlag(writeresultsthisstep_);
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
+{
+  // set gravity acceleration
+  if (particlegravity_) SetGravityAcceleration();
+
+  // evaluate particle interactions
+  if (particleinteraction_) particleinteraction_->EvaluateInteractions();
+
+  // apply viscous damping contribution
+  if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()

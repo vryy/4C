@@ -5,7 +5,6 @@
 
 \level 2
 
-
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H"  // for splitter
 
@@ -70,9 +69,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
   if (frt_ <= 0.) dserror("Factor F/RT is non-positive!");
 }
 
-
 /*----------------------------------------------------------------------*
- | initialize algorithm                                 rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Init()
 {
@@ -92,7 +89,7 @@ void SCATRA::ScaTraTimIntElch::Init()
       dserror(
           "Adaptive time stepping for CCCV cell cycling requires corresponding boundary "
           "condition!");
-    if (not(cycling_timestep_ < dta_))
+    if (cycling_timestep_ >= dta_)
       dserror(
           "Adaptive time stepping for CCCV cell cycling requires that the modified time step size "
           "is smaller than the original time step size!");
@@ -100,9 +97,7 @@ void SCATRA::ScaTraTimIntElch::Init()
 }
 
 /*----------------------------------------------------------------------*
- |  initialize splitter for preconditioning                deanda 10/17 |
  *----------------------------------------------------------------------*/
-
 void SCATRA::ScaTraTimIntElch::SetupSplitter()
 {
   // set up concentration-potential splitter
@@ -146,31 +141,22 @@ void SCATRA::ScaTraTimIntElch::Setup()
   }
 
   // initialize vectors for states of charge and C rates of resolved electrodes
-  std::vector<DRT::Condition*> electrodesocconditions;
-  discret_->GetCondition("ElectrodeSOC", electrodesocconditions);
-  if (electrodesocconditions.size() > 0)
+  std::vector<DRT::Condition*> electrodeSocConditions;
+  discret_->GetCondition("ElectrodeSOC", electrodeSocConditions);
+  for (const auto& electrodeSocCondition : electrodeSocConditions)
   {
-    for (const auto& electrodesoccondition : electrodesocconditions)
-    {
-      auto conditioninitpair = std::make_pair(electrodesoccondition->GetInt("ConditionID"), -1.0);
-      if (isale_) electrodeinitvols_.insert(conditioninitpair);
-      electrodesoc_.insert(conditioninitpair);
-      electrodecrates_.insert(conditioninitpair);
-    }
+    auto conditioninitpair = std::make_pair(electrodeSocCondition->GetInt("ConditionID"), -1.0);
+    if (isale_) electrodeinitvols_.insert(conditioninitpair);
+    electrodesoc_.insert(conditioninitpair);
+    electrodecrates_.insert(conditioninitpair);
 
     // safety checks
-    for (int i = 0; i < static_cast<int>(electrodesocconditions.size()); ++i)
-    {
-      const double one_hour = electrodesocconditions[i]->GetDouble("one_hour");
-
-      if (one_hour <= 0.0) dserror("One hour must not be negative");
-      if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
-        dserror("This is not one hour in SI units");
-      if (i > 0)  // in case of more than one condition
-        for (int j = 0; j < i; ++j)
-          if (one_hour != electrodesocconditions[j]->GetDouble("one_hour"))
-            dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
-    }
+    const double one_hour = electrodeSocCondition->GetDouble("one_hour");
+    if (one_hour <= 0.0) dserror("One hour must not be negative");
+    if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
+      dserror("This is not one hour in SI units");
+    if (electrodeSocConditions[0]->GetDouble("one_hour") != one_hour)
+      dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
   }
 
   // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total
@@ -181,17 +167,17 @@ void SCATRA::ScaTraTimIntElch::Setup()
   discret_->GetCondition("ElchBoundaryKinetics", electrodeboundaryconditions);
   std::vector<DRT::Condition*> electrodeboundarypointconditions;
   discret_->GetCondition("ElchBoundaryKineticsPoint", electrodeboundarypointconditions);
-  if (electrodedomainconditions.size() > 0 and
-      (electrodeboundaryconditions.size() > 0 or electrodeboundarypointconditions.size() > 0))
+  if (!electrodedomainconditions.empty() and
+      (!electrodeboundaryconditions.empty() or !electrodeboundarypointconditions.empty()))
     dserror(
         "At the moment, we cannot have electrode domain kinetics conditions and electrode boundary "
         "kinetics conditions at the same time!");
-  else if (electrodeboundaryconditions.size() > 0 and electrodeboundarypointconditions.size() > 0)
+  else if (!electrodeboundaryconditions.empty() and !electrodeboundarypointconditions.empty())
     dserror(
         "At the moment, we cannot have electrode boundary kinetics line/surface conditions and "
         "electrode boundary kinetics point conditions at the same time!");
-  else if (electrodedomainconditions.size() > 0 or electrodeboundaryconditions.size() > 0 or
-           electrodeboundarypointconditions.size() > 0)
+  else if (!electrodedomainconditions.empty() or !electrodeboundaryconditions.empty() or
+           !electrodeboundarypointconditions.empty())
   {
     // group electrode conditions from all entities into one vector and loop
     std::vector<std::vector<DRT::Condition*>> electrodeconditions = {
@@ -208,9 +194,9 @@ void SCATRA::ScaTraTimIntElch::Setup()
 
   // extract constant-current constant-voltage (CCCV) cell cycling and half-cycle boundary
   // conditions
-  std::vector<Teuchos::RCP<DRT::Condition>> cccvcyclingconditions;
+  std::vector<DRT::Condition*> cccvcyclingconditions;
   discret_->GetCondition("CCCVCycling", cccvcyclingconditions);
-  std::vector<Teuchos::RCP<DRT::Condition>> cccvhalfcycleconditions;
+  std::vector<DRT::Condition*> cccvhalfcycleconditions;
   discret_->GetCondition("CCCVHalfCycle", cccvhalfcycleconditions);
 
   switch (cccvcyclingconditions.size())
@@ -219,7 +205,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
     case 0:
     {
       // safety check
-      if (cccvhalfcycleconditions.size())
+      if (!cccvhalfcycleconditions.empty())
         dserror(
             "Found constant-current constant-voltage (CCCV) half-cycle boundary conditions, but no "
             "CCCV cell cycling condition!");
@@ -238,7 +224,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
         dserror(
             "Must have exactly two degrees of freedom per node (lithium concentration and electric "
             "potential) for lithium-ion cell cycling!");
-      if (!cccvhalfcycleconditions.size())
+      if (cccvhalfcycleconditions.empty())
         dserror(
             "Found constant-current constant-voltage (CCCV) cell cycling boundary condition, but "
             "no CCCV half-cycle boundary conditions!");
@@ -247,9 +233,6 @@ void SCATRA::ScaTraTimIntElch::Setup()
         dserror(
             "Invalid ID of constant-current constant-voltage (CCCV) half-cycle boundary condition "
             "specified in CCCV cell cycling boundary condition!");
-
-      std::vector<DRT::Condition*> cccvhalfcycleconditions;
-      discret_->GetCondition("CCCVHalfCycle", cccvhalfcycleconditions);
 
       // new cccv condition
       cccv_condition_ =
@@ -270,9 +253,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
   }
 }
 
-
 /*----------------------------------------------------------------------*
- | set up concentration-potential splitter                   fang 08/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
 {
@@ -343,9 +324,7 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
 }
 
-
 /*----------------------------------------------------------------------*
- | set elch-specific element parameters                      fang 11/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
     Teuchos::ParameterList& eleparams) const
@@ -369,7 +348,6 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
   eleparams.set<bool>("boundaryfluxcoupling",
       DRT::INPUT::IntegralValue<bool>(*elchparams_, "COUPLE_BOUNDARY_FLUXES"));
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -486,9 +464,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
   return dt_new;
 }
 
-
 /*----------------------------------------------------------------------*
- | add parameters depending on the problem              rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
     Teuchos::ParameterList& params  //!< parameter list
@@ -497,9 +473,7 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
   discret_->SetState("dctoggle", dctoggle_);
 }
 
-
 /*----------------------------------------------------------------------*
- | contains the elch-specific nonlinear iteration loop       ehrl 01/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::NonlinearSolve()
 {
@@ -515,9 +489,7 @@ void SCATRA::ScaTraTimIntElch::NonlinearSolve()
   }  // end galvanostatic control
 }
 
-
 /*----------------------------------------------------------------------*
- | assemble global system of equations                       fang 09/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
 {
@@ -530,11 +502,9 @@ void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
 
   // call base class routine
   ScaTraTimIntImpl::AssembleMatAndRHS();
-}  // SCATRA::ScaTraTimIntElch::AssembleMatAndRHS
-
+}
 
 /*----------------------------------------------------------------------*
- | prepare time loop                                         fang 10/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
 {
@@ -551,11 +521,10 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-}  // SCATRA::ScaTraTimIntElch::PrepareTimeLoop
+}
 
 
 /*------------------------------------------------------------------------------*
- | initialization procedure prior to evaluation of first time step   fang 09/15 |
  *------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 {
@@ -571,18 +540,16 @@ void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 
   // initialize Nernst boundary conditions
   InitNernstBC();
-}  // SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep
+}
 
 /*----------------------------------------------------------------------------------------*
- | create scalar manager                                                      fang 12/14 |
  *----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CreateScalarHandler()
 {
   scalarhandler_ = Teuchos::rcp(new ScalarHandlerElch());
-}  // ScaTraTimIntImpl::CreateMeshtyingStrategy
+}
 
 /*----------------------------------------------------------------------*
- |  calculate error compared to analytical solution            gjb 10/08|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 {
@@ -762,12 +729,9 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       break;
     }
   }
-}  // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
-
+}
 
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Update(const int num)
 {
@@ -775,9 +739,7 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
   ElectrodeKineticsTimeUpdate();
 }
 
-
 /*----------------------------------------------------------------------*
- | output solution and restart data to file                  fang 02/18 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Output(const int num)
 {
@@ -796,9 +758,7 @@ void SCATRA::ScaTraTimIntElch::Output(const int num)
   }
 }
 
-
 /*----------------------------------------------------------------------*
- | problem-specific outputs                                  fang 01/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 {
@@ -814,11 +774,9 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 
   // for elch problems with moving boundary
   if (isale_) output_->WriteVector("trueresidual", trueresidual_);
-}  // SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
-
+}
 
 /*----------------------------------------------------------------------*
- | read problem-specific restart data                        fang 01/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
     const int step, IO::DiscretizationReader& reader)
@@ -869,11 +827,9 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
     // read restart of cccv condition
     cccv_condition_->ReadRestart(reader);
   }
-}  // SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific
-
+}
 
 /*------------------------------------------------------------------------------*
- | output electrode boundary status information to screen and file   fang 09/15 |
  *------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 {
@@ -884,13 +840,13 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
   discret_->GetCondition("ElchBoundaryKineticsPoint", pointcond);
 
   // safety check
-  if (cond.size() and pointcond.size())
+  if (!cond.empty() and !pointcond.empty())
     dserror(
         "Cannot have electrode boundary kinetics point conditions and electrode boundary "
         "kinetics line/surface conditions at the same time!");
 
   // process conditions
-  else if (cond.size() or pointcond.size())
+  else if (!cond.empty() or !pointcond.empty())
   {
     double sum(0.0);
 
@@ -910,7 +866,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
     {
       // extract condition ID
       int condid(-1);
-      if (cond.size())
+      if (!cond.empty())
         condid = cond[icond]->GetInt("ConditionID");
       else
         condid = pointcond[icond]->GetInt("ConditionID");
@@ -921,7 +877,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
       Teuchos::RCP<Epetra_SerialDenseVector> scalars;
 
       // electrode boundary kinetics line/surface condition
-      if (cond.size()) scalars = EvaluateSingleElectrodeInfo(condid, "ElchBoundaryKinetics");
+      if (!cond.empty()) scalars = EvaluateSingleElectrodeInfo(condid, "ElchBoundaryKinetics");
 
       // electrode boundary kinetics point condition
       else
@@ -946,16 +902,12 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
     // clean up
     discret_->ClearState();
   }
-}  // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
-
+}
 
 /*------------------------------------------------------------------------------*
- | evaluate status information on single line or surface electrode   fang 09/15 |
  *------------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfo(
-    const unsigned condid,        //!< ID of condition to be evaluated
-    const std::string condstring  //!< name of condition to be evaluated
-)
+    const int condid, const std::string& condstring)
 {
   // set vector values needed by elements
   discret_->ClearState();
@@ -1009,13 +961,10 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
   return scalars;
 }
 
-
 /*--------------------------------------------------------------------*
- | evaluate status information on single point electrode   fang 09/15 |
  *--------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(
-    Teuchos::RCP<DRT::Condition> condition  //!< condition to be evaluated
-)
+    Teuchos::RCP<DRT::Condition> condition)
 {
   // remove state vectors from discretization
   discret_->ClearState();
@@ -1075,7 +1024,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
     DRT::Node* node = discret_->gNode(nodeid);
 
     // safety checks
-    if (node == NULL) dserror("Cannot find node with global ID %d on discretization!", nodeid);
+    if (node == nullptr) dserror("Cannot find node with global ID %d on discretization!", nodeid);
     if (node->NumElement() != 1)
       dserror(
           "Electrode kinetics point boundary condition must be specified on boundary node with "
@@ -1115,22 +1064,11 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
   return scalars;
 }
 
-
 /*----------------------------------------------------------------------*
- | post-process status information on single electrode       fang 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
-    Epetra_SerialDenseVector&
-        scalars,           //!< scalar quantities associated with electrode status information (in)
-    const unsigned id,     //!< electrode ID (in)
-    const bool print,      //!< flag for output to screen and file (in)
-    double& currentsum,    //!< net current involving all conditions (out)
-    double& currtangent,   //!< tangent of current w.r.t. electrode potential (out)
-    double& currresidual,  //!< negative residual of current equation (out)
-    double& electrodeint,  //!< physical dimensions of the electrode region (out)
-    double& electrodepot,  //!< electrode potential on electrode side (out)
-    double& meanoverpot    //!< mean overpotential (out)
-)
+void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(Epetra_SerialDenseVector& scalars,
+    const unsigned id, const bool print, double& currentsum, double& currtangent,
+    double& currresidual, double& electrodeint, double& electrodepot, double& meanoverpot)
 {
   // get total integral of current
   double currentintegral = scalars(0);
@@ -1215,11 +1153,9 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
   electrodeconc_[id] = cint / boundaryint;
   electrodeeta_[id] = overpotentialint / boundaryint;
   electrodecurr_[id] = currentintegral + currentdlintegral;
-}  // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
-
+}
 
 /*-------------------------------------------------------------------------*
- | output electrode domain status information to screen         fang 07/15 |
  *-------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
 {
@@ -1229,7 +1165,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
   discret_->GetCondition(condstring, conditions);
 
   // output electrode domain status information to screen if applicable
-  if (conditions.size() > 0)
+  if (!conditions.empty())
   {
     // initialize variable for total current
     double currentsum(0.);
@@ -1279,9 +1215,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
   }
 }
 
-
 /*-------------------------------------------------------------------------------*
- | output electrode interior status information to screen and files   fang 01/15 |
  *-------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 {
@@ -1291,7 +1225,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
   // perform all following operations only if there is at least one condition for electrode state
   // of charge
-  if (conditions.size() > 0)
+  if (!conditions.empty())
   {
     // initialize variable for cell C rate
     cellcrate_ = 0.;
@@ -1416,11 +1350,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     if (myrank_ == 0)
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
   }
-}  // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior
-
+}
 
 /*----------------------------------------------------------------------*
- | output cell voltage to screen and file                    fang 01/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 {
@@ -1429,16 +1361,15 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
   discret_->GetCondition("CellVoltage", conditions);
   std::vector<DRT::Condition*> conditionspoint;
   discret_->GetCondition("CellVoltagePoint", conditionspoint);
-  if (conditions.size() and conditionspoint.size())
+  if (!conditions.empty() and !conditionspoint.empty())
     dserror(
         "Cannot have cell voltage line/surface conditions and cell voltage point conditions at "
-        "the "
-        "same time!");
-  else if (conditionspoint.size())
+        "the same time!");
+  else if (!conditionspoint.empty())
     conditions = conditionspoint;
 
   // perform all following operations only if there is at least one condition for cell voltage
-  if (conditions.size() > 0)
+  if (!conditions.empty())
   {
     // safety check
     if (conditions.size() != 2)
@@ -1462,7 +1393,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       const int condid = condition->GetInt("ConditionID");
 
       // process line and surface conditions
-      if (conditionspoint.size() == 0)
+      if (conditionspoint.empty())
       {
         // add state vector to discretization
         discret_->ClearState();
@@ -1502,7 +1433,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 
         // extract nodal cloud
         const std::vector<int>* const nodeids = condition->Nodes();
-        if (nodeids == NULL) dserror("Cell voltage point condition does not have nodal cloud!");
+        if (nodeids == nullptr) dserror("Cell voltage point condition does not have nodal cloud!");
         if (nodeids->size() != 1)
           dserror("Nodal cloud of cell voltage point condition must have exactly one node!");
 
@@ -1514,7 +1445,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         {
           // extract node
           DRT::Node* node = discret_->gNode(nodeid);
-          if (node == NULL)
+          if (node == nullptr)
             dserror("Cannot extract node with global ID %d from scalar transport discretization!",
                 nodeid);
 
@@ -1573,11 +1504,9 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       file.close();
     }  // if(myrank_ == 0)
   }
-}  // SCATRA::ScaTraTimIntElch::OutputCellVoltage
-
+}
 
 /*----------------------------------------------------------------------*
- | output restart data                                       fang 01/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputRestart() const
 {
@@ -1637,11 +1566,9 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
     // is time step adaptivity activated?
     output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);
   }
-}  // SCATRA::ScaTraTimIntElch::OutputRestart()
-
+}
 
 /*----------------------------------------------------------------------*
- | perform setup of natural convection                       fang 08/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetupNatConv()
 {
@@ -1713,11 +1640,9 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   }
   else
     dserror("Material type is not allowed!");
-}  // ScaTraTimIntElch::SetupNatConv()
-
+}
 
 /*-------------------------------------------------------------------------*
- | valid parameters for the diffusion-conduction formulation    ehrl 12/12 |
  *-------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
 {
@@ -1798,16 +1723,14 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
   }
 }
 
-
 /*----------------------------------------------------------------------*
- | Initialize Nernst-BC                                      ehrl 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::InitNernstBC()
 {
   // access electrode kinetics condition
   std::vector<DRT::Condition*> Elchcond;
   discret_->GetCondition("ElchBoundaryKinetics", Elchcond);
-  if (!Elchcond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", Elchcond);
+  if (Elchcond.empty()) discret_->GetCondition("ElchBoundaryKineticsPoint", Elchcond);
 
   for (unsigned icond = 0; icond < Elchcond.size(); ++icond)
   {
@@ -1852,11 +1775,9 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
 
   // At element level the Nernst condition has to be handled like a DC
   if (ektoggle_ != Teuchos::null) dctoggle_->Update(1.0, *ektoggle_, 1.0);
-}  // SCATRA::ScaTraTimIntImpl::InitNernstBC
-
+}
 
 /*----------------------------------------------------------------------------------------*
- | initialize meshtying strategy (including standard case without meshtying)   fang 12/14 |
  *----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 {
@@ -1871,10 +1792,9 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
   // standard case without meshtying
   else
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStdElch(this));
-}  // SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
+}
 
 /*----------------------------------------------------------------------*
- | calculate initial electric potential field                fang 03/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
@@ -2070,17 +1990,12 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
   // reset global system matrix and its graph, since we solved a very special problem with a
   // special sparsity pattern
   sysmat_->Reset();
-}  // SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
-
+}
 
 /*----------------------------------------------------------------------*
- |  calculate conductivity of electrolyte solution             gjb 07/09|
  *----------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeConductivity(
-    Epetra_SerialDenseVector& sigma,  //! result vector
-    bool effCond,                     //! flag for computation of effective conductivity
-    bool specresist                   //! flag for computation of specific electrolyte resistance
-)
+    Epetra_SerialDenseVector& sigma, bool effCond, bool specresist)
 {
   // we perform the calculation on element level hiding the material access!
   // the initial concentration distribution has to be uniform to do so!!
@@ -2090,15 +2005,9 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", SCATRA::calc_elch_conductivity);
 
-  if (effCond == true)
-    eleparams.set("effCond", true);
-  else
-    eleparams.set("effCond", false);
+  eleparams.set("effCond", effCond);
 
-  if (specresist == true)
-    eleparams.set("specresist", true);
-  else
-    eleparams.set("specresist", false);
+  eleparams.set("specresist", specresist);
 
   // provide number of dofset associated with velocity-related dofs
   eleparams.set<int>("ndsvel", nds_vel_);
@@ -2117,17 +2026,15 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   discret_->ClearState();  // clean up
   const double domint = (*sigma_domint)[NumScal() + 1];
 
-  if (specresist == false)
+  if (!specresist)
     for (int ii = 0; ii < NumScal() + 1; ++ii) sigma[ii] = (*sigma_domint)[ii] / domint;
   else
     specific_resistance = (*sigma_domint)[NumScal()] / domint;
 
   return specific_resistance;
-}  // ScaTraTimIntImpl::ComputeConductivity
-
+}
 
 /*----------------------------------------------------------------------*
- | apply galvanostatic control                                gjb 11/09 |
  *----------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 {
@@ -2150,12 +2057,12 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
     discret_->GetCondition("ElchBoundaryKineticsPoint", electrodeboundarypointconditions);
 
     // safety checks
-    if (electrodedomainconditions.size() > 0 and
-        (electrodeboundaryconditions.size() > 0 or electrodeboundarypointconditions.size() > 0))
+    if (!electrodedomainconditions.empty() and
+        (!electrodeboundaryconditions.empty() or !electrodeboundarypointconditions.empty()))
       dserror(
           "At the moment, we cannot have electrode domain kinetics conditions and electrode "
           "boundary kinetics conditions at the same time!");
-    else if (electrodeboundaryconditions.size() > 0 and electrodeboundarypointconditions.size() > 0)
+    else if (!electrodeboundaryconditions.empty() and !electrodeboundarypointconditions.empty())
       dserror(
           "At the moment, we cannot have electrode boundary kinetics line/surface conditions and "
           "electrode boundary kinetics point conditions at the same time!");
@@ -2163,17 +2070,17 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
     // determine type of electrode kinetics conditions to be evaluated
     std::vector<Teuchos::RCP<DRT::Condition>> conditions;
     std::string condstring;
-    if (electrodedomainconditions.size() > 0)
+    if (!electrodedomainconditions.empty())
     {
       conditions = electrodedomainconditions;
       condstring = "ElchDomainKinetics";
     }
-    else if (electrodeboundaryconditions.size() > 0)
+    else if (!electrodeboundaryconditions.empty())
     {
       conditions = electrodeboundaryconditions;
       condstring = "ElchBoundaryKinetics";
     }
-    else if (electrodeboundarypointconditions.size() > 0)
+    else if (!electrodeboundarypointconditions.empty())
     {
       conditions = electrodeboundarypointconditions;
       condstring = "ElchBoundaryPointKinetics";
@@ -2192,9 +2099,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
       if (effective_length < 0.0) dserror("A negative effective length is not possible!");
-      const INPAR::ELCH::ApproxElectResist approxelctresist =
-          DRT::INPUT::IntegralValue<INPAR::ELCH::ApproxElectResist>(
-              *elchparams_, "GSTAT_APPROX_ELECT_RESIST");
+      const auto approxelctresist = DRT::INPUT::IntegralValue<INPAR::ELCH::ApproxElectResist>(
+          *elchparams_, "GSTAT_APPROX_ELECT_RESIST");
 
       // There are maximal two electrode conditions by definition
       // current flow i at electrodes
@@ -2283,14 +2189,14 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       }
 
       // get the applied electrode potential of the cathode
-      int icond_cathode(-1);
-      for (unsigned icond = 0; icond < conditions.size(); ++icond)
-        if (conditions[icond]->GetInt("ConditionID") == condid_cathode)
+      Teuchos::RCP<DRT::Condition> cathode_condition;
+      for (const auto& condition : conditions)
+        if (condition->GetInt("ConditionID") == condid_cathode)
         {
-          icond_cathode = icond;
+          cathode_condition = condition;
           break;
         }
-      const double potold = conditions[icond_cathode]->GetDouble("pot");
+      const double potold = cathode_condition->GetDouble("pot");
       double potnew = potold;
 
       // bulk voltage loss
@@ -2512,7 +2418,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
                   << std::endl;
         std::cout << "| the ohmic electrolyte resistance obtained from                        |"
                   << std::endl;
-        ;
+
         if (approxelctresist == INPAR::ELCH::approxelctresist_effleninitcond)
           std::cout << "| GSTAT_LENGTH_CURRENTPATH and the averaged electrolyte conductivity.   |"
                     << std::endl;
@@ -2567,24 +2473,19 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       //      }
 
       // replace potential value of the boundary condition (on all processors)
-      conditions[icond_cathode]->Add("pot", potnew);
+      cathode_condition->Add("pot", potnew);
       gstatnumite_++;
       return false;  // not yet converged -> continue Newton iteration with updated potential
     }
   }
   return true;  // default
-
-}  // end ApplyGalvanostaticControl()
-
+}
 
 /*----------------------------------------------------------------------------*
- | evaluate domain or boundary conditions for electrode kinetics   fang 06/15 |
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< global system matrix
-    Teuchos::RCP<Epetra_Vector> rhs,                    //!< global right-hand side vector
-    const std::string condstring                        //!< name of condition to be evaluated
-)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
+    const std::string& condstring)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition '" + condstring + "'");
@@ -2615,16 +2516,12 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   // add linearization of NernstCondition to system matrix
   if (ektoggle_ != Teuchos::null) LinearizationNernstCondition();
-}  // ScaTraTimIntElch::EvaluateElectrodeKineticsConditions
-
+}
 
 /*----------------------------------------------------------------------------*
- | evaluate point boundary conditions for electrode kinetics       fang 07/15 |
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< global system matrix
-    Teuchos::RCP<Epetra_Vector> rhs                     //!< global right-hand side vector
-)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
@@ -2673,7 +2570,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
       DRT::Node* node = discret_->gNode(nodeid);
 
       // safety checks
-      if (node == NULL) dserror("Cannot find node with global ID %d on discretization!", nodeid);
+      if (node == nullptr) dserror("Cannot find node with global ID %d on discretization!", nodeid);
       if (node->NumElement() != 1)
         dserror(
             "Electrode kinetics point boundary condition must be specified on boundary node with "
@@ -2722,11 +2619,9 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
   // remove state vectors from discretization
   discret_->ClearState();
-}  // SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions
-
+}
 
 /*----------------------------------------------------------------------*
- | Add Linearization for Nernst-BC                           ehrl 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
 {
@@ -2755,36 +2650,30 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   discret_->EvaluateCondition(
       condparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condstring);
   discret_->ClearState();
-}  //  SCATRA::ScaTraTimIntImpl::LinearizationNernstCondition()
-
+}
 
 /*----------------------------------------------------------------------------*
- | evaluate solution-depending boundary and interface conditions   fang 10/14 |
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
-    Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
-)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // evaluate domain conditions for electrode kinetics
-  if (discret_->GetCondition("ElchDomainKinetics") != NULL)
+  if (discret_->GetCondition("ElchDomainKinetics") != nullptr)
     EvaluateElectrodeKineticsConditions(systemmatrix, rhs, "ElchDomainKinetics");
 
   // evaluate boundary conditions for electrode kinetics
-  if (discret_->GetCondition("ElchBoundaryKinetics") != NULL)
+  if (discret_->GetCondition("ElchBoundaryKinetics") != nullptr)
     EvaluateElectrodeKineticsConditions(systemmatrix, rhs, "ElchBoundaryKinetics");
 
   // evaluate point boundary conditions for electrode kinetics
-  if (discret_->GetCondition("ElchBoundaryKineticsPoint") != NULL)
+  if (discret_->GetCondition("ElchBoundaryKineticsPoint") != nullptr)
     EvaluateElectrodeBoundaryKineticsPointConditions(systemmatrix, rhs);
 
   // call base class routine
   ScaTraTimIntImpl::EvaluateSolutionDependingConditions(systemmatrix, rhs);
-}  // ScaTraTimIntElch::EvaluateSolutionDependingConditions
-
+}
 
 /*----------------------------------------------------------------------*
- | check for zero/negative concentration values               gjb 01/10 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vector> vec)
 {
@@ -2795,7 +2684,7 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // outside the domain of interest. Thus, they can have negative
   // concentration values although the concentration solution is positive
   // in the whole computational domain!
-  if (dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get()) != NULL) return;
+  if (dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get()) != nullptr) return;
 
   // this option can be helpful in some rare situations
   bool makepositive(false);
@@ -2860,20 +2749,12 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
     discret_->Comm().Barrier();
   }
 #endif
-
-  // so much code for a simple check!
-  return;
-}  // ScaTraTimIntImpl::CheckConcentrationValues
-
+}
 
 /*----------------------------------------------------------------------*
- | apply Dirichlet boundary conditions to state vectors      fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
-    Teuchos::RCP<Epetra_Vector> phinp,  //!< state vector of scalar transport degrees of freedom
-    Teuchos::RCP<Epetra_Vector>
-        phidt  //!< state vector of time derivatives of scalar transport degrees of freedom
-)
+void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
+    const double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt)
 {
   // call base class routine
   ScaTraTimIntImpl::ApplyDirichletBC(time, phinp, phidt);
@@ -2908,17 +2789,14 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
 
           // extract nodal cloud of current condition and perform safety check
           const std::vector<int>* nodegids = cccvhalfcyclecondition->Nodes();
-          if (!nodegids or !nodegids->size())
+          if (!nodegids or nodegids->empty())
             dserror(
                 "Constant-current constant-voltage (CCCV) cell cycling boundary condition does "
                 "not have a nodal cloud!");
 
           // loop over all nodes
-          for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+          for (int nodegid : *nodegids)
           {
-            // extract global ID of current node
-            const int nodegid = (*nodegids)[inode];
-
             // consider only nodes stored by current processor
             if (discret_->HaveGlobalNode(nodegid))
             {
@@ -2956,16 +2834,11 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(const double time,  //!< time
       // merge map with existing map for Dirichlet boundary conditions
       AddDirichCond(dbcmap);
     }
-}  // SCATRA::ScaTraTimIntElch::ApplyDirichletBC
-
-
+}
 
 /*----------------------------------------------------------------------*
- | evaluate Neumann boundary conditions                      fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
-    const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
-)
+void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
 {
   // call base class routine
   ScaTraTimIntImpl::ApplyNeumannBC(neumann_loads);
@@ -3039,12 +2912,9 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
         }  // relevant condition
       }    // loop over all conditions
     }
-}  // SCATRA::ScaTraTimIntElch::ApplyNeumannBC
-
-
+}
 
 /*---------------------------------------------------------------------------*
- | determine whether there are still time steps to be evaluated   fang 01/17 |
  *---------------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntElch::NotFinished()
 {
@@ -3077,15 +2947,10 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
   }
 }
 
-
 /*---------------------------------------------------------------------------*
- | perform Aitken relaxation                                      fang 08/17 |
  *---------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
-    Epetra_Vector& phinp,  //!< state vector to be relaxed
-    const Epetra_Vector&
-        phinp_inc_diff  //!< difference between current and previous state vector increments
-)
+    Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff)
 {
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit)
   {
@@ -3127,13 +2992,10 @@ void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
     ScaTraTimIntImpl::PerformAitkenRelaxation(phinp, phinp_inc_diff);
 }
 
-
 /*----------------------------------------------------------------------*
- | output flux vectors                                       fang 08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
-    const std::string& fluxtype  //!< flux type ("domain" or "boundary")
-)
+void SCATRA::ScaTraTimIntElch::OutputFlux(
+    Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype)
 {
   // safety check
   if (flux == Teuchos::null) dserror("Invalid flux vector!");
@@ -3159,13 +3021,11 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
 
   // perform actual flux output by calling base class routine
   ScaTraTimIntImpl::OutputFlux(flux, fluxtype);
-}  // SCATRA::ScaTraTimIntElch::OutputFlux
-
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SCATRA::ScalarHandlerElch::ScalarHandlerElch() : numscal_() { return; }
-
+SCATRA::ScalarHandlerElch::ScalarHandlerElch() : numscal_() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3175,9 +3035,8 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
   ScalarHandler::Setup(scatratimint);
 
   // cast to electrochemistry time integrator
-  const ScaTraTimIntElch* const elchtimint =
-      dynamic_cast<const ScaTraTimIntElch* const>(scatratimint);
-  if (elchtimint == NULL) dserror("cast to ScaTraTimIntElch failed!");
+  const auto* const elchtimint = dynamic_cast<const ScaTraTimIntElch* const>(scatratimint);
+  if (elchtimint == nullptr) dserror("cast to ScaTraTimIntElch failed!");
 
   // adapt number of transported scalars if necessary
   // current is a solution variable
@@ -3210,7 +3069,6 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
 }
 
 /*-------------------------------------------------------------------------*
-|  Determine number of Scalars per node in given condition    vuong   04/16|
  *-------------------------------------------------------------------------*/
 int SCATRA::ScalarHandlerElch::NumScalInCondition(
     const DRT::Condition& condition, const Teuchos::RCP<const DRT::Discretization>& discret) const
@@ -3300,50 +3158,51 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
+void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
-  // call base class routine
-  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver);
+  if (init_block_number != 0) dserror("System matrix must begin with scatra blocks in elch");
+
+  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver, init_block_number);
 
   if (MatrixType() == LINALG::MatrixType::block_condition_dof)
+    ReduceDimensionNullSpaceBlocks(solver, init_block_number);
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
+{
+  // loop over blocks of global system matrix
+  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
   {
-    // loop over blocks of global system matrix
-    for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
-    {
-      // store number of current block as string, starting from 1
-      std::ostringstream iblockstr;
-      iblockstr << iblock + 1;
+    std::ostringstream iblockstr;
+    iblockstr << iblock + 1;
 
-      // access parameter sublist associated with smoother for current matrix block
-      Teuchos::ParameterList& mueluparams =
-          solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
+    // access parameter sublist associated with smoother for current matrix block
+    Teuchos::ParameterList& mueluparams =
+        solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
-      // extract already reduced null space associated with current matrix block
-      std::vector<double>& nullspace =
-          *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
+    // extract already reduced null space associated with current matrix block
+    std::vector<double>& nullspace =
+        *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
 
-      // Each matrix block is associated with either concentration dofs or electric potential dofs
-      // only. However, since the original full null space was computed for all degrees of freedom
-      // on the discretization, the reduced null spaces still have the full dimension, i.e., the
-      // full number of null space vectors equaling the total number of primary variables. Hence,
-      // we need to decrease the dimension of each null space by one and remove the corresponding
-      // zero null space vector from the null space.
-      if (iblock % 2 == 0)
-        // null space associated with concentration dofs
-        // remove zero null space vector associated with electric potential dofs by truncating
-        // null space
-        nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
+    // null space associated with concentration dofs
+    if (iblock % 2 == 0)
+      // remove zero null space vector associated with electric potential dofs by truncating
+      // null space
+      nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
 
-      else
-        // null space associated with electric potential dofs
-        // remove zero null space vector(s) associated with concentration dofs and retain only the
-        // last null space vector associated with electric potential dofs
-        nullspace.erase(
-            nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
+    // null space associated with electric potential dofs
+    else
+      // remove zero null space vector(s) associated with concentration dofs and retain only
+      // the last null space vector associated with electric potential dofs
+      nullspace.erase(
+          nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
 
-      // decrease null space dimension and number of partial differential equations by one
-      --mueluparams.get<int>("null space: dimension");
-      --mueluparams.get<int>("PDE equations");
-    }
+    // decrease null space dimension and number of partial differential equations by one
+    --mueluparams.get<int>("null space: dimension");
+    --mueluparams.get<int>("PDE equations");
   }
 }

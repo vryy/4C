@@ -502,9 +502,8 @@ void POROELAST::Monolithic::SetupSystem()
 void POROELAST::Monolithic::SetupEquilibration()
 {
   // instantiate appropriate equilibration class
-  LINALG::EquilibrationFactory equibrilationfactory;
-  equilibration_ = equibrilationfactory.BuildEquilibration(
-      LINALG::MatrixType::block_field, equilibration_method_, *fullmap_);
+  equilibration_ =
+      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method_, fullmap_);
 }
 
 /*----------------------------------------------------------------------*

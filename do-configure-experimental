@@ -1,6 +1,0 @@
-#!/bin/sh
-
-BACI_HOME=`dirname $0`
-EXTRA_ARGS=$@
-
-$BACI_HOME/do-configure --experimental $EXTRA_ARGS

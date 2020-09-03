@@ -33,7 +33,12 @@ PARTICLEINTERACTION::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
 
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::Init()
 {
-  // nothing to do
+  // init with potential fluid particle types
+  fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
+      PARTICLEENGINE::NeumannPhase};
+
+  // init with potential boundary particle types
+  boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
@@ -49,14 +54,17 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
 
-  // check if boundary and/or rigid particles are present
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
-    boundarytypes_.insert(PARTICLEENGINE::BoundaryPhase);
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
-    boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
+  // update with actual fluid particle types
+  for (const auto& type_i : fluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+
+  // update with actual boundary particle types
+  for (const auto& type_i : boundarytypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      boundarytypes_.erase(type_i);
 
   // safety check
-  if (boundarytypes_.size() == 0)
+  if (boundarytypes_.empty())
     dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
@@ -91,8 +99,8 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
     std::vector<PARTICLEENGINE::StateEnum> states{
         PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
 
-    for (const auto& typeEnum : boundarytypes_)
-      boundarystatestorefresh_.push_back(std::make_pair(typeEnum, states));
+    for (const auto& type_i : boundarytypes_)
+      boundarystatestorefresh_.push_back(std::make_pair(type_i, states));
   }
 
   // determine size of vectors indexed by particle types
@@ -128,9 +136,10 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     sumj_vel_j_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // get relevant particle pair indices for particle types
+  // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndices(boundarytypes_, relindices);
+  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+      boundarytypes_, fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
@@ -149,27 +158,20 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
-    // no evaluation for both boundary or rigid particles
-    if (isboundaryrigid_i and isboundaryrigid_j) continue;
-
-    // evaluate contribution of neighboring particle j
-    if (isboundaryrigid_i)
+    // evaluate contribution of neighboring fluid particle j
+    if (boundarytypes_.count(type_i))
     {
       // get container of owned particles
       PARTICLEENGINE::ParticleContainer* container_j =
           particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-      // declare pointer variables for particle j
-      const double *vel_j, *dens_j, *press_j;
-
       // get pointer to particle states
-      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+      const double* vel_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+      const double* dens_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      const double* press_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
 
       // sum contribution of neighboring particle j
       sumj_Wij_[type_i][particle_i] += particlepair.Wij_;
@@ -181,20 +183,20 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
       UTILS::vec_addscale(&sumj_vel_j_Wij_[type_i][particle_i][0], particlepair.Wij_, vel_j);
     }
 
-    // evaluate contribution of neighboring particle i
-    if (isboundaryrigid_j and status_j == PARTICLEENGINE::Owned)
+    // evaluate contribution of neighboring fluid particle i
+    if (boundarytypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // get container of owned particles
       PARTICLEENGINE::ParticleContainer* container_i =
           particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-      // declare pointer variables for particle i
-      const double *vel_i, *dens_i, *press_i;
-
       // get pointer to particle states
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+      const double* vel_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      const double* press_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
 
       // sum contribution of neighboring particle i
       sumj_Wij_[type_j][particle_j] += particlepair.Wji_;
@@ -224,16 +226,14 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
       // set modified boundary particle states
       if (sumj_Wij_[type_i][particle_i] > 0.0)
       {
-        // declare pointer variables for boundary particle i
-        const double *vel_i, *acc_i;
-        double *boundarypress_i, *boundaryvel_i;
-
         // get pointer to particle states
-        vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-        acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-        boundarypress_i =
+        const double* vel_i =
+            container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+        const double* acc_i =
+            container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+        double* boundarypress_i =
             container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_i);
-        boundaryvel_i =
+        double* boundaryvel_i =
             container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_i);
 
         // get relative acceleration of boundary particle

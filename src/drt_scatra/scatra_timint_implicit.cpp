@@ -133,6 +133,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
                    problem_->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1),
       micro_scale_(probnum != 0),
+      isemd_(extraparams->get<bool>("ELECTROMAGNETICDIFFUSION", false)),
+      emd_source_(extraparams->get<int>("EMDSOURCE", -1)),
       calcflux_domain_(
           DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params, "CALCFLUX_DOMAIN")),
       calcflux_domain_lumped_(DRT::INPUT::IntegralValue<bool>(*params, "CALCFLUX_DOMAIN_LUMPED")),
@@ -991,6 +993,11 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
           solvtype_ ==
               INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit or
           solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro);
+
+  // flag for electromagnetic diffusion
+  eleparams.set<bool>("electromagnetic_diffusion", isemd_);
+  // current source function
+  if (isemd_) eleparams.set<int>("electromagnetic_diffusion_source", emd_source_);
 
   // add parameters associated with meshtying strategy
   strategy_->SetElementGeneralParameters(eleparams);
@@ -3897,7 +3904,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
   if (matrixtype_ == LINALG::MatrixType::block_meshtying) blockmaps_ = strategy_->InterfaceMaps();
 
   // now build the null spaces
-  BuildBlockNullSpaces(Solver());
+  BuildBlockNullSpaces(Solver(), 0);
 
   // in case of an extended solver for scatra-scatra interface meshtying including interface growth
   // we need to equip it with the null space information generated above
@@ -3906,10 +3913,11 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
+void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
   {
     // store number of current block as string, starting from 1
     std::ostringstream iblockstr;
@@ -3928,7 +3936,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>
 
     // reduce full null space to match degrees of freedom associated with current matrix block
     LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(), *discret_->DofRowMap(),
-        *BlockMaps().Map(iblock), blocksmootherparams);
+        *BlockMaps().Map(iblock - init_block_number), blocksmootherparams);
   }
 }
 

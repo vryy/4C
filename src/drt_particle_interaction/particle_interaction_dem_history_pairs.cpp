@@ -184,9 +184,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
     // processor id of current particle
     const int currproc = particlestoproc[gid];
 
-    // safety check
-    dsassert(currproc < comm_.NumProc(), "found non-reasonable processor id for current particle!");
-
     // no need to send history pairs
     if (currproc == comm_.MyPID()) continue;
 
