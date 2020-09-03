@@ -100,6 +100,7 @@ PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionCo
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHSurfaceTensionBase(params),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
+      alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
       staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
       alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
       reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
@@ -114,6 +115,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
 
   // safety check
   if (not(alpha0_ > 0.0)) dserror("constant factor of surface tension coefficient not positive!");
+
+  if (not(alpha0_ > alphamin_))
+    dserror("constant part smaller than minimum surface tension coefficient!");
 
   if (alphaT_ != 0.0)
   {
@@ -959,7 +963,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
 
         // evaluate surface tension coefficient
         double alpha = alpha0_;
-        if (alphaT_ != 0.0) alpha += alphaT_ * (temp_i[0] - reftemp_);
+        if (alphaT_ != 0.0)
+        {
+          alpha += alphaT_ * (temp_i[0] - reftemp_);
+          alpha = std::max(alpha, alphamin_);
+        }
 
         // add contribution to acceleration
         UTILS::vec_addscale(acc_i, -timefac * alpha * curvature_i / dens_i[0], colorfieldgrad_i);
@@ -975,6 +983,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   double timefac = 1.0;
   if (surfacetensionrampfctnumber_ > 0)
     timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+
+  // temperature in transition from linear to constant regime of surface tension coefficient
+  const double transitiontemp = reftemp_ + (alphamin_ - alpha0_) / alphaT_;
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -993,12 +1004,17 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       const double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
+      const double* temp_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
       const double* tempgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i);
       double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+
+      // no evaluation in the regime of constant surface tension coefficient
+      if (temp_i[0] > transitiontemp) continue;
 
       // projection of temperature gradient onto tangential plane defined by interface normal
       double tempgrad_i_proj[3];

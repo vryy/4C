@@ -251,8 +251,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   IntParameter("SURFACETENSION_RAMP_FUNCT", -1, "number of function governing surface tension ramp",
       &particledynsph);
 
-  DoubleParameter("SURFACETENSIONCOEFFICIENT", -1.0,
-      "constant factor of surface tension coefficient", &particledynsph);
+  DoubleParameter("SURFACETENSIONCOEFFICIENT", -1.0, "constant part of surface tension coefficient",
+      &particledynsph);
+  DoubleParameter("SURFACETENSIONMINIMUM", 0.0,
+      "minimum surface tension coefficient in case of temperature dependence", &particledynsph);
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
       &particledynsph);
