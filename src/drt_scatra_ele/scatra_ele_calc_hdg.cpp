@@ -272,7 +272,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     }
     case SCATRA::project_dirich_field:
     {
-      return ProjectDirichField(ele, params, discretization, la, elevec1_epetra);
+      if (params.isParameter("faceconsider"))
+      {
+        return ProjectDirichField(ele, params, discretization, la, elevec1_epetra);
+      }
       break;
     }
     case SCATRA::project_neumann_field:
@@ -389,14 +392,60 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
 }  // NodeBasedValues
 
 /*----------------------------------------------------------------------*
- * ProjectDirichField                                    hoermann 09/15 |
+ * ProjectDirichField                                  berardocco 05/20 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Dirichlet boundary conditions not implemented!");
+  // get actual time
+  const double time = params.get<double>("time");
+
+  Teuchos::Array<int>* func = params.getPtr<Teuchos::Array<int>>("funct");
+
+  const int face = params.get<unsigned int>("faceconsider");
+  DRT::UTILS::ShapeValuesFaceParams svfparams(
+      ele->Faces()[face]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[face]->Degree());
+
+  shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+
+  shapesface_->EvaluateFace(*ele, face);
+
+  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
+
+  // integration loop
+  for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
+  {
+    // global coordinates of current Gauss point
+    double coordgp[3];  // we always need three coordinates for function evaluation!
+    for (int i = 0; i < 3; ++i) coordgp[i] = shapesface_->xyzreal(i, q);
+
+    const double fac = shapesface_->jfac(q);
+    // evaluate function at current Gauss point (provide always 3D coordinates!)
+    const double functfac =
+        DRT::Problem::Instance()->Funct((*func)[0] - 1).Evaluate(0, coordgp, time);
+
+    // Creating the mass matrix and the RHS vector
+    for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+    {
+      // Mass matrix
+      for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
+        mass(i, j) += shapesface_->shfunct(i, q) * shapesface_->shfunct(j, q) * fac;
+
+      // RHS
+      trVec(i) += shapesface_->shfunct(i, q) * functfac * fac;
+    }
+
+  }  // loop over integration points
+
+  Epetra_SerialDenseSolver inverseMass;
+  inverseMass.SetMatrix(mass);
+  inverseMass.SetVectors(trVec, trVec);
+  inverseMass.Solve();
+
+  for (unsigned int node = 0; node < shapesface_->nfdofs_; node++) elevec1[node] = trVec(node);
 
   return 0;
 }  // ProjectDirichField
