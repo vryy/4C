@@ -141,31 +141,22 @@ void SCATRA::ScaTraTimIntElch::Setup()
   }
 
   // initialize vectors for states of charge and C rates of resolved electrodes
-  std::vector<DRT::Condition*> electrodesocconditions;
-  discret_->GetCondition("ElectrodeSOC", electrodesocconditions);
-  if (!electrodesocconditions.empty())
+  std::vector<DRT::Condition*> electrodeSocConditions;
+  discret_->GetCondition("ElectrodeSOC", electrodeSocConditions);
+  for (const auto& electrodeSocCondition : electrodeSocConditions)
   {
-    for (const auto& electrodesoccondition : electrodesocconditions)
-    {
-      auto conditioninitpair = std::make_pair(electrodesoccondition->GetInt("ConditionID"), -1.0);
-      if (isale_) electrodeinitvols_.insert(conditioninitpair);
-      electrodesoc_.insert(conditioninitpair);
-      electrodecrates_.insert(conditioninitpair);
-    }
+    auto conditioninitpair = std::make_pair(electrodeSocCondition->GetInt("ConditionID"), -1.0);
+    if (isale_) electrodeinitvols_.insert(conditioninitpair);
+    electrodesoc_.insert(conditioninitpair);
+    electrodecrates_.insert(conditioninitpair);
 
     // safety checks
-    for (int i = 0; i < static_cast<int>(electrodesocconditions.size()); ++i)
-    {
-      const double one_hour = electrodesocconditions[i]->GetDouble("one_hour");
-
-      if (one_hour <= 0.0) dserror("One hour must not be negative");
-      if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
-        dserror("This is not one hour in SI units");
-      if (i > 0)  // in case of more than one condition
-        for (int j = 0; j < i; ++j)
-          if (one_hour != electrodesocconditions[j]->GetDouble("one_hour"))
-            dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
-    }
+    const double one_hour = electrodeSocCondition->GetDouble("one_hour");
+    if (one_hour <= 0.0) dserror("One hour must not be negative");
+    if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
+      dserror("This is not one hour in SI units");
+    if (electrodeSocConditions[0]->GetDouble("one_hour") != one_hour)
+      dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
   }
 
   // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total
@@ -2198,14 +2189,14 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       }
 
       // get the applied electrode potential of the cathode
-      int icond_cathode(-1);
-      for (int icond = 0; icond < conditions.size(); ++icond)
-        if (conditions[icond]->GetInt("ConditionID") == condid_cathode)
+      Teuchos::RCP<DRT::Condition> cathode_condition;
+      for (const auto& condition : conditions)
+        if (condition->GetInt("ConditionID") == condid_cathode)
         {
-          icond_cathode = icond;
+          cathode_condition = condition;
           break;
         }
-      const double potold = conditions[icond_cathode]->GetDouble("pot");
+      const double potold = cathode_condition->GetDouble("pot");
       double potnew = potold;
 
       // bulk voltage loss
@@ -2482,7 +2473,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       //      }
 
       // replace potential value of the boundary condition (on all processors)
-      conditions[icond_cathode]->Add("pot", potnew);
+      cathode_condition->Add("pot", potnew);
       gstatnumite_++;
       return false;  // not yet converged -> continue Newton iteration with updated potential
     }

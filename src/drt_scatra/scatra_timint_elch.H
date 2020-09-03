@@ -41,9 +41,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! virtual destructor
-    ~ScaTraTimIntElch() override = default;
-
     //! initialize algorithm
     void Init() override;
 
@@ -383,9 +380,6 @@ namespace SCATRA
 
     //! Standard Constructor
     ScalarHandlerElch();
-
-    //! Destructor
-    ~ScalarHandlerElch() override = default;
 
     //! initialize time integration
     void Setup(const ScaTraTimIntImpl* scatratimint) override;

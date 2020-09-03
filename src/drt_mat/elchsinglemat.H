@@ -21,9 +21,6 @@ namespace MAT
     class ElchSingleMat : public Parameter
     {
      public:
-      //! create instance of electrode or electrolyte material
-      Teuchos::RCP<MAT::Material> CreateMaterial() override = 0;
-
       //! @name parameters for abstract battery material
       //@{
       //! function number to describe concentration dependence of diffusion coefficient
@@ -48,9 +45,6 @@ namespace MAT
      protected:
       //! constructor
       explicit ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! destructor
-      ~ElchSingleMat() override = default;
 
       //! check whether number of parameters is consistent with curve number
       void CheckProvidedParams(int functnr, const std::vector<double>& functparams);
