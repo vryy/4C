@@ -2,7 +2,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-Test for ScatraHDG L2 errors
+Test for ScatraHDG electromagnetic diffusion source
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
@@ -28,7 +28,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         10
 MAXTIME                         1.0
-TIMESTEP                        0.01
+TIMESTEP                        0.1
 THETA                           1.0
 VELOCITYFIELD                   zero
 VELFUNCNO                       -2
@@ -37,13 +37,15 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 CALCERROR                       No
 CALCERRORNO                     1
+ELECTROMAGNETICDIFFUSION        Yes
+EMDSOURCE                       2
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        centered
 DEFINITION_TAU                  Numerical_Value
-TAU_VALUE                       10.0
+TAU_VALUE                       1.0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          20
 ABSTOLRES                       1e-15
@@ -51,12 +53,14 @@ CONVTOL                         1e-15
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)*sin(pi*z)*exp(-0.1*3*pi^2*t)
+COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)*sin(pi*z)*cos(pi*t)
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 0.5*cos(pi*x)*sin(pi*y)*sin(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0.5*sin(pi*x)*sin(pi*y)*cos(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 1.11658174535268096e-02 TOLERANCE 1E-6
-SCATRA DIS scatra NODE 1 QUANTITY rel_L2error_phi VALUE 4.24643967453811888e-02 TOLERANCE 1E-6
-SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 2.67156894162022596e-01 TOLERANCE 1E-6
-SCATRA DIS scatra NODE 1 QUANTITY rel_L2error_gradPhi VALUE 1.86719777533579268e-01 TOLERANCE 1E-6
+SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 1.03840667000133224e-01 TOLERANCE 1E-6
+SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 5.70781662501835263e-01 TOLERANCE 1E-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

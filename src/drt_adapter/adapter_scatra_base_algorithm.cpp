@@ -202,6 +202,11 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES") = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
   extraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
 
+  // ------------------------------------get electromagnetic parameters
+  extraparams->set<bool>("ELECTROMAGNETICDIFFUSION",
+      DRT::INPUT::IntegralValue<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
+  extraparams->set<int>("EMDSOURCE", scatradyn.get<int>("EMDSOURCE"));
+
   // -------------------------------------------------------------------
   // algorithm construction depending on problem type and
   // time-integration (or stationary) scheme

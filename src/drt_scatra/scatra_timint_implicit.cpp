@@ -133,6 +133,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
                    problem_->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1),
       micro_scale_(probnum != 0),
+      isemd_(extraparams->get<bool>("ELECTROMAGNETICDIFFUSION", false)),
+      emd_source_(extraparams->get<int>("EMDSOURCE", -1)),
       calcflux_domain_(
           DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params, "CALCFLUX_DOMAIN")),
       calcflux_domain_lumped_(DRT::INPUT::IntegralValue<bool>(*params, "CALCFLUX_DOMAIN_LUMPED")),
@@ -991,6 +993,11 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
           solvtype_ ==
               INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit or
           solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro);
+
+  // flag for electromagnetic diffusion
+  eleparams.set<bool>("electromagnetic_diffusion", isemd_);
+  // current source function
+  if (isemd_) eleparams.set<int>("electromagnetic_diffusion_source", emd_source_);
 
   // add parameters associated with meshtying strategy
   strategy_->SetElementGeneralParameters(eleparams);
