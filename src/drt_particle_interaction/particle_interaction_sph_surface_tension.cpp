@@ -374,7 +374,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
 
       // sum contribution of neighboring boundary particle j
       UTILS::vec_addscale(
-          wallnormal_i, -UTILS::pow<2>(V_j) * inv_V_i * particlepair.dWdrij_, particlepair.e_ij_);
+          wallnormal_i, UTILS::pow<2>(V_j) * inv_V_i * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
@@ -403,7 +403,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
 
       // sum contribution of neighboring boundary particle i
       UTILS::vec_addscale(
-          wallnormal_j, UTILS::pow<2>(V_i) * inv_V_j * particlepair.dWdrji_, particlepair.e_ij_);
+          wallnormal_j, -UTILS::pow<2>(V_i) * inv_V_j * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
@@ -486,7 +486,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
 
       // distance of particle i to neighboring boundary particle j
       const double currentwalldistance =
-          particlepair.absdist_ * UTILS::vec_dot(wallnormal_i, particlepair.e_ij_);
+          -particlepair.absdist_ * UTILS::vec_dot(wallnormal_i, particlepair.e_ij_);
 
       // update wall distance of particle i
       walldistance_i[0] = std::min(walldistance_i[0], currentwalldistance);
@@ -510,7 +510,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
 
       // distance of particle j to neighboring boundary particle i
       const double currentwalldistance =
-          -particlepair.absdist_ * UTILS::vec_dot(wallnormal_j, particlepair.e_ij_);
+          particlepair.absdist_ * UTILS::vec_dot(wallnormal_j, particlepair.e_ij_);
 
       // update wall distance of particle j
       walldistance_j[0] = std::min(walldistance_j[0], currentwalldistance);
@@ -790,7 +790,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
       // determine triple point normal
       double triplepointnormal_i[3];
       UTILS::vec_setscale(triplepointnormal_i, std::sin(theta_0), walltangential_i);
-      UTILS::vec_addscale(triplepointnormal_i, std::cos(theta_0), wallnormal_i);
+      UTILS::vec_addscale(triplepointnormal_i, -std::cos(theta_0), wallnormal_i);
 
       // determine corrected normal
       double correctednormal_i[3];
