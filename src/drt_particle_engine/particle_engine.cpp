@@ -1044,7 +1044,7 @@ void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
 {
   // create and init particle unique global identifier handler
   particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler>(
-      new PARTICLEENGINE::ParticleUniqueGlobalIdHandler(comm_));
+      new PARTICLEENGINE::ParticleUniqueGlobalIdHandler(comm_, "particle"));
   particleuniqueglobalidhandler_->Init();
 }
 

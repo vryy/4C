@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief particle unique global identifier handler for particle simulations
+\brief unique global identifier handler for particle simulations
 \level 1
 */
 /*---------------------------------------------------------------------------*/
@@ -23,8 +23,8 @@
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleUniqueGlobalIdHandler::ParticleUniqueGlobalIdHandler(
-    const Epetra_Comm& comm)
-    : comm_(comm), myrank_(comm.MyPID()), masterrank_(0), maxglobalid_(-1)
+    const Epetra_Comm& comm, const std::string& objectname)
+    : comm_(comm), myrank_(comm.MyPID()), masterrank_(0), objectname_(objectname), maxglobalid_(-1)
 {
   // empty constructor
 }
@@ -43,7 +43,7 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::WriteRestart(
     std::shared_ptr<IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart
-  writer->WriteDouble("maxglobalid", maxglobalid_);
+  writer->WriteDouble(objectname_ + "maxglobalid", maxglobalid_);
 
   // write reusable global ids
   {
@@ -56,7 +56,7 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::WriteRestart(
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
-    writer->WriteCharVector("reusableglobalids", buffer);
+    writer->WriteCharVector(objectname_ + "reusableglobalids", buffer);
   }
 }
 
@@ -64,13 +64,13 @@ void PARTICLEENGINE::ParticleUniqueGlobalIdHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart
-  maxglobalid_ = reader->ReadDouble("maxglobalid");
+  maxglobalid_ = reader->ReadDouble(objectname_ + "maxglobalid");
 
   // get reusable global ids from restart
   {
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "reusableglobalids");
+    reader->ReadCharVector(buffer, objectname_ + "reusableglobalids");
 
     std::vector<char>::size_type position = 0;
 
