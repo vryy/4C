@@ -305,6 +305,9 @@ namespace ELEMAG
     double dtsolve_;  /// solver time
 
     bool calcerr_;  /// flag for error calculation
+
+    bool postproc_;  /// flag for postprocessing
+
     int errfunct_;  /// Function number for error calculation
 
     int sourcefuncno_;  /// Source function number

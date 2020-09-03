@@ -49,6 +49,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       dtele_(0.0),
       dtsolve_(0.0),
       calcerr_(DRT::INPUT::IntegralValue<bool>(*params_, "CALCERR")),
+      postproc_(DRT::INPUT::IntegralValue<bool>(*params_, "POSTPROC")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1))
 {
@@ -347,6 +348,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   params.set<int>("funcno", errfunct_);
   params.set<double>("time", time_);
   params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  params.set<bool>("postproc", postproc_);
 
   const int numberOfErrorMeasures = 11;
   Teuchos::RCP<Epetra_SerialDenseVector> errors =

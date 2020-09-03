@@ -92,7 +92,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::compute_error:
     {
-      localSolver_->PostProcessing(*hdgele);
+      // Postprocess the solution only if required
+      if (params.get<bool>("postproc")) localSolver_->PostProcessing(*hdgele);
+
       localSolver_->ComputeError(hdgele, params, elevec1);
       break;
     }
@@ -680,47 +682,50 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     }
   }
 
-  // Post-processed quantities
-  for (unsigned int q = 0; q < highshapes_post.nqpoints_; ++q)
+  if (params.get<bool>("postproc"))
   {
-    // Zero all temp vectors
-    electric_post.Scale(0.0), electric_post_grad.Scale(0.0);
-    analytical.Scale(0.0), analytical_grad.Scale(0.0);
+    // Post-processed quantities
+    for (unsigned int q = 0; q < highshapes_post.nqpoints_; ++q)
+    {
+      // Zero all temp vectors
+      electric_post.Scale(0.0), electric_post_grad.Scale(0.0);
+      analytical.Scale(0.0), analytical_grad.Scale(0.0);
 
-    for (unsigned int i = 0; i < highshapes_post.ndofs_; ++i)
+      for (unsigned int i = 0; i < highshapes_post.ndofs_; ++i)
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          electric_post(d) += highshapes_post.shfunct(i, q) *
+                              ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
+          for (unsigned int d_grad = 0; d_grad < nsd_; ++d_grad)
+          {
+            electric_post_grad(d, d_grad) +=
+                highshapes_post.shderxy(i * nsd_ + d_grad, q) *
+                ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
+          }
+        }
+
+      // Evaluate error function and its derivatives in the integration point (real) coordinates
+      for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_post.xyzreal(idim, q);
+      EvaluateAll(func, time, xsi, analytical);
+      ComputeFunctionGradient(func, time, xsi, analytical_grad);
+
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        electric_post(d) += highshapes_post.shfunct(i, q) *
-                            ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
-        for (unsigned int d_grad = 0; d_grad < nsd_; ++d_grad)
-        {
-          electric_post_grad(d, d_grad) +=
-              highshapes_post.shderxy(i * nsd_ + d_grad, q) *
-              ele->eleinteriorElectricPost_(d * highshapes_post.ndofs_ + i);
-        }
+        // Electric error
+        error_ele_post += std::pow((analytical(d) - electric_post(d)), 2) * highshapes_post.jfac(q);
+        exact_ele += std::pow(analytical(d), 2) * highshapes_post.jfac(q);
+        // Divergence
+        error_ele_post_grad(0) +=
+            std::pow(analytical_grad(d, d) - electric_post_grad(d, d), 2) * highshapes_post.jfac(q);
+        // Rotor
+        error_ele_post_grad(1) +=
+            std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                         analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
+                         (electric_post_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                             electric_post_grad((d + 1) % nsd_, (d + 2) % nsd_)),
+                2) *
+            highshapes_post.jfac(q);
       }
-
-    // Evaluate error function and its derivatives in the integration point (real) coordinates
-    for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_post.xyzreal(idim, q);
-    EvaluateAll(func, time, xsi, analytical);
-    ComputeFunctionGradient(func, time, xsi, analytical_grad);
-
-    for (unsigned int d = 0; d < nsd_; ++d)
-    {
-      // Electric error
-      error_ele_post += std::pow((analytical(d) - electric_post(d)), 2) * highshapes_post.jfac(q);
-      exact_ele += std::pow(analytical(d), 2) * highshapes_post.jfac(q);
-      // Divergence
-      error_ele_post_grad(0) +=
-          std::pow(analytical_grad(d, d) - electric_post_grad(d, d), 2) * highshapes_post.jfac(q);
-      // Rotor
-      error_ele_post_grad(1) +=
-          std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                       analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
-                       (electric_post_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                           electric_post_grad((d + 1) % nsd_, (d + 2) % nsd_)),
-              2) *
-          highshapes_post.jfac(q);
     }
   }
 
@@ -843,19 +848,16 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   }
 
   {
-    Epetra_SerialDenseSolver solve;
-    Epetra_SerialDenseMatrix tempMat(
-        postproc_shapes_.ndofs_ * nsd_, postproc_shapes_.ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVec(postproc_shapes_.ndofs_ * nsd_);
-    tempMat.Multiply('T', 'N', 1.0, postproc_mat, postproc_mat, 0.0);
-    tempVec.Multiply('T', 'N', 1.0, postproc_mat, postproc_rhs, 0.0);
-    solve.SetMatrix(tempMat);
-    solve.SetVectors(ele.eleinteriorElectricPost_, tempVec);
-    solve.EquilibrateMatrix();
-    solve.EquilibrateRHS();
-    int err = solve.Solve();
-    if (err) dserror("Post-processing failed with errorcode %d", err);
-    solve.UnequilibrateLHS();
+    Epetra_SerialDenseVector test(postproc_rhs.Length() * 2);
+    Epetra_LAPACK solve;
+    int err;
+    solve.GELS('N', postproc_mat.M(), postproc_mat.N(), 1, postproc_mat.A(), postproc_mat.LDA(),
+        postproc_rhs.A(), postproc_rhs.Length(), test.A(), test.Length(), &err);
+    if (err != 0)
+      dserror("Least-square approximation for the Postprocessing failed with error %d", err);
+
+    for (int i = 0; i < ele.eleinteriorElectricPost_.Length(); ++i)
+      ele.eleinteriorElectricPost_(i) = postproc_rhs(i);
   }
 
   return;
