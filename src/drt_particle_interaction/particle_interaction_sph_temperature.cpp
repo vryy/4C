@@ -42,6 +42,9 @@ void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // init heat source handler
   InitHeatSourceHandler();
+
+  // init with potential integrated thermo particle types
+  intthermotypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
 }
 
 void PARTICLEINTERACTION::SPHTemperature::Setup(
@@ -61,19 +64,17 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
 
+  // update with actual integrated thermo particle types
+  for (const auto& type_i : intthermotypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      intthermotypes_.erase(type_i);
+
   // setup temperature of ghosted particles to refresh
   {
     std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Temperature};
 
-    for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-      if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot))
-        temptorefresh_.push_back(std::make_pair(type_i, states));
-    }
+    for (const auto& type_i : intthermotypes_)
+      temptorefresh_.push_back(std::make_pair(type_i, states));
   }
 
   // determine size of vectors indexed by particle types
@@ -137,11 +138,8 @@ void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
     // set temperature state
     particlestates.insert(PARTICLEENGINE::Temperature);
 
-    // no temperature integration for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
-
-    // no temperature integration for open boundary particles
-    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+    // current particle type is not an integrated thermo particle type
+    if (not intthermotypes_.count(type)) continue;
 
     // state for temperature evaluation scheme
     particlestates.insert(PARTICLEENGINE::TemperatureDot);
@@ -161,17 +159,15 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   // evaluate heat source
   if (heatsource_) heatsource_->EvaluateHeatSource(time_);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over integrated thermo particle types
+  for (const auto& type_i : intthermotypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // update temperature of all particles
-    if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot))
-      container_i->UpdateState(
-          1.0, PARTICLEENGINE::Temperature, dt_, PARTICLEENGINE::TemperatureDot);
+    container_i->UpdateState(1.0, PARTICLEENGINE::Temperature, dt_, PARTICLEENGINE::TemperatureDot);
   }
 
   // refresh temperature of ghosted particles
@@ -220,16 +216,15 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
 
 void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over integrated thermo particle types
+  for (const auto& type_i : intthermotypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature dot state
-    if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot))
-      container_i->ClearState(PARTICLEENGINE::TemperatureDot);
+    container_i->ClearState(PARTICLEENGINE::TemperatureDot);
   }
 
   // iterate over particle pairs
@@ -262,35 +257,36 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i, *temp_i;
-    double* tempdot_i = nullptr;
-
-    const double *mass_j, *dens_j, *temp_j;
-    double* tempdot_j = nullptr;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-                 : &(basematerial_i->initDensity_);
+    const double* dens_i =
+        (container_i->HaveStoredState(PARTICLEENGINE::Density))
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+            : &(basematerial_i->initDensity_);
 
-    temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+    const double* temp_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
 
-    if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot))
-      tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+    double* tempdot_i =
+        container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i)
+            : nullptr;
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-                 : &(basematerial_j->initDensity_);
+    const double* dens_j =
+        (container_j->HaveStoredState(PARTICLEENGINE::Density))
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+            : &(basematerial_j->initDensity_);
 
-    temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
+    const double* temp_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
 
-    if (container_j->HaveStoredState(PARTICLEENGINE::TemperatureDot))
-      tempdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_j);
+    double* tempdot_j =
+        container_j->HaveStoredState(PARTICLEENGINE::TemperatureDot)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_j)
+            : nullptr;
 
     // thermal conductivities
     const double& k_i = thermomaterial_i->thermalConductivity_;
@@ -316,16 +312,15 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::TemperatureGradient");
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over integrated thermo particle types
+  for (const auto& type_i : intthermotypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature gradient state
-    if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureGradient))
-      container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
+    container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
   }
 
   // iterate over particle pairs
@@ -355,37 +350,36 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
     const MAT::PAR::ParticleMaterialBase* basematerial_j =
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i, *temp_i;
-    double* tempgrad_i = nullptr;
-
-    const double *mass_j, *dens_j, *temp_j;
-    double* tempgrad_j = nullptr;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
-    dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-                 : &(basematerial_i->initDensity_);
+    const double* dens_i =
+        (container_i->HaveStoredState(PARTICLEENGINE::Density))
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
+            : &(basematerial_i->initDensity_);
 
-    temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+    const double* temp_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
 
-    if (container_i->HaveStoredState(PARTICLEENGINE::TemperatureGradient))
-      tempgrad_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i);
+    double* tempgrad_i =
+        container_i->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i)
+            : nullptr;
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-    dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
-                 ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-                 : &(basematerial_j->initDensity_);
+    const double* dens_j =
+        (container_j->HaveStoredState(PARTICLEENGINE::Density))
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
+            : &(basematerial_j->initDensity_);
 
-    temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
+    const double* temp_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
 
-    if (container_j->HaveStoredState(PARTICLEENGINE::TemperatureGradient))
-      tempgrad_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_j);
+    double* tempgrad_j =
+        container_j->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
+            ? container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_j)
+            : nullptr;
 
     const double fac =
         (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) *

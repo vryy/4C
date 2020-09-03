@@ -107,6 +107,19 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
 
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
+
+  void test_NormalPotentialEnergy()
+  {
+    const double gap = -0.15;
+
+    const double normalpotentialenergy_ref =
+        0.5 * contactnormal_->GetNormalContactStiffness() * UTILS::pow<2>(gap);
+
+    double normalpotentialenergy = 0.0;
+    contactnormal_->NormalPotentialEnergy(gap, normalpotentialenergy);
+
+    TS_ASSERT_DELTA(normalpotentialenergy, normalpotentialenergy_ref, 1.0e-12);
+  }
 };
 
 class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public CxxTest::TestSuite
@@ -283,6 +296,19 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
+  }
+
+  void test_NormalPotentialEnergy()
+  {
+    const double gap = -0.15;
+
+    const double normalpotentialenergy_ref =
+        0.4 * contactnormal_->GetNormalContactStiffness() * UTILS::pow<2>(gap) * std::sqrt(-gap);
+
+    double normalpotentialenergy = 0.0;
+    contactnormal_->NormalPotentialEnergy(gap, normalpotentialenergy);
+
+    TS_ASSERT_DELTA(normalpotentialenergy, normalpotentialenergy_ref, 1.0e-12);
   }
 };
 

@@ -758,7 +758,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     }
 
     // no wall elements added
-    if (eleids.size() == 0) dserror("no wall elements added, check periodic boundary conditions!");
+    if (eleids.empty()) dserror("no wall elements added, check periodic boundary conditions!");
   }
 
   // node row map of wall elements

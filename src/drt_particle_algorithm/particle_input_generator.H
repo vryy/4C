@@ -98,11 +98,10 @@ namespace PARTICLEALGORITHM
      *
      * \param[in]  position           position of particle
      * \param[in]  particletype       particle type enum
-     * \param[in]  globalid           global id of particle
      * \param[out] particlesgenerated particle objects generated
      */
     void AddGeneratedParticle(const std::vector<double>& position,
-        const PARTICLEENGINE::TypeEnum particletype, int globalid,
+        const PARTICLEENGINE::TypeEnum particletype,
         std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const;
 
     //! processor id

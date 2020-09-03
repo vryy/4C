@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion.H"
 
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
@@ -243,21 +243,14 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
     const int* globalid_j = container_j->GetPtrToParticleGlobalID(particle_j);
 
-    // declare pointer variables for particle i and j
-    const double *vel_i, *rad_i;
-    double* force_i;
-
-    const double *vel_j, *rad_j;
-    double* force_j;
-
     // get pointer to particle states
-    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    double* force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-    vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
+    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    double* force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
 
     // relative velocity in contact point c between particle i and j (neglecting angular velocity)
     double vel_rel[3];
@@ -367,16 +360,12 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     // get global id of particle
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
 
-    // declare pointer variables for particle i
-    const double *pos_i, *vel_i, *rad_i, *mass_i;
-    double* force_i;
-
     // get pointer to particle states
-    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    double* force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;

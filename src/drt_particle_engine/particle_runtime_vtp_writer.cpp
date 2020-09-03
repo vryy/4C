@@ -175,8 +175,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
         std::string statename = PARTICLEENGINE::EnumToStateName(particleState);
 
         // get pointer to particle state
-        double* state_ptr = nullptr;
-        if (particlestored > 0) state_ptr = container->GetPtrToParticleState(particleState, 0);
+        const double* state_ptr =
+            (particlestored > 0) ? container->GetPtrToParticleState(particleState, 0) : nullptr;
 
         if (particleState == PARTICLEENGINE::Position)
         {
@@ -187,9 +187,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
           positiondata.reserve(statedim * particlestored);
 
           // copy particle position data
-          if (particlestored > 0)
-            for (int i = 0; i < (statedim * particlestored); ++i)
-              positiondata.push_back(state_ptr[i]);
+          for (int i = 0; i < (statedim * particlestored); ++i)
+            positiondata.push_back(state_ptr[i]);
 
 #ifdef DEBUG
           // safety check
@@ -205,8 +204,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
           statedata.reserve(statedim * particlestored);
 
           // copy particle state data
-          if (particlestored > 0)
-            for (int i = 0; i < (statedim * particlestored); ++i) statedata.push_back(state_ptr[i]);
+          for (int i = 0; i < (statedim * particlestored); ++i) statedata.push_back(state_ptr[i]);
 
           // append particle state data to vtp writer
           (runtime_vtpwriters_[typeEnum])[statusEnum]->AppendVisualizationPointDataVector(
@@ -214,25 +212,25 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
         }
       }
 
+      // get pointer to global id of particles
+      const int* globalids =
+          (particlestored > 0) ? container->GetPtrToParticleGlobalID(0) : nullptr;
+
       // prepare particle global id data
       std::vector<double> globaliddata;
       globaliddata.reserve(particlestored);
 
       // copy particle global id data
-      if (particlestored > 0)
-      {
-        // get pointer to global id of particles
-        int* globalids = container->GetPtrToParticleGlobalID(0);
-
-        for (int i = 0; i < particlestored; ++i) globaliddata.push_back(globalids[i]);
-      }
+      for (int i = 0; i < particlestored; ++i) globaliddata.push_back(globalids[i]);
 
       // append global id of particles to vtp writer
       (runtime_vtpwriters_[typeEnum])[statusEnum]->AppendVisualizationPointDataVector(
           globaliddata, 1, "globalid");
 
-      // append owner of particles to vtp writer
+      // set particle owner data
       std::vector<double> ownerdata(particlestored, comm_.MyPID());
+
+      // append owner of particles to vtp writer
       (runtime_vtpwriters_[typeEnum])[statusEnum]->AppendVisualizationPointDataVector(
           ownerdata, 1, "owner");
     }

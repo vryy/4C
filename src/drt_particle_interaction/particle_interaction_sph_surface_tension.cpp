@@ -34,15 +34,18 @@ PARTICLEINTERACTION::SPHSurfaceTensionBase::SPHSurfaceTensionBase(
     const Teuchos::ParameterList& params)
     : params_sph_(params),
       time_(0.0),
-      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
-      haveboundaryorrigidparticles_(false)
+      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT"))
 {
   // empty constructor
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::Init()
 {
-  // nothing to do
+  // init with potential fluid particle types
+  fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
+
+  // init with potential boundary particle types
+  boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
@@ -66,11 +69,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
 
-  // determine set of boundary particle types
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
-    boundarytypes_.insert(PARTICLEENGINE::BoundaryPhase);
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
-    boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
+  // update with actual fluid particle types
+  for (const auto& type_i : fluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+
+  // update with actual boundary particle types
+  for (const auto& type_i : boundarytypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      boundarytypes_.erase(type_i);
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::WriteRestart(
@@ -134,15 +140,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
     std::vector<PARTICLEENGINE::StateEnum> states{
         PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::WallDistance};
 
-    // iterate over particle types
-    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-    {
-      // no refreshing of density states for boundary or rigid particles
-      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-        continue;
-
-      cfgwalldisttorefresh_.push_back(std::make_pair(typeEnum, states));
-    }
+    // iterate over fluid particle types
+    for (const auto& type_i : fluidtypes_)
+      cfgwalldisttorefresh_.push_back(std::make_pair(type_i, states));
   }
 
   // setup colorfield gradient and interface normal of ghosted particles to refresh
@@ -150,15 +150,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
     std::vector<PARTICLEENGINE::StateEnum> states{
         PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal};
 
-    // iterate over particle types
-    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-    {
-      // no refreshing of density states for boundary or rigid particles
-      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-        continue;
-
-      cfgintnormtorefresh_.push_back(std::make_pair(typeEnum, states));
-    }
+    // iterate over fluid particle types
+    for (const auto& type_i : fluidtypes_)
+      cfgintnormtorefresh_.push_back(std::make_pair(type_i, states));
   }
 
   // determine size of vectors indexed by particle types
@@ -173,15 +167,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes)
 {
+  bool haveboundarytypes = false;
+
   // iterate over particle types
   for (auto& typeIt : particlestatestotypes)
   {
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // have boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
-      haveboundaryorrigidparticles_ = true;
+    if (boundarytypes_.count(type)) haveboundarytypes = true;
   }
 
   // iterate over particle types
@@ -193,13 +187,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+    // current particle type is not a fluid particle type
+    if (not fluidtypes_.count(type)) continue;
 
     // states for surface tension evaluation scheme
     particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal});
 
-    if (haveboundaryorrigidparticles_)
+    if (haveboundarytypes)
       particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
   }
 }
@@ -212,17 +206,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // compute colorfield gradient
   ComputeColorfieldGradient();
 
-  if (haveboundaryorrigidparticles_)
+  if (not boundarytypes_.empty())
   {
-    // get relevant particle pair indices for particle types
-    std::vector<int> relindices;
-    neighborpairs_->GetRelevantParticlePairIndices(boundarytypes_, relindices);
-
     // compute unit wall normal
-    ComputeUnitWallNormal(relindices);
+    ComputeUnitWallNormal();
 
     // compute wall distance
-    ComputeWallDistance(relindices);
+    ComputeWallDistance();
 
     // refresh colorfield gradient and wall distance
     particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgwalldisttorefresh_);
@@ -237,7 +227,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // compute interface normal
   ComputeInterfaceNormal();
 
-  if (haveboundaryorrigidparticles_)
+  if (not boundarytypes_.empty())
   {
     // correct normal vector of particles close to triple point
     CorrectTriplePointNormal();
@@ -255,12 +245,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
 
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfieldGradient() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no colorfield gradient evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -269,9 +256,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     container_i->ClearState(PARTICLEENGINE::ColorfieldGradient);
   }
 
-  // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
@@ -286,13 +280,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     // no evaluation for particles of same type
     if (type_i == type_j) continue;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
-    // no evaluation for boundary or rigid particles
-    if (isboundaryrigid_i or isboundaryrigid_j) continue;
-
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -300,22 +287,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i;
-    double* colorfieldgrad_i;
-
-    const double *mass_j, *dens_j;
-    double* colorfieldgrad_j;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    colorfieldgrad_i =
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    double* colorfieldgrad_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    colorfieldgrad_j =
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+    double* colorfieldgrad_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
 
     const double fac =
@@ -333,15 +313,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWallNormal(
-    std::vector<int>& relwallindices) const
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWallNormal() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no wall normal and distance evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -350,8 +326,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     container_i->ClearState(PARTICLEENGINE::UnitWallNormal);
   }
 
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+      boundarytypes_, fluidtypes_, relindices);
+
   // iterate over relevant particle pairs
-  for (const int particlepairindex : relwallindices)
+  for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
         neighborpairs_->GetRefToParticlePairData()[particlepairindex];
@@ -367,12 +348,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
     // evaluate contribution of neighboring boundary particle j
-    if ((not isboundaryrigid_i) and isboundaryrigid_j)
+    if (fluidtypes_.count(type_i))
     {
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_i =
@@ -382,14 +359,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       const MAT::PAR::ParticleMaterialBase* material_i =
           particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-      // declare pointer variables for particle i
-      const double *mass_i, *dens_i;
-      double* wallnormal_i;
-
       // get pointer to particle states
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      double* wallnormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
 
       // (current) inverse volume of particle i
       const double inv_V_i = dens_i[0] / mass_i[0];
@@ -403,7 +378,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     }
 
     // evaluate contribution of neighboring boundary particle i
-    if (isboundaryrigid_i and (not isboundaryrigid_j) and status_j == PARTICLEENGINE::Owned)
+    if (fluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_j =
@@ -413,14 +388,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       const MAT::PAR::ParticleMaterialBase* material_j =
           particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-      // declare pointer variables for particle j
-      const double *mass_j, *dens_j;
-      double* wallnormal_j;
-
       // get pointer to particle states
-      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      wallnormal_j = container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
+      const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+      const double* dens_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      double* wallnormal_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
 
       // (current) inverse volume of particle j
       const double inv_V_j = dens_j[0] / mass_j[0];
@@ -434,12 +407,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     }
   }
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no wall normal and distance evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -447,11 +417,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      double* wallnormal_i;
-
       // get pointer to particle state
-      wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      double* wallnormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
 
       // norm of wall normal
       const double wallnormal_i_norm = UTILS::vec_norm2(wallnormal_i);
@@ -465,15 +433,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDistance(
-    std::vector<int>& relwallindices) const
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDistance() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no wall normal and distance evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -482,8 +446,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
     container_i->UpdateState(0.0, PARTICLEENGINE::WallDistance, 1.0, PARTICLEENGINE::Radius);
   }
 
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+      boundarytypes_, fluidtypes_, relindices);
+
   // iterate over relevant particle pairs
-  for (const int particlepairindex : relwallindices)
+  for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
         neighborpairs_->GetRefToParticlePairData()[particlepairindex];
@@ -499,24 +468,18 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
-    // evaluate distance of neighboring boundary particle j
-    if ((not isboundaryrigid_i) and isboundaryrigid_j)
+    // evaluate distance to neighboring boundary particle j
+    if (fluidtypes_.count(type_i))
     {
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_i =
           particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-      // declare pointer variables for particle i
-      const double* wallnormal_i;
-      double* walldistance_i;
-
       // get pointer to particle states
-      wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
-      walldistance_i = container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
+      const double* wallnormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      double* walldistance_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
       // no interacting boundary particle
       if (not(UTILS::vec_norm2(wallnormal_i) > 0.0)) continue;
@@ -529,20 +492,18 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
       walldistance_i[0] = std::min(walldistance_i[0], currentwalldistance);
     }
 
-    // evaluate distance of neighboring boundary particle i
-    if (isboundaryrigid_i and (not isboundaryrigid_j) and status_j == PARTICLEENGINE::Owned)
+    // evaluate distance to neighboring boundary particle i
+    if (fluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_j =
           particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-      // declare pointer variables for particle j
-      const double* wallnormal_j;
-      double* walldistance_j;
-
       // get pointer to particle states
-      wallnormal_j = container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
-      walldistance_j = container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
+      const double* wallnormal_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
+      double* walldistance_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
 
       // no interacting boundary particle
       if (not(UTILS::vec_norm2(wallnormal_j) > 0.0)) continue;
@@ -562,12 +523,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCor
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no colorfield gradient extrapolation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // iterate over particle statuses
     for (auto& status_i : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
     {
@@ -584,12 +542,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCor
       // iterate over particles in container
       for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
       {
-        // declare pointer variables for particle i and j
-        const double *rad_i, *walldistance_i;
-
         // get pointer to particle states
-        rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-        walldistance_i =
+        const double* rad_i =
+            container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+        const double* walldistance_i =
             container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
         // corrected wall distance and maximum correction distance
@@ -617,12 +573,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   std::vector<std::vector<double>> sumj_fj_Vj_Wij(typevectorsize);
   std::vector<std::vector<std::vector<double>>> sumj_fj_Vj_Wij_CFGj(typevectorsize);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no colorfield gradient extrapolation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -635,9 +588,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     sumj_fj_Vj_Wij_CFGj[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
@@ -649,13 +609,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
-    // no evaluation for boundary or rigid particles
-    if (isboundaryrigid_i or isboundaryrigid_j) continue;
-
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -663,25 +616,23 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double *rad_i, *mass_i, *dens_i, *colorfieldgrad_i, *walldistance_i;
-    const double *rad_j, *mass_j, *dens_j, *colorfieldgrad_j, *walldistance_j;
-
     // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    colorfieldgrad_i =
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    const double* colorfieldgrad_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    walldistance_i = container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
+    const double* walldistance_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
     // get pointer to particle states
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    colorfieldgrad_j =
+    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+    const double* colorfieldgrad_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
-    walldistance_j = container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
+    const double* walldistance_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
 
     // change sign of colorfield gradient for different particle types
     double signfac = (type_i == type_j) ? 1.0 : -1.0;
@@ -719,12 +670,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     }
   }
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no colorfield gradient extrapolation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -737,11 +685,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           not(UTILS::vec_norm2(&sumj_fj_Vj_Wij_CFGj[type_i][particle_i][0]) > 0.0))
         continue;
 
-      // declare pointer variables for particle i
-      double* colorfieldgrad_i;
-
       // get pointer to particle states
-      colorfieldgrad_i =
+      double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
 
       // norm of colorfield gradient
@@ -764,12 +709,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
 
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no colorfield gradient evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -780,15 +722,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *colorfieldgrad_i;
-      double* interfacenormal_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      colorfieldgrad_i =
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      interfacenormal_i =
+      double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
       // norm of colorfield gradient
@@ -803,12 +741,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
 
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTriplePointNormal() const
 {
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no triple point correction for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -816,16 +751,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *wallnormal_i, *walldistance_i;
-      double* interfacenormal_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      interfacenormal_i =
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* wallnormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      const double* walldistance_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
+      double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
-      wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
-      walldistance_i = container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
       // evaluation only for particles close to boundary
       if (not(walldistance_i[0] < rad_i[0])) continue;
@@ -850,8 +783,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
           walltangential_i, 1.0 / UTILS::vec_norm2(walltangential_i), walltangential_i);
 
       // convert static contact angle in radians
-      double theta_0 = staticcontactangle_ * M_PI / 180.0;
-      if (type_i == PARTICLEENGINE::Phase2) theta_0 = (180 - staticcontactangle_) * M_PI / 180.0;
+      const double theta_0 = (type_i == PARTICLEENGINE::Phase1)
+                                 ? staticcontactangle_ * M_PI / 180.0
+                                 : (180 - staticcontactangle_) * M_PI / 180.0;
 
       // determine triple point normal
       double triplepointnormal_i[3];
@@ -880,12 +814,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   std::vector<std::vector<double>> sumj_nij_Vj_eij_dWij(typevectorsize);
   std::vector<std::vector<double>> sumj_Vj_Wij(typevectorsize);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no curvature evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -901,14 +832,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *mass_i, *dens_i, *interfacenormal_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      interfacenormal_i =
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      const double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
       // compute norm of interface normal
@@ -925,9 +854,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     }
   }
 
-  // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
@@ -939,13 +875,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i = boundarytypes_.count(type_i);
-    bool isboundaryrigid_j = boundarytypes_.count(type_j);
-
-    // no evaluation for boundary or rigid particles
-    if (isboundaryrigid_i or isboundaryrigid_j) continue;
-
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -953,19 +882,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-    // declare pointer variables for particle i and j
-    const double *mass_i, *dens_i, *interfacenormal_i;
-    const double *mass_j, *dens_j, *interfacenormal_j;
-
     // get pointer to particle states
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    interfacenormal_i =
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    const double* interfacenormal_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
-    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    interfacenormal_j =
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+    const double* interfacenormal_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_j);
 
     // evaluation only for non-zero interface normal
@@ -1003,12 +928,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   if (surfacetensionrampfctnumber_ > 0)
     timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no curvature evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -1016,19 +938,17 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *rad_i, *dens_i, *temp_i, *colorfieldgrad_i;
-      double* acc_i;
-
       // get pointer to particle states
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      colorfieldgrad_i =
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* dens_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+      double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
-      if (alphaT_ != 0.0)
-        temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+      const double* temp_i = (alphaT_ != 0.0) ? container_i->GetPtrToParticleState(
+                                                    PARTICLEENGINE::Temperature, particle_i)
+                                              : nullptr;
 
       // only add meaningful contributions
       if (std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))
@@ -1056,12 +976,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   if (surfacetensionrampfctnumber_ > 0)
     timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
   {
-    // no surface tension evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -1069,18 +986,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // declare pointer variables for particle i
-      const double *colorfieldgrad_i, *interfacenormal_i, *tempgrad_i;
-      double* acc_i;
-
       // get pointer to particle states
-      colorfieldgrad_i =
+      const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      interfacenormal_i =
+      const double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
-      tempgrad_i =
+      const double* tempgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i);
-      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+      double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;

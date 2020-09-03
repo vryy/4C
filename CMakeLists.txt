@@ -104,6 +104,12 @@ if (TRILINOS_Q1_2019)
   add_definitions("-DTRILINOS_Q1_2019")
 endif (TRILINOS_Q1_2019)
 
+option (TRILINOS_DEVELOP "Select Trilinos installation based on current develop branch (highly experimental!)" OFF)
+if (TRILINOS_DEVELOP)
+  MESSAGE("II Trilinos installation: develop branch (highly experimental!)")
+  add_definitions("-DTRILINOS_DEVELOP")
+endif (TRILINOS_DEVELOP)
+
 option (ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
 if (ENABLE_STACKTR)
   MESSAGE("II Print stacktrace in dserror")
@@ -1878,7 +1884,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
-  src/drt_particle_interaction/particle_interaction_runtime_vtp_writer.cpp
+  src/drt_particle_interaction/particle_interaction_runtime_writer.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container.cpp
@@ -1936,6 +1942,7 @@ set(OBJS_LINALG
   src/linalg/linalg_utils_densematrix_determinant.cpp
   src/linalg/linalg_utils_densematrix_eigen.cpp
   src/linalg/linalg_utils_densematrix_inverse.cpp
+  src/linalg/linalg_utils_densematrix_print.cpp
   src/linalg/linalg_utils_densematrix_svd.cpp
   src/linalg/linalg_utils_sparse_algebra_assemble.cpp
   src/linalg/linalg_utils_sparse_algebra_create.cpp
@@ -2079,6 +2086,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/runtime_vtp_writer.cpp
   src/drt_io/discretization_runtime_vtu_writer.cpp
   src/drt_io/discretization_runtime_vtp_writer.cpp
+  src/drt_io/runtime_csv_writer.cpp
   src/drt_beam3/beam_discretization_runtime_vtu_writer.cpp
   src/drt_io/io_pstream.cpp
   src/drt_lib/drt_domainreader.cpp

@@ -106,8 +106,8 @@ namespace PARTICLEINTERACTION
     //! surface tension ramp function number
     const int surfacetensionrampfctnumber_;
 
-    //! have boundary or rigid particles
-    bool haveboundaryorrigidparticles_;
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
 
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
@@ -142,10 +142,10 @@ namespace PARTICLEINTERACTION
     void ComputeColorfieldGradient() const;
 
     //! compute unit wall normal
-    void ComputeUnitWallNormal(std::vector<int>& relwallindices) const;
+    void ComputeUnitWallNormal() const;
 
     //! compute wall distance
-    void ComputeWallDistance(std::vector<int>& relwallindices) const;
+    void ComputeWallDistance() const;
 
     //! compute wall correction factor
     void ComputeWallCorrectionFactor();

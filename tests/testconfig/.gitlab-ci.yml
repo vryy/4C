@@ -70,7 +70,7 @@ variables:
         paths:
             - buildtest_minimal.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         - master
     except:
@@ -113,7 +113,7 @@ variables:
         paths:
             - buildtest_full.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         refs:
             - web
@@ -157,7 +157,7 @@ variables:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
             - buildtest_interactive.log
-        expire_in: 5 days
+        expire_in: 1 day
 
 # This kind of job is started by a weekly scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "3"
@@ -182,8 +182,10 @@ variables:
         - lcov --capture --no-external --directory ../baci-build/ --base-directory . --output-file baci_coverage_tests.info > baci_coverage_tests.log
         # combine the baseline coverage with the coverage from the tests
         - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info --output-file baci_coverage.info  > baci_coverage.log
+        # remove unwanted files from the coveragre report
+        - lcov --remove baci_coverage.info "*/Unittests/*" "*/tests/*" "*/baci-build/*" -o baci_coverage_filtered.info > baci_coverage_filtered.log
         # generate the html version of the coverage report
-        - genhtml baci_coverage.info --legend --demangle-cpp --output-directory coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
+        - genhtml baci_coverage_filtered.info --legend --demangle-cpp --output-directory coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
         # add repo link to the commit that the report is based on
         - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g" {} \;
         # Write Selection of the output into the terminal and therefore to GITLAB
@@ -207,16 +209,14 @@ variables:
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
-            - baci_coverage_base.info
             - baci_coverage_base.log
-            - baci_coverage_tests.info
             - baci_coverage_tests.log
-            - baci_coverage.info
             - baci_coverage.log
+            - baci_coverage_filtered.log
             - buildtest_weekly_coverage.log
             - genhtml_weekly_coverage.log
         when: always
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
@@ -254,7 +254,7 @@ variables:
         paths:
             - buildtest_daily.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
@@ -292,7 +292,7 @@ variables:
         paths:
             - buildtest_daily_debug.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
@@ -322,7 +322,7 @@ variables:
         paths:
             - doxygen.log
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         refs:
             - web
@@ -398,7 +398,7 @@ checkcode:
             - wrong_clang_format.txt
             - wrong_headers.txt
         when: on_failure
-        expire_in: 5 days
+        expire_in: 1 day
     only:
         - master
         - web
@@ -589,6 +589,7 @@ pages: # job name needs to be pages
         # the content of the below artifact is published on GitLab Pages
         paths:
             - public
+        expire_in: 1 day
     only:
         refs:
             - master

@@ -127,6 +127,12 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double*
   UTILS::vec_scale(rollingcontactmoment, r_eff);
 }
 
+void PARTICLEINTERACTION::DEMContactRollingViscous::RollingPotentialEnergy(
+    const double* gap_rolling, double& rollingpotentialenergy) const
+{
+  rollingpotentialenergy = 0.0;
+}
+
 PARTICLEINTERACTION::DEMContactRollingCoulomb::DEMContactRollingCoulomb(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactRollingBase(params), k_rolling_(0.0)
@@ -232,4 +238,10 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double*
   // compute rolling contact moment
   UTILS::vec_setcross(rollingcontactmoment, rollingcontactforce, normal);
   UTILS::vec_scale(rollingcontactmoment, r_eff);
+}
+
+void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingPotentialEnergy(
+    const double* gap_rolling, double& rollingpotentialenergy) const
+{
+  rollingpotentialenergy = 0.5 * k_rolling_ * UTILS::vec_dot(gap_rolling, gap_rolling);
 }

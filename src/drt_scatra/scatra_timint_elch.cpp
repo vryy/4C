@@ -3300,50 +3300,51 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver> solver) const
+void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
-  // call base class routine
-  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver);
+  if (init_block_number != 0) dserror("System matrix must begin with scatra blocks in elch");
+
+  SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver, init_block_number);
 
   if (MatrixType() == LINALG::MatrixType::block_condition_dof)
+    ReduceDimensionNullSpaceBlocks(solver, init_block_number);
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
+    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
+{
+  // loop over blocks of global system matrix
+  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
   {
-    // loop over blocks of global system matrix
-    for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
-    {
-      // store number of current block as string, starting from 1
-      std::ostringstream iblockstr;
-      iblockstr << iblock + 1;
+    std::ostringstream iblockstr;
+    iblockstr << iblock + 1;
 
-      // access parameter sublist associated with smoother for current matrix block
-      Teuchos::ParameterList& mueluparams =
-          solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
+    // access parameter sublist associated with smoother for current matrix block
+    Teuchos::ParameterList& mueluparams =
+        solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
-      // extract already reduced null space associated with current matrix block
-      std::vector<double>& nullspace =
-          *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
+    // extract already reduced null space associated with current matrix block
+    std::vector<double>& nullspace =
+        *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
 
-      // Each matrix block is associated with either concentration dofs or electric potential dofs
-      // only. However, since the original full null space was computed for all degrees of freedom
-      // on the discretization, the reduced null spaces still have the full dimension, i.e., the
-      // full number of null space vectors equaling the total number of primary variables. Hence,
-      // we need to decrease the dimension of each null space by one and remove the corresponding
-      // zero null space vector from the null space.
-      if (iblock % 2 == 0)
-        // null space associated with concentration dofs
-        // remove zero null space vector associated with electric potential dofs by truncating
-        // null space
-        nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
+    // null space associated with concentration dofs
+    if (iblock % 2 == 0)
+      // remove zero null space vector associated with electric potential dofs by truncating
+      // null space
+      nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
 
-      else
-        // null space associated with electric potential dofs
-        // remove zero null space vector(s) associated with concentration dofs and retain only the
-        // last null space vector associated with electric potential dofs
-        nullspace.erase(
-            nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
+    // null space associated with electric potential dofs
+    else
+      // remove zero null space vector(s) associated with concentration dofs and retain only
+      // the last null space vector associated with electric potential dofs
+      nullspace.erase(
+          nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
 
-      // decrease null space dimension and number of partial differential equations by one
-      --mueluparams.get<int>("null space: dimension");
-      --mueluparams.get<int>("PDE equations");
-    }
+    // decrease null space dimension and number of partial differential equations by one
+    --mueluparams.get<int>("null space: dimension");
+    --mueluparams.get<int>("PDE equations");
   }
 }

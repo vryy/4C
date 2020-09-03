@@ -63,6 +63,9 @@ namespace PARTICLEINTERACTION
         const double* radius_j, const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const = 0;
 
+    //! evaluate normal potential energy
+    virtual void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const = 0;
+
    protected:
     //! discrete element method parameter list
     const Teuchos::ParameterList& params_dem_;
@@ -98,6 +101,9 @@ namespace PARTICLEINTERACTION
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
+
+    //! evaluate normal potential energy
+    void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const override;
   };
 
   class DEMContactNormalLinearSpringDamp : public DEMContactNormalLinearSpring
@@ -149,6 +155,9 @@ namespace PARTICLEINTERACTION
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const override = 0;
+
+    //! evaluate normal potential energy
+    void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const override;
 
    private:
     //! time step critical contact stiffness

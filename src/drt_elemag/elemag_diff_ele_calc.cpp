@@ -953,26 +953,19 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
 {
   int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
 
+  // If the number is not recognised throw an error
+  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
+    dserror(
+        "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
+        "components the field will be initialized componentwise, if only one component is "
+        "provided, every component of the field will be initialized with the same values.");
+
   // If there is on component for each entry of the vector use une for each
   // If the vector is half the number of the component only use the firt half
   // If the number of component is half of the vector, repeat the first half twice
-  if (numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2)
-  {
-    for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d % numComp, xyz.A(), t);
-  }
   // If there is only one component always use it
-  else if (numComp == 1)
-  {
-    for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz.A(), t);
-  }
-  // If the number is not recognised throw an error
-  else
-    dserror(
-        "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
-        "components the field will be initialized componentwise, if only one component is "
-        "provided, every component of the field will be initialized with the same values.");
+  for (int d = 0; d < v.M(); ++d)
+    v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d % numComp, xyz.A(), t);
 
   return;
 }
@@ -987,35 +980,56 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
 {
   int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
 
+  // If the number is not recognised throw an error
+  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
+    dserror(
+        "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
+        "components the field will be initialized componentwise, if only one component is "
+        "provided, every component of the field will be initialized with the same values.");
   // If there is on component for each entry of the vector use une for each
   // If the vector is half the number of the component only use the firt half
   // If the number of component is half of the vector, repeat the first half twice
-  if (numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2)
-  {
-    for (int d = 0; d < v.M(); ++d)
-    {
-      std::vector<double> deriv = DRT::Problem::Instance()
-                                      ->Funct(start_func - 1)
-                                      .EvaluateSpatialDerivative(d % numComp, xyz.A(), t);
-      for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
-    }
-  }
   // If there is only one component always use it
-  else if (numComp == 1)
+  for (int d = 0; d < v.M(); ++d)
   {
-    for (int d = 0; d < v.M(); ++d)
-    {
-      std::vector<double> deriv =
-          DRT::Problem::Instance()->Funct(start_func - 1).EvaluateSpatialDerivative(0, xyz.A(), t);
-      for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
-    }
+    std::vector<double> deriv = DRT::Problem::Instance()
+                                    ->Funct(start_func - 1)
+                                    .EvaluateSpatialDerivative(d % numComp, xyz.A(), t);
+    for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * ComputeFunctionTimeDerivative
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTimeDerivative(
+    const int start_func, const double t, const double dt, const LINALG::Matrix<nsd_, 1>& xyz,
+    Epetra_SerialDenseVector& v) const
+{
+  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+
   // If the number is not recognised throw an error
-  else
+  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
     dserror(
         "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
+
+  // If there is on component for each entry of the vector use one for each
+  // If the vector is half the number of the component only use the firt half
+  // If the number of component is half of the vector, repeat the first half twice
+  // If there is only one component always use it
+  for (int d = 0; d < v.M(); ++d)
+    v[d] = (DRT::Problem::Instance()
+                   ->Funct(start_func - 1)
+                   .Evaluate(d % numComp, xyz.A(), t + (0.5 * dt)) -
+               DRT::Problem::Instance()
+                   ->Funct(start_func - 1)
+                   .Evaluate(d % numComp, xyz.A(), t - (0.5 * dt))) /
+           dt;
 
   return;
 }
@@ -1584,62 +1598,37 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
 {
   int funcno = params.get<int>("sourcefuncno");
   if (funcno <= 0) return;  // there is no such thing as a volume force
-  // if(DRT::Problem::Instance()->Funct(funcno).NumberComponents()>1) dserror("for standard
-  // elemag, the source term has to be scalar, i.e. only 1 component");
 
   const double factor = params.get<double>("mod_mu");
 
   // the vector to be filled
-  std::vector<Epetra_SerialDenseVector> sourcen(2, Epetra_SerialDenseVector(nsd_));
-  std::vector<Epetra_SerialDenseVector> sourcenp(2, Epetra_SerialDenseVector(nsd_));
+  std::vector<Epetra_SerialDenseVector> source(2, Epetra_SerialDenseVector(nsd_));
 
   // what time is it?
   double tn = params.get<double>("time");
   double tp = params.get<double>("timep");
-  double dt = (tn - tp);
+  double dt = (tp - tn);
 
-  /*
-  // Hard-coding first-order time derivative
+  // Cycle Gauss points
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
+    // Gauss point location
     LINALG::Matrix<nsd_, 1> xyz;
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
 
-    // calculate right hand side contribution for dp/dt
-    EvaluateAll(funcno, tn + dt, xyz, sourcen[0]);
-    EvaluateAll(funcno, tn - dt, xyz, sourcen[1]);
-    EvaluateAll(funcno, tp + dt, xyz, sourcenp[0]);
-    EvaluateAll(funcno, tp - dt, xyz, sourcenp[1]);
+    // Evaluate time derivative of the source term
+    // We evaluate at tn and tp as they are already the next time step
+    ComputeFunctionTimeDerivative(funcno, tn, dt, xyz, source[0]);
+    ComputeFunctionTimeDerivative(funcno, tp, dt, xyz, source[1]);
 
     // add it all up
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
         interiorSourcen(i + d * shapes_.ndofs_) +=
-            shapes_.shfunct(i, q) * (sourcen[0](d) - sourcen[1](d)) * shapes_.jfac(q) / dt / 2;
+            shapes_.shfunct(i, q) * source[0](d) * shapes_.jfac(q) * factor;
         interiorSourcenp(i + d * shapes_.ndofs_) +=
-            shapes_.shfunct(i, q) * (sourcenp[0](d) - sourcenp[1](d)) * shapes_.jfac(q) / dt / 2;
-      }
-  }
-  */
-  // testing purposes
-  for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
-  {
-    LINALG::Matrix<nsd_, 1> xyz;
-    for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
-
-    // calculate right hand side contribution for dp/dt
-    EvaluateAll(funcno, tn + dt, xyz, sourcen[0]);
-    EvaluateAll(funcno, tp + dt, xyz, sourcenp[0]);
-
-    // add it all up
-    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
-      {
-        interiorSourcen(i + d * shapes_.ndofs_) +=
-            shapes_.shfunct(i, q) * sourcen[0](d) * shapes_.jfac(q) * factor;
-        interiorSourcenp(i + d * shapes_.ndofs_) +=
-            shapes_.shfunct(i, q) * sourcenp[0](d) * shapes_.jfac(q) * factor;
+            shapes_.shfunct(i, q) * source[1](d) * shapes_.jfac(q) * factor;
       }
   }
 
@@ -1765,7 +1754,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
   Epetra_SerialDenseVector tempVec2(intdofs);
   // Once the compute source is ready we will need to delete these
   // The ComputeSource is necesessary to include the forcing terms
-  ComputeSource(params, tempVec1, tempVec2);
+  ComputeSource(params, tempVec2, tempVec1);
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {

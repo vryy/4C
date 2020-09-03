@@ -99,17 +99,14 @@ namespace PARTICLEINTERACTION
     //! get normal contact stiffness
     double GetNormalContactStiffness() const;
 
-    //! have tangential contact
-    bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
-
-    //! have rolling contact
-    bool HaveRollingContact() const { return contactrolling_ ? true : false; };
-
     //! check critical time step (on this processor)
     void CheckCriticalTimeStep() const;
 
     //! add contact contribution to force and moment field
     void AddForceAndMomentContribution();
+
+    //! evaluate elastic potential energy contribution
+    void EvaluateElasticPotentialEnergy(double& elasticpotentialenergy) const;
 
    private:
     //! init normal contact handler
@@ -132,6 +129,12 @@ namespace PARTICLEINTERACTION
 
     //! evaluate particle-wall contact contribution
     void EvaluateParticleWallContact();
+
+    //! evaluate particle elastic potential energy contribution
+    void EvaluateParticleElasticPotentialEnergy(double& elasticpotentialenergy) const;
+
+    //! evaluate particle-wall elastic potential energy contribution
+    void EvaluateParticleWallElasticPotentialEnergy(double& elasticpotentialenergy) const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

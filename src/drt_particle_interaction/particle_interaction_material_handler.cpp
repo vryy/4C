@@ -46,10 +46,10 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
   for (auto& typeIt : typetomatidmap)
   {
     // get type of particle
-    PARTICLEENGINE::TypeEnum typeEnum = typeIt.first;
+    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
     // add to set of particle types of stored particle material parameters
-    storedtypes_.insert(typeEnum);
+    storedtypes_.insert(type_i);
 
     // get material parameters and cast to particle material parameter
     const MAT::PAR::Parameter* matparameter =
@@ -61,7 +61,7 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
     if (particlematparameter == NULL) dserror("cast to specific particle material failed!");
 
     // relate particle types to particle material parameters
-    phasetypetoparticlematpar_[typeEnum] = particlematparameter;
+    phasetypetoparticlematpar_[type_i] = particlematparameter;
   }
 }
 

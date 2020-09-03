@@ -12,7 +12,7 @@
 
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_material_handler.H"
-#include "particle_interaction_runtime_vtp_writer.H"
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_sph_equationofstate_bundle.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
@@ -49,7 +49,6 @@ PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
       transportvelocityformulation_(
           DRT::INPUT::IntegralValue<INPAR::PARTICLE::TransportVelocityFormulation>(
               params_sph_, "TRANSPORTVELOCITYFORMULATION")),
-      applytransportvelocity_(false),
       writeparticlewallinteraction_(
           DRT::INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
@@ -66,10 +65,14 @@ void PARTICLEINTERACTION::SPHMomentum::Init()
   // init artificial viscosity handler
   InitArtificialViscosityHandler();
 
-  // check if transport velocity formulation is applied
-  if (transportvelocityformulation_ !=
-      INPAR::PARTICLE::TransportVelocityFormulation::NoTransportVelocity)
-    applytransportvelocity_ = true;
+  // init with potential fluid particle types
+  allfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
+      PARTICLEENGINE::NeumannPhase};
+  intfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::NeumannPhase};
+  purefluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
+
+  // init with potential boundary particle types
+  boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
 void PARTICLEINTERACTION::SPHMomentum::Setup(
@@ -118,18 +121,33 @@ void PARTICLEINTERACTION::SPHMomentum::Setup(
   // setup artificial viscosity handler
   artificialviscosity_->Setup();
 
+  // update with actual fluid particle types
+  for (const auto& type_i : allfluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      allfluidtypes_.erase(type_i);
+
+  for (const auto& type_i : intfluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      intfluidtypes_.erase(type_i);
+
+  for (const auto& type_i : purefluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      purefluidtypes_.erase(type_i);
+
+  // update with actual boundary particle types
+  for (const auto& type_i : boundarytypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      boundarytypes_.erase(type_i);
+
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
 
   // allocate memory to hold particle types
   fluidmaterial_.resize(typevectorsize);
 
-  // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over all fluid particle types
+  for (const auto& type_i : allfluidtypes_)
   {
-    // no fluid material for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
     fluidmaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
         particlematerial_->GetPtrToParticleMatParameter(type_i));
   }
@@ -162,19 +180,17 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
   for (auto& typeIt : particlestatestotypes)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
-
-    // no states for open boundary particles
-    if (type == PARTICLEENGINE::DirichletPhase or type == PARTICLEENGINE::NeumannPhase) continue;
+    // current particle type is not a pure fluid particle type
+    if (not purefluidtypes_.count(type_i)) continue;
 
     // additional states for transport velocity formulation
-    if (applytransportvelocity_)
+    if (transportvelocityformulation_ !=
+        INPAR::PARTICLE::TransportVelocityFormulation::NoTransportVelocity)
       particlestates.insert(
           {PARTICLEENGINE::ModifiedVelocity, PARTICLEENGINE::ModifiedAcceleration});
   }
@@ -186,6 +202,9 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 
   // momentum equation (particle contribution)
   MomentumEquationParticleContribution();
+
+  // momentum equation (particle-boundary contribution)
+  MomentumEquationParticleBoundaryContribution();
 
   // momentum equation (particle-wall contribution)
   if (virtualwallparticle_) MomentumEquationParticleWallContribution();
@@ -246,9 +265,16 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution");
 
-  // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(allfluidtypes_, relindices);
+
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
@@ -260,15 +286,6 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
-    // check for boundary or rigid particles
-    bool isboundaryrigid_i =
-        (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase);
-    bool isboundaryrigid_j =
-        (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase);
-
-    // no momentum evaluation for both boundary or rigid particles
-    if (isboundaryrigid_i and (isboundaryrigid_j or status_j == PARTICLEENGINE::Ghosted)) continue;
-
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
@@ -277,126 +294,51 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialSPHFluid* material_i =
-        (isboundaryrigid_i) ? fluidmaterial_[type_j] : fluidmaterial_[type_i];
-    const MAT::PAR::ParticleMaterialSPHFluid* material_j =
-        (isboundaryrigid_j) ? fluidmaterial_[type_i] : fluidmaterial_[type_j];
+    const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
+    const MAT::PAR::ParticleMaterialSPHFluid* material_j = fluidmaterial_[type_j];
 
-    // get equation of state for particle types
-    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i;
-    if (not isboundaryrigid_i)
-      equationofstate_i = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
+    // get pointer to particle states
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    const double* press_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
-    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_j;
-    if (not isboundaryrigid_j)
-      equationofstate_j = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_j);
+    double* acc_i = nullptr;
+    if (intfluidtypes_.count(type_i))
+      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
-    // declare pointer variables for particle i and j
-    const double *vel_i, *rad_i, *mass_i, *dens_i, *press_i;
     const double* mod_vel_i = nullptr;
-    double *acc_i = nullptr, *mod_acc_i = nullptr;
+    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
+      mod_vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i);
 
-    const double *vel_j, *rad_j, *mass_j, *dens_j, *press_j;
-    const double* mod_vel_j = nullptr;
-    double *acc_j = nullptr, *mod_acc_j = nullptr;
-
-    double temp_dens(0.0);
-
-    // get pointer to particle states
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-
-    if (isboundaryrigid_i)
-    {
-      mass_i = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_i);
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_i);
-
-      temp_dens = equationofstate_j->PressureToDensity(press_i[0], material_j->initDensity_);
-      dens_i = &temp_dens;
-    }
-    else if (type_i == PARTICLEENGINE::DirichletPhase)
-    {
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    }
-    else if (type_i == PARTICLEENGINE::NeumannPhase)
-    {
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-    }
-    else
-    {
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-
-      if (applytransportvelocity_)
-      {
-        mod_vel_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i);
-        mod_acc_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
-      }
-    }
+    double* mod_acc_i = nullptr;
+    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
+      mod_acc_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
 
     // get pointer to particle states
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+    const double* press_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
-    if (isboundaryrigid_j)
-    {
-      mass_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_j);
-      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_j);
-
-      temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
-      dens_j = &temp_dens;
-    }
-    else if (type_j == PARTICLEENGINE::DirichletPhase)
-    {
-      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
-      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    }
-    else if (type_j == PARTICLEENGINE::NeumannPhase)
-    {
-      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
-      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    double* acc_j = nullptr;
+    if (intfluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
       acc_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_j);
-    }
-    else
-    {
-      mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
-      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
-      if (status_j == PARTICLEENGINE::Owned)
-        acc_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_j);
+    const double* mod_vel_j = nullptr;
+    if (container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
+      mod_vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_j);
 
-      if (applytransportvelocity_)
-      {
-        mod_vel_j =
-            container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_j);
-        mod_acc_j =
-            container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_j);
-      }
-    }
-
-    // determine weather viscous contribution are evaluated
-    bool evaluateviscouscontributions = true;
-    if ((isboundaryrigid_i or isboundaryrigid_j) and
-        boundaryparticleinteraction_ == INPAR::PARTICLE::FreeSlipBoundaryParticle)
-      evaluateviscouscontributions = false;
+    double* mod_acc_j = nullptr;
+    if (container_j->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration) and
+        status_j == PARTICLEENGINE::Owned)
+      mod_acc_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_j);
 
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
@@ -409,7 +351,6 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
         speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
 
     // evaluate shear forces
-    if (evaluateviscouscontributions)
     {
       // get factor from kernel space dimension
       int kernelfac = 0;
@@ -424,50 +365,41 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
     }
 
     // apply transport velocity formulation
-    if (applytransportvelocity_)
+    if (transportvelocityformulation_ ==
+        INPAR::PARTICLE::TransportVelocityFormulation::StandardTransportVelocity)
     {
-      if (transportvelocityformulation_ ==
-          INPAR::PARTICLE::TransportVelocityFormulation::StandardTransportVelocity)
-      {
-        // evaluate background pressure (standard formulation)
-        momentumformulation_->StandardBackgroundPressure(dens_i, dens_j,
-            material_i->backgroundPressure_, material_j->backgroundPressure_, speccoeff_ij,
-            speccoeff_ji, particlepair.e_ij_, mod_acc_i, mod_acc_j);
-      }
-      else if (transportvelocityformulation_ ==
-               INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
-      {
-        // modified support radius and first derivative of kernel
-        const double mod_rad_i = (mod_acc_i) ? kernel_->SmoothingLength(rad_i[0]) : 0.0;
-        const double mod_dWdrij =
-            (mod_acc_i) ? kernel_->dWdrij(particlepair.absdist_, mod_rad_i) : 0.0;
+      // evaluate background pressure (standard formulation)
+      momentumformulation_->StandardBackgroundPressure(dens_i, dens_j,
+          material_i->backgroundPressure_, material_j->backgroundPressure_, speccoeff_ij,
+          speccoeff_ji, particlepair.e_ij_, mod_acc_i, mod_acc_j);
 
-        double mod_rad_j = 0.0;
-        double mod_dWdrji = 0.0;
-        if (mod_acc_j and mod_acc_i and rad_i[0] == rad_j[0])
-        {
-          mod_rad_j = mod_rad_i;
-          mod_dWdrji = mod_dWdrij;
-        }
-        else if (mod_acc_j)
-        {
-          mod_rad_j = kernel_->SmoothingLength(rad_j[0]);
-          mod_dWdrji = kernel_->dWdrij(particlepair.absdist_, mod_rad_j);
-        }
+      // evaluate convection of momentum with relative velocity
+      momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
+          mod_vel_j, speccoeff_ij, speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
+    }
+    else if (transportvelocityformulation_ ==
+             INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
+    {
+      // modified first derivative of kernel
+      const double mod_dWdrij =
+          (mod_acc_i) ? kernel_->dWdrij(particlepair.absdist_, kernel_->SmoothingLength(rad_i[0]))
+                      : 0.0;
+      const double mod_dWdrji =
+          (mod_acc_j) ? kernel_->dWdrij(particlepair.absdist_, kernel_->SmoothingLength(rad_j[0]))
+                      : 0.0;
 
-        // modified background pressure
-        const double mod_bg_press_i =
-            (mod_acc_i) ? std::min(std::abs(10.0 * press_i[0]), material_i->backgroundPressure_)
-                        : 0.0;
-        const double mod_bg_press_j =
-            (mod_acc_j) ? std::min(std::abs(10.0 * press_j[0]), material_j->backgroundPressure_)
-                        : 0.0;
+      // modified background pressure
+      const double mod_bg_press_i =
+          (mod_acc_i) ? std::min(std::abs(10.0 * press_i[0]), material_i->backgroundPressure_)
+                      : 0.0;
+      const double mod_bg_press_j =
+          (mod_acc_j) ? std::min(std::abs(10.0 * press_j[0]), material_j->backgroundPressure_)
+                      : 0.0;
 
-        // evaluate background pressure (generalized formulation)
-        momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_j, mass_i, mass_j,
-            mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, particlepair.e_ij_, mod_acc_i,
-            mod_acc_j);
-      }
+      // evaluate background pressure (generalized formulation)
+      momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_j, mass_i, mass_j,
+          mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, particlepair.e_ij_, mod_acc_i,
+          mod_acc_j);
 
       // evaluate convection of momentum with relative velocity
       momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
@@ -475,15 +407,11 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
     }
 
     // evaluate artificial viscosity
-    if (evaluateviscouscontributions and
-        (material_i->artificialViscosity_ > 0.0 or material_j->artificialViscosity_ > 0.0))
+    if (material_i->artificialViscosity_ > 0.0 or material_j->artificialViscosity_ > 0.0)
     {
-      // get smoothing length
-      const double h_i = kernel_->SmoothingLength(rad_i[0]);
-      const double h_j = (rad_i[0] == rad_j[0]) ? h_i : kernel_->SmoothingLength(rad_j[0]);
-
       // particle averaged smoothing length
-      const double h_ij = 0.5 * (h_i + h_j);
+      const double h_ij =
+          0.5 * (kernel_->SmoothingLength(rad_i[0]) + kernel_->SmoothingLength(rad_j[0]));
 
       // get speed of sound
       const double c_i = material_i->SpeedOfSound();
@@ -504,6 +432,174 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
   }
 }
 
+void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribution");
+
+  // get relevant particle pair indices
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+      intfluidtypes_, boundarytypes_, relindices);
+
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
+  {
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
+
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
+
+    // swap fluid particle and boundary particle
+    const bool swapparticles = boundarytypes_.count(type_i);
+    if (swapparticles)
+    {
+      std::tie(type_i, status_i, particle_i) = particlepair.tuple_j_;
+      std::tie(type_j, status_j, particle_j) = particlepair.tuple_i_;
+    }
+
+    // absolute distance between particles
+    const double absdist = particlepair.absdist_;
+
+    // versor from particle j to i
+    double e_ij[3];
+    UTILS::vec_set(e_ij, particlepair.e_ij_);
+    if (swapparticles) UTILS::vec_scale(e_ij, -1.0);
+
+    // first derivative of kernel
+    const double dWdrij = (swapparticles) ? particlepair.dWdrji_ : particlepair.dWdrij_;
+
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+    // get material for particle types
+    const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
+
+    // get equation of state for particle types
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i =
+        equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
+
+    // get pointer to particle states
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    const double* press_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+
+    double* acc_i = nullptr;
+    if (status_i == PARTICLEENGINE::Owned)
+      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+
+    const double* mod_vel_i = nullptr;
+    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
+      mod_vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i);
+
+    double* mod_acc_i = nullptr;
+    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration) and
+        status_i == PARTICLEENGINE::Owned)
+      mod_acc_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
+
+    // get pointer to boundary particle states
+    const double* mass_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* press_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_j);
+    const double* vel_j =
+        container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_j);
+
+    double temp_dens(0.0);
+    temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
+    const double* dens_j = &temp_dens;
+
+    // evaluate specific coefficient
+    double speccoeff_ij(0.0);
+    momentumformulation_->SpecificCoefficient(
+        dens_i, dens_j, mass_i, mass_j, dWdrij, 0.0, &speccoeff_ij, nullptr);
+
+    // evaluate pressure gradient
+    momentumformulation_->PressureGradient(
+        dens_i, dens_j, press_i, press_j, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+
+    // evaluate shear forces
+    if (boundaryparticleinteraction_ == INPAR::PARTICLE::NoSlipBoundaryParticle)
+    {
+      // get factor from kernel space dimension
+      int kernelfac = 0;
+      kernel_->KernelSpaceDimension(kernelfac);
+      kernelfac += 2;
+
+      // evaluate shear forces
+      momentumformulation_->ShearForces(dens_i, dens_j, vel_i, vel_j, kernelfac,
+          material_i->dynamicViscosity_, material_i->dynamicViscosity_, material_i->bulkViscosity_,
+          material_i->bulkViscosity_, absdist, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+    }
+
+    // apply transport velocity formulation
+    if (transportvelocityformulation_ ==
+        INPAR::PARTICLE::TransportVelocityFormulation::StandardTransportVelocity)
+    {
+      // evaluate background pressure (standard formulation)
+      momentumformulation_->StandardBackgroundPressure(dens_i, dens_j,
+          material_i->backgroundPressure_, 0.0, speccoeff_ij, 0.0, e_ij, mod_acc_i, nullptr);
+
+      // evaluate convection of momentum with relative velocity
+      momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
+          nullptr, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+    }
+    else if (transportvelocityformulation_ ==
+             INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
+    {
+      // modified first derivative of kernel
+      const double mod_dWdrij = kernel_->dWdrij(absdist, kernel_->SmoothingLength(rad_i[0]));
+
+      // modified background pressure
+      const double mod_bg_press_i =
+          std::min(std::abs(10.0 * press_i[0]), material_i->backgroundPressure_);
+
+      // evaluate background pressure (generalized formulation)
+      momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_j, mass_i, mass_j,
+          mod_bg_press_i, 0.0, mod_dWdrij, 0.0, e_ij, mod_acc_i, nullptr);
+
+      // evaluate convection of momentum with relative velocity
+      momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
+          nullptr, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+    }
+
+    // evaluate artificial viscosity
+    if (boundaryparticleinteraction_ == INPAR::PARTICLE::NoSlipBoundaryParticle and
+        material_i->artificialViscosity_ > 0.0)
+    {
+      // get smoothing length
+      const double h_i = kernel_->SmoothingLength(rad_i[0]);
+
+      // get speed of sound
+      const double c_i = material_i->SpeedOfSound();
+
+      // particle averaged density
+      const double dens_ij = 0.5 * (dens_i[0] + dens_j[0]);
+
+      // evaluate artificial viscosity
+      artificialviscosity_->ArtificialViscosity(vel_i, vel_j, mass_i, mass_j,
+          material_i->artificialViscosity_, 0.0, dWdrij, 0.0, dens_ij, h_i, c_i, absdist, e_ij,
+          acc_i, nullptr);
+    }
+  }
+}
+
 void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -517,6 +613,9 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
   const SPHParticleWallPairData& particlewallpairdata =
       neighborpairs_->GetRefToParticleWallPairData();
 
+  // get number of particle-wall pairs
+  const int numparticlewallpairs = particlewallpairdata.size();
+
   // write interaction output
   const bool writeinteractionoutput =
       particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
@@ -529,8 +628,6 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
   // prepare storage for interaction output
   if (writeinteractionoutput)
   {
-    const int numparticlewallpairs = particlewallpairdata.size();
-
     attackpoints.reserve(3 * numparticlewallpairs);
     contactforces.reserve(3 * numparticlewallpairs);
     normaldirection.reserve(3 * numparticlewallpairs);
@@ -551,26 +648,20 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
   const std::vector<std::vector<double>>& weightedvelocity =
       virtualwallparticle_->GetWeightedVelocity();
 
-  // determine weather viscous contribution are evaluated
-  bool evaluateviscouscontributions =
-      (boundaryparticleinteraction_ == INPAR::PARTICLE::FreeSlipBoundaryParticle) ? false : true;
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices(intfluidtypes_, relindices);
 
-  // iterate over particle-wall pairs
-  for (int i = 0; i < static_cast<int>(particlewallpairdata.size()); ++i)
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
   {
-    const SPHParticleWallPair& particlewallpair = particlewallpairdata[i];
+    const SPHParticleWallPair& particlewallpair = particlewallpairdata[particlewallpairindex];
 
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
     std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
-
-    // no evaluation for boundary or rigid particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-    // no evaluation for dirichlet open boundary particles
-    if (type_i == PARTICLEENGINE::DirichletPhase) continue;
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -583,26 +674,25 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i =
         equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
 
-    // declare pointer variables for particle i
-    const double *pos_i, *vel_i, *rad_i, *mass_i, *dens_i, *press_i;
-    const double* mod_vel_i = nullptr;
-    double *acc_i, *mod_acc_i = nullptr;
-
     // get pointer to particle states
-    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
-    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+    const double* press_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
-    if (applytransportvelocity_ and type_i != PARTICLEENGINE::NeumannPhase)
-    {
-      mod_vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i);
-      mod_acc_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
-    }
+    const double* mod_vel_i =
+        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : nullptr;
+
+    double* mod_acc_i =
+        container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration)
+            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedAcceleration, particle_i)
+            : nullptr;
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
@@ -653,7 +743,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
 
     // vector from weighted fluid particle positions l to wall contact point j
     double r_jl_weighted[3];
-    UTILS::vec_set(r_jl_weighted, &weighteddistancevector[i][0]);
+    UTILS::vec_set(r_jl_weighted, &weighteddistancevector[particlewallpairindex][0]);
 
     // inverse normal distance from weighted fluid particle positions l to wall contact point j
     const double inv_norm_dist_jl_weighted =
@@ -690,25 +780,23 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
         UTILS::vec_set(r_kl_weighted, r_jl_weighted);
         UTILS::vec_sub(r_kl_weighted, r_jk);
 
-        // declare pointer variables for virtual particle k
-        const double *vel_k, *mass_k, *dens_k, *press_k;
-
         // get pointer to virtual particle states
-        mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+        const double* mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
         const double temp_press_k =
-            weightedpressure[i] + UTILS::vec_dot(r_kl_weighted, &weightedpressuregradient[i][0]);
-        press_k = &temp_press_k;
+            weightedpressure[particlewallpairindex] +
+            UTILS::vec_dot(r_kl_weighted, &weightedpressuregradient[particlewallpairindex][0]);
+        const double* press_k = &temp_press_k;
 
         const double temp_dens_k =
             equationofstate_i->PressureToDensity(press_k[0], material_i->initDensity_);
-        dens_k = &temp_dens_k;
+        const double* dens_k = &temp_dens_k;
 
         double temp_vel_k[3];
         double fac = -virtualparticle[0] * inv_norm_dist_jl_weighted;
         UTILS::vec_setscale(temp_vel_k, 1 + fac, vel_j);
-        UTILS::vec_addscale(temp_vel_k, -fac, &weightedvelocity[i][0]);
-        vel_k = &temp_vel_k[0];
+        UTILS::vec_addscale(temp_vel_k, -fac, &weightedvelocity[particlewallpairindex][0]);
+        const double* vel_k = &temp_vel_k[0];
 
         // versor from virtual particle k to particle i
         double e_ik[3];
@@ -727,7 +815,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
             dens_i, dens_k, press_i, press_k, speccoeff_ik, 0.0, e_ik, sumk_acc_ik, nullptr);
 
         // evaluate shear forces
-        if (evaluateviscouscontributions)
+        if (boundaryparticleinteraction_ == INPAR::PARTICLE::NoSlipBoundaryParticle)
         {
           // get factor from kernel space dimension
           int kernelfac = 0;
@@ -742,31 +830,31 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
         }
 
         // apply transport velocity formulation
-        if (applytransportvelocity_)
+        if (transportvelocityformulation_ ==
+            INPAR::PARTICLE::TransportVelocityFormulation::StandardTransportVelocity)
         {
-          if (transportvelocityformulation_ ==
-              INPAR::PARTICLE::TransportVelocityFormulation::StandardTransportVelocity)
-          {
-            // evaluate background pressure (standard formulation)
-            momentumformulation_->StandardBackgroundPressure(dens_i, dens_k,
-                material_i->backgroundPressure_, 0.0, speccoeff_ik, 0.0, e_ik, sumk_mod_acc_ik,
-                nullptr);
-          }
-          else if (transportvelocityformulation_ ==
-                   INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
-          {
-            // modified support radius and first derivative of kernel
-            const double mod_rad_i = kernel_->SmoothingLength(rad_i[0]);
-            const double mod_dWdrij = kernel_->dWdrij(absdist, mod_rad_i);
+          // evaluate background pressure (standard formulation)
+          momentumformulation_->StandardBackgroundPressure(dens_i, dens_k,
+              material_i->backgroundPressure_, 0.0, speccoeff_ik, 0.0, e_ik, sumk_mod_acc_ik,
+              nullptr);
 
-            // modified background pressure
-            const double mod_bg_press_i =
-                std::min(std::abs(10.0 * press_i[0]), material_i->backgroundPressure_);
+          // evaluate convection of momentum with relative velocity
+          momentumformulation_->ModifiedVelocityContribution(dens_i, dens_k, vel_i, vel_k,
+              mod_vel_i, nullptr, speccoeff_ik, 0.0, e_ik, sumk_acc_ik, nullptr);
+        }
+        else if (transportvelocityformulation_ ==
+                 INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
+        {
+          // modified first derivative of kernel
+          const double mod_dWdrij = kernel_->dWdrij(absdist, kernel_->SmoothingLength(rad_i[0]));
 
-            // evaluate background pressure (generalized formulation)
-            momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_k, mass_i, mass_k,
-                mod_bg_press_i, 0.0, mod_dWdrij, 0.0, e_ik, sumk_mod_acc_ik, nullptr);
-          }
+          // modified background pressure
+          const double mod_bg_press_i =
+              std::min(std::abs(10.0 * press_i[0]), material_i->backgroundPressure_);
+
+          // evaluate background pressure (generalized formulation)
+          momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_k, mass_i, mass_k,
+              mod_bg_press_i, 0.0, mod_dWdrij, 0.0, e_ik, sumk_mod_acc_ik, nullptr);
 
           // evaluate convection of momentum with relative velocity
           momentumformulation_->ModifiedVelocityContribution(dens_i, dens_k, vel_i, vel_k,
@@ -774,7 +862,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
         }
 
         // evaluate artificial viscosity
-        if (evaluateviscouscontributions and material_i->artificialViscosity_ > 0.0)
+        if (boundaryparticleinteraction_ == INPAR::PARTICLE::NoSlipBoundaryParticle and
+            material_i->artificialViscosity_ > 0.0)
         {
           // get smoothing length
           const double h_i = kernel_->SmoothingLength(rad_i[0]);

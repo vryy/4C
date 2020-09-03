@@ -1005,6 +1005,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
 
   double dt = scatraparatimint_->Dt();
   double theta = scatraparatimint_->TimeFac() * (1 / dt);
+  const double time = scatraparatimint_->Time();
+  bool source = scatrapara_->IsEMD();
 
   Epetra_SerialDenseVector tempVec1(hdgele->ndofs_);
   Epetra_SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
@@ -1024,11 +1026,19 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
   {
     // Reaction term
     tempVecI = hdgele->Ivecnp_;
+    if (source)
+    {
+      ComputeSource(hdgele, tempVecI, time + dt);
+    }
     tempVecI.Scale(dt * theta);
     tempVec1 += tempVecI;
     if (theta != 1.0)
     {
       tempVecI = hdgele->Ivecn_;
+      if (source)
+      {
+        ComputeSource(hdgele, tempVecI, time);
+      }
       tempVecI.Scale(dt * (1.0 - theta));
       tempVec1 += tempVecI;
     }
@@ -1037,6 +1047,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
   else
   {
     tempVecI = hdgele->Ivecn_;
+    if (source)
+    {
+      ComputeSource(hdgele, tempVecI, time);
+    }
     tempVecI.Scale(dt);
     tempVec1 += tempVecI;
   }
@@ -1079,6 +1093,42 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
   return;
 }  // ComputeResidual
 
+/*----------------------------------------------------------------------*
+ * ComputeSource
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSource(
+    const DRT::Element* ele, Epetra_SerialDenseVector& elevec1, const double time)
+{
+  const int funcno = scatrapara_->EMDSource();
+
+  shapes_->Evaluate(*ele);
+
+  // Epetra_SerialDenseVector source(nsd_);
+  if (nsd_ != DRT::Problem::Instance()->Funct(funcno - 1).NumberComponents())
+    dserror(
+        "The source does not have the correct number of components.\n The correct number of "
+        "components should be equal to the number of spatial dimensions.\n Fix the source "
+        "function.");
+
+  for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
+  {
+    LINALG::Matrix<nsd_, 1> xyz;
+    // add it all up
+    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
+      for (unsigned int j = 0; j < shapes_->ndofs_; ++j)
+      {
+        double source = 0;
+        for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->nodexyzreal(d, j);
+        for (unsigned int d = 0; d < nsd_; ++d)
+          source += shapes_->shderxy(j * nsd_ + d, q) *
+                    DRT::Problem::Instance()->Funct(funcno - 1).Evaluate(d, xyz.A(), time);
+        elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
+      }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * CondenseLocalPart
@@ -1440,6 +1490,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
   double dt = localSolver_->scatraparatimint_->Dt();
   double theta = localSolver_->scatraparatimint_->TimeFac() * (1 / dt);
+  const double time = localSolver_->scatraparatimint_->Time();
+  bool source = localSolver_->scatrapara_->IsEMD();
 
   Epetra_SerialDenseVector tempVec1(hdgele->ndofs_);
   if (theta != 1.0)
@@ -1458,11 +1510,19 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   if (!localSolver_->scatrapara_->SemiImplicit())
   {
     tempVecI = hdgele->Ivecnp_;
+    if (source)
+    {
+      localSolver_->ComputeSource(hdgele, tempVecI, time + dt);
+    }
     tempVecI.Scale(-dt * theta);
     tempVec1 += tempVecI;
     if (theta != 1.0)
     {
       tempVecI = hdgele->Ivecn_;
+      if (source)
+      {
+        localSolver_->ComputeSource(hdgele, tempVecI, time);
+      }
       tempVecI.Scale(-dt * (1.0 - theta));
       tempVec1 += tempVecI;
     }
@@ -1470,6 +1530,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   else
   {
     tempVecI = hdgele->Ivecn_;
+    if (source)
+    {
+      localSolver_->ComputeSource(hdgele, tempVecI, time);
+    }
     tempVecI.Scale(-dt);
     tempVec1 += tempVecI;
   }

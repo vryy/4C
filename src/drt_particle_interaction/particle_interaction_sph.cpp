@@ -314,11 +314,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   const double initialparticlevolume = std::pow(initialparticlespacing, kernelspacedim);
 
   // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -328,7 +328,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // initial density of current phase
     std::vector<double> initdensity(1);
@@ -342,15 +342,13 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     std::vector<double> initradius(1);
     initradius[0] = material->initRadius_;
 
-    // set initial density for all non-boundary and non-rigid particles
-    if (typeEnum != PARTICLEENGINE::BoundaryPhase and typeEnum != PARTICLEENGINE::RigidPhase)
-      particlecontainerbundle_->SetStateSpecificContainer(
-          initdensity, PARTICLEENGINE::Density, typeEnum);
+    // set initial density for respective particles of current type
+    if (container->HaveStoredState(PARTICLEENGINE::Density))
+      container->SetState(initdensity, PARTICLEENGINE::Density);
 
     // set initial mass and radius for all particles of current type
-    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, typeEnum);
-    particlecontainerbundle_->SetStateSpecificContainer(
-        initradius, PARTICLEENGINE::Radius, typeEnum);
+    container->SetState(initmass, PARTICLEENGINE::Mass);
+    container->SetState(initradius, PARTICLEENGINE::Radius);
 
     // initial states for temperature evaluation
     if (temperature_)
@@ -358,15 +356,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
       // get material for current particle type
       const MAT::PAR::ParticleMaterialThermo* material =
           dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-              particlematerial_->GetPtrToParticleMatParameter(typeEnum));
+              particlematerial_->GetPtrToParticleMatParameter(type_i));
 
       // initial temperature of current phase
       std::vector<double> inittemperature(1);
       inittemperature[0] = material->initTemperature_;
 
       // set initial temperature for all particles of current type
-      particlecontainerbundle_->SetStateSpecificContainer(
-          inittemperature, PARTICLEENGINE::Temperature, typeEnum);
+      container->SetState(inittemperature, PARTICLEENGINE::Temperature);
     }
   }
 }
@@ -402,14 +399,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
 
-  // init boundary particle states
-  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
-
   // interpolate open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->InterpolateOpenBoundaryStates();
 
   // interpolate open boundary states
   if (neumannopenboundary_) neumannopenboundary_->InterpolateOpenBoundaryStates();
+
+  // init boundary particle states
+  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
 
   // init states at wall contact points
   if (virtualwallparticle_) virtualwallparticle_->InitStatesAtWallContactPoints(gravity_);

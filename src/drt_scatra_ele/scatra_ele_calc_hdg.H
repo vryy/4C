@@ -248,6 +248,10 @@ namespace DRT
         //! concentrations) into the element matrix for the trace and similarly for the residuals
         void CondenseLocalPart(DRT::ELEMENTS::ScaTraHDG* hdgele);
 
+        //! Compute divergence of current source (ELEMAG)
+        void ComputeSource(
+            const DRT::Element* ele, Epetra_SerialDenseVector& elevec1, const double time);
+
         //! add diffusive term to element matrix
         void AddDiffMat(Epetra_SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
 

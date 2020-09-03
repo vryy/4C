@@ -742,7 +742,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   }
 
   // get maximum global id on this processor
-  int thisprocmaxglobalid = (thisprocglobalids.size() == 0) ? 0 : *thisprocglobalids.rbegin();
+  int thisprocmaxglobalid = (thisprocglobalids.empty()) ? 0 : *thisprocglobalids.rbegin();
 
   // get maximum global id on all processors
   int allprocmaxglobalid(0);
@@ -1533,7 +1533,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
-      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      const double* currpos =
+          container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
 
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
@@ -2103,9 +2104,12 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(&(lasttransferpos[statedim * index]));
 
-      dsassert(gidofbin >= 0, "particle out of bounding box but not removed from container!");
-      dsassert(binrowmap_->LID(gidofbin) >= 0,
-          "particle not owned by this proc but not removed from container!");
+#ifdef DEBUG
+      if (gidofbin < 0) dserror("particle out of bounding box but not removed from container!");
+
+      if (binrowmap_->LID(gidofbin) < 0)
+        dserror("particle not owned by this proc but not removed from container!");
+#endif
 
       // add index relating (owned and ghosted) particles to col bins
       particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, index));

@@ -387,6 +387,13 @@ namespace PARTICLEALGORITHM
     void SetCurrentWriteResultFlag();
 
     /*!
+     * \brief evaluate time step
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     */
+    void EvaluateTimeStep();
+
+    /*!
      * \brief set gravity acceleration
      *
      * \author Sebastian Fuchs \date 06/2018
