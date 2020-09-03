@@ -43,7 +43,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
    - [ ] Get the code
    - [ ] Configure git including the git hooks
    - [ ] Build the code and run some tests for verification
-- [ ] Read through our [CONTRIBUTING GUIDELINES](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) and
+- [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) guidelines
 - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
 - [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
