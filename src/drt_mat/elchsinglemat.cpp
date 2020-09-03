@@ -184,7 +184,9 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficient(const double concentratio
 
   // diffusion coefficient is a constant prescribed in input file
   else if (DiffusionCoefficientConcentrationDependenceFunct() == 0)
-    diffusionCoefficient = EvalFunctValue(-1, concentration, DiffusionCoefficientParams());
+    dserror(
+        "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
+        "the implemented models, or set a positive value and make use of the function framework!");
 
   // diffusion coefficient is a function of the concentration as defined in the input file
   else
@@ -206,7 +208,9 @@ double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double concentration
     firstderiv = EvalFirstDerivFunctValue(DiffusionCoefficientConcentrationDependenceFunct(),
         concentration, DiffusionCoefficientParams());
   else if (DiffusionCoefficientConcentrationDependenceFunct() == 0)
-    firstderiv = EvalFirstDerivFunctValue(-1, concentration, DiffusionCoefficientParams());
+    dserror(
+        "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
+        "the implemented models, or set a positive value and make use of the function framework!");
   else
     firstderiv = (DRT::Problem::Instance()
                       ->Funct(DiffusionCoefficientConcentrationDependenceFunct() - 1)
@@ -227,11 +231,13 @@ double MAT::ElchSingleMat::ComputeConductivity(const double concentration) const
     conductivity = EvalFunctValue(
         ConductivityConcentrationDependenceFunct(), concentration, ConductivityParams());
 
-  // conductivitiy is a constant prescribed in input file
+  // conductivity is a constant prescribed in input file
   else if (ConductivityConcentrationDependenceFunct() == 0)
-    conductivity = EvalFunctValue(-1, concentration, ConductivityParams());
+    dserror(
+        "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
+        "implemented models, or set a positive value and make use of the function framework!");
 
-  // conductivitiy is a function of the concentration as defined in the input file
+  // conductivity is a function of the concentration as defined in the input file
   else
     conductivity = DRT::Problem::Instance()
                        ->Funct(ConductivityConcentrationDependenceFunct() - 1)
@@ -251,7 +257,9 @@ double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) con
     firstderiv = EvalFirstDerivFunctValue(
         ConductivityConcentrationDependenceFunct(), concentration, ConductivityParams());
   else if (ConductivityConcentrationDependenceFunct() == 0)
-    firstderiv = EvalFirstDerivFunctValue(-1, concentration, ConductivityParams());
+    dserror(
+        "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
+        "implemented models, or set a positive value and make use of the function framework!");
   else
     firstderiv = (DRT::Problem::Instance()
                       ->Funct(ConductivityConcentrationDependenceFunct() - 1)
