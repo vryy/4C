@@ -107,7 +107,7 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   // write particle data
   binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
 
-  // write restart of particle unique global identifier handler
+  // write restart of unique global identifier handler
   particleuniqueglobalidhandler_->WriteRestart(binwriter);
 
   // write restart of runtime vtp writer
@@ -142,7 +142,7 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
   if (position != particledata->size())
     dserror("mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
 
-  // read restart of particle unique global identifier handler
+  // read restart of unique global identifier handler
   particleuniqueglobalidhandler_->ReadRestart(reader);
 
   // read restart of runtime vtp writer
@@ -1042,15 +1042,15 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 
 void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
 {
-  // create and init particle unique global identifier handler
-  particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler>(
-      new PARTICLEENGINE::ParticleUniqueGlobalIdHandler(comm_, "particle"));
+  // create and init unique global identifier handler
+  particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
+      new PARTICLEENGINE::UniqueGlobalIdHandler(comm_, "particle"));
   particleuniqueglobalidhandler_->Init();
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupParticleUniqueGlobalIdHandler() const
 {
-  // setup particle unique global identifier handler
+  // setup unique global identifier handler
   particleuniqueglobalidhandler_->Setup();
 }
 

@@ -48,7 +48,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 11/2019
    */
-  class ParticleUniqueGlobalIdHandler final
+  class UniqueGlobalIdHandler final
   {
    public:
     /*!
@@ -58,27 +58,27 @@ namespace PARTICLEENGINE
      *
      * \param[in] comm communicator
      */
-    explicit ParticleUniqueGlobalIdHandler(const Epetra_Comm& comm, const std::string& objectname);
+    explicit UniqueGlobalIdHandler(const Epetra_Comm& comm, const std::string& objectname);
 
     //! destructor
-    ~ParticleUniqueGlobalIdHandler() = default;
+    ~UniqueGlobalIdHandler() = default;
 
     /*!
-     * \brief init particle unique global identifier handler
+     * \brief init unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      */
     void Init();
 
     /*!
-     * \brief setup particle unique global identifier handler
+     * \brief setup unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      */
     void Setup();
 
     /*!
-     * \brief write restart of particle unique global identifier handler
+     * \brief write restart of unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      *
@@ -87,7 +87,7 @@ namespace PARTICLEENGINE
     void WriteRestart(std::shared_ptr<IO::DiscretizationWriter> writer) const;
 
     /*!
-     * \brief read restart of particle unique global identifier handler
+     * \brief read restart of unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      *
