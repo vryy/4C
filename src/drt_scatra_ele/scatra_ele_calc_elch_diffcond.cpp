@@ -1398,26 +1398,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
  | get material parameters                                   fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
-    const DRT::Element* ele,      //!< current element
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< ID of current integration point
-)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(const DRT::Element* ele,
+    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
+    double& visc, const int iquad)
 {
   // extract material from element
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // evaluate electrolyte material
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    Utils()->MatElchMat(material, VarManager()->Phinp(), myelch::elchparams_->EquPot(),
-        myelch::elchparams_->Faraday() * VarManager()->FRT(), DiffManager(), diffcondmat_);
+    Utils()->MatElchMat(material, VarManager()->Phinp(), VarManager()->Temperature(),
+        myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * VarManager()->FRT(),
+        DiffManager(), diffcondmat_);
   else
     dserror("Invalid material type!");
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams
 
 

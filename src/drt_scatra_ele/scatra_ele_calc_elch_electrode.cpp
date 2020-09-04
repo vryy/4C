@@ -350,26 +350,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcRhsPotEquDiviOhm(
  | get material parameters                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams(
-    const DRT::Element* ele,      //!< the element we are dealing with
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< id of current gauss point (default = -1)
-)
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams(const DRT::Element* ele,
+    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
+    double& visc, const int iquad)
 {
   // get material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
 
   // evaluate electrode material
   if (material->MaterialType() == INPAR::MAT::m_electrode)
-    Utils()->MatElectrode(material, VarManager()->Phinp(0), DiffManager());
+    Utils()->MatElectrode(
+        material, VarManager()->Phinp(0), VarManager()->Temperature(), DiffManager());
   else
     dserror("Material type not supported!");
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams
+}
 
 
 // template classes

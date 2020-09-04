@@ -567,17 +567,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ExtractElementAndNodeVal
 
 
 /*----------------------------------------------------------------------*
- | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(
-    const DRT::Element* ele,      //!< current element
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< ID of current integration point
-)
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const DRT::Element* ele,
+    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
+    double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
@@ -590,15 +584,14 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(
   material = ele->Material(1);
   if (material->MaterialType() == INPAR::MAT::m_electrode)
   {
-    utils_->MatElectrode(material, VarManager()->Conc(), diffmanagerstielectrode_);
+    utils_->MatElectrode(
+        material, VarManager()->Conc(), my::scatravarmanager_->Phinp(0), diffmanagerstielectrode_);
     diffmanagerstielectrode_->SetOCPAndDerivs(
         ele, VarManager()->Conc(), my::scatravarmanager_->Phinp(0));
   }
   else
     dserror("Invalid scalar transport material!");
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams
+}
 
 
 /*----------------------------------------------------------------------*

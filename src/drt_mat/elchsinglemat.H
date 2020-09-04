@@ -24,7 +24,10 @@ namespace MAT
       //! @name parameters for abstract battery material
       //@{
       //! function number to describe concentration dependence of diffusion coefficient
-      const int diffusion_coefficient_concentration_dependence_funct_;
+      const int diffusion_coefficient_concentration_dependence_funct_num_;
+
+      //! function number defining the temperature scaling of the diffusion coefficient
+      const int diffusion_coefficient_temperature_scaling_funct_num_;
 
       //! number of parameters for diffusion coefficient
       const int number_diffusion_coefficent_params_;
@@ -33,7 +36,10 @@ namespace MAT
       const std::vector<double> diffusion_coefficent_params_;
 
       //! function number to describe concentration dependence of conductivity
-      const int conductivity_concentration_dependence_funct_;
+      const int conductivity_concentration_dependence_funct_num_;
+
+      //! function number defining the temperature scaling of the conductivity
+      const int conductivity_temperature_scaling_funct_num_;
 
       //! number of parameters for conductivity
       const int number_conductivity_params_;
@@ -92,31 +98,54 @@ namespace MAT
     void Unpack(const std::vector<char>& data) override = 0;
     //@}
 
-    //! compute diffusion coefficient according to curve number
-    double ComputeDiffusionCoefficient(double concentration) const;
+    //! compute diffusion coefficient accounting for concentration and temperature dependence
+    double ComputeDiffusionCoefficient(double concentration, double temperature) const;
 
-    //! compute first derivative of diffusion coefficient according to curve number
+    //! compute concentration dependent diffusion coefficient according to function number
+    double ComputeDiffusionCoefficientConcentrationDependent(double concentration) const;
+
+    //! compute temperature dependent scale factor based on provided function
+    double ComputeTemperatureDependentScaleFactor(double temperature, int functionNumber) const;
+
+    //! compute first derivative of diffusion coefficient according to function number
     double ComputeFirstDerivDiffCoeff(double concentration) const;
 
-    //! compute conductivity according to curve number
-    double ComputeConductivity(double concentration) const;
+    //! compute conductivity accounting for concentration and temperature dependence
+    double ComputeConductivity(double concentration, double temperature) const;
 
-    //! compute first derivative of conductivity according to curve number
+    //! compute concentration dependent conductivity according to function number
+    double ComputeConductivityConcentrationDependent(double concentration) const;
+
+    //! compute first derivative of conductivity according to function number
     double ComputeFirstDerivCond(double concentration) const;
 
    protected:
-    //! return function number describing concentration dependence of diffusion coefficient
-    int DiffusionCoefficientConcentrationDependenceFunct() const
+    //! return function number describing concentration dependence of the diffusion coefficient
+    int DiffusionCoefficientConcentrationDependenceFunctNum() const
     {
       return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
-          ->diffusion_coefficient_concentration_dependence_funct_;
+          ->diffusion_coefficient_concentration_dependence_funct_num_;
     };
 
-    //! return function number describing concentration dependence of conductivity
-    int ConductivityConcentrationDependenceFunct() const
+    //! return the function number describing the temperature scaling of the diffusion coefficient
+    int DiffusionCoefficientTemperatureScalingFunctNum() const
     {
       return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
-          ->conductivity_concentration_dependence_funct_;
+          ->diffusion_coefficient_temperature_scaling_funct_num_;
+    };
+
+    //! return function number describing concentration dependence of the conductivity
+    int ConductivityConcentrationDependenceFunctNum() const
+    {
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+          ->conductivity_concentration_dependence_funct_num_;
+    };
+
+    //! return the function number describing the temperature scaling of the conductivity
+    int ConductivityTemperatureScalingFunctNum() const
+    {
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+          ->conductivity_temperature_scaling_funct_num_;
     };
 
     //! return parameters for diffusion coefficient
@@ -132,11 +161,11 @@ namespace MAT
     };
 
     //! evaluate value of predefined function
-    double EvalFunctValue(
+    double EvalPreDefinedFunctValue(
         int functnr, double concentration, const std::vector<double>& functparams) const;
 
     //! evaluate first derivative of predefined function
-    double EvalFirstDerivFunctValue(
+    double EvalFirstDerivPreDefinedFunctValue(
         int functnr, double concentration, const std::vector<double>& functparams) const;
   };
 }  // namespace MAT

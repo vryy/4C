@@ -148,7 +148,10 @@ namespace SCATRA
     INPAR::ELCH::EquPot EquPot() const { return equpot_; }
 
     //! return constant F/RT
-    double FRT() const { return frt_; }
+    double FRT() const { return fr_ / temperature_; }
+
+    //! current temperature is determined and returned
+    double GetCurrentTemperature() const;
 
     //! return elch parameter list
     Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_; }
@@ -195,7 +198,8 @@ namespace SCATRA
     //! prepare time loop
     void PrepareTimeLoop() override;
 
-    //! initialization procedure prior to evaluation of first time step
+    void PrepareTimeStep() override;
+
     void PrepareFirstTimeStep() override;
 
     //! initialize meshtying strategy (including standard case without meshtying)
@@ -209,6 +213,9 @@ namespace SCATRA
 
     //! compute time step size
     void ComputeTimeStepSize(double& dt) final;
+
+    //! temperature is computed based on function prescribed in input file
+    double ComputeTemperatureFromFunction() const;
 
     //! extrapolate current state and adapt time step
     double ExtrapolateStateAdaptTimeStep(double dt);
@@ -301,8 +308,14 @@ namespace SCATRA
     //! type of closing equation for electric potential
     INPAR::ELCH::EquPot equpot_;
 
-    //! ELCH-specific parameter F/RT (default value for the temperature is 298K)
-    double frt_;
+    //! ELCH-specific parameter F/R
+    const double fr_;
+
+    //! function number describing the temporal temperature curve
+    const int temperature_funct_num_;
+
+    //! homogeneous temperature within the scalar transport field (can be time dependent)
+    double temperature_;
 
     //! number of iterations in galvanostatic mode (ELCH)
     int gstatnumite_;

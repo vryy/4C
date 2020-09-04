@@ -46,8 +46,9 @@ namespace DRT
       //! evaluate electrolyte material
       void MatElchMat(const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte material
           const std::vector<double>& concentrations,  //!< local concentration values
-          const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
-          const double& ffrt,                 //!< factor F²/RT
+          double temperature,                         //!< temperature
+          INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
+          double ffrt,                 //!< factor F²/RT
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
           INPAR::ELCH::DiffCondMat& diffcondmat                               //!< ion type
       );
@@ -55,6 +56,7 @@ namespace DRT
       //! evaluate electrolyte phase
       void MatElchPhase(const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte phase
           const std::vector<double>& concentrations,  //!< local concentration values
+          double temperature,                         //!< temperature
           const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
           const double& ffrt,                 //!< factor F²/RT
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
@@ -63,14 +65,16 @@ namespace DRT
 
       //! evaluate standard Newman material
       void MatNewman(const Teuchos::RCP<const MAT::Material>& material,  //!< Newman material
-          const double& concentration,  //!< local concentration value
+          double concentration,  //!< local concentration value
+          double temperature,    //!< temperature
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager  //!< diffusion manager
       );
 
       //! evaluate multi-scale Newman material
       void MatNewmanMultiScale(
           const Teuchos::RCP<const MAT::Material>& material,  //!< Newman Multi-Scale material
-          const double& concentration,                        //!< local concentration value
+          double concentration,                               //!< local concentration value
+          double temperature,                                 //!< temperature
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager  //!< diffusion manager
       );
 

@@ -85,30 +85,26 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
 
 
 /*----------------------------------------------------------------------*
- | evaluate electrode material                               fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
-    const Teuchos::RCP<const MAT::Material> material,                   //!< electrode material
-    const double concentration,                                         //!< concentration
-    const Teuchos::RCP<ScaTraEleDiffManagerElchElectrode>& diffmanager  //!< diffusion manager
-)
+    const Teuchos::RCP<const MAT::Material> material, const double concentration,
+    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchElectrode>& diffmanager)
 {
-  const MAT::Electrode* matelectrode = static_cast<const MAT::Electrode*>(material.get());
+  const auto* matelectrode = static_cast<const MAT::Electrode*>(material.get());
 
   // diffusion coefficient
-  diffmanager->SetIsotropicDiff(matelectrode->ComputeDiffusionCoefficient(concentration), 0);
+  diffmanager->SetIsotropicDiff(
+      matelectrode->ComputeDiffusionCoefficient(concentration, temperature), 0);
 
   // derivative of diffusion coefficient with respect to concentration
   diffmanager->SetDerivIsoDiffCoef(matelectrode->ComputeFirstDerivDiffCoeff(concentration), 0, 0);
 
   // electronic conductivity
-  diffmanager->SetCond(matelectrode->ComputeConductivity(concentration));
+  diffmanager->SetCond(matelectrode->ComputeConductivity(concentration, temperature));
 
   // derivative of electronic conductivity with respect to concentration
   diffmanager->SetDerivCond(matelectrode->ComputeFirstDerivCond(concentration), 0);
-
-  return;
 }
 
 

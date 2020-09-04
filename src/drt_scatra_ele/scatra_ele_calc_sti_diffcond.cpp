@@ -628,17 +628,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ExtractElementAndNodeValu
 
 
 /*----------------------------------------------------------------------*
- | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(
-    const DRT::Element* ele,      //!< current element
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< ID of current integration point
-)
+void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const DRT::Element* ele,
+    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
+    double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
@@ -651,20 +645,20 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(
   material = ele->Material(1);
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
+    // pre calculate RT and F²/(RT)
+    const double rt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
+                      VarManager()->Phinp(0);
+    const double ffrt =
+        std::pow(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(), 2) / rt;
+
     std::vector<double> concentrations(1, VarManager()->Conc());
     INPAR::ELCH::DiffCondMat dummy(INPAR::ELCH::diffcondmat_undefined);
-    utils_->MatElchMat(material, concentrations, INPAR::ELCH::equpot_undefined,
-        pow(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(), 2) /
-            (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
-                VarManager()->Phinp(0)),
-        diffmanagerdiffcond_, dummy);
+    utils_->MatElchMat(material, concentrations, VarManager()->Phinp(0),
+        INPAR::ELCH::equpot_undefined, ffrt, diffmanagerdiffcond_, dummy);
   }
   else
     dserror("Invalid scalar transport material!");
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams
-
+}
 
 /*----------------------------------------------------------------------*
  | evaluate Soret material                                   fang 11/15 |

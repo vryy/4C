@@ -28,6 +28,10 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Convergence check tolerance for outer loop in electrode shape change computations",
       &elchcontrol);
   DoubleParameter("TEMPERATURE", 298.0, "Constant temperature (Kelvin)", &elchcontrol);
+  IntParameter("TEMPERATURE_FROM_FUNCT", -1,
+      "Homogeneous temperature within electrochemistry field that can be time dependent according "
+      "to function definition",
+      &elchcontrol);
   DoubleParameter("FARADAY_CONSTANT", 9.64853399e4,
       "Faraday constant (in unit system as chosen in input file)", &elchcontrol);
   DoubleParameter("GAS_CONSTANT", 8.314472,
