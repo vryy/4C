@@ -29,7 +29,7 @@ namespace PARTICLEENGINE
   class ParticleContainer;
   class ParticleContainerBundle;
   class ParticleObject;
-  class ParticleUniqueGlobalIdHandler;
+  class UniqueGlobalIdHandler;
   class ParticleRuntimeVtpWriter;
 }  // namespace PARTICLEENGINE
 
@@ -806,7 +806,7 @@ namespace PARTICLEENGINE
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle unique global identifier handler
-    std::unique_ptr<PARTICLEENGINE::ParticleUniqueGlobalIdHandler> particleuniqueglobalidhandler_;
+    std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> particleuniqueglobalidhandler_;
 
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
