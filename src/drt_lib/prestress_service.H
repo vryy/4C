@@ -81,7 +81,7 @@ namespace UTILS
 
     /*!
      * \brief Returns whether material iterative prestressing is set as the given prestress type.
-     * This method does not ensure that MULF is actually active
+     * This method does not ensure that prestressing is actually active
      *
      * \param pstype Prestress type that is used
      * \return true material iterative prestressing is set in input file

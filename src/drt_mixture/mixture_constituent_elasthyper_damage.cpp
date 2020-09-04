@@ -3,8 +3,6 @@
 \brief Definition of a hyperelastic constituent with a damage process
 
 \level 3
-
-\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 

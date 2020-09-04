@@ -5,8 +5,6 @@
 
 \level 3
 
-\maintainer Amadeus Gebauer
-
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy_iterative.H"
