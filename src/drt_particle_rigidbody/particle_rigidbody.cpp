@@ -11,6 +11,7 @@
 #include "particle_rigidbody.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
+#include "../drt_particle_engine/particle_unique_global_id.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
@@ -25,9 +26,12 @@ PARTICLERIGIDBODY::RigidBodyHandler::RigidBodyHandler(
   // empty constructor
 }
 
+PARTICLERIGIDBODY::RigidBodyHandler::~RigidBodyHandler() = default;
+
 void PARTICLERIGIDBODY::RigidBodyHandler::Init()
 {
-  // nothing to do
+  // init rigid body unique global identifier handler
+  InitRigidBodyUniqueGlobalIdHandler();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
@@ -35,6 +39,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
+
+  // setup unique global identifier handler
+  rigidbodyuniqueglobalidhandler_->Setup();
 
   // safety check
   {
@@ -54,11 +61,25 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
 
 void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
 {
-  // nothing to do
+  // get bin discretization writer
+  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+      particleengineinterface_->GetBinDiscretizationWriter();
+
+  // write restart of unique global identifier handler
+  rigidbodyuniqueglobalidhandler_->WriteRestart(binwriter);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // nothing to do
+  // read restart of unique global identifier handler
+  rigidbodyuniqueglobalidhandler_->ReadRestart(reader);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
+{
+  // create and init unique global identifier handler
+  rigidbodyuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
+      new PARTICLEENGINE::UniqueGlobalIdHandler(comm_, "rigidbody"));
+  rigidbodyuniqueglobalidhandler_->Init();
 }

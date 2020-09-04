@@ -30,7 +30,8 @@ namespace IO
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
-}
+  class UniqueGlobalIdHandler;
+}  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -54,6 +55,16 @@ namespace PARTICLERIGIDBODY
      * \param[in] params particle simulation parameter list
      */
     explicit RigidBodyHandler(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+
+    /*!
+     * \brief destructor
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     *
+     * \note At compile-time a complete type of class T as used in class member
+     *       std::unique_ptr<T> ptr_T_ is required
+     */
+    ~RigidBodyHandler() override;
 
     /*!
      * \brief init rigid body handler
@@ -87,6 +98,13 @@ namespace PARTICLERIGIDBODY
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
    private:
+    /*!
+     * \brief init rigid body unique global identifier handler
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void InitRigidBodyUniqueGlobalIdHandler();
+
     //! communicator
     const Epetra_Comm& comm_;
 
@@ -98,6 +116,9 @@ namespace PARTICLERIGIDBODY
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! rigid body unique global identifier handler
+    std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> rigidbodyuniqueglobalidhandler_;
   };
 }  // namespace PARTICLERIGIDBODY
 
