@@ -197,7 +197,7 @@ macro(post_processing arg nproc stresstype straintype startstep)
 
   # specify test case
   add_test(NAME ${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp
-    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx${IDENTIFIER}_PAR_${arg}${FIELD}*.case xxx${IDENTIFIER}_SER_${arg}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${IDENTIFIER}${FIELD}.csv")
+    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx${IDENTIFIER}_PAR_${arg}${FIELD}*.case xxx${IDENTIFIER}_SER_${arg}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${IDENTIFIER}${FIELD}.csv")
   set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
 endmacro(post_processing)

@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_discret_xfem.H"
 
 #include <string>
+#include <numeric>
 
 #include "../pss_full/pss_cpp.h"
 extern "C"
@@ -1893,9 +1894,21 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
 
     if (myrank_ == 0)
     {
+      std::vector<int> mycols(numdf);
+      std::iota(std::begin(mycols), std::end(mycols), 0);
+      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // ordering XY, XZ, YZ, for symmetric tensors)
+      if ((name == "nodal_2PK_stresses_xyz" or name == "nodal_cauchy_stresses_xyz" or
+              name == "nodal_2PK_coupling_stresses_xyz" or
+              name == "nodal_cauchy_coupling_stresses_xyz" or name == "nodal_GL_strains_xyz" or
+              name == "nodal_EA_strains_xyz" or name == "nodal_LOG_strains_xyz" or
+              name == "nodal_pl_GL_strains_xyz" or name == "nodal_pl_EA_strains_xyz" or
+              name == "nodal_stresses_xyz") and
+          numdf == 6)
+        std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Epetra_Vector* column = (*data_proc0)(idf);
+        Epetra_Vector* column = (*data_proc0)(mycols[idf]);
         for (int inode = 0; inode < finalnumnode;
              inode++)  // inode == lid of node because we use proc0map_
         {
@@ -2170,10 +2183,21 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
     if (myrank_ == 0)
     {
       if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
+      std::vector<int> mycols(numdf);
+      std::iota(std::begin(mycols), std::end(mycols), 0);
+      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // ordering XY, XZ, YZ, for symmetric tensors)
+      if ((name == "element_2PK_stresses_xyz" or name == "element_cauchy_stresses_xyz" or
+              name == "element_2PK_coupling_stresses_xyz" or
+              name == "element_cauchy_coupling_stresses_xyz" or name == "element_GL_strains_xyz" or
+              name == "element_EA_strains_xyz" or name == "element_LOG_strains_xyz" or
+              name == "element_pl_GL_strains_xyz" or name == "element_pl_EA_strains_xyz") and
+          numdf == 6)
+        std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
       for (int col = 0; col < numdf; ++col)
       {
         // extract actual column
-        Epetra_Vector* datacolumn = (*proc0data)(col + from);
+        Epetra_Vector* datacolumn = (*proc0data)(mycols[col] + from);
 
         for (int iele = 0; iele < numelepertype; iele++)
         {
