@@ -58,22 +58,14 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   gravity_.resize(3, 0.0);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
-    const int step, const double time) const
+void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart() const
 {
-  // write restart of particle material handler
-  particlematerial_->WriteRestart(step, time);
-
-  // write restart of particle interaction writer
-  particleinteractionwriter_->WriteRestart(step, time);
+  // nothing to do
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // read restart of particle material handler
-  particlematerial_->ReadRestart(reader);
-
   // read restart of particle interaction writer
   particleinteractionwriter_->ReadRestart(reader);
 }

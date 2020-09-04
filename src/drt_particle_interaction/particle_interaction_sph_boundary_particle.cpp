@@ -68,18 +68,6 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
     dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHBoundaryParticleBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHBoundaryParticleBase(params)

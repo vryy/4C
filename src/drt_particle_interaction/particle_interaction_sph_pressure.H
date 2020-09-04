@@ -60,12 +60,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
-    //! write restart of pressure handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of pressure handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! compute pressure using equation of state and density
     void ComputePressure() const;
 

@@ -99,12 +99,6 @@ void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double ti
   Teuchos::RCP<IO::DiscretizationWriter> walldiscretizationwriter = walldiscretization_->Writer();
 
   walldiscretizationwriter->NewStep(step, time);
-
-  // write restart of wall data state container
-  walldatastate_->WriteRestart(step, time);
-
-  // write restart of wall discretization runtime vtu writer
-  walldiscretizationruntimevtuwriter_->WriteRestart(step, time);
 }
 
 void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep)
@@ -115,9 +109,6 @@ void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep)
 
   // safety check
   if (restartstep != reader->ReadInt("step")) dserror("time step on file not equal to given step!");
-
-  // read restart of wall data state container
-  walldatastate_->ReadRestart(reader);
 
   // read restart of wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_->ReadRestart(reader);

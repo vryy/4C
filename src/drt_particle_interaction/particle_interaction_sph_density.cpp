@@ -95,17 +95,6 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHDensityBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
@@ -876,26 +865,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
 
   // setup density correction handler
   densitycorrection_->Setup();
-}
-
-void PARTICLEINTERACTION::SPHDensityPredictCorrect::WriteRestart(
-    const int step, const double time) const
-{
-  // call base class function
-  SPHDensityBase::WriteRestart(step, time);
-
-  // write restart of density correction handler
-  densitycorrection_->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::SPHDensityPredictCorrect::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // call base class function
-  SPHDensityBase::ReadRestart(reader);
-
-  // read restart of density correction handler
-  densitycorrection_->ReadRestart(reader);
 }
 
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfParticleTypes(

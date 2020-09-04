@@ -74,25 +74,6 @@ namespace PARTICLEALGORITHM
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!
-     * \brief write restart of temperature boundary condition handler
-     *
-     * \author Sebastian Fuchs \date 09/2018
-     *
-     * \param[in] step restart step
-     * \param[in] time restart time
-     */
-    void WriteRestart(const int step, const double time) const;
-
-    /*!
-     * \brief read restart of temperature boundary condition handler
-     *
-     * \author Sebastian Fuchs \date 09/2018
-     *
-     * \param[in] reader discretization reader
-     */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
-    /*!
      * \brief get reference to set of particle types subjected to temperature boundary conditions
      *
      * \author Sebastian Fuchs \date 09/2018

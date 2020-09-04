@@ -43,18 +43,6 @@ void PARTICLEINTERACTION::DEMContactNormalBase::Setup(const double& dens_max)
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactNormalBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMContactNormalBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::DEMContactNormalLinearSpring::DEMContactNormalLinearSpring(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalBase(params)

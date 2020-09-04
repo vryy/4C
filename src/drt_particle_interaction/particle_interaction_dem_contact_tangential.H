@@ -46,12 +46,6 @@ namespace PARTICLEINTERACTION
     //! setup tangential contact handler
     virtual void Setup(const double& k_normal);
 
-    //! write restart of tangential contact handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of tangential contact handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 

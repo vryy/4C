@@ -161,50 +161,10 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
-    const int step, const double time) const
+void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart() const
 {
   // call base class function
-  ParticleInteractionBase::WriteRestart(step, time);
-
-  // write restart of kernel handler
-  kernel_->WriteRestart(step, time);
-
-  // write restart of equation of state bundle
-  equationofstatebundle_->WriteRestart(step, time);
-
-  // write restart of neighbor pair handler
-  neighborpairs_->WriteRestart(step, time);
-
-  // write restart of density handler
-  density_->WriteRestart(step, time);
-
-  // write restart of pressure handler
-  pressure_->WriteRestart(step, time);
-
-  // write restart of temperature handler
-  if (temperature_) temperature_->WriteRestart(step, time);
-
-  // write restart of momentum handler
-  momentum_->WriteRestart(step, time);
-
-  // write restart of surface tension handler
-  if (surfacetension_) surfacetension_->WriteRestart(step, time);
-
-  // write restart of boundary particle handler
-  if (boundaryparticle_) boundaryparticle_->WriteRestart(step, time);
-
-  // write restart of dirichlet open boundary handler
-  if (dirichletopenboundary_) dirichletopenboundary_->WriteRestart(step, time);
-
-  // write restart of neumann open boundary handler
-  if (neumannopenboundary_) neumannopenboundary_->WriteRestart(step, time);
-
-  // write restart of virtual wall particle handler
-  if (virtualwallparticle_) virtualwallparticle_->WriteRestart(step, time);
-
-  // write restart of phase change handler
-  if (phasechange_) phasechange_->WriteRestart(step, time);
+  ParticleInteractionBase::WriteRestart();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
@@ -212,45 +172,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 {
   // call base class function
   ParticleInteractionBase::ReadRestart(reader);
-
-  // read restart of kernel handler
-  kernel_->ReadRestart(reader);
-
-  // read restart of equation of state bundle
-  equationofstatebundle_->ReadRestart(reader);
-
-  // read restart of neighbor pair handler
-  neighborpairs_->ReadRestart(reader);
-
-  // read restart of density handler
-  density_->ReadRestart(reader);
-
-  // read restart of pressure handler
-  pressure_->ReadRestart(reader);
-
-  // read restart of temperature handler
-  if (temperature_) temperature_->ReadRestart(reader);
-
-  // read restart of momentum handler
-  momentum_->ReadRestart(reader);
-
-  // read restart of surface tension handler
-  if (surfacetension_) surfacetension_->ReadRestart(reader);
-
-  // read restart of boundary particle handler
-  if (boundaryparticle_) boundaryparticle_->ReadRestart(reader);
-
-  // read restart of dirichlet open boundary handler
-  if (dirichletopenboundary_) dirichletopenboundary_->ReadRestart(reader);
-
-  // read restart of neumann open boundary handler
-  if (neumannopenboundary_) neumannopenboundary_->ReadRestart(reader);
-
-  // read restart of virtual wall particle handler
-  if (virtualwallparticle_) virtualwallparticle_->ReadRestart(reader);
-
-  // read restart of phase change handler
-  if (phasechange_) phasechange_->ReadRestart(reader);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticleTypes(

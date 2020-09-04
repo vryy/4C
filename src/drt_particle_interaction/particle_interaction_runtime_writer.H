@@ -52,9 +52,6 @@ namespace PARTICLEINTERACTION
     //! setup interaction writer
     void Setup();
 
-    //! write restart of interaction writer
-    void WriteRestart(const int step, const double time) const;
-
     //! read restart of interaction writer
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 

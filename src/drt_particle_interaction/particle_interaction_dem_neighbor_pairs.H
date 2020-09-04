@@ -69,12 +69,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
-    //! write restart of neighbor pair handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of neighbor pair handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! get reference to particle pair data
     inline const DEMParticlePairData& GetRefToParticlePairData() const
     {

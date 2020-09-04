@@ -95,17 +95,3 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Setup()
 {
   for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->Setup();
 }
-
-void PARTICLEINTERACTION::SPHEquationOfStateBundle::WriteRestart(
-    const int step, const double time) const
-{
-  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_)
-    phasetypetoequationofstate_[type_i]->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::SPHEquationOfStateBundle::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_)
-    phasetypetoequationofstate_[type_i]->ReadRestart(reader);
-}

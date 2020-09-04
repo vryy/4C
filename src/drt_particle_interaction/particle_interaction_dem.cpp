@@ -88,23 +88,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   SetupParticleInteractionWriter();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
-    const int step, const double time) const
+void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart() const
 {
   // call base class function
-  ParticleInteractionBase::WriteRestart(step, time);
-
-  // write restart of neighbor pair handler
-  neighborpairs_->WriteRestart(step, time);
+  ParticleInteractionBase::WriteRestart();
 
   // write restart of history pair handler
-  historypairs_->WriteRestart(step, time);
-
-  // write restart of contact handler
-  contact_->WriteRestart(step, time);
-
-  // write restart of adhesion handler
-  if (adhesion_) adhesion_->WriteRestart(step, time);
+  historypairs_->WriteRestart();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
@@ -113,17 +103,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
   // call base class function
   ParticleInteractionBase::ReadRestart(reader);
 
-  // read restart of neighbor pair handler
-  neighborpairs_->ReadRestart(reader);
-
   // read restart of history pair handler
   historypairs_->ReadRestart(reader);
-
-  // read restart of contact handler
-  contact_->ReadRestart(reader);
-
-  // read restart of adhesion handler
-  if (adhesion_) adhesion_->ReadRestart(reader);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticleTypes(

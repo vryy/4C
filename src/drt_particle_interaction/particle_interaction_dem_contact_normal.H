@@ -46,12 +46,6 @@ namespace PARTICLEINTERACTION
     //! setup normal contact handler
     virtual void Setup(const double& dens_max);
 
-    //! write restart of normal contact handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of normal contact handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! get normal contact stiffness
     virtual double GetNormalContactStiffness() const = 0;
 

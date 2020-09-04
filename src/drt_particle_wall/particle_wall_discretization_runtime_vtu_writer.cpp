@@ -55,12 +55,6 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Setup(bool write_binary_o
       walldiscretization_, max_number_timesteps_to_be_written, setuptime_, write_binary_output);
 }
 
-void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {

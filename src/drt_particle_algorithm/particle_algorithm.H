@@ -109,6 +109,8 @@ namespace PARTICLEALGORITHM
     /*!
      * \brief read restart information for given time step
      *
+     * Read the restart information in the same order as it is written.
+     *
      * \author Sebastian Fuchs \date 04/2018
      *
      * \param[in] restartstep restart step
@@ -154,6 +156,11 @@ namespace PARTICLEALGORITHM
 
     /*!
      * \brief write restart information
+     *
+     * The order of writing the restart information in the particle framework is important: First
+     * restart information is written by the bin discretization writer, afterwards restart
+     * information is written by the wall discretization writer. This order is important, otherwise
+     * the restart fails.
      *
      * \author Sebastian Fuchs \date 07/2020
      */

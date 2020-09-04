@@ -45,18 +45,6 @@ void PARTICLEINTERACTION::DEMContactRollingBase::Setup(const double& k_normal)
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactRollingBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMContactRollingBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::DEMContactRollingBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;

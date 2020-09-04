@@ -39,11 +39,6 @@ void PARTICLEINTERACTION::InteractionWriter::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::InteractionWriter::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {

@@ -65,17 +65,6 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHPressure::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHPressure::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");

@@ -121,31 +121,6 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   }
 }
 
-void PARTICLEINTERACTION::DEMContact::WriteRestart(const int step, const double time) const
-{
-  // write restart of normal contact handler
-  contactnormal_->WriteRestart(step, time);
-
-  // write restart of tangential contact handler
-  if (contacttangential_) contacttangential_->WriteRestart(step, time);
-
-  // write restart of rolling contact handler
-  if (contactrolling_) contactrolling_->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::DEMContact::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // read restart of normal contact handler
-  contactnormal_->ReadRestart(reader);
-
-  // read restart of tangential contact handler
-  if (contacttangential_) contacttangential_->ReadRestart(reader);
-
-  // read restart of rolling contact handler
-  if (contactrolling_) contactrolling_->ReadRestart(reader);
-}
-
 void PARTICLEINTERACTION::DEMContact::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;

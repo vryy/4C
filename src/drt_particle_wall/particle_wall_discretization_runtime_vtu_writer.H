@@ -91,16 +91,6 @@ namespace PARTICLEWALL
     void Setup(bool write_binary_output);
 
     /*!
-     * \brief write restart of wall discretization runtime vtu writer
-     *
-     * \author Sebastian Fuchs \date 08/2019
-     *
-     * \param[in] step restart step
-     * \param[in] time restart time
-     */
-    void WriteRestart(const int step, const double time) const;
-
-    /*!
      * \brief read restart of wall discretization runtime vtu writer
      *
      * \author Sebastian Fuchs \date 08/2019

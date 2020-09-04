@@ -64,12 +64,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of surface tension handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of surface tension handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! set current time
     virtual void SetCurrentTime(const double currenttime);
 

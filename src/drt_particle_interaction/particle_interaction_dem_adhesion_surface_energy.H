@@ -46,12 +46,6 @@ namespace PARTICLEINTERACTION
     //! setup adhesion surface energy handler
     virtual void Setup();
 
-    //! write restart of adhesion surface energy handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of adhesion surface energy handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! calculate adhesion surface energy
     virtual void AdhesionSurfaceEnergy(
         const double& mean_surface_energy, double& surface_energy) const = 0;

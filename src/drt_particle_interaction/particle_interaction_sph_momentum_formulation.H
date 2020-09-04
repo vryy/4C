@@ -44,12 +44,6 @@ namespace PARTICLEINTERACTION
     //! setup momentum formulation handler
     virtual void Setup();
 
-    //! write restart of momentum formulation handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of momentum formulation handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& dWdrij, const double& dWdrji,

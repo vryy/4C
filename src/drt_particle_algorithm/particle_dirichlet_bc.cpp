@@ -50,18 +50,6 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const

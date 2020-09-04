@@ -34,18 +34,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationBase::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHMomentumFormulationBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonaghan()
     : PARTICLEINTERACTION::SPHMomentumFormulationBase()
 {

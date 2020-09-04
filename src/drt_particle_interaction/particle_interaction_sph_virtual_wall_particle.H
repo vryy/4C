@@ -68,12 +68,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of virtual wall particle handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of virtual wall particle handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! get reference to relative positions of virtual particles
     inline const std::vector<std::vector<double>>& GetRelativePositionsOfVirtualParticles() const
     {

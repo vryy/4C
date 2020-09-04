@@ -153,25 +153,6 @@ void PARTICLEINTERACTION::SPHMomentum::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHMomentum::WriteRestart(const int step, const double time) const
-{
-  // write restart of momentum formulation handler
-  momentumformulation_->WriteRestart(step, time);
-
-  // write restart of artificial viscosity handler
-  artificialviscosity_->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::SPHMomentum::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // read restart of momentum formulation handler
-  momentumformulation_->ReadRestart(reader);
-
-  // read restart of artificial viscosity handler
-  artificialviscosity_->ReadRestart(reader);
-}
-
 void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const

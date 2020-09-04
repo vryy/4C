@@ -65,17 +65,6 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   indexofparticlewallpairs_.resize(typevectorsize);
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForDisjointCombination(
     const std::set<PARTICLEENGINE::TypeEnum>& types_a,
     const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const

@@ -36,18 +36,6 @@ void PARTICLEINTERACTION::DEMContactTangentialBase::Setup(const double& k_normal
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMContactTangentialBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::DEMContactTangentialBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;

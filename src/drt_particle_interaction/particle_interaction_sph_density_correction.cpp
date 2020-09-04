@@ -32,18 +32,6 @@ void PARTICLEINTERACTION::SPHDensityCorrectionBase::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHDensityCorrectionBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHDensityCorrectionBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 /*---------------------------------------------------------------------------*
   | set corrected density of interior particles               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/

@@ -37,17 +37,6 @@ void PARTICLEALGORITHM::GravityHandler::Setup()
   // nothing to do
 }
 
-void PARTICLEALGORITHM::GravityHandler::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEALGORITHM::GravityHandler::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
     const double time, std::vector<double>& scaled_gravity)
 {

@@ -44,12 +44,6 @@ namespace PARTICLEINTERACTION
     //! setup equation of state handler
     virtual void Setup();
 
-    //! write restart of equation of state handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of equation of state handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! determine the pressure
     virtual double DensityToPressure(const double& density, const double& density0) const = 0;
 

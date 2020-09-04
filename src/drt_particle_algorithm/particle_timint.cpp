@@ -83,24 +83,6 @@ void PARTICLEALGORITHM::TimInt::Setup(
     if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
-void PARTICLEALGORITHM::TimInt::WriteRestart(const int step, const double time) const
-{
-  // write restart of dirichlet boundary condition handler
-  if (dirichletboundarycondition_) dirichletboundarycondition_->WriteRestart(step, time);
-
-  // write restart of temperature boundary condition handler
-  if (temperatureboundarycondition_) temperatureboundarycondition_->WriteRestart(step, time);
-}
-
-void PARTICLEALGORITHM::TimInt::ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // read restart of dirichlet boundary condition handler
-  if (dirichletboundarycondition_) dirichletboundarycondition_->ReadRestart(reader);
-
-  // read restart of temperature boundary condition handler
-  if (temperatureboundarycondition_) temperatureboundarycondition_->ReadRestart(reader);
-}
-
 void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const

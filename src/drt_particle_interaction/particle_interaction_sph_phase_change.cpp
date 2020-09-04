@@ -52,17 +52,6 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
   equationofstatebundle_ = equationofstatebundle;
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHPhaseChangeBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params),
