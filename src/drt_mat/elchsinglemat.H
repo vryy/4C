@@ -161,11 +161,11 @@ namespace MAT
     };
 
     //! evaluate value of predefined function
-    double EvalFunctValue(
+    double EvalPreDefinedFunctValue(
         int functnr, double concentration, const std::vector<double>& functparams) const;
 
     //! evaluate first derivative of predefined function
-    double EvalFirstDerivFunctValue(
+    double EvalFirstDerivPreDefinedFunctValue(
         int functnr, double concentration, const std::vector<double>& functparams) const;
   };
 }  // namespace MAT

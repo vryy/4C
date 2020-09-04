@@ -180,7 +180,7 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficient(
 {
   double diffusionCoefficient = ComputeDiffusionCoefficientConcentrationDependent(concentration);
 
-  // do the temperature dependent scaling if set in input file
+  // do the temperature dependent scaling
   diffusionCoefficient *= ComputeTemperatureDependentScaleFactor(
       temperature, DiffusionCoefficientTemperatureScalingFunctNum());
 
@@ -196,8 +196,9 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
 
   // evaluate pre implemented concentration dependent diffusion coefficient
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
-    diffusionCoefficient = EvalFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
-        concentration, DiffusionCoefficientParams());
+    diffusionCoefficient =
+        EvalPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
+            concentration, DiffusionCoefficientParams());
 
   // diffusion coefficient is a constant prescribed in input file
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
@@ -246,8 +247,9 @@ double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double concentration
   double firstderiv(0.0);
 
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
-    firstderiv = EvalFirstDerivFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
-        concentration, DiffusionCoefficientParams());
+    firstderiv =
+        EvalFirstDerivPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
+            concentration, DiffusionCoefficientParams());
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
     dserror(
         "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
@@ -267,7 +269,7 @@ double MAT::ElchSingleMat::ComputeConductivity(
 {
   double conductivity = ComputeConductivityConcentrationDependent(concentration);
 
-  // do the temperature dependent scaling if set in input file
+  // do the temperature dependent scaling
   conductivity *=
       ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
 
@@ -283,7 +285,7 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
 
   // evaluate pre implemented concentration dependent conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
-    conductivity = EvalFunctValue(
+    conductivity = EvalPreDefinedFunctValue(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
 
   // conductivity is a constant prescribed in input file
@@ -308,7 +310,7 @@ double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) con
   double firstderiv(0.0);
 
   if (ConductivityConcentrationDependenceFunctNum() < 0)
-    firstderiv = EvalFirstDerivFunctValue(
+    firstderiv = EvalFirstDerivPreDefinedFunctValue(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
     dserror(
@@ -325,7 +327,7 @@ double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::EvalFunctValue(
+double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
     const int functnr, const double concentration, const std::vector<double>& functparams) const
 {
   double functval(0.0);
@@ -466,7 +468,7 @@ double MAT::ElchSingleMat::EvalFunctValue(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::EvalFirstDerivFunctValue(
+double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
     const int functnr, const double concentration, const std::vector<double>& functparams) const
 {
   double firstderivfunctval(0.0);

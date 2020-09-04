@@ -42,8 +42,8 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       elchparams_(params),
       equpot_(DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_, "EQUPOT")),
       fr_(elchparams_->get<double>("FARADAY_CONSTANT") / elchparams_->get<double>("GAS_CONSTANT")),
-      temperature_function_(elchparams_->get<int>("TEMPERATURE_FROM_FUNCT")),
-      temperature_(ReturnCurrentTemperature()),
+      temperature_funct_num_(elchparams_->get<int>("TEMPERATURE_FROM_FUNCT")),
+      temperature_(GetCurrentTemperature()),
       gstatnumite_(0),
       gstatincrement_(0.),
       dlcapexists_(false),
@@ -95,7 +95,7 @@ void SCATRA::ScaTraTimIntElch::Init()
           "is smaller than the original time step size!");
   }
 
-  if ((elchparams_->get<double>("TEMPERATURE") != 298.0) and (temperature_function_ != -1))
+  if ((elchparams_->get<double>("TEMPERATURE") != 298.0) and (temperature_funct_num_ != -1))
     dserror(
         "You set two methods to calculate the temperature in your Input-File. This is not "
         "reasonable! It is only allowed to set either 'TEMPERATURE' or 'TEMPERATURE_FROM_FUNCT'");
@@ -533,7 +533,7 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeStep()
   // call base class routine
   ScaTraTimIntImpl::PrepareTimeStep();
 
-  if (temperature_function_ != -1)
+  if (temperature_funct_num_ != -1)
   {
     // set the temperature at the beginning of each time step but after the call to the base class
     // as there the time is updated
@@ -3231,17 +3231,17 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
  *-----------------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeTemperatureFromFunction() const
 {
-  return problem_->Funct(temperature_function_ - 1).EvaluateTime(time_);
+  return problem_->Funct(temperature_funct_num_ - 1).EvaluateTime(time_);
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntElch::ReturnCurrentTemperature() const
+double SCATRA::ScaTraTimIntElch::GetCurrentTemperature() const
 {
   double temperature(-1.0);
 
   // if no function is defined we use the value set in the dat-file
-  if (temperature_function_ == -1)
+  if (temperature_funct_num_ == -1)
     temperature = elchparams_->get<double>("TEMPERATURE");
   else
     temperature = ComputeTemperatureFromFunction();

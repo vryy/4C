@@ -24,9 +24,7 @@ SCATRA::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ElchResultTest::ResultSpecial(
-    const std::string quantity  //! name of quantity to be tested
-    ) const
+double SCATRA::ElchResultTest::ResultSpecial(const std::string quantity) const
 {
   // initialize variable for result
   double result(0.);
@@ -64,7 +62,7 @@ double SCATRA::ElchResultTest::ResultSpecial(
   else if (quantity == "cellvoltage")
     result = ElchTimInt()->CellVoltage();
   else if (quantity == "temperature")
-    result = ElchTimInt()->Temperature();
+    result = ElchTimInt()->GetCurrentTemperature();
   else
     result = ScaTraResultTest::ResultSpecial(quantity);
 

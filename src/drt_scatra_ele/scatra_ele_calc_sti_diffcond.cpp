@@ -645,14 +645,16 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const D
   material = ele->Material(1);
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
+    // pre calculate RT and F²/(RT)
+    const double rt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
+                      VarManager()->Phinp(0);
+    const double ffrt =
+        std::pow(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(), 2) / rt;
+
     std::vector<double> concentrations(1, VarManager()->Conc());
     INPAR::ELCH::DiffCondMat dummy(INPAR::ELCH::diffcondmat_undefined);
     utils_->MatElchMat(material, concentrations, VarManager()->Phinp(0),
-        INPAR::ELCH::equpot_undefined,
-        std::pow(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(), 2) /
-            (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
-                VarManager()->Phinp(0)),
-        diffmanagerdiffcond_, dummy);
+        INPAR::ELCH::equpot_undefined, ffrt, diffmanagerdiffcond_, dummy);
   }
   else
     dserror("Invalid scalar transport material!");

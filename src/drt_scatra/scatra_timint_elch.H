@@ -150,8 +150,8 @@ namespace SCATRA
     //! return constant F/RT
     double FRT() const { return fr_ / temperature_; }
 
-    //! return the homogeneous temperature in the scatra field (can be time dependent)
-    double Temperature() const { return temperature_; }
+    //! current temperature is determined and returned
+    double GetCurrentTemperature() const;
 
     //! return elch parameter list
     Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_; }
@@ -228,9 +228,6 @@ namespace SCATRA
 
     //! initialize meshtying strategy (including standard case without meshtying)
     void CreateMeshtyingStrategy() override;
-
-    //! current temperature is determined and returned
-    double ReturnCurrentTemperature() const;
 
     //! set up concentration-potential splitter
     void SetupConcPotSplit();
@@ -315,7 +312,7 @@ namespace SCATRA
     const double fr_;
 
     //! function number describing the temporal temperature curve
-    const int temperature_function_;
+    const int temperature_funct_num_;
 
     //! homogeneous temperature within the scalar transport field (can be time dependent)
     double temperature_;
