@@ -99,19 +99,6 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
 }
 
-void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const double time) const
-{
-  // write restart of heat source handler
-  if (heatsource_) heatsource_->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // read restart of heat source handler
-  if (heatsource_) heatsource_->ReadRestart(reader);
-}
-
 void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
 {
   time_ = currenttime;

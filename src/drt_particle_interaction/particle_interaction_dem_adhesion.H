@@ -80,12 +80,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs,
         const double& k_normal);
 
-    //! write restart of contact handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of contact handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! get adhesion distance
     inline double GetAdhesionDistance() const { return adhesion_distance_; };
 

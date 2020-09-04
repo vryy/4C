@@ -44,12 +44,6 @@ namespace PARTICLEINTERACTION
     //! setup density correction handler
     virtual void Setup();
 
-    //! write restart of density correction handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of density correction handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! density boundary condition is needed
     virtual bool ComputeDensityBC() const = 0;
 

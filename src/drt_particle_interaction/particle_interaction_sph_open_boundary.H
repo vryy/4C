@@ -66,12 +66,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of open boundary handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of open boundary handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! prescribe open boundary states
     virtual void PrescribeOpenBoundaryStates(const double& evaltime) = 0;
 

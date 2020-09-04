@@ -60,12 +60,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of boundary particle handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of boundary particle handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! init boundary particle states
     virtual void InitBoundaryParticleStates(std::vector<double>& gravity) = 0;
 

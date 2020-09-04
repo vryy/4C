@@ -102,11 +102,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
   }
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {

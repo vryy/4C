@@ -79,18 +79,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
       boundarytypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::SetCurrentTime(const double currenttime)
 {
   time_ = currenttime;

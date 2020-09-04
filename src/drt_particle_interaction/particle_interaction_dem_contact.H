@@ -82,12 +82,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
 
-    //! write restart of contact handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of contact handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! set current step size
     void SetCurrentStepSize(const double currentstepsize);
 

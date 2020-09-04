@@ -34,18 +34,6 @@ void PARTICLEINTERACTION::SPHArtificialViscosity::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHArtificialViscosity::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHArtificialViscosity::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const double* vel_i,
     const double* vel_j, const double* mass_i, const double* mass_j, const double& artvisc_i,
     const double& artvisc_j, const double& dWdrij, const double& dWdrji, const double& dens_ij,

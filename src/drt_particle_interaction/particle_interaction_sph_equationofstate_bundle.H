@@ -53,12 +53,6 @@ namespace PARTICLEINTERACTION
     //! setup equation of state bundle
     void Setup();
 
-    //! write restart of equation of state bundle
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of equation of state bundle
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! return pointer to specific equation of state
     inline const PARTICLEINTERACTION::SPHEquationOfStateBase* GetPtrToSpecificEquationOfState(
         PARTICLEENGINE::TypeEnum type_i) const

@@ -94,24 +94,21 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 
 void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double time) const
 {
-  // pack particles of all containers
-  std::shared_ptr<std::vector<char>> particlebuffer = std::make_shared<std::vector<char>>();
-  particlecontainerbundle_->GetPackedParticleObjectsOfAllContainers(particlebuffer);
-
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =
       Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 
   binwriter->NewStep(step, time);
 
+  // pack particles of all containers
+  std::shared_ptr<std::vector<char>> particlebuffer = std::make_shared<std::vector<char>>();
+  particlecontainerbundle_->GetPackedParticleObjectsOfAllContainers(particlebuffer);
+
   // write particle data
   binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
 
   // write restart of unique global identifier handler
   particleuniqueglobalidhandler_->WriteRestart(binwriter);
-
-  // write restart of runtime vtp writer
-  particlevtpwriter_->WriteRestart(step, time);
 }
 
 void PARTICLEENGINE::ParticleEngine::ReadRestart(

@@ -69,17 +69,6 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::Setup(
   neighborpairs_ = neighborpairs;
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHOpenBoundaryBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHOpenBoundaryBase::CheckOpenBoundaryPhaseChange(
     const double maxinteractiondistance)
 {

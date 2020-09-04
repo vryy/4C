@@ -33,17 +33,6 @@ void PARTICLEINTERACTION::SPHKernelBase::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHKernelBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHKernelBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
 {
   switch (kernelspacedim_)

@@ -77,17 +77,6 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
   }
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMAdhesionLawBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionLawBase(params),

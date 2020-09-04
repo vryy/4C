@@ -85,25 +85,6 @@ namespace PARTICLEALGORITHM
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!
-     * \brief write restart of particle time integration
-     *
-     * \author Sebastian Fuchs \date 05/2018
-     *
-     * \param[in] step restart step
-     * \param[in] time restart time
-     */
-    void WriteRestart(const int step, const double time) const;
-
-    /*!
-     * \brief read restart of particle time integration
-     *
-     * \author Sebastian Fuchs \date 05/2018
-     *
-     * \param[in] reader discretization reader
-     */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
-    /*!
      * \brief insert integration dependent states of all particle types
      *
      * \author Sebastian Fuchs \date 07/2018

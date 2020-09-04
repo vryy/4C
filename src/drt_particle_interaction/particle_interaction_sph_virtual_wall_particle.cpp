@@ -82,18 +82,6 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
       intfluidtypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHVirtualWallParticle::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::SPHVirtualWallParticle::InitRelativePositionsOfVirtualParticles(
     const double maxinteractiondistance)
 {

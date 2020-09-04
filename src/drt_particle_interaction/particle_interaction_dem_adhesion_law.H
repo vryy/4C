@@ -46,12 +46,6 @@ namespace PARTICLEINTERACTION
     //! setup adhesion law handler
     virtual void Setup(const double& k_normal);
 
-    //! write restart of adhesion law handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of adhesion law handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! calculate adhesion force
     virtual void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
         const double& v_rel_normal, const double& m_eff, double& adhesionforce) const = 0;

@@ -38,7 +38,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart(const int step, const double time) const
+void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =

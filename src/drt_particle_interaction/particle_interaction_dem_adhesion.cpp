@@ -98,25 +98,6 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   if (adhesion_distance_ < 0.0) dserror("negative adhesion distance!");
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::WriteRestart(const int step, const double time) const
-{
-  // write restart of adhesion law handler
-  adhesionlaw_->WriteRestart(step, time);
-
-  // write restart of adhesion surface energy handler
-  adhesionsurfaceenergy_->WriteRestart(step, time);
-}
-
-void PARTICLEINTERACTION::DEMAdhesion::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // read restart of adhesion law handler
-  adhesionlaw_->ReadRestart(reader);
-
-  // read restart of adhesion surface energy handler
-  adhesionsurfaceenergy_->ReadRestart(reader);
-}
-
 void PARTICLEINTERACTION::DEMAdhesion::AddForceContribution()
 {
   // evaluate particle adhesion contribution

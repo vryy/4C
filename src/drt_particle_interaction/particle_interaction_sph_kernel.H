@@ -48,12 +48,6 @@ namespace PARTICLEINTERACTION
     //! setup kernel handler
     virtual void Setup();
 
-    //! write restart of kernel handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of kernel handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! get kernel space dimension
     virtual void KernelSpaceDimension(int& dim) const final;
 

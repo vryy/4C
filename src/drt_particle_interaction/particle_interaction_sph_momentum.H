@@ -93,12 +93,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
 
-    //! write restart of momentum handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of momentum handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! insert momentum evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&

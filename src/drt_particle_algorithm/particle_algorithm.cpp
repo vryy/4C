@@ -159,17 +159,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
 
-  // read restart of particle time integration
-  particletimint_->ReadRestart(reader);
-
   // read restart of particle interaction handler
   if (particleinteraction_) particleinteraction_->ReadRestart(reader);
-
-  // read restart of gravity handler
-  if (particlegravity_) particlegravity_->ReadRestart(reader);
-
-  // read restart of viscous damping handler
-  if (viscousdamping_) viscousdamping_->ReadRestart(reader);
 
   // read restart of wall handler
   if (particlewall_) particlewall_->ReadRestart(restartstep);
@@ -284,17 +275,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
 
-    // write restart of particle time integration
-    particletimint_->WriteRestart(Step(), Time());
-
     // write restart of particle interaction handler
-    if (particleinteraction_) particleinteraction_->WriteRestart(Step(), Time());
-
-    // write restart of gravity handler
-    if (particlegravity_) particlegravity_->WriteRestart(Step(), Time());
-
-    // write restart of viscous damping handler
-    if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
+    if (particleinteraction_) particleinteraction_->WriteRestart();
 
     // write restart of wall handler
     if (particlewall_) particlewall_->WriteRestart(Step(), Time());

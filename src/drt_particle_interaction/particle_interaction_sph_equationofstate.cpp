@@ -30,18 +30,6 @@ void PARTICLEINTERACTION::SPHEquationOfStateBase::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHEquationOfStateBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHEquationOfStateBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
     const double& speedofsound, const double& refdensfac, const double& exponent)
     : PARTICLEINTERACTION::SPHEquationOfStateBase(),

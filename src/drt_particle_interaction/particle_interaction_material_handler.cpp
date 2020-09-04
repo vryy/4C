@@ -69,14 +69,3 @@ void PARTICLEINTERACTION::MaterialHandler::Setup()
 {
   // nothing to do
 }
-
-void PARTICLEINTERACTION::MaterialHandler::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::MaterialHandler::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}

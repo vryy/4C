@@ -53,12 +53,6 @@ namespace PARTICLEINTERACTION
     //! setup particle material handler
     void Setup();
 
-    //! write restart of particle material handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of particle material handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! return pointer to particle material parameter
     inline const MAT::PAR::ParticleMaterialBase* GetPtrToParticleMatParameter(
         PARTICLEENGINE::TypeEnum type_i) const

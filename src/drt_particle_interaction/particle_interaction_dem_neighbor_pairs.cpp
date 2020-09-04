@@ -52,17 +52,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
   particlewallinterface_ = particlewallinterface;
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMNeighborPairs::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
 {
   // evaluate particle pairs

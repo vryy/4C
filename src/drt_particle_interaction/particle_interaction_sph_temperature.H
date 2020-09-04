@@ -78,12 +78,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of temperature handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of temperature handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! set current time
     void SetCurrentTime(const double currenttime);
 

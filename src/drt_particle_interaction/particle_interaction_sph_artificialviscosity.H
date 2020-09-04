@@ -44,12 +44,6 @@ namespace PARTICLEINTERACTION
     //! setup artificial viscosity handler
     void Setup();
 
-    //! write restart of artificial viscosity handler
-    void WriteRestart(const int step, const double time) const;
-
-    //! read restart of artificial viscosity handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! evaluate artificial viscosity
     void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,
         const double* mass_j, const double& artvisc_i, const double& artvisc_j,

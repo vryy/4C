@@ -51,18 +51,6 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const

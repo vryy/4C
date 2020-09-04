@@ -36,17 +36,6 @@ void PARTICLEALGORITHM::ViscousDampingHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::ViscousDampingHandler::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEALGORITHM::ViscousDampingHandler::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
 {
   // get particle container bundle

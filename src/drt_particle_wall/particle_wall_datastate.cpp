@@ -61,17 +61,6 @@ void PARTICLEWALL::WallDataState::Setup()
   // nothing to do
 }
 
-void PARTICLEWALL::WallDataState::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEWALL::WallDataState::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
 {
   if (disp_row_ != Teuchos::null)

@@ -75,12 +75,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
 
-    //! write restart of density handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of density handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 
@@ -237,12 +231,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle)
         override;
-
-    //! write restart of density handler
-    void WriteRestart(const int step, const double time) const override;
-
-    //! read restart of density handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(

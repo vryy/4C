@@ -68,25 +68,6 @@ namespace PARTICLEALGORITHM
     void Setup();
 
     /*!
-     * \brief write restart of gravity handler
-     *
-     * \author Sebastian Fuchs \date 05/2018
-     *
-     * \param[in] step restart step
-     * \param[in] time restart time
-     */
-    void WriteRestart(const int step, const double time) const;
-
-    /*!
-     * \brief read restart of gravity handler
-     *
-     * \author Sebastian Fuchs \date 05/2018
-     *
-     * \param[in] reader discretization reader
-     */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
-    /*!
      * \brief get gravity acceleration
      *
      * Evaluate the gravity ramp function at the given time to get the scaled gravity acceleration.

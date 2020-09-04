@@ -78,16 +78,6 @@ namespace PARTICLEENGINE
     void Setup(bool write_binary_output, bool write_ghosted_particles);
 
     /*!
-     * \brief write restart of runtime vtp writer
-     *
-     * \author Sebastian Fuchs \date 07/2018
-     *
-     * \param[in] step restart step
-     * \param[in] time restart time
-     */
-    void WriteRestart(const int step, const double time) const;
-
-    /*!
      * \brief read restart of runtime vtp writer
      *
      * \author Sebastian Fuchs \date 07/2018

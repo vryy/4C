@@ -70,12 +70,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of heat source handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of heat source handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! evaluate heat source
     virtual void EvaluateHeatSource(const double& evaltime) const = 0;
 

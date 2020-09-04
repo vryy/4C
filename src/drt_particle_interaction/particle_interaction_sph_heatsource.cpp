@@ -91,17 +91,6 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceBase::WriteRestart(const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHHeatSourceBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::SPHHeatSourceVolume::SPHHeatSourceVolume(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHHeatSourceBase(params)
 {

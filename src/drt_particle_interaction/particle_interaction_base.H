@@ -74,7 +74,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
-    virtual void WriteRestart(const int step, const double time) const;
+    virtual void WriteRestart() const;
 
     //! read restart of particle interaction handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);

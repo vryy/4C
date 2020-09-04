@@ -38,18 +38,6 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
     dserror("non-positive adhesion surface energy!");
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::WriteRestart(
-    const int step, const double time) const
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // nothing to do
-}
-
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyConstant(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params)

@@ -62,12 +62,6 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
-    //! write restart of phase change handler
-    virtual void WriteRestart(const int step, const double time) const;
-
-    //! read restart of phase change handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
     //! evaluate phase change
     virtual void EvaluatePhaseChange() const = 0;
 
