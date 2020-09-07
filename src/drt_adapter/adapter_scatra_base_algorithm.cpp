@@ -32,6 +32,7 @@
 
 // HDG time integration schemes
 #include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.H"
+#include "../drt_scatra/scatra_timint_stat_hdg.H"
 #include "../drt_scatra/scatra_resulttest_hdg.H"
 
 // loma specific files
@@ -496,8 +497,30 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     // HDG implements all time stepping schemes within gen-alpha
     if (DRT::Problem::Instance()->SpatialApproximationType() ==
         ShapeFunctionType::shapefunction_hdg)
-      scatra_ = Teuchos::rcp(
-          new SCATRA::TimIntHDG(discret, solver, scatratimeparams, extraparams, output));
+    {
+      switch (timintscheme)
+      {
+        case INPAR::SCATRA::timeint_one_step_theta:
+        case INPAR::SCATRA::timeint_bdf2:
+        case INPAR::SCATRA::timeint_gen_alpha:
+        {
+          scatra_ = Teuchos::rcp(
+              new SCATRA::TimIntHDG(discret, solver, scatratimeparams, extraparams, output));
+          break;
+        }
+        case INPAR::SCATRA::timeint_stationary:
+        {
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntStationaryHDG(
+              discret, solver, scatratimeparams, extraparams, output));
+          break;
+        }
+        default:
+        {
+          dserror("Unknown time-integration scheme for HDG scalar transport problem");
+          break;
+        }
+      }
+    }
     else
     {
       switch (timintscheme)

@@ -86,7 +86,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(const int id, co
 void DRT::ELEMENTS::ScaTraHDGType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = DRT::UTILS::getDimension(dwele->Shape()) + 1;
+  numdf = 1;  // Only one scalar (so far) is the unknown that is solved for
   dimns = numdf;
   nv = numdf;
 
@@ -128,11 +128,14 @@ void DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
         mode[i / ndofs][lid] = 1.;
       }
     }
+    // Scatra does not have element dofs as fluid does(pressure)
+    // Keeping the code anyways for future additions
     const Epetra_Map* erowmap = dis.ElementRowMap();
     for (int i = 0; i < erowmap->NumMyElements(); ++i)
     {
       std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
       dsassert(dofs.size() == 1, "Expect a single concentration dof per element for scatra HDG");
+      if (dofs.size() == 0) break;
       const unsigned int lid = rowmap->LID(dofs[0]);
       const unsigned int dim = DRT::UTILS::getDimension(dis.lRowElement(i)->Shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
