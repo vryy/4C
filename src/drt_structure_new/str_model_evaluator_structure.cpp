@@ -962,6 +962,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   if (beam_vtu_output_params.IsWriteOrientationParamter())
     beam_vtu_writer_ptr_->AppendElementOrientationParamater(displacement_state_vector);
 
+  // append reference length if desired.
+  if (beam_vtu_output_params.IsWriteRefLength()) beam_vtu_writer_ptr_->AppendRefLength();
+
   // export displacement state to column format
   if (beam_vtu_output_params.IsWriteRVECrosssectionForces())
     beam_vtu_writer_ptr_->AppendRVECrosssectionForces(displacement_state_vector);
