@@ -1898,14 +1898,13 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
       std::iota(std::begin(mycols), std::end(mycols), 0);
       // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
       // ordering XY, XZ, YZ, for symmetric tensors)
-      if ((name == "nodal_2PK_stresses_xyz" or name == "nodal_cauchy_stresses_xyz" or
-              name == "nodal_2PK_coupling_stresses_xyz" or
-              name == "nodal_cauchy_coupling_stresses_xyz" or name == "nodal_GL_strains_xyz" or
-              name == "nodal_EA_strains_xyz" or name == "nodal_LOG_strains_xyz" or
-              name == "nodal_pl_GL_strains_xyz" or name == "nodal_pl_EA_strains_xyz" or
-              name == "nodal_stresses_xyz") and
-          numdf == 6)
+      if (numdf == 6)
+      {
+        std::cout << "6x1 vector " << name
+                  << " interpreted as symmetric 3x3 tensor --> entries 5 and 6 are switched"
+                  << std::endl;
         std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
+      }
       for (int idf = 0; idf < numdf; ++idf)
       {
         Epetra_Vector* column = (*data_proc0)(mycols[idf]);
@@ -2187,13 +2186,13 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
       std::iota(std::begin(mycols), std::end(mycols), 0);
       // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
       // ordering XY, XZ, YZ, for symmetric tensors)
-      if ((name == "element_2PK_stresses_xyz" or name == "element_cauchy_stresses_xyz" or
-              name == "element_2PK_coupling_stresses_xyz" or
-              name == "element_cauchy_coupling_stresses_xyz" or name == "element_GL_strains_xyz" or
-              name == "element_EA_strains_xyz" or name == "element_LOG_strains_xyz" or
-              name == "element_pl_GL_strains_xyz" or name == "element_pl_EA_strains_xyz") and
-          numdf == 6)
+      if (numdf == 6)
+      {
+        std::cout << "6x1 vector " << name
+                  << " interpreted as symmetric 3x3 tensor --> entries 5 and 6 are switched"
+                  << std::endl;
         std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
+      }
       for (int col = 0; col < numdf; ++col)
       {
         // extract actual column
