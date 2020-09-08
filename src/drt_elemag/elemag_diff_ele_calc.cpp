@@ -93,7 +93,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::compute_error:
     {
       // Postprocess the solution only if required
-      if (params.get<bool>("postproc")) localSolver_->PostProcessing(*hdgele);
+      if (params.get<bool>("postprocess")) localSolver_->PostProcessing(*hdgele);
 
       localSolver_->ComputeError(hdgele, params, elevec1);
       break;
@@ -296,7 +296,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
     const DRT::ELEMENTS::ElemagDiff* ele)
 {
-  if (shapes_ == Teuchos::null)
+  if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->Degree()) ||
+      shapes_->usescompletepoly_ != usescompletepoly_)
   {
     shapes_ = Teuchos::rcp(
         new DRT::UTILS::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
@@ -305,10 +306,6 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
     postproc_shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
         ele->Degree() + 1, usescompletepoly_, 2 * (ele->Degree() + 1)));
   }
-  else if (shapes_->degree_ != unsigned(ele->Degree()) ||
-           shapes_->usescompletepoly_ != usescompletepoly_)
-    shapes_ = Teuchos::rcp(
-        new DRT::UTILS::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
   if (shapesface_ == Teuchos::null)
   {
@@ -317,14 +314,11 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
     shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
   }
 
-  if (localSolver_ == Teuchos::null)
+  if (localSolver_ == Teuchos::null || localSolver_->ndofs_ != shapes_->ndofs_)
   {
     localSolver_ =
         Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
   }
-  else if (localSolver_->ndofs_ != shapes_->ndofs_)
-    localSolver_ =
-        Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
 }
 
 /*----------------------------------------------------------------------*
@@ -667,22 +661,23 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
       error_mag_grad(0) +=
           std::pow(analytical_grad(d + nsd_, d) - magnetic_grad(d, d), 2) * highshapes.jfac(q);
       // Rotor
-      error_ele_grad(1) += std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                        analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
-                                        (electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                            electric_grad((d + 1) % nsd_, (d + 2) % nsd_)),
-                               2) *
-                           highshapes.jfac(q);
-      error_mag_grad(1) += std::pow((analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
-                                        analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_)) -
-                                        (magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                                            magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_)),
-                               2) *
-                           highshapes.jfac(q);
+      // Compute rotor components
+      const double analytical_electric_rot = analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                             analytical_grad((d + 1) % nsd_, (d + 2) % nsd_);
+      const double analytical_magnetic_rot =
+          analytical_grad((d + 2) % nsd_ + nsd_, (d + 1) % nsd_) -
+          analytical_grad((d + 1) % nsd_ + nsd_, (d + 2) % nsd_);
+      const double electric_rot = electric_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                  electric_grad((d + 1) % nsd_, (d + 2) % nsd_);
+      const double magnetic_rot = magnetic_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                  magnetic_grad((d + 1) % nsd_, (d + 2) % nsd_);
+      // Use rotor components
+      error_ele_grad(1) += std::pow(analytical_electric_rot - electric_rot, 2) * highshapes.jfac(q);
+      error_mag_grad(1) += std::pow(analytical_magnetic_rot - magnetic_rot, 2) * highshapes.jfac(q);
     }
   }
 
-  if (params.get<bool>("postproc"))
+  if (params.get<bool>("postprocess"))
   {
     // Post-processed quantities
     for (unsigned int q = 0; q < highshapes_post.nqpoints_; ++q)
@@ -718,13 +713,14 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
         error_ele_post_grad(0) +=
             std::pow(analytical_grad(d, d) - electric_post_grad(d, d), 2) * highshapes_post.jfac(q);
         // Rotor
+        // Compute rotor components
+        const double analytical_electric_rot = analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                               analytical_grad((d + 1) % nsd_, (d + 2) % nsd_);
+        const double electric_post_rot = electric_post_grad((d + 2) % nsd_, (d + 1) % nsd_) -
+                                         electric_post_grad((d + 1) % nsd_, (d + 2) % nsd_);
+        // Use rotor components
         error_ele_post_grad(1) +=
-            std::pow((analytical_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                         analytical_grad((d + 1) % nsd_, (d + 2) % nsd_)) -
-                         (electric_post_grad((d + 2) % nsd_, (d + 1) % nsd_) -
-                             electric_post_grad((d + 1) % nsd_, (d + 2) % nsd_)),
-                2) *
-            highshapes_post.jfac(q);
+            std::pow(analytical_electric_rot - electric_post_rot, 2) * highshapes_post.jfac(q);
       }
     }
   }
@@ -882,8 +878,11 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
   const int* start_func = params.getPtr<int>("startfuncno");
   const double time = params.get<double>("time");
 
+  bool do_internal = false;
+  bool do_postprocess = true;
+
   // internal variables
-  if (0)
+  if (do_internal)
   {
     // the RHS matrix has to have the row dimension equal to the number of shape
     // functions(so we have one coefficient for each) and a number of column
@@ -943,7 +942,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
   }
 
   // postproc variables
-  if (1)
+  if (do_postprocess)
   {
     Epetra_SerialDenseMatrix localMat(postproc_shapes_.ndofs_, nsd_ * 2);
     for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)

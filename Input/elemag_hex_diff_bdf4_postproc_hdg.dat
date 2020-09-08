@@ -28,7 +28,7 @@ TIMEINT                         BDF4
 INITIALFIELD                    field_by_function
 CALCERR                         yes
 ERRORFUNCNO                     1
-POSTPROC                        yes
+POSTPROCESS                     yes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES

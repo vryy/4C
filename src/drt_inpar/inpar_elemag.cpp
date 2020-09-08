@@ -80,7 +80,7 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     BoolParameter("CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
 
     // Post process solution?
-    BoolParameter("POSTPROC", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
+    BoolParameter("POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
   }
 
   IntParameter("ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
