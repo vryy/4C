@@ -377,16 +377,6 @@ namespace DRT
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
-      /*!
-       * \brief Evaluate the deformation gradient at a specific Gauss point
-       *
-       * \param defgrd Deformation gradient
-       * \param xdisp Matrix with the nodal displacements (3x10)
-       * \param gp Gauss point
-       */
-      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>& defgrd,
-          const LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& xdisp, int gp);
-
       friend class DRT::ELEMENTS::InvDesign;
       Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 

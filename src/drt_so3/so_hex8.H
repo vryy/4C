@@ -671,10 +671,12 @@ namespace DRT
        *
        * \param defgrd [out] : Deformation gradient
        * \param xdisp  [in] : Nodal displacements of the element
+       * \param xcurr  [in] : Current nodal coordinates of the element
        * \param gp  [in] : Id of the Gauss point
        */
       void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& xdisp, int gp);
+          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xdisp,
+          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr, int gp);
 
       /*! \brief Calculate the deformation gradient that is consistent
        *         with modified (e.g. EAS) GL strain tensor.
