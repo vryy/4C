@@ -77,7 +77,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(LINALG::Matrix<3, 3> c
   LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
   gprefecoord = params.get<LINALG::Matrix<1, 3>>("gprefecoord");
 
-  double totaltime = params.get<double>("total time", 10);
+  double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
   {
     dserror("Parameter 'total time' could not be read!");

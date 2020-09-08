@@ -56,9 +56,6 @@ namespace MAT
       /// parameter sets of the hyperelastic summands.
       explicit ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      /// destructor
-      ~ElastHyper() override = default;
-
       /// @name material parameters
       //@{
 

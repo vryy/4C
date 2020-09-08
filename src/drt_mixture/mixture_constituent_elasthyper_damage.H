@@ -44,9 +44,6 @@ namespace MIXTURE
       explicit MixtureConstituent_ElastHyperDamage(
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
 
-      /// default destructor
-      ~MixtureConstituent_ElastHyperDamage() override = default;
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() override;
 

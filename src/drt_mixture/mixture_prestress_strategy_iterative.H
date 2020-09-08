@@ -52,8 +52,7 @@ namespace MIXTURE
   }  // namespace PAR
 
   /*!
-   * \brief General mixture constituent prestress interface to be implemented by prestressing
-   * techniques.
+   * \brief Mixture prestress strategy to be used with MATERIAL_ITERATIVE prestressing
    *
    * This prestressing technique has to be used with the PRESTRESSTYPE MATERIAL_ITERATIVE. In each
    * prestress update step, the internal prestretch tensor is updated with the current stretch

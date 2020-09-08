@@ -207,9 +207,6 @@ namespace MAT
     void Update(LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
-    /*!
-     * \copydoc
-     */
     void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
