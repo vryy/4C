@@ -37,7 +37,7 @@ namespace UTILS
      *
      * \return double
      */
-    static inline double GetTime()
+    static inline double GetPrestressTime()
     {
       static double pstime =
           DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
@@ -168,7 +168,7 @@ namespace UTILS
      */
     static inline bool IsActive(const double currentTime)
     {
-      return IsAny() && currentTime <= GetTime() + 1.0e-15;
+      return IsAny() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -196,7 +196,7 @@ namespace UTILS
      */
     static inline bool IsMulfActive(const double currentTime)
     {
-      return IsMulf() && currentTime <= GetTime() + 1.0e-15;
+      return IsMulf() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -209,7 +209,7 @@ namespace UTILS
      */
     static inline bool IsMaterialIterativeActive(const double currentTime)
     {
-      return IsMaterialIterative() && currentTime <= GetTime() + 1.0e-15;
+      return IsMaterialIterative() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -238,7 +238,7 @@ namespace UTILS
      */
     static inline bool IsInverseDesignActive(const double currentTime)
     {
-      return IsInverseDesign() && currentTime <= GetTime() + 1.0e-15;
+      return IsInverseDesign() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!

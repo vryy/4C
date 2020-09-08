@@ -135,7 +135,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
     pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetTime();
+    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))

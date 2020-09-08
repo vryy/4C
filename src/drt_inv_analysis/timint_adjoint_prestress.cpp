@@ -33,7 +33,7 @@ STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretiza
   rhsnp_ = LINALG::CreateVector(*(dofrowmap_), true);
 
   // prestress stuff
-  pstime_ = ::UTILS::PRESTRESS::GetTime();
+  pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 }
 
 

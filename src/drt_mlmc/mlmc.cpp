@@ -922,7 +922,7 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
     if (::UTILS::PRESTRESS::IsMulf())
     {
       // get prestress time
-      double pstime = ::UTILS::PRESTRESS::GetTime();
+      double pstime = ::UTILS::PRESTRESS::GetPrestressTime();
       double endtime;
 
       // compute the number of steps we did in prestressing mode

@@ -114,7 +114,7 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
   if (params != Teuchos::null)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetTime();
+    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
