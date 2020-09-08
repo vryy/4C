@@ -14,6 +14,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_prestress_strategy_isocyl.H"
 #include "mixture_prestress_strategy_iterative.H"
+#include "../drt_mat/material_service.H"
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id
 MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)
@@ -41,22 +42,12 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
   {
     case INPAR::MAT::mix_prestress_strategy_cylinder:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->SetParameter(new MIXTURE::PAR::IsotropicCylinderPrestressStrategy(curmat));
-      }
-      auto* params =
-          dynamic_cast<MIXTURE::PAR::IsotropicCylinderPrestressStrategy*>(curmat->Parameter());
-      return params;
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(
+          curmat);
     }
     case INPAR::MAT::mix_prestress_strategy_iterative:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->SetParameter(new MIXTURE::PAR::IterativePrestressStrategy(curmat));
-      }
-      auto* params = dynamic_cast<MIXTURE::PAR::IterativePrestressStrategy*>(curmat->Parameter());
-      return params;
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IterativePrestressStrategy>(curmat);
     }
     default:
       dserror(

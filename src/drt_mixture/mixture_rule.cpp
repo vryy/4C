@@ -13,6 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 #include "mixture_rule_growthremodel.H"
 
 // Constructor of the material parameters
@@ -52,21 +53,11 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   {
     case INPAR::MAT::mix_rule_base:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureRule(curmat));
-      }
-      auto* params = dynamic_cast<MIXTURE::PAR::MixtureRule*>(curmat->Parameter());
-      return params;
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::MixtureRule>(curmat);
     }
     case INPAR::MAT::mix_rule_growthremodel:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->SetParameter(new MIXTURE::PAR::GrowthRemodelMixtureRule(curmat));
-      }
-      auto* params = dynamic_cast<MIXTURE::PAR::GrowthRemodelMixtureRule*>(curmat->Parameter());
-      return params;
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::GrowthRemodelMixtureRule>(curmat);
     }
     default:
       dserror("The referenced material with id %d is not registered as a mixturerule!", matid);

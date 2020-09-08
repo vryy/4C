@@ -13,6 +13,11 @@
 #include "matpar_parameter.H"
 #include "matpar_bundle.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "matpar_parameter.H"
+#include "../drt_mixture/mixture_prestress_strategy_isocyl.H"
+#include "../drt_mixture/mixture_prestress_strategy_iterative.H"
+#include "../drt_mixture/mixture_rule_growthremodel.H"
+#include "../drt_mixture/mixture_rule.H"
 
 #include <Sacado.hpp>
 
@@ -1214,6 +1219,17 @@ void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3
   return;
 }
 
+template <class T>
+T* MAT::CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat)
+{
+  if (curmat->Parameter() == nullptr)
+  {
+    curmat->SetParameter(new T(curmat));
+  }
+  auto* params = dynamic_cast<T*>(curmat->Parameter());
+  return params;
+}
+
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::Matrix<6, 9, double>&,
@@ -1230,3 +1246,12 @@ template void MAT::AddtoCmatHolzapfelProduct<double>(
     LINALG::Matrix<6, 6, double>&, const LINALG::Matrix<6, 1, double>&, const double scalar);
 template void MAT::AddtoCmatHolzapfelProduct<FAD>(
     LINALG::Matrix<6, 6, FAD>&, const LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
+
+template MIXTURE::PAR::IsotropicCylinderPrestressStrategy* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::MixtureRule* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::GrowthRemodelMixtureRule* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);

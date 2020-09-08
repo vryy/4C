@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 #include "mixture_constituent_elasthyper.H"
 #include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
