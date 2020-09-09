@@ -214,6 +214,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
 
   // distribute affiliation pairs
   affiliationpairs_->DistributeAffiliationPairs();
+
+  // update rigid body ownership
+  UpdateRigidBodyOwnership();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
@@ -222,6 +225,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
 
   // communicate affiliation pairs
   affiliationpairs_->CommunicateAffiliationPairs();
+
+  // update rigid body ownership
+  UpdateRigidBodyOwnership();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -249,4 +255,44 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
 
   // init affiliation pair handler
   affiliationpairs_->Init();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
+{
+  ownedrigidbodies_.clear();
+  hostedrigidbodies_.clear();
+  ownerofrigidbodies_.clear();
+
+  // number of global ids
+  const int numglobalids = rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() + 1;
+
+  // maximum number of particles per rigid body over all processors
+  std::vector<std::pair<int, int>> maxnumberofparticlesperrigidbodyonproc(
+      numglobalids, std::make_pair(0, myrank_));
+
+  // get number of particle per rigid body on this processor
+  for (const auto& it : affiliationpairs_->GetRefToAffiliationPairData())
+    maxnumberofparticlesperrigidbodyonproc[it.second].first++;
+
+  // get global ids of rigid bodies hosted (owned and non-owned) by this processor
+  for (int rigidbody_k = 0; rigidbody_k < numglobalids; ++rigidbody_k)
+    if (maxnumberofparticlesperrigidbodyonproc[rigidbody_k].first > 0)
+      hostedrigidbodies_.push_back(rigidbody_k);
+
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // get maximum number of particles per rigid body over all processors
+  MPI_Allreduce(MPI_IN_PLACE, &maxnumberofparticlesperrigidbodyonproc[0], numglobalids, MPI_2INT,
+      MPI_MAXLOC, mpicomm->Comm());
+
+  // get owner of all rigid bodies
+  ownerofrigidbodies_.reserve(numglobalids);
+  for (const auto& it : maxnumberofparticlesperrigidbodyonproc)
+    ownerofrigidbodies_.push_back(it.second);
+
+  // get global ids of rigid bodies owned by this processor
+  for (const int rigidbody_k : hostedrigidbodies_)
+    if (ownerofrigidbodies_[rigidbody_k] == myrank_) ownedrigidbodies_.push_back(rigidbody_k);
 }

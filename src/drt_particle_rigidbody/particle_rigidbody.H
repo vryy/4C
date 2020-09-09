@@ -170,6 +170,19 @@ namespace PARTICLERIGIDBODY
      */
     void InitAffiliationPairHandler();
 
+    /*!
+     * \brief update rigid body ownership
+     *
+     * Update the ownership of rigid bodies on all processors. First, the global ids of rigid bodies
+     * hosted, i.e., owned and non-owned, by this processor are determined using the affiliation of
+     * rigid particles to rigid bodies. Then, based on the maximum number of rigid particles per
+     * processor the owning processor of all rigid bodies is determined. Finally, each processor
+     * stores the global ids of rigid bodies owned.
+     *
+     * \author Sebastian Fuchs \date 08/2020
+     */
+    void UpdateRigidBodyOwnership();
+
     //! communicator
     const Epetra_Comm& comm_;
 
@@ -190,6 +203,15 @@ namespace PARTICLERIGIDBODY
 
     //! affiliation pair handler
     std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs> affiliationpairs_;
+
+    //! rigid bodies owned by this processor
+    std::vector<int> ownedrigidbodies_;
+
+    //! rigid bodies hosted (owned and non-owned) by this processor
+    std::vector<int> hostedrigidbodies_;
+
+    //! owner of all rigid bodies
+    std::vector<int> ownerofrigidbodies_;
   };
 }  // namespace PARTICLERIGIDBODY
 
