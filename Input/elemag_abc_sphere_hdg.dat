@@ -19,7 +19,7 @@ RANDSEED                        -1
 
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        1e-10
-NUMSTEP                         1000
+NUMSTEP                         25
 MAXTIME                         2.5e-9
 RESULTSEVRY                     1
 RESTARTEVRY                     1000

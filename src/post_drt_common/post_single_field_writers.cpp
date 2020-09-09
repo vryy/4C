@@ -629,6 +629,7 @@ void ThermoFilter::WriteAllResults(PostField* field)
 void ElemagFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("electric", "electric", nodebased, 3);
+  writer_->WriteResult("electric_post", "electric_post", nodebased, 3);
   writer_->WriteResult("magnetic", "magnetic", nodebased, 3);
   writer_->WriteResult("trace", "trace", nodebased, 3);
   writer_->WriteResult("dft", "dft", nodebased, 3);

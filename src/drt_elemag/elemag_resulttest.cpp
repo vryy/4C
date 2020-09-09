@@ -79,7 +79,7 @@ void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       }
       else if (variable == "L2electric-rel")
       {
-        if ((*error_)[1] != 0)
+        if ((*error_)[1] > 0.0)
           result = std::sqrt((*error_)[0] / (*error_)[1]);
         else
           dserror(
@@ -88,7 +88,7 @@ void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       }
       else if (variable == "L2magnetic-rel")
       {
-        if ((*error_)[3] != 0)
+        if ((*error_)[3] > 0.0)
           result = std::sqrt((*error_)[2] / (*error_)[3]);
         else
           dserror(
@@ -110,6 +110,27 @@ void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       else if (variable == "Hcurl-magnetic")
       {
         result = std::sqrt((*error_)[7]);
+      }
+      else if (variable == "L2electric-post")
+      {
+        result = std::sqrt((*error_)[8]);
+      }
+      else if (variable == "L2electric-rel-post")
+      {
+        if ((*error_)[1] > 0.0)
+          result = std::sqrt((*error_)[8] / (*error_)[1]);
+        else
+          dserror(
+              "Impossible to compute the post-processed electric relative error. The L2-norm of "
+              "the analytical solution is zero, resulting in a division by zero.");
+      }
+      else if (variable == "Hdiv-electric-post")
+      {
+        result = std::sqrt((*error_)[9]);
+      }
+      else if (variable == "Hcurl-electric-post")
+      {
+        result = std::sqrt((*error_)[10]);
       }
       else
       {

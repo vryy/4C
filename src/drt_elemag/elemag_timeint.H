@@ -308,6 +308,9 @@ namespace ELEMAG
     double dtsolve_;  /// solver time
 
     bool calcerr_;  /// flag for error calculation
+
+    bool postprocess_;  /// flag for postprocessing
+
     int errfunct_;  /// Function number for error calculation
 
     int sourcefuncno_;  /// Source function number
@@ -335,6 +338,7 @@ namespace ELEMAG
 
     /// Output vectors
     Teuchos::RCP<Epetra_MultiVector> electric;
+    Teuchos::RCP<Epetra_MultiVector> electric_post;
     Teuchos::RCP<Epetra_MultiVector> magnetic;
     Teuchos::RCP<Epetra_MultiVector> trace;
     Teuchos::RCP<Epetra_Vector> conductivity;

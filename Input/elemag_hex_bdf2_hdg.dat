@@ -19,7 +19,7 @@ RANDSEED                        -1
 
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.125
-NUMSTEP                         200000
+NUMSTEP                         5
 MAXTIME                         0.625
 TAU                             100
 RESULTSEVRY                     1

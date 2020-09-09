@@ -49,6 +49,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       dtele_(0.0),
       dtsolve_(0.0),
       calcerr_(DRT::INPUT::IntegralValue<bool>(*params_, "CALCERR")),
+      postprocess_(DRT::INPUT::IntegralValue<bool>(*params_, "POSTPROCESS")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1))
 {
@@ -75,6 +76,7 @@ void ELEMAG::ElemagTimeInt::Init()
 
   // Nodevectors for the output
   electric = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
+  electric_post = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   magnetic = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   trace = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   conductivity = Teuchos::rcp(new Epetra_Vector(*discret_->ElementRowMap()));
@@ -345,8 +347,9 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   params.set<int>("funcno", errfunct_);
   params.set<double>("time", time_);
   params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  params.set<bool>("postprocess", postprocess_);
 
-  const int numberOfErrorMeasures = 8;
+  const int numberOfErrorMeasures = 11;
   Teuchos::RCP<Epetra_SerialDenseVector> errors =
       Teuchos::rcp(new Epetra_SerialDenseVector(numberOfErrorMeasures));
 
@@ -370,13 +373,13 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
     std::cout << "Electric L2-error: " << std::sqrt((*errors)[0]) << std::endl;
     std::cout << "Magnetic L2-error: " << std::sqrt((*errors)[2]) << std::endl;
     std::cout << "\nRELATIVE ERROR:" << std::endl;
-    if ((*errors)[1] == 0 && (*errors)[3] == 0)
+    if ((*errors)[1] < 1e-14 && (*errors)[3] < 1e-14)
       std::cout << "Impossible to compute relative errors. The L2-norm of the analytical "
                    "solution is zero, resulting in a division by zero."
                 << std::endl;
     else
     {
-      if ((*errors)[1] != 0)
+      if ((*errors)[1] > 1e-14)
         std::cout << "Electric relative L2-error: " << std::sqrt((*errors)[0] / (*errors)[1])
                   << std::endl;
       else
@@ -384,7 +387,7 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
             << "Impossible to compute the electric relative error. The L2-norm of the analytical "
                "solution is zero, resulting in a division by zero."
             << std::endl;
-      if ((*errors)[3] != 0)
+      if ((*errors)[3] > 1e-14)
         std::cout << "Magnetic relative L2-error: " << std::sqrt((*errors)[2] / (*errors)[3])
                   << std::endl;
       else
@@ -399,6 +402,18 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
     std::cout << "\nHCURL ERROR:" << std::endl;
     std::cout << "Electric Hcurl-error: " << std::sqrt((*errors)[5]) << std::endl;
     std::cout << "Magnetic Hcurl-error: " << std::sqrt((*errors)[7]) << std::endl;
+
+    std::cout << "\nPOST-PROCESSED ELECTRIC FIELD:" << std::endl;
+    std::cout << "Absolute L2-error: " << std::sqrt((*errors)[8]) << std::endl;
+    if ((*errors)[1] > 1e-14)
+      std::cout << "Relative L2-error: " << std::sqrt((*errors)[8] / (*errors)[1]) << std::endl;
+    else
+      std::cout << "Impossible to compute the post-processed electric relative error. The L2-norm "
+                   "of the analytical "
+                   "solution is zero, resulting in a division by zero."
+                << std::endl;
+    std::cout << "Hdiv-error: " << std::sqrt((*errors)[9]) << std::endl;
+    std::cout << "Hcurl-error: " << std::sqrt((*errors)[10]) << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
@@ -697,9 +712,9 @@ namespace
   // internal helper function for output
   void getNodeVectorsHDG(DRT::Discretization &dis, const Teuchos::RCP<Epetra_Vector> &traceValues,
       const int ndim, Teuchos::RCP<Epetra_MultiVector> &electric,
-      Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
-      Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
-      Teuchos::RCP<Epetra_Vector> &permeability)
+      Teuchos::RCP<Epetra_MultiVector> &electric_post, Teuchos::RCP<Epetra_MultiVector> &magnetic,
+      Teuchos::RCP<Epetra_MultiVector> &trace, Teuchos::RCP<Epetra_Vector> &conductivity,
+      Teuchos::RCP<Epetra_Vector> &permittivity, Teuchos::RCP<Epetra_Vector> &permeability)
   {
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
@@ -710,6 +725,7 @@ namespace
       // The multivector is based on the map of the node
       // owned by the processor. The vectors are zeroed.
       electric.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
+      electric_post.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
       magnetic.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
     }
 
@@ -744,7 +760,7 @@ namespace
       // Electric field
       // Magnetic field
       ele->LocationVector(dis, la, false);
-      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * 3 * ndim);
+      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * 4 * ndim);
       for (int i = 0; i < interpolVec.Length(); i++) interpolVec(i) = 0.0;
 
       // Interpolating hdg internal values to the node
@@ -768,10 +784,12 @@ namespace
         for (int d = 0; d < ndim; ++d)
         {
           (*electric)[d][localIndex] += interpolVec(i + d * ele->NumNode());
+          (*electric_post)[d][localIndex] +=
+              interpolVec(ele->NumNode() * (2 * ndim) + i + d * ele->NumNode());
           (*magnetic)[d][localIndex] +=
               interpolVec(ele->NumNode() * (ndim) + i + d * ele->NumNode());
           (*trace)[d][localIndex] +=
-              interpolVec(ele->NumNode() * (2 * ndim) + i + d * ele->NumNode());
+              interpolVec(ele->NumNode() * (3 * ndim) + i + d * ele->NumNode());
         }
       }
     }
@@ -780,6 +798,7 @@ namespace
       for (int d = 0; d < ndim; ++d)
       {
         (*electric)[d][i] /= touchCount[i];
+        (*electric_post)[d][i] /= touchCount[i];
         (*magnetic)[d][i] /= touchCount[i];
       }
       for (int d = 0; d < ndim; ++d)
@@ -822,12 +841,13 @@ void ELEMAG::ElemagTimeInt::Output()
   TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::Output");
   // Preparing the vectors that are going to be written in the output file
   electric.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
+  electric_post.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   magnetic.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   trace.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
 
   // Get the results from the discretization vectors to the output ones
-  getNodeVectorsHDG(*discret_, trace_, numdim_, electric, magnetic, trace, conductivity,
-      permittivity, permeability);
+  getNodeVectorsHDG(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,
+      conductivity, permittivity, permeability);
 
   // Create the new step
   output_->NewStep(step_, time_);
@@ -848,6 +868,7 @@ void ELEMAG::ElemagTimeInt::Output()
   output_->WriteVector("magnetic", magnetic, IO::nodevector);
   output_->WriteVector("trace", trace, IO::nodevector);
   output_->WriteVector("electric", electric, IO::nodevector);
+  output_->WriteVector("electric_post", electric_post, IO::nodevector);
 
   // add restart data
 
