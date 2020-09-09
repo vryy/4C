@@ -44,8 +44,8 @@ COMPONENT 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 2*x
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 1.34962952487214289e-15 TOLERANCE 1E-10
-SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 1.27885747364599182e-14 TOLERANCE 1E-10
+SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 0.0 TOLERANCE 1E-10
+SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 0.0 TOLERANCE 1E-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
