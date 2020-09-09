@@ -42,12 +42,6 @@ void SCATRA::TimIntStationaryHDG::Init()
 
 
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                             berardocco 05/20 |
-*----------------------------------------------------------------------*/
-SCATRA::TimIntStationaryHDG::~TimIntStationaryHDG() { return; }
-
-
-/*----------------------------------------------------------------------*
  | set time parameter for element evaluation           berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationaryHDG::SetElementTimeParameter(bool forcedincrementalsolver) const

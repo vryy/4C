@@ -15,7 +15,7 @@
 
 namespace SCATRA
 {
-  class TimIntStationaryHDG : public virtual TimIntHDG
+  class TimIntStationaryHDG : public TimIntHDG
   {
    public:
     /// Standard Constructor
@@ -24,15 +24,11 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// Destructor
-    virtual ~TimIntStationaryHDG();
-
     /// initialize time integration scheme
-    virtual void Init();
+    void Init() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void ComputeIntermediateValues() { return; };
-
 
     /// routine to return time integration specific parameters
     Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
@@ -40,7 +36,6 @@ namespace SCATRA
       dserror("Not yet implemented!");
       return Teuchos::null;
     }
-
 
    protected:
     /// don't want = operator and cctor
