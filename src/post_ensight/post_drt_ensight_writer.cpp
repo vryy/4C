@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_discret_xfem.H"
 
 #include <string>
+#include <numeric>
 
 #include "../pss_full/pss_cpp.h"
 extern "C"
@@ -1893,9 +1894,20 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
 
     if (myrank_ == 0)
     {
+      std::vector<int> mycols(numdf);
+      std::iota(std::begin(mycols), std::end(mycols), 0);
+      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // ordering XY, XZ, YZ, for symmetric tensors)
+      if (numdf == 6)
+      {
+        std::cout << "6x1 vector " << name
+                  << " interpreted as symmetric 3x3 tensor --> entries 5 and 6 are switched"
+                  << std::endl;
+        std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
+      }
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Epetra_Vector* column = (*data_proc0)(idf);
+        Epetra_Vector* column = (*data_proc0)(mycols[idf]);
         for (int inode = 0; inode < finalnumnode;
              inode++)  // inode == lid of node because we use proc0map_
         {
@@ -2170,10 +2182,21 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
     if (myrank_ == 0)
     {
       if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
+      std::vector<int> mycols(numdf);
+      std::iota(std::begin(mycols), std::end(mycols), 0);
+      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // ordering XY, XZ, YZ, for symmetric tensors)
+      if (numdf == 6)
+      {
+        std::cout << "6x1 vector " << name
+                  << " interpreted as symmetric 3x3 tensor --> entries 5 and 6 are switched"
+                  << std::endl;
+        std::iter_swap(mycols.begin() + 4, mycols.begin() + 5);
+      }
       for (int col = 0; col < numdf; ++col)
       {
         // extract actual column
-        Epetra_Vector* datacolumn = (*proc0data)(col + from);
+        Epetra_Vector* datacolumn = (*proc0data)(mycols[col] + from);
 
         for (int iele = 0; iele < numelepertype; iele++)
         {

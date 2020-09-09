@@ -383,12 +383,6 @@ endif()
 REMOVE_DUPLICATES(LIBRARIES)
 list(REMOVE_ITEM LIBRARIES debug optimized general)
 
-if (HAVE_ENSIGHT_POSTPROCESSING_TESTS)
-  message("-- Post-processing test for ensight filter: enabled")
-else()
-  message("-- Post-processing test for ensight filter: disabled")
-endif()
-
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
   src/drt_ale2/ale2.cpp
