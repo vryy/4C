@@ -162,7 +162,18 @@ namespace DRT
         /// Postprocess the solution to obtain a better approximation
         void PostProcessing(DRT::ELEMENTS::ElemagDiff& ele);
 
-        /// Projection of a given field on the interior variables for testing purposes.
+        /*!
+         * \brief Projection of a given field on the interior variables for testing purposes.
+         *
+         * This is a debug utility necessary for code development and prototyping. The selection
+         * of the field to project is hard-coded whithin the method itself with the flags
+         * do_internal and do_postprocess. The flags are used as follows:
+         *  - do_internal projects the field in the internal dofs of the element
+         *  - do_postprocess projects the field in the postprocessed internal dofs of the element
+         *
+         * \note It is possible to project one or both the variables, depending on the debugging
+         * needs.
+         */
         int ProjectFieldTest(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
 
