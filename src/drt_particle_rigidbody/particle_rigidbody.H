@@ -38,6 +38,7 @@ namespace PARTICLEENGINE
 namespace PARTICLERIGIDBODY
 {
   class RigidBodyDataState;
+  class RigidBodyRuntimeVtpWriter;
   class RigidBodyAffiliationPairs;
 }  // namespace PARTICLERIGIDBODY
 
@@ -117,6 +118,16 @@ namespace PARTICLERIGIDBODY
             particlestatestotypes) const;
 
     /*!
+     * \brief write rigid body runtime output
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] step output step
+     * \param[in] time output time
+     */
+    void WriteRigidBodyRuntimeOutput(const int step, const double time) const;
+
+    /*!
      * \brief set unique global ids for all rigid bodies
      *
      * Currently, the rigid body color of each rigid particle defined via the input file in the
@@ -171,11 +182,25 @@ namespace PARTICLERIGIDBODY
     void InitRigidBodyDataState();
 
     /*!
+     * \brief init rigid body runtime vtp writer
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void InitRigidBodyVtpWriter();
+
+    /*!
      * \brief init affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      */
     void InitAffiliationPairHandler();
+
+    /*!
+     * \brief setup rigid body runtime vtp writer
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetupRigidBodyVtpWriter();
 
     /*!
      * \brief get packed rigid body state data
@@ -249,6 +274,9 @@ namespace PARTICLERIGIDBODY
 
     //! rigid body data state container
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
+
+    //! rigid body runtime vtp writer
+    std::unique_ptr<PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter> rigidbodyvtpwriter_;
 
     //! affiliation pair handler
     std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs> affiliationpairs_;

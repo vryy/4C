@@ -271,6 +271,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
+    // write rigid body runtime output
+    if (particlerigidbody_) particlerigidbody_->WriteRigidBodyRuntimeOutput(Step(), Time());
+
     // write interaction runtime output
     if (particleinteraction_) particleinteraction_->WriteInteractionRuntimeOutput(Step(), Time());
 
