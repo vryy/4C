@@ -57,8 +57,7 @@ MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MOD
 COMPONENT 0 FUNCTION 0.5*x
 COMPONENT 1 FUNCTION 0.5
 COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0
-COMPONENT 4 FUNCTION 0.5*x
+COMPONENT 3 FUNCTION 0.5*x
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

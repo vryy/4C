@@ -94,27 +94,35 @@ void SCATRA::TimIntHDG::Setup()
   }
 
   // implement ost and bdf2 through gen-alpha facilities
-  // TO DO: implement other time integration schemes, at the moment only one-step-theta implemented
-  if (timealgo_ == INPAR::SCATRA::timeint_bdf2)
+  // TO DO: implement other time integration schemes, at the moment only one-step-theta and
+  // stationary are implemented
+  switch (timealgo_)
   {
-    dserror("At the moment only one step theta implemented");
-    alphaM_ = 1.5;
-    alphaF_ = 1.0;
-    gamma_ = 1.0;
+    case INPAR::SCATRA::timeint_bdf2:
+    {
+      dserror("At the moment only one step theta implemented");
+      alphaM_ = 1.5;
+      alphaF_ = 1.0;
+      gamma_ = 1.0;
+      break;
+    }
+    case INPAR::SCATRA::timeint_one_step_theta:
+    {
+      alphaM_ = 1.0;
+      alphaF_ = 1.0;
+      gamma_ = params_->get<double>("THETA");
+      break;
+    }
+    case INPAR::SCATRA::timeint_stationary:
+    {
+      break;
+    }
+    default:
+      dserror("At the moment only one step theta implemented");
   }
-  else if (timealgo_ == INPAR::SCATRA::timeint_one_step_theta)
-  {
-    alphaM_ = 1.0;
-    alphaF_ = 1.0;
-    gamma_ = params_->get<double>("THETA");
-  }
-  else if (timealgo_ == INPAR::SCATRA::timeint_stationary)
-    dserror("Stationary case not implemented for HDG");
-  else
-    dserror("At the moment only one step theta implemented");
 
   timealgoset_ = timealgo_;
-  timealgo_ = INPAR::SCATRA::timeint_gen_alpha;
+  if (timealgo_ != INPAR::SCATRA::timeint_stationary) timealgo_ = INPAR::SCATRA::timeint_gen_alpha;
 
   // call Init()-functions of base classes
   // note: this order is important
@@ -158,21 +166,42 @@ void SCATRA::TimIntHDG::SetTheta()
     else
     {
       // recall original user wish
-      if (timealgoset_ == INPAR::SCATRA::timeint_one_step_theta)
+      switch (timealgoset_)
       {
-        alphaM_ = alphaF_ = 1.0;
-        gamma_ = params_->get<double>("THETA");
-      }
-      else if (timealgoset_ == INPAR::SCATRA::timeint_bdf2)
-      {
-        alphaF_ = gamma_ = 1.0;
-        alphaM_ = 3. / 2.;
-      }
-      else
-      {
-        alphaM_ = params_->get<double>("alpha_M");
-        alphaF_ = params_->get<double>("alpha_F");
-        gamma_ = params_->get<double>("gamma");
+        case INPAR::SCATRA::timeint_one_step_theta:
+        {
+          alphaM_ = alphaF_ = 1.0;
+          gamma_ = params_->get<double>("THETA");
+          break;
+        }
+        case INPAR::SCATRA::timeint_bdf2:
+        {
+          alphaF_ = gamma_ = 1.0;
+          alphaM_ = 3. / 2.;
+          break;
+        }
+        case INPAR::SCATRA::timeint_stationary:
+        {
+          // Setting the parameters as for INPAR::SCATRA::timeint_one_step_theta with theta = 1
+          // (basically BDF1 and therefore we only compute the RHS and Dirich at t+1)
+          alphaM_ = alphaF_ = gamma_ = 1.0;
+          // The time step can not be set to zero because there is plenty of divisions by dt.
+          // Dt is therefore to 1.0
+          dta_ = 1.0;
+          // Set time equal to final time (in case of time dependent functions)
+          // This way the steady state is given as the solution at t=maxtime_
+          time_ = maxtime_ - dta_;
+          // stepmax is 1 to avoid waste computation (it's stationary after all)
+          stepmax_ = 1;
+          break;
+        }
+        default:
+        {
+          alphaM_ = params_->get<double>("alpha_M");
+          alphaF_ = params_->get<double>("alpha_F");
+          gamma_ = params_->get<double>("gamma");
+          break;
+        }
       }
 
       // do not enter starting algorithm section in the future

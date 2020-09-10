@@ -820,7 +820,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
 
   // multiply matrices to perform summation over quadrature points
-  hdgele->Mmat_.Multiply('N', 'T', 1.0, massPart, massPartW, 0.0);
+  if (not scatraparatimint_->IsStationary())
+  {
+    hdgele->Mmat_.Multiply('N', 'T', 1.0, massPart, massPartW, 0.0);
+  }
   hdgele->Amat_.Multiply('N', 'T', -1.0, gradPartVel, massPartW,
       0.0);  // first part of A matrix (only if velocity field not zero)
   hdgele->Bmat_.Multiply('N', 'T', -1.0, massPartW, gradPart, 0.0);
@@ -914,7 +917,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
 
   // multiply matrices to perform summation over quadrature points
-  hdgele->Mmat_.Multiply('N', 'T', 1.0, massPart, massPartW, 0.0);
+  if (not scatraparatimint_->IsStationary())
+  {
+    hdgele->Mmat_.Multiply('N', 'T', 1.0, massPart, massPartW, 0.0);
+  }
   hdgele->Amat_.Multiply('N', 'T', -1.0, gradPartVel, massPartW,
       0.0);  // first part of A matrix (only if velocity field not zero)
   hdgele->Bmat_.Multiply('N', 'T', -1.0, massPartW, gradPart, 0.0);
@@ -1618,6 +1624,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       double gradphi[nsd_];
 
       dsassert(start_func != NULL, "funct not set for initial value");
+      if (DRT::Problem::Instance()->Funct(*start_func - 1).NumberComponents() != 1 &&
+          DRT::Problem::Instance()->Funct(*start_func - 1).NumberComponents() != nsd_ + 2)
+        dserror(
+            "Impossible to initialize the field with the given number of components of the initial "
+            "field. Set the number of components to either 1 or nsd_ + 2.\nThe fields are ordered "
+            "as:\n- phi\n- gradphi\n- tracephi");
+
       phi = DRT::Problem::Instance()->Funct(*start_func - 1).Evaluate(0, xyz, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = DRT::Problem::Instance()->Funct(*start_func - 1).Evaluate(1 + i, xyz, 0);

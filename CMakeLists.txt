@@ -1171,6 +1171,7 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_timint_ost.cpp
   src/drt_levelset/levelset_timint_stat.cpp
   src/drt_scatra/scatra_timint_hdg.cpp
+  src/drt_scatra/scatra_timint_stat_hdg.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
   src/drt_contact_xcontact/xcontact_levelset_timint_ost.cpp
 )
