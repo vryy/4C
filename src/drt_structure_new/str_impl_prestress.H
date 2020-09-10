@@ -49,8 +49,6 @@ namespace STR
      private:
       /// Absolute displacement norm used for the convergence check of the prestress state
       double absoluteDisplacementNorm_;
-      /// Absolute residuum norm used for the convergence check of the prestress state
-      // double absoluteResiduumNorm_;
     };
   }  // namespace IMPLICIT
 }  // namespace STR

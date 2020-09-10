@@ -1316,11 +1316,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
             prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
             Fnew.Multiply(deltaF, Fhist);
             prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
-            // if(gp ==1)
-            // {
-            // std::cout << "Fhist  " << Fhist << std::endl;
-            // std::cout << "Fhnew  " << new << std::endl;
-            // }
           }
 
           // push-forward invJ for every gaussian point
@@ -2848,15 +2843,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;   // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;   // current  coord. of element
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurro;  // old  coord. of element
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> tmp;     // old  coord. of element
+  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
+      xdisp_tmp;  // Tensor holding nodal displacements temporary
 
   UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, tmp, xcurr);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp_tmp, xcurr);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(dispo, tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, tmp, xcurro);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(dispo, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp_tmp, xcurro);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */

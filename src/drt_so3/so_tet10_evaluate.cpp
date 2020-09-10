@@ -365,7 +365,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
           UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
           UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(mydisp, xdisp);
-          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xdisp, xrefe, xcurr);
+          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
           for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
           {
@@ -472,7 +472,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
       UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
       UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xdisp, xrefe, xcurr);
+      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
@@ -1051,7 +1051,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
   UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
   UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xdisp, xrefe, xcurr);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1774,7 +1774,7 @@ void DRT::ELEMENTS::So_tet10::Update_element(
     LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
     UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
     UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xdisp, xrefe, xcurr);
+    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
