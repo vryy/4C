@@ -20,6 +20,7 @@
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
+#include <unordered_map>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
@@ -161,6 +162,16 @@ namespace PARTICLERIGIDBODY
      */
     void CommunicateRigidBody();
 
+    /*!
+     * \brief compute mass quantities of rigid bodies
+     *
+     * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
+     * rigid bodies over all processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputeMassQuantities();
+
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
       return rigidbodydatastate_;
@@ -258,6 +269,58 @@ namespace PARTICLERIGIDBODY
      * \param[in] previouslyownedrigidbodies rigid bodies previously owned by this processor
      */
     void CommunicateRigidBodyStates(std::vector<int>& previouslyownedrigidbodies);
+
+    /*!
+     * \brief clear partial mass quantities of rigid bodies
+     *
+     * Clear partial mass quantities of hosted rigid bodies on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearPartialMassQuantities();
+
+    /*!
+     * \brief compute partial mass quantities of rigid bodies
+     *
+     * Compute the partial mass quantities of hosted rigid bodies on respective hosting processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputePartialMassQuantities();
+
+    /*!
+     * \brief gather partial mass quantities of rigid bodies
+     *
+     * Gather the partial mass quantities for owned rigid bodies from respective hosting processors
+     * on owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[out] gatheredpartialmass     gathered partial mass
+     * \param[out] gatheredpartialinertia  gathered partial inertia
+     * \param[out] gatheredpartialposition gathered partial position
+     */
+    void GatherPartialMassQuantities(
+        std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
+        std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
+        std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition);
+
+    /*!
+     * \brief compute full mass quantities of rigid bodies
+     *
+     * Compute the full mass quantities of owned rigid bodies on owning processor using all gathered
+     * partial mass quantities.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] gatheredpartialmass     gathered partial mass
+     * \param[in] gatheredpartialinertia  gathered partial inertia
+     * \param[in] gatheredpartialposition gathered partial position
+     */
+    void ComputeFullMassQuantities(
+        std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
+        std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
+        std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition);
 
     //! communicator
     const Epetra_Comm& comm_;

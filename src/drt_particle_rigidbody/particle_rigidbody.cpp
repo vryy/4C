@@ -14,6 +14,8 @@
 #include "particle_rigidbody_runtime_vtp_writer.H"
 #include "particle_rigidbody_affiliation_pairs.H"
 
+#include "../drt_particle_interaction/particle_interaction_utils.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_unique_global_id.H"
@@ -298,6 +300,28 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
 
   // communicate rigid body states
   CommunicateRigidBodyStates(previouslyownedrigidbodies);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ComputeMassQuantities()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ComputeMassQuantities");
+
+  // clear partial mass quantities of rigid bodies
+  ClearPartialMassQuantities();
+
+  // compute partial mass quantities of rigid bodies
+  ComputePartialMassQuantities();
+
+  // gathered partial mass quantities of rigid bodies from all corresponding processors
+  std::unordered_map<int, std::vector<double>> gatheredpartialmass;
+  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialinertia;
+  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialposition;
+
+  // gather partial mass quantities of rigid bodies
+  GatherPartialMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
+
+  // compute full mass quantities of rigid bodies
+  ComputeFullMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -594,5 +618,286 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
 
     if (position != rmsg.size())
       dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()
+{
+  // iterate over hosted rigid bodies
+  for (const int rigidbody_k : hostedrigidbodies_)
+  {
+    // get pointer to rigid body states
+    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
+    double* inertia_k = &rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k][0];
+    double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
+
+    // clear mass quantities
+    mass_k[0] = 0.0;
+    for (int i = 0; i < 6; ++i) inertia_k[i] = 0.0;
+    PARTICLEINTERACTION::UTILS::vec_clear(pos_k);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
+{
+  // get reference to affiliation pair data
+  const std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
+    double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+
+    // sum contribution of particle i
+    mass_k[0] += mass_i[0];
+    PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, mass_i[0], pos_i);
+  }
+
+  // iterate over hosted rigid bodies
+  for (const int rigidbody_k : hostedrigidbodies_)
+  {
+    // get pointer to rigid body states
+    const double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
+
+#ifdef DEBUG
+    if (not(mass_k[0] > 0.0)) dserror("partial mass of rigid body %d is zero!", rigidbody_k);
+#endif
+
+    // determine center of gravity of (partial) rigid body k
+    PARTICLEINTERACTION::UTILS::vec_scale(pos_k, 1.0 / mass_k[0]);
+  }
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    const double* pos_k = &rigidbodydatastate_->GetRefPosition()[rigidbody_k][0];
+    double* inertia_k = &rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* inertia_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::Inertia, particle_i);
+
+    double r_ki[3];
+    PARTICLEINTERACTION::UTILS::vec_set(r_ki, pos_k);
+    PARTICLEINTERACTION::UTILS::vec_sub(r_ki, pos_i);
+
+    // sum contribution of particle i
+    inertia_k[0] += inertia_i[0] + (r_ki[1] * r_ki[1] + r_ki[2] * r_ki[2]) * mass_i[0];
+    inertia_k[1] += inertia_i[0] + (r_ki[0] * r_ki[0] + r_ki[2] * r_ki[2]) * mass_i[0];
+    inertia_k[2] += inertia_i[0] + (r_ki[0] * r_ki[0] + r_ki[1] * r_ki[1]) * mass_i[0];
+    inertia_k[3] -= r_ki[0] * r_ki[1] * mass_i[0];
+    inertia_k[4] -= r_ki[0] * r_ki[2] * mass_i[0];
+    inertia_k[5] -= r_ki[1] * r_ki[2] * mass_i[0];
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
+    std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
+    std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
+    std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition)
+{
+  // prepare buffer for sending and receiving
+  std::map<int, std::vector<char>> sdata;
+  std::map<int, std::vector<char>> rdata;
+
+  // iterate over hosted rigid bodies
+  for (const int rigidbody_k : hostedrigidbodies_)
+  {
+    // owner of rigid body k
+    const int owner_k = ownerofrigidbodies_[rigidbody_k];
+
+    // get reference to rigid body states
+    const double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    const std::vector<double>& inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k];
+    const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+
+    // rigid body k owned by this processor
+    if (owner_k == myrank_)
+    {
+      // append to gathered partial mass quantities
+      gatheredpartialmass[rigidbody_k].push_back(mass_k);
+      gatheredpartialinertia[rigidbody_k].push_back(inertia_k);
+      gatheredpartialposition[rigidbody_k].push_back(pos_k);
+    }
+    // communicate partial mass quantities to owning processor
+    else
+    {
+      // pack data for sending
+      DRT::PackBuffer data;
+      data.StartPacking();
+
+      data.AddtoPack(rigidbody_k);
+      data.AddtoPack(mass_k);
+      for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
+
+      sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
+    }
+  }
+
+  // communicate data via non-buffered send from proc to proc
+  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+
+  // unpack and store received data
+  for (auto& p : rdata)
+  {
+    std::vector<char>& rmsg = p.second;
+
+    std::vector<char>::size_type position = 0;
+
+    while (position < rmsg.size())
+    {
+      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      double mass_k = DRT::ParObject::ExtractDouble(position, rmsg);
+
+      std::vector<double> inertia_k(6);
+      for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+
+      std::vector<double> pos_k(3);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+
+      // append to gathered partial mass quantities
+      gatheredpartialmass[rigidbody_k].push_back(mass_k);
+      gatheredpartialinertia[rigidbody_k].push_back(inertia_k);
+      gatheredpartialposition[rigidbody_k].push_back(pos_k);
+    }
+
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
+    std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
+    std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
+    std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition)
+{
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    std::vector<double>& partialmass_k = gatheredpartialmass[rigidbody_k];
+    std::vector<std::vector<double>>& partialpos_k = gatheredpartialposition[rigidbody_k];
+
+    // number of partial mass quantities of rigid body k including this processor
+    const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
+
+#ifdef DEBUG
+    if (static_cast<int>(partialmass_k.size()) != numpartial_k or
+        static_cast<int>(partialpos_k.size()) != numpartial_k)
+      dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
+#endif
+
+    // get pointer to rigid body states
+    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
+    double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
+
+    // clear mass and position
+    mass_k[0] = 0.0;
+    PARTICLEINTERACTION::UTILS::vec_clear(pos_k);
+
+    // iterate over partial quantities
+    for (int p = 0; p < numpartial_k; ++p)
+    {
+      // sum contribution of partial quantity
+      mass_k[0] += partialmass_k[p];
+      PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, partialmass_k[p], &partialpos_k[p][0]);
+    }
+
+    // determine center of gravity of rigid body k
+    PARTICLEINTERACTION::UTILS::vec_scale(pos_k, 1.0 / mass_k[0]);
+  }
+
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    std::vector<double>& partialmass_k = gatheredpartialmass[rigidbody_k];
+    std::vector<std::vector<double>>& partialpos_k = gatheredpartialposition[rigidbody_k];
+    std::vector<std::vector<double>>& partialinertia_k = gatheredpartialinertia[rigidbody_k];
+
+    // number of partial mass quantities of rigid body k including this processor
+    const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
+
+#ifdef DEBUG
+    if (static_cast<int>(partialmass_k.size()) != numpartial_k or
+        static_cast<int>(partialinertia_k.size()) != numpartial_k)
+      dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
+#endif
+
+    // get pointer to rigid body states
+    const double* pos_k = &rigidbodydatastate_->GetRefPosition()[rigidbody_k][0];
+    double* inertia_k = &rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k][0];
+
+    // clear inertia
+    for (int i = 0; i < 6; ++i) inertia_k[i] = 0.0;
+
+    // iterate over partial quantities
+    for (int p = 0; p < numpartial_k; ++p)
+    {
+      double r_kp[3];
+      PARTICLEINTERACTION::UTILS::vec_set(r_kp, pos_k);
+      PARTICLEINTERACTION::UTILS::vec_sub(r_kp, &partialpos_k[p][0]);
+
+      // sum contribution of partial quantity
+      for (int i = 0; i < 6; ++i) inertia_k[i] += partialinertia_k[p][i];
+
+      inertia_k[0] += (r_kp[1] * r_kp[1] + r_kp[2] * r_kp[2]) * partialmass_k[p];
+      inertia_k[1] += (r_kp[0] * r_kp[0] + r_kp[2] * r_kp[2]) * partialmass_k[p];
+      inertia_k[2] += (r_kp[0] * r_kp[0] + r_kp[1] * r_kp[1]) * partialmass_k[p];
+      inertia_k[3] -= r_kp[0] * r_kp[1] * partialmass_k[p];
+      inertia_k[4] -= r_kp[0] * r_kp[2] * partialmass_k[p];
+      inertia_k[5] -= r_kp[1] * r_kp[2] * partialmass_k[p];
+    }
   }
 }
