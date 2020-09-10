@@ -952,7 +952,9 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
   InitializeShapes(ele);
 
   // Check if the vector has the correct size
-  dsassert(elevec1.M() == (int)nen_ * (3 * nsd_), "Vector does not have correct size");
+  // The last part of the vector is not used so far as the postprocessing is not yet implemented for
+  // this type of element
+  dsassert(elevec1.M() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
