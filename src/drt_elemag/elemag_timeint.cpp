@@ -364,9 +364,8 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
   if (Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(scatradis) != Teuchos::null)
   {
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap(2))));
-    initParams.set<bool>("ishdg", true);
-    initParams.set<double>("dt", dtp_);
     ishdg = true;
+    initParams.set<bool>("ishdg", ishdg);
   }
   else
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap())));

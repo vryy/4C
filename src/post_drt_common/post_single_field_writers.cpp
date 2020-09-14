@@ -637,7 +637,7 @@ void ElemagFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("permittivity", "permittivity", elementbased, 1);
   writer_->WriteResult("permeability", "permeability", elementbased, 1);
 
-  WriteElementResults(field);
+  // WriteElementResults(field);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

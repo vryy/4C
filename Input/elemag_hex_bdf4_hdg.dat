@@ -36,6 +36,7 @@ ERRORFUNCNO                     2
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZTOL                           1e-8
+AZREUSE                         5
 
 ----------------------------------------------------------MATERIALS
 

@@ -36,7 +36,7 @@ ERRORFUNCNO                     2
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZTOL                           1e-8
-
+AZREUSE                         5
 ----------------------------------------------------------MATERIALS
 
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 0 PERMITTIVITY 1.732050808 PERMEABILITY 1.732050808

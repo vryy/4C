@@ -617,12 +617,14 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
     const MAT::ElectromagneticMat* elemagmat =
         static_cast<const MAT::ElectromagneticMat*>(mat.get());
     const double sigma = elemagmat->sigma(ele->Id());
-    const double dt = params.get<double>("dt");
+    // const double dt = params.get<double>("dt");
 
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
         ele->eleinteriorElectric_(i + d * shapes_.ndofs_) =
-            -(*nodevals_phi)(i + (d + 1) * shapes_.ndofs_) / sigma / dt;
+            -(*nodevals_phi)(i + (d + 1) * shapes_.ndofs_) / sigma;
+    // In case the dt for the stationary ScatraHDG class is modified and the value is not 1 anymore,
+    // it will be necessary to divide ele->eleinteriorElectric_ by dt
 
     return 0;
   }

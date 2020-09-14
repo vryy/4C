@@ -36,6 +36,7 @@ EQUILIBRATION                   rowsandcolumns_full
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZTOL                           1e-7
+AZREUSE                         25
 
 ----------------------------------------------------------MATERIALS
 
