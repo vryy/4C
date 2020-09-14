@@ -151,10 +151,22 @@ SUGRVEL                         no
 // REINIT_INITIAL                  yes
 -----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR
+AZTOL                           1e-05
+AZPREC                          MLFLUID2
+AZREUSE                         5
+AZOUTPUT                        10
+ML_MAXCOARSESIZE                10000
+ML_DAMPFINE                     0.7
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
+ML_SMOTIMES                     3 3 3 3 1
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
 -----------------------------------------------------------SOLVER 2
 NAME                            Scatra_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.0 // 1*10E-9
