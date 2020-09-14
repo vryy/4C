@@ -597,7 +597,19 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
   Epetra_SerialDenseSolver inverseAMmat;
   inverseAMmat.SetMatrix(hdgele->invAMmat_);
   int err = inverseAMmat.Invert();
-  if (err != 0) dserror("Inversion for AMmat failed with errorcode %d", err);
+  if (err != 0)
+  {
+    if (scatraparatimint_->IsStationary())
+      dserror(
+          "Inversion for AMmat failed with errorcode %d. This might be due to the fact that in "
+          "stationary problems Mmat_ is a zero matrix and AMat_ (if there is no convection) only "
+          "has boundary integrals. Therefore, if you are using elements with internal degrees of "
+          "freedom (high degree?), invAMmat_ matrix will be singular. If none of this is the case, "
+          "you'll need to find the problem yourself.",
+          err);
+    else
+      dserror("Inversion for AMmat failed with errorcode %d", err);
+  }
 }
 
 /*----------------------------------------------------------------------*

@@ -1374,141 +1374,144 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
 
   shapesface_->EvaluateFace(*ele, face);
 
-  // Get the user defined functions
-  Teuchos::RCP<DRT::Condition>* cond = params.getPtr<Teuchos::RCP<DRT::Condition>>("condition");
-  const std::vector<int>* funct = (*cond)->Get<std::vector<int>>("funct");
-  const double time = params.get<double>("time");
-
-  Epetra_SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));
-  // the RHS matrix has to have the row dimension equal to the number of shape
-  // functions(so we have one coefficient for each) and a number of column
-  // equal to the overall number of component that we want to solve for.
-  // The number is nsd_*2 because we have two fields..
-  Epetra_SerialDenseMatrix localMat(shapesface_->nfdofs_, nsd_ * 2);
-  {
-    Epetra_SerialDenseMatrix tempMassMat(shapesface_->nfdofs_, shapesface_->nfdofs_);
-    Epetra_SerialDenseMatrix tempMat(shapesface_->nfdofs_, shapesface_->nqpoints_);
-    Epetra_SerialDenseMatrix tempMatW(shapesface_->nfdofs_, shapesface_->nqpoints_);
-    for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
-    {
-      // Storing the values of the coordinates for the current quadrature point
-      // and of the jacobian computed in that point
-      const double fac = shapesface_->jfac(q);
-      LINALG::Matrix<nsd_, 1> xyz;
-      for (unsigned int d = 0; d < nsd_; ++d)
-        xyz(d) = shapesface_->xyzreal(d, q);  // coordinates of quadrature point in real coordinates
-      // Creating the temporary electric and magnetic field vector intVal
-      // The vector is going to contain first the electric and then the magnetic
-      // field such that the field will be initialized as first tree component
-      // of the specified function as electric field, last three components as
-      // magnetic field. If there is only one component all the components will
-      // be initialized to the same value.
-      Epetra_SerialDenseVector intVal(2 * nsd_);
-      dsassert(funct != NULL, "funct not set for initial value");
-      EvaluateAll((*funct)[0], time, xyz, intVal);
-      // now fill the components in the one-sided mass matrix and the right hand side
-      for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
-      {
-        // Mass matrix
-        tempMat(i, q) = shapesface_->shfunct(i, q);
-        tempMatW(i, q) = shapesface_->shfunct(i, q) * fac;
-
-        // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
-          localMat(i, j) += shapesface_->shfunct(i, q) * intVal(j) * fac;
-      }
-    }
-    // The integration is made by computing the matrix product
-    tempMassMat.Multiply('N', 'T', 1., tempMat, tempMatW, 0.);
-    {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(tempMassMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
-    }
-  }
-
-  for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
-    for (unsigned int d = 0; d < nsd_; ++d)
-      tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d);  // Electric field
-
-  // Creating the matrix
-  Epetra_SerialDenseMatrix transformatrix(
-      (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
-  for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
-    for (unsigned int d = 0; d < nsd_; ++d)
-      for (unsigned int q = 0; q < nsd_ - 1; ++q)
-        transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
-            shapesface_->tangent(d, q);
+  unsigned int newindex = shapesface_->nfdofs_ * (nsd_ - 1) * face;
 
   const MAT::ElectromagneticMat* actmat = static_cast<const MAT::ElectromagneticMat*>(mat.get());
   double impedance = sqrt(actmat->epsilon(ele->Id()) / actmat->mu(ele->Id()));
 
-  // MIXED SHAPE FUNCTIONS
-  // The matrix that are going to be build here are D,I and J
-  // loop over number of internal shape functions
-  // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
-  // transformation matrices and then put in the real D and H matrices
-  Epetra_SerialDenseMatrix tempI(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseMatrix tempJ(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
-  for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+  bool do_rhs = params.get<bool>("do_rhs");
+  if (do_rhs)
   {
-    // If the shape function is zero on the face we can just skip it. Remember
-    // that the matrix have already been set to zero and therefore if nothing
-    // is done the value ramains zero
-    // loop over number of face shape functions
-    for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
+    // Get the user defined functions
+    Teuchos::RCP<DRT::Condition>* cond = params.getPtr<Teuchos::RCP<DRT::Condition>>("condition");
+    const std::vector<int>* funct = (*cond)->Get<std::vector<int>>("funct");
+    const double time = params.get<double>("time");
+
+    Epetra_SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
+    Epetra_SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));
+    // the RHS matrix has to have the row dimension equal to the number of shape
+    // functions(so we have one coefficient for each) and a number of column
+    // equal to the overall number of component that we want to solve for.
+    // The number is nsd_*2 because we have two fields..
+    Epetra_SerialDenseMatrix localMat(shapesface_->nfdofs_, nsd_ * 2);
     {
-      // Now that the integration has been carried on it is necessary to place
-      // the value in the right position inside the matrices
-      for (unsigned int d = 0; d < nsd_; ++d)
+      Epetra_SerialDenseMatrix tempMassMat(shapesface_->nfdofs_, shapesface_->nfdofs_);
+      Epetra_SerialDenseMatrix tempMat(shapesface_->nfdofs_, shapesface_->nqpoints_);
+      Epetra_SerialDenseMatrix tempMatW(shapesface_->nfdofs_, shapesface_->nqpoints_);
+      for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
       {
-        // i internal shape functions
-        // j boundary shape functions
-        for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
+        // Storing the values of the coordinates for the current quadrature point
+        // and of the jacobian computed in that point
+        const double fac = shapesface_->jfac(q);
+        LINALG::Matrix<nsd_, 1> xyz;
+        for (unsigned int d = 0; d < nsd_; ++d)
+          xyz(d) =
+              shapesface_->xyzreal(d, q);  // coordinates of quadrature point in real coordinates
+        // Creating the temporary electric and magnetic field vector intVal
+        // The vector is going to contain first the electric and then the magnetic
+        // field such that the field will be initialized as first tree component
+        // of the specified function as electric field, last three components as
+        // magnetic field. If there is only one component all the components will
+        // be initialized to the same value.
+        Epetra_SerialDenseVector intVal(2 * nsd_);
+        dsassert(funct != NULL, "funct not set for initial value");
+        EvaluateAll((*funct)[0], time, xyz, intVal);
+        // now fill the components in the one-sided mass matrix and the right hand side
+        for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
         {
-          // Storing the value of the integral without the normal components
-          const double temp =
-              shapesface_->jfac(q) * shapesface_->shfunct(i, q) * shapesface_->shfunct(j, q);
+          // Mass matrix
+          tempMat(i, q) = shapesface_->shfunct(i, q);
+          tempMatW(i, q) = shapesface_->shfunct(i, q) * fac;
 
-          // Filling the matrices
-          // Imat = -[H x n]
-          //+1 coordinate
-          tempI(shapesface_->nfdofs_ * d + j, ((d + 1) % nsd_) * shapesface_->nfdofs_ + i) -=
-              temp * shapesface_->normals((d + 2) % nsd_, q);
-          //+2 coordinate
-          tempI(shapesface_->nfdofs_ * d + j, ((d + 2) % nsd_) * shapesface_->nfdofs_ + i) +=
-              temp * shapesface_->normals((d + 1) % nsd_, q);
-          // Jmat
-          tempJ(shapesface_->nfdofs_ * d + j, d * shapesface_->nfdofs_ + i) += temp;
+          // RHS for the electric and magnetic field
+          for (int j = 0; j < intVal.M(); ++j)
+            localMat(i, j) += shapesface_->shfunct(i, q) * intVal(j) * fac;
         }
-      }  // for (unsigned int d = 0; d < nsd_; ++d)
-    }    // for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
-  }      // for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+      }
+      // The integration is made by computing the matrix product
+      tempMassMat.Multiply('N', 'T', 1., tempMat, tempMatW, 0.);
+      {
+        Epetra_SerialDenseSolver inverseMass;
+        inverseMass.SetMatrix(tempMassMat);
+        inverseMass.SetVectors(localMat, localMat);
+        inverseMass.Solve();
+      }
+    }
 
-  // Fill face values into the matrices
-  Epetra_SerialDenseMatrix magneticMat(
-      shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseMatrix electricMat(
-      shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
-  magneticMat.Multiply('N', 'N', 1.0, transformatrix, tempI, 0.0);
-  electricMat.Multiply('N', 'N', 1.0, transformatrix, tempJ, 0.0);
+    for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
+      for (unsigned int d = 0; d < nsd_; ++d)
+        tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d);  // Electric field
 
-  tempVec2.Multiply('N', 'N', impedance, electricMat, tempVec1, 0.0);
+    // Creating the matrix
+    Epetra_SerialDenseMatrix transformatrix(
+        (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
+    for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+      for (unsigned int d = 0; d < nsd_; ++d)
+        for (unsigned int q = 0; q < nsd_ - 1; ++q)
+          transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
+              shapesface_->tangent(d, q);
 
-  for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
-    for (unsigned int d = 0; d < nsd_; ++d)
-      tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d + nsd_);  // magnetic
+    // MIXED SHAPE FUNCTIONS
+    // The matrix that are going to be build here are D,I and J
+    // loop over number of internal shape functions
+    // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
+    // transformation matrices and then put in the real D and H matrices
+    Epetra_SerialDenseMatrix tempI(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+    Epetra_SerialDenseMatrix tempJ(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+    for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+    {
+      // If the shape function is zero on the face we can just skip it. Remember
+      // that the matrix have already been set to zero and therefore if nothing
+      // is done the value ramains zero
+      // loop over number of face shape functions
+      for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
+      {
+        // Now that the integration has been carried on it is necessary to place
+        // the value in the right position inside the matrices
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          // i internal shape functions
+          // j boundary shape functions
+          for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
+          {
+            // Storing the value of the integral without the normal components
+            const double temp =
+                shapesface_->jfac(q) * shapesface_->shfunct(i, q) * shapesface_->shfunct(j, q);
 
-  tempVec2.Multiply('N', 'N', 1.0, magneticMat, tempVec1, 1.0);
+            // Filling the matrices
+            // Imat = -[H x n]
+            //+1 coordinate
+            tempI(shapesface_->nfdofs_ * d + j, ((d + 1) % nsd_) * shapesface_->nfdofs_ + i) -=
+                temp * shapesface_->normals((d + 2) % nsd_, q);
+            //+2 coordinate
+            tempI(shapesface_->nfdofs_ * d + j, ((d + 2) % nsd_) * shapesface_->nfdofs_ + i) +=
+                temp * shapesface_->normals((d + 1) % nsd_, q);
+            // Jmat
+            tempJ(shapesface_->nfdofs_ * d + j, d * shapesface_->nfdofs_ + i) += temp;
+          }
+        }  // for (unsigned int d = 0; d < nsd_; ++d)
+      }    // for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
+    }      // for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
 
-  unsigned int newindex = shapesface_->nfdofs_ * (nsd_ - 1) * face;
+    // Fill face values into the matrices
+    Epetra_SerialDenseMatrix magneticMat(
+        shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
+    Epetra_SerialDenseMatrix electricMat(
+        shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
+    magneticMat.Multiply('N', 'N', 1.0, transformatrix, tempI, 0.0);
+    electricMat.Multiply('N', 'N', 1.0, transformatrix, tempJ, 0.0);
 
-  for (int i = 0; i < tempVec2.M(); ++i) elevec1(newindex + i) = tempVec2(i);
+    tempVec2.Multiply('N', 'N', impedance, electricMat, tempVec1, 0.0);
 
-  bool resonly = params.get<bool>("resonly");
-  if (!resonly)
+    for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
+      for (unsigned int d = 0; d < nsd_; ++d)
+        tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d + nsd_);  // magnetic
+
+    tempVec2.Multiply('N', 'N', 1.0, magneticMat, tempVec1, 1.0);
+
+    for (int i = 0; i < tempVec2.M(); ++i) elevec1(newindex + i) = tempVec2(i);
+  }
+  else  // if not(do_rhs) then do the matrix
   {
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)

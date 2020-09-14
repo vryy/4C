@@ -155,6 +155,10 @@ namespace DRT
         int ProjectField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
 
+        /// Projection of scatra computed gradients into elements
+        int ProjectElectricField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+            const Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec1);
+
         /// Compute the error with respect to an analytical field.
         void ComputeError(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
