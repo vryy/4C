@@ -963,11 +963,11 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntHDG::PrepareTimeLoop()
 {
-  // call base class routine
-  ScaTraTimIntImpl::PrepareTimeLoop();
-
   // calculate matrices on element
   CalcMatInitial();
+
+  // call base class routine
+  ScaTraTimIntImpl::PrepareTimeLoop();
 
 }  // SCATRA::TimIntHDG::PrepareTimeLoop
 
