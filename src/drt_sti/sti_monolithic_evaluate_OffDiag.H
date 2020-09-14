@@ -155,6 +155,7 @@ namespace STI
     explicit ScatraThermoOffDiagCouplingMatchingNodes(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -177,12 +178,22 @@ namespace STI
         Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface) override;
 
    private:
+    //! map extractor associated with degrees of freedom on interface (slave side) of temperature
+    //! field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermoInterfaceSlave() const
+    {
+      return block_map_thermo_interface_slave_;
+    };
+
     //! copy slave entries to master side scaled by -1.0
     void CopySlaveToMasterScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
     //! evaluate condition on slave side
     void EvaluateScatraThermoInterfaceSlaveSide(Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+
+    //! map extractor associated with degrees of freedom on interface of temperature field
+    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
   };
 
   //! evaluation of scatra-thermo off-diagonal blocks for standard Mortar on scatra discretization
@@ -220,6 +231,7 @@ namespace STI
       const INPAR::S2I::CouplingType& couplingtype,
       Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
       Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
       Teuchos::RCP<const Epetra_Map> full_map_scatra,
       Teuchos::RCP<const Epetra_Map> full_map_thermo,
       Teuchos::RCP<const Epetra_Map> interface_map_scatra,
