@@ -39,6 +39,16 @@ namespace PARTICLERIGIDBODY
    public:
     //! virtual destructor
     virtual ~RigidBodyHandlerInterface() = default;
+
+    /*!
+     * \brief get rigid body data state container
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \return rigid body data state container
+     */
+    virtual std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState()
+        const = 0;
   };
 
 }  // namespace PARTICLERIGIDBODY

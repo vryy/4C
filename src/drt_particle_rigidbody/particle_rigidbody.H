@@ -102,6 +102,11 @@ namespace PARTICLERIGIDBODY
      */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
+    {
+      return rigidbodydatastate_;
+    }
+
    private:
     /*!
      * \brief init rigid body unique global identifier handler
