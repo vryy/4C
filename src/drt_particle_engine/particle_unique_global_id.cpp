@@ -187,6 +187,11 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
 
   // sort reusable global ids
   std::sort(reusableglobalids_.begin(), reusableglobalids_.end());
+
+#ifdef DEBUG
+  auto it = std::unique(reusableglobalids_.begin(), reusableglobalids_.end());
+  if (it != reusableglobalids_.end()) dserror("duplicate entries in reusable global ids!");
+#endif
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs(
