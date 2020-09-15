@@ -130,6 +130,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   Teuchos::RCP<Epetra_Map> interface_map_thermo(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface(Teuchos::null);
+  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerfaceslave(Teuchos::null);
+
   if (ScaTraField()->S2ICoupling())
   {
     // merge slave and master side full maps for interface matrix for thermo and scatra
@@ -141,6 +143,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     blockmapthermointerface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_thermo,
         std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_thermo)));
     blockmapthermointerface->CheckForValidMapExtractor();
+    blockmapthermointerfaceslave = Teuchos::rcp(new LINALG::MultiMapExtractor(
+        *strategythermo_->InterfaceMaps()->Map(1),
+        std::vector<Teuchos::RCP<const Epetra_Map>>(1, strategythermo_->InterfaceMaps()->Map(1))));
+    blockmapthermointerfaceslave->CheckForValidMapExtractor();
   }
 
   // initialize map extractors associated with blocks of global system matrix
@@ -302,10 +308,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   }
 
   // initialize OD evaluation strategy
-  scatrathermooffdiagcoupling_ =
-      STI::BuildScatraThermoOffDiagCoupling(strategyscatra_->CouplingType(), blockmapthermo_,
-          blockmapthermointerface, maps_->Map(0), maps_->Map(1), interface_map_scatra,
-          interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
+  scatrathermooffdiagcoupling_ = STI::BuildScatraThermoOffDiagCoupling(
+      strategyscatra_->CouplingType(), blockmapthermo_, blockmapthermointerface,
+      blockmapthermointerfaceslave, maps_->Map(0), maps_->Map(1), interface_map_scatra,
+      interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
   equilibration_ = LINALG::BuildEquilibration(
