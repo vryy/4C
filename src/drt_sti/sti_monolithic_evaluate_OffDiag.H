@@ -165,7 +165,6 @@ namespace STI
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
-
     //! destructor
     ~ScatraThermoOffDiagCouplingMatchingNodes() override = default;
 
@@ -192,7 +191,8 @@ namespace STI
     //! evaluate condition on slave side
     void EvaluateScatraThermoInterfaceSlaveSide(Teuchos::RCP<LINALG::SparseOperator> slavematrix);
 
-    //! map extractor associated with degrees of freedom on interface of temperature field
+    //! map extractor associated with degrees of freedom on interface (slave side) of temperature
+    //! field
     const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
   };
 
