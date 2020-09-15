@@ -20,6 +20,8 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
+#include "../drt_structure_new/str_enum_lists.H"
+
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -202,6 +204,10 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
   Teuchos::ParameterList eleparams;
   // set action
   eleparams.set("action", "calc_struct_stiffscalar");
+
+  // linearization of structural residuals w.r.t. elch
+  eleparams.set<int>("dtype", STR::DifferentiationType::elch);
+
   // set time
   eleparams.set<double>("total time", structure_->Time());
   // set numscatradofspernode
@@ -342,6 +348,9 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
 
   // action for elements
   condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+
+  // linearization of boundary flux w.r.t. displacement
+  condparams.set<int>("dtype", SCATRA::DifferentiationType::disp);
 
   // number of dofset associated with displacement-related dofs on scalar transport discretization
   condparams.set<int>("ndsdisp", 1);

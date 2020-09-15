@@ -12,6 +12,7 @@
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/so3_material.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
@@ -47,7 +48,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
       Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1, "scalarfield");
 
       if (concnp == Teuchos::null)
-        dserror("calc_struct_nlnstiff: Cannot get state vector 'temperature' ");
+        dserror("calc_struct_nlnstiff: Cannot get state vector 'scalarfield' ");
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myconc =
@@ -220,10 +221,18 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
   // compute deformation gradient w.r.t. to material configuration
   LINALG::Matrix<numdim_, numdim_> defgrad(true);
 
-  // get numscatradofspernode from parameter list
-  const int numscatradofspernode = params.get<int>("numscatradofspernode", -1);
-  if (numscatradofspernode == -1)
-    dserror("Could not read 'numscatradofspernode' from parameter list!");
+  // get primary variable to derive the linearization
+  const int dtype = params.get<int>("dtype", STR::DifferentiationType::none);
+  if (dtype == STR::DifferentiationType::none) dserror("Cannot get differentation type");
+
+  // get numscatradofspernode from parameter list in case of elch linearizations
+  int numscatradofspernode(-1);
+  if (dtype == STR::DifferentiationType::elch)
+  {
+    numscatradofspernode = params.get<int>("numscatradofspernode", -1);
+    if (numscatradofspernode == -1)
+      dserror("Could not read 'numscatradofspernode' from parameter list!");
+  }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -273,8 +282,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
     // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
     LINALG::Matrix<numstr_, 1> dSdc(true);
 
-    params.set<std::string>("scalartype", "concentration");
-
     // get dSdc, hand in NULL as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, NULL, gp, Id());
@@ -293,7 +300,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
       // loop over columns
       for (unsigned coli = 0; coli < numnod_; ++coli)
       {
-        stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
+        // stiffness matrix w.r.t. elch dofs
+        if (dtype == STR::DifferentiationType::elch)
+          stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
+        else
+          dserror("Unknown differentation type");
       }
     }
   }  // gauss point loop

@@ -116,7 +116,7 @@ namespace DRT
               funct_master,
           const int kineticmodel, const double kr, const double alphaa, const double alphac,
           const double peltier, const double timefacfac, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm);
+          Epetra_SerialDenseMatrix& k_sm, const int dtype);
 
      private:
       //! private constructor for singletons

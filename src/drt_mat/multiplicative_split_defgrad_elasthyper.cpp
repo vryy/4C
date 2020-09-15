@@ -21,6 +21,7 @@ multiplicatively into elastic and inelastic parts
 #include "../drt_inpar/inpar_ssi.H"
 #include "elasthyper_service.H"
 #include "../drt_lib/voigt_notation.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 
 /*--------------------------------------------------------------------*
@@ -262,9 +263,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   // evaluate OD Block
   else
   {
-    // get source of deformation for this OD block
+    // get source of deformation for this OD block depending on the differentiation type
     PAR::InelasticSource source;
-    if (params.get<std::string>("scalartype", "none") == "concentration")
+    const int dtype = params.get<int>("dtype", STR::DifferentiationType::none);
+    if (dtype == STR::DifferentiationType::elch)
       source = PAR::InelasticSource::inelastic_concentration;
     else
       dserror("unknown scalaratype");

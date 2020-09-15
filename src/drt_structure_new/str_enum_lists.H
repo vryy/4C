@@ -81,6 +81,14 @@ namespace STR
     exit(EXIT_FAILURE);
   };
 
+
+  enum DifferentiationType
+  {
+    none,
+    elch,
+    temp
+  };
+
 }  // namespace STR
 
 #endif

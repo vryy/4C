@@ -143,5 +143,16 @@ namespace SCATRA
     bd_calc_weak_Dirichlet,
     bd_integrate_shape_functions
   };  // enum SCATRA::BoundaryAction
+
+  /*!
+   * \brief for coupled, monolithic problems: linearization w.r.t. to other primary variable
+   */
+  enum DifferentiationType
+  {
+    none,
+    disp,
+    elch,
+    temp
+  };
 }  // namespace SCATRA
 #endif  // SCATRA_ELE_ACTION_H

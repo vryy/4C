@@ -430,6 +430,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // get primary variable to derive the linearization
+  const int dtype = params.get<int>("dtype", SCATRA::DifferentiationType::none);
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
@@ -460,87 +463,103 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       case INPAR::S2I::kinetics_butlervolmer:
       case INPAR::S2I::kinetics_butlervolmerreduced:
       {
-        // access input parameters associated with current condition
-        const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-        if (numelectrons != 1)
-          dserror(
-              "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-              "interface: %i",
-              numelectrons);
-        const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-        if (stoichiometries == nullptr)
-          dserror(
-              "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-              "coupling!");
-        if (stoichiometries->size() != 1)
-          dserror("Number of stoichiometric coefficients does not match number of scalars!");
-        if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
-        const double faraday = myelch::elchparams_->Faraday();
-        const double alphaa = my::scatraparamsboundary_->AlphaA();
-        const double alphac = my::scatraparamsboundary_->AlphaC();
-        const double kr = my::scatraparamsboundary_->Kr();
-        if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
-
-        // extract saturation value of intercalated lithium concentration from electrode material
-        const double cmax = matelectrode->CMax();
-        if (cmax < 1.0e-12)
-          dserror("Saturation value c_max of intercalated lithium concentration is too small!");
-
-        // compute factor F/(RT)
-        const double frt = GetFRT();
-
-        // equilibrium electric potential difference at electrode surface
-        const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt);
-
-        // skip further computation in case equilibrium electric potential difference is outside
-        // physically meaningful range
-        if (not std::isinf(epd))
+        // dervivative of interface flux w.r.t. displacement
+        switch (dtype)
         {
-          // electrode-electrolyte overpotential at integration point
-          const double eta = eslavepotint - emasterpotint - epd;
-
-          // Butler-Volmer exchange mass flux density
-          const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced
-                              ? kr
-                              : kr * std::pow(emasterphiint, alphaa) *
-                                    std::pow(cmax - eslavephiint, alphaa) *
-                                    std::pow(eslavephiint, alphac));
-
-          // exponential Butler-Volmer terms
-          const double expterm1 = std::exp(alphaa * frt * eta);
-          const double expterm2 = std::exp(-alphac * frt * eta);
-          const double expterm = expterm1 - expterm2;
-
-          // safety check
-          if (abs(expterm) > 1.0e5)
-            dserror(
-                "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-                expterm);
-
-          // core linearization associated with Butler-Volmer mass flux density
-          const double dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
-
-          // loop over matrix columns
-          for (int ui = 0; ui < my::nen_; ++ui)
+          case SCATRA::DifferentiationType::disp:
           {
-            const int fui = ui * 3;
+            // access input parameters associated with current condition
+            const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+            if (numelectrons != 1)
+              dserror(
+                  "Invalid number of electrons involved in charge transfer at "
+                  "electrode-electrolyte interface: %i",
+                  numelectrons);
+            const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
+            if (stoichiometries == nullptr)
+              dserror(
+                  "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
+                  "coupling!");
+            if (stoichiometries->size() != 1)
+              dserror("Number of stoichiometric coefficients does not match number of scalars!");
+            if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+            const double faraday = myelch::elchparams_->Faraday();
+            const double alphaa = my::scatraparamsboundary_->AlphaA();
+            const double alphac = my::scatraparamsboundary_->AlphaC();
+            const double kr = my::scatraparamsboundary_->Kr();
+            if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
 
-            // loop over matrix rows
-            for (int vi = 0; vi < my::nen_; ++vi)
+            // extract saturation value of intercalated lithium concentration from electrode
+            // material
+            const double cmax = matelectrode->CMax();
+            if (cmax < 1.0e-12)
+              dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+
+            // compute factor F/(RT)
+            const double frt = GetFRT();
+
+            // equilibrium electric potential difference at electrode surface
+            const double epd =
+                matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt);
+
+            // skip further computation in case equilibrium electric potential difference is outside
+            // physically meaningful range
+            if (not std::isinf(epd))
             {
-              const int row_conc = vi * 2;
-              const int row_pot = row_conc + 1;
-              const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+              // electrode-electrolyte overpotential at integration point
+              const double eta = eslavepotint - emasterpotint - epd;
 
-              // loop over spatial dimensions
-              for (int dim = 0; dim < 3; ++dim)
+              // Butler-Volmer exchange mass flux density
+              const double j0(kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced
+                                  ? kr
+                                  : kr * std::pow(emasterphiint, alphaa) *
+                                        std::pow(cmax - eslavephiint, alphaa) *
+                                        std::pow(eslavephiint, alphac));
+
+              // exponential Butler-Volmer terms
+              const double expterm1 = std::exp(alphaa * frt * eta);
+              const double expterm2 = std::exp(-alphac * frt * eta);
+              const double expterm = expterm1 - expterm2;
+
+              // safety check
+              if (abs(expterm) > 1.0e5)
+                dserror(
+                    "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
+                    "%lf",
+                    expterm);
+
+              // core linearization associated with Butler-Volmer mass flux density
+              const double dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+
+              // loop over matrix columns
+              for (int ui = 0; ui < my::nen_; ++ui)
               {
-                // compute linearizations w.r.t. slave-side structural displacements
-                eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
-                eslavematrix(row_pot, fui + dim) +=
-                    numelectrons * vi_dj_dd_slave * shapederivatives(dim, ui);
+                const int fui = ui * 3;
+
+                // loop over matrix rows
+                for (int vi = 0; vi < my::nen_; ++vi)
+                {
+                  const int row_conc = vi * 2;
+                  const int row_pot = row_conc + 1;
+                  const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+
+                  // loop over spatial dimensions
+                  for (int dim = 0; dim < 3; ++dim)
+                  {
+                    // compute linearizations w.r.t. slave-side structural displacements
+                    eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                    eslavematrix(row_pot, fui + dim) +=
+                        numelectrons * vi_dj_dd_slave * shapederivatives(dim, ui);
+                  }
+                }
               }
             }
+            break;
+          }
+          default:
+          {
+            dserror("Unknown primary quantity to calculate derivative");
+            break;
           }
         }
 
@@ -548,29 +567,41 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       }
       case INPAR::S2I::kinetics_constantinterfaceresistance:
       {
-        // calculate linearizations
-        const double inv_massfluxresistance =
-            1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
-        const double dj_dd_slave_timefacwgt =
-            timefacwgt * (eslavepotint - emasterpotint) * inv_massfluxresistance;
-
-        // loop over matrix columns
-        for (int ui = 0; ui < my::nen_; ++ui)
+        switch (dtype)
         {
-          const int fui = ui * 3;
-
-          // loop over matrix rows
-          for (int vi = 0; vi < my::nen_; ++vi)
+          case SCATRA::DifferentiationType::disp:
           {
-            const int row_pot = vi * 2 + 1;
-            const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+            // calculate linearizations
+            const double inv_massfluxresistance =
+                1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
+            const double dj_dd_slave_timefacwgt =
+                timefacwgt * (eslavepotint - emasterpotint) * inv_massfluxresistance;
 
-            // loop over spatial dimensions
-            for (int dim = 0; dim < 3; ++dim)
+            // loop over matrix columns
+            for (int ui = 0; ui < my::nen_; ++ui)
             {
-              // finalize linearizations w.r.t. slave-side structural displacements
-              eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+              const int fui = ui * 3;
+
+              // loop over matrix rows
+              for (int vi = 0; vi < my::nen_; ++vi)
+              {
+                const int row_pot = vi * 2 + 1;
+                const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+
+                // loop over spatial dimensions
+                for (int dim = 0; dim < 3; ++dim)
+                {
+                  // finalize linearizations w.r.t. slave-side structural displacements
+                  eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                }
+              }
             }
+            break;
+          }
+          default:
+          {
+            dserror("Unknown primary quantity to calculate derivative");
+            break;
           }
         }
 

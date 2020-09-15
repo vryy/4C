@@ -86,7 +86,7 @@ namespace DRT
               test_master,
           const int kineticmodel, const int numelectrons, const std::vector<int>* stoichiometries,
           const double kr, const double alphaa, const double alphac, const double timefacfac,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms, const int);
 
      private:
       //! private constructor for singletons

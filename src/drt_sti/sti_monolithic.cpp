@@ -311,7 +311,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   scatrathermooffdiagcoupling_ = STI::BuildScatraThermoOffDiagCoupling(
       strategyscatra_->CouplingType(), blockmapthermo_, blockmapthermointerface,
       blockmapthermointerfaceslave, maps_->Map(0), maps_->Map(1), interface_map_scatra,
-      interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
+      interface_map_thermo, false, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
   equilibration_ = LINALG::BuildEquilibration(
