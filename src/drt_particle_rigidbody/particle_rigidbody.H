@@ -16,6 +16,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_rigidbody_interface.H"
 
+#include "../drt_particle_engine/particle_typedefs.H"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -102,6 +104,30 @@ namespace PARTICLERIGIDBODY
      * \param[in] reader discretization reader
      */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+
+    /*!
+     * \brief insert rigid body handler dependent states of all particle types
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[out] particlestatestotypes map of particle types and corresponding states
+     */
+    void InsertParticleStatesOfParticleTypes(
+        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
+            particlestatestotypes) const;
+
+    /*!
+     * \brief set unique global ids for all rigid bodies
+     *
+     * Currently, the rigid body color of each rigid particle defined via the input file in the
+     * particle section defines the affiliation of a rigid particle to a rigid body. First, the
+     * affiliation pair data is initialized. Then, the rigid body unique global identifier handler
+     * is initialized. This requires knowledge of all global ids currently assigned to rigid bodies
+     * over all processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetUniqueGlobalIdsForAllRigidBodies();
 
     /*!
      * \brief distribute rigid body

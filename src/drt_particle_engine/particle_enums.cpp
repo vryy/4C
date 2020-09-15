@@ -25,6 +25,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Density:
     case PARTICLEENGINE::Pressure:
     case PARTICLEENGINE::Temperature:
+    case PARTICLEENGINE::RigidBodyColor:
     case PARTICLEENGINE::DensitySum:
     case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::TemperatureDot:
@@ -93,6 +94,9 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::Temperature:
       name = "temperature";
+      break;
+    case PARTICLEENGINE::RigidBodyColor:
+      name = "rigid body color";
       break;
     case PARTICLEENGINE::TemperatureDot:
       name = "temperature dot";

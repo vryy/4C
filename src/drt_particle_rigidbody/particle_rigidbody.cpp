@@ -14,6 +14,7 @@
 #include "particle_rigidbody_affiliation_pairs.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
+#include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_unique_global_id.H"
 
 #include "../drt_io/io.H"
@@ -97,6 +98,114 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
 
   // read restart of affiliation pair handler
   affiliationpairs_->ReadRestart(reader);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
+    std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
+    const
+{
+  // iterate over particle types
+  for (auto& typeIt : particlestatestotypes)
+  {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // set of particle states for current particle type
+    std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
+
+    if (type == PARTICLEENGINE::RigidPhase)
+    {
+      // insert states of rigid particles
+      particlestates.insert(PARTICLEENGINE::RigidBodyColor);
+    }
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
+{
+  // get reference to affiliation pair data
+  std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+  // maximum global id of rigid bodies on this processor
+  int maxglobalid = -1;
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    // get pointer to particle states
+    const double* rigidbodycolor_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RigidBodyColor, particle_i);
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = std::round(rigidbodycolor_i[0]);
+
+    // insert affiliation pair
+    affiliationpairdata.insert(std::make_pair(globalid_i[0], rigidbody_k));
+
+    // get maximum global id of rigid bodies on this processor
+    maxglobalid = std::max(maxglobalid, rigidbody_k);
+  }
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // get maximum global id of rigid bodies on all processors
+  int allprocmaxglobalid = -1;
+  comm_.MaxAll(&maxglobalid, &allprocmaxglobalid, 1);
+
+  // number of global ids on all processors
+  const int numglobalids = allprocmaxglobalid + 1;
+
+#ifdef DEBUG
+  if (not(rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() < 0))
+    dserror("maximum global id of rigid body unique global identifier handler already touched!");
+#endif
+
+  // request number of global ids of all rigid bodies on processor 0
+  std::vector<int> requesteduniqueglobalids;
+  if (myrank_ == 0) requesteduniqueglobalids.reserve(numglobalids);
+
+  // draw requested number of global ids
+  rigidbodyuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
+
+#ifdef DEBUG
+  if (myrank_ == 0)
+    for (int i = 0; i < numglobalids; ++i)
+      if (requesteduniqueglobalids[i] != i) dserror("drawn requested global ids not consecutive!");
+#endif
+
+  // used global ids on all processors
+  std::vector<int> usedglobalids(numglobalids, 0);
+
+  // get used global ids on this processor
+  for (const auto& it : affiliationpairdata) usedglobalids[it.second] = 1;
+
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // get used global ids on all processors
+  MPI_Allreduce(MPI_IN_PLACE, &usedglobalids[0], numglobalids, MPI_INT, MPI_MAX, mpicomm->Comm());
+
+  // free unused global ids on processor 0
+  if (myrank_ == 0)
+    for (int i = 0; i < numglobalids; ++i)
+      if (usedglobalids[i] == 0)
+        rigidbodyuniqueglobalidhandler_->InsertFreedGlobalId(requesteduniqueglobalids[i]);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()

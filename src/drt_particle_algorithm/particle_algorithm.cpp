@@ -564,6 +564,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
 
   // insert wall handler dependent states of all particle types
   if (particlewall_) particlewall_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
+
+  // insert rigid body handler dependent states of all particle types
+  if (particlerigidbody_)
+    particlerigidbody_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
@@ -583,6 +587,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialRigidBodies()
 {
+  // set unique global ids for all rigid bodies
+  if (not isrestarted_) particlerigidbody_->SetUniqueGlobalIdsForAllRigidBodies();
+
   // distribute rigid body
   particlerigidbody_->DistributeRigidBody();
 }
