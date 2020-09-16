@@ -51,14 +51,14 @@ template <ShapeFunctionType sft>
 void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
-  DRT::ELEMENTS::Transport* Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  auto Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
   if (Transport != NULL)
   {
     Transport->SetDisType(oldele->Shape());
     Transport->SetMaterial(matid);
     if (sft == ShapeFunctionType::shapefunction_hdg)
     {
-      DRT::ELEMENTS::ScaTraHDG* scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);
+      auto scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);
       scatraele->SetImplType(INPAR::SCATRA::impltype_std_hdg);
       scatraele->SetDegree(oldele->Degree());
       scatraele->SetCompletePolynomialSpace(false);

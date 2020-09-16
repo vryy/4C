@@ -1376,8 +1376,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
 
   unsigned int newindex = shapesface_->nfdofs_ * (nsd_ - 1) * face;
 
-  const MAT::ElectromagneticMat* actmat = static_cast<const MAT::ElectromagneticMat*>(mat.get());
-  double impedance = sqrt(actmat->epsilon(ele->Id()) / actmat->mu(ele->Id()));
+  auto actmat = static_cast<const MAT::ElectromagneticMat*>(mat.get());
+  double impedance = std::sqrt(actmat->epsilon(ele->Id()) / actmat->mu(ele->Id()));
 
   bool do_rhs = params.get<bool>("do_rhs");
   if (do_rhs)
