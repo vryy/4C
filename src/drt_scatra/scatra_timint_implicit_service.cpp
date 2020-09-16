@@ -1992,9 +1992,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAt
 
   // Probably not the nicest way...
   // Might want to have L2_projection incorporated into two-phase surface tension parameters
-  // const Teuchos::ParameterList& scatradyn = problem_->ScalarTransportDynamicParams();
-  // const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
-  const int lstsolver = ScatraParameterList()->get<int>("L2_PROJ_LINEAR_SOLVER");
+  const Teuchos::ParameterList& scatradyn = problem_->ScalarTransportDynamicParams();
+  const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
 
   const int dim = problem_->NDim();
 

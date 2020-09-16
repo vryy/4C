@@ -87,9 +87,9 @@ void ELEMAG::ElemagTimeInt::Init()
   permeability = Teuchos::rcp(new Epetra_Vector(*discret_->ElementRowMap()));
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector((*dofrowmap), true);
+  zeros_ = LINALG::CreateVector(*dofrowmap, true);
 
-  trace_ = LINALG::CreateVector((*dofrowmap), true);
+  trace_ = LINALG::CreateVector(*dofrowmap, true);
 
   // Map of the dirichlet conditions
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -110,13 +110,13 @@ void ELEMAG::ElemagTimeInt::Init()
 
   // create system matrix and set to zero
   // the 108 comes from line 282 of /drt_fluid/fluidimplicitintegration.cpp
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix((*dofrowmap), 108, false, true));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
   // Is it possible to avoid this passage? It is a sparse matrix so it should
   // only contain non-zero entries that have to be initialized
   sysmat_->Zero();
 
   // create residual vector
-  residual_ = LINALG::CreateVector((*dofrowmap), true);
+  residual_ = LINALG::CreateVector(*dofrowmap, true);
 
   // instantiate equilibration class
   equilibration_ = Teuchos::rcp(new LINALG::EquilibrationSparse(equilibration_method_, dofrowmap));
@@ -770,7 +770,6 @@ void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool do_rhs)
     else
       discret_->EvaluateCondition(
           eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-    // eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
   }
 
   return;

@@ -8,13 +8,11 @@ Test for Elemag initialization via ScatraHDG
 //NODES       216
 DIM           3
 --------------------------------------------------------PROBLEM TYP
-
 PROBLEMTYP                      Electromagnetics
 RESTART                         0
 RESTARTTIME                     -1
 SHAPEFCT                        HDG
 RANDSEED                        -1
-
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         10
@@ -30,20 +28,16 @@ INITIALFIELD                    field_by_steady_state
 CALCERR                         yes
 ERRORFUNCNO                     1
 POSTPROCESS                     no
-
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZTOL                           1e-8
 AZREUSE                         10
 ----------------------------------------------------------MATERIALS
-
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 50 PERMITTIVITY 0 PERMEABILITY 1
 MAT 1 MAT_scatra DIFFUSIVITY 50
-
 ----------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD elemag SRC_MAT 0 TAR_FIELD scatra TAR_MAT 1
-
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION -sin(pi*x)*cos(pi*y)*cos(pi*z)*cos(pi*t)
 COMPONENT 1 FUNCTION -cos(pi*x)*sin(pi*y)*cos(pi*z)*cos(pi*t)
@@ -60,10 +54,9 @@ NDPOINT 0
 NDLINE  0
 NDSURF  6
 NDVOL   0
-
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.27916736148896759e-01 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.11915361446640851e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.27916736275605070e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.11915361717993930e-02 TOLERANCE 1e-6
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // front_face
@@ -515,7 +508,6 @@ NODE       213 COORD  5.0000000000000000e-01 -1.0000000000000000e-01  5.00000000
 NODE       214 COORD  5.0000000000000000e-01  1.0000000000000000e-01  5.0000000000000000e-01
 NODE       215 COORD  5.0000000000000000e-01  3.0000000000000000e-01  5.0000000000000000e-01
 NODE       216 COORD  5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
-
 ---------------------------------------------------ELECTROMAGNETIC ELEMENTS
    1 ELECTROMAGNETICDIFF HEX8  1 2 3 4 5 6 7 8    MAT 0 DEG 1 SPC 0
    2 ELECTROMAGNETICDIFF HEX8  2 9 10 3 6 11 12 7    MAT 0 DEG 1 SPC 0

@@ -93,7 +93,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::project_electric_from_scatra_field:
     {
       ElementInit(hdgele, params);
-      localSolver_->ProjectElectricField(hdgele, params, mat, elevec1);
+      localSolver_->ProjectElectricFieldFromScatra(hdgele, params, mat, elevec1);
       break;
     }
     case ELEMAG::compute_error:
@@ -593,10 +593,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
 }
 
 /*----------------------------------------------------------------------*
- * ProjectElectricField
+ * ProjectElectricFieldFromScatra
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField(
+int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricFieldFromScatra(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     const Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec)
 {
@@ -612,19 +612,16 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
       dserror("Scatra ndofs does not match elemag ndofs. This is not yet implemented.");
 
     // This is necessary as the scatra code computes the gradient of the scalar field multiplied by
-    // the inverse of the conductivity. Therefore to obtain the actual value of the elctric field it
-    // is necessary to rescale it by the value of conductivity.
+    // the inverse of the conductivity. Therefore to obtain the actual value of the electric field
+    // it is necessary to rescale it by the value of conductivity.
     const MAT::ElectromagneticMat* elemagmat =
         static_cast<const MAT::ElectromagneticMat*>(mat.get());
     const double sigma = elemagmat->sigma(ele->Id());
-    // const double dt = params.get<double>("dt");
 
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
         ele->eleinteriorElectric_(i + d * shapes_.ndofs_) =
             -(*nodevals_phi)(i + (d + 1) * shapes_.ndofs_) / sigma;
-    // In case the dt for the stationary ScatraHDG class is modified and the value is not 1 anymore,
-    // it will be necessary to divide ele->eleinteriorElectric_ by dt
 
     return 0;
   }

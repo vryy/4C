@@ -26,7 +26,6 @@
 #include "../drt_io/io_control.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-//#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 // Clone discreization
 #include "../drt_lib/drt_utils_createdis.H"
@@ -37,49 +36,6 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_stat_hdg.H"
-
-void redistributescatradis(
-    Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> elemagdis)
-{
-  const Teuchos::ParameterList& elemagparams = DRT::Problem::Instance()->ElectromagneticParams();
-  bool meshconform = DRT::INPUT::IntegralValue<bool>(elemagparams, "MESHCONFORM");
-  if (meshconform == false) dserror("at the moment only implemented for conforming meshes.");
-
-  // redistribute scatra discretization, since it usually has way less dofs than acou and does not
-  // need as many processors
-  // if(DRT::INPUT::IntegralValue<bool>(elemagparams,"REDISTRIBUTESCATRA"))
-  {
-    std::vector<int> rownodeids;
-    std::vector<int> colnodeids;
-
-    int minelemagnodegid = elemagdis->NodeRowMap()->MinAllGID();
-    int minscanodegid = scatradis->NodeRowMap()->MinAllGID();
-
-    for (int i = minscanodegid; i < minscanodegid + scatradis->NumGlobalNodes(); ++i)
-    {
-      // check who owns the eelctromagnetic node
-      int lidrownode = elemagdis->NodeRowMap()->LID(i - minscanodegid + minelemagnodegid);
-      int lidcolnode = elemagdis->NodeColMap()->LID(i - minscanodegid + minelemagnodegid);
-
-      if (lidrownode >= 0) rownodeids.push_back(i);
-      if (lidcolnode >= 0) colnodeids.push_back(i);
-    }
-
-    // create new maps
-    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(
-        scatradis->NumGlobalNodes(), rownodeids.size(), &rownodeids[0], 0, elemagdis->Comm()));
-    Teuchos::RCP<Epetra_Map> newnodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodeids.size(), &colnodeids[0], 0, elemagdis->Comm()));
-
-    // redistribute
-    scatradis->Redistribute(*newnoderowmap, *newnodecolmap, true, true, true, true, true);
-    std::cout << "warning: this function is not tested for empty processors or processors which "
-                 "accidently only get one or two elements, test it and implement something better"
-              << std::endl;
-  }
-
-  return;
-}
 
 void electromagnetics_drt()
 {
@@ -252,12 +208,6 @@ void electromagnetics_drt()
 
         Teuchos::RCP<IO::DiscretizationWriter> output_scatra = scatradis->Writer();
 
-        if (0)
-        {
-          redistributescatradis(scatradis, elemagdishdg);
-          scatradis->FillComplete();
-        }
-
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
         // DRT::UTILS::DbcHDG::DoDirichletCondition.
@@ -289,9 +239,6 @@ void electromagnetics_drt()
             scatradis->FillComplete(true, true, true);
 
             // create scatra output
-            // Teuchos::RCP<IO::DiscretizationWriter> scatraoutput = scatradis->Writer();
-            // output_scatra->NewResultFile("scatra_file");
-            // output->WriteMesh(0, 0.0);
             // access the problem-specific parameter list
             Teuchos::RCP<Teuchos::ParameterList> scatraparams =
                 Teuchos::rcp(new Teuchos::ParameterList(
@@ -306,17 +253,12 @@ void electromagnetics_drt()
             scatraparams->set("RESTARTEVRY", 1000);
             // This has to be changed accordingly to the intial time
             // As of now elemag simulation can only start at 0.
-            scatraparams->set<double>("MAXTIME", 0 + elemagparams.get<double>("TIMESTEP"));
-            scatraparams->set("TIMESTEP", elemagparams.get<double>("TIMESTEP"));
-            // scatraparams->set("CALCERROR", "error_by_function");
-            // scatraparams->set("CALCERRORNO", elemagparams.get<int>("ERRORFUNCNO"));
 
             // The solver type still has to be fixed as the problem is linear but the steady state
             // does not always behave correctly with linear solvers.
             scatraparams->set("SOLVERTYPE", "nonlinear");
 
             // create necessary extra parameter list for scatra
-            //{
             Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
             scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
             scatraextraparams->set<FILE*>(
@@ -328,7 +270,6 @@ void electromagnetics_drt()
             scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES") =
                 fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
             scatraextraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
-            //}
 
             scatraextraparams->set("ELECTROMAGNETICDIFFUSION", true);
             scatraextraparams->set("EMDSOURCE", elemagparams.get<int>("SOURCEFUNCNO"));
@@ -422,10 +363,6 @@ void electromagnetics_drt()
   elemagalgo->PrintInformationToScreen();
 
   elemagalgo->Integrate();
-
-  // PrintMatrixInMatlabFormat("matrix_matlab");
-  // LINALG::PrintMatrixInMatlabFormat("hdg_elemag", elemagalgo->SystemMatrix());
-  // elemagalgo->SpySysmat("matrix.mat");
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))

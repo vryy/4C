@@ -73,8 +73,6 @@ namespace ELEMAG
 
       /// check for correct material
       void CheckMaterialType(const int matid);
-
-     private:
     };  // class ScatraCloneStrategy
   }     // namespace UTILS
 }  // namespace ELEMAG
