@@ -34,6 +34,23 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
   return;
 }
 
+void STR::TimIntPrestress::Setup()
+{
+  STR::TimIntStatics::Setup();
+  // Check for compatible prestressing algorithms
+  switch (::UTILS::PRESTRESS::GetType())
+  {
+    case INPAR::STR::PreStress::mulf:
+    case INPAR::STR::PreStress::id:
+      // both are implemented
+      break;
+    default:
+      dserror(
+          "Your prestressing algorithm is not implemented in the old structural time integration "
+          "framework. Possibly you have to use the new structural time integration framework.");
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
@@ -42,10 +59,10 @@ void STR::TimIntPrestress::UpdateStepElement()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
-  // MULF
+  // MULF, Material iterative prestressing
   if (::UTILS::PRESTRESS::IsMulf())
   {
-    if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
+    if (::UTILS::PRESTRESS::IsActive((*time_)[0]))
     {
       if (!discret_->Comm().MyPID()) IO::cout << "====== Entering MULF update" << IO::endl;
       // action for elements
@@ -104,8 +121,8 @@ void STR::TimIntPrestress::UpdateStepElement()
 
   if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
   {
-    // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient in
-    // material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
+    // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient
+    // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
     if (springman_->HaveSpringDashpot())
     {
       springman_->ResetPrestress(disn_);
@@ -116,5 +133,4 @@ void STR::TimIntPrestress::UpdateStepElement()
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
   }
 }
-
 /*----------------------------------------------------------------------*/

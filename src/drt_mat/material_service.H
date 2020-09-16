@@ -20,6 +20,10 @@
 /// MAT: materials
 namespace MAT
 {
+  namespace PAR
+  {
+    class Material;
+  }
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
    *
@@ -339,10 +343,9 @@ namespace MAT
    *
    * In tensor index notation this does:
    * \f[out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} ) \f]
-   * Note that the result is symmetric within the first two indices. Thus the first two indices are
-   * stored in stress-like Voigt notation. The 2nd index pair has no symmetries and is therefore
-   * stored as 9-vector.
-   * Be aware that this is NOT symmetric w.r.t. A and B !
+   * Note that the result is symmetric within the first two indices. Thus the first two indices
+   * are stored in stress-like Voigt notation. The 2nd index pair has no symmetries and is
+   * therefore stored as 9-vector. Be aware that this is NOT symmetric w.r.t. A and B !
    *
    * \param out[in,out] 4th order tensor \f[out_{ABCD}\f]
    * \param A[in]       2nd order tensor \f[A_{EF}\f]
@@ -379,9 +382,8 @@ namespace MAT
    * In tensor index notation this does:
    * \f[ out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} ) \f]
    * Note that the result is symmetric within the second two indices. Thus the second two indices
-   * are stored in stress-like Voigt notation. The 1st index pair has no symmetries and is therefore
-   * stored as 9-vector.
-   * Be aware that this is NOT symmetric w.r.t. A and B !
+   * are stored in stress-like Voigt notation. The 1st index pair has no symmetries and is
+   * therefore stored as 9-vector. Be aware that this is NOT symmetric w.r.t. A and B !
    *
    * \param out[in,out] 4th order tensor \f[out_{ABCD}\f]
    * \param A[in]       2nd order tensor \f[A_{EF}\f]
@@ -471,6 +473,9 @@ namespace MAT
     // 3rd invariant, determinant tens
     prinv(2) = tens.Determinant();
   }
+
+  template <class T>
+  T* CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
 
 }  // namespace MAT
 

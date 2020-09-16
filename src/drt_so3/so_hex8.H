@@ -299,6 +299,8 @@ namespace DRT
 
       //@}
 
+      void MaterialPostSetup(Teuchos::ParameterList& params) override;
+
       //! @name Input and Creation
 
       /*!
@@ -629,6 +631,14 @@ namespace DRT
       const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
       const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
+
+      /*!
+       * \brief Evaluate the first derivatives of the shape functions at the Gauss point gp
+       *
+       * \param derivs first derivatives of the shape functions
+       * \param gp Gauss point
+       */
+      void soh8_derivs(LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
       //! Evaluate Hex8 Weights to keep them static
       const std::vector<double> soh8_weights() const;
 
@@ -656,6 +666,17 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
+      /*!
+       * \brief Computes the deformation gradient at a Gauss point
+       *
+       * \param defgrd [out] : Deformation gradient
+       * \param xdisp  [in] : Nodal displacements of the element
+       * \param xcurr  [in] : Current nodal coordinates of the element
+       * \param gp  [in] : Id of the Gauss point
+       */
+      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xdisp,
+          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr, int gp);
 
       /*! \brief Calculate the deformation gradient that is consistent
        *         with modified (e.g. EAS) GL strain tensor.

@@ -171,6 +171,13 @@ namespace STR
         return prestresstime_;
       }
 
+      /// Returns the tolerance for the displacements during prestressing
+      double GetPreStressDisplacementTolerance() const
+      {
+        CheckInitSetup();
+        return prestressDisplacementTolerance_;
+      }
+
       /// Returns prestress type
       const enum INPAR::STR::PreStress& GetPreStressType() const
       {
@@ -456,6 +463,12 @@ namespace STR
         return prestresstime_;
       }
 
+      double& GetPreStressDisplacementTolerance()
+      {
+        CheckInitSetup();
+        return prestressDisplacementTolerance_;
+      }
+
       /// Returns prestress type
       enum INPAR::STR::PreStress& GetMutablePreStressType()
       {
@@ -723,6 +736,9 @@ namespace STR
 
       /// Time until the prestressing algorithm should be applied
       double prestresstime_;
+
+      /// Tolerance for the residual displacements during prestressing
+      double prestressDisplacementTolerance_;
 
       /// type of pre-stressing
       enum INPAR::STR::PreStress prestresstype_;

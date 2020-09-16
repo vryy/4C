@@ -37,7 +37,7 @@ namespace UTILS
      *
      * \return double
      */
-    static inline double GetTime()
+    static inline double GetPrestressTime()
     {
       static double pstime =
           DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
@@ -55,6 +55,18 @@ namespace UTILS
     static inline bool IsMulf() { return GetType() == INPAR::STR::PreStress::mulf; }
 
     /*!
+     * \brief Returns whether material iterative prestressing is set in the parameters of structural
+     * dynamics. This method does not ensure that prestressing is actually active
+     *
+     * \return true material iterative prestressing is set in input file
+     * \return false material iterative prestressing is not set in input file
+     */
+    static inline bool IsMaterialIterative()
+    {
+      return GetType() == INPAR::STR::PreStress::material_iterative;
+    }
+
+    /*!
      * \brief Returns whether MULF is set for prestressing as the given prestress type.
      * This method does not ensure that MULF is actually active
      *
@@ -65,6 +77,19 @@ namespace UTILS
     static inline bool IsMulf(INPAR::STR::PreStress pstype)
     {
       return pstype == INPAR::STR::PreStress::mulf;
+    }
+
+    /*!
+     * \brief Returns whether material iterative prestressing is set as the given prestress type.
+     * This method does not ensure that prestressing is actually active
+     *
+     * \param pstype Prestress type that is used
+     * \return true material iterative prestressing is set in input file
+     * \return false material iterative prestressing is not set in input file
+     */
+    static inline bool IsMaterialIterative(INPAR::STR::PreStress pstype)
+    {
+      return pstype == INPAR::STR::PreStress::material_iterative;
     }
 
     /*!
@@ -143,7 +168,7 @@ namespace UTILS
      */
     static inline bool IsActive(const double currentTime)
     {
-      return IsAny() && currentTime <= GetTime() + 1.0e-15;
+      return IsAny() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -171,7 +196,20 @@ namespace UTILS
      */
     static inline bool IsMulfActive(const double currentTime)
     {
-      return IsMulf() && currentTime <= GetTime() + 1.0e-15;
+      return IsMulf() && currentTime <= GetPrestressTime() + 1.0e-15;
+    }
+
+    /*!
+     * \brief Returns true if material iterative prestressing method is currently active with the
+     * parameters of strtuctural dynamics.
+     *
+     * \param currentTimeCurrent time of the simulation
+     * \return true Material iterative prestressing method is active
+     * \return false Material iterative prestressing method is active
+     */
+    static inline bool IsMaterialIterativeActive(const double currentTime)
+    {
+      return IsMaterialIterative() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -200,7 +238,7 @@ namespace UTILS
      */
     static inline bool IsInverseDesignActive(const double currentTime)
     {
-      return IsInverseDesign() && currentTime <= GetTime() + 1.0e-15;
+      return IsInverseDesign() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!

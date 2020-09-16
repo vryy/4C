@@ -54,6 +54,12 @@ namespace MIXTURE
       /// deposition stretch of new fibers
       const double deposition_stretch_;
 
+      /// Id of the scaling function of the deposition stretch
+      const int deposition_stretch_funct_;
+
+      /// Flag whether growth is enabled
+      const bool growth_enabled_;
+
       // @}
     };
   }  // namespace PAR
@@ -320,6 +326,15 @@ namespace MIXTURE
      */
     void EvaluatedsigdCe(
         const LINALG::Matrix<3, 3>& Ce, LINALG::Matrix<3, 3>& dsigdCe, int gp, int eleGID) const;
+
+
+    /*!
+     * \brief Evaluation of the current deposition stretch
+     *
+     * \param current_time Current time
+     * \return double
+     */
+    double EvaluateCurrentDepositionStretch(double current_time) const;
 
     /*!
      * \brief Computes the homeostatic stress and stores it as the internal state

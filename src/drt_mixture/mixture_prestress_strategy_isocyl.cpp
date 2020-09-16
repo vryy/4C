@@ -15,6 +15,7 @@
 #include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_mat/anisotropy.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_mat/anisotropy_coordinate_system_provider.H"
 #include "mixture_rule.H"
 
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
@@ -41,8 +42,9 @@ MIXTURE::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
 }
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
-    const MAT::CylinderCoordinateSystemProvider& cosy, MIXTURE::MixtureConstituent& constituent,
-    LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
+    Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // We evaluate the stress in the reference configuration with a prestretch. Hence, the
   // deformation gradient is the identity matrix and the inverse inelastic deformation gradient ist
@@ -81,13 +83,23 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
         "requirement from the prestressing technique.");
   }
 
+  Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
+      cosy->GetCylinderCoordinateSystem();
+
+  if (Teuchos::is_null(cylinderCosy))
+  {
+    dserror(
+        "No cylinder coordinate system is defined but required by the cylinder prestress "
+        "strategy!");
+  }
+
   LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
   gprefecoord = params.get<LINALG::Matrix<1, 3>>("gprefecoord");
 
   double r = 0;
   for (unsigned i = 0; i < 3; ++i)
   {
-    r += cosy.GetRad()(i) * gprefecoord(i);
+    r += cylinderCosy->GetRad()(i) * gprefecoord(i);
   }
 
   double Res = 1.0;
@@ -139,16 +151,27 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
   }
 
   // Build prestretch tensor
-  G.MultiplyNT(lamb_pre, cosy.GetRad(), cosy.GetRad(), 0.0);
-  G.MultiplyNT(params_->axial_prestretch_, cosy.GetAxi(), cosy.GetAxi(), 1.0);
-  G.MultiplyNT(params_->circumferential_prestretch_, cosy.GetCir(), cosy.GetCir(), 1.0);
+  G.MultiplyNT(lamb_pre, cylinderCosy->GetRad(), cylinderCosy->GetRad(), 0.0);
+  G.MultiplyNT(params_->axial_prestretch_, cylinderCosy->GetAxi(), cylinderCosy->GetAxi(), 1.0);
+  G.MultiplyNT(
+      params_->circumferential_prestretch_, cylinderCosy->GetCir(), cylinderCosy->GetCir(), 1.0);
 }
 
 double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule& mixtureRule,
-    const MAT::CylinderCoordinateSystemProvider& cosy, MIXTURE::MixtureConstituent& constituent,
-    ElastinMembraneEvaluation& membraneEvaluation, Teuchos::ParameterList& params, int gp,
-    int eleGID) const
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
+    Teuchos::ParameterList& params, int gp, int eleGID) const
 {
+  Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
+      cosy->GetCylinderCoordinateSystem();
+
+  if (Teuchos::is_null(cylinderCosy))
+  {
+    dserror(
+        "No cylinder coordinate system is defined but required by the cylinder prestress "
+        "strategy!");
+  }
+
   LINALG::Matrix<3, 3> F(false);
   LINALG::Matrix<6, 1> E_strain(true);
   LINALG::Matrix<6, 1> S_stress(true);
@@ -160,10 +183,10 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
 
   LINALG::Matrix<6, 1> Acir(false);
   // Compute structural tensor
-  for (int i = 0; i < 3; ++i) Acir(i) = cosy.GetCir()(i) * cosy.GetCir()(i);
-  Acir(3) = 2.0 * cosy.GetCir()(0) * cosy.GetCir()(1);
-  Acir(4) = 2.0 * cosy.GetCir()(1) * cosy.GetCir()(2);
-  Acir(5) = 2.0 * cosy.GetCir()(0) * cosy.GetCir()(2);
+  for (int i = 0; i < 3; ++i) Acir(i) = cylinderCosy->GetCir()(i) * cylinderCosy->GetCir()(i);
+  Acir(3) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(1);
+  Acir(4) = 2.0 * cylinderCosy->GetCir()(1) * cylinderCosy->GetCir()(2);
+  Acir(5) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(2);
 
   LINALG::Matrix<6, 1> Smembrane(false);
   membraneEvaluation.EvaluateMembraneStress(Smembrane, params, gp, eleGID);
@@ -176,4 +199,14 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
                          params_->wall_thickness_;  // stress that we need in circular direction
 
   return (target_stress - (total_stress - membrane_stress)) / membrane_stress;
+}
+
+void MIXTURE::IsotropicCylinderPrestressStrategy::UpdatePrestress(
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+    MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
+    LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+{
+  dserror(
+      "The prestretching strategy that you have chosen does not need iterative prestretching. It "
+      "ensures equilibrium during setup.");
 }

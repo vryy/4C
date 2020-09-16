@@ -69,7 +69,7 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
 
   // prestress stuff
   pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
-  if (::UTILS::PRESTRESS::IsMulf(pstype_)) pstime_ = ::UTILS::PRESTRESS::GetTime();
+  if (::UTILS::PRESTRESS::IsMulf(pstype_)) pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
   if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     dserror("id is not implemented yet for the adjoint formulation");

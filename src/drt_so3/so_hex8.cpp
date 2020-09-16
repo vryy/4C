@@ -28,6 +28,10 @@
 #include "inversedesign.H"
 #include "prestress.H"
 
+#include "../drt_fiber/drt_fiber_node.H"
+#include "so_utils.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
+
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
 
@@ -131,7 +135,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
     pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetTime();
+    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
@@ -550,4 +554,43 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
   if (DRT::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOH8, this->Id());
+}
+
+// Compute nodal fibers and call post setup routine of the materials
+void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
+{
+  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(Nodes()[0]);
+  if (fnode != nullptr)
+  {
+    // This element has fiber nodes.
+    // Interpolate fibers to the Gauss points and pass themd to the material
+
+    // Get shape functions
+    const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
+
+    // initialize fiber vectors
+    std::vector<LINALG::Matrix<NUMDIM_SOH8, 1>> gpfiber1(
+        NUMNOD_SOH8, LINALG::Matrix<NUMDIM_SOH8, 1>(true));
+    std::vector<LINALG::Matrix<NUMDIM_SOH8, 1>> gpfiber2(
+        NUMNOD_SOH8, LINALG::Matrix<NUMDIM_SOH8, 1>(true));
+
+    // interpolate fibers
+    DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::hex8>(Nodes(), shapefcts, gpfiber1, gpfiber2);
+
+    // add fibers to the ParameterList
+    // ParameterList does not allow to store a std::vector, so we have to add every gp fiber
+    // with a separate key. To keep it clean, It is added to a sublist.
+    DRT::FIBER::NodalFiberHolder fiberHolder;
+    fiberHolder.SetFiber(DRT::FIBER::FiberType::Fiber1, gpfiber1);
+    fiberHolder.SetFiber(DRT::FIBER::FiberType::Fiber2, gpfiber2);
+
+    params.set("fiberholder", fiberHolder);
+  }
+
+  // Call super post setup
+  So_base::MaterialPostSetup(params);
+
+  // Cleanup ParameterList to not carry all fibers the whole simulation
+  // do not throw an error if key does not exist.
+  params.remove("fiberholder", false);
 }

@@ -191,7 +191,7 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
   if (params != Teuchos::null)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetTime();
+    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));

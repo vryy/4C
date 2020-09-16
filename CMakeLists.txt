@@ -2602,13 +2602,15 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent.cpp
   src/drt_mixture/mixture_constituent_elasthyperbase.cpp
   src/drt_mixture/mixture_constituent_elasthyper.cpp
-  src/drt_mixture/mixture_constituent_elasthyper_elastin.cpp
+  src/drt_mixture/mixture_constituent_elasthyper_damage.cpp
+  src/drt_mixture/mixture_constituent_elasthyper_elastin_membrane.cpp
   src/drt_mixture/mixture_constituent_remodelfiber.cpp
   src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
   src/drt_mixture/mixture_rule.cpp
   src/drt_mixture/mixture_rule_growthremodel.cpp
   src/drt_mixture/mixture_prestress_strategy.cpp
-  src/drt_mixture/mixture_prestress_strategy_isocyl.cpp)
+  src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
+  src/drt_mixture/mixture_prestress_strategy_iterative.cpp)
 
 
 ###------------------------------------------------------------------ Element flags

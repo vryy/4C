@@ -355,29 +355,65 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      // build incremental def gradient for every gauss point
-      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET10, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
-
-      // update deformation gradient and put back to storage
-      LINALG::Matrix<3, 3> deltaF;
-      LINALG::Matrix<3, 3> Fhist;
-      LINALG::Matrix<3, 3> Fnew;
-      for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
+      switch (pstype_)
       {
-        prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
-        prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-        Fnew.Multiply(deltaF, Fhist);
-        prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
-      }
+        case INPAR::STR::PreStress::material_iterative:
+        {
+          // get current displacements
+          LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
+          LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
+          LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
+          UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
+          UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(mydisp, xdisp);
+          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
-      // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+          for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
+          {
+            // Compute deformation gradient
+            LINALG::Matrix<3, 3> defgrd(false);
+            LINALG::Matrix<3, 10> derivs(false);
+            so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs, gp);
 
-      // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        SolidMaterial()->Update();
+
+            UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
+                defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
+
+            SolidMaterial()->UpdatePrestress(defgrd, gp, params, Id());
+          }
+          break;
+        }
+        case INPAR::STR::PreStress::mulf:
+        {
+          // build incremental def gradient for every gauss point
+          LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET10, 9);
+          DefGradient(mydisp, gpdefgrd, *prestress_);
+
+          // update deformation gradient and put back to storage
+          LINALG::Matrix<3, 3> deltaF;
+          LINALG::Matrix<3, 3> Fhist;
+          LINALG::Matrix<3, 3> Fnew;
+          for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
+          {
+            prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
+            prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+            Fnew.Multiply(deltaF, Fhist);
+            prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
+          }
+
+          // push-forward invJ for every gaussian point
+          UpdateJacobianMapping(mydisp, *prestress_);
+
+          // Update constraintmixture material
+          if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+          {
+            SolidMaterial()->Update();
+          }
+          break;
+        }
+        default:
+          dserror(
+              "You should either not be here, or the prestressing method you are using is not "
+              "implemented for TET10 elements!");
       }
     }
     break;
@@ -434,25 +470,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
       LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
       LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-      DRT::Node** nodes = Nodes();
-      for (int i = 0; i < NUMNOD_SOTET10; ++i)
-      {
-        const double* x = nodes[i]->X();
-        xrefe(i, 0) = x[0];
-        xrefe(i, 1) = x[1];
-        xrefe(i, 2) = x[2];
+      UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(mydisp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
-        xcurr(i, 0) = xrefe(i, 0) + mydisp[i * NODDOF_SOTET10 + 0];
-        xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOTET10 + 1];
-        xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOTET10 + 2];
-
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
-        {
-          xdisp(i, 0) = mydisp[i * NODDOF_SOTET10 + 0];
-          xdisp(i, 1) = mydisp[i * NODDOF_SOTET10 + 1];
-          xdisp(i, 2) = mydisp[i * NODDOF_SOTET10 + 2];
-        }
-      }
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
       /* =========================================================================*/
@@ -586,14 +607,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         for (int i = 0; i < NUMDOF_SOTET10; ++i) nodaldisp(i, 0) = mydisp[i];
 
         // reference geometry (nodal positions)
-        LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;
-        DRT::Node** nodes = Nodes();
-        for (int i = 0; i < NUMNOD_SOTET10; ++i)
-        {
-          xrefe(i, 0) = nodes[i]->X()[0];
-          xrefe(i, 1) = nodes[i]->X()[1];
-          xrefe(i, 2) = nodes[i]->X()[2];
-        }
+        LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
+        UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
 
         // deformation gradient = identity tensor (geometrically linear case!)
         LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> defgrd(false);
@@ -898,14 +913,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    const double* x = nodes[i]->X();
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-  }
+  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
 
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -969,13 +977,9 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs11gp =
       so_tet10_11gp_derivs();
 
-  LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
-  }
+  LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
+  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
+
   // Initialize for stiffness integration with 4 GPs
   invJ_.resize(NUMGPT_SOTET10);
   detJ_.resize(NUMGPT_SOTET10);
@@ -1045,25 +1049,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  DRT::Node** nodes = Nodes();
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    const double* x = nodes[i]->X();
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-
-    xcurr(i, 0) = xrefe(i, 0) + disp[i * NODDOF_SOTET10 + 0];
-    xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOTET10 + 1];
-    xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOTET10 + 2];
-
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
-    {
-      xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
-      xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
-      xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
-    }
-  }
+  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1571,19 +1559,26 @@ DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_SOTET10; gp++)
   {
-    const double r = intpoints.qxg[gp][0];
-    const double s = intpoints.qxg[gp][1];
-    const double t = intpoints.qxg[gp][2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs[gp], r, s, t, DRT::Element::tet10);
+    so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs[gp], gp);
   }
   derivs_done = true;
 
   return derivs;
+}
+
+template <DRT::UTILS::GaussRule3D intrule>
+void DRT::ELEMENTS::So_tet10::so_tet10_derivs(
+    LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, const int gp) const
+{
+  const DRT::UTILS::IntegrationPoints3D intpoints(intrule);
+
+  const double r = intpoints.qxg[gp][0];
+  const double s = intpoints.qxg[gp][1];
+  const double t = intpoints.qxg[gp][2];
+
+  DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, DRT::Element::tet10);
 }
 
 /*----------------------------------------------------------------------*
@@ -1639,15 +1634,9 @@ DRT::ELEMENTS::So_tet10::so_tet10_11gp_derivs()
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_MASS_SOTET10; gp++)
   {
-    const double r = intpoints.qxg[gp][0];
-    const double s = intpoints.qxg[gp][1];
-    const double t = intpoints.qxg[gp][2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs[gp], r, s, t, DRT::Element::tet10);
+    so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_11point>(derivs[gp], gp);
   }
   derivs_done = true;
 
@@ -1696,14 +1685,9 @@ void DRT::ELEMENTS::So_tet10::DefGradient(const std::vector<double>& disp,
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
       so_tet10_4gp_derivs();
 
+  LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
+  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;  // current  coord. of element
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
-    xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
-    xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
-  }
 
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
   {
@@ -1739,12 +1723,7 @@ void DRT::ELEMENTS::So_tet10::UpdateJacobianMapping(
 
   // get incremental disp
   LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
-    xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
-    xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
-  }
+  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
 
   LINALG::Matrix<3, 3> invJhist;
   LINALG::Matrix<3, 3> invJ;
@@ -1789,34 +1768,17 @@ void DRT::ELEMENTS::So_tet10::Update_element(
         so_tet10_4gp_derivs();
 
     // update element geometry
-    LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // current  coord. of element
+
+    LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
     LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
     LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-    DRT::Node** nodes = Nodes();
-    for (int i = 0; i < NUMNOD_SOTET10; ++i)
-    {
-      const double* x = nodes[i]->X();
-      xrefe(i, 0) = x[0];
-      xrefe(i, 1) = x[1];
-      xrefe(i, 2) = x[2];
-      xcurr(i, 0) = x[0] + disp[i * NODDOF_SOTET10 + 0];
-      xcurr(i, 1) = x[1] + disp[i * NODDOF_SOTET10 + 1];
-      xcurr(i, 2) = x[2] + disp[i * NODDOF_SOTET10 + 2];
+    UTILS::EvaluateNodalCoordinates<DRT::Element::tet10>(Nodes(), xrefe);
+    UTILS::EvaluateNodalDisplacements<DRT::Element::tet10>(disp, xdisp);
+    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10>(xrefe, xdisp, xcurr);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
-        xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
-        xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
-      }
-    }
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
     /* =========================================================================*/
-    LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> N_XYZ;
-    // interpolated values of stress and defgrd for remodeling
-    LINALG::Matrix<3, 3> avg_stress(true);
-    LINALG::Matrix<3, 3> avg_defgrd(true);
 
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> defgrd(false);
@@ -1826,43 +1788,11 @@ void DRT::ELEMENTS::So_tet10::Update_element(
       LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
       point.MultiplyTN(so_tet10_4gp_shapefcts()[gp], xrefe);
       params.set("gprefecoord", point);
+      LINALG::Matrix<3, 10> derivs(false);
+      so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs, gp);
 
-      /* get the inverse of the Jacobian matrix which looks like:
-       **            [ x_,r  y_,r  z_,r ]^-1
-       **     J^-1 = [ x_,s  y_,s  z_,s ]
-       **            [ x_,t  y_,t  z_,t ]
-       */
-      // compute derivatives N_XYZ at gp w.r.t. material coordinates
-      // by N_XYZ = J^-1 * N_rst
-      N_XYZ.Multiply(invJ_[gp], derivs[gp]);
-
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        // get Jacobian mapping wrt to the stored configuration
-        LINALG::Matrix<3, 3> invJdef;
-        prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
-        // get derivatives wrt to last spatial configuration
-        LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> N_xyz;
-        N_xyz.Multiply(invJdef, derivs[gp]);
-
-        // build multiplicative incremental defgrd
-        defgrd.MultiplyTT(xdisp, N_xyz);
-        defgrd(0, 0) += 1.0;
-        defgrd(1, 1) += 1.0;
-        defgrd(2, 2) += 1.0;
-
-        // get stored old incremental F
-        LINALG::Matrix<3, 3> Fhist;
-        prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-
-        // build total defgrd = delta F * F_old
-        LINALG::Matrix<3, 3> Fnew;
-        Fnew.Multiply(defgrd, Fhist);
-        defgrd = Fnew;
-      }
-      else
-        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        defgrd.MultiplyTT(xcurr, N_XYZ);
+      UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
+          defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
 
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update

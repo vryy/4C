@@ -106,7 +106,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner)
   if (params != Teuchos::null)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetTime();
+    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));

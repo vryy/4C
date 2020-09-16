@@ -171,6 +171,22 @@ namespace MIXTURE
     }
 
     /*!
+     * \brief Update of prestretch during the internal prestretching mechanism
+     *
+     * \param defgrd Deformation gradient that ensures global equilibrium in the deformed
+     * configuration
+     *
+     * \param params Container for additional information
+     * \param gp Gauss point
+     * \param eleGID Global element id
+     */
+    virtual void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+        const int gp, const int eleGID)
+    {
+      // Do nothing in the default case
+    }
+
+    /*!
      * @brief Update of the internal variables used for mixture rules evaluating the elastic part of
      * the deformation. This method must be explicitly called by the mixture rule and will not be
      * invoked automatically!

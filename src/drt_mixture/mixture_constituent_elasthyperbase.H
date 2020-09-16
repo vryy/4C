@@ -127,6 +127,9 @@ namespace MIXTURE
     void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
+    void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
+
     /*!
      * \brief Returns the current reference mass density of the constituent
      *

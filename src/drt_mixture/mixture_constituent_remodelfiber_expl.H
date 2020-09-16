@@ -59,6 +59,10 @@ namespace MIXTURE
      */
     void UpdateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFext,
         Teuchos::ParameterList& params, double dt, int gp, int eleGID) override;
+
+   private:
+    /// my material parameters
+    MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params_;
   };
 }  // namespace MIXTURE
 

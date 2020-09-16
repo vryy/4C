@@ -15,12 +15,19 @@
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_pack_buffer.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "mixture_constituent.H"
-#include "../drt_mat/anisotropy.H"
+
+
+// forward declarations
+namespace MAT
+{
+  class CoordinateSystemProvider;
+}
+
 namespace MIXTURE
 {
   // forward declaration
   class PrestressStrategy;
+  class MixtureConstituent;
 
   namespace PAR
   {
@@ -82,9 +89,25 @@ namespace MIXTURE
      * @param gp (in) : Gauss-point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluatePrestress(const MAT::CylinderCoordinateSystemProvider& anisotropy,
+    virtual void EvaluatePrestress(
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
+
+    /*!
+     * \brief Update prestretch tensor during update
+     *
+     * \param anisotropy (in) : Cylinder coordinate system
+     * \param constituent (in) : Constituent that needs to be prestretched
+     * \param F (in) : Deformation gradient that ensures global stability of the deformed system
+     * \param G (in/out) : Prestretch tensor that should be updated
+     * \param params (in) : Container for additional information
+     * \param gp (in) : Gauss point
+     * \param eleGID (in) : Global element id
+     */
+    virtual void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
+        LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
 
