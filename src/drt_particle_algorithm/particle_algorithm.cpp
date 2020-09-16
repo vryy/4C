@@ -32,6 +32,7 @@
 #include "../drt_particle_wall/particle_wall_result_test.H"
 
 #include "../drt_particle_rigidbody/particle_rigidbody.H"
+#include "../drt_particle_rigidbody/particle_rigidbody_result_test.H"
 
 #include "../drt_inpar/inpar_particle.H"
 
@@ -342,6 +343,19 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
     wallresulttest->Setup(particlewall_);
 
     allresulttests.push_back(wallresulttest);
+  }
+
+  if (particlerigidbody_)
+  {
+    // create and init rigid body result test
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyResultTest> rigidbodyresulttest =
+        std::make_shared<PARTICLERIGIDBODY::RigidBodyResultTest>();
+    rigidbodyresulttest->Init();
+
+    // setup rigid body result test
+    rigidbodyresulttest->Setup(particlerigidbody_);
+
+    allresulttests.push_back(rigidbodyresulttest);
   }
 
   return allresulttests;

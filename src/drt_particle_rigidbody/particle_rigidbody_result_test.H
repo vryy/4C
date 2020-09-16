@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief interface to provide restricted access to rigid body handler
-\level 2
+\brief rigid body result test for particle simulations
+\level 1
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_RIGIDBODY_INTERFACE_H
-#define PARTICLE_RIGIDBODY_INTERFACE_H
+#ifndef PARTICLE_RIGIDBODY_RESULT_TEST_H
+#define PARTICLE_RIGIDBODY_RESULT_TEST_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include <vector>
+#include "../drt_lib/drt_resulttest.H"
+
 #include <memory>
 
 /*---------------------------------------------------------------------------*
@@ -22,7 +23,7 @@
  *---------------------------------------------------------------------------*/
 namespace PARTICLERIGIDBODY
 {
-  class RigidBodyDataState;
+  class RigidBodyHandlerInterface;
 }
 
 /*---------------------------------------------------------------------------*
@@ -31,34 +32,47 @@ namespace PARTICLERIGIDBODY
 namespace PARTICLERIGIDBODY
 {
   /*!
-   * \brief interface to provide restricted access to rigid body handler
+   * \brief rigid body result test handler
    *
    * \author Sebastian Fuchs \date 09/2020
    */
-  class RigidBodyHandlerInterface
+  class RigidBodyResultTest final : public DRT::ResultTest
   {
    public:
-    //! virtual destructor
-    virtual ~RigidBodyHandlerInterface() = default;
+    //! constructor
+    explicit RigidBodyResultTest();
 
     /*!
-     * \brief get rigid body data state container
+     * \brief init rigid body result test
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void Init();
+
+    /*!
+     * \brief setup rigid body result test
      *
      * \author Sebastian Fuchs \date 09/2020
      *
-     * \return rigid body data state container
+     * \param[in] particlerigidbodyinterface interface to rigid body handler
      */
-    virtual std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState()
-        const = 0;
+    void Setup(const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface>
+            particlerigidbodyinterface);
 
     /*!
-     * \brief get owned rigid bodies by this processor
+     * \brief test special quantity
      *
      * \author Sebastian Fuchs \date 09/2020
      *
-     * \return owned rigid bodies by this processor
+     * \param[in]  res        result line definition
+     * \param[out] nerr       number of tests with errors
+     * \param[out] test_count number of tests performed
      */
-    virtual const std::vector<int>& GetOwnedRigidBodies() const = 0;
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+
+   private:
+    //! interface to rigid body handler
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface_;
   };
 
 }  // namespace PARTICLERIGIDBODY

@@ -166,6 +166,8 @@ namespace PARTICLERIGIDBODY
       return rigidbodydatastate_;
     }
 
+    const std::vector<int>& GetOwnedRigidBodies() const override { return ownedrigidbodies_; }
+
    private:
     /*!
      * \brief init rigid body unique global identifier handler
