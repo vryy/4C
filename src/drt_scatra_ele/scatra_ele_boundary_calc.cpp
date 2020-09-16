@@ -1134,7 +1134,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", SCATRA::DifferentiationType::none);
+  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
           // dervivative of interface flux w.r.t. displacement
           switch (dtype)
           {
-            case SCATRA::DifferentiationType::disp:
+            case static_cast<int>(SCATRA::DifferentiationType::disp):
             {
               // access real vector of constant permeabilities associated with current condition
               const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();

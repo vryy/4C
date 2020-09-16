@@ -431,7 +431,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", SCATRA::DifferentiationType::none);
+  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -466,7 +466,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // dervivative of interface flux w.r.t. displacement
         switch (dtype)
         {
-          case SCATRA::DifferentiationType::disp:
+          case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
             // access input parameters associated with current condition
             const int numelectrons = my::scatraparamsboundary_->NumElectrons();
@@ -569,7 +569,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       {
         switch (dtype)
         {
-          case SCATRA::DifferentiationType::disp:
+          case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
             // calculate linearizations
             const double inv_massfluxresistance =

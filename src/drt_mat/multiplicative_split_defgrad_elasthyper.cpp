@@ -265,8 +265,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   {
     // get source of deformation for this OD block depending on the differentiation type
     PAR::InelasticSource source;
-    const int dtype = params.get<int>("dtype", STR::DifferentiationType::none);
-    if (dtype == STR::DifferentiationType::elch)
+    const int dtype = params.get<int>("dtype", static_cast<int>(STR::DifferentiationType::none));
+    if (dtype == static_cast<int>(STR::DifferentiationType::elch))
       source = PAR::InelasticSource::inelastic_concentration;
     else
       dserror("unknown scalaratype");

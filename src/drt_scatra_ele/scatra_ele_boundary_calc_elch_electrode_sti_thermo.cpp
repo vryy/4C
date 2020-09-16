@@ -129,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evalua
   const double alphac = my::scatraparamsboundary_->AlphaC();
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", SCATRA::DifferentiationType::none);
+  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
     {
       switch (dtype)
       {
-        case SCATRA::DifferentiationType::temp:
+        case static_cast<int>(SCATRA::DifferentiationType::temp):
         {
           // get or check input parameters associated with current condition
           if (numelectrons != 1)

@@ -288,7 +288,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
   const double peltier = my::scatraparamsboundary_->Peltier();
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", SCATRA::DifferentiationType::none);
+  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     {
       switch (dtype)
       {
-        case SCATRA::DifferentiationType::elch:
+        case static_cast<int>(SCATRA::DifferentiationType::elch):
         {
           // access input parameters associated with current condition
           const double faraday =

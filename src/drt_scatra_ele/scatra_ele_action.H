@@ -144,10 +144,12 @@ namespace SCATRA
     bd_integrate_shape_functions
   };  // enum SCATRA::BoundaryAction
 
+  /*--------------------------------------------------------------------------*/
   /*!
-   * \brief for coupled, monolithic problems: linearization w.r.t. to other primary variable
+   * \brief for coupled, monolithic problems: linearization w.r.t. other primary variable
    */
-  enum DifferentiationType
+  /*--------------------------------------------------------------------------*/
+  enum class DifferentiationType : int
   {
     none,
     disp,
