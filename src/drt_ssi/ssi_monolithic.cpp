@@ -78,6 +78,10 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 {
   // pass scalar transport degrees of freedom to structural discretization
   SetScatraSolution(ScaTraField()->Phinp());
+
+  // evaluate temperature from function and set to structural discretization
+  EvaluateAndSetTemperatureField();
+
   // build system matrix and residual for structure field
   StructureField()->Evaluate();
 
@@ -520,6 +524,9 @@ void SSI::SSI_Mono::PrepareTimeStep()
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(ScaTraField()->Phinp());
+
+  // evaluate temperature from function and set to structural discretization
+  EvaluateAndSetTemperatureField();
 
   // prepare time step for structural field
   StructureField()->PrepareTimeStep();

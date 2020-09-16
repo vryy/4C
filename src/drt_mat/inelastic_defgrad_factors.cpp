@@ -122,6 +122,21 @@ MAT::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      reftemp_(matdata->GetDouble("RefTemp")),
+      tempgrowthfac_(matdata->GetDouble("Temp_GrowthFac"))
+
+{
+  // safety checks
+  if (reftemp_ < 0.0) dserror("Avoid negative reference temperatures");
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradFactors::InelasticDefgradFactors() : params_(nullptr) {}
 
 
@@ -252,6 +267,14 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
         // return pointer to inelastic deformation gradient object
         return Teuchos::rcp(new InelasticDefgradPolyIntercalFracIso(params, PolynomialGrowth));
       }
+    }
+    case INPAR::MAT::mfi_lin_temp_iso:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::InelasticDefgradLinTempIso(curmat));
+
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(curmat->Parameter());
+      return Teuchos::rcp(new InelasticDefgradLinTempIso(params));
     }
     default:
       dserror("cannot deal with type %d", curmat->Type());
@@ -419,8 +442,7 @@ void MAT::InelasticDefgradLinScalarIso::PreEvaluate(Teuchos::ParameterList& para
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
-        Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
+    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
 }
 
 /*--------------------------------------------------------------------*
@@ -547,8 +569,7 @@ void MAT::InelasticDefgradLinScalarAniso::PreEvaluate(Teuchos::ParameterList& pa
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
-        Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
+    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
 }
 
 /*--------------------------------------------------------------------*
@@ -667,8 +688,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::PreEvaluate(
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
-        Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
+    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
 }
 
 /*--------------------------------------------------------------------*
@@ -803,8 +823,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::PreEvaluate(
 
   // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
   if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
-        Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
+    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
 }
 
 /*--------------------------------------------------------------------*
@@ -869,4 +888,74 @@ void MAT::InelasticDefgradPolynomialShape::CheckPolynomialBounds(const double X)
     std::cout << "Evaluation at: " << X << " Lower bound is " << Xmin_ << " Upper bound is "
               << Xmax_ << std::endl;
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso()
+    : InelasticDefgradFactors(), gp_(-1), temperatures_(nullptr)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(MAT::PAR::Parameter* params)
+    : InelasticDefgradFactors(params), gp_(-1), temperatures_(nullptr)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinTempIso::PreEvaluate(Teuchos::ParameterList& params, int gp)
+{
+  // get Gauss point number
+  gp_ = gp;
+
+  // set pointer to vector of gp_temp, only if gp is 0, because this is the first gp
+  if (gp_ == 0) temperatures_ = params.get<Teuchos::RCP<std::vector<double>>>("gp_temp");
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
+    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+{
+  // get parameters
+  const double tempgrowthfac = Parameter()->GetTempGrowthFac();
+  const double reftemp = Parameter()->RefTemp();
+
+  const double growthfactor = 1.0 + tempgrowthfac * (temperatures_->at(gp_) - reftemp);
+  if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
+  const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
+
+  // calculate inverse inelastic deformation gradient
+  for (int i = 0; i < 3; ++i) iFinM(i, i) = 1.0 / isoinelasticdefo;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinTempIso::EvaluateAdditionalCmat(
+    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
+    LINALG::Matrix<6, 6>& cmatadd)
+{
+  // nothing todo so far, as current growth model is not a function of displacements (and thus C)
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
+    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+    LINALG::Matrix<6, 1>& dstressdc)
+{
+  // nothing todo so far, as currently temerpature is non primary variable
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticSource MAT::InelasticDefgradLinTempIso::GetInelasticSource()
+{
+  return PAR::InelasticSource::inelastic_temperature;
 }

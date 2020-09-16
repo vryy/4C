@@ -44,7 +44,8 @@ namespace MAT
     enum class InelasticSource
     {
       inelastic_none,
-      inelastic_concentration
+      inelastic_concentration,
+      inelastic_temperature
     };
 
     class MultiplicativeSplitDefgrad_ElastHyper : public Parameter

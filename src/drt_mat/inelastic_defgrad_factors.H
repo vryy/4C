@@ -169,6 +169,35 @@ namespace MAT
       /// pointer to object, that calculates and holds direction of inelastic deformation
       Teuchos::RCP<InelasticDeformationDirection> growthdir_;
     };
+
+    /*----------------------------------------------------------------------
+    ----------------------------------------------------------------------*/
+    /*! \class InelasticDefgradLinTempIso
+
+    Parameter class of InelasticDefgradLinTempIso.
+    */
+    class InelasticDefgradLinTempIso : public MAT::PAR::Parameter
+    {
+     public:
+      explicit InelasticDefgradLinTempIso(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+      ~InelasticDefgradLinTempIso() override = default;
+
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+
+      /// return temperature related growth factor
+      double GetTempGrowthFac() const { return tempgrowthfac_; };
+
+      /// return value of temperature that causes no growth
+      double RefTemp() const { return reftemp_; };
+
+     private:
+      /// value of temperature that causes no growth
+      const double reftemp_;
+
+      /// growth factor
+      const double tempgrowthfac_;
+    };
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
@@ -688,9 +717,77 @@ namespace MAT
    private:
     /// store current gauss point id
     int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
+    /// store vector of gauss point concentrations calculated in the pre-evaluate of the
+    /// so3_scatra element
     Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
+  };
+
+  /*----------------------------------------------------------------------*/
+  /*! \class InelasticDefgradLinTempIso
+   *Volumetric change due to this law is linearily dependent on the temperature
+   \f$ T \f$ as follows:
+   \f[
+   \boldsymbol{F}_\text{in} = \boldsymbol{I} \left[ 1 + \beta \left( T - T_\text{ref} \right)
+   \right]^\frac{1}{3}, \f]
+   */
+  class InelasticDefgradLinTempIso : public InelasticDefgradFactors
+  {
+   public:
+    InelasticDefgradLinTempIso();
+
+    explicit InelasticDefgradLinTempIso(MAT::PAR::Parameter* params);
+
+    ~InelasticDefgradLinTempIso() override = default;
+
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_lin_temp_iso; };
+
+    /// evaluate the deformation gradient and its inverse
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
+        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
+
+    /// evaluate additional terms of the elasticity tensor
+    void EvaluateAdditionalCmat(
+        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
+        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
+                                             ///< inelastic contribution as 3x3 matrix
+        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
+        const LINALG::Matrix<6, 9>&
+            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
+                       ///< deformation gradient of current inelastic contribution
+        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
+
+    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
+    /// cross-linearizations
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
+        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
+                                             ///< inelastic contribution as 3x3 matrix
+        const LINALG::Matrix<6, 9>&
+            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
+                       ///< deformation gradient of current inelastic contribution
+        LINALG::Matrix<6, 1>& dstressdc)
+        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
+
+    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+
+    /// return the material parameters
+    MAT::PAR::InelasticDefgradLinTempIso* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
+
+    /// Get type of scalar, that leads to deformation
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
+   private:
+    //! gauss point id
+    int gp_;
+
+    /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
+    /// element
+    Teuchos::RCP<std::vector<double>> temperatures_;
   };
 }  // namespace MAT
 
