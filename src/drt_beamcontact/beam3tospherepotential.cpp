@@ -23,7 +23,6 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_rigidsphere/rigidsphere.H"
 #include "../headers/FAD_utils.H"
 
 #include "Teuchos_TimeMonitor.hpp"
