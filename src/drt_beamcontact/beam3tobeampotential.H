@@ -20,7 +20,7 @@
 #include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "beam3_base.H"
+#include "../drt_beam3/beam3_base.H"
 
 
 namespace CONTACT
