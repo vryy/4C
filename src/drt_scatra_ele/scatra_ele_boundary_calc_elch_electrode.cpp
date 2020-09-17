@@ -431,7 +431,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -464,7 +465,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       case INPAR::S2I::kinetics_butlervolmerreduced:
       {
         // dervivative of interface flux w.r.t. displacement
-        switch (dtype)
+        switch (differentiationtype)
         {
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
@@ -522,7 +523,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
               const double expterm = expterm1 - expterm2;
 
               // safety check
-              if (abs(expterm) > 1.0e5)
+              if (std::abs(expterm) > 1.0e5)
                 dserror(
                     "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
                     "%lf",
@@ -567,7 +568,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       }
       case INPAR::S2I::kinetics_constantinterfaceresistance:
       {
-        switch (dtype)
+        switch (differentiationtype)
         {
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {

@@ -293,7 +293,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   if (IsAle()) condparams.set<int>("ndsdisp", 1);
 
   // set type of differentiation to temperature
-  condparams.set<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::temp));
+  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::temp));
 
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();
@@ -470,7 +470,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
 
   // set differentiation type to elch
-  condparams.set<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::elch));
+  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
 
   // create strategy for assembly of auxiliary system matrices
   DRT::AssembleStrategy strategythermoscatras2i(

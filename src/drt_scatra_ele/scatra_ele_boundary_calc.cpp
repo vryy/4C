@@ -1134,7 +1134,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // get primary variable to derive the linearization
-  const int dtype = params.get<int>("dtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
@@ -1170,16 +1171,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
         case INPAR::S2I::kinetics_constperm:
         {
           // dervivative of interface flux w.r.t. displacement
-          switch (dtype)
+          switch (differentiationtype)
           {
             case static_cast<int>(SCATRA::DifferentiationType::disp):
             {
               // access real vector of constant permeabilities associated with current condition
               const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
-              if (permeabilities == NULL)
+              if (permeabilities == nullptr)
                 dserror(
                     "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-              if (permeabilities->size() != (unsigned)numscal_)
+              if (permeabilities->size() != static_cast<unsigned>(numscal_))
                 dserror("Number of permeabilities does not match number of scalars!");
 
               // core linearization

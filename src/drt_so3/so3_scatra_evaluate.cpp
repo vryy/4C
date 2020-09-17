@@ -222,13 +222,14 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
   LINALG::Matrix<numdim_, numdim_> defgrad(true);
 
   // evaluation of linearization w.r.t. certain primary variable
-  const int dtype = params.get<int>("dtype", static_cast<int>(STR::DifferentiationType::none));
-  if (dtype == static_cast<int>(STR::DifferentiationType::none))
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
+  if (differentiationtype == static_cast<int>(STR::DifferentiationType::none))
     dserror("Cannot get differentation type");
 
   // get numscatradofspernode from parameter list in case of elch linearizations
   int numscatradofspernode(-1);
-  if (dtype == static_cast<int>(STR::DifferentiationType::elch))
+  if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
   {
     numscatradofspernode = params.get<int>("numscatradofspernode", -1);
     if (numscatradofspernode == -1)
@@ -302,7 +303,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
       for (unsigned coli = 0; coli < numnod_; ++coli)
       {
         // stiffness matrix w.r.t. elch dofs
-        if (dtype == static_cast<int>(STR::DifferentiationType::elch))
+        if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
           stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
         else
           dserror("Unknown differentation type");
