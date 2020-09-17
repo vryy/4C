@@ -459,11 +459,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   for (double g : gravity) temp += g * g;
   const double gravity_norm = std::sqrt(temp);
 
-  // no gravity defined
-  if (gravity_norm == 0.0)
-    particlegravity_ = std::unique_ptr<PARTICLEALGORITHM::GravityHandler>(nullptr);
   // create particle gravity handler
-  else
+  if (gravity_norm > 0.0)
     particlegravity_ = std::unique_ptr<PARTICLEALGORITHM::GravityHandler>(
         new PARTICLEALGORITHM::GravityHandler(params_));
 
@@ -480,8 +477,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
   if (viscdampfac > 0.0)
     viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(
         new PARTICLEALGORITHM::ViscousDampingHandler(viscdampfac));
-  else
-    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(nullptr);
 
   // init viscous damping handler
   if (viscousdamping_) viscousdamping_->Init();
