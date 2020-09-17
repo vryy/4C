@@ -81,6 +81,15 @@ namespace STR
     exit(EXIT_FAILURE);
   };
 
+
+  //! for coupled, monolithic problems: linearization w.r.t. other primary variable
+  enum class DifferentiationType : int
+  {
+    none,
+    elch,
+    temp
+  };
+
 }  // namespace STR
 
 #endif

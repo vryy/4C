@@ -99,6 +99,8 @@ namespace DRT
        * @param[in] alphac        symmetry coefficient of cathodic intercalation reaction
        * @param[in] peltier       peltier coefficient
        * @param[in] timefacfac    time-integration factor times domain-integration factor
+       * @param[in] differentiationtype
+       *                          type of variable for linearization
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
@@ -114,8 +116,8 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const int kineticmodel, const double kr, const double alphaa, const double alphac,
-          const double peltier, const double timefacfac, Epetra_SerialDenseMatrix& k_ss,
+          int kineticmodel, double kr, double alphaa, double alphac, double peltier,
+          double timefacfac, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm);
 
      private:

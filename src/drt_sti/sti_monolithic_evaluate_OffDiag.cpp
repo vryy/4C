@@ -30,7 +30,7 @@ STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -41,6 +41,7 @@ STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
       full_map_thermo_(std::move(full_map_thermo)),
       interface_map_scatra_(std::move(interface_map_scatra)),
       interface_map_thermo_(std::move(interface_map_thermo)),
+      isale_(std::move(isale)),
       meshtying_strategy_scatra_(std::move(meshtying_strategy_scatra)),
       meshtying_strategy_thermo_(std::move(meshtying_strategy_thermo)),
       scatra_(std::move(scatra)),
@@ -129,6 +130,9 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
   // number of dofset associated with velocity-related dofs on thermo discretization
   eleparams.set<int>("ndsvel", 1);
 
+  // in case of deforming mesh: set displacement
+  if (IsAle()) eleparams.set<int>("ndsdisp", 1);
+
   // remove state vectors from thermo discretization
   ThermoField()->Discretization()->ClearState();
 
@@ -183,7 +187,7 @@ STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchi
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -191,7 +195,7 @@ STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchi
     : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
           std::move(block_map_thermo_interface), std::move(full_map_scatra),
           std::move(full_map_thermo), std::move(interface_map_scatra),
-          std::move(interface_map_thermo), std::move(meshtying_strategy_scatra),
+          std::move(interface_map_thermo), std::move(isale), std::move(meshtying_strategy_scatra),
           std::move(meshtying_strategy_thermo), std::move(scatra), std::move(thermo)),
       block_map_thermo_interface_slave_(block_map_thermo_interface_slave)
 {
@@ -284,6 +288,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
 
   // action for elements
   condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+
+  // in case of deforming mesh: set displacement
+  if (IsAle()) condparams.set<int>("ndsdisp", 1);
+
+  // set type of differentiation to temperature
+  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::temp));
 
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();
@@ -459,6 +469,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   // action for elements
   condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
 
+  // set differentiation type to elch
+  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
+
   // create strategy for assembly of auxiliary system matrices
   DRT::AssembleStrategy strategythermoscatras2i(
       0,              // row assembly based on number of dofset associated with thermo dofs on
@@ -563,7 +576,7 @@ STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMorta
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -571,7 +584,7 @@ STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMorta
     : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
           std::move(block_map_thermo_interface), std::move(full_map_scatra),
           std::move(full_map_thermo), std::move(interface_map_scatra),
-          std::move(interface_map_thermo), std::move(meshtying_strategy_scatra),
+          std::move(interface_map_thermo), std::move(isale), std::move(meshtying_strategy_scatra),
           std::move(meshtying_strategy_thermo), std::move(scatra), std::move(thermo))
 {
 }
@@ -859,7 +872,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoup
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -873,7 +886,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoup
     {
       scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
           block_map_thermo, block_map_thermo_interface, block_map_thermo_interface_slave,
-          full_map_scatra, full_map_thermo, interface_map_scatra, interface_map_thermo,
+          full_map_scatra, full_map_thermo, interface_map_scatra, interface_map_thermo, isale,
           meshtying_strategy_scatra, meshtying_strategy_thermo, scatra, thermo));
       break;
     }
@@ -881,7 +894,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoup
     {
       scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMortarStandard(
           block_map_thermo, block_map_thermo_interface, full_map_scatra, full_map_thermo,
-          interface_map_scatra, interface_map_thermo, meshtying_strategy_scatra,
+          interface_map_scatra, interface_map_thermo, isale, meshtying_strategy_scatra,
           meshtying_strategy_thermo, scatra, thermo));
       break;
     }
