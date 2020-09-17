@@ -172,6 +172,17 @@ namespace PARTICLERIGIDBODY
      */
     void ComputeMassQuantities();
 
+    /*!
+     * \brief compute accelerations of rigid bodies
+     *
+     * First compute the force and the torque acting on rigid bodies over all processors. Then, the
+     * accelerations are computed from force and torque using the mass quantities on the owning
+     * processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputeAccelerations();
+
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
       return rigidbodydatastate_;
@@ -321,6 +332,45 @@ namespace PARTICLERIGIDBODY
         std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition);
+
+    /*!
+     * \brief clear force and torque acting on rigid bodies
+     *
+     * Clear the force and torque of hosted rigid bodies on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearForceAndTorque();
+
+    /*!
+     * \brief compute partial force and torque acting on rigid bodies
+     *
+     * Compute the partial force and torque acting on hosted rigid bodies on respective hosting
+     * processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputePartialForceAndTorque();
+
+    /*!
+     * \brief gather partial and compute full force and torque acting on rigid bodies
+     *
+     * Gather the partial force and torque acting on owned rigid bodies from respective hosting
+     * processors on owning processor and compute the full force and torque.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void GatherPartialAndComputeFullForceAndTorque();
+
+    /*!
+     * \brief compute accelerations of rigid bodies from force and torque
+     *
+     * Compute the accelerations of owned rigid bodies from force and torque using mass quantities
+     * on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputeAccelerationsFromForceAndTorque();
 
     //! communicator
     const Epetra_Comm& comm_;

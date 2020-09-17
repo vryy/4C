@@ -926,6 +926,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
 
   // apply viscous damping contribution
   if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
+
+  // compute accelerations of rigid bodies
+  if (particlerigidbody_ and particleinteraction_) particlerigidbody_->ComputeAccelerations();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
