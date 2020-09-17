@@ -93,6 +93,7 @@ modules/contact_module/src/
 
 # Python
 *.pyc
+utilities/baci-python-venv/*
 
 # VS Code
 *.vscode

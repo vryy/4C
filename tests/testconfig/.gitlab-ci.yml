@@ -386,6 +386,7 @@ checkcode:
     script:
         - "echo code check"
         - cd ../baci
+        - ./create-baci-python-venv
         - bash utilities/code_checks/check_format_and_header
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"

@@ -25,50 +25,47 @@
 # Date:      26.08.2019
 # Version:   1.5
 
+# Load the python virtual environment, which provides clang-format.
+source utilities/baci-python-venv/bin/activate
+
 ### Style format check ##############################
-if [ -f ./utilities/code_checks/clang-format ]
+# set the field separator to new line
+IFS=$'\n'
+
+for line in $(git diff --cached --name-only --diff-filter=ACMR)
+do
+# check if the file is a c or cpp file
+if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
 then
-  # set the field separator to new line
-  IFS=$'\n'
-
-  for line in $(git diff --cached --name-only --diff-filter=ACMR)
-  do
-    # check if the file is a c or cpp file
-    if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
+    # Check if clang would format the file
+    if [[  $(diff -u <(clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
     then
-      # Check if clang would format the file
-      if [[  $(diff -u <(./utilities/code_checks/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-      then
-        uncompliant_files+="$(pwd)/${line}\n"
-      fi
+    uncompliant_files+="$(pwd)/${line}\n"
     fi
-  done
+fi
+done
 
-  if [ ! -z "$uncompliant_files" ]
-  then
-    printf "\n"
-    printf "The following file(s) are not compliant with BACI's coding style:\n"
-    printf "\n"
-    echo "########################################################################"
-    printf "$uncompliant_files"
-    echo "########################################################################"
-    printf "\n"
-    echo "--> Please run clang-format manually for those files using:"
-    echo "./utilities/code_checks/clang-format -i -style=file <path/to/file>"
-    echo "(Run this from BACI's top-level directory)"
-    printf "\n"
-    echo "--> Alternatively you can use the following script to format ALL source files:"
-    echo "./utilities/run_clang_on_everything"
-    echo "(Run this from BACI's top-level directory)"
-    printf "\n"
-    echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
-    printf "\n"
-    exit 1
-  fi
-
-else
-  echo "ERROR: clang-format was not found, cannot check file formatting!"
-  exit 1
+if [ ! -z "$uncompliant_files" ]
+then
+printf "\n"
+printf "The following file(s) are not compliant with BACI's coding style:\n"
+printf "\n"
+echo "########################################################################"
+printf "$uncompliant_files"
+echo "########################################################################"
+printf "\n"
+echo "--> Please run clang-format manually for those files using:"
+echo "source ./utilities/baci-python-venv/bin/activate"
+echo "clang-format -i -style=file <path/to/file>"
+echo "(Run this from BACI's top-level directory)"
+printf "\n"
+echo "--> Alternatively you can use the following script to format ALL source files:"
+echo "./utilities/run_clang_on_everything"
+echo "(Run this from BACI's top-level directory)"
+printf "\n"
+echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
+printf "\n"
+exit 1
 fi
 
 ### Header check ####################################
