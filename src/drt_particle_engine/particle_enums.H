@@ -53,7 +53,9 @@ namespace PARTICLEENGINE
     Temperature,  //!< temperature
     /*---------------------------------------------------------------------------*/
     // particle states for rigid body evaluation
-    RigidBodyColor,  //!< rigid body color
+    RigidBodyColor,             //!< rigid body color
+    RelativePosition,           //!< position relative to rigid body position in rotating frame
+    ReferenceRelativePosition,  //!< position relative to rigid body position in reference frame
     /*---------------------------------------------------------------------------*/
     // particle states for SPH interaction
     DensitySum,           //!< density from summation of weighted masses
