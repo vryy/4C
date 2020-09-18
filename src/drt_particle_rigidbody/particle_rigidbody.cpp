@@ -17,6 +17,9 @@
 #include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_unique_global_id.H"
 
+#include "../drt_lib/drt_pack_buffer.H"
+#include "../drt_lib/drt_parobject.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
@@ -217,6 +220,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
 
   // update rigid body ownership
   UpdateRigidBodyOwnership();
+
+  // relate owned rigid bodies to all hosting processors
+  RelateOwnedRigidBodiesToHostingProcs();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
@@ -228,6 +234,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
 
   // update rigid body ownership
   UpdateRigidBodyOwnership();
+
+  // relate owned rigid bodies to all hosting processors
+  RelateOwnedRigidBodiesToHostingProcs();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -295,4 +304,59 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
   // get global ids of rigid bodies owned by this processor
   for (const int rigidbody_k : hostedrigidbodies_)
     if (ownerofrigidbodies_[rigidbody_k] == myrank_) ownedrigidbodies_.push_back(rigidbody_k);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
+{
+  // number of global ids
+  const int numglobalids = rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() + 1;
+
+  // allocate memory
+  ownedrigidbodiestohostingprocs_.assign(numglobalids, std::vector<int>(0));
+
+  // prepare buffer for sending and receiving
+  std::map<int, std::vector<char>> sdata;
+  std::map<int, std::vector<char>> rdata;
+
+  // iterate over hosted rigid bodies
+  for (const int rigidbody_k : hostedrigidbodies_)
+  {
+    // owner of rigid body k
+    const int owner_k = ownerofrigidbodies_[rigidbody_k];
+
+    // communicate global id of rigid body to owning processor
+    if (owner_k != myrank_)
+    {
+      // pack data for sending
+      DRT::PackBuffer data;
+      data.StartPacking();
+
+      data.AddtoPack(rigidbody_k);
+
+      sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
+    }
+  }
+
+  // communicate data via non-buffered send from proc to proc
+  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+
+  // unpack and store received data
+  for (auto& p : rdata)
+  {
+    int msgsource = p.first;
+    std::vector<char>& rmsg = p.second;
+
+    std::vector<char>::size_type position = 0;
+
+    while (position < rmsg.size())
+    {
+      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+
+      // insert processor id the gathered global id of rigid body is received from
+      ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
+    }
+
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
 }

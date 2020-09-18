@@ -183,6 +183,16 @@ namespace PARTICLERIGIDBODY
      */
     void UpdateRigidBodyOwnership();
 
+    /*!
+     * \brief relate owned rigid bodies to all hosting processors
+     *
+     * Relate the global ids of rigid bodies owned by this processor to the corresponding hosting
+     * processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void RelateOwnedRigidBodiesToHostingProcs();
+
     //! communicator
     const Epetra_Comm& comm_;
 
@@ -212,6 +222,9 @@ namespace PARTICLERIGIDBODY
 
     //! owner of all rigid bodies
     std::vector<int> ownerofrigidbodies_;
+
+    //! owned rigid bodies related to hosting processors (without this processor)
+    std::vector<std::vector<int>> ownedrigidbodiestohostingprocs_;
   };
 }  // namespace PARTICLERIGIDBODY
 
