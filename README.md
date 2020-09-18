@@ -21,6 +21,7 @@ using modern software design and is parallelized with MPI for distributed memory
    1. [Updating BACI](#updating-baci)
 1. [Where to Ask Questions](#where-to-ask-questions)
 1. [Contributing](#contributing)
+1. [How to cite Baci](#how-to-cite-baci)
 1. [License](#license)
 
 ## Getting Up and Running with BACI
@@ -229,6 +230,18 @@ If you need help with BACI, feel free to ask questions by [creating a GitLab iss
 ## Contributing
 
 If you're interested in contributing to BACI, we welcome your collaboration. Before your start, configure your [local Git](#set-up-git) and your [LRZ GitLab account](#set-up-lrz-gitlab). Read [our contributing guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) carefully for details on our workflow, submitting merge-requests, etc.
+
+[↑ Contents](#contents)
+
+## How to cite Baci
+
+Whenever you mention BACI in some sort of scientific document/publication/presentation, please cite BACI as follows:
+
+```
+BACI: A Comprehensive Multi-Physics Simulation Framework, https://baci.pages.gitlab.lrz.de/website
+```
+
+Remember: It is good scientific practice to include the date, when you've visisted that website, into the citation. It's up to you (and your advisor) to include the date, depending on the type of publication.
 
 [↑ Contents](#contents)
 
