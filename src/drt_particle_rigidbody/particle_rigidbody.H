@@ -183,6 +183,30 @@ namespace PARTICLERIGIDBODY
      */
     void ComputeAccelerations();
 
+    /*!
+     * \brief update positions with given time increment
+     *
+     * Update the positions of rigid bodies with a given time increment and set the corresponding
+     * positions of rigid particles affiliated with the rigid bodies.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    void UpdatePositions(const double timeincrement) override;
+
+    /*!
+     * \brief update velocities with given time increment
+     *
+     * Update the velocities of rigid bodies with a given time increment and set the corresponding
+     * velocities of rigid particles affiliated with the rigid bodies.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    void UpdateVelocities(const double timeincrement) override;
+
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
       return rigidbodydatastate_;
@@ -371,6 +395,69 @@ namespace PARTICLERIGIDBODY
      * \author Sebastian Fuchs \date 09/2020
      */
     void ComputeAccelerationsFromForceAndTorque();
+
+    /*!
+     * \brief update positions of rigid bodies with given time increment
+     *
+     * Update the positions of rigid bodies with a given time increment on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    void UpdateRigidBodyPositions(const double timeincrement);
+
+    /*!
+     * \brief update velocities of rigid bodies with given time increment
+     *
+     * Update the velocities of rigid bodies with a given time increment on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    void UpdateRigidBodyVelocities(const double timeincrement);
+
+    /*!
+     * \brief broadcast positions of rigid bodies
+     *
+     * Broadcast positions of rigid bodies from the owning processor to respective local processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void BroadcastPositions();
+
+    /*!
+     * \brief broadcast velocities of rigid bodies
+     *
+     * Broadcast velocities of rigid bodies from the owning processor to respective local
+     * processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void BroadcastVelocities();
+
+    /*!
+     * \brief update relative position of rigid particles
+     *
+     * Update the relative position of rigid particles in the rotating frame owned on this
+     * processor.
+     */
+    void UpdateRigidParticleRelativePosition();
+
+    /*!
+     * \brief set position of rigid particles
+     *
+     * Set the position of rigid particles owned on this processor.
+     */
+    void SetRigidParticlePosition();
+
+    /*!
+     * \brief set velocities of rigid particles
+     *
+     * Set the velocities of rigid particles owned on this processor.
+     */
+    void SetRigidParticleVelocities();
 
     //! communicator
     const Epetra_Comm& comm_;

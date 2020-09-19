@@ -13,6 +13,7 @@
 #include "particle_rigidbody_datastate.H"
 #include "particle_rigidbody_runtime_vtp_writer.H"
 #include "particle_rigidbody_affiliation_pairs.H"
+#include "particle_rigidbody_utils.H"
 
 #include "../drt_particle_interaction/particle_interaction_utils.H"
 
@@ -339,6 +340,37 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerations()
 
   // compute accelerations of rigid bodies from force and torque
   ComputeAccelerationsFromForceAndTorque();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdatePositions(const double timeincrement)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::UpdatePositions");
+
+  // update positions of rigid bodies with given time increment
+  UpdateRigidBodyPositions(timeincrement);
+
+  // broadcast positions of rigid bodies
+  BroadcastPositions();
+
+  // update relative position of rigid particles
+  UpdateRigidParticleRelativePosition();
+
+  // set position of rigid particles
+  SetRigidParticlePosition();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdateVelocities(const double timeincrement)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::UpdateVelocities");
+
+  // update velocities of rigid bodies with given time increment
+  UpdateRigidBodyVelocities(timeincrement);
+
+  // broadcast velocities of rigid bodies
+  BroadcastVelocities();
+
+  // set velocities of rigid particles
+  SetRigidParticleVelocities();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -1108,5 +1140,320 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
 
     // compute angular acceleration of rigid body k in the rotating frame
     UTILS::quaternion_rotate_vector(angacc_k, rot_k, refangacc_k);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double timeincrement)
+{
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get pointer to rigid body states
+    double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
+    double* rot_k = &rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k][0];
+    const double* vel_k = &rigidbodydatastate_->GetRefVelocity()[rigidbody_k][0];
+    const double* angvel_k = &rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k][0];
+
+    // update position
+    PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, timeincrement, vel_k);
+
+    // save current rotation
+    double curr_rot_k[4];
+    UTILS::quaternion_set(curr_rot_k, rot_k);
+
+    // get rotation increment
+    double phi_k[3];
+    PARTICLEINTERACTION::UTILS::vec_setscale(phi_k, timeincrement, angvel_k);
+
+    double incr_rot_k[4];
+    UTILS::quaternion_from_angle(incr_rot_k, phi_k);
+
+    // update rotation
+    UTILS::quaternion_product(rot_k, incr_rot_k, curr_rot_k);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyVelocities(const double timeincrement)
+{
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get pointer to rigid body states
+    double* vel_k = &rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k][0];
+    double* angvel_k = &rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k][0];
+    const double* acc_k = &rigidbodydatastate_->GetRefAcceleration()[rigidbody_k][0];
+    const double* angacc_k = &rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k][0];
+
+    // update velocities
+    PARTICLEINTERACTION::UTILS::vec_addscale(vel_k, timeincrement, acc_k);
+    PARTICLEINTERACTION::UTILS::vec_addscale(angvel_k, timeincrement, angacc_k);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastPositions()
+{
+  // prepare buffer for sending and receiving
+  std::map<int, std::vector<char>> sdata;
+  std::map<int, std::vector<char>> rdata;
+
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get reference to hosting processors of rigid body k
+    std::vector<int>& hostingprocs_k = ownedrigidbodiestohostingprocs_[rigidbody_k];
+
+    // get reference to rigid body states
+    const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+    const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
+
+    // pack data for sending
+    DRT::PackBuffer data;
+    data.StartPacking();
+
+    data.AddtoPack(rigidbody_k);
+
+    for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
+    for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
+
+    for (int torank : hostingprocs_k)
+      sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
+  }
+
+  // communicate data via non-buffered send from proc to proc
+  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+
+  // unpack and store received data
+  for (auto& p : rdata)
+  {
+    std::vector<char>& rmsg = p.second;
+
+    std::vector<char>::size_type position = 0;
+
+    while (position < rmsg.size())
+    {
+      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+
+      // get reference to rigid body states
+      std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
+      std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
+
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+      for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+    }
+
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastVelocities()
+{
+  // prepare buffer for sending and receiving
+  std::map<int, std::vector<char>> sdata;
+  std::map<int, std::vector<char>> rdata;
+
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get reference to hosting processors of rigid body k
+    std::vector<int>& hostingprocs_k = ownedrigidbodiestohostingprocs_[rigidbody_k];
+
+    // get reference to rigid body states
+    const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+
+    // pack data for sending
+    DRT::PackBuffer data;
+    data.StartPacking();
+
+    data.AddtoPack(rigidbody_k);
+
+    for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
+
+    for (int torank : hostingprocs_k)
+      sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
+  }
+
+  // communicate data via non-buffered send from proc to proc
+  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+
+  // unpack and store received data
+  for (auto& p : rdata)
+  {
+    std::vector<char>& rmsg = p.second;
+
+    std::vector<char>::size_type position = 0;
+
+    while (position < rmsg.size())
+    {
+      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+
+      // get reference to rigid body states
+      std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k =
+          rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
+
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+    }
+
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
+{
+  // get reference to affiliation pair data
+  const std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    const double* rot_k = &rigidbodydatastate_->GetRefRotation()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* refrelpos_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::ReferenceRelativePosition, particle_i);
+    double* relpos_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
+
+    // update relative position of particle i
+    UTILS::quaternion_rotate_vector(relpos_i, rot_k, refrelpos_i);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
+{
+  // get reference to affiliation pair data
+  const std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    const double* pos_k = &rigidbodydatastate_->GetRefPosition()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* relpos_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
+    double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+
+    // set position of particle i
+    PARTICLEINTERACTION::UTILS::vec_set(pos_i, pos_k);
+    PARTICLEINTERACTION::UTILS::vec_add(pos_i, relpos_i);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
+{
+  // get reference to affiliation pair data
+  const std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    const double* vel_k = &rigidbodydatastate_->GetRefVelocity()[rigidbody_k][0];
+    const double* angvel_k = &rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* relpos_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
+    double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    double* angvel_i = nullptr;
+    if (container_i->HaveStoredState(PARTICLEENGINE::AngularVelocity))
+      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
+
+    // set velocities of particle i
+    PARTICLEINTERACTION::UTILS::vec_set(vel_i, vel_k);
+    PARTICLEINTERACTION::UTILS::vec_addcross(vel_i, angvel_k, relpos_i);
+    if (angvel_i) PARTICLEINTERACTION::UTILS::vec_set(angvel_i, angvel_k);
   }
 }

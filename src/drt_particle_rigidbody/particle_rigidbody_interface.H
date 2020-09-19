@@ -42,6 +42,24 @@ namespace PARTICLERIGIDBODY
     virtual ~RigidBodyHandlerInterface() = default;
 
     /*!
+     * \brief update positions with given time increment
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    virtual void UpdatePositions(const double timeincrement) = 0;
+
+    /*!
+     * \brief update velocities with given time increment
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] timeincrement time increment
+     */
+    virtual void UpdateVelocities(const double timeincrement) = 0;
+
+    /*!
      * \brief get rigid body data state container
      *
      * \author Sebastian Fuchs \date 09/2020
