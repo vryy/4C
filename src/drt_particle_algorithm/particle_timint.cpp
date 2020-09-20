@@ -18,6 +18,8 @@
 #include "../drt_particle_engine/particle_container_bundle.H"
 #include "../drt_particle_engine/particle_container.H"
 
+#include "../drt_particle_rigidbody/particle_rigidbody_interface.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"
@@ -45,10 +47,14 @@ void PARTICLEALGORITHM::TimInt::Init()
 }
 
 void PARTICLEALGORITHM::TimInt::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
+
+  // set interface to rigid body handler
+  particlerigidbodyinterface_ = particlerigidbodyinterface;
 
   // setup dirichlet boundary condition handler
   if (dirichletboundarycondition_) dirichletboundarycondition_->Setup(particleengineinterface_);
@@ -234,9 +240,11 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
 }
 
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
-  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface);
+  // call base class setup
+  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface, particlerigidbodyinterface);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -293,6 +301,22 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
 
     // update position of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
+  }
+
+  if (particlerigidbodyinterface_)
+  {
+    // update velocities of all rigid bodies and corresponding rigid particles
+    particlerigidbodyinterface_->UpdateVelocities(dt_);
+
+    // get container of owned particles of rigid phase
+    PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle->GetSpecificContainer(
+        PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+    // clear acceleration of rigid phase
+    container->ClearState(PARTICLEENGINE::Acceleration);
+
+    // update positions of all rigid bodies and corresponding rigid particles
+    particlerigidbodyinterface_->UpdatePositions(dt_);
   }
 
   // evaluate dirichlet boundary condition
@@ -395,6 +419,22 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     }
   }
 
+  if (particlerigidbodyinterface_)
+  {
+    // update velocities of all rigid bodies and corresponding rigid particles
+    particlerigidbodyinterface_->UpdateVelocities(dthalf_);
+
+    // get container of owned particles of rigid phase
+    PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle->GetSpecificContainer(
+        PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+    // clear acceleration of rigid phase
+    container->ClearState(PARTICLEENGINE::Acceleration);
+
+    // update positions of all rigid bodies and corresponding rigid particles
+    particlerigidbodyinterface_->UpdatePositions(dt_);
+  }
+
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)
   {
@@ -435,6 +475,9 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
           1.0, PARTICLEENGINE::AngularVelocity, dthalf_, PARTICLEENGINE::AngularAcceleration);
     }
   }
+
+  // update velocities of all rigid bodies and corresponding rigid particles
+  if (particlerigidbodyinterface_) particlerigidbodyinterface_->UpdateVelocities(dthalf_);
 
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)

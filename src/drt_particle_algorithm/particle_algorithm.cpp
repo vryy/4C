@@ -117,7 +117,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   if (particlerigidbody_) particlerigidbody_->Setup(particleengine_);
 
   // setup particle time integration
-  particletimint_->Setup(particleengine_);
+  particletimint_->Setup(particleengine_, particlerigidbody_);
 
   // setup particle interaction handler
   if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
