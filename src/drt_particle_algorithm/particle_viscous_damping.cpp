@@ -45,8 +45,8 @@ void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
   // iterate over particle types
   for (const auto& type : particlecontainerbundle->GetParticleTypes())
   {
-    // no viscous damping contribution for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+    // no viscous damping contribution for boundary particles
+    if (type == PARTICLEENGINE::BoundaryPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
