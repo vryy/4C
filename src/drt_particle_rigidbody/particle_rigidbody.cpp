@@ -229,11 +229,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
   // distribute affiliation pairs
   affiliationpairs_->DistributeAffiliationPairs();
 
+  // store rigid bodies previously owned by this processor
+  std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
+
   // update rigid body ownership
   UpdateRigidBodyOwnership();
 
   // relate owned rigid bodies to all hosting processors
   RelateOwnedRigidBodiesToHostingProcs();
+
+  // communicate rigid body states
+  CommunicateRigidBodyStates(previouslyownedrigidbodies);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
@@ -243,11 +249,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
   // communicate affiliation pairs
   affiliationpairs_->CommunicateAffiliationPairs();
 
+  // store rigid bodies previously owned by this processor
+  std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
+
   // update rigid body ownership
   UpdateRigidBodyOwnership();
 
   // relate owned rigid bodies to all hosting processors
   RelateOwnedRigidBodiesToHostingProcs();
+
+  // communicate rigid body states
+  CommunicateRigidBodyStates(previouslyownedrigidbodies);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
@@ -365,6 +377,92 @@ void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
 
       // insert processor id the gathered global id of rigid body is received from
       ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
+    }
+
+    if (position != rmsg.size())
+      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
+    std::vector<int>& previouslyownedrigidbodies)
+{
+  // prepare buffer for sending and receiving
+  std::map<int, std::vector<char>> sdata;
+  std::map<int, std::vector<char>> rdata;
+
+  // iterate over previously owned rigid bodies
+  for (const int rigidbody_k : previouslyownedrigidbodies)
+  {
+    // owner of rigid body k
+    const int owner_k = ownerofrigidbodies_[rigidbody_k];
+
+    // get reference to rigid body states
+    const double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    const std::vector<double>& inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k];
+    const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+    const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
+    const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    const std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
+    const std::vector<double>& angacc_k =
+        rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+
+    // communicate states to owning processor
+    if (owner_k != myrank_)
+    {
+      // pack data for sending
+      DRT::PackBuffer data;
+      data.StartPacking();
+
+      data.AddtoPack(rigidbody_k);
+      data.AddtoPack(mass_k);
+      for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
+      for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(acc_k[i]);
+      for (int i = 0; i < 3; ++i) data.AddtoPack(angacc_k[i]);
+
+      sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
+    }
+  }
+
+  // communicate data via non-buffered send from proc to proc
+  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+
+  // unpack and store received data
+  for (auto& p : rdata)
+  {
+    std::vector<char>& rmsg = p.second;
+
+    std::vector<char>::size_type position = 0;
+
+    while (position < rmsg.size())
+    {
+      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+
+      // get reference to rigid body states
+      double& mass_k = rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
+      std::vector<double>& inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k];
+      std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
+      std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
+      std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k =
+          rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
+      std::vector<double>& acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k];
+      std::vector<double>& angacc_k =
+          rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k];
+
+      DRT::ParObject::ExtractfromPack(position, rmsg, mass_k);
+      for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+      for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
     }
 
     if (position != rmsg.size())

@@ -200,6 +200,18 @@ namespace PARTICLERIGIDBODY
      */
     void RelateOwnedRigidBodiesToHostingProcs();
 
+    /*!
+     * \brief communicate rigid body states
+     *
+     * Communicate required states of all rigid bodies previously owned by this processor to the new
+     * owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] previouslyownedrigidbodies rigid bodies previously owned by this processor
+     */
+    void CommunicateRigidBodyStates(std::vector<int>& previouslyownedrigidbodies);
+
     //! communicator
     const Epetra_Comm& comm_;
 
