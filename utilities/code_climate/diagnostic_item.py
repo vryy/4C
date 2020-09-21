@@ -23,7 +23,7 @@ class DiagnosticItem:
         return str(hashlib.md5(hash_source.encode()).hexdigest())
 
     def global_hash(self, hash_set):
-        for i in range(10000):
+        for i in range(1000):
 
             hash_source = "{0}/{1}/{2}/{3}/{4}/{5}".format(
                 self.name,
