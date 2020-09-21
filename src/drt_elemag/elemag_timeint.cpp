@@ -19,6 +19,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_mat/electromagnetic.H"
 
@@ -51,7 +52,9 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       calcerr_(DRT::INPUT::IntegralValue<bool>(*params_, "CALCERR")),
       postprocess_(DRT::INPUT::IntegralValue<bool>(*params_, "POSTPROCESS")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
-      sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1))
+      sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1)),
+      equilibration_method_(
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(*params, "EQUILIBRATION"))
 {
   // constructor supposed to be empty!
 
@@ -69,7 +72,7 @@ ELEMAG::ElemagTimeInt::~ElemagTimeInt() {}
 void ELEMAG::ElemagTimeInt::Init()
 {
   // get dof row map
-  const Epetra_Map *dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcp(discret_->DofRowMap(), false);
 
   // check time-step length
   if (dtp_ <= 0.0) dserror("Zero or negative time-step length!");
@@ -87,6 +90,7 @@ void ELEMAG::ElemagTimeInt::Init()
   zeros_ = LINALG::CreateVector(*dofrowmap, true);
 
   trace_ = LINALG::CreateVector(*dofrowmap, true);
+
   // Map of the dirichlet conditions
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   // Why is this in a new scope?
@@ -113,6 +117,9 @@ void ELEMAG::ElemagTimeInt::Init()
 
   // create residual vector
   residual_ = LINALG::CreateVector(*dofrowmap, true);
+
+  // instantiate equilibration class
+  equilibration_ = Teuchos::rcp(new LINALG::EquilibrationSparse(equilibration_method_, dofrowmap));
 
   // write mesh
   output_->WriteMesh(0, 0.0);
@@ -189,12 +196,14 @@ void ELEMAG::ElemagTimeInt::Integrate()
     // increment time and step
     IncrementTimeAndStep();
 
-    // Update RHS for boundary conditions
-    ApplyDirichletToSystem(true);
+    // Apply BCS to RHS
     ComputeSilverMueller(true);
+    ApplyDirichletToSystem(true);
 
+    // Solve for the trace values
     Solve();
 
+    // Update the local solutions
     UpdateInteriorVariablesAndAssembleRHS();
 
     // The output to file only once in a while
@@ -252,8 +261,7 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
 /*----------------------------------------------------------------------*
  |  Set initial field by given function (public)       berardocco 03/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::SetInitialField(
-    const INPAR::ELEMAG::InitialField init, Teuchos::ParameterList &start_params)
+void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno)
 {
 // time measurement: SetInitialField just in the debug phase
 #ifdef DEBUG
@@ -287,17 +295,18 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
     {
       if (!myrank_)
       {
-        std::cout << "Initializing field as specified by STARTFUNCNO "
-                  << start_params.get<int>("startfuncno") << std::endl;
+        std::cout << "Initializing field as specified by STARTFUNCNO " << startfuncno << std::endl;
       }
 
       // Initializing siome vectors and parameters
       Epetra_SerialDenseVector elevec1, elevec2, elevec3;
       Epetra_SerialDenseMatrix elemat1, elemat2;
-      start_params.set<int>("action", ELEMAG::project_field);
-      start_params.set<double>("time", time_);
-      start_params.set<double>("dt", dtp_);
-      start_params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+      Teuchos::ParameterList initParams;
+      initParams.set<int>("action", ELEMAG::project_field);
+      initParams.set("startfuncno", startfuncno);
+      initParams.set<double>("time", time_);
+      initParams.set<double>("dt", dtp_);
+      initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
       DRT::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyColElements(); ++el)
@@ -313,7 +322,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
           elevec1.Shape(la[0].lm_.size(), 1);
         if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
         ele->Evaluate(
-            start_params, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+            initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       break;
     }  // case INPAR::ELEMAG::initfield_field_by_function
@@ -333,6 +342,89 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
   }
   return;
 }  // SetInitialField
+
+/*----------------------------------------------------------------------*
+ |  Set initial field by scatra solution (public)      berardocco 05/20 |
+ *----------------------------------------------------------------------*/
+void ELEMAG::ElemagTimeInt::SetInitialElectricField(
+    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization> &scatradis)
+{
+  // we have to call an init for the elements first!
+  Teuchos::ParameterList initParams;
+  DRT::Element::LocationArray la(2);
+
+  Epetra_SerialDenseVector elevec1, elevec2;  //, elevec3;
+  Epetra_SerialDenseMatrix elemat;            //, elemat2;
+
+  initParams.set<int>("action", ELEMAG::project_electric_from_scatra_field);
+  initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
+
+  Teuchos::RCP<Epetra_Vector> phicol;
+  bool ishdg = false;
+  if (Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(scatradis) != Teuchos::null)
+  {
+    phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap(2))));
+    ishdg = true;
+    initParams.set<bool>("ishdg", ishdg);
+  }
+  else
+    phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap())));
+
+  LINALG::Export(*phi, *phicol);
+
+  // Loop MyColElements
+  for (int el = 0; el < discret_->NumMyColElements(); ++el)
+  {
+    // determine owner of the scatra element
+    DRT::Element *scatraele = scatradis->lColElement(el);
+    DRT::Element *elemagele = discret_->lColElement(el);
+
+    elemagele->LocationVector(*discret_, la, false);
+    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
+      elevec1.Shape(la[0].lm_.size(), 1);
+    if (elevec2.M() != discret_->NumDof(1, elemagele))
+      elevec2.Shape(discret_->NumDof(1, elemagele), 1);
+
+    Teuchos::RCP<Epetra_SerialDenseVector> nodevals_phi =
+        Teuchos::rcp(new Epetra_SerialDenseVector);
+
+    if (ishdg)
+    {
+      std::vector<int> localDofs = scatradis->Dof(2, scatraele);
+      DRT::UTILS::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
+      // Obtain scatra ndofs knowing that the vector contains the values of the transported scalar
+      // plus numdim_ components of its gradient
+      initParams.set<unsigned int>("ndofs", localDofs.size() / (numdim_ + 1));
+    }
+    else
+    {
+      int numscatranode = scatraele->NumNode();
+      (*nodevals_phi).Resize(numscatranode);
+      // fill nodevals with node coords and nodebased solution values
+      DRT::Node **scatranodes = scatraele->Nodes();
+      for (int i = 0; i < numscatranode; ++i)
+      {
+        int dof = scatradis->Dof(0, scatranodes[i], 0);
+        int lid = phicol->Map().LID(dof);
+        if (lid < 0)
+          dserror("given dof is not stored on proc %d although map is colmap", myrank_);
+        else
+          (*nodevals_phi)[i] = (*(phicol.get()))[lid];
+      }
+    }
+
+    initParams.set<Teuchos::RCP<Epetra_SerialDenseVector>>("nodevals_phi", nodevals_phi);
+
+    // evaluate the element
+    elemagele->Evaluate(
+        initParams, *discret_, la[0].lm_, elemat, elemat, elevec1, elevec2, elevec1);
+  }
+  discret_->Comm().Barrier();  // other procs please wait for the one, who did all the work
+
+  Output();
+
+  return;
+}  // SetInitialElectricField
 
 /*----------------------------------------------------------------------*
  |  Compute error routine (public)                     berardocco 08/18 |
@@ -518,10 +610,11 @@ void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
     // increment time and step
     IncrementTimeAndStep();
 
-    // Update boundary condition RHS
-    ApplyDirichletToSystem(true);
+    // Apply BCS to RHS
     ComputeSilverMueller(true);
+    ApplyDirichletToSystem(true);
 
+    // Solve
     Solve();
 
     UpdateInteriorVariablesAndAssembleRHS();
@@ -593,8 +686,11 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   sysmat_->Complete();
 
   // Compute matrices and RHS for boundary conditions
-  ApplyDirichletToSystem(false);
   ComputeSilverMueller(false);
+  ApplyDirichletToSystem(false);
+
+  // Equilibrate matrix
+  equilibration_->EquilibrateMatrix(sysmat_);
 
   return;
 }  // AssembleMatAndRHS
@@ -652,7 +748,7 @@ void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
 /*----------------------------------------------------------------------*
  |  Compute Silver-Mueller         (public)            berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool resonly)
+void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool do_rhs)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + Compute Silver-Mueller BC");
 
@@ -666,11 +762,14 @@ void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool resonly)
   {
     Teuchos::ParameterList eleparams;
     eleparams.set<double>("time", time_);
-    eleparams.set<bool>("resonly", resonly);
+    eleparams.set<bool>("do_rhs", do_rhs);
     eleparams.set<int>("action", ELEMAG::calc_abc);
     // Evaluate the boundary condition
-    discret_->EvaluateCondition(
-        eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+    if (do_rhs)
+      discret_->EvaluateCondition(eleparams, residual_, condname);
+    else
+      discret_->EvaluateCondition(
+          eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
   }
 
   return;
@@ -681,12 +780,19 @@ void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool resonly)
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::Solve()
 {
+  // Equilibrate RHS
+  equilibration_->EquilibrateRHS(residual_);
+
   // This part has only been copied from the fluid part to be able to use algebraic multigrid
   // solvers and has to be checked
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
   // solve for trace
   solver_->Solve(sysmat_->EpetraOperator(), trace_, residual_, true, false, Teuchos::null);
+
+
+  // Unequilibrate solution vector
+  equilibration_->UnequilibrateIncrement(trace_);
 
   return;
 }  // Solve

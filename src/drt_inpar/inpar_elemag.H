@@ -53,7 +53,11 @@ namespace INPAR
       /// Initialize a zero field on all the components
       initfield_zero_field,
       /// Initialize the components as specified by the function
-      initfield_field_by_function
+      initfield_field_by_function,
+      /// Initialize the electric field with a CG scatra solution
+      initfield_scatra,
+      /// Initialize the electric field with a HDG scatra solution
+      initfield_scatra_hdg
     };
 
     /// Define all valid parameters for electromagnetic problem.

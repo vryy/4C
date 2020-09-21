@@ -807,6 +807,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(
       //----------------------------------------------------------------
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
         CalcMatAndRhsMultiScale(ele, emat, erhs, k, iquad, timefacfac, rhsfac);
+
+      //----------------------------------------------------------------
+      // 8) Compute Rhs for ElectroMagnetic Diffusion equation
+      // the term includes the divergence og the electric current
+      //----------------------------------------------------------------
+      if (scatrapara_->IsEMD()) CalcRHSEMD(ele, erhs, rhsfac);
+
     }  // end loop all scalars
   }    // end loop Gauss points
 
@@ -2196,6 +2203,37 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   return;
 }
 
+/*-------------------------------------------------------------------- *
+ |  standard Galerkin EMD right hand side             berardocco 05/20 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
+    const DRT::Element* const ele,  //!< element
+    Epetra_SerialDenseVector& erhs, const double rhsfac)
+{
+  // (SPATIAL) FUNCTION BUSINESS
+  const int functno = scatrapara_->EMDSource();
+  if (functno <= 0)
+    dserror(
+        "For electromagnetic diffusion simulations a current density source function has to be "
+        "given.");
+
+  std::vector<double> current(nsd_, 0);
+  for (unsigned jnode = 0; jnode < nen_; jnode++)
+    for (unsigned int d = 0; d < nsd_; ++d)
+      current[d] +=
+          funct_(jnode) * DRT::Problem::Instance()
+                              ->Funct(functno - 1)
+                              .Evaluate(d, (ele->Nodes()[jnode])->X(), scatraparatimint_->Time());
+
+  for (unsigned vi = 0; vi < nen_; ++vi)
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      erhs[vi] += derxy_(d, vi) * current[d] * rhsfac;
+    }
+
+  return;
+}
 
 /*------------------------------------------------------------------------------*
  | set internal variables                                          vuong 11/14  |

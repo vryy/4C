@@ -1903,6 +1903,7 @@ set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
   src/drt_elemag/elemag_timeint.cpp
   src/drt_elemag/elemag_resulttest.cpp
+  src/drt_elemag/elemag_utils_clonestrategy.cpp
 )
 set(OBJS_DRT_ELEMAG_LIB
   src/drt_elemag/elemag_ele_boundary_calc.cpp

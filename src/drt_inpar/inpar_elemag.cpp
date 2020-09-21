@@ -11,6 +11,7 @@
 #include "drt_validparameters.H"
 #include "inpar_elemag.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "../linalg/linalg_equilibrate.H"
 
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -66,12 +67,16 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
-    Teuchos::Tuple<std::string, 2> name;
-    Teuchos::Tuple<int, 2> label;
+    Teuchos::Tuple<std::string, 4> name;
+    Teuchos::Tuple<int, 4> label;
     name[0] = "zero_field";
     label[0] = initfield_zero_field;
     name[1] = "field_by_function";
     label[1] = initfield_field_by_function;
+    name[2] = "field_by_steady_state";
+    label[2] = initfield_scatra;
+    name[3] = "field_by_steady_state_hdg";
+    label[3] = initfield_scatra_hdg;
 
     setStringToIntegralParameter<int>("INITIALFIELD", "zero_field", "Initial field for ele problem",
         name, label, &electromagneticdyn);
@@ -84,6 +89,18 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   }
 
   IntParameter("ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
+
+  // flag for equilibration of global system of equations
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
+          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
+          LINALG::EquilibrationMethod::columns_full, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_full,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+      &electromagneticdyn);
 
   // PML
   // StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the pml

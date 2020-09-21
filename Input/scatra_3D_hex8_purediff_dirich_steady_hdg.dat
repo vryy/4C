@@ -21,11 +21,10 @@ TIMESTEP                        0.1
 THETA                           1.0
 VELOCITYFIELD                   zero
 VELFUNCNO                       -2
-INITIALFIELD                    field_by_function
-INITFUNCNO                      1
+INITIALFIELD                    zero_field
 FSSUGRDIFF                      No
 CALCERROR                       error_by_function
-CALCERRORNO                     2
+CALCERRORNO                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Superlu
@@ -40,8 +39,6 @@ CONVTOL                         1e-15
 -------------------------------------------------------------------MATERIALS
 MAT 0 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0 
-----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 2*x
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 0.0 TOLERANCE 1E-10
@@ -54,7 +51,7 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

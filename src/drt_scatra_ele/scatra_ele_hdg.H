@@ -190,6 +190,9 @@ namespace DRT
         onfdofs_ = onfdofs;
       }
 
+      //! Set completepol_ variable
+      void SetCompletePolynomialSpace(bool completepol) { completepol_ = completepol; }
+
       //! Returns the degree of the element
       int UsesCompletePolynomialSpace() const { return completepol_; }
 
