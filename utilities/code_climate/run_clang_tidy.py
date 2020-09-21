@@ -115,7 +115,10 @@ def run_tidy(args, tmpdir, build_path, queue, lock, failed_files):
             sys.stdout.flush()
 
         process = subprocess.Popen(
-            invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            " ".join(invocation),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
         )
         _, stderr = process.communicate()
         with lock:
@@ -206,9 +209,9 @@ def main():
         if args.quiet:
             # Even with -quiet we still want to check if we can call clang-tidy.
             with open(os.devnull, "w") as dev_null:
-                subprocess.check_call(invocation, stdout=dev_null)
+                subprocess.check_call(" ".join(invocation), stdout=dev_null, shell=True)
         else:
-            subprocess.check_call(invocation)
+            subprocess.check_call(" ".join(invocation), shell=True)
     except:
         print("Unable to run clang-tidy.", file=sys.stderr)
         sys.exit(1)
