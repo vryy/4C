@@ -178,6 +178,26 @@ namespace PARTICLERIGIDBODY
     void InitAffiliationPairHandler();
 
     /*!
+     * \brief get packed rigid body state data
+     *
+     * Get the packed required states of all rigid bodies owned by this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[out] buffer buffer of packed rigid body state data
+     */
+    void GetPackedRigidBodyStates(std::vector<char>& buffer) const;
+
+    /*!
+     * \brief extract packed rigid body state data
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] buffer buffer of packed rigid body state data
+     */
+    void ExtractPackedRigidBodyStates(std::vector<char>& buffer);
+
+    /*!
      * \brief update rigid body ownership
      *
      * Update the ownership of rigid bodies on all processors. First, the global ids of rigid bodies

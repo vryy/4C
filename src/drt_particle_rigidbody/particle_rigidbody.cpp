@@ -91,6 +91,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
 
   // write restart of affiliation pair handler
   affiliationpairs_->WriteRestart();
+
+  // get packed rigid body state data
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  GetPackedRigidBodyStates(*buffer);
+
+  // write rigid body state data
+  binwriter->WriteCharVector("RigidBodyStateData", buffer);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
@@ -101,6 +108,16 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
 
   // read restart of affiliation pair handler
   affiliationpairs_->ReadRestart(reader);
+
+  // allocate rigid body states
+  AllocateRigidBodyStates();
+
+  // read rigid body state data
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  reader->ReadCharVector(buffer, "RigidBodyStateData");
+
+  // extract packed rigid body state data
+  ExtractPackedRigidBodyStates(*buffer);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
@@ -287,6 +304,77 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
 
   // init affiliation pair handler
   affiliationpairs_->Init();
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<char>& buffer) const
+{
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get reference to rigid body states
+    const double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    const std::vector<double>& inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k];
+    const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+    const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
+    const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    const std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
+    const std::vector<double>& angacc_k =
+        rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+
+    // pack data for sending
+    DRT::PackBuffer data;
+    data.StartPacking();
+
+    data.AddtoPack(rigidbody_k);
+    data.AddtoPack(mass_k);
+    for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
+    for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(acc_k[i]);
+    for (int i = 0; i < 3; ++i) data.AddtoPack(angacc_k[i]);
+
+    buffer.insert(buffer.end(), data().begin(), data().end());
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vector<char>& buffer)
+{
+  std::vector<char>::size_type position = 0;
+
+  while (position < buffer.size())
+  {
+    const int rigidbody_k = DRT::ParObject::ExtractInt(position, buffer);
+
+    // get global ids of rigid bodies owned by this processor
+    ownedrigidbodies_.push_back(rigidbody_k);
+
+    // get reference to rigid body states
+    double& mass_k = rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
+    std::vector<double>& inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k];
+    std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
+    std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
+    std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
+    std::vector<double>& angvel_k =
+        rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
+    std::vector<double>& acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k];
+    std::vector<double>& angacc_k =
+        rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k];
+
+    DRT::ParObject::ExtractfromPack(position, buffer, mass_k);
+    for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, buffer, inertia_k[i]);
+    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, pos_k[i]);
+    for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, buffer, rot_k[i]);
+    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, vel_k[i]);
+    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, angvel_k[i]);
+    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, acc_k[i]);
+    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, angacc_k[i]);
+  }
+
+  if (position != buffer.size())
+    dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
