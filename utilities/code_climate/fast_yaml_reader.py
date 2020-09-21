@@ -98,7 +98,7 @@ def write_list_of_issues(fout, lst):
     issues_dict = sort_issues_by_file(lst)
 
     hash_set = set()
-    fout.write("[")
+    fout.write("[\n")
     first = True
     # go through files
     for issues in issues_dict.values():
@@ -106,8 +106,8 @@ def write_list_of_issues(fout, lst):
         issues_sorted = sort_file_issues_by_offset(issues)
 
         # open source file
-        write_file_issues(fout, issues[0].file, issues, hash_set, first)
-    fout.write("]")
+        write_file_issues(fout, issues[0].file, issues_sorted, hash_set, first)
+    fout.write("\n]")
 
 
 def write_file_issues(fout, filename, issues, hash_set, first):
@@ -115,6 +115,7 @@ def write_file_issues(fout, filename, issues, hash_set, first):
     previous_line = None
     current_line = None
     sum_offset = 0
+    last_successful = True
     with open(filename, "r") as source_file:
 
         for diagnosticItem in issues:
@@ -134,7 +135,12 @@ def write_file_issues(fout, filename, issues, hash_set, first):
             diagnosticItem.line = current_line
             diagnosticItem.previous_line = previous_line
 
-            if not first:
-                fout.write(",")
-            diagnosticItem.write(fout, hash_set)
+            if not first and last_successful:
+                fout.write(",\n")
+            try:
+                diagnosticItem.write(fout, hash_set)
+                last_successful = True
+            except:
+                last_successful = False
+
             first = False

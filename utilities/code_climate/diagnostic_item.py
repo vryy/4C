@@ -23,9 +23,9 @@ class DiagnosticItem:
         return str(hashlib.md5(hash_source.encode()).hexdigest())
 
     def global_hash(self, hash_set):
-        for i in range(100):
+        for i in range(10000):
 
-            hash_source = "{0}{1}{2}{3}{4}{5}".format(
+            hash_source = "{0}/{1}/{2}/{3}/{4}/{5}".format(
                 self.name,
                 self.message,
                 self.get_relative_path(),
@@ -33,12 +33,12 @@ class DiagnosticItem:
                 self.previous_line,
                 i,
             )
-            hash_str = str(hashlib.md5(hash_source.encode()).hexdigest())
+            hash_str = str(hashlib.md5(hash_source.encode()).hexdigest()[:9])
             if hash_str not in hash_set:
                 hash_set.add(hash_str)
                 return hash_str
 
-        return RuntimeError("Should never hend here")
+        return RuntimeError("Should never end here")
 
     def get_relative_path(self):
         return os.path.relpath(self.file, self.srcdir)

@@ -205,7 +205,7 @@ def main():
         invocation.append("-p=" + build_path)
 
         invocation.append(files[0])
-        print(invocation)
+
         if args.quiet:
             # Even with -quiet we still want to check if we can call clang-tidy.
             with open(os.devnull, "w") as dev_null:
