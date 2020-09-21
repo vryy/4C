@@ -6,24 +6,7 @@ Checks: >-
   bugprone-*,
   boost-*,
   misc-suspicious-semicolon,
-  misc-assert-side-effect,
-  modernize-use-nullptr,
-  -bugprone-reserved-identifier,
-  -modernize-use-trailing-return-type,
-  -readability-magic-numbers,
-  -readability-braces-around-statements,
-  -readability-implicit-bool-conversion,
-  -readability-redundant-control-flow,
-  -modernize-use-default-member-init,
-  -readability-identifier-naming,
-  -bugprone-use-after-move,
-  -bugprone-unused-return-value,
-  -bugprone-suspicious-string-compare,
-  -bugprone-infinite-loop,
-  -bugprone-assert-side-effect,
-  -bugprone-multiple-statement-macro,
-  -bugprone-suspicious-semicolon,
-  -bugprone-throw-keyword-missing
+  misc-assert-side-effect
 CheckOptions:
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase
