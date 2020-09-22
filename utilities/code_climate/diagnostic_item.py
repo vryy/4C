@@ -23,20 +23,20 @@ class DiagnosticItem:
         return str(hashlib.md5(hash_source.encode()).hexdigest())
 
     def global_hash(self, hash_set):
+        hash_source = "{0}/{1}/{2}/{3}/{4}".format(
+            self.name,
+            self.message,
+            self.get_relative_path(),
+            self.line,
+            self.previous_line,
+        )
+        hash_str = str(hashlib.md5(hash_source.encode()).hexdigest()[:9])
         for i in range(1000):
+            my_hash = "{0}-{1}".format(hash_str, i)
 
-            hash_source = "{0}/{1}/{2}/{3}/{4}/{5}".format(
-                self.name,
-                self.message,
-                self.get_relative_path(),
-                self.line,
-                self.previous_line,
-                i,
-            )
-            hash_str = str(hashlib.md5(hash_source.encode()).hexdigest()[:9])
-            if hash_str not in hash_set:
-                hash_set.add(hash_str)
-                return hash_str
+            if my_hash not in hash_set:
+                hash_set.add(my_hash)
+                return my_hash
 
         return RuntimeError("Should never end here")
 

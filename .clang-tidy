@@ -5,8 +5,18 @@ Checks: >-
   performance-*,
   bugprone-*,
   boost-*,
-  misc-suspicious-semicolon,
-  misc-assert-side-effect
+  -bugprone-reserved-identifier,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-braces-around-statements,
+  -readability-redundant-control-flow,
+  -modernize-use-default-member-init,
+  -bugprone-use-after-move,
+  -bugprone-unused-return-value,
+  -bugprone-suspicious-string-compare,
+  -bugprone-infinite-loop,
+  -bugprone-assert-side-effect,
+  -bugprone-multiple-statement-macro
 CheckOptions:
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase

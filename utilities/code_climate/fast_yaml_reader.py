@@ -99,14 +99,16 @@ def write_list_of_issues(fout, lst):
 
     hash_set = set()
     fout.write("[\n")
-    first = True
+    num_written = 0
     # go through files
     for issues in issues_dict.values():
         # sort issues for their offset
         issues_sorted = sort_file_issues_by_offset(issues)
 
         # open source file
-        write_file_issues(fout, issues[0].file, issues_sorted, hash_set, first)
+        num_written += write_file_issues(
+            fout, issues[0].file, issues_sorted, hash_set, num_written == 0
+        )
     fout.write("\n]")
 
 
@@ -116,6 +118,7 @@ def write_file_issues(fout, filename, issues, hash_set, first):
     current_line = None
     sum_offset = 0
     last_successful = True
+    num_successful = 0
     with open(filename, "r") as source_file:
 
         for diagnosticItem in issues:
@@ -140,7 +143,11 @@ def write_file_issues(fout, filename, issues, hash_set, first):
             try:
                 diagnosticItem.write(fout, hash_set)
                 last_successful = True
-            except:
+                num_successful += 1
+            except Exception as e:
+                print(e)
                 last_successful = False
 
             first = False
+
+    return num_successful
