@@ -268,6 +268,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
         params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
     if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
       source = PAR::InelasticSource::inelastic_concentration;
+    else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
+      source = PAR::InelasticSource::inelastic_temperature;
     else
       dserror("unknown scalaratype");
 
@@ -705,7 +707,8 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
       if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
           (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
-          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso) and
+          (materialtype != INPAR::MAT::mfi_lin_temp_iso))
         dserror(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you "
             "need to use the material 'MAT_InelasticDefgradLinScalarAniso' "

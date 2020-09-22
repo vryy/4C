@@ -192,7 +192,10 @@ void SSI::SSI_Part2WC::DoScatraStep()
   ScaTraField()->Solve();
 
   // set structure-based scalar transport values
-  return SetScatraSolution(ScaTraField()->Phinp());
+  SetScatraSolution(ScaTraField()->Phinp());
+
+  // evaluate temperature from function and set to structural discretization
+  EvaluateAndSetTemperatureField();
 }
 
 /*----------------------------------------------------------------------*
@@ -752,6 +755,9 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 
     // set relaxed scalars
     SetScatraSolution(phinp);
+
+    // evaluate temperature from function and set to structural discretization
+    EvaluateAndSetTemperatureField();
 
     // prepare partitioned structure step
     if (IterationCount() != 1 and UseOldStructureTimeInt())

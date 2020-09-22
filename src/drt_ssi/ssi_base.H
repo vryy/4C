@@ -208,6 +208,9 @@ namespace SSI
     /// set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
+    /// set temperature field  by evaluating time dependent function
+    void EvaluateAndSetTemperatureField();
+
     //! get bool indicating if we have at least one ssi interface meshtying condition
     bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
 
@@ -255,34 +258,52 @@ namespace SSI
     /// set structure velocity field on scatra field
     void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
 
+    //! Type of coupling strategy between the two fields of the SSI problems
+    const INPAR::SSI::FieldCoupling fieldcoupling_;
+
     //! scatra-scatra interface coupling adapter for structure field
     Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
 
     //! scatra-scatra interface coupling adapter for structure field
     Teuchos::RCP<ADAPTER::CouplingSlaveConverter> icoup_structure_slave_converter_;
 
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+    //! flag indicating if class is setup
+    bool issetup_;
+
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
     //! (partitioned algorithm)
     int iter_;
-
-    //! map for interior and master-side structural degrees of freedom
-    Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
     //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2:
     //! master-side degrees of freedom)
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
 
-    /// ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
-
-    /// ptr to underlying structure
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    //! map for interior and master-side structural degrees of freedom
+    Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
     /// ptr underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
+
+    //! bool indicating if we have at least one ssi interface meshtying condition
+    const bool ssiinterfacemeshtying_;
+
+    /// ptr to underlying structure
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+
+    /// ptr to the underlying structure problem base algorithm
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+
+    //! number of function for prescribed temperature
+    const int temperature_funct_num_;
+
+    //! vector of temperatures
+    Teuchos::RCP<Epetra_Vector> temperature_vector_;
 
     //! Temporary flag to indicate whether old strutural time integration is used.
     //! todo Remove as soon as structural elements are adapted to new structure.
@@ -291,17 +312,6 @@ namespace SSI
     /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
-    //! Type of coupling strategy between the two fields of the SSI problems
-    const INPAR::SSI::FieldCoupling fieldcoupling_;
-
-    //! flag indicating if class is setup
-    bool issetup_;
-
-    //! flag indicating if class is initialized
-    bool isinit_;
-
-    //! bool indicating if we have at least one ssi interface meshtying condition
-    const bool ssiinterfacemeshtying_;
   };  // SSI_Base
 }  // namespace SSI
 #endif /* SSI_BASE_H_ */

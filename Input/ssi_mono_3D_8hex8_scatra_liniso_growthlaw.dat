@@ -4,15 +4,19 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-simple, academic test case for monolithic scalar-structure interaction:
+simple, academic test case for monolithic scalar-structure interaction with temperature dependent expansion:
 - three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 8 hex8 elements
 - constant initial value 0.0 of transported scalar
-- scalar controlled via Volume Dirichlet condition (linearly ramped from 0.0 to 10.0)
+- scalar controlled via Volume Dirichlet condition (cosine form 0 to 10 to prevent oscillations)
+- temperature prescribed by temporal function (cosine from 300 to 310 to prevent oscillations)
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
-- MAT_InelasticDefgradLinScalarIso: isotropic strain dependent on scalar concentration according to the following equation:
-- F_{in} = [1 + GrowthFac * det(F) * (c - RefConc)]^(1/3) I
-- point in the center of the domain is fixed by Point Dirichlet condition
+- MAT_InelasticDefgradLinScalarIso: isotropic strain dependent on scalar concentration:
+     F_{in,c} = [1 + GrowthFac_c * det(F) * (c - RefConc)]^(1/3) I
+- MAT_InelasticDefgradLinTempIso: isotropic strain dependent on temperature:
+     F_{in,t} = [1 + GrowthFac_t * (t - RefTemp)]^(1/3) I
+- point in the center of the domain is fixed by Point Dirichlet condition to suppress displacements
+- center points on surfaces in x and z are fixed to suppress rotations
 -> due to isotropic strain perfectly symmetric deformation is achieved
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
@@ -33,6 +37,8 @@ VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVFORM                        conservative
+----------------------------------------------------------------ELCH CONTROL
+TEMPERATURE_FROM_FUNCT          2
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         100
 TIMESTEP                        0.1
@@ -45,35 +51,42 @@ MATRIXTYPE                      sparse
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 1.0
-MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-3
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 2 INELDEFGRADFACIDS 4 5 DENS 1.0e-3
 MAT 3 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
-MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 0.1 SCALAR1_RefConc 0.0
+MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 0.04 SCALAR1_RefConc 0.0
+MAT 5 MAT_InelasticDefgradLinTempIso Temp_GrowthFac 0.1 RefTemp 300.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION 5*(1-cos(t*pi/10))
+------------------------------------------------------------FUNCT2
+FUNCTION 300+5*(1-cos(t*pi/10))
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.99999999999998046e+00 TOLERANCE 1.e-08
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -3.00160900317053514e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -3.00160900317051915e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -3.00160900317051738e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE -3.00160900317051160e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 3.00160900317050716e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 3.00160900317051915e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 3.00160900317050494e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE 3.00160900317052182e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE 3.00160900317051560e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE  1.00000000000000000e+01 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.15513311363108295e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.15513311363106652e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -1.15513311363106919e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE -1.15513311363106785e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE  1.15513311363106586e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE  1.15513311363106941e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE  1.15513311363107918e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE  1.15513311363107007e+00 TOLERANCE 1.2e-09
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE  1.15513311363106452e+00 TOLERANCE 1.2e-09
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
+NDPOINT 3
 NDVOL   1
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 1
+DPOINT 3
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT none none none
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    7 DNODE 1
+NODE    21 DNODE 2
+NODE    8 DNODE 3
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY

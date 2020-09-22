@@ -39,24 +39,27 @@
 /*----------------------------------------------------------------------*/
 SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
-      icoup_structure_(Teuchos::null),
-      icoup_structure_slave_converter_(Teuchos::null),
-      iter_(0),
-      map_structure_condensed_(Teuchos::null),
-      maps_structure_(Teuchos::null),
-      struct_adapterbase_ptr_(Teuchos::null),
-      structure_(Teuchos::null),
-      scatra_base_algorithm_(Teuchos::null),
-      ssicoupling_(Teuchos::null),
-      use_old_structure_(false),  // todo temporary flag
-      zeros_(Teuchos::null),
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
-      issetup_(false),
+      icoup_structure_(Teuchos::null),
+      icoup_structure_slave_converter_(Teuchos::null),
       isinit_(false),
+      issetup_(false),
+      iter_(0),
+      maps_structure_(Teuchos::null),
+      map_structure_condensed_(Teuchos::null),
+      scatra_base_algorithm_(Teuchos::null),
+      ssicoupling_(Teuchos::null),
       ssiinterfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
-          nullptr)
+          nullptr),
+      structure_(Teuchos::null),
+      struct_adapterbase_ptr_(Teuchos::null),
+      temperature_funct_num_(
+          DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
+      temperature_vector_(Teuchos::null),
+      use_old_structure_(false),  // todo temporary flag
+      zeros_(Teuchos::null)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -213,6 +216,24 @@ void SSI::SSI_Base::Setup()
         INPAR::SSI::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
           *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp());
+
+    // temperature is non primary variable. Only set, if function for temperature is given
+    if (temperature_funct_num_ != -1)
+    {
+      const int numDofsPerNodeTemp = 1;  // defined by temperature field
+      const int numDofsTemp = ScaTraField()->Discretization()->NumGlobalNodes() *
+                              numDofsPerNodeTemp;  // number of dofs for temperature
+      const int numAllDofGIDs = ScaTraField()->DofRowMap()->MaxAllGID();  // number of all dofs
+
+      temperature_vector_ =
+          Teuchos::rcp(new Epetra_Vector(Epetra_Map(numDofsTemp, numAllDofGIDs + 1, Comm()), true));
+
+      temperature_vector_->PutScalar(
+          DRT::Problem::Instance()->Funct(temperature_funct_num_ - 1).EvaluateTime(Time()));
+
+      ssicoupling_->SetTemperatureField(
+          *DRT::Problem::Instance()->GetDis("structure"), temperature_vector_);
+    }
 
     // set up structural base algorithm
     struct_adapterbase_ptr_->Setup();
@@ -580,6 +601,23 @@ void SSI::SSI_Base::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*structure_->Discretization(), phi);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::EvaluateAndSetTemperatureField()
+{
+  // temperature is non primary variable. Only set, if function for temperature is given
+  if (temperature_funct_num_ != -1)
+  {
+    // evaluate temperature at current time and put to scalar
+    const double temperature =
+        DRT::Problem::Instance()->Funct(temperature_funct_num_ - 1).EvaluateTime(Time());
+    temperature_vector_->PutScalar(temperature);
+
+    // set temperature vector to structure discretization
+    ssicoupling_->SetTemperatureField(*structure_->Discretization(), temperature_vector_);
+  }
 }
 
 /*----------------------------------------------------------------------*/

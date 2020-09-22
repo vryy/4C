@@ -67,6 +67,10 @@ namespace SSI
     virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
         ) = 0;
+
+    //! set temperature field on structure field
+    virtual void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
   };
 
   //! solid-scatra coupling for matching volume meshes
@@ -112,6 +116,9 @@ namespace SSI
     virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
     );
+
+    void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:
     //! flag indicating if class is setup
@@ -193,6 +200,12 @@ namespace SSI
     virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
     );
+
+    void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
+    {
+      dserror("only for matching nodes");
+    };
 
    private:
     //! adapter to mortar framework
@@ -288,6 +301,12 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
     );
 
+    void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
+    {
+      dserror("only for matching nodes");
+    };
+
    private:
     //! volume coupling (using mortar) adapter
     Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
@@ -371,6 +390,11 @@ namespace SSI
     virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
     );
+
+    void SetTemperatureField(DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
+    {
+      dserror("only for matching nodes");
+    };
 
    private:
     //! flag indicating if class is setup
