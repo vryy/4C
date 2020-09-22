@@ -211,6 +211,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
         rigidbodyuniqueglobalidhandler_->InsertFreedGlobalId(requesteduniqueglobalids[i]);
 }
 
+void PARTICLERIGIDBODY::RigidBodyHandler::AllocateRigidBodyStates()
+{
+  // number of global ids
+  const int numglobalids = rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() + 1;
+
+  // allocate stored states
+  rigidbodydatastate_->AllocateStoredStates(numglobalids);
+}
+
 void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody");

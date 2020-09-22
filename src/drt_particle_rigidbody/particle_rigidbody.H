@@ -130,6 +130,13 @@ namespace PARTICLERIGIDBODY
     void SetUniqueGlobalIdsForAllRigidBodies();
 
     /*!
+     * \brief allocate rigid body states
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void AllocateRigidBodyStates();
+
+    /*!
      * \brief distribute rigid body
      *
      * \author Sebastian Fuchs \date 08/2020

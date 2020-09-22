@@ -590,6 +590,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialRigidBodies()
   // set unique global ids for all rigid bodies
   if (not isrestarted_) particlerigidbody_->SetUniqueGlobalIdsForAllRigidBodies();
 
+  // allocate rigid body states
+  if (not isrestarted_) particlerigidbody_->AllocateRigidBodyStates();
+
   // distribute rigid body
   particlerigidbody_->DistributeRigidBody();
 }
