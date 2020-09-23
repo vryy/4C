@@ -149,6 +149,13 @@ namespace PARTICLERIGIDBODY
     void AllocateRigidBodyStates();
 
     /*!
+     * \brief set initial states
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetInitialStates();
+
+    /*!
      * \brief distribute rigid body
      *
      * \author Sebastian Fuchs \date 08/2020
@@ -397,6 +404,15 @@ namespace PARTICLERIGIDBODY
     void ComputeAccelerationsFromForceAndTorque();
 
     /*!
+     * \brief clear orientation of rigid bodies
+     *
+     * Clear the orientation of rigid bodies owned on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearRigidBodyOrientation();
+
+    /*!
      * \brief update positions of rigid bodies with given time increment
      *
      * Update the positions of rigid bodies with a given time increment on the owning processor.
@@ -436,6 +452,15 @@ namespace PARTICLERIGIDBODY
      * \author Sebastian Fuchs \date 09/2020
      */
     void BroadcastVelocities();
+
+    /*!
+     * \brief set relative position of rigid particles in reference frame
+     *
+     * Set the relative position of rigid particles in the reference frame owned on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetRigidParticleReferenceRelativePosition();
 
     /*!
      * \brief update relative position of rigid particles

@@ -263,6 +263,24 @@ void PARTICLERIGIDBODY::RigidBodyHandler::AllocateRigidBodyStates()
   rigidbodydatastate_->AllocateStoredStates(numglobalids);
 }
 
+void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialStates()
+{
+  // compute mass quantities of rigid bodies
+  ComputeMassQuantities();
+
+  // clear orientation of rigid bodies
+  ClearRigidBodyOrientation();
+
+  // broadcast positions of rigid bodies
+  BroadcastPositions();
+
+  // set relative position of rigid particles in reference frame
+  SetRigidParticleReferenceRelativePosition();
+
+  // update relative position of rigid particles
+  UpdateRigidParticleRelativePosition();
+}
+
 void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody");
@@ -1143,6 +1161,19 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
   }
 }
 
+void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyOrientation()
+{
+  // iterate over owned rigid bodies
+  for (const int rigidbody_k : ownedrigidbodies_)
+  {
+    // get pointer to rigid body states
+    double* rot_k = &rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k][0];
+
+    // initialize rotation of rigid body k
+    UTILS::quaternion_clear(rot_k);
+  }
+}
+
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double timeincrement)
 {
   // iterate over owned rigid bodies
@@ -1300,6 +1331,55 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastVelocities()
 
     if (position != rmsg.size())
       dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+  }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleReferenceRelativePosition()
+{
+  // get reference to affiliation pair data
+  const std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get container of owned particles of rigid phase
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+      PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
+
+#ifdef DEBUG
+  if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
+    dserror("number of affiliation pairs and rigid particles not equal!");
+#endif
+
+  // loop over particles in container
+  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  {
+    // get global id of particle i
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    auto it = affiliationpairdata.find(globalid_i[0]);
+
+#ifdef DEBUG
+    // no affiliation pair for current global id
+    if (it == affiliationpairdata.end())
+      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+#endif
+
+    // get global id of affiliated rigid body k
+    const int rigidbody_k = it->second;
+
+    // get pointer to rigid body states
+    const double* pos_k = &rigidbodydatastate_->GetRefPosition()[rigidbody_k][0];
+
+    // get pointer to particle states
+    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    double* refrelpos_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::ReferenceRelativePosition, particle_i);
+
+    PARTICLEINTERACTION::UTILS::vec_set(refrelpos_i, pos_i);
+    PARTICLEINTERACTION::UTILS::vec_sub(refrelpos_i, pos_k);
   }
 }
 
