@@ -104,51 +104,54 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
     }  // if (discretization.HasState(1,"scalarfield"))
 
-    if (discretization.HasState(2, "tempfield"))  // if temperatures were set
-    {
-      if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
-              distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
-        dserror(
-            "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
-            "The following should work, but keep your eyes open (especially with the order of the "
-            "Gauß points");
-
-      /* =========================================================================*/
-      // start temperature business
-      /* =========================================================================*/
-      auto gptemp = Teuchos::rcp(new std::vector<double>(std::vector<double>(numgpt_, 0.0)));
-
-      Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "tempfield");
-
-      if (tempnp == Teuchos::null)
-        dserror("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
-
-      // extract local values of the global vectors
-      auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
-
-      DRT::UTILS::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
-
-      // element vector for k-th scalar
-      LINALG::Matrix<numnod_, 1> etemp;
-
-      for (int i = 0; i < numnod_; ++i) etemp(i, 0) = mytemp.at(i);
-
-      /* =========================================================================*/
-      /* ================================================= Loop over Gauss Points */
-      /* =========================================================================*/
-
-      for (int igp = 0; igp < numgpt_; ++igp)
+    // if temperatures were set
+    if (discretization.NumDofSets() == 3)
+      if (discretization.HasState(2, "tempfield"))
       {
-        // shape functions evaluated at current gauß point
-        LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
-        DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
+        if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
+                distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+          dserror(
+              "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
+              "The following should work, but keep your eyes open (especially with the order of "
+              "the Gauß points");
 
-        // temperature at Gauß point withidentical shapefunctions for displacements and temperatures
-        gptemp->at(igp) = shapefunct_gp.Dot(etemp);
+        /* =========================================================================*/
+        // start temperature business
+        /* =========================================================================*/
+        auto gptemp = Teuchos::rcp(new std::vector<double>(std::vector<double>(numgpt_, 0.0)));
+
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "tempfield");
+
+        if (tempnp == Teuchos::null)
+          dserror("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
+
+        // extract local values of the global vectors
+        auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
+
+        DRT::UTILS::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
+
+        // element vector for k-th scalar
+        LINALG::Matrix<numnod_, 1> etemp;
+
+        for (int i = 0; i < numnod_; ++i) etemp(i, 0) = mytemp.at(i);
+
+        /* =========================================================================*/
+        /* ================================================= Loop over Gauss Points */
+        /* =========================================================================*/
+
+        for (int igp = 0; igp < numgpt_; ++igp)
+        {
+          // shape functions evaluated at current gauß point
+          LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
+          DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
+
+          // temperature at Gauß point withidentical shapefunctions for displacements and
+          // temperatures
+          gptemp->at(igp) = shapefunct_gp.Dot(etemp);
+        }
+
+        params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
       }
-
-      params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
-    }
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material
