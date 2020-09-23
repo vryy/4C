@@ -384,9 +384,59 @@ namespace MAT
     /// Get type of scalar, that leads to deformation
     virtual PAR::InelasticSource GetInelasticSource() = 0;
 
+   protected:
+    //! Get ID of current Gauß point
+    int GetGP() const { return gp_; };
+
+    //! Set ID of current Gauß point
+    void SetGP(int gp) { gp_ = gp; };
+
    private:
+    //! ID of current Gauß point
+    int gp_;
+
     /// material parameters
     MAT::PAR::Parameter* params_;
+  };
+
+  class InelasticDefgradScalar : public InelasticDefgradFactors
+  {
+   public:
+    InelasticDefgradScalar() = default;
+
+    /*!
+     * @brief construct material with required inputs
+     *
+     * @param[in] params           pointer to material specific parameters
+     */
+    explicit InelasticDefgradScalar(MAT::PAR::Parameter* params);
+
+    ~InelasticDefgradScalar() override = default;
+
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
+
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
+
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
+
+    PAR::InelasticSource GetInelasticSource() override = 0;
+
+    INPAR::MAT::MaterialType MaterialType() const override = 0;
+
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+
+   protected:
+    //! Get vector of concentration at current Gauß point
+    std::vector<double>& GetConcentrationGP() const { return concentrations_->at(GetGP()); };
+
+   private:
+    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
+    /// element
+    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
   };
 
   /*--------------------------------------------------------------------*/
@@ -397,14 +447,13 @@ namespace MAT
    describes the growth of material with respect to intercalation fraction and it is prescribed by
    user in input file by defining it coefficients.
    */
-  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradFactors
+  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradScalar
   {
    public:
-    /// constructor
     InelasticDefgradPolyIntercalFrac() = default;
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -446,8 +495,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override = 0;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
@@ -471,10 +518,9 @@ namespace MAT
       \boldsymbol{I}
       \f]
       */
-  class InelasticDefgradLinScalarIso : public InelasticDefgradFactors
+  class InelasticDefgradLinScalarIso : public InelasticDefgradScalar
   {
    public:
-    /// construct empty material
     InelasticDefgradLinScalarIso();
 
     /*!
@@ -504,8 +550,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradScalar* Parameter() override
@@ -515,11 +559,6 @@ namespace MAT
     }
 
    private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
     /// pointer to class that evaluates the linear growth law
     Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
   };  // namespace MAT
@@ -541,10 +580,9 @@ namespace MAT
      \f$ \bold{g} \f$ is normalized to length 1 before calculation of \f$ \bold{G} \f$.
      \f$ f(\chi) \f$ is defined by the user in the input file.
      */
-  class InelasticDefgradLinScalarAniso : public InelasticDefgradFactors
+  class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
   {
    public:
-    /// construct empty material
     InelasticDefgradLinScalarAniso();
 
     /*!
@@ -574,8 +612,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
@@ -585,11 +621,6 @@ namespace MAT
     }
 
    private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
     /// store pointer to class that evaluates the linear growth law
     Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
   };  // end of InelasticDefgradLinScalarAniso
@@ -609,11 +640,10 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracIso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    /// construct empty material
     InelasticDefgradPolyIntercalFracIso();
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -640,20 +670,11 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
           MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
-
-   private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -676,11 +697,10 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    /// construct empty material
     InelasticDefgradPolyIntercalFracAniso();
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -706,20 +726,11 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticDefgradPolyIntercalFracAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFracAniso*>(
           MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
-
-   private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the
-    /// so3_scatra element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -739,52 +750,30 @@ namespace MAT
 
     ~InelasticDefgradLinTempIso() override = default;
 
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) final;
+
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) final;
+
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+        LINALG::Matrix<6, 1>& dstressdc) final;
+
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
     INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_lin_temp_iso; };
 
-    /// evaluate the deformation gradient and its inverse
-    void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
-        LINALG::Matrix<3, 3>& iFinM) final;   ///< Inverse inelastic deformation gradient
-
-    /// evaluate additional terms of the elasticity tensor
-    void EvaluateAdditionalCmat(
-        const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 1>& iCV,     ///< Inverse right Cauchy-Green tensor
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 6>& cmatadd) final;  ///< Additional elasticity tensor
-
-    /// evaluate off-diagonal stiffness matrix for monolithic systems to get the
-    /// cross-linearizations
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-        const LINALG::Matrix<3, 3>& iFinjM,  ///< Inverse inelastic deformation gradient of current
-                                             ///< inelastic contribution as 3x3 matrix
-        const LINALG::Matrix<6, 9>&
-            dSdiFinj,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-                       ///< deformation gradient of current inelastic contribution
-        LINALG::Matrix<6, 1>& dstressdc)
-        final;  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t. concentration
-
-    /// pre-evaluation, intended to be used for stuff that has to be done only once per Evaluate()
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
-    /// return the material parameters
     MAT::PAR::InelasticDefgradLinTempIso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(
           MAT::InelasticDefgradFactors::Parameter());
     }
 
-    /// Get type of scalar, that leads to deformation
-    MAT::PAR::InelasticSource GetInelasticSource() override;
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
-    //! gauss point id
-    int gp_;
-
     /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<double>> temperatures_;

@@ -137,12 +137,13 @@ MAT::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::InelasticDefgradFactors::InelasticDefgradFactors() : params_(nullptr) {}
+MAT::InelasticDefgradFactors::InelasticDefgradFactors() : gp_(-1), params_(nullptr) {}
 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::InelasticDefgradFactors::InelasticDefgradFactors(MAT::PAR::Parameter* params) : params_(params)
+MAT::InelasticDefgradFactors::InelasticDefgradFactors(MAT::PAR::Parameter* params)
+    : gp_(-1), params_(params)
 {
 }
 
@@ -285,9 +286,27 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+MAT::InelasticDefgradScalar::InelasticDefgradScalar(MAT::PAR::Parameter* params)
+    : InelasticDefgradFactors(params), concentrations_(Teuchos::null)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradScalar::PreEvaluate(Teuchos::ParameterList& params, const int gp)
+{
+  SetGP(gp);
+
+  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
+  if (gp == 0)
+    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(MAT::PAR::Parameter* params,
     const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth)
-    : InelasticDefgradFactors(params), polynomial_growth_(PolynomialGrowth)
+    : InelasticDefgradScalar(params), polynomial_growth_(PolynomialGrowth)
 {
 }
 
@@ -329,10 +348,7 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradPolyIntercalFrac::GetInelasticSou
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso()
-    : InelasticDefgradFactors(),
-      gp_(-1),
-      concentrations_(Teuchos::null),
-      linear_growth_(Teuchos::null)
+    : InelasticDefgradScalar(), linear_growth_(Teuchos::null)
 {
 }
 
@@ -340,10 +356,7 @@ MAT::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso()
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(
     MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth)
-    : InelasticDefgradFactors(params),
-      gp_(-1),
-      concentrations_(Teuchos::null),
-      linear_growth_(LinearGrowth)
+    : InelasticDefgradScalar(params), linear_growth_(LinearGrowth)
 {
 }
 
@@ -361,8 +374,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
 {
   // get parameter
   const int Sc1 = Parameter()->Scalar1();
-  const double material_concentration =
-      concentrations_->at(gp_).at(Sc1 - 1) * defgrad->Determinant();
+  const double material_concentration = GetConcentrationGP().at(Sc1 - 1) * defgrad->Determinant();
 
   // get growth factor
   const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
@@ -390,7 +402,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
-  const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double detjacobian = defgrad->Determinant();
 
   // get growth factor
@@ -421,7 +433,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
   const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
   const double detjacobian = defgrad->Determinant();
-  const double material_concentration = concentrations_->at(gp_).at(Sc1 - 1) * detjacobian;
+  const double material_concentration = GetConcentrationGP().at(Sc1 - 1) * detjacobian;
 
   // get growth factor
   const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
@@ -436,22 +448,8 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarIso::PreEvaluate(Teuchos::ParameterList& params, const int gp)
-{
-  gp_ = gp;
-
-  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
-  if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso()
-    : InelasticDefgradFactors(),
-      gp_(-1),
-      concentrations_(Teuchos::null),
-      linear_growth_(Teuchos::null)
+    : InelasticDefgradScalar(), linear_growth_(Teuchos::null)
 {
 }
 
@@ -459,10 +457,7 @@ MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso()
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth)
-    : InelasticDefgradFactors(params),
-      gp_(-1),
-      concentrations_(Teuchos::null),
-      linear_growth_(LinearGrowth)
+    : InelasticDefgradScalar(params), linear_growth_(LinearGrowth)
 {
 }
 
@@ -484,8 +479,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
 
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
-  const double material_concentration =
-      concentrations_->at(gp_).at(Sc1 - 1) * defgrad->Determinant();
+  const double material_concentration = GetConcentrationGP().at(Sc1 - 1) * defgrad->Determinant();
 
   // get growth factor
   const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
@@ -516,7 +510,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
   const double Sc1GrowthFac = linear_growth_->GrowthFac();
-  const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double detjacobian = defgrad->Determinant();
 
   // prepare scalefac
@@ -563,19 +557,8 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarAniso::PreEvaluate(Teuchos::ParameterList& params, const int gp)
-{
-  gp_ = gp;
-
-  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
-  if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso()
-    : InelasticDefgradPolyIntercalFrac(), gp_(-1), concentrations_(Teuchos::null)
+    : InelasticDefgradPolyIntercalFrac()
 {
 }
 
@@ -584,9 +567,7 @@ MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso()
 MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso(
     MAT::PAR::Parameter* params,
     const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth)
-    : InelasticDefgradPolyIntercalFrac(params, PolynomialGrowth),
-      gp_(-1),
-      concentrations_(Teuchos::null)
+    : InelasticDefgradPolyIntercalFrac(params, PolynomialGrowth)
 {
 }
 
@@ -601,7 +582,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
 
   // get polynomial
   const double PolynomValue =
-      EvaluatePolynomial(concentrations_->at(gp_).at(Sc1 - 1), defgrad->Determinant());
+      EvaluatePolynomial(GetConcentrationGP().at(Sc1 - 1), defgrad->Determinant());
 
   // calculate growth
   const double isoinelasticdefo =
@@ -629,7 +610,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
-  const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
   // get polynomials
@@ -660,7 +641,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
-  const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
@@ -681,20 +662,8 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracIso::PreEvaluate(
-    Teuchos::ParameterList& params, const int gp)
-{
-  gp_ = gp;
-
-  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
-  if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAniso()
-    : InelasticDefgradPolyIntercalFrac(), gp_(-1), concentrations_(Teuchos::null)
+    : InelasticDefgradPolyIntercalFrac()
 {
 }
 
@@ -703,9 +672,7 @@ MAT::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAnis
 MAT::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAniso(
     MAT::PAR::Parameter* params,
     const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth)
-    : InelasticDefgradPolyIntercalFrac(params, PolynomialGrowth),
-      gp_(-1),
-      concentrations_(Teuchos::null)
+    : InelasticDefgradPolyIntercalFrac(params, PolynomialGrowth)
 {
 }
 
@@ -724,7 +691,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad
 
   // get polynomials
   const double PolynomValue =
-      EvaluatePolynomial(concentrations_->at(gp_).at(Sc1 - 1), defgrad->Determinant());
+      EvaluatePolynomial(GetConcentrationGP().at(Sc1 - 1), defgrad->Determinant());
 
   // calculate growth factor
   const double growth_factor =
@@ -756,7 +723,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
   const int Sc1 = Parameter()->Scalar1();
   const double Chimax = Parameter()->Chimax();
   const double Cmax = Parameter()->Cmax();
-  const double concentration = concentrations_->at(gp_).at(Sc1 - 1);
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double detjacobian = defgrad->Determinant();
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
@@ -799,7 +766,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
   // get polynomials
   const double PolynomDerivativeValue =
-      EvaluatePolynomialDerivative(concentrations_->at(gp_).at(Sc1 - 1), detjacobian);
+      EvaluatePolynomialDerivative(GetConcentrationGP().at(Sc1 - 1), detjacobian);
 
   // prepare scalefac
   const double scalefac =
@@ -812,18 +779,6 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
   // dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(1.0, dSdiFinj, diFinjdc9x1, 1.0);
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracAniso::PreEvaluate(
-    Teuchos::ParameterList& params, const int gp)
-{
-  gp_ = gp;
-
-  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
-  if (gp_ == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
 }
 
 /*--------------------------------------------------------------------*
@@ -893,14 +848,14 @@ void MAT::InelasticDefgradPolynomialShape::CheckPolynomialBounds(const double X)
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso()
-    : InelasticDefgradFactors(), gp_(-1), temperatures_(nullptr)
+    : InelasticDefgradFactors(), temperatures_(Teuchos::null)
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(MAT::PAR::Parameter* params)
-    : InelasticDefgradFactors(params), gp_(-1), temperatures_(nullptr)
+    : InelasticDefgradFactors(params), temperatures_(Teuchos::null)
 {
 }
 
@@ -909,10 +864,10 @@ MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(MAT::PAR::Parameter*
 void MAT::InelasticDefgradLinTempIso::PreEvaluate(Teuchos::ParameterList& params, int gp)
 {
   // get Gauss point number
-  gp_ = gp;
+  SetGP(gp);
 
   // set pointer to vector of gp_temp, only if gp is 0, because this is the first gp
-  if (gp_ == 0) temperatures_ = params.get<Teuchos::RCP<std::vector<double>>>("gp_temp");
+  if (gp == 0) temperatures_ = params.get<Teuchos::RCP<std::vector<double>>>("gp_temp");
 
   return;
 }
@@ -926,7 +881,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
   const double reftemp = Parameter()->RefTemp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (temperatures_->at(gp_) - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (temperatures_->at(GetGP()) - reftemp);
   if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
   const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
 
