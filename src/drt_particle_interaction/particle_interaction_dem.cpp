@@ -131,6 +131,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 
   // set initial mass
   SetInitialMass();
+
+  // set initial inertia
+  SetInitialInertia();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::PrepareTimeStep()
@@ -448,6 +451,34 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
     // compute mass via particle volume and initial density
     const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
     for (int i = 0; i < particlestored; ++i) mass[i] = fac * UTILS::pow<3>(radius[i]);
+  }
+}
+
+void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialInertia()
+{
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // no inertia state for current particle type
+    if (not container->HaveStoredState(PARTICLEENGINE::Inertia)) continue;
+
+    // get pointer to particle states
+    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    double* inertia = container->GetPtrToParticleState(PARTICLEENGINE::Inertia, 0);
+
+    // compute mass via particle volume and initial density
+    for (int i = 0; i < particlestored; ++i) inertia[i] = 0.4 * mass[i] * UTILS::pow<2>(radius[i]);
   }
 }
 

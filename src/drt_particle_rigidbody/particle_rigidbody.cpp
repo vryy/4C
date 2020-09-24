@@ -119,8 +119,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
     if (type == PARTICLEENGINE::RigidPhase)
     {
       // insert states of rigid particles
-      particlestates.insert({PARTICLEENGINE::RigidBodyColor,
-          PARTICLEENGINE::ReferenceRelativePosition, PARTICLEENGINE::RelativePosition});
+      particlestates.insert(
+          {PARTICLEENGINE::RigidBodyColor, PARTICLEENGINE::ReferenceRelativePosition,
+              PARTICLEENGINE::RelativePosition, PARTICLEENGINE::Inertia});
     }
   }
 }

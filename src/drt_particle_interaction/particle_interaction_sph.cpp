@@ -11,6 +11,7 @@
 #include "particle_interaction_sph.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_utils.H"
 
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_sph_equationofstate.H"
@@ -270,6 +271,17 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     // set initial mass and radius for all particles of current type
     container->SetState(initmass, PARTICLEENGINE::Mass);
     container->SetState(initradius, PARTICLEENGINE::Radius);
+
+    // set initial inertia for respective particles of current type
+    if (container->HaveStoredState(PARTICLEENGINE::Inertia))
+    {
+      // (initial) inertia of current phase
+      std::vector<double> initinertia(1);
+      initinertia[0] =
+          0.4 * initmass[0] * std::pow(0.75 * M_1_PI * initialparticlevolume, 2.0 / 3.0);
+
+      container->SetState(initinertia, PARTICLEENGINE::Inertia);
+    }
 
     // initial states for temperature evaluation
     if (temperature_)
