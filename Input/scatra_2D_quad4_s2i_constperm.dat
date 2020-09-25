@@ -37,6 +37,7 @@ LINEAR_SOLVER                   1
 OUTPUTSCALARS                   entire_domain_and_by_condition
 CALCERROR                       error_by_function
 CALCERRORNO                     3
+MATLAB_STATE_OUTPUT             Yes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 CONVTOL                         1e-15
