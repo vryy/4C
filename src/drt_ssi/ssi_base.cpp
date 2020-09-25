@@ -220,13 +220,8 @@ void SSI::SSI_Base::Setup()
     // temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
-      const int numDofsPerNodeTemp = 1;  // defined by temperature field
-      const int numDofsTemp = ScaTraField()->Discretization()->NumGlobalNodes() *
-                              numDofsPerNodeTemp;  // number of dofs for temperature
-      const int numAllDofGIDs = ScaTraField()->DofRowMap()->MaxAllGID();  // number of all dofs
-
-      temperature_vector_ =
-          Teuchos::rcp(new Epetra_Vector(Epetra_Map(numDofsTemp, numAllDofGIDs + 1, Comm()), true));
+      temperature_vector_ = Teuchos::rcp(
+          new Epetra_Vector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap(2), true));
 
       temperature_vector_->PutScalar(
           DRT::Problem::Instance()->Funct(temperature_funct_num_ - 1).EvaluateTime(Time()));
