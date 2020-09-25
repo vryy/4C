@@ -473,6 +473,7 @@ imcs-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-nightly-debug
+    needs: ["checkcode"]
 
 .imcs-doxygen:
     <<: *doxygen
@@ -803,6 +804,7 @@ lnm-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-debug-nightly-full
+    needs: ["checkcode"]
 
 lnm-doxygen-web:
     <<: *doxygen_web
