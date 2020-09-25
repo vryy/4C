@@ -43,6 +43,14 @@ namespace SSI
   class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
 
+  //! equilibration methods applied to system matrix
+  struct SSIMonoEquilibrationMethod
+  {
+    const LINALG::EquilibrationMethod global;     //! unique equilibration
+    const LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
+    const LINALG::EquilibrationMethod structure;  //! equilibration for structure block
+  };
+
   enum class Subproblem : int
   {
     scalar_transport,
@@ -133,6 +141,9 @@ namespace SSI
     //! finite difference check for global system matrix
     void FDCheck();
 
+    // build and return vector of equilibration methods for each block of system matrix
+    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
+
     void Output() override;
 
     void PrepareTimeStep() override;
@@ -157,7 +168,7 @@ namespace SSI
     double dtsolve_;
 
     //! equilibration method applied to system matrix
-    const LINALG::EquilibrationMethod equilibration_method_;
+    const struct SSIMonoEquilibrationMethod equilibration_method_;
 
     //! global increment vector for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Vector> increment_;

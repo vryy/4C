@@ -54,8 +54,14 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       dtnewton_(0.0),
       dtsolve_(0.0),
       timer_(Teuchos::rcp(new Epetra_Time(comm))),
-      equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
-          globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
+      equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+                                globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_THERMO")},
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams))),
@@ -278,6 +284,18 @@ void SSTI::SSTIMono::Setup()
         "transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
+  if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none or
+          equilibration_method_.thermo != LINALG::EquilibrationMethod::none))
+    dserror("Either global equilibration or local equilibration");
+
+  if (matrixtype_ == LINALG::MatrixType::sparse and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none or
+          equilibration_method_.thermo != LINALG::EquilibrationMethod::none))
+    dserror("Block based equilibration only for block matrices");
+
   if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
@@ -387,7 +405,7 @@ void SSTI::SSTIMono::SetupSystem()
 
   // initialize equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
-      matrixtype_, equilibration_method_, AllMaps()->MapsSubproblems()->FullMap());
+      matrixtype_, GetBlockEquilibration(), AllMaps()->MapsSubproblems()->FullMap());
 }
 
 /*--------------------------------------------------------------------------*
@@ -685,4 +703,59 @@ int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
   }
 
   return position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+std::vector<LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibration()
+{
+  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
+  switch (matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+    {
+      equilibration_method_vector.emplace_back(equilibration_method_.global);
+      break;
+    }
+    case LINALG::MatrixType::block_field:
+    {
+      if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
+        equilibration_method_vector.emplace_back(equilibration_method_.global);
+      else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
+               equilibration_method_.scatra == LINALG::EquilibrationMethod::none and
+               equilibration_method_.thermo == LINALG::EquilibrationMethod::none)
+        equilibration_method_vector.emplace_back(LINALG::EquilibrationMethod::none);
+      else
+      {
+        Teuchos::RCP<std::vector<int>> block_positions_scatra =
+            GetBlockPositions(Subproblem::scalar_transport);
+        Teuchos::RCP<std::vector<int>> block_position_structure =
+            GetBlockPositions(Subproblem::structure);
+        Teuchos::RCP<std::vector<int>> block_positions_thermo =
+            GetBlockPositions(Subproblem::thermo);
+
+        equilibration_method_vector.resize(block_positions_scatra->size() +
+                                           block_position_structure->size() +
+                                           block_positions_thermo->size());
+
+        for (const int block_position_scatra : *block_positions_scatra)
+          equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
+
+        equilibration_method_vector.at(block_position_structure->at(0)) =
+            equilibration_method_.structure;
+
+        for (const int block_position_thermo : *block_positions_thermo)
+          equilibration_method_vector.at(block_position_thermo) = equilibration_method_.thermo;
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with system matrix field!");
+      break;
+    }
+  }
+
+  return equilibration_method_vector;
 }

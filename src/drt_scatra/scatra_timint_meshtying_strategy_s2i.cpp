@@ -2773,7 +2773,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   }
 
   // instantiate appropriate equilibration class
-  equilibration_ = LINALG::BuildEquilibration(matrixtype_, scatratimint_->EquilibrationMethod(),
+  std::vector<LINALG::EquilibrationMethod> equilibration_method(
+      1, scatratimint_->EquilibrationMethod());
+  equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method,
       (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
               ? extendedmaps_->FullMap()
               : Teuchos::rcp(new const Epetra_Map(*scatratimint_->Discretization()->DofRowMap()))));

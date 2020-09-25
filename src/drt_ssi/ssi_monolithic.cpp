@@ -48,8 +48,12 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
     : SSIBase(comm, globaltimeparams),
       dtele_(0.0),
       dtsolve_(0.0),
-      equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
-          globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
+      equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+                                globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
       increment_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_scatra_(Teuchos::null),
@@ -591,6 +595,15 @@ void SSI::SSIMono::Setup()
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
   }
+  if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+    dserror("Either global equilibration or local equilibration");
+
+  if (matrixtype_ == LINALG::MatrixType::sparse and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+    dserror("Block based equilibration only for block matrices");
 
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
@@ -755,8 +768,8 @@ void SSI::SSIMono::SetupSystem()
       ScaTraBaseAlgorithm(), StructureField()));
 
   // instantiate appropriate equilibration class
-  strategy_equilibration_ =
-      LINALG::BuildEquilibration(matrixtype_, equilibration_method_, MapsSubProblems()->FullMap());
+  strategy_equilibration_ = LINALG::BuildEquilibration(
+      matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1006,4 +1019,52 @@ int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
   }
 
   return position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
+{
+  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
+  switch (matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+    {
+      equilibration_method_vector.emplace_back(equilibration_method_.global);
+      break;
+    }
+    case LINALG::MatrixType::block_field:
+    {
+      if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
+        equilibration_method_vector.emplace_back(equilibration_method_.global);
+      else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
+               equilibration_method_.scatra == LINALG::EquilibrationMethod::none)
+        equilibration_method_vector.emplace_back(LINALG::EquilibrationMethod::none);
+      else
+      {
+        Teuchos::RCP<std::vector<int>> block_positions_scatra =
+            GetBlockPositions(Subproblem::scalar_transport);
+        Teuchos::RCP<std::vector<int>> block_position_structure =
+            GetBlockPositions(Subproblem::structure);
+
+        equilibration_method_vector.resize(
+            block_positions_scatra->size() + block_position_structure->size());
+
+        for (const int block_position_scatra : *block_positions_scatra)
+          equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
+
+        equilibration_method_vector.at(block_position_structure->at(0)) =
+            equilibration_method_.structure;
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with system matrix field!");
+      break;
+    }
+  }
+
+  return equilibration_method_vector;
 }

@@ -317,8 +317,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       interface_map_thermo, isAle, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
-  equilibration_ = LINALG::BuildEquilibration(
-      matrixtype_, ScaTraField()->EquilibrationMethod(), maps_->FullMap());
+  std::vector<LINALG::EquilibrationMethod> equilibration_method(
+      1, ScaTraField()->EquilibrationMethod());
+  equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method, maps_->FullMap());
 }
 
 /*---------------------------------------------------------------------------------------------*

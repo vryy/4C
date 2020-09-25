@@ -130,12 +130,32 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
-          "rowsandcolumns_full", "rowsandcolumns_maindiag"),
+          "rowsandcolumns_full", "rowsandcolumns_maindiag", "local"),
       tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
           LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
           LINALG::EquilibrationMethod::columns_full, LINALG::EquilibrationMethod::columns_maindiag,
           LINALG::EquilibrationMethod::rowsandcolumns_full,
-          LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag, LINALG::EquilibrationMethod::local),
+      &ssidynmono);
+
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_STRUCTURE", "none",
+      "flag for equilibration of structural equations",
+      tuple<std::string>(
+          "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          LINALG::EquilibrationMethod::symmetry),
+      &ssidynmono);
+
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_SCATRA", "none",
+      "flag for equilibration of scatra equations",
+      tuple<std::string>(
+          "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
 }
 
