@@ -374,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
           // w.r.t. concentration at electrode surface
           const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt);
           const double epdderiv =
-              matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint, faraday, frt);
+              matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt);
 
           // electrode-electrolyte overpotential at integration point
           const double eta = eslavepotint - emasterpotint - epd;

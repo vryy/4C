@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 #include "electrode.H"
 
+#include "matpar_bundle.H"
+
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_mat/matpar_bundle.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -332,8 +332,8 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
           if (X <= params_->X_[i + 1])
           {
             const double invdX = 1. / (params_->X_[i + 1] - params_->X_[i]);
-            ocp = params_->m_[i] * invdX * pow(params_->X_[i + 1] - X, 3) +
-                  params_->m_[i + 1] * invdX * pow(X - params_->X_[i], 3) +
+            ocp = params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 3) +
+                  params_->m_[i + 1] * invdX * std::pow(X - params_->X_[i], 3) +
                   params_->a_[i] * (X - params_->X_[i]) + params_->b_[i];
             break;
           }
@@ -350,7 +350,7 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
         // ocppara_[1,2,3,...] = Redlich-Kister coefficients
 
         // terms not associated with any Redlich-Kister coefficient
-        ocp = params_->ocppara_[0] + faraday / frt * log((1. - X) / X);
+        ocp = params_->ocppara_[0] + faraday / frt * std::log((1. - X) / X);
 
         // terms associated with first and second Redlich-Kister coefficients
         // these two terms are separated from the remaining sum and simplified thereafter to remove
@@ -360,8 +360,9 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 2; i < params_->ocpparanum_ - 1; ++i)
-          ocp += params_->ocppara_[i + 1] *
-                 (pow(2. * X - 1., i + 1) - 2. * i * X * (1. - X) * pow(2. * X - 1., i - 1));
+          ocp +=
+              params_->ocppara_[i + 1] *
+              (std::pow(2. * X - 1., i + 1) - 2. * i * X * (1. - X) * std::pow(2. * X - 1., i - 1));
 
         // final scaling
         ocp /= faraday;
@@ -373,11 +374,12 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
       {
         // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
         ocp = params_->ocppara_[0] +
-              params_->ocppara_[1] * tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
-              params_->ocppara_[4] * exp(params_->ocppara_[5] * pow(X, 8.0)) +
-              params_->ocppara_[6] * (1 / (pow((params_->ocppara_[7] - X), params_->ocppara_[8])) +
-                                         params_->ocppara_[9]) +
-              params_->ocppara_[10] * exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
+              params_->ocppara_[1] * std::tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
+              params_->ocppara_[4] * std::exp(params_->ocppara_[5] * std::pow(X, 8.0)) +
+              params_->ocppara_[6] *
+                  (1 / (std::pow((params_->ocppara_[7] - X), params_->ocppara_[8])) +
+                      params_->ocppara_[9]) +
+              params_->ocppara_[10] * std::exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
 
         break;
       }
@@ -389,7 +391,7 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
         ocp = params_->ocppara_[0];
 
         // add higher polynomial order terms
-        for (int i = 1; i < params_->ocpparanum_; ++i) ocp += params_->ocppara_[i] * pow(X, i);
+        for (int i = 1; i < params_->ocpparanum_; ++i) ocp += params_->ocppara_[i] * std::pow(X, i);
 
         break;
       }
@@ -414,7 +416,7 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
  | compute first derivative of half cell open circuit potential with respect to concentration   fang
  08/15 |
  *---------------------------------------------------------------------------------------------------------*/
-double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
+double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
     const double concentration, const double faraday, const double frt) const
 {
   double ocpderiv(0.0);
@@ -442,8 +444,8 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
           if (X <= params_->X_[i + 1])
           {
             const double invdX = 1. / (params_->X_[i + 1] - params_->X_[i]);
-            ocpderiv = -3. * params_->m_[i] * invdX * pow(params_->X_[i + 1] - X, 2) +
-                       3. * params_->m_[i + 1] * invdX * pow(X - params_->X_[i], 2) +
+            ocpderiv = -3. * params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 2) +
+                       3. * params_->m_[i + 1] * invdX * std::pow(X - params_->X_[i], 2) +
                        params_->a_[i];
             break;
           }
@@ -472,8 +474,8 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 3; i < params_->ocpparanum_ - 1; ++i)
           ocpderiv += params_->ocppara_[i + 1] *
-                      ((2. * i + 1.) * pow(2. * X - 1., i) +
-                          2. * X * i * (X - 1.) * (i - 1.) * pow(2. * X - 1., i - 2));
+                      ((2. * i + 1.) * std::pow(2. * X - 1., i) +
+                          2. * X * i * (X - 1.) * (i - 1.) * std::pow(2. * X - 1., i - 2));
 
         // intermediate scaling
         ocpderiv *= 2. / faraday;
@@ -486,13 +488,13 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
       case MAT::PAR::ocp_taralov:
       {
         ocpderiv = params_->ocppara_[1] * params_->ocppara_[2] /
-                       pow(cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) +
+                       std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) +
                    8. * params_->ocppara_[4] * params_->ocppara_[5] *
-                       exp(params_->ocppara_[5] * pow(X, 8)) * pow(X, 7) +
+                       std::exp(params_->ocppara_[5] * std::pow(X, 8)) * std::pow(X, 7) +
                    params_->ocppara_[6] * params_->ocppara_[8] /
-                       pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 1.) +
+                       std::pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 1.) +
                    params_->ocppara_[10] * params_->ocppara_[11] *
-                       exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
+                       std::exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
 
         break;
       }
@@ -501,7 +503,7 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
       case MAT::PAR::ocp_polynomial:
       {
         for (int i = 1; i < params_->ocpparanum_; ++i)
-          ocpderiv += i * params_->ocppara_[i] * pow(X, i - 1);
+          ocpderiv += i * params_->ocppara_[i] * std::pow(X, i - 1);
 
         break;
       }
@@ -522,14 +524,14 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
     ocpderiv = std::numeric_limits<double>::infinity();
 
   return ocpderiv;
-}  // MAT::Electrode::ComputeFirstDerivOpenCircuitPotential
+}
 
 
 /*----------------------------------------------------------------------------------------------------------*
  | compute second derivative of half cell open circuit potential with respect to concentration fang
  08/15 |
  *----------------------------------------------------------------------------------------------------------*/
-double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
+double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
     const double concentration, const double faraday, const double frt) const
 {
   double ocpderiv2(0.0);
@@ -587,9 +589,9 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 4; i < params_->ocpparanum_ - 1; ++i)
-          ocpderiv2 += params_->ocppara_[i + 1] *
-                       (3. * i * i * pow(2. * X - 1., i - 1) +
-                           2. * i * (i - 1.) * (i - 2.) * X * (X - 1.) * pow(2. * X - 1., i - 3));
+          ocpderiv2 += params_->ocppara_[i + 1] * (3. * i * i * std::pow(2. * X - 1., i - 1) +
+                                                      2. * i * (i - 1.) * (i - 2.) * X * (X - 1.) *
+                                                          std::pow(2. * X - 1., i - 3));
 
         // intermediate scaling
         ocpderiv2 *= 4. / faraday;
@@ -601,16 +603,16 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
       // Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
       case MAT::PAR::ocp_taralov:
       {
-        ocpderiv2 = -2. * params_->ocppara_[1] * pow(params_->ocppara_[2], 2) /
-                        pow(cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
-                        tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
-                    8. * params_->ocppara_[4] * params_->ocppara_[5] * pow(X, 6) *
-                        exp(params_->ocppara_[5] * pow(X, 8)) *
-                        (7. + 8. * params_->ocppara_[5] * pow(X, 8)) +
+        ocpderiv2 = -2. * params_->ocppara_[1] * std::pow(params_->ocppara_[2], 2) /
+                        std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
+                        std::tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
+                    8. * params_->ocppara_[4] * params_->ocppara_[5] * std::pow(X, 6) *
+                        std::exp(params_->ocppara_[5] * std::pow(X, 8)) *
+                        (7. + 8. * params_->ocppara_[5] * std::pow(X, 8)) +
                     params_->ocppara_[6] * params_->ocppara_[8] * (params_->ocppara_[8] + 1.) /
-                        pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 2.) +
-                    params_->ocppara_[10] * pow(params_->ocppara_[11], 2) *
-                        exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
+                        std::pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 2.) +
+                    params_->ocppara_[10] * std::pow(params_->ocppara_[11], 2) *
+                        std::exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
 
         break;
       }
@@ -619,7 +621,7 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
       case MAT::PAR::ocp_polynomial:
       {
         for (int i = 2; i < params_->ocpparanum_; ++i)
-          ocpderiv2 += i * (i - 1) * params_->ocppara_[i] * pow(X, i - 2);
+          ocpderiv2 += i * (i - 1) * params_->ocppara_[i] * std::pow(X, i - 2);
 
         break;
       }
@@ -640,4 +642,44 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
     ocpderiv2 = std::numeric_limits<double>::infinity();
 
   return ocpderiv2;
-}  // MAT::Electrode::ComputeSecondDerivOpenCircuitPotential
+}
+
+/*---------------------------------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------------------------------*/
+double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialTemp(
+    const double concentration, const double faraday, const double gasconstant) const
+{
+  double ocpderiv = 0.0;
+  switch (params_->ocpmodel_)
+  {
+    case MAT::PAR::ocp_csv:
+    {
+      ocpderiv = 0.0;
+      break;
+    }
+    case MAT::PAR::ocp_redlichkister:
+    {
+      const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
+
+      ocpderiv = std::log((1.0 - X) / X) * gasconstant / faraday;
+      break;
+    }
+    case MAT::PAR::ocp_taralov:
+    {
+      ocpderiv = 0.0;
+      break;
+    }
+    case MAT::PAR::ocp_polynomial:
+    {
+      ocpderiv = 0.0;
+      break;
+    }
+
+    default:
+    {
+      dserror("Model for half cell open circuit potential not recognized!");
+      break;
+    }
+  }
+  return ocpderiv;
+}
