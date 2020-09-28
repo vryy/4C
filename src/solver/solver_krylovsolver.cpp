@@ -68,6 +68,9 @@ typedef Node NO;
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
 #endif  // TRILINOS_Q1_2015
+#ifdef TRILINOS_DEVELOP
+#include "solver_muelucontactsppreconditioner.H"
+#endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif  // HAVE_TEKO
@@ -333,11 +336,13 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef TRILINOS_Q1_2015
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_DEVELOP)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
-      dserror("MueLu (Contact) preconditioner only available with Trilinos Q1_2015.");
+      dserror(
+          "MueLu (Contact) preconditioner only available with Trilinos Q1_2015 or current Trilinos "
+          "develop branch.");
 #endif
     }
     else if (Params().isSublist("AMGnxn Parameters"))
@@ -346,6 +351,10 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else
     {
+#ifdef DEBUG
+      Params().print(std::cout);
+#endif
+
       dserror("unknown preconditioner for block matrix solver");
     }
   }

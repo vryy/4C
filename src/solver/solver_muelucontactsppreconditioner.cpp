@@ -7,20 +7,25 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef TRILINOS_Q1_2015
-
-
 #include "../drt_lib/drt_dserror.H"
 
-#include <MueLu_ConfigDefs.hpp>
+// MueLu
+#include <MueLu_EpetraOperator.hpp>
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ArrayRCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_DefaultComm.hpp>
+
+#include "solver_muelucontactsppreconditioner.H"
+
+#ifdef TRILINOS_Q1_2015
+#include <MueLu_ConfigDefs.hpp>
+
+// Teuchos
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <Teuchos_GlobalMPISession.hpp>
-#include <Teuchos_DefaultComm.hpp>
 
 // Xpetra
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -28,6 +33,7 @@
 #include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_StridedMap.hpp>
 #include <Xpetra_CrsMatrix.hpp>  // for merging blocked operator
+#include <Xpetra_IO.hpp>
 
 // MueLu
 #include <MueLu.hpp>
@@ -99,6 +105,8 @@ typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
 typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
 typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrixWrap;
 typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
+using MapExtractor = Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal>;
+using MapExtractorFactory = Xpetra::MapExtractorFactory<Scalar, LocalOrdinal, GlobalOrdinal>;
 typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
 typedef Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVectorFactory;
 typedef Xpetra::StridedMap<LocalOrdinal, GlobalOrdinal, Node> StridedMap;
@@ -158,6 +166,28 @@ typedef LocalOrdinal LO;
 typedef GlobalOrdinal GO;
 typedef Node NO;
 
+#else  // TRILINOS_Q1_2015
+
+#include "muelu/muelu_utils.H"
+
+// EpetraExt
+#include <EpetraExt_BlockMapOut.h>
+
+// MueLu
+#include <MueLu_CreateXpetraPreconditioner.hpp>
+#include <MueLu_UseShortNames.hpp>
+
+// Xpetra
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_EpetraMap.hpp>
+#include <Xpetra_Map.hpp>
+#include <Xpetra_MapFactory.hpp>
+#include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_UseShortNamesOrdinal.hpp>
+#include <Xpetra_UseShortNamesScalar.hpp>
+
+#endif  // TRILINOS_Q1_2015
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
@@ -174,6 +204,18 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
 void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
+  using Teuchos::ParameterList;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+
+#if defined(TRILINOS_Q1_2015)
+  using EpetraMap = Xpetra::EpetraMap;
+#elif defined(TRILINOS_DEVELOP)
+  using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
+#else
+  dserror("MueLuContactSpPreconditioner only available for TRILINOS_Q1_2015 and TRILINOS_DEVELOP.");
+#endif
+
   SetupLinearProblem(matrix, x, b);
 
   // Check whether input matrix is an actual blocked operator
@@ -189,6 +231,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   ///////////////////////////////////////////////////////////////////////
 
   // prepare nullspace vector for MueLu (block A11 only)
+  if (!mllist_.isParameter("PDE equations"))
+    dserror("Multigrid parameter 'PDE equations' missing in solver parameter list.");
+  if (!mllist_.isParameter("null space: dimension"))
+    dserror("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
   const int numdf = mllist_.get<int>("PDE equations", -1);
   const int dimns = mllist_.get<int>("null space: dimension", -1);
   if (numdf == -1) dserror("Multigrid parameter 'PDE equations' wrong. It has to be > 0.");
@@ -225,7 +271,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   ///////////////////////////////////////////////////////////////////////
 
   // Transform maps
-  Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap = Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
+  Teuchos::RCP<EpetraMap> xSlaveDofMap = Teuchos::rcp(new EpetraMap(epSlaveDofMap));
 
   // Get maps and matrix blocks for blocked operator
   Teuchos::RCP<const Map> fullrangemap = Teuchos::null;
@@ -238,7 +284,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // (Re-)create the preconditioner, so extract everything from the input matrix 'A'.
 
     // Prepare maps for blocked operator
-    fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+    fullrangemap = Teuchos::rcp(new EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
 
     // Transform matrix blocks
     xA11 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
@@ -251,14 +297,16 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // Re-use the preconditioner, so extract everything from the existing preconditioner 'Pmatrix_'.
 
     // create maps
-    fullrangemap =
-        Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(Pmatrix_->FullRangeMap())));
+    fullrangemap = Teuchos::rcp(new EpetraMap(Teuchos::rcpFromRef(Pmatrix_->FullRangeMap())));
 
     xA11 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 0).EpetraMatrix()));
     xA12 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 1).EpetraMatrix()));
     xA21 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 0).EpetraMatrix()));
     xA22 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 1).EpetraMatrix()));
   }
+
+  // std::cout << __LINE__ << __FILE__ << std::endl;
+  // xA22->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
 
   /* Define strided maps
    *
@@ -279,17 +327,40 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   xmaps.push_back(strMap1);
   xmaps.push_back(strMap2);
 
-  Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
-      Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
+  Teuchos::RCP<const ::MapExtractor> map_extractor =
+      MapExtractorFactory::Build(fullrangemap, xmaps);
 
   // build blocked Xpetra operator
   Teuchos::RCP<BlockedCrsMatrix> bOp =
       Teuchos::rcp(new BlockedCrsMatrix(map_extractor, map_extractor, 10));
+#ifdef TRILINOS_Q1_2015
   bOp->setMatrix(0, 0, xA11);
   bOp->setMatrix(0, 1, xA12);
   bOp->setMatrix(1, 0, xA21);
   bOp->setMatrix(1, 1, xA22);
+#else
+  bOp->setMatrix(0, 0, Teuchos::rcp(new CrsMatrixWrap(xA11)));
+  bOp->setMatrix(0, 1, Teuchos::rcp(new CrsMatrixWrap(xA12)));
+  bOp->setMatrix(1, 0, Teuchos::rcp(new CrsMatrixWrap(xA21)));
+  bOp->setMatrix(1, 1, Teuchos::rcp(new CrsMatrixWrap(xA22)));
+#endif
   bOp->fillComplete();
+
+  //  xSlaveDofMap->describe(
+  //      *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
+  //  Teuchos::RCP<const Xpetra::Map<int, int, Xpetra::EpetraNode>> xSlaveDofMapForOutput =
+  //      Xpetra::MapFactory<int, int, Xpetra::EpetraNode>::Build(*xSlaveDofMap);
+  //  xSlaveDofMapForOutput->describe(
+  //      *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
+
+  //  Xpetra::IO<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Write(
+  //      "meshtying2D_interface_dof_map.mm", *xSlaveDofMap);
+
+  // epSlaveDofMap->Print(std::cout);
+  // EpetraExt::BlockMapToMatrixMarketFile("meshtying2D_interface_dof_row_map.mm", *epSlaveDofMap);
+
+  // std::cout << __LINE__ << __FILE__ << std::endl;
+  // exit(0);
 
   // Re-create or re-use the preconditioner?
   if (create)
@@ -299,6 +370,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // free old matrix first
     P_ = Teuchos::null;
 
+#if defined(TRILINOS_Q1_2015)
     // interpret ML parameters
     int maxLevels = 3;
     int verbosityLevel = 10;
@@ -826,7 +898,74 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
       std::cout << "END FINAL CONTENT of multigrid levels" << std::endl;
     } // end debug output
     Write(H);
-#endif
+#endif  // 0
+#elif defined(TRILINOS_DEVELOP)
+
+    if (!mllist_.isParameter("MUELU_XML_FILE"))
+      dserror(
+          "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
+          "Please set it as entry 'MUELU_XML_FILE'.");
+    std::string xml_file = mllist_.get<std::string>("MUELU_XML_FILE");
+
+    ParameterList mueluParams;
+    Teuchos::updateParametersFromXmlFileAndBroadcast(
+        xml_file, Teuchos::Ptr<ParameterList>(&mueluParams), *comm);
+    // ParameterList& userDataParams = mueluParams.sublist("user data");
+
+    // Pass nullspace of displacement block to MueLu
+    RCP<MultiVector> nullspace11 = Teuchos::null;
+    RCP<MultiVector> nullspace22 = Teuchos::null;
+    {
+      // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
+      nullspace11 =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(xA11->getRowMap(), mllist_);
+      // nullspace11->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)),
+      // Teuchos::VERB_EXTREME);
+
+      Xpetra::IO<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Write(
+          "meshtying2D_nullspace1.mm", *nullspace11);
+
+      // Compute default nullspace for block (1,1)
+      {
+        const int dimNS2 = numdf;
+        nullspace22 = MultiVectorFactory::Build(xA22->getRowMap(), dimNS2);
+
+        for (int i = 0; i < dimNS2; ++i)
+        {
+          Teuchos::ArrayRCP<Scalar> nsValues22 = nullspace22->getDataNonConst(i);
+          int numBlocks = nsValues22.size() / dimNS2;
+          for (int j = 0; j < numBlocks; ++j)
+          {
+            nsValues22[j * dimNS2 + i] = 1.0;
+          }
+        }
+      }
+      // std::cout << "Nullspace2  with " << nullspace22->getNumVectors()
+      //           << " vectors and dim = " << nullspace22->getGlobalLength() << std::endl;
+      // nullspace22->describe(
+      //     *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
+
+      // userDataParams.set<RCP<MultiVector>>("Nullspace1", nullspace11);
+      // userDataParams.set<RCP<MultiVector>>("Nullspace2", nullspace11);
+    }
+
+    // bOp->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
+
+    // ParameterListInterpreter mueLuFactory(xml_file, *comm);
+    ParameterListInterpreter mueLuFactory(mueluParams, comm);
+
+    RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+    // H->SetDefaultVerbLevel(MueLu::Extreme);
+    H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp));
+    H->GetLevel(0)->Set("Nullspace1", nullspace11);
+    H->GetLevel(0)->Set("Nullspace2", nullspace22);
+    H->GetLevel(0)->Set(
+        "PrimalInterfaceDofRowMap", Teuchos::rcp_dynamic_cast<const Map>(xSlaveDofMap, true));
+
+    mueLuFactory.SetupHierarchy(*H);
+#else
+    dserror("Not implemented for your Trilinos installation.");
+#endif  // TRILINOS_Q1_2015, else TRILINOS_DEVELOP
 
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
@@ -850,6 +989,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   return;
 }
 
+#ifdef TRILINOS_Q1_2015
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>

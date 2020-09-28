@@ -11,10 +11,9 @@
 #ifndef SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 #define SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 
-#ifdef TRILINOS_Q1_2015
-
 #include "solver_preconditionertype.H"
 
+#ifdef TRILINOS_Q1_2015
 #include <Xpetra_BlockedCrsMatrix_fwd.hpp>
 
 #include <MueLu_Hierarchy.hpp>  // for MueLu
@@ -30,6 +29,16 @@
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
 #include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
 
+#else  // TRILINOS_Q1_2015
+
+// MueLu
+#include <MueLu_Hierarchy.hpp>
+
+// header files for default types, must be included after all other MueLu/Xpetra headers
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+
+#endif  // TRILINOS_Q1_2015
+
 // BACI includes
 #include "../linalg/linalg_blocksparsematrix.H"
 
@@ -44,6 +53,7 @@ namespace LINALG
     class MueLuContactSpPreconditioner : public PreconditionerType
     {
      public:
+#ifdef TRILINOS_Q1_2015
       // some typedefs
       typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
       typedef MueLu::FactoryBase FactoryBase;
@@ -51,6 +61,7 @@ namespace LINALG
       typedef LocalOrdinal LO;
       typedef GlobalOrdinal GO;
       typedef Node NO;
+#endif  // TRILINOS_Q1_2015
 
       MueLuContactSpPreconditioner(FILE* outfile, Teuchos::ParameterList& mllist);
 
@@ -93,6 +104,7 @@ namespace LINALG
         return "MueLu (Contact) Parameters";
       }  // TODO check me
      private:
+#ifdef TRILINOS_Q1_2015
       void Write(
           const Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>& H);
 
@@ -199,6 +211,7 @@ namespace LINALG
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
       InterpretBACIList2MueLuSmoother(
           const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact) const;
+#endif  // TRILINOS_Q1_2015
 
       //! ML parameter list
       Teuchos::ParameterList& mllist_;
@@ -214,7 +227,5 @@ namespace LINALG
     };  // class MueLuContactSpPreconditioner
   }     // namespace SOLVER
 }  // namespace LINALG
-
-#endif  // TRILINOS_Q1_2015
 
 #endif /* SOLVER_MUELUCONTACTSPPRECONDITIONER_H_ */

@@ -1824,6 +1824,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         muelulist = LINALG::Solver::TranslateBACIToML(
             inparams, &azlist);                          // MueLu reuses the ML parameter list
         muelulist.set("MueLu: Prec Type", "ContactSP");  // not used?
+
+#ifdef TRILINOS_DEVELOP
+        /* Insert name of xml-file with MueLu preconditioner configuration into parameter list
+         *
+         * When MueLu-internal implementations for saddle-point preconditioning are used, the MueLu
+         * configuration is given in this xml-file.
+         *
+         * Note: This is not required for the "old" Baci implementation of meshtying/contact
+         * saddle-point preconditioning.
+         */
+        std::string muelu_xml_file = inparams.get<std::string>("MUELU_XML_FILE");
+        muelulist.set<std::string>("MUELU_XML_FILE", muelu_xml_file);
+#endif  // TRILINOS_DEVELOP
       }
       if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
       {
