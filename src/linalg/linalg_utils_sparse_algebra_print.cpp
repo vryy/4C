@@ -16,13 +16,16 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_MultiVector.h>
 #include <Ifpack_AdditiveSchwarz.h>
 #include <Kokkos_DefaultNode.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
 #include <Xpetra_IO.hpp>
+#include <Xpetra_EpetraMultiVector.hpp>
 #include <Xpetra_Matrix.hpp>
+#include <Xpetra_MultiVector.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -243,7 +246,8 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::WriteEpetraAsXpetra(std::string filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
+void LINALG::WriteEpetraCrsMatrixAsXpetra(
+    std::string filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
 {
 #include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace IO
   using Teuchos::rcp;
@@ -254,4 +258,12 @@ void LINALG::WriteEpetraAsXpetra(std::string filename, Teuchos::RCP<Epetra_CrsMa
   RCP<Matrix> A = Teuchos::rcp_dynamic_cast<Matrix>(ACrsWrap);
 
   Xpetra::IO<double, int, int, Node>::Write(filename, *A);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::WriteEpetraMultiVectorAsXpetra(
+    std::string filename, Teuchos::RCP<Epetra_MultiVector> vec)
+{
+  Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));
 }
