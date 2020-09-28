@@ -648,7 +648,8 @@ namespace CONTACT
     // don't want cctor (= operator impossible anyway for abstract class)
     MtAbstractStrategy(const MtAbstractStrategy& old) = delete;
 
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
+    //! Vector with all meshtying interfaces
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;
 
     //! Global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;
