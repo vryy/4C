@@ -6,8 +6,7 @@ variables:
     # Clone repository by default, file have changed attribute.
     GIT_STRATEGY: clone
     # If not called by a scheduler this variable has to be 0.
-    # 1: daily full
-    # 2: daily debug
+    # 1: daily full (release, debug)
     # 3: weekly coverage
     GITLAB_SCHEDULER_TYPE: "0"
 
@@ -260,7 +259,7 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "2"
+# $GITLAB_SCHEDULER_TYPE = "1"
 # Debug tests are performed.
 .buildtest_daily_debug: &buildtest_daily_debug
     stage: buildtest
@@ -295,7 +294,7 @@ variables:
         expire_in: 1 day
     only:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "2"
+            - $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 #
@@ -331,12 +330,8 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
             - $GITLAB_INTERACTIVE_MODE == "1"
 
-# This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "1"
+# This kind of job is started only on the master branch
 # Doxygen is build and moved to a folder with known path.
-#
-# The doxygen job is meant for nightly testing. It also provides doxygen output
-# to be copied to $DOXYGEN_PATH.
 .doxygen: &doxygen
     stage: doxygen
     script:
@@ -404,7 +399,6 @@ checkcode:
         - web
     except:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
             - $GITLAB_INTERACTIVE_MODE == "1"
     tags:
@@ -479,6 +473,7 @@ imcs-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-nightly-debug
+    needs: ["checkcode"]
 
 .imcs-doxygen:
     <<: *doxygen
@@ -527,8 +522,6 @@ lnm-codeclimate:
         - web
     except:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "2"
-            - $GITLAB_SCHEDULER_TYPE == "3"
             - $GITLAB_INTERACTIVE_MODE == "1"
     allow_failure: true
     tags:
@@ -594,6 +587,7 @@ lnm-buildtest_coverage_weekly:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-weekly-coverage
+    needs: []
 
 pages: # job name needs to be pages
     stage: pages
@@ -810,6 +804,7 @@ lnm-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-debug-nightly-full
+    needs: ["checkcode"]
 
 lnm-doxygen-web:
     <<: *doxygen_web
