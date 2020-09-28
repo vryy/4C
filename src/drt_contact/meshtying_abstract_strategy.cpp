@@ -369,7 +369,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // print message
   if (Comm().MyPID() == 0)
   {
-    std::cout << "*RMZ*...............";
+    std::cout << "*RestrictMeshtyingZone*...............";
     fflush(stdout);
   }
 
@@ -419,15 +419,16 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     std::vector<int> data;
 
     // loop over all entries of allreduced map
-    for (int k = 0; k < fullsdofs->NumMyElements(); ++k)
+    const int numMyFullSlaveDofs = fullsdofs->NumMyElements();
+    for (int k = 0; k < numMyFullSlaveDofs; ++k)
     {
       // get global ID of current dof
-      int dofgid = fullsdofs->GID(k);
+      int gid = fullsdofs->GID(k);
 
-      // check is this GID is stored on this processor in the
-      // slave dof row map based on the old distribution and
-      // add to data vector if so
-      if (pgsdofrowmap_->MyGID(dofgid)) data.push_back(dofgid);
+      /* Check if this GID is stored on this processor in the slave dof row map based on the old
+       * distribution and add to data vector if so.
+       */
+      if (pgsdofrowmap_->MyGID(gid)) data.push_back(gid);
     }
 
     // re-setup old slave dof row map (with restriction now)
@@ -1294,10 +1295,11 @@ void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
 {
   InnerDofMap = gndofrowmap_;  // global internal dof row map
 
+  // global active slave dof row map (all slave dofs are active  in meshtying)
   if (pgsdofrowmap_ != Teuchos::null)
     ActiveDofMap = pgsdofrowmap_;
   else
-    ActiveDofMap = gsdofrowmap_;  // global active slave dof row map ( all slave dofs are active )
+    ActiveDofMap = gsdofrowmap_;
 
   // check if parallel redistribution is used
   // if parallel redistribution is activated, then use (original) maps before redistribution
