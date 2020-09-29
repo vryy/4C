@@ -1836,75 +1836,75 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE_ALGORITHM
-  src/drt_particle_algorithm/particle_sim.cpp
-  src/drt_particle_algorithm/particle_algorithm.cpp
-  src/drt_particle_algorithm/particle_timint.cpp
-  src/drt_particle_algorithm/particle_input_generator.cpp
-  src/drt_particle_algorithm/particle_gravity.cpp
-  src/drt_particle_algorithm/particle_viscous_damping.cpp
-  src/drt_particle_algorithm/particle_dirichlet_bc.cpp
-  src/drt_particle_algorithm/particle_temperature_bc.cpp
-  src/drt_particle_algorithm/particle_initial_field.cpp
-  src/drt_particle_algorithm/particle_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
-)
-set(OBJS_DRT_PARTICLE_INTERACTION
-  src/drt_particle_interaction/particle_interaction_base.cpp
-  src/drt_particle_interaction/particle_interaction_dem.cpp
-  src/drt_particle_interaction/particle_interaction_dem_neighbor_pairs.cpp
-  src/drt_particle_interaction/particle_interaction_dem_history_pairs.cpp
-  src/drt_particle_interaction/particle_interaction_dem_contact.cpp
-  src/drt_particle_interaction/particle_interaction_dem_contact_normal.cpp
-  src/drt_particle_interaction/particle_interaction_dem_contact_tangential.cpp
-  src/drt_particle_interaction/particle_interaction_dem_contact_rolling.cpp
-  src/drt_particle_interaction/particle_interaction_dem_adhesion.cpp
-  src/drt_particle_interaction/particle_interaction_dem_adhesion_law.cpp
-  src/drt_particle_interaction/particle_interaction_dem_adhesion_surface_energy.cpp
-  src/drt_particle_interaction/particle_interaction_sph.cpp
-  src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
-  src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
-  src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
-  src/drt_particle_interaction/particle_interaction_sph_neighbor_pairs.cpp
-  src/drt_particle_interaction/particle_interaction_sph_density.cpp
-  src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
-  src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
-  src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
-  src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
-  src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
-  src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
-  src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
-  src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
-  src/drt_particle_interaction/particle_interaction_sph_open_boundary.cpp
-  src/drt_particle_interaction/particle_interaction_sph_virtual_wall_particle.cpp
-  src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
-  src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
-  src/drt_particle_interaction/particle_interaction_material_handler.cpp
-  src/drt_particle_interaction/particle_interaction_runtime_writer.cpp
+  src/drt_particle_algorithm/particle_algorithm.cpp
+  src/drt_particle_algorithm/particle_dirichlet_bc.cpp
+  src/drt_particle_algorithm/particle_gravity.cpp
+  src/drt_particle_algorithm/particle_initial_field.cpp
+  src/drt_particle_algorithm/particle_input_generator.cpp
+  src/drt_particle_algorithm/particle_result_test.cpp
+  src/drt_particle_algorithm/particle_sim.cpp
+  src/drt_particle_algorithm/particle_temperature_bc.cpp
+  src/drt_particle_algorithm/particle_timint.cpp
+  src/drt_particle_algorithm/particle_viscous_damping.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
+  src/drt_particle_engine/particle_communication_utils.cpp
   src/drt_particle_engine/particle_container.cpp
   src/drt_particle_engine/particle_container_bundle.cpp
   src/drt_particle_engine/particle_engine.cpp
-  src/drt_particle_engine/particle_communication_utils.cpp
-  src/drt_particle_engine/particle_unique_global_id.cpp
   src/drt_particle_engine/particle_runtime_vtp_writer.cpp
+  src/drt_particle_engine/particle_unique_global_id.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE_LIB
   src/drt_particle_engine/particle_enums.cpp
   src/drt_particle_engine/particle_object.cpp
 )
+set(OBJS_DRT_PARTICLE_INTERACTION
+  src/drt_particle_interaction/particle_interaction_base.cpp
+  src/drt_particle_interaction/particle_interaction_dem_adhesion_law.cpp
+  src/drt_particle_interaction/particle_interaction_dem_adhesion_surface_energy.cpp
+  src/drt_particle_interaction/particle_interaction_dem_adhesion.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_normal.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_rolling.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_tangential.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact.cpp
+  src/drt_particle_interaction/particle_interaction_dem_history_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem.cpp
+  src/drt_particle_interaction/particle_interaction_material_handler.cpp
+  src/drt_particle_interaction/particle_interaction_runtime_writer.cpp
+  src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
+  src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
+  src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
+  src/drt_particle_interaction/particle_interaction_sph_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_sph_open_boundary.cpp
+  src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
+  src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
+  src/drt_particle_interaction/particle_interaction_sph_virtual_wall_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph.cpp
+)
+set(OBJS_DRT_PARTICLE_RIGIDBODY
+  src/drt_particle_rigidbody/particle_rigidbody_affiliation_pairs.cpp
+  src/drt_particle_rigidbody/particle_rigidbody_datastate.cpp
+  src/drt_particle_rigidbody/particle_rigidbody_result_test.cpp
+  src/drt_particle_rigidbody/particle_rigidbody_runtime_vtp_writer.cpp
+  src/drt_particle_rigidbody/particle_rigidbody.cpp
+)
 set(OBJS_DRT_PARTICLE_WALL
-  src/drt_particle_wall/particle_wall.cpp
   src/drt_particle_wall/particle_wall_datastate.cpp
   src/drt_particle_wall/particle_wall_discretization_runtime_vtu_writer.cpp
   src/drt_particle_wall/particle_wall_result_test.cpp
-)
-set(OBJS_DRT_PARTICLE_RIGIDBODY
-  src/drt_particle_rigidbody/particle_rigidbody.cpp
-  src/drt_particle_rigidbody/particle_rigidbody_datastate.cpp
-  src/drt_particle_rigidbody/particle_rigidbody_runtime_vtp_writer.cpp
-  src/drt_particle_rigidbody/particle_rigidbody_affiliation_pairs.cpp
-  src/drt_particle_rigidbody/particle_rigidbody_result_test.cpp
+  src/drt_particle_wall/particle_wall.cpp
 )
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
@@ -2565,11 +2565,11 @@ set(OBJS_DRT_MOR
 
 set(OBJS_DRT_PASI
 src/drt_pasi/pasi_dyn.cpp
-src/drt_pasi/pasi_partitioned.cpp
 src/drt_pasi/pasi_partitioned_onewaycoup.cpp
 src/drt_pasi/pasi_partitioned_twowaycoup.cpp
-src/drt_pasi/pasi_utils.cpp
+src/drt_pasi/pasi_partitioned.cpp
 src/drt_pasi/pasi_str_model_evaluator_partitioned.cpp
+src/drt_pasi/pasi_utils.cpp
 )
 
 set(OBJS_DRT_TUTORIAL
@@ -2769,10 +2769,10 @@ add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
-add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
-add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
+add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY})
+add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
@@ -2798,10 +2798,10 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid_adjoint
   alg_opti
   alg_particle_algorithm
-  alg_particle_interaction
   alg_particle_engine
-  alg_particle_wall
+  alg_particle_interaction
   alg_particle_rigidbody
+  alg_particle_wall
   alg_elemag
   alg_tutorial
   )
