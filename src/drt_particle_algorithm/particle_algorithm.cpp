@@ -948,8 +948,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
-    // gravity is not set for boundary particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
+    // gravity is not set for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // gravity is not set for open boundary particles
     if (typeEnum == PARTICLEENGINE::DirichletPhase or typeEnum == PARTICLEENGINE::NeumannPhase)
