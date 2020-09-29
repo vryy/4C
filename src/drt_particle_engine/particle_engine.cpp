@@ -182,7 +182,7 @@ void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
 void PARTICLEENGINE::ParticleEngine::CheckNumberOfUniqueGlobalIds()
 {
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  auto mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // get number of particles on all processors
@@ -753,7 +753,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   for (int globalid : thisprocglobalids) particlestoproc[globalid] = myrank_;
 
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  auto mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // communicate global ids between all processors
