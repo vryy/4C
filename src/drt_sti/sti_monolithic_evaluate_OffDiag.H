@@ -47,7 +47,7 @@ namespace STI
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-        Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+        Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -97,6 +97,9 @@ namespace STI
     //! map associated with all degrees of freedom on scatra interface
     Teuchos::RCP<const Epetra_Map> InterfaceMapThermo() const { return interface_map_thermo_; };
 
+    //! problem with deforming mesh
+    bool IsAle() const { return isale_; }
+
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyScaTra() const
     {
@@ -134,6 +137,9 @@ namespace STI
     //! map associated with all degrees of freedom on scatra interface
     const Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
 
+    //! flag, if mesh deforms
+    const bool isale_;
+
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
 
@@ -159,7 +165,7 @@ namespace STI
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-        Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+        Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -208,7 +214,7 @@ namespace STI
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-        Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+        Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -235,7 +241,7 @@ namespace STI
       Teuchos::RCP<const Epetra_Map> full_map_scatra,
       Teuchos::RCP<const Epetra_Map> full_map_thermo,
       Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-      Teuchos::RCP<const Epetra_Map> interface_map_thermo,
+      Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
       Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
       Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,

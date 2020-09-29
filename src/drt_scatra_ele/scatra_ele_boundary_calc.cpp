@@ -1133,6 +1133,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
   if (s2icondition == Teuchos::null)
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
+  // get primary variable to derive the linearization
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1166,32 +1170,46 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
         // constant permeability model
         case INPAR::S2I::kinetics_constperm:
         {
-          // access real vector of constant permeabilities associated with current condition
-          const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
-          if (permeabilities == NULL)
-            dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-          if (permeabilities->size() != (unsigned)numscal_)
-            dserror("Number of permeabilities does not match number of scalars!");
-
-          // core linearization
-          const double dN_dd_slave_timefacwgt =
-              timefacwgt * (*permeabilities)[k] * (slavephiint - masterphiint);
-
-          // loop over matrix columns
-          for (int ui = 0; ui < nen_; ++ui)
+          // dervivative of interface flux w.r.t. displacement
+          switch (differentiationtype)
           {
-            const int fui = ui * 3;
-
-            // loop over matrix rows
-            for (int vi = 0; vi < nen_; ++vi)
+            case static_cast<int>(SCATRA::DifferentiationType::disp):
             {
-              const int fvi = vi * numscal_ + k;
-              const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave_timefacwgt;
+              // access real vector of constant permeabilities associated with current condition
+              const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
+              if (permeabilities == nullptr)
+                dserror(
+                    "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+              if (permeabilities->size() != static_cast<unsigned>(numscal_))
+                dserror("Number of permeabilities does not match number of scalars!");
 
-              // loop over spatial dimensions
-              for (unsigned dim = 0; dim < 3; ++dim)
-                // compute linearizations w.r.t. slave-side structural displacements
-                eslavematrix(fvi, fui + dim) += vi_dN_dd_slave * shapederivatives(dim, ui);
+              // core linearization
+              const double dN_dd_slave_timefacwgt =
+                  timefacwgt * (*permeabilities)[k] * (slavephiint - masterphiint);
+
+              // loop over matrix columns
+              for (int ui = 0; ui < nen_; ++ui)
+              {
+                const int fui = ui * 3;
+
+                // loop over matrix rows
+                for (int vi = 0; vi < nen_; ++vi)
+                {
+                  const int fvi = vi * numscal_ + k;
+                  const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave_timefacwgt;
+
+                  // loop over spatial dimensions
+                  for (unsigned dim = 0; dim < 3; ++dim)
+                    // compute linearizations w.r.t. slave-side structural displacements
+                    eslavematrix(fvi, fui + dim) += vi_dN_dd_slave * shapederivatives(dim, ui);
+                }
+              }
+              break;
+            }
+            default:
+            {
+              dserror("Unknown primary quantity to calculate derivative");
+              break;
             }
           }
 

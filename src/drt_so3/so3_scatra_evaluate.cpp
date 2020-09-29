@@ -12,6 +12,7 @@
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/so3_material.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
@@ -33,37 +34,31 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
       if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
               distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
         dserror(
-            "The Solidscatra elements are only tested for the Hex8, Hex27 and Tet4 case. The "
-            "following should work, but keep your eyes open (especially with the order of the Gauß "
-            "points");
+            "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
+            "The following should work, but keep your eyes open (especially with the order of the "
+            "Gauß points)");
 
       /* =========================================================================*/
       // start concentration business
       /* =========================================================================*/
-      Teuchos::RCP<std::vector<std::vector<double>>> gpconc = Teuchos::rcp(
+      auto gpconc = Teuchos::rcp(
           new std::vector<std::vector<double>>(numgpt_, std::vector<double>(numscal, 0.0)));
 
       // check if you can get the scalar state
       Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1, "scalarfield");
 
       if (concnp == Teuchos::null)
-        dserror("calc_struct_nlnstiff: Cannot get state vector 'temperature' ");
+        dserror("calc_struct_nlnstiff: Cannot get state vector 'scalarfield' ");
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double>> myconc =
-          Teuchos::rcp(new std::vector<double>(la[1].lm_.size(), 0.0));
+      auto myconc = std::vector<double>(la[1].lm_.size(), 0.0);
 
-      DRT::UTILS::ExtractMyValues(*concnp, *myconc, la[1].lm_);
+      DRT::UTILS::ExtractMyValues(*concnp, myconc, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<LINALG::Matrix<numnod_, 1>> econc(numscal);
       for (int k = 0; k < numscal; ++k)
-      {
-        for (int i = 0; i < numnod_; ++i)
-        {
-          (econc.at(k))(i, 0) = myconc->at(numscal * i + k);
-        }
-      }
+        for (int i = 0; i < numnod_; ++i) (econc.at(k))(i, 0) = myconc.at(numscal * i + k);
 
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
@@ -100,18 +95,63 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
       params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc);
 
-      // compute average concentrations
-      for (int k = 0; k < numscal; ++k)
-      {
-        // now mass_ref is the element averaged concentration
-        mass_ref.at(k) /= volume_ref;
-      }
-      Teuchos::RCP<std::vector<std::vector<double>>> avgconc =
-          Teuchos::rcp(new std::vector<std::vector<double>>(numgpt_, mass_ref));
+      // compute average concentrations. Now mass_ref is the element averaged concentration
+      for (int k = 0; k < numscal; ++k) mass_ref.at(k) /= volume_ref;
+
+      auto avgconc = Teuchos::rcp(new std::vector<std::vector<double>>(numgpt_, mass_ref));
 
       params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("avg_conc", avgconc);
 
     }  // if (discretization.HasState(1,"scalarfield"))
+
+    // if temperatures were set
+    if (discretization.NumDofSets() == 3)
+      if (discretization.HasState(2, "tempfield"))
+      {
+        if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
+                distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+          dserror(
+              "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
+              "The following should work, but keep your eyes open (especially with the order of "
+              "the Gauß points");
+
+        /* =========================================================================*/
+        // start temperature business
+        /* =========================================================================*/
+        auto gptemp = Teuchos::rcp(new std::vector<double>(std::vector<double>(numgpt_, 0.0)));
+
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "tempfield");
+
+        if (tempnp == Teuchos::null)
+          dserror("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
+
+        // extract local values of the global vectors
+        auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
+
+        DRT::UTILS::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
+
+        // element vector for k-th scalar
+        LINALG::Matrix<numnod_, 1> etemp;
+
+        for (int i = 0; i < numnod_; ++i) etemp(i, 0) = mytemp.at(i);
+
+        /* =========================================================================*/
+        /* ================================================= Loop over Gauss Points */
+        /* =========================================================================*/
+
+        for (int igp = 0; igp < numgpt_; ++igp)
+        {
+          // shape functions evaluated at current gauß point
+          LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
+          DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
+
+          // temperature at Gauß point withidentical shapefunctions for displacements and
+          // temperatures
+          gptemp->at(igp) = shapefunct_gp.Dot(etemp);
+        }
+
+        params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
+      }
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material
@@ -122,7 +162,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific
   // stuff. But for now we let it be...
   std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
-  Teuchos::RCP<std::vector<double>> xrefe = Teuchos::rcp(new std::vector<double>(center));
+  auto xrefe = Teuchos::rcp(new std::vector<double>(center));
   params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
 
   return;
@@ -220,10 +260,20 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
   // compute deformation gradient w.r.t. to material configuration
   LINALG::Matrix<numdim_, numdim_> defgrad(true);
 
-  // get numscatradofspernode from parameter list
-  const int numscatradofspernode = params.get<int>("numscatradofspernode", -1);
-  if (numscatradofspernode == -1)
-    dserror("Could not read 'numscatradofspernode' from parameter list!");
+  // evaluation of linearization w.r.t. certain primary variable
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
+  if (differentiationtype == static_cast<int>(STR::DifferentiationType::none))
+    dserror("Cannot get differentation type");
+
+  // get numscatradofspernode from parameter list in case of elch linearizations
+  int numscatradofspernode(-1);
+  if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
+  {
+    numscatradofspernode = params.get<int>("numscatradofspernode", -1);
+    if (numscatradofspernode == -1)
+      dserror("Could not read 'numscatradofspernode' from parameter list!");
+  }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -273,8 +323,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
     // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
     LINALG::Matrix<numstr_, 1> dSdc(true);
 
-    params.set<std::string>("scalartype", "concentration");
-
     // get dSdc, hand in NULL as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, NULL, gp, Id());
@@ -293,7 +341,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
       // loop over columns
       for (unsigned coli = 0; coli < numnod_; ++coli)
       {
-        stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
+        // stiffness matrix w.r.t. elch dofs
+        if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
+          stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
+        else
+          dserror("Unknown differentation type");
       }
     }
   }  // gauss point loop

@@ -169,6 +169,35 @@ namespace MAT
       /// pointer to object, that calculates and holds direction of inelastic deformation
       Teuchos::RCP<InelasticDeformationDirection> growthdir_;
     };
+
+    /*----------------------------------------------------------------------
+    ----------------------------------------------------------------------*/
+    /*! \class InelasticDefgradLinTempIso
+
+    Parameter class of InelasticDefgradLinTempIso.
+    */
+    class InelasticDefgradLinTempIso : public MAT::PAR::Parameter
+    {
+     public:
+      explicit InelasticDefgradLinTempIso(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+      ~InelasticDefgradLinTempIso() override = default;
+
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+
+      /// return temperature related growth factor
+      double GetTempGrowthFac() const { return tempgrowthfac_; };
+
+      /// return value of temperature that causes no growth
+      double RefTemp() const { return reftemp_; };
+
+     private:
+      /// value of temperature that causes no growth
+      const double reftemp_;
+
+      /// growth factor
+      const double tempgrowthfac_;
+    };
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
@@ -355,9 +384,59 @@ namespace MAT
     /// Get type of scalar, that leads to deformation
     virtual PAR::InelasticSource GetInelasticSource() = 0;
 
+   protected:
+    //! Get ID of current Gauß point
+    int GetGP() const { return gp_; };
+
+    //! Set ID of current Gauß point
+    void SetGP(int gp) { gp_ = gp; };
+
    private:
+    //! ID of current Gauß point
+    int gp_;
+
     /// material parameters
     MAT::PAR::Parameter* params_;
+  };
+
+  class InelasticDefgradScalar : public InelasticDefgradFactors
+  {
+   public:
+    InelasticDefgradScalar() = default;
+
+    /*!
+     * @brief construct material with required inputs
+     *
+     * @param[in] params           pointer to material specific parameters
+     */
+    explicit InelasticDefgradScalar(MAT::PAR::Parameter* params);
+
+    ~InelasticDefgradScalar() override = default;
+
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
+
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
+
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
+
+    PAR::InelasticSource GetInelasticSource() override = 0;
+
+    INPAR::MAT::MaterialType MaterialType() const override = 0;
+
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+
+   protected:
+    //! Get vector of concentration at current Gauß point
+    std::vector<double>& GetConcentrationGP() const { return concentrations_->at(GetGP()); };
+
+   private:
+    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
+    /// element
+    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
   };
 
   /*--------------------------------------------------------------------*/
@@ -368,14 +447,13 @@ namespace MAT
    describes the growth of material with respect to intercalation fraction and it is prescribed by
    user in input file by defining it coefficients.
    */
-  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradFactors
+  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradScalar
   {
    public:
-    /// constructor
     InelasticDefgradPolyIntercalFrac() = default;
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -417,8 +495,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override = 0;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
@@ -442,10 +518,9 @@ namespace MAT
       \boldsymbol{I}
       \f]
       */
-  class InelasticDefgradLinScalarIso : public InelasticDefgradFactors
+  class InelasticDefgradLinScalarIso : public InelasticDefgradScalar
   {
    public:
-    /// construct empty material
     InelasticDefgradLinScalarIso();
 
     /*!
@@ -475,8 +550,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradScalar* Parameter() override
@@ -486,11 +559,6 @@ namespace MAT
     }
 
    private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
     /// pointer to class that evaluates the linear growth law
     Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
   };  // namespace MAT
@@ -512,10 +580,9 @@ namespace MAT
      \f$ \bold{g} \f$ is normalized to length 1 before calculation of \f$ \bold{G} \f$.
      \f$ f(\chi) \f$ is defined by the user in the input file.
      */
-  class InelasticDefgradLinScalarAniso : public InelasticDefgradFactors
+  class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
   {
    public:
-    /// construct empty material
     InelasticDefgradLinScalarAniso();
 
     /*!
@@ -545,8 +612,6 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
     MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
@@ -556,11 +621,6 @@ namespace MAT
     }
 
    private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
     /// store pointer to class that evaluates the linear growth law
     Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
   };  // end of InelasticDefgradLinScalarAniso
@@ -580,11 +640,10 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracIso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    /// construct empty material
     InelasticDefgradPolyIntercalFracIso();
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -611,20 +670,11 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
           MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
-
-   private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -647,11 +697,10 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    /// construct empty material
     InelasticDefgradPolyIntercalFracAniso();
 
     /*!
-     * @brief construct material with reqired inputs
+     * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
@@ -677,20 +726,57 @@ namespace MAT
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
-
     MAT::PAR::InelasticDefgradPolyIntercalFracAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFracAniso*>(
           MAT::InelasticDefgradPolyIntercalFrac::Parameter());
     }
+  };
+
+  /*----------------------------------------------------------------------*/
+  /*! \class InelasticDefgradLinTempIso
+   *Volumetric change due to this law is linearily dependent on the temperature
+   \f$ T \f$ as follows:
+   \f[
+   \boldsymbol{F}_\text{in} = \boldsymbol{I} \left[ 1 + \beta \left( T - T_\text{ref} \right)
+   \right]^\frac{1}{3}, \f]
+   */
+  class InelasticDefgradLinTempIso : public InelasticDefgradFactors
+  {
+   public:
+    InelasticDefgradLinTempIso();
+
+    explicit InelasticDefgradLinTempIso(MAT::PAR::Parameter* params);
+
+    ~InelasticDefgradLinTempIso() override = default;
+
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) final;
+
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) final;
+
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+        LINALG::Matrix<6, 1>& dstressdc) final;
+
+    MAT::PAR::InelasticSource GetInelasticSource() override;
+
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_lin_temp_iso; };
+
+    MAT::PAR::InelasticDefgradLinTempIso* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
+
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
-    /// store current gauss point id
-    int gp_;
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
+    /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
     /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
+    Teuchos::RCP<std::vector<double>> temperatures_;
   };
 }  // namespace MAT
 

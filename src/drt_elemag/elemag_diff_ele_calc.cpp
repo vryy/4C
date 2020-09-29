@@ -90,6 +90,12 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       localSolver_->ProjectField(hdgele, params, elevec1, elevec2);
       break;
     }
+    case ELEMAG::project_electric_from_scatra_field:
+    {
+      ElementInit(hdgele, params);
+      localSolver_->ProjectElectricFieldFromScatra(hdgele, params, mat, elevec1);
+      break;
+    }
     case ELEMAG::compute_error:
     {
       // Postprocess the solution only if required
@@ -582,6 +588,81 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
               break;
           }
     }
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * ProjectElectricFieldFromScatra
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricFieldFromScatra(
+    DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+    const Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec)
+{
+  shapes_.Evaluate(*ele);
+
+  Teuchos::RCP<Epetra_SerialDenseVector> nodevals_phi =
+      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("nodevals_phi");
+
+  if (params.isParameter("ishdg"))
+  {
+    unsigned int scatra_ndofs = params.get<unsigned int>("ndofs");
+    if (scatra_ndofs != shapes_.ndofs_)
+      dserror("Scatra ndofs does not match elemag ndofs. This is not yet implemented.");
+
+    // This is necessary as the scatra code computes the gradient of the scalar field multiplied by
+    // the inverse of the conductivity. Therefore to obtain the actual value of the electric field
+    // it is necessary to rescale it by the value of conductivity.
+    const MAT::ElectromagneticMat* elemagmat =
+        static_cast<const MAT::ElectromagneticMat*>(mat.get());
+    const double sigma = elemagmat->sigma(ele->Id());
+
+    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+      for (unsigned int d = 0; d < nsd_; ++d)
+        ele->eleinteriorElectric_(i + d * shapes_.ndofs_) =
+            -(*nodevals_phi)(i + (d + 1) * shapes_.ndofs_) / sigma;
+
+    return 0;
+  }
+
+  if ((*nodevals_phi).Length() != nen_) dserror("node number not matching");
+
+  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
+  for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+  {
+    // Storing the values of the coordinates for the current quadrature point
+    // and of the jacobian computed in that point
+    const double fac = shapes_.jfac(q);
+    Epetra_SerialDenseVector intVal(nsd_);
+    for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int n = 0; n < nen_; ++n)
+        intVal(d) += shapes_.derxy(n * nsd_ + d, q) * (*nodevals_phi)[n];
+
+    // now fill the components in the one-sided mass matrix and the right hand side
+    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+    {
+      // Mass matrix
+      massPart(i, q) = shapes_.shfunct(i, q);
+      massPartW(i, q) = shapes_.shfunct(i, q) * fac;
+
+      // RHS for the electric and magnetic field
+      for (int j = 0; j < intVal.M(); ++j)
+        localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
+    }
+  }
+  // The integration is made by computing the matrix product
+  massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+  {
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(massMat);
+    inverseMass.SetVectors(localMat, localMat);
+    inverseMass.Solve();
+  }
+
+  for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+    for (unsigned int d = 0; d < nsd_; ++d)
+      ele->eleinteriorElectric_(i + d * shapes_.ndofs_) = -localMat(i, d);
 
   return 0;
 }

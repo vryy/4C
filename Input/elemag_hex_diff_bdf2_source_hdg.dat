@@ -20,7 +20,7 @@ RANDSEED                        -1
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.1
 TAU                             1
-NUMSTEP                         200000
+NUMSTEP                         10
 MAXTIME                         0.99
 RESULTSEVRY                     1
 RESTARTEVRY                     5
@@ -36,7 +36,7 @@ ERRORFUNCNO                     1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZPREC                          ILU
-AZREUSE                         1000
+AZREUSE                         10
 ----------------------------------------------------------MATERIALS
 
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 50 PERMITTIVITY 0 PERMEABILITY 1

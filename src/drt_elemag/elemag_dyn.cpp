@@ -26,7 +26,16 @@
 #include "../drt_io/io_control.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-//#include "../linalg/linalg_utils_sparse_algebra_print.H"
+
+// Clone discreization
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_elemag/elemag_utils_clonestrategy.H"
+
+// Scatra init
+#include "../drt_inpar/inpar_scatra.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_scatra/scatra_timint_stat.H"
+#include "../drt_scatra/scatra_timint_stat_hdg.H"
 
 void electromagnetics_drt()
 {
@@ -154,27 +163,206 @@ void electromagnetics_drt()
   // Initialize the evolution algorithm
   elemagalgo->Init();
 
-  // print information to screen
-  elemagalgo->PrintInformationToScreen();
-
   // set initial field
   if (restart)
     elemagalgo->ReadRestart(restart);
   else
   {
-    Teuchos::ParameterList start_params;
-    start_params.set("startfuncno", elemagparams.get<int>("STARTFUNCNO"));
     INPAR::ELEMAG::InitialField init =
         DRT::INPUT::IntegralValue<INPAR::ELEMAG::InitialField>(elemagparams, "INITIALFIELD");
-    elemagalgo->SetInitialField(init, start_params);
+
+    bool ishdg = false;
+
+    switch (init)
+    {
+      case INPAR::ELEMAG::initfield_scatra_hdg:
+        ishdg = true;
+      case INPAR::ELEMAG::initfield_scatra:
+      {
+        Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(elemagdishdg->Comm().Clone());
+
+        Teuchos::RCP<DRT::Discretization> scatradis;
+
+        if (ishdg)
+        {
+          scatradis = Teuchos::rcp(new DRT::DiscretizationHDG((std::string) "scatra", newcomm));
+
+          scatradis->FillComplete();
+
+          DRT::UTILS::CloneDiscretization<
+              ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_hdg>>(
+              elemagdishdg, scatradis);
+        }
+        else
+        {
+          scatradis = Teuchos::rcp(new DRT::Discretization((std::string) "scatra", newcomm));
+          scatradis->FillComplete();
+
+          DRT::UTILS::CloneDiscretization<
+              ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_polynomial>>(
+              elemagdishdg, scatradis);
+        }
+
+        // call fill complete on discretization
+        scatradis->FillComplete();
+
+        Teuchos::RCP<IO::DiscretizationWriter> output_scatra = scatradis->Writer();
+
+        // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
+        // might be necessary to rethink how things are handled inside the
+        // DRT::UTILS::DbcHDG::DoDirichletCondition.
+        problem->SetProblemType(prb_scatra);
+
+        // access the problem-specific parameter list
+        const Teuchos::ParameterList& scatradyn =
+            DRT::Problem::Instance()->ScalarTransportDynamicParams();
+
+        // do the scatra
+        const INPAR::SCATRA::VelocityField veltype =
+            DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+        switch (veltype)
+        {
+          case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
+          {
+            // we directly use the elements from the scalar transport elements section
+            if (scatradis->NumGlobalNodes() == 0)
+              dserror("No elements in the ---TRANSPORT ELEMENTS section");
+
+            // add proxy of velocity related degrees of freedom to scatra discretization
+            Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+                Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
+                    DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+            if (scatradis->AddDofSet(dofsetaux) != 1)
+              dserror("Scatra discretization has illegal number of dofsets!");
+
+            // finalize discretization
+            scatradis->FillComplete(true, true, true);
+
+            // create scatra output
+            // access the problem-specific parameter list
+            Teuchos::RCP<Teuchos::ParameterList> scatraparams =
+                Teuchos::rcp(new Teuchos::ParameterList(
+                    DRT::Problem::Instance()->ScalarTransportDynamicParams()));
+
+            // TODO (berardocco) Might want to add the scatra section in the input file to avoid
+            // adding params to the elemag or using existing ones for scatra purposes
+            scatraparams->set("TIMEINTEGR", "Stationary");
+            scatraparams->set("NUMSTEP", 1);
+            // This way we avoid writing results and restart
+            scatraparams->set("RESULTSEVRY", 1000);
+            scatraparams->set("RESTARTEVRY", 1000);
+            // This has to be changed accordingly to the intial time
+            // As of now elemag simulation can only start at 0.
+
+            // The solver type still has to be fixed as the problem is linear but the steady state
+            // does not always behave correctly with linear solvers.
+            scatraparams->set("SOLVERTYPE", "nonlinear");
+
+            // create necessary extra parameter list for scatra
+            Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
+            scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
+            scatraextraparams->set<FILE*>(
+                "err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+            scatraextraparams->set<bool>("isale", false);
+            const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+            scatraextraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
+            scatraextraparams->sublist("SUBGRID VISCOSITY") = fdyn.sublist("SUBGRID VISCOSITY");
+            scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES") =
+                fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+            scatraextraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
+
+            scatraextraparams->set("ELECTROMAGNETICDIFFUSION", true);
+            scatraextraparams->set("EMDSOURCE", elemagparams.get<int>("SOURCEFUNCNO"));
+
+            // In case the scatra solver is not defined just use the elemag one
+            if (scatraparams->get<int>("LINEAR_SOLVER") == -1)
+              scatraparams->set<int>("LINEAR_SOLVER", elemagparams.get<int>("LINEAR_SOLVER"));
+
+            // create solver
+            Teuchos::RCP<LINALG::Solver> scatrasolver = Teuchos::rcp(new LINALG::Solver(
+                DRT::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
+                scatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+            // create instance of scalar transport basis algorithm (empty fluid discretization)
+            Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatraalgo;
+            if (ishdg)
+            {
+              // Add parameters for HDG
+              scatraparams->sublist("STABILIZATION").set("STABTYPE", "centered");
+              scatraparams->sublist("STABILIZATION").set("DEFINITION_TAU", "Numerical_Value");
+              // If the input file does not specify a tau parameter then use the one given to the
+              // elemag discretization
+              if (scatraparams->sublist("STABILIZATION").get<double>("TAU_VALUE") == 0.0)
+                scatraparams->sublist("STABILIZATION")
+                    .set("TAU_VALUE", elemagparams.get<double>("TAU"));
+
+              scatraalgo = Teuchos::rcp(new SCATRA::TimIntStationaryHDG(
+                  scatradis, scatrasolver, scatraparams, scatraextraparams, output));
+            }
+            else
+            {
+              // Add parameters for CG
+              // There is no need for stabilization as the problem is a pure diffusion problem
+              scatraparams->sublist("STABILIZATION").set("STABTYPE", "no_stabilization");
+              scatraalgo = Teuchos::rcp(new SCATRA::TimIntStationary(
+                  scatradis, scatrasolver, scatraparams, scatraextraparams, output));
+            }
+
+            // scatraparams->print(std::cout);
+
+            scatraalgo->Init();
+            scatraalgo->Setup();
+            scatraalgo->SetVelocityField(1);
+            scatraalgo->TimeLoop();
+
+            // scatraalgo->ComputeInteriorValues();
+
+            // Create a vector that is going to be filled differently depending on the
+            // discretization. If HDG we already have the information about the gradient, otherwise
+            // the gradient has to be computed.
+            Teuchos::RCP<Epetra_Vector> phi;
+
+            // If it is an HDG discretization return the interior variables else return the nodal
+            // values
+            if (ishdg)
+              phi = Teuchos::rcp_dynamic_cast<SCATRA::TimIntStationaryHDG>(scatraalgo)
+                        ->ReturnIntPhinp();
+            else
+              phi = scatraalgo->Phinp();
+
+            // This is a shortcut for output reason
+            // TODO (berardocco) Fix the output
+            output->CreateNewResultAndMeshFile();
+
+            // Given the results of the scatra solver obtain the initial value of the electric field
+            elemagalgo->SetInitialElectricField(phi, scatradis);
+
+            // Once work is done change back to problem elemag
+            problem->SetProblemType(prb_elemag);
+
+            break;
+          }
+          default:
+            dserror(
+                "Does not make sense to have a velocity field to initialize the electric potential "
+                "field.\nCheck your input file.");
+            break;
+        }
+        break;
+      }
+      default:
+      {
+        int startfuncno = elemagparams.get<int>("STARTFUNCNO");
+        elemagalgo->SetInitialField(init, startfuncno);
+        break;
+      }
+    }
   }
 
-  // call time-integration scheme
-  elemagalgo->Integrate();
+  // print information to screen
+  elemagalgo->PrintInformationToScreen();
 
-  // PrintMatrixInMatlabFormat("matrix_matlab");
-  // LINALG::PrintMatrixInMatlabFormat("hdg_elemag", elemagalgo->SystemMatrix());
-  // elemagalgo->SpySysmat("matrix.mat");
+  elemagalgo->Integrate();
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))

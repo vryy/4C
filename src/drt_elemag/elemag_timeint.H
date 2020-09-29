@@ -35,6 +35,8 @@
 namespace LINALG
 {
   class SparseOperator;
+  class EquilibrationSparse;
+  enum class EquilibrationMethod;
   class MapExtractor;
   class Solver;
 }  // namespace LINALG
@@ -122,8 +124,13 @@ namespace ELEMAG
     /*!
     \brief Set initial field by given function or null function.
     */
-    virtual void SetInitialField(
-        const INPAR::ELEMAG::InitialField init, Teuchos::ParameterList& start_params);
+    virtual void SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno);
+
+    /*!
+    \brief Import initial electric field from scatra solution
+    */
+    void SetInitialElectricField(
+        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
@@ -181,12 +188,16 @@ namespace ELEMAG
     /*!
     \brief Compute Silver-Mueller boundary conditions.
 
-    The functions ask the elements to compute the element matrices and vectors and assembles.
+    The functions ask the elements to compute the element matrices or vectors related to the
+    Silver--Mueller (absorbing) boundary conditions and assembles.
 
-    \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
-    it necessary to compute the matrices AND the RHS (false).
+    \param[in]  do_rhs Boolean indicating if we want to compute the rhs OR the matrix.
+
+    \note We can not do both the matrix and the rhs as the underlying EvaluateCondition does not
+    replace the values in the rhs vector but assembles it. Therefore, by doing both the matrix and
+    the vector we would end up summing more than one contribution at once
     */
-    void ComputeSilverMueller(bool resonly);
+    void ComputeSilverMueller(bool do_rhs);
 
     /*!
     \brief Solve the system for trace and interior variables.
@@ -315,11 +326,16 @@ namespace ELEMAG
 
     int sourcefuncno_;  /// Source function number
 
+    LINALG::EquilibrationMethod equilibration_method_;  /// equilibration method
+
     /// system matrix
     Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
     /// residual vector
     Teuchos::RCP<Epetra_Vector> residual_;
+
+    /// all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::EquilibrationSparse> equilibration_;
 
     /// maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

@@ -899,6 +899,13 @@ namespace DRT
                                     //!< right-hand side vector
       );
 
+      //! Electromagnetic diffusion current density source RHS term
+      void CalcRHSEMD(const DRT::Element* const ele,  //!< element
+          Epetra_SerialDenseVector& erhs,             //!< element right-hand side vector
+          const double rhsfac  //!< domain integration factor times time integration factor for
+                               //!< right-hand side vector
+      );
+
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
       virtual void CalcMatConvODFluid(
           Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled

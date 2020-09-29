@@ -785,7 +785,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
         my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
-        alphaa, alphac, timefacfac, k_ss, k_ms);
+        alphaa, alphac, timefacfac, static_cast<int>(SCATRA::DifferentiationType::temp), k_ss,
+        k_ms);
   }  // loop over integration points
 
   return;
@@ -1121,7 +1122,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_, my::funct_master_,
-        kineticmodel, kr, alphaa, alphac, peltier, timefacfac, k_ss, k_sm);
+        kineticmodel, kr, alphaa, alphac, peltier, timefacfac,
+        static_cast<int>(SCATRA::DifferentiationType::elch), k_ss, k_sm);
   }  // loop over integration points
 
   return;
