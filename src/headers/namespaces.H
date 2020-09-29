@@ -1604,6 +1604,13 @@ namespace PARTICLEINTERACTION
 {
 }  // namespace PARTICLEINTERACTION
 
+/*! \brief Rigid body handler in particle simulations
+ *
+ */
+namespace PARTICLERIGIDBODY
+{
+}  // namespace PARTICLERIGIDBODY
+
 /*! \brief Particle wall enabling interaction of particles and finite element interfaces
  *
  */

@@ -483,6 +483,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
+  DRT::INPUT::LineDefinition rigidbody;
+  rigidbody.AddTag("RIGIDBODY")
+      .AddNamedInt("ID")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE");
+
   DRT::INPUT::LineDefinition elemag;
   elemag.AddTag("ELECTROMAGNETIC")
       .AddNamedString("DIS")
@@ -532,6 +539,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particle);
   lines->Add(particlewall_node);
   lines->Add(particlewall_special);
+  lines->Add(rigidbody);
   lines->Add(elemag);
   lines->Add(cardiovascular0d);
 

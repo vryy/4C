@@ -31,6 +31,9 @@
 #include "../drt_particle_wall/particle_wall.H"
 #include "../drt_particle_wall/particle_wall_result_test.H"
 
+#include "../drt_particle_rigidbody/particle_rigidbody.H"
+#include "../drt_particle_rigidbody/particle_rigidbody_result_test.H"
+
 #include "../drt_inpar/inpar_particle.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -71,6 +74,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle wall handler
   InitParticleWall();
 
+  // init rigid body handler
+  InitParticleRigidBody();
+
   // init particle time integration
   InitParticleTimeIntegration();
 
@@ -107,8 +113,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup wall handler
   if (particlewall_) particlewall_->Setup(particleengine_);
 
+  // setup rigid body handler
+  if (particlerigidbody_) particlerigidbody_->Setup(particleengine_);
+
   // setup particle time integration
-  particletimint_->Setup(particleengine_);
+  particletimint_->Setup(particleengine_, particlerigidbody_);
 
   // setup particle interaction handler
   if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
@@ -121,6 +130,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup initial particles
   SetupInitialParticles();
+
+  // setup initial rigid bodies
+  if (particlerigidbody_) SetupInitialRigidBodies();
 
   // distribute load among processors
   DistributeLoadAmongProcs();
@@ -158,6 +170,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
+
+  // read restart of rigid body handler
+  if (particlerigidbody_) particlerigidbody_->ReadRestart(reader);
 
   // read restart of particle interaction handler
   if (particleinteraction_) particleinteraction_->ReadRestart(reader);
@@ -257,6 +272,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
+    // write rigid body runtime output
+    if (particlerigidbody_) particlerigidbody_->WriteRigidBodyRuntimeOutput(Step(), Time());
+
     // write interaction runtime output
     if (particleinteraction_) particleinteraction_->WriteInteractionRuntimeOutput(Step(), Time());
 
@@ -274,6 +292,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
   {
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
+
+    // write restart of rigid body handler
+    if (particlerigidbody_) particlerigidbody_->WriteRestart();
 
     // write restart of particle interaction handler
     if (particleinteraction_) particleinteraction_->WriteRestart();
@@ -324,6 +345,19 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
     allresulttests.push_back(wallresulttest);
   }
 
+  if (particlerigidbody_)
+  {
+    // create and init rigid body result test
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyResultTest> rigidbodyresulttest =
+        std::make_shared<PARTICLERIGIDBODY::RigidBodyResultTest>();
+    rigidbodyresulttest->Init();
+
+    // setup rigid body result test
+    rigidbodyresulttest->Setup(particlerigidbody_);
+
+    allresulttests.push_back(rigidbodyresulttest);
+  }
+
   return allresulttests;
 }
 
@@ -368,6 +402,16 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
 
   // init particle wall handler
   if (particlewall_) particlewall_->Init(particleengine_->GetBinningStrategy());
+}
+
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleRigidBody()
+{
+  // create rigid body handler
+  if (DRT::INPUT::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
+    particlerigidbody_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyHandler>(Comm(), params_);
+
+  // init rigid body handler
+  if (particlerigidbody_) particlerigidbody_->Init();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
@@ -459,11 +503,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   for (double g : gravity) temp += g * g;
   const double gravity_norm = std::sqrt(temp);
 
-  // no gravity defined
-  if (gravity_norm == 0.0)
-    particlegravity_ = std::unique_ptr<PARTICLEALGORITHM::GravityHandler>(nullptr);
   // create particle gravity handler
-  else
+  if (gravity_norm > 0.0)
     particlegravity_ = std::unique_ptr<PARTICLEALGORITHM::GravityHandler>(
         new PARTICLEALGORITHM::GravityHandler(params_));
 
@@ -480,8 +521,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
   if (viscdampfac > 0.0)
     viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(
         new PARTICLEALGORITHM::ViscousDampingHandler(viscdampfac));
-  else
-    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(nullptr);
 
   // init viscous damping handler
   if (viscousdamping_) viscousdamping_->Init();
@@ -542,6 +581,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
 
   // insert wall handler dependent states of all particle types
   if (particlewall_) particlewall_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
+
+  // insert rigid body handler dependent states of all particle types
+  if (particlerigidbody_)
+    particlerigidbody_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
@@ -559,10 +602,25 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
 }
 
+void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialRigidBodies()
+{
+  // set unique global ids for all rigid bodies
+  if (not isrestarted_) particlerigidbody_->SetUniqueGlobalIdsForAllRigidBodies();
+
+  // allocate rigid body states
+  if (not isrestarted_) particlerigidbody_->AllocateRigidBodyStates();
+
+  // distribute rigid body
+  particlerigidbody_->DistributeRigidBody();
+}
+
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 {
   // set initial states
   if (particleinteraction_) particleinteraction_->SetInitialStates();
+
+  // set initial states
+  if (particlerigidbody_) particlerigidbody_->SetInitialStates();
 
   // set initial conditions
   SetInitialConditions();
@@ -741,6 +799,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs()
   // transfer wall elements and nodes
   if (particlewall_) particlewall_->TransferWallElementsAndNodes();
 
+  // communicate rigid body
+  if (particlerigidbody_) particlerigidbody_->CommunicateRigidBody();
+
   // communicate interaction history
   if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
 
@@ -794,6 +855,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs()
     // distribute wall elements and nodes
     particlewall_->DistributeWallElementsAndNodes();
   }
+
+  // communicate rigid body
+  if (particlerigidbody_) particlerigidbody_->CommunicateRigidBody();
 
   // communicate interaction history
   if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
@@ -857,6 +921,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
 
 void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
 {
+  // clear forces and torques
+  if (particlerigidbody_) particlerigidbody_->ClearForcesAndTorques();
+
   // set gravity acceleration
   if (particlegravity_) SetGravityAcceleration();
 
@@ -865,6 +932,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
 
   // apply viscous damping contribution
   if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
+
+  // compute accelerations of rigid bodies
+  if (particlerigidbody_ and particleinteraction_) particlerigidbody_->ComputeAccelerations();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
@@ -893,6 +963,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     particlecontainerbundle->SetStateSpecificContainer(
         scaled_gravity, PARTICLEENGINE::Acceleration, typeEnum);
   }
+
+  // add gravity acceleration
+  if (particlerigidbody_) particlerigidbody_->AddGravityAcceleration(scaled_gravity);
 
   // set scaled gravity in particle interaction handler
   if (particleinteraction_) particleinteraction_->SetGravity(scaled_gravity);

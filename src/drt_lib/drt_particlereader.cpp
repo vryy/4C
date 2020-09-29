@@ -135,28 +135,42 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             // set position state
             particlestates[PARTICLEENGINE::Position] = pos;
 
-            // optional particle radius
+            // optional particle states
             {
-              std::string radlabel;
-              std::vector<double> rad(1);
+              std::string statelabel;
+              PARTICLEENGINE::StateEnum particlestate;
+              std::vector<double> state;
 
-              // read in optional particle radius
-              linestream >> radlabel;
-              if (linestream)
+              while (linestream >> statelabel)
               {
-                if (radlabel != "RAD") dserror("expected particle radius label 'RAD'!");
+                // optional particle radius
+                if (statelabel == "RAD")
+                {
+                  particlestate = PARTICLEENGINE::Radius;
+                  state.resize(1);
+                  linestream >> state[0];
+                }
+                // optional rigid body color
+                else if (statelabel == "RIGIDCOLOR")
+                {
+                  particlestate = PARTICLEENGINE::RigidBodyColor;
+                  state.resize(1);
+                  linestream >> state[0];
+                }
+                else
+                  dserror("optional particle state with label '%s' unknown!", statelabel.c_str());
 
-                linestream >> rad[0];
+                if (not linestream)
+                  dserror("expecting values of state '%s' if label '%s' is set!",
+                      PARTICLEENGINE::EnumToStateName(particlestate).c_str(), statelabel.c_str());
 
-                if (not linestream) dserror("expected radius if radius label 'RAD' is set!");
+                // allocate memory to hold optional particle state
+                if (static_cast<int>(particlestates.size()) < (particlestate + 1))
+                  particlestates.resize(particlestate + 1);
+
+                // set optional particle state
+                particlestates[particlestate] = state;
               }
-
-              // allocate memory to hold particle radius state
-              if (particlestates.size() < (PARTICLEENGINE::Radius + 1))
-                particlestates.resize(PARTICLEENGINE::Radius + 1);
-
-              // set radius state
-              particlestates[PARTICLEENGINE::Radius] = rad;
             }
 
             // construct and store read in particle object

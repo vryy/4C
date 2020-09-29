@@ -121,6 +121,9 @@ namespace PARTICLEINTERACTION
     //! set initial mass
     void SetInitialMass();
 
+    //! set initial inertia
+    void SetInitialInertia();
+
     //! clear force and moment states of particles
     void ClearForceAndMomentStates() const;
 

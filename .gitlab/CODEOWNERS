@@ -212,6 +212,8 @@ src/drt_particle_engine/           @sfuchs
 
 src/drt_particle_interaction/      @sfuchs
 
+src/drt_particle_rigidbody/        @sfuchs
+
 src/drt_particle_wall/             @sfuchs
 
 src/drt_pasi/                      @sfuchs

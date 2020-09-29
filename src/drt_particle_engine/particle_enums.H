@@ -52,6 +52,12 @@ namespace PARTICLEENGINE
     Pressure,     //!< pressure
     Temperature,  //!< temperature
     /*---------------------------------------------------------------------------*/
+    // particle states for rigid body evaluation
+    RigidBodyColor,             //!< rigid body color
+    RelativePosition,           //!< position relative to rigid body position in rotating frame
+    ReferenceRelativePosition,  //!< position relative to rigid body position in reference frame
+    Inertia,                    //!< mass moment of inertia
+    /*---------------------------------------------------------------------------*/
     // particle states for SPH interaction
     DensitySum,           //!< density from summation of weighted masses
     DensityDot,           //!< first time derivative of density
