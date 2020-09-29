@@ -921,6 +921,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
 
 void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
 {
+  // clear forces and torques
+  if (particlerigidbody_) particlerigidbody_->ClearForcesAndTorques();
+
   // set gravity acceleration
   if (particlegravity_) SetGravityAcceleration();
 
@@ -960,6 +963,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     particlecontainerbundle->SetStateSpecificContainer(
         scaled_gravity, PARTICLEENGINE::Acceleration, typeEnum);
   }
+
+  // add gravity acceleration
+  particlerigidbody_->AddGravityAcceleration(scaled_gravity);
 
   // set scaled gravity in particle interaction handler
   if (particleinteraction_) particleinteraction_->SetGravity(scaled_gravity);

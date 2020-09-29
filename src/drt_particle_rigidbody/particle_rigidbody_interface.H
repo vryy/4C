@@ -60,6 +60,13 @@ namespace PARTICLERIGIDBODY
     virtual void UpdateVelocities(const double timeincrement) = 0;
 
     /*!
+     * \brief clear accelerations
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    virtual void ClearAccelerations() = 0;
+
+    /*!
      * \brief get rigid body data state container
      *
      * \author Sebastian Fuchs \date 09/2020

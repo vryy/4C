@@ -308,12 +308,8 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
     // update velocities of all rigid bodies and corresponding rigid particles
     particlerigidbodyinterface_->UpdateVelocities(dt_);
 
-    // get container of owned particles of rigid phase
-    PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle->GetSpecificContainer(
-        PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
-
-    // clear acceleration of rigid phase
-    container->ClearState(PARTICLEENGINE::Acceleration);
+    // clear accelerations of all rigid bodies
+    particlerigidbodyinterface_->ClearAccelerations();
 
     // update positions of all rigid bodies and corresponding rigid particles
     particlerigidbodyinterface_->UpdatePositions(dt_);
@@ -424,12 +420,8 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     // update velocities of all rigid bodies and corresponding rigid particles
     particlerigidbodyinterface_->UpdateVelocities(dthalf_);
 
-    // get container of owned particles of rigid phase
-    PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle->GetSpecificContainer(
-        PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
-
-    // clear acceleration of rigid phase
-    container->ClearState(PARTICLEENGINE::Acceleration);
+    // clear accelerations of all rigid bodies
+    particlerigidbodyinterface_->ClearAccelerations();
 
     // update positions of all rigid bodies and corresponding rigid particles
     particlerigidbodyinterface_->UpdatePositions(dt_);

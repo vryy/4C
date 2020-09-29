@@ -177,14 +177,36 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputeMassQuantities();
+    void ComputeRigidBodyMassQuantities();
+
+    /*!
+     * \brief clear forces and torques
+     *
+     * Clear the forces and torques acting on rigid bodies and on the corresponding rigid particles
+     * affiliated with the rigid bodies.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearForcesAndTorques();
+
+    /*!
+     * \brief add gravity acceleration
+     *
+     * Add the gravity acceleration acting on rigid bodies.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     *
+     * \param[in] gravity gravity acceleration
+     */
+    void AddGravityAcceleration(std::vector<double>& gravity);
 
     /*!
      * \brief compute accelerations of rigid bodies
      *
      * First compute the force and the torque acting on rigid bodies over all processors. Then, the
      * accelerations are computed from force and torque using the mass quantities on the owning
-     * processor.
+     * processor. Finally, the corresponding accelerations of rigid particles affiliated with the
+     * rigid bodies are set.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
@@ -213,6 +235,16 @@ namespace PARTICLERIGIDBODY
      * \param[in] timeincrement time increment
      */
     void UpdateVelocities(const double timeincrement) override;
+
+    /*!
+     * \brief clear accelerations
+     *
+     * Clear the accelerations of rigid bodies. However, note that the accelerations of rigid
+     * particles remain untouched!
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearAccelerations() override;
 
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
@@ -371,7 +403,14 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearForceAndTorque();
+    void ClearRigidBodyForceAndTorque();
+
+    /*!
+     * \brief clear force acting on rigid particles
+     *
+     * Clear the force of rigid particles owned on this processor.
+     */
+    void ClearRigidParticleForce();
 
     /*!
      * \brief compute partial force and torque acting on rigid bodies
@@ -435,13 +474,22 @@ namespace PARTICLERIGIDBODY
     void UpdateRigidBodyVelocities(const double timeincrement);
 
     /*!
+     * \brief clear accelerations of rigid bodies
+     *
+     * Clear the accelerations of rigid bodies on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ClearRigidBodyAccelerations();
+
+    /*!
      * \brief broadcast positions of rigid bodies
      *
      * Broadcast positions of rigid bodies from the owning processor to respective local processors.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void BroadcastPositions();
+    void BroadcastRigidBodyPositions();
 
     /*!
      * \brief broadcast velocities of rigid bodies
@@ -451,7 +499,17 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void BroadcastVelocities();
+    void BroadcastRigidBodyVelocities();
+
+    /*!
+     * \brief broadcast accelerations of rigid bodies
+     *
+     * Broadcast accelerations of rigid bodies from the owning processor to respective local
+     * processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void BroadcastRigidBodyAccelerations();
 
     /*!
      * \brief set relative position of rigid particles in reference frame
@@ -473,16 +531,26 @@ namespace PARTICLERIGIDBODY
     /*!
      * \brief set position of rigid particles
      *
-     * Set the position of rigid particles owned on this processor.
+     * Set the position of rigid particles owned on this processor consistent to the affiliated
+     * rigid body.
      */
     void SetRigidParticlePosition();
 
     /*!
      * \brief set velocities of rigid particles
      *
-     * Set the velocities of rigid particles owned on this processor.
+     * Set the velocities of rigid particles owned on this processor consistent to the affiliated
+     * rigid body.
      */
     void SetRigidParticleVelocities();
+
+    /*!
+     * \brief set accelerations of rigid particles
+     *
+     * Set the accelerations of rigid particles owned on this processor consistent to the affiliated
+     * rigid body.
+     */
+    void SetRigidParticleAccelerations();
 
     //! communicator
     const Epetra_Comm& comm_;
