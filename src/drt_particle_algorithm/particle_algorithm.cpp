@@ -965,7 +965,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
   }
 
   // add gravity acceleration
-  particlerigidbody_->AddGravityAcceleration(scaled_gravity);
+  if (particlerigidbody_) particlerigidbody_->AddGravityAcceleration(scaled_gravity);
 
   // set scaled gravity in particle interaction handler
   if (particleinteraction_) particleinteraction_->SetGravity(scaled_gravity);
