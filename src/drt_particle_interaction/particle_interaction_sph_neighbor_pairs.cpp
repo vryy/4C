@@ -178,7 +178,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
 #endif
 
     // neighboring particles within interaction distance
-    if (absdist < rad_i[0] or (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned))
+    if (absdist < std::min(rad_i[0], rad_j[0]))
     {
       // initialize particle pair
       particlepairdata_.push_back(SPHParticlePair());
@@ -213,7 +213,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
       }
 
       // particle i within support radius of owned particle j
-      if (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned)
+      if (absdist < rad_j[0])
       {
         // equal support radius for particle i and j
         if (rad_i[0] == rad_j[0])
