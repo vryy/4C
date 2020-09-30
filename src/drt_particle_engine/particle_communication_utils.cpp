@@ -28,7 +28,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   int const numsendtoprocs = sdata.size();
 
   // mpi communicator
-  auto mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // ---- communicate target processors to all processors ----
