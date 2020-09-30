@@ -156,7 +156,6 @@ std::map<std::string, ShapeFunctionType> INPAR::PROBLEMTYPE::StringToShapeFuncti
     // problem types in alphabetical order
     string2shapefuntype["Polynomial"] = ShapeFunctionType::shapefunction_polynomial;
     string2shapefuntype["Nurbs"] = ShapeFunctionType::shapefunction_nurbs;
-    string2shapefuntype["Meshfree"] = ShapeFunctionType::shapefunction_meshfree;
     string2shapefuntype["HDG"] = ShapeFunctionType::shapefunction_hdg;
   }
 

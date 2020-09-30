@@ -97,7 +97,6 @@ enum class ShapeFunctionType
   shapefunction_undefined,   ///< Undefined
   shapefunction_polynomial,  ///< Polynomial shape functions
   shapefunction_nurbs,       ///< NURBS shape functions
-  shapefunction_meshfree,    ///< Meshfree
   shapefunction_hdg          ///< Hybridizable Discontinuous Galerkin
 };
 

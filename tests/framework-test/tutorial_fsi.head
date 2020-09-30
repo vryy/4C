@@ -721,7 +721,7 @@ RANDSEED                        -1
 RESTART                         0
 //
 // Defines the function spaces for the spatial approximation
-//                              Polynomial,Nurbs,Meshfree
+//                              Polynomial,Nurbs,HDG
 SHAPEFCT                        Polynomial
 //
 --------------------------------------------------------------------SOLVER 1
