@@ -360,9 +360,11 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 2; i < params_->ocpparanum_ - 1; ++i)
+        {
           ocp +=
               params_->ocppara_[i + 1] *
               (std::pow(2. * X - 1., i + 1) - 2. * i * X * (1. - X) * std::pow(2. * X - 1., i - 1));
+        }
 
         // final scaling
         ocp /= faraday;
@@ -653,6 +655,8 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialTemp(
   switch (params_->ocpmodel_)
   {
     case MAT::PAR::ocp_csv:
+    case MAT::PAR::ocp_taralov:
+    case MAT::PAR::ocp_polynomial:
     {
       ocpderiv = 0.0;
       break;
@@ -664,17 +668,6 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialTemp(
       ocpderiv = std::log((1.0 - X) / X) * gasconstant / faraday;
       break;
     }
-    case MAT::PAR::ocp_taralov:
-    {
-      ocpderiv = 0.0;
-      break;
-    }
-    case MAT::PAR::ocp_polynomial:
-    {
-      ocpderiv = 0.0;
-      break;
-    }
-
     default:
     {
       dserror("Model for half cell open circuit potential not recognized!");

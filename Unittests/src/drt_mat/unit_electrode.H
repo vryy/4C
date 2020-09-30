@@ -28,6 +28,12 @@ namespace MAT
 class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 {
  public:
+  Electrode_TestSuite()
+      : CxxTest::TestSuite(),
+        faraday_(9.64853399e4),
+        gasconstant_(8.314472),
+        frt_(faraday_ / (gasconstant_ * 298.0)){};
+
   //! set up unit testing for electrode material
   void setUp() override
   {
@@ -284,14 +290,6 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
         1677.6;  // cathode concentration at 100% state of charge
     concentrations_cathode_polynomial_[1] = 3115.6;  // cathode concentration at 50% state of charge
     concentrations_cathode_polynomial_[2] = 4553.6;  // cathode concentration at 0% state of charge
-
-    // as we do not have access to data defined in the input file here, we define the constants here
-    // using the SI unit system
-    faraday_ = 9.64853399e4;
-    gasconstant_ = 8.314472;
-
-    // calculate factor F/(RT) for temperature 298.0 K
-    frt_ = faraday_ / (gasconstant_ * 298.0);
   }
 
   //! tear down unit testing for electrode material
@@ -316,7 +314,6 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     concentrations_cathode_taralov_.clear();
     concentrations_anode_polynomial_.clear();
     concentrations_cathode_polynomial_.clear();
-    frt_ = 0.;
   }
 
   //! test member function ComputeOpenCircuitPotential of electrode material
@@ -613,12 +610,12 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
   std::vector<double> concentrations_cathode_polynomial_;
 
   //! faraday constant
-  double faraday_;
-
-  //! factor F/(RT)
-  double frt_;
+  const double faraday_;
 
   //! universal gas constant
-  double gasconstant_;
+  const double gasconstant_;
+
+  //! factor F/(RT)
+  const double frt_;
 };
 #endif
