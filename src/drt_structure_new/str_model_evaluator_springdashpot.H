@@ -120,9 +120,6 @@ namespace STR
       //! all spring dashpot instances
       std::vector<Teuchos::RCP<UTILS::SpringDashpot>> springs_;
 
-      //! number of spring dashpot conditions
-      int n_conds_;
-
       //! structural displacement at \f$t_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
