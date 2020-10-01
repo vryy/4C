@@ -277,14 +277,6 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(IO::DiscretizationReader& i
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::RunPostComputeX(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
-{
-  // empty
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
@@ -307,35 +299,6 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
     }
   }
   for (const auto& spring : springs_) spring->Update();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::UpdateStepElement()
-{
-  // empty
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineStressStrain()
-{
-  // nothing to do
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
-{
-  // nothing to do
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineOptionalQuantity()
-{
-  // nothing to do
 }
 
 /*----------------------------------------------------------------------*

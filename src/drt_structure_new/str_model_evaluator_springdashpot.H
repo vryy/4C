@@ -78,7 +78,9 @@ namespace STR
 
       //! derived
       void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
+      {
+      }
 
       //! derived
       void RunPostIterate(const NOX::Solver::Generic& solver) override{};
@@ -87,16 +89,16 @@ namespace STR
       void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      void UpdateStepElement() override;
+      void UpdateStepElement() override{};
 
       //! derived
-      void DetermineStressStrain() override;
+      void DetermineStressStrain() override{};
 
       //! derived
-      void DetermineEnergy() override;
+      void DetermineEnergy() override{};
 
       //! derived
-      void DetermineOptionalQuantity() override;
+      void DetermineOptionalQuantity() override{};
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
