@@ -241,7 +241,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   for (const auto& it : affiliationpairdata) usedglobalids[it.second] = 1;
 
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // get used global ids on all processors
@@ -565,7 +565,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
       hostedrigidbodies_.push_back(rigidbody_k);
 
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // get maximum number of particles per rigid body over all processors

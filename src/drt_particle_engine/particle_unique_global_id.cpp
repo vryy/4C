@@ -198,7 +198,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs
     int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids)
 {
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // gather number of requested global ids of each processor on master processor

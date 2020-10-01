@@ -13,11 +13,6 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLERIGIDBODY::RigidBodyDataState::RigidBodyDataState()
-{
-  // empty constructor
-}
-
 void PARTICLERIGIDBODY::RigidBodyDataState::Init()
 {
   // nothing to do

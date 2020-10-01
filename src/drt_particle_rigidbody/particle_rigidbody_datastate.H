@@ -47,10 +47,8 @@ namespace PARTICLERIGIDBODY
      * \brief constructor
      *
      * \author Sebastian Fuchs \date 08/2020
-     *
-     * \param[in] comm   communicator
      */
-    explicit RigidBodyDataState();
+    explicit RigidBodyDataState() = default;
 
     //! destructor
     ~RigidBodyDataState() = default;

@@ -506,6 +506,14 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
     temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
     const double* dens_j = &temp_dens;
 
+    double* force_j = nullptr;
+    if (container_j->HaveStoredState(PARTICLEENGINE::Force) and status_j == PARTICLEENGINE::Owned)
+      force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
+
+    // contribution from neighboring boundary particle j
+    double acc_ij[3] = {0.0};
+    double mod_acc_ij[3] = {0.0};
+
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
     momentumformulation_->SpecificCoefficient(
@@ -513,7 +521,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
 
     // evaluate pressure gradient
     momentumformulation_->PressureGradient(
-        dens_i, dens_j, press_i, press_j, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+        dens_i, dens_j, press_i, press_j, speccoeff_ij, 0.0, e_ij, acc_ij, nullptr);
 
     // evaluate shear forces
     if (boundaryparticleinteraction_ == INPAR::PARTICLE::NoSlipBoundaryParticle)
@@ -526,7 +534,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
       // evaluate shear forces
       momentumformulation_->ShearForces(dens_i, dens_j, vel_i, vel_j, kernelfac,
           material_i->dynamicViscosity_, material_i->dynamicViscosity_, material_i->bulkViscosity_,
-          material_i->bulkViscosity_, absdist, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+          material_i->bulkViscosity_, absdist, speccoeff_ij, 0.0, e_ij, acc_ij, nullptr);
     }
 
     // apply transport velocity formulation
@@ -535,11 +543,11 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
     {
       // evaluate background pressure (standard formulation)
       momentumformulation_->StandardBackgroundPressure(dens_i, dens_j,
-          material_i->backgroundPressure_, 0.0, speccoeff_ij, 0.0, e_ij, mod_acc_i, nullptr);
+          material_i->backgroundPressure_, 0.0, speccoeff_ij, 0.0, e_ij, mod_acc_ij, nullptr);
 
       // evaluate convection of momentum with relative velocity
       momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
-          nullptr, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+          nullptr, speccoeff_ij, 0.0, e_ij, acc_ij, nullptr);
     }
     else if (transportvelocityformulation_ ==
              INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
@@ -553,11 +561,11 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
 
       // evaluate background pressure (generalized formulation)
       momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_j, mass_i, mass_j,
-          mod_bg_press_i, 0.0, mod_dWdrij, 0.0, e_ij, mod_acc_i, nullptr);
+          mod_bg_press_i, 0.0, mod_dWdrij, 0.0, e_ij, mod_acc_ij, nullptr);
 
       // evaluate convection of momentum with relative velocity
       momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
-          nullptr, speccoeff_ij, 0.0, e_ij, acc_i, nullptr);
+          nullptr, speccoeff_ij, 0.0, e_ij, acc_ij, nullptr);
     }
 
     // evaluate artificial viscosity
@@ -576,8 +584,15 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
       // evaluate artificial viscosity
       artificialviscosity_->ArtificialViscosity(vel_i, vel_j, mass_i, mass_j,
           material_i->artificialViscosity_, 0.0, dWdrij, 0.0, dens_ij, h_i, c_i, absdist, e_ij,
-          acc_i, nullptr);
+          acc_ij, nullptr);
     }
+
+    // add contribution from neighboring boundary particle j
+    if (acc_i) UTILS::vec_add(acc_i, acc_ij);
+    if (mod_acc_i) UTILS::vec_add(mod_acc_i, mod_acc_ij);
+
+    // add contribution to neighboring boundary particle j
+    if (force_j) UTILS::vec_addscale(force_j, -mass_i[0], acc_ij);
   }
 }
 
