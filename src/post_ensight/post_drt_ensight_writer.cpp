@@ -517,7 +517,6 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   switch (distype)
   {
     case ShapeFunctionType::shapefunction_polynomial:
-    case ShapeFunctionType::shapefunction_meshfree:
     case ShapeFunctionType::shapefunction_hdg:
     {
       WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
@@ -1693,8 +1692,6 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   }
   else if (field_->problem()->SpatialApproximationType() ==
                ShapeFunctionType::shapefunction_polynomial or
-           field_->problem()->SpatialApproximationType() ==
-               ShapeFunctionType::shapefunction_meshfree or
            field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
            (field_->problem()->SpatialApproximationType() ==
                    ShapeFunctionType::shapefunction_nurbs &&
@@ -1872,8 +1869,6 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   }
   else if (field_->problem()->SpatialApproximationType() ==
                ShapeFunctionType::shapefunction_polynomial or
-           field_->problem()->SpatialApproximationType() ==
-               ShapeFunctionType::shapefunction_meshfree or
            field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
            (field_->problem()->SpatialApproximationType() ==
                    ShapeFunctionType::shapefunction_nurbs &&

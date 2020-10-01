@@ -1453,10 +1453,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_sti:
     {
       // safety checks
-      if (distype == ShapeFunctionType::shapefunction_meshfree or
-          distype == ShapeFunctionType::shapefunction_nurbs)
-        dserror(
-            "Scatra-thermo interaction does not work for meshfree or nurbs discretizations yet!");
+      if (distype == ShapeFunctionType::shapefunction_nurbs)
+        dserror("Scatra-thermo interaction does not work for nurbs discretizations yet!");
 
       // create empty discretizations for scalar and thermo fields
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
@@ -2250,9 +2248,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         {
           case ShapeFunctionType::shapefunction_nurbs:
           {
-            dserror("Meshfree structure not implemented, yet.");
-            structdis =
-                Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
+            dserror("nurbs discretization not implemented, yet.");
             break;
           }
           default:

@@ -26,7 +26,7 @@ RESTART                         0
 RESTARTTIME                     -1
 //
 // Defines the function spaces for the spatial approximation
-//     Polynomial,Nurbs,Meshfree,HDG
+//     Polynomial,Nurbs,HDG
 SHAPEFCT                        Nurbs
 -----------------------------------------------------------------IO
 OUTPUT_GMSH                     No

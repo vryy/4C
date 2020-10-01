@@ -258,8 +258,6 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
   }
   if (not(field_->problem()->SpatialApproximationType() ==
               ShapeFunctionType::shapefunction_polynomial or
-          field_->problem()->SpatialApproximationType() ==
-              ShapeFunctionType::shapefunction_meshfree or
           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs))
     dserror(
