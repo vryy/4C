@@ -156,12 +156,12 @@ namespace MAT
     //! clone electrode material
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Electrode(*this)); };
 
-    //! return saturation value of intercalated Lithium concentration
-    double CMax() const { return params_->cmax_; };
-
     //! return lithiation value corresponding to saturation value of intercalated Lithium
     //! concentration
     double ChiMax() const { return params_->chimax_; };
+
+    //! return saturation value of intercalated Lithium concentration
+    double CMax() const { return params_->cmax_; };
 
     /*!
      * @brief compute the current lithiation
@@ -179,23 +179,48 @@ namespace MAT
       return (concentration * Chimax * DetJacobian) / Cmax;
     };
 
-    //! compute half cell open circuit potential
-    double ComputeOpenCircuitPotential(double concentration,  //!< concentration
-        double faraday,                                       //!< Faraday constant
-        double frt                                            //!< factor F/RT
-        ) const;
+    /*!
+     * @brief compute first derivative of half cell open circuit potential w.r.t. concentration
+     *
+     * @param[in] concentration  concentration
+     * @param[in] faraday        Faraday constant
+     * @param[in] frt            factor F/RT
+     * @return derivative of open circuit potential w.r.t. concentration
+     */
+    double ComputeFirstDerivOpenCircuitPotentialConc(
+        double concentration, double faraday, double frt) const;
 
-    //! compute first derivative of half cell open circuit potential with respect to concentration
-    double ComputeFirstDerivOpenCircuitPotential(double concentration,  //!< concentration
-        double faraday,                                                 //!< Faraday constant
-        double frt                                                      //!< factor F/RT
-        ) const;
+    /*!
+     * @brief compute first derivative of half cell open circuit potential w.r.t. temperature
+     *
+     * @param[in] concentration  concentration
+     * @param[in] faraday        Faraday constant
+     * @param[in] gasconstant    General gas constant
+     * @return derivative of open circuit potential w.r.t. temperature
+     */
+    double ComputeFirstDerivOpenCircuitPotentialTemp(
+        const double concentration, const double faraday, const double gasconstant) const;
 
-    //! compute second derivative of half cell open circuit potential with respect to concentration
-    double ComputeSecondDerivOpenCircuitPotential(double concentration,  //!< concentration
-        double faraday,                                                  //!< Faraday constant
-        double frt                                                       //!< factor F/RT
-        ) const;
+    /*!
+     * @brief compute half cell open circuit potential
+     *
+     * @param[in] concentration  concentration
+     * @param[in] faraday        Faraday constant
+     * @param[in] frt            factor F/RT
+     * @return open circuit potential
+     */
+    double ComputeOpenCircuitPotential(double concentration, double faraday, double frt) const;
+
+    /*!
+     * @brief compute second derivative of half cell open circuit potential w.r.t. concentration
+     *
+     * @param[in] concentration  concentration
+     * @param[in] faraday        Faraday constant
+     * @param[in] frt            factor F/RT
+     * @return 2nd derivative of open circuit potential w.r.t. concentration
+     */
+    double ComputeSecondDerivOpenCircuitPotentialConc(
+        double concentration, double faraday, double frt) const;
 
    protected:
     //! return material parameters
