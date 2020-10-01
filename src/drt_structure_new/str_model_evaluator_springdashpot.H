@@ -33,31 +33,28 @@ namespace STR
       //! constructor
       SpringDashpot();
 
-      //! destructor
-      virtual ~SpringDashpot() = default;
-
-      virtual void Setup() override;
+      void Setup() override;
 
       //! derived
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_springdashpot; }
 
       //! derived
-      virtual void Reset(const Epetra_Vector& x) override;
+      void Reset(const Epetra_Vector& x) override;
 
       //! derived
-      virtual bool EvaluateForce() override;
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateStiff() override;
+      bool EvaluateStiff() override;
 
       //! derived
-      virtual bool EvaluateForceStiff() override;
+      bool EvaluateForceStiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void PreEvaluate() override{};
 
       //! derived
-      void PostEvaluate() override { return; };
+      void PostEvaluate() override{};
 
       //! derived
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -73,21 +70,18 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
-      {
-        return;
-      };
+          const NOX::NLN::Group& curr_grp) override{};
 
       //! derived
       void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;

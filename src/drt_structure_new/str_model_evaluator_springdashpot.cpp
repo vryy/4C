@@ -254,8 +254,6 @@ void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
   iowriter.WriteVector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
   iowriter.WriteVector("springoffsetprestr_old", springoffsetprestr_old);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -312,7 +310,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
         break;
     }
   }
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->Update();
+  for (auto spring : springs_) spring->Update();
 }
 
 /*----------------------------------------------------------------------*
@@ -328,7 +326,6 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepElement()
 void STR::MODELEVALUATOR::SpringDashpot::DetermineStressStrain()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -336,7 +333,6 @@ void STR::MODELEVALUATOR::SpringDashpot::DetermineStressStrain()
 void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -344,7 +340,6 @@ void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
 void STR::MODELEVALUATOR::SpringDashpot::DetermineOptionalQuantity()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -378,11 +373,8 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
   }
 
   // write spring stress if defined in io-flag
-  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
-      true)
+  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
     iowriter.WriteVector("springstress", springstress);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -392,8 +384,6 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
   CheckInitSetup();
 
   dserror("Not yet implemented");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -423,10 +413,4 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetLastTim
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::PostOutput()
-{
-  CheckInitSetup();
-  // empty
-
-  return;
-}  // PostOutput()
+void STR::MODELEVALUATOR::SpringDashpot::PostOutput() { CheckInitSetup(); }
