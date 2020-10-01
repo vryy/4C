@@ -306,7 +306,8 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
     switch (prestress_type)
     {
       case INPAR::STR::PreStress::mulf:
-        for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetPrestress(GState().GetDisNp());
+      case INPAR::STR::PreStress::material_iterative:
+        for (auto spring : springs_) spring->ResetPrestress(GState().GetDisNp());
       default:
         break;
     }
