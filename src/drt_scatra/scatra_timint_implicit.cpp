@@ -36,6 +36,7 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1762,7 +1763,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
   if ((step_ != 0) and (output_state_matlab_))
   {
     std::ostringstream filename;
-    filename << "Result_Step" << step_ << ".m";
+    filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
     LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
   // NOTE:
