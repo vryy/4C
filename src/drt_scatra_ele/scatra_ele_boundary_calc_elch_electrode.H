@@ -64,8 +64,6 @@ namespace DRT
        * @param[in] test_master      master-side test function values
        * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
        * @param[in] numelectrons     number of electrons involved in charge transfer
-       * @param[in] stoichiometries  vector of stoichiometric coefficients for scatra-scatra
-       *                             interface
        * @param[in] kr               charge transfer constant
        * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
@@ -103,12 +101,12 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int kineticmodel, int numelectrons, const std::vector<int>* stoichiometries, double kr,
-          double alphaa, double alphac, double resistance, double itemaxmodifiedBV,
-          double convtolmodifiedBV, double timefacfac, double timefacrhsfac, double frt,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
+          double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
+          double timefacrhsfac, double frt, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
 
       /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals

@@ -31,6 +31,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
       // instance of utility class supporting element evaluation
       utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
 {
+  // safety checks
+  if (numscal != 1) dserror("Invalid number of transported scalars!");
+  if (numdofpernode != 2) dserror("Invalid number of degrees of freedom per node!");
+
   return;
 }
 
@@ -145,7 +149,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
 
   // access input parameter
   const double frt = elchparams_->FRT();
-  if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
 
   // get control parameter from parameter list
   const bool is_stationary = my::scatraparamstimint_->IsStationary();
@@ -252,7 +255,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     // access input parameter
     const double frt = elchparams_->FRT();
-    if (frt < 0.0) dserror("A negative factor frt is not possible by definition");
 
     const double time = my::scatraparamstimint_->Time();
 
