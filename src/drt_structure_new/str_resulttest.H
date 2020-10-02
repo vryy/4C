@@ -74,6 +74,10 @@ namespace STR
     //! Possible position flags are "dispx", "dispy", "dispz",
     //!                             "velx", "vely", "velz",
     //!                             "accx", "accy", "accz"
+    //!                             "stress_xx", "stress_yy", "stress_zz", "stress_xy", "stress_xz",
+    //!                             "stress_yz"
+    //!
+    //! \note The type of stress that is used for testing hast to be specified in IO->STRUCT_STRESS
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /*! \brief test special quantity not associated with a particular element or node

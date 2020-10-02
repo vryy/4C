@@ -10,12 +10,14 @@
 
 
 #include "str_resulttest.H"
+#include <Teuchos_RCPDecl.hpp>
 #include "str_timint_base.H"
 #include "str_model_evaluator_data.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/voigt_notation.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -70,7 +72,6 @@ void STR::ResultTest::Setup()
 void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   CheckInitSetup();
-  // this implementation does not allow testing of stresses !
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -195,6 +196,53 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
                 actnode->Id());
           result = (*accn_)[lid];
         }
+      }
+
+      // test nodal stresses
+      if (position.rfind("stress", 0) == 0)
+      {
+        int idx = -1;
+        if (position == "stress_xx")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+        }
+        else if (position == "stress_yy")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+        }
+        else if (position == "stress_zz")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+        }
+        else if (position == "stress_xy")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+        }
+        else if (position == "stress_xz")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+        }
+        else if (position == "stress_yz")
+        {
+          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+        }
+        Teuchos::RCP<Epetra_MultiVector> nodalStressData = data_->GetStressDataNodePostprocessed();
+
+        if (Teuchos::is_null(nodalStressData))
+        {
+          dserror(
+              "It looks like you don't write stresses. You have to specify the stress type in "
+              "IO->STRUCT_STRESS");
+        }
+
+        result = (*nodalStressData)[idx][actnode->Id()];
+
+        if (idx < 0)
+        {
+          dserror("You try to test an unknown stress component %s", position.c_str());
+        }
+        // ToDo: Store stress in result
+        unknownpos = false;
       }
 
       // catch position std::strings, which are not handled by structure result test
