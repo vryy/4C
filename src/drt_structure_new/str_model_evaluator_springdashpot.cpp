@@ -35,8 +35,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
-    : n_conds_(0),
-      disnp_ptr_(Teuchos::null),
+    : disnp_ptr_(Teuchos::null),
       velnp_ptr_(Teuchos::null),
       stiff_spring_ptr_(Teuchos::null),
       fspring_np_ptr_(Teuchos::null)
@@ -54,14 +53,11 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   std::vector<Teuchos::RCP<DRT::Condition>> springdashpots;
   Discret().GetCondition("RobinSpringDashpot", springdashpots);
 
-  // number of spring dashpot conditions
-  n_conds_ = (int)springdashpots.size();
-
   // new instance of spring dashpot BC for each condition
   Teuchos::RCP<DRT::Discretization> discret_ptr =
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
-  for (int i = 0; i < n_conds_; ++i)
-    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpots[i])));
+  for (auto& springdashpot : springdashpots)
+    springs_.emplace_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpot)));
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
@@ -82,7 +78,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
   CheckInitSetup();
 
   // loop over all spring dashpot conditions and reset them
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetNewton();
+  for (const auto& spring : springs_) spring->ResetNewton();
 
   // update the structural displacement vector
   disnp_ptr_ = GState().GetDisNp();
@@ -103,20 +99,20 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
-      springs_[i]->EvaluateRobin(
+      spring->EvaluateRobin(
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
-      springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+      spring->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
   }
 
@@ -140,20 +136,20 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
   if (fac_vel > 0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
-      springs_[i]->EvaluateRobin(
+      spring->EvaluateRobin(
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
-      springs_[i]->EvaluateForceStiff(
+      spring->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
   }
@@ -182,20 +178,20 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
   if (fac_vel > 0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
-      springs_[i]->EvaluateRobin(
+      spring->EvaluateRobin(
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == UTILS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
-      springs_[i]->EvaluateForceStiff(
+      spring->EvaluateForceStiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
   }
@@ -239,23 +235,21 @@ void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
       Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()), 3, true));
 
   // collect outputs from all spring dashpot conditions
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
-      springs_[i]->OutputPrestrOffset(springoffsetprestr);
+      spring->OutputPrestrOffset(springoffsetprestr);
     if (stype == UTILS::SpringDashpot::cursurfnormal)
-      springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
+      spring->OutputPrestrOffsetOld(springoffsetprestr_old);
   }
 
   // write vector to output for restart
   iowriter.WriteVector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
   iowriter.WriteVector("springoffsetprestr_old", springoffsetprestr_old);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -270,23 +264,15 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(IO::DiscretizationReader& i
   ioreader.ReadMultiVector(tempvecold, "springoffsetprestr_old");
 
   // loop over all spring dashpot conditions and set restart
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
     if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
-      springs_[i]->SetRestart(tempvec);
-    if (stype == UTILS::SpringDashpot::cursurfnormal) springs_[i]->SetRestartOld(tempvecold);
+      spring->SetRestart(tempvec);
+    if (stype == UTILS::SpringDashpot::cursurfnormal) spring->SetRestartOld(tempvecold);
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::RunPostComputeX(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
-{
-  // empty
 }
 
 /*----------------------------------------------------------------------*
@@ -306,44 +292,13 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
     switch (prestress_type)
     {
       case INPAR::STR::PreStress::mulf:
-        for (int i = 0; i < n_conds_; ++i) springs_[i]->ResetPrestress(GState().GetDisNp());
+      case INPAR::STR::PreStress::material_iterative:
+        for (const auto& spring : springs_) spring->ResetPrestress(GState().GetDisNp());
       default:
         break;
     }
   }
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->Update();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::UpdateStepElement()
-{
-  // empty
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineStressStrain()
-{
-  // nothing to do
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
-{
-  // nothing to do
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::DetermineOptionalQuantity()
-{
-  // nothing to do
-  return;
+  for (const auto& spring : springs_) spring->Update();
 }
 
 /*----------------------------------------------------------------------*
@@ -360,12 +315,12 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
-  for (int i = 0; i < n_conds_; ++i)
+  for (const auto& spring : springs_)
   {
-    springs_[i]->OutputGapNormal(gap, normals, springstress);
+    spring->OutputGapNormal(gap, normals, springstress);
 
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
     if (stype == UTILS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
   }
 
@@ -377,11 +332,8 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
   }
 
   // write spring stress if defined in io-flag
-  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
-      true)
+  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
     iowriter.WriteVector("springstress", springstress);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -391,8 +343,6 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
   CheckInitSetup();
 
   dserror("Not yet implemented");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -422,10 +372,4 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetLastTim
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::PostOutput()
-{
-  CheckInitSetup();
-  // empty
-
-  return;
-}  // PostOutput()
+void STR::MODELEVALUATOR::SpringDashpot::PostOutput() { CheckInitSetup(); }
