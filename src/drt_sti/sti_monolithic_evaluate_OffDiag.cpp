@@ -472,6 +472,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   // set differentiation type to elch
   condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
 
+  // in case of deforming mesh: set displacement
+  if (IsAle()) condparams.set<int>("ndsdisp", 1);
+
   // create strategy for assembly of auxiliary system matrices
   DRT::AssembleStrategy strategythermoscatras2i(
       0,              // row assembly based on number of dofset associated with thermo dofs on
@@ -524,7 +527,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
 
       // split temporary matrix and assemble into thermo-scatra matrix block
       const auto blockksm = ksm.Split<LINALG::DefaultBlockMatrixStrategy>(
-          ScaTraField()->BlockMaps(), *BlockMapThermoInterfaceSlave());
+          MeshtyingStrategyScaTra()->BlockMapsMaster(), *BlockMapThermoInterfaceSlave());
       blockksm->Complete();
       thermoscatrablockinterface->Add(*blockksm, false, 1.0, 1.0);
 

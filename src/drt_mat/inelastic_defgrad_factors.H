@@ -759,7 +759,7 @@ namespace MAT
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdc) final;
+        LINALG::Matrix<6, 1>& dstressdT) final;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -774,6 +774,9 @@ namespace MAT
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
+    //! Get temperature at current Gauß point
+    double GetTemperatureGP() const { return temperatures_->at(GetGP()); };
+
     /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
     /// element
     Teuchos::RCP<std::vector<double>> temperatures_;

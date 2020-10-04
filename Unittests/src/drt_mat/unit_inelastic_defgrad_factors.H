@@ -68,6 +68,11 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     iFin_poly_intercal_frac_aniso_solution_(0, 0) =  0.9980206598171963; iFin_poly_intercal_frac_aniso_solution_(0, 1) = -0.0009896700914018; iFin_poly_intercal_frac_aniso_solution_(0, 2) = -0.0005938020548410;
     iFin_poly_intercal_frac_aniso_solution_(1, 0) = -0.0009896700914018; iFin_poly_intercal_frac_aniso_solution_(1, 1) =  0.9995051649542991; iFin_poly_intercal_frac_aniso_solution_(1, 2) = -0.0002969010274205;
     iFin_poly_intercal_frac_aniso_solution_(2, 0) = -0.0005938020548410; iFin_poly_intercal_frac_aniso_solution_(2, 1) = -0.0002969010274205; iFin_poly_intercal_frac_aniso_solution_(2, 2) =  0.9998218593835476;
+
+    // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradLinTemIso
+    iFin_lin_temp_iso_solution_.Clear();
+    iFin_lin_temp_iso_solution_(0, 0) = iFin_lin_temp_iso_solution_(1, 1) = iFin_lin_temp_iso_solution_(2, 2) = 1.006073023359708;
+
     // clang-format on
 
     // prepare variables needed to instantiate linear shape evaluation object
@@ -94,19 +99,19 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
     // create InelasticDefgradLinScalarIso object initialize container for material parameters
-    const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradScalarData =
+    const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradScalarData =
         Teuchos::rcp(new MAT::PAR::Material());
 
-    InelasticDefgradScalarData->Add("SCALAR1", 1);
-    InelasticDefgradScalarData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
-    InelasticDefgradScalarData->Add("SCALAR1_RefConc", RefConc);
+    inelasticDefgradScalarData->Add("SCALAR1", 1);
+    inelasticDefgradScalarData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
+    inelasticDefgradScalarData->Add("SCALAR1_RefConc", RefConc);
 
-    InelasticDefgradScalarData->SetParameter(
-        new MAT::PAR::InelasticDefgradScalar(InelasticDefgradScalarData));
+    inelasticDefgradScalarData->SetParameter(
+        new MAT::PAR::InelasticDefgradScalar(inelasticDefgradScalarData));
 
     // get pointer to parameter class
     params_inelastic_defgrad_scalar_ =
-        Teuchos::rcp(new MAT::PAR::InelasticDefgradScalar(InelasticDefgradScalarData));
+        Teuchos::rcp(new MAT::PAR::InelasticDefgradScalar(inelasticDefgradScalarData));
 
     // setup pointer to InelasticDefgradLinScalarIso object
     lin_scalar_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarIso(
@@ -116,23 +121,23 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     lin_scalar_iso_->PreEvaluate(params_lin, 0);
 
     // create InelasticDefgradLinScalarAniso object initialize container for material parameters
-    const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradLinScalarAnisoData =
+    const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradLinScalarAnisoData =
         Teuchos::rcp(new MAT::PAR::Material());
 
-    InelasticDefgradLinScalarAnisoData->Add("SCALAR1", 1);
-    InelasticDefgradLinScalarAnisoData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
-    InelasticDefgradLinScalarAnisoData->Add("SCALAR1_RefConc", RefConc);
+    inelasticDefgradLinScalarAnisoData->Add("SCALAR1", 1);
+    inelasticDefgradLinScalarAnisoData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
+    inelasticDefgradLinScalarAnisoData->Add("SCALAR1_RefConc", RefConc);
 
     // vector to instantiate the deformation direction object
     const std::vector<double> growthdir{1.0, 0.5, 0.3};
-    InelasticDefgradLinScalarAnisoData->Add("GrowthDirection", growthdir);
+    inelasticDefgradLinScalarAnisoData->Add("GrowthDirection", growthdir);
 
-    InelasticDefgradLinScalarAnisoData->SetParameter(
-        new MAT::PAR::InelasticDefgradLinScalarAniso(InelasticDefgradLinScalarAnisoData));
+    inelasticDefgradLinScalarAnisoData->SetParameter(
+        new MAT::PAR::InelasticDefgradLinScalarAniso(inelasticDefgradLinScalarAnisoData));
 
     // get pointer to parameter class
     params_inelastic_defgrad_lin_scalar_aniso_ = Teuchos::rcp(
-        new MAT::PAR::InelasticDefgradLinScalarAniso(InelasticDefgradLinScalarAnisoData));
+        new MAT::PAR::InelasticDefgradLinScalarAniso(inelasticDefgradLinScalarAnisoData));
 
     // set up pointer to InelasticDefgradLinScalarAniso object
     lin_scalar_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarAniso(
@@ -182,19 +187,19 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
 
     // initialize container for material parameters
-    const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradPolyIntercalFracData =
+    const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradPolyIntercalFracData =
         Teuchos::rcp(new MAT::PAR::Material());
 
-    InelasticDefgradPolyIntercalFracData->Add("MATID", matid);
-    InelasticDefgradPolyIntercalFracData->Add("SCALAR1", 1);
-    InelasticDefgradPolyIntercalFracData->Add("SCALAR1_RefConc", RefConc);
+    inelasticDefgradPolyIntercalFracData->Add("MATID", matid);
+    inelasticDefgradPolyIntercalFracData->Add("SCALAR1", 1);
+    inelasticDefgradPolyIntercalFracData->Add("SCALAR1_RefConc", RefConc);
 
-    InelasticDefgradPolyIntercalFracData->SetParameter(
-        new MAT::PAR::InelasticDefgradPolyIntercalFrac(InelasticDefgradPolyIntercalFracData));
+    inelasticDefgradPolyIntercalFracData->SetParameter(
+        new MAT::PAR::InelasticDefgradPolyIntercalFrac(inelasticDefgradPolyIntercalFracData));
 
     // get pointer to parameter class
     params_inelastic_defgrad_poly_intercal_frac_ = Teuchos::rcp(
-        new MAT::PAR::InelasticDefgradPolyIntercalFrac(InelasticDefgradPolyIntercalFracData));
+        new MAT::PAR::InelasticDefgradPolyIntercalFrac(inelasticDefgradPolyIntercalFracData));
 
     // get reference intercalation fraction
     const double X_ref = MAT::Electrode::ComputeIntercalationFraction(RefConc, chi_max, c_max, 1.0);
@@ -212,22 +217,22 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
     // parameters
-    const Teuchos::RCP<MAT::PAR::Material> InelasticDefgradPolyIntercalFracAnisoData =
+    const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradPolyIntercalFracAnisoData =
         Teuchos::rcp(new MAT::PAR::Material());
 
-    InelasticDefgradPolyIntercalFracAnisoData->Add("MATID", matid);
-    InelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1", 1);
-    InelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1_RefConc", RefConc);
-    InelasticDefgradPolyIntercalFracAnisoData->Add("GrowthDirection", growthdir);
+    inelasticDefgradPolyIntercalFracAnisoData->Add("MATID", matid);
+    inelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1", 1);
+    inelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1_RefConc", RefConc);
+    inelasticDefgradPolyIntercalFracAnisoData->Add("GrowthDirection", growthdir);
 
-    InelasticDefgradPolyIntercalFracAnisoData->SetParameter(
+    inelasticDefgradPolyIntercalFracAnisoData->SetParameter(
         new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(
-            InelasticDefgradPolyIntercalFracAnisoData));
+            inelasticDefgradPolyIntercalFracAnisoData));
 
     // get pointer to parameter class
     params_inelastic_defgrad_poly_intercal_frac_aniso_ =
         Teuchos::rcp(new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(
-            InelasticDefgradPolyIntercalFracAnisoData));
+            inelasticDefgradPolyIntercalFracAnisoData));
 
     // set the value of the reference polynomial
     params_inelastic_defgrad_poly_intercal_frac_aniso_->SetPolynomReferenceValue(
@@ -239,6 +244,30 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // call PreEvaluate to set the concentration value
     poly_intercal_frac_aniso_->PreEvaluate(params_poly, 0);
+
+    // create InelasticDefgradLinTempIso object initialize container for material parameters
+    const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradTempIsoData =
+        Teuchos::rcp(new MAT::PAR::Material());
+
+    inelasticDefgradTempIsoData->Add("MATID", matid);
+    inelasticDefgradTempIsoData->Add("RefTemp", 298.0);
+    inelasticDefgradTempIsoData->Add("Temp_GrowthFac", 1.0e-3);
+    inelasticDefgradTempIsoData->SetParameter(
+        new MAT::PAR::InelasticDefgradLinTempIso(inelasticDefgradTempIsoData));
+
+    // get pointer to parameter class
+    params_lin_temp_iso_ =
+        Teuchos::rcp(new MAT::PAR::InelasticDefgradLinTempIso(inelasticDefgradTempIsoData));
+
+    // setup pointer to InelasticDefgradLinScalarIso object
+    lin_temp_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinTempIso(params_lin_temp_iso_.get()));
+
+    // parameter list for PreEvaluate call with gp temerature
+    Teuchos::ParameterList params_temp;
+    auto gptemp = Teuchos::rcp(new std::vector<double>(1, 280.0));
+    params_temp.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
+    // call PreEvaluate to set the temperature
+    lin_temp_iso_->PreEvaluate(params_temp, 0);
   }
 
   /// tear down test suite
@@ -254,6 +283,8 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
     params_inelastic_defgrad_poly_intercal_frac_ = Teuchos::null;
     poly_intercal_frac_aniso_ = Teuchos::null;
     params_inelastic_defgrad_poly_intercal_frac_aniso_ = Teuchos::null;
+    lin_temp_iso_ = Teuchos::null;
+    params_lin_temp_iso_ = Teuchos::null;
 
     // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
     // not done, some troubles arise where unit tests influence each other on some configurations.
@@ -381,6 +412,15 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // compare the results
     TESTING::AssertDelta(iFin, iFin_poly_intercal_frac_aniso_solution_, 1.0e-10);
+
+    // clear matrix to be filled again
+    iFin.Clear();
+
+    // test InelasticDefgradLinTempIso: evaluate the method
+    lin_temp_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+
+    // compare the results
+    TESTING::AssertDelta(iFin, iFin_lin_temp_iso_solution_, 1.0e-15);
   }
 
   /*--------------------------------------------------------------------*
@@ -475,6 +515,19 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // compare the results
     TESTING::AssertDelta(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
+
+    // clear matrix before test of next method
+    CMatAdd.Clear();
+
+    // test InelasticDefgradLinTempIso: set up reference solution
+    CMatAdd_ref_solution.PutScalar(0.0);
+
+    // evaluate the method
+    lin_temp_iso_->EvaluateAdditionalCmat(
+        &FM_, iFin_lin_temp_iso_solution_, iCV, dSdiFin_, CMatAdd);
+
+    // compare the results
+    TESTING::AssertDelta(CMatAdd, CMatAdd_ref_solution, 1.0e-16);
   }
 
   /*--------------------------------------------------------------------*
@@ -538,6 +591,20 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
     // compare the results
     TESTING::AssertDelta(dSdc, dSdc_ref_solution, 1.0e-10);
+
+    // clear the derivative to be refilled again by next method to be tested
+    dSdc.Clear();
+
+    // test InelasticDefgradTempIso: set up reference solution
+    // clang-format off
+    dSdc_ref_solution(0) = -4.822047213115778; dSdc_ref_solution(1) = -4.470297310176029; dSdc_ref_solution(2) = -4.207338644871557; dSdc_ref_solution(3) = 0.08838143192311355; dSdc_ref_solution(4) = 0.09261609094879596; dSdc_ref_solution(5) = 0.1424074849765778;
+    // clang-format on
+
+    // evaluate the method
+    lin_temp_iso_->EvaluateODStiffMat(&FM_, iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
+
+    // compare the results
+    TESTING::AssertDelta(dSdc, dSdc_ref_solution, 1.0e-15);
   }
 
  private:
@@ -557,6 +624,8 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
   // reference solution of inverse inelastic deformation gradient using
   // InelasticDefgradPolyIntercalFracAniso
   LINALG::Matrix<3, 3> iFin_poly_intercal_frac_aniso_solution_;
+  // reference solution of inverse inelastic deformation gradient using InelasticDefgradLinTempIso
+  LINALG::Matrix<3, 3> iFin_lin_temp_iso_solution_;
   // pointer to object that evaluates a linear shape
   Teuchos::RCP<MAT::InelasticDefgradLinearShape> linear_shape_;
   // pointer to object that evaluates a polynomial shape
@@ -579,6 +648,10 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
   // pointer to parameters of InelasticDefgradPolyIntercalFracAniso
   Teuchos::RCP<MAT::PAR::InelasticDefgradPolyIntercalFracAniso>
       params_inelastic_defgrad_poly_intercal_frac_aniso_;
+  // pointer to InelasticDefgradLinTempIso
+  Teuchos::RCP<MAT::InelasticDefgradLinTempIso> lin_temp_iso_;
+  // pointer to parameters of InelasticDefgradLinTempIso
+  Teuchos::RCP<MAT::PAR::InelasticDefgradLinTempIso> params_lin_temp_iso_;
 };
 
 #endif  // BACI_UNIT_INELASTIC_DEFGRAD_FACTORS_H

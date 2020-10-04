@@ -881,7 +881,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
   const double reftemp = Parameter()->RefTemp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (temperatures_->at(GetGP()) - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
   if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
   const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
 
@@ -903,9 +903,24 @@ void MAT::InelasticDefgradLinTempIso::EvaluateAdditionalCmat(
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
     const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 1>& dstressdc)
+    LINALG::Matrix<6, 1>& dstressdT)
 {
-  // nothing todo so far, as currently temerpature is non primary variable
+  static LINALG::Matrix<9, 1> id9x1(true);
+  // prepare id9x1 (identity matrix written as a 9x1 vector)
+  for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
+
+  // get parameters from parameter class
+  const double tempgrowthfac = Parameter()->GetTempGrowthFac();
+  const double reftemp = Parameter()->RefTemp();
+
+  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
+  if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
+
+  const double scalefac = -tempgrowthfac / (3.0 * std::pow(growthfactor, 4.0 / 3.0));
+
+  // dstressdT = dSdiFinj : diFinjdT
+  // diFinjdT = - growthfac/(3*[1 + growthfac*(T-T_{ref})]^(4/3)) * I
+  dstressdT.MultiplyNN(scalefac, dSdiFinj, id9x1, 1.0);
 }
 
 /*--------------------------------------------------------------------*

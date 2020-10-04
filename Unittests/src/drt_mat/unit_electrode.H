@@ -28,12 +28,6 @@ namespace MAT
 class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 {
  public:
-  Electrode_TestSuite()
-      : CxxTest::TestSuite(),
-        faraday_(9.64853399e4),
-        gasconstant_(8.314472),
-        frt_(faraday_ / (gasconstant_ * 298.0)){};
-
   //! set up unit testing for electrode material
   void setUp() override
   {
@@ -610,12 +604,12 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
   std::vector<double> concentrations_cathode_polynomial_;
 
   //! faraday constant
-  const double faraday_;
+  const double faraday_ = 9.64853399e4;
 
   //! universal gas constant
-  const double gasconstant_;
+  const double gasconstant_ = 8.314472;
 
   //! factor F/(RT)
-  const double frt_;
+  const double frt_ = faraday_ / (gasconstant_ * 298.0);
 };
 #endif
