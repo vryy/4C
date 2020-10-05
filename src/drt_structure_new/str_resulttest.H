@@ -74,7 +74,11 @@ namespace STR
     //! Possible position flags are "dispx", "dispy", "dispz",
     //!                             "velx", "vely", "velz",
     //!                             "accx", "accy", "accz"
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    //!                             "stress_xx", "stress_yy", "stress_zz", "stress_xy", "stress_xz",
+    //!                             "stress_yz"
+    //!
+    //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*! \brief test special quantity not associated with a particular element or node
      *
@@ -152,6 +156,17 @@ namespace STR
      *
      *  \author kremheller \date 11/19 */
     double GetEnergy(const std::string& quantity, Status& special_status) const;
+
+    /*!
+     * \brief Returns the stress component requested in label at the given node
+     *
+     * \param label Stress component (stress_xx, stress_yy, stress_zz, stress_xy, stress_xz,
+     * stress_yz)
+     *
+     * \param node_id
+     * \return double stress component
+     */
+    double GetNodalStressComponent(const std::string& label, int node_id) const;
 
    protected:
     //! flag which indicates if the Init() routine has already been called
