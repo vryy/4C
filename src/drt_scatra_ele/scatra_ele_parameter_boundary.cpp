@@ -65,7 +65,9 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
     : alphaa_(0.0),
       alphac_(0.0),
       conditiontype_(DRT::Condition::ConditionType::none),
+      convtolimplicitBV_(-1.0),
       density_(-1.0),
+      itemaxmimplicitBV_(-1),
       kineticmodel_(-1),
       kr_(-1.0),
       molarmass_(-1.0),
@@ -75,11 +77,9 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       permeabilities_(nullptr),
       regularizationparameter_(-1.0),
       regularizationtype_(INPAR::S2I::RegularizationType::regularization_undefined),
-      resistivity_(0.0),
-      stoichiometries_(nullptr),
       resistance_(0.0),
-      convtolimplicitBV_(-1.0),
-      itemaxmimplicitBV_(-1.0)
+      resistivity_(0.0),
+      stoichiometries_(nullptr)
 {
   return;
 }
@@ -196,8 +196,8 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetAlpha(Teuchos::ParameterList&
 {
   alphaa_ = parameters.get<double>("alpha_a", std::numeric_limits<double>::infinity());
   alphac_ = parameters.get<double>("alpha_c", std::numeric_limits<double>::infinity());
-  if (alphaa_ < 0.0) dserror("Alpha a must be positive!");
-  if (alphac_ < 0.0) dserror("Alpha c must be positive!");
+  if (alphaa_ <= 0.0) dserror("Alpha a must be positive!");
+  if (alphac_ <= 0.0) dserror("Alpha c must be positive!");
   if (alphaa_ + alphac_ != 1.0) dserror("Sum of Alpha a and Alpha c must be equal to one!");
 }
 
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetChargeTransferConstant(
     Teuchos::ParameterList& parameters)
 {
   kr_ = parameters.get<double>("k_r", -1.0);
-  if (kr_ < 0.0) dserror("Charge transfer constant k_r is negative!");
+  if (kr_ <= 0.0) dserror("Charge transfer constant k_r is negative!");
 }
 
 /*----------------------------------------------------------------------*
@@ -217,10 +217,10 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetConvTolIterNum(
 {
   convtolimplicitBV_ =
       parameters.get<double>("CONVTOL_IMPLBUTLERVOLMER", std::numeric_limits<double>::infinity());
-  if (convtolimplicitBV_ < 0.0) dserror("Tolerance of convergence must be positive!");
+  if (convtolimplicitBV_ <= 0.0) dserror("Tolerance of convergence must be positive!");
   itemaxmimplicitBV_ =
-      parameters.get<double>("ITEMAX_IMPLBUTLERVOLMER", std::numeric_limits<double>::infinity());
-  if (itemaxmimplicitBV_ < 0) dserror("Maximum number of iterations must be positive!");
+      parameters.get<int>("ITEMAX_IMPLBUTLERVOLMER", std::numeric_limits<int>::infinity());
+  if (itemaxmimplicitBV_ <= 0) dserror("Maximum number of iterations must be positive!");
 }
 
 /*----------------------------------------------------------------------*
@@ -229,10 +229,10 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetDensityMolarMass(
     Teuchos::ParameterList& parameters)
 {
   density_ = parameters.get<double>("density", std::numeric_limits<double>::infinity());
-  if (density_ < 0.0) dserror("Density must be positive");
+  if (density_ <= 0.0) dserror("Density must be positive");
 
   molarmass_ = parameters.get<double>("molar mass", std::numeric_limits<double>::infinity());
-  if (molarmass_ < 0.0) dserror("Molar mass must be positive");
+  if (molarmass_ <= 0.0) dserror("Molar mass must be positive");
 }
 
 /*----------------------------------------------------------------------*
@@ -241,9 +241,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetNumElectrons(Teuchos::Paramet
 {
   numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
   if (numelectrons_ != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
+    dserror("Invalid number of electrons in charge transfer at electrode-electrolyte interface!");
 }
 
 /*----------------------------------------------------------------------*
@@ -251,7 +249,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetNumElectrons(Teuchos::Paramet
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetNumScal(Teuchos::ParameterList& parameters)
 {
   numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
-  if (numscal_ < 0) dserror("Scalar must be positive");
+  if (numscal_ <= 0) dserror("Scalar must be positive");
 }
 
 /*----------------------------------------------------------------------*
@@ -267,8 +265,8 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetPermeabilities(
     Teuchos::ParameterList& parameters)
 {
   permeabilities_ = parameters.get<std::vector<double>*>("permeabilities");
-  for (unsigned i = 0; i < permeabilities_->size(); ++i)
-    if (permeabilities_->at(i) < 0.0) dserror("Permeability must be positive");
+  for (auto permeability : *permeabilities_)
+    if (permeability <= 0.0) dserror("Permeability must be positive");
 }
 
 /*----------------------------------------------------------------------*
@@ -288,7 +286,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetRegularization(
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetResistance(Teuchos::ParameterList& parameters)
 {
   resistance_ = parameters.get<double>("resistance", std::numeric_limits<double>::infinity());
-  if (resistance_ < 0.0) dserror("Resistance must be positive");
+  if (resistance_ <= 0.0) dserror("Resistance must be positive");
 }
 
 /*----------------------------------------------------------------------*
@@ -296,7 +294,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetResistance(Teuchos::Parameter
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetResistivity(Teuchos::ParameterList& parameters)
 {
   resistivity_ = 1.0 / (parameters.get<double>("conductivity", -1.0));
-  if (resistivity_ < 0.0) dserror("Conductivity must be positive");
+  if (resistivity_ <= 0.0) dserror("Conductivity must be positive");
 }
 
 /*----------------------------------------------------------------------*
@@ -304,6 +302,12 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetResistivity(Teuchos::Paramete
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
     Teuchos::ParameterList& parameters)
 {
-  numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
-  if (numscal_ < 0) dserror("Scalar must be positive");
+  stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
+
+  if (stoichiometries_ == nullptr)
+    dserror(
+        "Cannot get vector of stoichiometric coefficients for scatra-scatra interface coupling!");
+  if (stoichiometries_->size() != 1)
+    dserror("Number of stoichiometric coefficients does not match number of scalars!");
+  if ((*stoichiometries_)[0] != -1) dserror("Invalid stoichiometric coefficient!");
 }

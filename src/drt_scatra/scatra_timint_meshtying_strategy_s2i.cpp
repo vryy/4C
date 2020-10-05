@@ -2944,8 +2944,8 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
             conditionparams.set<double>("resistance", s2icondition.GetDouble("resistance"));
             conditionparams.set<double>(
                 "CONVTOL_IMPLBUTLERVOLMER", s2icondition.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
-            conditionparams.set<double>(
-                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetDouble("ITEMAX_IMPLBUTLERVOLMER"));
+            conditionparams.set<int>(
+                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
           }
           break;
         }

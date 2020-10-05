@@ -177,7 +177,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
     Epetra_SerialDenseVector& eslaveresidual)
 {
-  // safety check
+  // safety checks
+  if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
+  if (my::numdofpernode_ != 2) dserror("Invalid number of degrees of freedom per node!");
   if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
     dserror("Invalid closing equation for electric potential!");
 

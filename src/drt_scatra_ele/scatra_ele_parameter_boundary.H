@@ -28,17 +28,13 @@ namespace DRT
 
       //! singleton access method
       static ScaTraEleParameterBoundary* Instance(
-          const std::string& disname,  //!< name of discretization
-          const ScaTraEleParameterBoundary* delete_me =
-              nullptr  //!< creation/destruction indication
-      );
+          const std::string& disname, const ScaTraEleParameterBoundary* delete_me = nullptr);
 
       //! singleton destruction
       virtual void Done();
 
       //! set parameters for specific kintetic model
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+      void SetParameters(Teuchos::ParameterList& parameters) override;
 
       /// Set actual parameters
       ///@{
@@ -80,8 +76,7 @@ namespace DRT
 
      private:
       //! private constructor for singletons
-      ScaTraEleParameterBoundary(const std::string& disname  //!< name of discretization
-      );
+      ScaTraEleParameterBoundary(const std::string& disname);
 
       /// symmetry coefficient of anodic intercalation reaction
       double alphaa_;
@@ -92,8 +87,16 @@ namespace DRT
       /// condition type of stored condition
       DRT::Condition::ConditionType conditiontype_;
 
+      /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      double convtolimplicitBV_;
+
       /// density of the interface layer material associated to S2ICouplingGrowth condition
       double density_;
+
+      /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
+      /// equation
+      int itemaxmimplicitBV_;
 
       /// kinetic model of s2i condition
       int kineticmodel_;
@@ -122,22 +125,14 @@ namespace DRT
       /// type of regularization for S2ICouplingGrowth condition
       INPAR::S2I::RegularizationType regularizationtype_;
 
+      /// interface resistance associated with S2ICoupling condition
+      double resistance_;
+
       /// resistivity of the interface layer material associated to S2ICouplingGrowth condition
       double resistivity_;
 
       /// vector of stoichiometric coefficients for scatra-scatra interface
       std::vector<int>* stoichiometries_;
-
-      /// interface resistance associated with S2ICoupling condition
-      double resistance_;
-
-      /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
-      /// equation
-      double convtolimplicitBV_;
-
-      /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
-      /// equation
-      double itemaxmimplicitBV_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

@@ -31,11 +31,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
       // instance of utility class supporting element evaluation
       utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
 {
-  // safety checks
-  if (numscal != 1) dserror("Invalid number of transported scalars!");
-  if (numdofpernode != 2) dserror("Invalid number of degrees of freedom per node!");
-
-  return;
 }
 
 
@@ -511,8 +506,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
     dserror(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus
 
 
