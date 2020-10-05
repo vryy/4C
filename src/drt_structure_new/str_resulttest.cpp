@@ -201,47 +201,7 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
       // test nodal stresses
       if (position.rfind("stress", 0) == 0)
       {
-        int idx = -1;
-        if (position == "stress_xx")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
-        }
-        else if (position == "stress_yy")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
-        }
-        else if (position == "stress_zz")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
-        }
-        else if (position == "stress_xy")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
-        }
-        else if (position == "stress_xz")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
-        }
-        else if (position == "stress_yz")
-        {
-          idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
-        }
-        Teuchos::RCP<Epetra_MultiVector> nodalStressData = data_->GetStressDataNodePostprocessed();
-
-        if (Teuchos::is_null(nodalStressData))
-        {
-          dserror(
-              "It looks like you don't write stresses. You have to specify the stress type in "
-              "IO->STRUCT_STRESS");
-        }
-
-        result = (*nodalStressData)[idx][actnode->Id()];
-
-        if (idx < 0)
-        {
-          dserror("You try to test an unknown stress component %s", position.c_str());
-        }
-        // ToDo: Store stress in result
+        result = GetReferenceNodalStressComponent(position, node);
         unknownpos = false;
       }
 
@@ -363,4 +323,53 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
         "\"<prefix_name>_<number>\"");
   }
   exit(EXIT_FAILURE);
+}
+
+double STR::ResultTest::GetReferenceNodalStressComponent(
+    const std::string& label, int node_id) const
+{
+  int idx = -1;
+  if (label == "stress_xx")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+  }
+  else if (label == "stress_yy")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+  }
+  else if (label == "stress_zz")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+  }
+  else if (label == "stress_xy")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+  }
+  else if (label == "stress_xz")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+  }
+  else if (label == "stress_yz")
+  {
+    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+  }
+
+  if (idx < 0)
+  {
+    dserror(
+        "You try to test an unknown stress component %s. Use one of [stress_xx, stress_yy, "
+        "stress_zz, stress_xy, stress_xz, stress_yz]",
+        label.c_str());
+  }
+
+  Teuchos::RCP<Epetra_MultiVector> nodalStressData = data_->GetStressDataNodePostprocessed();
+
+  if (Teuchos::is_null(nodalStressData))
+  {
+    dserror(
+        "It looks like you don't write stresses. You have to specify the stress type in "
+        "IO->STRUCT_STRESS");
+  }
+
+  return (*nodalStressData)[idx][node_id];
 }
