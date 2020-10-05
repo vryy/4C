@@ -201,7 +201,7 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
       // test nodal stresses
       if (position.rfind("stress", 0) == 0)
       {
-        result = GetReferenceNodalStressComponent(position, node);
+        result = GetNodalStressComponent(position, node);
         unknownpos = false;
       }
 
@@ -325,8 +325,7 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
   exit(EXIT_FAILURE);
 }
 
-double STR::ResultTest::GetReferenceNodalStressComponent(
-    const std::string& label, int node_id) const
+double STR::ResultTest::GetNodalStressComponent(const std::string& label, int node_id) const
 {
   int idx = -1;
   if (label == "stress_xx")

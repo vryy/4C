@@ -166,7 +166,7 @@ namespace STR
      * \param node_id
      * \return double stress component
      */
-    double GetReferenceNodalStressComponent(const std::string& label, int node_id) const;
+    double GetNodalStressComponent(const std::string& label, int node_id) const;
 
    protected:
     //! flag which indicates if the Init() routine has already been called
