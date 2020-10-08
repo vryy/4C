@@ -23,7 +23,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
         const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
         double& di_dc_slave, double& di_dc_master, double& di_dpot_slave, double& di_dpot_master)
 {
-  const double kr = scatraeleparamsboundary->Kr();
+  const double kr = scatraeleparamsboundary->ChargeTransferConstant();
   const double alphaa = scatraeleparamsboundary->AlphaA();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
@@ -330,8 +330,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
   {
     // get the S2I coupling growth regularization parameter
     const double regularizationparameter = scatraeleboundary->RegularizationParameter();
-    if (regularizationparameter < 0.0)
-      dserror("Regularization parameter for lithium stripping must not be negative!");
 
     // evaluate dependent on the regularization type
     switch (regularizationtype)

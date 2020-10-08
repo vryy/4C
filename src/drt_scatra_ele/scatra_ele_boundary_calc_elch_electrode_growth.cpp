@@ -117,8 +117,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
         "layer growth!");
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // integration points and weights
@@ -213,30 +212,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  if (numelectrons != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == nullptr)
-    dserror(
-        "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-        "coupling!");
-  if (stoichiometries->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // extract saturation value of intercalated lithium concentration from electrode material
   const double cmax = matelectrode->CMax();
-  if (cmax < 1.0e-12)
-    dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
@@ -450,30 +434,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  if (numelectrons != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == nullptr)
-    dserror(
-        "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-        "coupling!");
-  if (stoichiometries->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // extract saturation value of intercalated lithium concentration from electrode material
   const double cmax = matelectrode->CMax();
-  if (cmax < 1.0e-12)
-    dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
@@ -598,23 +567,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  if (numelectrons != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == nullptr)
-    dserror(
-        "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-        "coupling!");
-  if (stoichiometries->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
   const double factor =
@@ -735,24 +691,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  if (numelectrons != 1)
-    dserror(
-        "Invalid number of electrons involved in charge transfer at electrode-electrolyte "
-        "interface!");
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  if (stoichiometries == nullptr)
-    dserror(
-        "Cannot access vector of stoichiometric coefficients for scatra-scatra interface "
-        "coupling!");
-  if (stoichiometries->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double kr = my::scatraparamsboundary_->Kr();
-  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
   const double factor =
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);

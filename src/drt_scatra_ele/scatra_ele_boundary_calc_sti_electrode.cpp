@@ -99,10 +99,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
 )
 {
-  // safety check
-  if (my::numscal_ != 1 or my::numdofpernode_ != 1)
-    dserror("Invalid number of transported scalars or degrees of freedom per node!");
-
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
       Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->ParentElement()->Material());
@@ -121,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
@@ -186,12 +182,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
       const double gasconstant =
           DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-      if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
 
       // extract saturation value of intercalated lithium concentration from electrode material
       const double cmax = matelectrode->CMax();
-      if (cmax < 1.e-12)
-        dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
       // evaluate factor F/RT
       const double frt = faraday / (gasconstant * eslavetempint);
@@ -260,10 +253,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     Epetra_SerialDenseMatrix& emastermatrix  ///< element matrix for master side
 )
 {
-  // safety check
-  if (my::numscal_ != 1 or my::numdofpernode_ != 1)
-    dserror("Invalid number of transported scalars or degrees of freedom per node!");
-
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
       Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->ParentElement()->Material());
@@ -282,7 +271,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
@@ -360,12 +349,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
               DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
           const double gasconstant =
               DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-          if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
 
           // extract saturation value of intercalated lithium concentration from electrode material
           const double cmax = matelectrode->CMax();
-          if (cmax < 1.e-12)
-            dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
           // evaluate factor F/RT
           const double frt = faraday / (gasconstant * eslavetempint);

@@ -462,8 +462,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double resistance = my::scatraparamsboundary_->Resistance();
@@ -487,9 +486,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
-        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
-        alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
-        GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, kr, alphaa, alphac,
+        resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac, GetFRT(), k_ss,
+        k_sm, k_ms, k_mm, r_s, r_m);
   }
 
   return;
@@ -543,8 +542,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double resistance = my::scatraparamsboundary_->Resistance();
@@ -561,8 +559,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, my::funct_slave_, my::funct_master_, my::funct_slave_,
-      my::funct_master_, kineticmodel, numelectrons, stoichiometries, kr, alphaa, alphac,
-      resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
+      my::funct_master_, kineticmodel, numelectrons, kr, alphaa, alphac, resistance,
+      itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
       DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
       r_m);
 
@@ -764,8 +762,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
 
@@ -784,9 +781,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
-        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
-        alphaa, alphac, timefacfac, static_cast<int>(SCATRA::DifferentiationType::temp), k_ss,
-        k_ms);
+        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, kr, alphaa, alphac,
+        timefacfac, static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
   }  // loop over integration points
 
   return;
@@ -1028,7 +1024,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
@@ -1102,7 +1098,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->Kr();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
