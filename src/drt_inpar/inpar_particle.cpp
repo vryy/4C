@@ -306,6 +306,19 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // definition of phase change
   StringParameter("PHASECHANGEDEFINITION", "none", "phase change definition", &particledynsph);
 
+  // type of rigid particle contact
+  setStringToIntegralParameter<int>("RIGIDPARTICLECONTACTTYPE", "NoRigidParticleContact",
+      "type of rigid particle contact",
+      tuple<std::string>("NoRigidParticleContact", "ElasticRigidParticleContact"),
+      tuple<int>(
+          INPAR::PARTICLE::NoRigidParticleContact, INPAR::PARTICLE::ElasticRigidParticleContact),
+      &particledynsph);
+
+  DoubleParameter(
+      "RIGIDPARTICLECONTACTSTIFF", -1.0, "rigid particle contact stiffness", &particledynsph);
+  DoubleParameter(
+      "RIGIDPARTICLECONTACTDAMP", 0.0, "rigid particle contact damping parameter", &particledynsph);
+
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |
    *-------------------------------------------------------------------------*/

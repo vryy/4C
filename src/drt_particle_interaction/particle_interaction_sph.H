@@ -35,6 +35,7 @@ namespace PARTICLEINTERACTION
   class SPHOpenBoundaryBase;
   class SPHVirtualWallParticle;
   class SPHPhaseChangeBase;
+  class SPHRigidParticleContactBase;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -149,6 +150,9 @@ namespace PARTICLEINTERACTION
     //! init phase change handler
     void InitPhaseChangeHandler();
 
+    //! init rigid particle contact handler
+    void InitRigidParticleContactHandler();
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -190,6 +194,9 @@ namespace PARTICLEINTERACTION
 
     //! phase change handler
     std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;
+
+    //! rigid particle contact handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactBase> rigidparticlecontact_;
   };
 
 }  // namespace PARTICLEINTERACTION
