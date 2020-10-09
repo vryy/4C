@@ -266,7 +266,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetPermeabilities(
 {
   permeabilities_ = parameters.get<std::vector<double>*>("permeabilities");
   for (auto permeability : *permeabilities_)
-    if (permeability <= 0.0) dserror("Permeability must be positive");
+    if (permeability < 0.0) dserror("Permeability must be positive");
 }
 
 /*----------------------------------------------------------------------*
