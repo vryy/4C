@@ -469,6 +469,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
   const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
 
+  // dummy matrix of nodal temperature values
+  LINALG::Matrix<my::nen_slave_, 1> dummy_temp(true);
+
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -485,7 +488,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
-        my::ephinp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
+        my::ephinp_slave_, my::ephinp_master_, dummy_temp, my::funct_slave_, my::funct_master_,
         my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, kr, alphaa, alphac,
         resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac, GetFRT(), k_ss,
         k_sm, k_ms, k_mm, r_s, r_m);
@@ -549,6 +552,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
   const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
 
+  // dummy matrix of nodal temperature values
+  LINALG::Matrix<my::nen_slave_, 1> dummy_temp(true);
+
   // overall integration factors
   const double timefacfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
@@ -558,9 +564,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
-      ephinp_slave, ephinp_master, my::funct_slave_, my::funct_master_, my::funct_slave_,
-      my::funct_master_, kineticmodel, numelectrons, kr, alphaa, alphac, resistance,
-      itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
+      ephinp_slave, ephinp_master, dummy_temp, my::funct_slave_, my::funct_master_,
+      my::funct_slave_, my::funct_master_, kineticmodel, numelectrons, kr, alphaa, alphac,
+      resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
       DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
       r_m);
 
@@ -1028,6 +1034,11 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
+  const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
+  const double energy_substance_ratio = my::scatraparamsboundary_->EnergySubstanceRatio();
+
+  // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
+  Epetra_SerialDenseMatrix dummy_ksm;
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -1045,9 +1056,11 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
-        my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_, my::funct_master_,
-        kineticmodel, kr, alphaa, alphac, peltier, timefacfac, timefacrhsfac, k_ss, r_s);
+        my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
+        my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
+        energy_substance_ratio, timefacfac, timefacrhsfac, k_ss, dummy_ksm, r_s);
   }  // loop over integration points
+
 
   return;
 }
@@ -1102,6 +1115,11 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
+  const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
+  const double energy_substance_ratio = my::scatraparamsboundary_->EnergySubstanceRatio();
+
+  // dummy matrix for shape derivatives
+  LINALG::Matrix<3, my::nen_slave_> dummy_shape_deriv;
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1117,9 +1135,10 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
-        my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_, my::funct_master_,
-        kineticmodel, kr, alphaa, alphac, peltier, timefacfac,
-        static_cast<int>(SCATRA::DifferentiationType::elch), k_ss, k_sm);
+        my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
+        my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
+        energy_substance_ratio, timefacfac, fac,
+        static_cast<int>(SCATRA::DifferentiationType::elch), dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 
   return;

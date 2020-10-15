@@ -510,7 +510,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   if (restarttime_ > 0.0)
   {
     // Currently this option is implemented only for scalar structure interaction problems
-    if (GetProblemType() != prb_ssi)
+    if (GetProblemType() != prb_ssi and GetProblemType() != prb_ssti)
       dserror("Restart with time option currently only implemented for SSI problems");
     // The value restartstep_ is used very deep down in Baci. Therefore we demand the user
     // to set this value, if one wants to use restart time option.
@@ -2141,6 +2141,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_ssi:
+    case prb_ssti:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2157,6 +2158,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+
+      if (GetProblemType() == prb_ssti)
+      {
+        thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
+        thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+        AddDis("thermo", thermdis);
+        nodereader.AddElementReader(
+            Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS")));
+      }
 
       break;
     }

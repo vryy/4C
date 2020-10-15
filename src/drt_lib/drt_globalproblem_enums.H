@@ -66,6 +66,7 @@ typedef enum _PROBLEM_TYP
   prb_redairways_tissue,     // coupling of reduced-dimensional airways with 3D tissue model
   prb_scatra,                // scalar transport problem (e.g. convection-diffusion)
   prb_ssi,                   // scalar structure interaction
+  prb_ssti,                  // scalar structure thermo interaction
   prb_sti,                   // scalar-thermo interaction
   prb_struct_ale,            // structural problem, ale formulation
   prb_structure,             // structural problem

@@ -2925,6 +2925,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
         case INPAR::S2I::kinetics_butlervolmerreduced:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
           conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
@@ -2947,6 +2948,14 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
             conditionparams.set<int>(
                 "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
           }
+
+          if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
+          {
+            conditionparams.set<double>("thermoperm", s2icondition.GetDouble("thermoperm"));
+            conditionparams.set<double>(
+                "energy_substance_ratio", s2icondition.GetDouble("energy_substance_ratio"));
+          }
+
           break;
         }
 

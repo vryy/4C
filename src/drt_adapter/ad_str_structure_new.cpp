@@ -426,6 +426,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_fsi_xfem:
     case prb_pasi:
     case prb_ssi:
+    case prb_ssti:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
@@ -956,6 +957,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       break;
     }
     case prb_ssi:
+    case prb_ssti:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;

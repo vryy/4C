@@ -20,6 +20,7 @@
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_cardiac_monodomain.H"
 #include "../drt_inpar/inpar_ssi.H"
+#include "../drt_inpar/inpar_ssti.H"
 #include "../drt_inpar/inpar_sti.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -253,6 +254,10 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
            (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
                                         DRT::Problem::Instance()->SSIControlParams(),
                                         "SCATRATIMINTTYPE") == INPAR::SSI::scatratiminttype_elch) or
+           (probtype == prb_ssti and disname == "scatra" and
+               Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
+                   DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
+                   INPAR::SSTI::ScaTraTimIntType::elch) or
            (probtype == prb_sti and disname == "scatra" and
                Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
@@ -643,9 +648,16 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
            (DRT::Problem::Instance()->GetProblemType() == prb_ssi and
                DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                   INPAR::SSI::scatratiminttype_elch))
+                   INPAR::SSI::scatratiminttype_elch) or
+           (DRT::Problem::Instance()->GetProblemType() == prb_ssti and
+               Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
+                   DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
+                   INPAR::SSTI::ScaTraTimIntType::elch and
+               scatra_->Discretization()->Name() == "scatra"))
+  {
     return Teuchos::rcp(
         new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatra_)));
+  }
   else
     return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
 }

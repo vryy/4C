@@ -335,15 +335,17 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
     BdSdc.MultiplyTN(detJ_w, bop, dSdc);
 
     // loop over rows
-    for (unsigned rowi = 0; rowi < numdofperelement_; ++rowi)
+    for (int rowi = 0; rowi < numdofperelement_; ++rowi)
     {
       const double BdSdc_rowi = BdSdc(rowi, 0);
       // loop over columns
-      for (unsigned coli = 0; coli < numnod_; ++coli)
+      for (int coli = 0; coli < numnod_; ++coli)
       {
         // stiffness matrix w.r.t. elch dofs
         if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
           stiffmatrix_kdS(rowi, coli * numscatradofspernode) += BdSdc_rowi * shapefunct(coli, 0);
+        else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
+          stiffmatrix_kdS(rowi, coli) += BdSdc_rowi * shapefunct(coli, 0);
         else
           dserror("Unknown differentation type");
       }

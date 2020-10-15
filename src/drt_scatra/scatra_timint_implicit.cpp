@@ -3788,6 +3788,7 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
       break;
     }
     case prb_ssi:
+    case prb_ssti:
     {
       // get structure discretization
       auto structdis = problem->GetDis("structure");
