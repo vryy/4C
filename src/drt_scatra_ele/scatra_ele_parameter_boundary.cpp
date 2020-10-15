@@ -67,6 +67,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       conditiontype_(DRT::Condition::ConditionType::none),
       convtolimplicitBV_(-1.0),
       density_(-1.0),
+      energy_substance_ratio_(-1.0),
       itemaxmimplicitBV_(-1),
       kineticmodel_(-1),
       kr_(-1.0),
@@ -79,7 +80,8 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       regularizationtype_(INPAR::S2I::RegularizationType::regularization_undefined),
       resistance_(0.0),
       resistivity_(0.0),
-      stoichiometries_(nullptr)
+      stoichiometries_(nullptr),
+      thermoperm_(-1.0)
 {
   return;
 }
@@ -124,6 +126,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_butlervolmerreduced:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
           SetAlpha(parameters);
@@ -138,6 +141,12 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           {
             SetConvTolIterNum(parameters);
             SetResistance(parameters);
+          }
+
+          if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
+          {
+            SetEnergySubstanceRatio(parameters);
+            SetThermoPerm(parameters);
           }
           break;
         }
@@ -237,6 +246,16 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetDensityMolarMass(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetEnergySubstanceRatio(
+    Teuchos::ParameterList& parameters)
+{
+  energy_substance_ratio_ =
+      parameters.get<double>("energy_substance_ratio", std::numeric_limits<double>::infinity());
+  if (energy_substance_ratio_ < 0.0) dserror("Ratio of energy- and mass-flux must be positive!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetNumElectrons(Teuchos::ParameterList& parameters)
 {
   numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
@@ -310,4 +329,12 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
   if (stoichiometries_->size() != 1)
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if ((*stoichiometries_)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetThermoPerm(Teuchos::ParameterList& parameters)
+{
+  thermoperm_ = parameters.get<double>("thermoperm", std::numeric_limits<double>::infinity());
+  if (thermoperm_ <= 0.0) dserror("Thermo permeability must be posititve!");
 }

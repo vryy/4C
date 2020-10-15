@@ -42,6 +42,7 @@ namespace DRT
       void SetChargeTransferConstant(Teuchos::ParameterList& parameters);
       void SetConvTolIterNum(Teuchos::ParameterList& parameters);
       void SetDensityMolarMass(Teuchos::ParameterList& parameters);
+      void SetEnergySubstanceRatio(Teuchos::ParameterList& parameters);
       void SetNumElectrons(Teuchos::ParameterList& parameters);
       void SetNumScal(Teuchos::ParameterList& parameters);
       void SetPeltier(Teuchos::ParameterList& parameters);
@@ -50,6 +51,7 @@ namespace DRT
       void SetResistance(Teuchos::ParameterList& parameters);
       void SetResistivity(Teuchos::ParameterList& parameters);
       void SetStoichiometries(Teuchos::ParameterList& parameters);
+      void SetThermoPerm(Teuchos::ParameterList& parameters);
       ///@}
 
       /// Return parameters
@@ -60,6 +62,7 @@ namespace DRT
       DRT::Condition::ConditionType ConditionType() const { return conditiontype_; };
       double ConvtolimplicitBV() const { return convtolimplicitBV_; };
       double Density() const { return density_; };
+      double EnergySubstanceRatio() const { return energy_substance_ratio_; }
       double ItemaximplicitBV() const { return itemaxmimplicitBV_; };
       int KineticModel() const { return kineticmodel_; };
       double MolarMass() const { return molarmass_; };
@@ -72,6 +75,7 @@ namespace DRT
       double Resistance() const { return resistance_; };
       double Resistivity() const { return resistivity_; };
       std::vector<int>* Stoichiometries() const { return stoichiometries_; };
+      double ThermoPerm() const { return thermoperm_; };
       ///@}
 
      private:
@@ -93,6 +97,9 @@ namespace DRT
 
       /// density of the interface layer material associated to S2ICouplingGrowth condition
       double density_;
+
+      /// ratio between flux of species (amount) and flux of energy
+      double energy_substance_ratio_;
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
@@ -133,6 +140,9 @@ namespace DRT
 
       /// vector of stoichiometric coefficients for scatra-scatra interface
       std::vector<int>* stoichiometries_;
+
+      /// constant permeability for heat at interface
+      double thermoperm_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

@@ -15,18 +15,20 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinearizations(
-    const int kineticmodel, const double j0, const double frt, const double epdderiv,
-    const double alphaa, const double alphac, const double resistance, const double expterm1,
-    const double expterm2, const double kr, const double faraday, const double emasterphiint,
-    const double eslavephiint, const double cmax, double& dj_dc_slave, double& dj_dc_master,
-    double& dj_dpot_slave, double& dj_dpot_master)
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+    CalculateButlerVolmerElchLinearizations(const int kineticmodel, const double j0,
+        const double frt, const double epdderiv, const double alphaa, const double alphac,
+        const double resistance, const double expterm1, const double expterm2, const double kr,
+        const double faraday, const double emasterphiint, const double eslavephiint,
+        const double cmax, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
+        double& dj_dpot_master)
 {
   const double expterm = expterm1 - expterm2;
   // core linearizations associated with Butler-Volmer mass flux density
   switch (kineticmodel)
   {
     case INPAR::S2I::kinetics_butlervolmerreduced:
+    case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
     {
       dj_dc_slave = j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
       dj_dc_master = 0.0;
@@ -93,6 +95,38 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::CalculateCoreLinear
       break;
     }
   }  // switch(kineticmodel)
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+    CalculateButlerVolmerTempLinearizations(double alphaa, double alphac, double depddT, double eta,
+        double etempint, double faraday, double frt, double gasconstant, double j0,
+        double& dj_dT_slave)
+{
+  // exponential Butler-Volmer terms
+  const double exptermA = std::exp(alphaa * frt * eta);
+  const double exptermB = std::exp(-alphac * frt * eta);
+  if (std::abs(exptermA) > 1.0e5 or (std::abs(exptermB) > 1.0e5))
+    dserror("Overflow of exponential term in Butler-Volmer formulation detected!");
+
+  // Butler-Volmer:
+  // j = j0 * (exp(A)-exp(B)), A = a eta/T, B = b eta/T
+  const double a = alphaa * faraday / gasconstant;
+  const double b = -1.0 * alphac * faraday / gasconstant;
+
+  // C = d(eta/T)/dT
+  const double C = (depddT / etempint) - (eta / (etempint * etempint));
+
+  // derivative of A and B w.r.t. temperature
+  const double dAdT = a * C;
+  const double dBdT = b * C;
+
+  // derivative of flux w.r.t. temperature
+  const double djdT = j0 * (exptermA * dAdT - exptermB * dBdT);
+
+  // derivative of flux w.r.t. slave side temperature (T = 0.5 * [T_slave + T_master])
+  dj_dT_slave = djdT * 0.5;
 }
 
 /*----------------------------------------------------------------------*
