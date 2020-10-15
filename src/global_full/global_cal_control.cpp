@@ -35,6 +35,7 @@
 #include "../drt_scatra/scatra_cardiac_monodomain_dyn.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
+#include "../drt_ssti/ssti_dyn.H"
 #include "../drt_sti/sti_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
 #include "../drt_structure/stru_dyn_nln_drt.H"
@@ -177,6 +178,9 @@ void ntacal()
       break;
     case prb_ssi:
       ssi_drt();
+      break;
+    case prb_ssti:
+      ssti_drt();
       break;
     case prb_redairways_tissue:
       redairway_tissue_dyn();

@@ -254,6 +254,8 @@ src/drt_spring3/                   @baci/team_structure
 
 src/drt_ssi/                       @baci/team_scatra
 
+src/drt_ssti/                      @baci/team_scatra
+
 src/drt_sti/                       @baci/team_scatra
 
 src/drt_stru_multi/                @baci/team_discretization # todo

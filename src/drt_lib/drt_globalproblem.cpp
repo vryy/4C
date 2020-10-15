@@ -281,6 +281,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SSI CONTROL", *list);
   reader.ReadGidSection("--SSI CONTROL/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
+  reader.ReadGidSection("--SSTI CONTROL", *list);
+  reader.ReadGidSection("--SSTI CONTROL/MONOLITHIC", *list);
+  reader.ReadGidSection("--SSTI CONTROL/THERMO", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);

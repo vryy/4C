@@ -779,6 +779,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_solver.cpp
   src/drt_inpar/inpar_solver_nonlin.cpp
   src/drt_inpar/inpar_ssi.cpp
+  src/drt_inpar/inpar_ssti.cpp
   src/drt_inpar/inpar_sti.cpp
   src/drt_inpar/inpar_structure.cpp
   src/drt_inpar/inpar_thermo.cpp
@@ -2548,6 +2549,15 @@ src/drt_ssi/ssi_str_model_evaluator_monolithic.cpp
 src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 )
 
+set(OBJS_DRT_SSTI
+src/drt_ssti/ssti_algorithm.cpp
+src/drt_ssti/ssti_dyn.cpp
+src/drt_ssti/ssti_monolithic.cpp
+src/drt_ssti/ssti_monolithic_assemble_strategy.cpp
+src/drt_ssti/ssti_monolithic_evaluate_OffDiag.cpp
+src/drt_ssti/ssti_utils.cpp
+)
+
 set(OBJS_DRT_IMMERSED_LIB
 src/drt_immersed_problem/immersed_node.cpp
 )
@@ -2719,6 +2729,7 @@ add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
+add_library(alg_ssti ${OBJS_DRT_SSTI})
 add_library(alg_ehl ${OBJS_DRT_EHL})
 add_library(alg_pasi ${OBJS_DRT_PASI})
 
@@ -2740,6 +2751,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
+  alg_ssti
   alg_ehl
   alg_pasi
   )
