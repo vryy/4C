@@ -1479,6 +1479,7 @@ vtk_test(solid_runtime_stress_strain_output-vtk-solid 1 xxx-structure.pvd ref/so
 vtk_test(solid_runtime_stress_strain_output-vtk-beam 1 xxx-structure-beams.pvd ref/solid_runtime_stress_strain_output-vtk/structure-beams.pvd 1e-08 1e-08 1.0)
 baci_test(solid_ele_vs_mat 2 "")
 baci_test(solid_nodal_fiber 2 "")
+baci_test(solid_nodal_fiber_eletypes 2 "")
 baci_test_Nested_Par_CopyDat(solid_ele_vs_mat 4 2)
 baci_test(solidh8_mat_neohooke_drt 2 "")
 baci_test(solidh8_mat_neohooke_gemm_drt 2 "")
