@@ -450,8 +450,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(Nodes()[0]);
-  if (fnode != nullptr)
+  if (UTILS::HaveNodalFibers<tet4>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material

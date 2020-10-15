@@ -559,8 +559,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
 // Compute nodal fibers and call post setup routine of the materials
 void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(Nodes()[0]);
-  if (fnode != nullptr)
+  if (UTILS::HaveNodalFibers<hex8>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass themd to the material

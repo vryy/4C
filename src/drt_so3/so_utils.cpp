@@ -369,6 +369,14 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
   inverseJacobian.Invert();
 }
 
+template <DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::UTILS::HaveNodalFibers(DRT::Node** nodes)
+{
+  return std::all_of(&nodes[0],
+      &nodes[DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement],
+      [](const Node* n) { return dynamic_cast<const DRT::FIBER::FiberNode*>(n) != nullptr; });
+}
+
 template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
     const DRT::Element*, const std::vector<double>&, LINALG::Matrix<3, 3>&);
 template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(DRT::Node**,
@@ -486,3 +494,7 @@ template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<DRT::Element
 template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<DRT::Element::tet4>(
     const LINALG::Matrix<4, 3>& xrefe, const LINALG::Matrix<3, 4>& derivs,
     LINALG::Matrix<3, 3>& inverseJacobian);
+
+template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::tet4>(DRT::Node** nodes);
+template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::tet10>(DRT::Node** nodes);
+template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::hex8>(DRT::Node** nodes);
