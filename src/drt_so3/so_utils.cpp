@@ -372,9 +372,11 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::UTILS::HaveNodalFibers(DRT::Node** nodes)
 {
-  return std::all_of(&nodes[0],
-      &nodes[DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement],
-      [](const Node* n) { return dynamic_cast<const DRT::FIBER::FiberNode*>(n) != nullptr; });
+  constexpr int numberOfNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  auto nodeHasFibers = [](const Node* n) {
+    return dynamic_cast<const DRT::FIBER::FiberNode*>(n) != nullptr;
+  };
+  return std::all_of(&nodes[0], &nodes[numberOfNodes], nodeHasFibers);
 }
 
 template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(

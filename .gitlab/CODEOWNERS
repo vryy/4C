@@ -374,6 +374,8 @@ Input/rigidsphere*                 @baci/team_structure
 
 /Input/scatra*                     @baci/team_scatra
 
+/Input/solid*                      @baci/team_structure
+
 /Input/spring_dashpot*             @agebauer @baci/team_discretization
 
 /Input/ssi*                        @cschmidt @ssinzig

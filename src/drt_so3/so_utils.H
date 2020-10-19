@@ -168,7 +168,7 @@ namespace DRT
               DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
 
       /*!
-       * \brief Check whether all nodes of the element have fibers so that the fibers
+       * \brief Check whether all nodes of the element have fibers.
        *
        * \tparam distype Discretization type
        * \param nodes Pointer to the nodes of the element
