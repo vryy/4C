@@ -67,7 +67,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       conditiontype_(DRT::Condition::ConditionType::none),
       convtolimplicitBV_(-1.0),
       density_(-1.0),
-      energy_substance_ratio_(-1.0),
+      molar_heat_capacity_(-1.0),
       itemaxmimplicitBV_(-1),
       kineticmodel_(-1),
       kr_(-1.0),
@@ -249,9 +249,9 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetDensityMolarMass(
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetEnergySubstanceRatio(
     Teuchos::ParameterList& parameters)
 {
-  energy_substance_ratio_ =
-      parameters.get<double>("energy_substance_ratio", std::numeric_limits<double>::infinity());
-  if (energy_substance_ratio_ < 0.0) dserror("Ratio of energy- and mass-flux must be positive!");
+  molar_heat_capacity_ =
+      parameters.get<double>("molar_heat_capacity", std::numeric_limits<double>::infinity());
+  if (molar_heat_capacity_ < 0.0) dserror("Ratio of energy- and mass-flux must be positive!");
 }
 
 /*----------------------------------------------------------------------*

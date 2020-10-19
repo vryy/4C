@@ -100,9 +100,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateButlerVolmerTempLinearizations(double alphaa, double alphac, double depddT, double eta,
-        double etempint, double faraday, double frt, double gasconstant, double j0,
-        double& dj_dT_slave)
+    CalculateButlerVolmerTempLinearizations(const double alphaa, const double alphac,
+        const double depddT, const double eta, const double etempint, const double faraday,
+        const double frt, const double gasconstant, const double j0, double& dj_dT_slave)
 {
   // exponential Butler-Volmer terms
   const double exptermA = std::exp(alphaa * frt * eta);

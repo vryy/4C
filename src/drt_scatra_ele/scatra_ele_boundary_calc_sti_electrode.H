@@ -65,7 +65,7 @@ namespace DRT
        * @param[in] alphac         symmetry coefficient of cathodic intercalation reaction
        * @param[in] peltier        peltier coefficient
        * @param[in] thermoperm     thermal permeability at interface
-       * @param[in] energy_substance_ratio
+       * @param[in] molar_heat_capacity
        *                           energy transported by flux of species
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
@@ -92,7 +92,7 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const int kineticmodel, const double kr, const double alphaa, const double alphac,
-          const double peltier, const double thermoperm, const double energy_substance_ratio,
+          const double peltier, const double thermoperm, const double molar_heat_capacity,
           const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s);
 
@@ -112,7 +112,7 @@ namespace DRT
        * @param[in] alphac        symmetry coefficient of cathodic intercalation reaction
        * @param[in] peltier       peltier coefficient
        * @param[in] thermoperm     thermal permeability at interface
-       * @param[in] energy_substance_ratio
+       * @param[in] molar_heat_capacity
        *                          energy transported by flux of species
        * @param[in] timefacfac    time-integration factor times domain-integration factor
        * @param[in] differentiationtype
@@ -138,7 +138,7 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           int kineticmodel, double kr, double alphaa, double alphac, double peltier,
-          const double thermoperm, const double energy_substance_ratio, const double timefacfac,
+          const double thermoperm, const double molar_heat_capacity, const double timefacfac,
           const double timefacwgt, int differentiationtype,
           const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);

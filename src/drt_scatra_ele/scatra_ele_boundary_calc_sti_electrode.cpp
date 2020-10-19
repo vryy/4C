@@ -126,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
   const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
-  const double energy_substance_ratio = my::scatraparamsboundary_->EnergySubstanceRatio();
+  const double molar_heat_capacity = my::scatraparamsboundary_->MolarHeatCapacity();
 
   LINALG::Matrix<my::nen_, 1> emastertemp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
 
     EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, my::funct_, my::funct_, kineticmodel, kr, alphaa, alphac, peltier,
-        thermoperm, energy_substance_ratio, timefacfac, timefacrhsfac, eslavematrix, emastermatrix,
+        thermoperm, molar_heat_capacity, timefacfac, timefacrhsfac, eslavematrix, emastermatrix,
         eslaveresidual);
   }  // loop over integration points
 
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const int kineticmodel, const double kr, const double alphaa, const double alphac,
-    const double peltier, const double thermoperm, const double energy_substance_ratio,
+    const double peltier, const double thermoperm, const double molar_heat_capacity,
     const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
     Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s)
 {
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       const double expterm = expterm1 - expterm2;
 
       // safety check
-      if (abs(expterm) > 1.e5)
+      if (std::abs(expterm) > 1.e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 
@@ -257,8 +257,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
 
       // equilibrium electric potential difference at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt);
-      const double depddT = -1.0 * matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
-                                       eslavephiint, faraday, gasconstant);
+      const double depddT = matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
+          eslavephiint, faraday, gasconstant);
 
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       const double expterm = expterm1 - expterm2;
 
       // safety check
-      if (abs(expterm) > 1.0e5)
+      if (std::abs(expterm) > 1.0e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       const double j_mass = j0 * expterm;
 
       // temperature from source side of flux
-      const double j_mass_energy = j_mass * energy_substance_ratio * etempint;
+      const double j_mass_energy = j_mass * molar_heat_capacity * etempint;
 
       j_timefacrhsfac += timefacrhsfac * j_mass_energy;
 
@@ -296,9 +296,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
           alphaa, alphac, depddT, eta, etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
 
       const double dj_mass_energydT_slave =
-          dj_dT_slave * energy_substance_ratio * etempint * 0.5 + j0 * expterm * 0.5;
+          dj_dT_slave * molar_heat_capacity * etempint * 0.5 + j0 * expterm * 0.5;
       const double dj_mass_energydT_master =
-          dj_dT_slave * energy_substance_ratio * etempint * 0.5 - j0 * expterm * 0.5;
+          dj_dT_slave * molar_heat_capacity * etempint * 0.5 - j0 * expterm * 0.5;
 
       djdT_slave_timefacfac += dj_mass_energydT_slave * timefacfac;
       djdT_master_timefacfac += dj_mass_energydT_master * timefacfac;
@@ -381,7 +381,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double peltier = my::scatraparamsboundary_->Peltier();
   const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
-  const double energy_substance_ratio = my::scatraparamsboundary_->EnergySubstanceRatio();
+  const double molar_heat_capacity = my::scatraparamsboundary_->MolarHeatCapacity();
 
   LINALG::Matrix<my::nen_, 1> emastertemp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
@@ -408,7 +408,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
 
     EvaluateS2ICouplingODAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, my::funct_, my::funct_, kineticmodel, kr, alphaa, alphac, peltier,
-        thermoperm, energy_substance_ratio, timefacfac, timefacwgt, differentiationtype,
+        thermoperm, molar_heat_capacity, timefacfac, timefacwgt, differentiationtype,
         shapederivatives, eslavematrix, emastermatrix);
   }  // loop over integration points
 
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const int kineticmodel, const double kr, const double alphaa, const double alphac,
-    const double peltier, const double thermoperm, const double energy_substance_ratio,
+    const double peltier, const double thermoperm, const double molar_heat_capacity,
     const double timefacfac, const double timefacwgt, const int differentiationtype,
     const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
     Epetra_SerialDenseMatrix& k_sm)
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
             const double expterm = expterm1 - expterm2;
 
             // safety check
-            if (abs(expterm) > 1.0e5)
+            if (std::abs(expterm) > 1.0e5)
             {
               dserror(
                   "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
 
             // core linearization associated with Butler-Volmer mass flux density
             const double dj_dd_slave_timefacwgt =
-                timefacwgt * j0 * expterm * energy_substance_ratio * etempint;
+                timefacwgt * j0 * expterm * molar_heat_capacity * etempint;
 
             // loop over matrix columns
             for (int ui = 0; ui < my::nen_; ++ui)
@@ -683,10 +683,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
                 epdderiv, alphaa, alphac, 0.0, expterm1, expterm2, kr, faraday, emasterphiint,
                 eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
-            const double dj_energydc_slave = dj_dc_slave * energy_substance_ratio * etempint;
-            const double dj_energydpot_slave = dj_dpot_slave * energy_substance_ratio * etempint;
-            const double dj_energydc_master = dj_dc_master * energy_substance_ratio * etempint;
-            const double dj_energydpot_master = dj_dpot_master * energy_substance_ratio * etempint;
+            const double dj_energydc_slave = dj_dc_slave * molar_heat_capacity * etempint;
+            const double dj_energydpot_slave = dj_dpot_slave * molar_heat_capacity * etempint;
+            const double dj_energydc_master = dj_dc_master * molar_heat_capacity * etempint;
+            const double dj_energydpot_master = dj_dpot_master * molar_heat_capacity * etempint;
             // compute matrix contributions associated with slave-side residuals
             for (int vi = 0; vi < my::nen_; ++vi)
             {

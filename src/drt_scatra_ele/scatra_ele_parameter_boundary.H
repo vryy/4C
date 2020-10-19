@@ -62,7 +62,7 @@ namespace DRT
       DRT::Condition::ConditionType ConditionType() const { return conditiontype_; };
       double ConvtolimplicitBV() const { return convtolimplicitBV_; };
       double Density() const { return density_; };
-      double EnergySubstanceRatio() const { return energy_substance_ratio_; }
+      double MolarHeatCapacity() const { return molar_heat_capacity_; }
       double ItemaximplicitBV() const { return itemaxmimplicitBV_; };
       int KineticModel() const { return kineticmodel_; };
       double MolarMass() const { return molarmass_; };
@@ -99,7 +99,7 @@ namespace DRT
       double density_;
 
       /// ratio between flux of species (amount) and flux of energy
-      double energy_substance_ratio_;
+      double molar_heat_capacity_;
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation

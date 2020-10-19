@@ -2,7 +2,7 @@
 /*! \file
  \brief control routine for scalar structure thermo interaction
 
- \level 1
+ \level 2
 
  *------------------------------------------------------------------------------------------------*/
 
@@ -31,18 +31,12 @@ void ssti_drt()
 
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
-  auto& sstiparams = const_cast<Teuchos::ParameterList&>(problem->SSTIControlParams());
-  auto& scatraparams = const_cast<Teuchos::ParameterList&>(problem->ScalarTransportDynamicParams());
-  auto& thermoparams =
-      const_cast<Teuchos::ParameterList&>(problem->SSTIControlParams().sublist("THERMO"));
-  auto& structureparams =
-      const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
+  auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<INPAR::SSTI::SolutionScheme>(
+                                  problem->SSTIControlParams(), "COUPALGO"),
+      comm, problem->SSTIControlParams());
 
-  auto ssti = SSTI::BuildSSTI(
-      Teuchos::getIntegralValue<INPAR::SSTI::SolutionScheme>(sstiparams, "COUPALGO"), comm,
-      sstiparams);
-
-  ssti->Init(comm, sstiparams, scatraparams, thermoparams, structureparams);
+  ssti->Init(comm, problem->SSTIControlParams(), problem->ScalarTransportDynamicParams(),
+      problem->SSTIControlParams().sublist("THERMO"), problem->StructuralDynamicParams());
 
   ssti->Setup();
 

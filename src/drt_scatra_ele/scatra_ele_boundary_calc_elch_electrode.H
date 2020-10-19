@@ -94,7 +94,11 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& etemp, const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
+          const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
@@ -104,7 +108,7 @@ namespace DRT
               test_master,
           int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
           double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
-          double timefacrhsfac, double frt, Epetra_SerialDenseMatrix& k_ss,
+          double timefacrhsfac, double frt, bool isReducedBV, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);

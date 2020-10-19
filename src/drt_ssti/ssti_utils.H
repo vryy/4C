@@ -2,7 +2,7 @@
 /*! \file
  \brief Utility methods for SSI
 
- \level 1
+ \level 2
 
 
  *------------------------------------------------------------------------------------------------*/
@@ -41,11 +41,6 @@ namespace SCATRA
   class ScaTraTimIntImpl;
 }  // namespace SCATRA
 
-namespace SSI
-{
-  class ScatraStructureCloneStrategy;
-}
-
 namespace SSTI
 {
   class SSTIMono;
@@ -77,7 +72,7 @@ namespace SSTI
     };
 
     //! global map extractor (0: scalar transport, 1: structure, 2: thermo)
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubpromblems() const
+    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubproblems() const
     {
       return maps_subproblems_;
     };

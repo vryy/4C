@@ -1,11 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief Assemble strategy for monolithic SSTI
+
 \level 2
 
-
- */
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 #ifndef SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 #define SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 
@@ -144,7 +143,7 @@ namespace SSTI
   };
 
   //======================================================================================================
-  // SSTI problem is organized in submatrices
+  //! SSTI problem is organized in submatrices
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
@@ -214,7 +213,7 @@ namespace SSTI
   };
 
   // *********************************************************************************************
-  // SSTI problem is organized in sparse structure submatrix and block scatra submatrix
+  //! SSTI problem is organized in sparse structure submatrix and block scatra submatrix
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
@@ -275,7 +274,7 @@ namespace SSTI
   };
 
   // *********************************************************************************************
-  // SSTI problem is organized in sparse submatrices
+  //! SSTI problem is organized in sparse submatrices
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
@@ -335,7 +334,7 @@ namespace SSTI
   };
 
   //======================================================================================================
-  // SSTI problem is organized in one sparse matrix
+  //! SSTI problem is organized in one sparse matrix
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:

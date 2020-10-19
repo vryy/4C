@@ -2,7 +2,7 @@
 /*! \file
  \brief base class for all scalar structure thermo algorithms
 
- \level 1
+ \level 2
 
 
  *------------------------------------------------------------------------------------------------*/
@@ -56,6 +56,8 @@ namespace SSTI
     ~SSTIAlgorithm() override = default;
 
     //! Setup of algorithm
+    //! Clone Discretizations, init and setup subproblems, setup coupling adapters at interfaces,
+    //! setup submatrices for coupling between fields
     //@{
     virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
@@ -126,9 +128,6 @@ namespace SSTI
    private:
     //! excahnge materials between discretizations
     void AssignMaterialPointers();
-
-    //! check for a consistent input file definition of the SSIInterfaceMeshtying condition
-    void CheckConsistencyInterfaceMeshtyingCondition();
 
     void CheckIsInit();
 

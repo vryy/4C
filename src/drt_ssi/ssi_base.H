@@ -246,9 +246,6 @@ namespace SSI
     virtual void SetupModelEvaluator() const = 0;
 
    private:
-    /// check for a consistent input file definition of the SSIInterfaceMeshtying condition
-    void CheckConsistencySSIInterfaceMeshtyingCondition();
-
     //! returns true if Init(..) was called and is still valid
     bool IsInit() const { return isinit_; }
 

@@ -1,17 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief Assemble strategy for monolithic SSTI
+
 \level 2
 
-
- */
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 #include "ssti_monolithic.H"
 #include "ssti_monolithic_assemble_strategy.H"
 #include "ssti_utils.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_io/io_control.H"
 
@@ -1329,11 +1327,11 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
   RHS->PutScalar(0.);
 
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
-  ssti_mono_->AllMaps()->MapsSubpromblems()->InsertVector(RHSscatra, 0, RHS);
-  ssti_mono_->AllMaps()->MapsSubpromblems()->InsertVector(RHSthermo, 2, RHS);
+  ssti_mono_->AllMaps()->MapsSubproblems()->InsertVector(RHSscatra, 0, RHS);
+  ssti_mono_->AllMaps()->MapsSubproblems()->InsertVector(RHSthermo, 2, RHS);
 
   if (!ssti_mono_->InterfaceMeshtying())
-    ssti_mono_->AllMaps()->MapsSubpromblems()->AddVector(RHSstructure, 1, RHS, -1.0);
+    ssti_mono_->AllMaps()->MapsSubproblems()->AddVector(RHSstructure, 1, RHS, -1.0);
   else
   {
     // perform structural meshtying before assembling structural right-hand side vector into
@@ -1371,7 +1369,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     ssti_mono_->AllMaps()->MapsInterfaceStructure()->PutScalar(residual_structure, 0, 0.0);
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
-    ssti_mono_->AllMaps()->MapsSubpromblems()->AddVector(residual_structure, 1, *RHS, -1.0);
+    ssti_mono_->AllMaps()->MapsSubproblems()->AddVector(residual_structure, 1, *RHS, -1.0);
   }
 }
 

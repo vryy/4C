@@ -513,7 +513,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   if (restarttime_ > 0.0)
   {
     // Currently this option is implemented only for scalar structure interaction problems
-    if (GetProblemType() != prb_ssi and GetProblemType() != prb_ssti)
+    if (GetProblemType() != prb_ssi)
       dserror("Restart with time option currently only implemented for SSI problems");
     // The value restartstep_ is used very deep down in Baci. Therefore we demand the user
     // to set this value, if one wants to use restart time option.

@@ -4,9 +4,7 @@
 
 \level 2
 
-
-*/
-/*--------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------*/
 
 #include "ssti_monolithic.H"
 
@@ -17,11 +15,7 @@
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_ssti.H"
 
 #include "../drt_io/io_control.H"
 
@@ -214,7 +208,7 @@ void SSTI::SSTIMono::Output()
                  "------------+--------------+--------------+--------------+--------------+--------"
                  "------+"
               << std::endl;
-    std::cout << "| Computation time for this timestep: " << std::setw(10) << Statistics()[2]
+    std::cout << "| Computation time for this timestep: " << std::setw(10) << TimeStatistics()[2]
               << "                                                                                 "
                  "                                       |"
               << std::endl;
@@ -238,18 +232,19 @@ void SSTI::SSTIMono::PrepareTimeStep()
 
   SetSolutionAllFields();
 
+  // in first time step: solve to get initital derivatives
   ScaTraField()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to structure and thermo
   if (ScaTraField()->TimeStepAdapted()) DistributeDtFromScaTra();
 
+  // in first time step: solve to get initital derivatives
   ThermoField()->PrepareTimeStep();
 
   // pass scalar transport degrees of freedom to structural discretization
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
-
   StructureField()->PrepareTimeStep();
 
   ScaTraField()->PrintTimeStepInfo();
@@ -292,10 +287,10 @@ void SSTI::SSTIMono::SetupSystem()
       ThermoField(), CouplingAdapterStructure(), InterfaceMeshtying()));
 
   // initialize global increment vector for Newton-Raphson iteration
-  increment_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubpromblems()->FullMap(), true);
+  increment_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
 
   // initialize global residual vector
-  residual_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubpromblems()->FullMap(), true);
+  residual_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
 
   // perform initializations associated with global system matrix
   switch (matrixtype_)
@@ -325,7 +320,7 @@ void SSTI::SSTIMono::SetupSystem()
 
       // initialize global system matrix
       systemmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(
-          *ssti_maps_mono_->MapsSubpromblems()->FullMap(), 27, false, true));
+          *ssti_maps_mono_->MapsSubproblems()->FullMap(), 27, false, true));
 
       break;
     }
@@ -475,25 +470,25 @@ void SSTI::SSTIMono::SetupSystem()
   // initialize evaluation objects for coupling betwee subproblems
   scatrastructureoffdiagcoupling_ = Teuchos::rcp(
       new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
-          ssti_maps_mono_->MapsSubpromblems()->Map(0), ssti_maps_mono_->MapsSubpromblems()->Map(1),
+          ssti_maps_mono_->MapsSubproblems()->Map(0), ssti_maps_mono_->MapsSubproblems()->Map(1),
           CouplingAdapterStructure(), ssti_maps_mono_->MapInterface(MeshtyingScatra()),
           MeshtyingScatra(), ScaTraFieldBase(), StructureField()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(
       new SSTI::ThermoStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
-          ssti_maps_mono_->MapsThermo(), ssti_maps_mono_->MapsSubpromblems()->Map(1),
-          ssti_maps_mono_->MapsSubpromblems()->Map(2), CouplingAdapterStructure(),
+          ssti_maps_mono_->MapsThermo(), ssti_maps_mono_->MapsSubproblems()->Map(1),
+          ssti_maps_mono_->MapsSubproblems()->Map(2), CouplingAdapterStructure(),
           interface_map_thermo, MeshtyingThermo(), StructureField(), ThermoFieldBase()));
 
   scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
-      ssti_maps_mono_->MapsSubpromblems()->Map(0), ssti_maps_mono_->MapsSubpromblems()->Map(2),
+      ssti_maps_mono_->MapsSubproblems()->Map(0), ssti_maps_mono_->MapsSubproblems()->Map(2),
       ssti_maps_mono_->MapInterface(MeshtyingScatra()), interface_map_thermo, true,
       MeshtyingScatra(), MeshtyingThermo(), ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
   equilibration_ = LINALG::BuildEquilibration(
-      matrixtype_, equilibration_method_, AllMaps()->MapsSubpromblems()->FullMap());
+      matrixtype_, equilibration_method_, AllMaps()->MapsSubproblems()->FullMap());
 }
 
 /*--------------------------------------------------------------------------*
@@ -571,7 +566,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     case Subproblem::structure:
     {
       // First, extract increment from domain and master side
-      subincrement = ssti_maps_mono_->MapsSubpromblems()->ExtractVector(increment_, 1);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 1);
 
       // Second, copy master side displacements and increments to slave side for meshtying
       if (InterfaceMeshtying())
@@ -594,12 +589,12 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     }
     case Subproblem::scalar_transport:
     {
-      subincrement = ssti_maps_mono_->MapsSubpromblems()->ExtractVector(increment_, 0);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 0);
       break;
     }
     case Subproblem::thermo:
     {
-      subincrement = ssti_maps_mono_->MapsSubpromblems()->ExtractVector(increment_, 2);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 2);
       break;
     }
     default:
@@ -617,13 +612,9 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 {
   double starttime = timer_->WallTime();
 
-  // evaluate structure field
-  SetScatraSolution();
-  SetThermoSolution();
-  StructureField()->Evaluate();
+  SetSolutionAllFields();
 
-  // evaluate scatra and thermo fields
-  SetStructureSolution();
+  StructureField()->Evaluate();
   ScaTraField()->PrepareLinearSolve();
   ThermoField()->PrepareLinearSolve();
 

@@ -3710,7 +3710,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double expterm = expterm1 - expterm2;
 
               // safety check
-              if (abs(expterm) > 1.e5)
+              if (std::abs(expterm) > 1.e5)
                 dserror(
                     "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
                     "%lf",
@@ -3788,7 +3788,6 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
       break;
     }
     case prb_ssi:
-    case prb_ssti:
     {
       // get structure discretization
       auto structdis = problem->GetDis("structure");
@@ -3799,6 +3798,19 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
 
       // do mesh tying if there is at least one mesh tying condition
       if (!ssiconditions.empty()) IsS2IMeshtying = true;
+      break;
+    }
+    case prb_ssti:
+    {
+      // get structure discretization
+      auto structdis = problem->GetDis("structure");
+
+      // get ssi meshtying conditions
+      std::vector<DRT::Condition*> ssticonditions;
+      structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
+
+      // do mesh tying if there is at least one mesh tying condition
+      if (!ssticonditions.empty()) IsS2IMeshtying = true;
       break;
     }
     default:

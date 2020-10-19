@@ -409,9 +409,9 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("thermoperm")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("energy_substance_ratio")));
+                  Teuchos::rcp(new SeparatorConditionComponent("molar_heat_capacity")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new RealConditionComponent("energy_substance_ratio")));
+                  Teuchos::rcp(new RealConditionComponent("molar_heat_capacity")));
 
               kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
                   "Butler-Volmer-reduced-thermoresistance", butlervolmerreducedthermo,

@@ -2,8 +2,7 @@
 /*! \file
  \brief base class for all scalar structure algorithms
 
- \level 1
-
+ \level 2
 
  *------------------------------------------------------------------------------------------------*/
 
@@ -27,14 +26,13 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_ssi/ssi_clonestrategy.H"
+#include "../drt_ssi/ssi_utils.H"
 
 #include "../drt_sti/sti_clonestrategy.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*/
@@ -51,7 +49,7 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
       meshtying_strategy_scatra_(Teuchos::null),
       meshtying_strategy_thermo_(Teuchos::null),
       interfacemeshtying_(
-          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
+          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSTIInterfaceMeshtying") !=
           nullptr),
       isinit_(false),
       issetup_(false)
@@ -82,18 +80,15 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
   Teuchos::RCP<DRT::Discretization> thermodis = problem->GetDis("thermo");
 
-  if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
-  {
-    struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
-
-    // initialize structure base algorithm
-    struct_adapterbase_ptr_->Init(
-        sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
-  }
-  else if (structparams.get<std::string>("INT_STRATEGY") == "Old")
+  // safety check
+  if (structparams.get<std::string>("INT_STRATEGY") == "Old")
     dserror("Old structural time integration is not supported");
-  else
-    dserror("Unknown time integration requested!");
+
+  struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
+
+  // initialize structure base algorithm
+  struct_adapterbase_ptr_->Init(
+      sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
@@ -153,25 +148,19 @@ void SSTI::SSTIAlgorithm::Setup()
   scatra_->ScaTraField()->Setup();
   thermo_->ScaTraField()->Setup();
 
-  // only if adapter base has not already been set up outside
-  if (!struct_adapterbase_ptr_->IsSetup())
-  {
-    // pass initial scalar field to structural discretization to correctly compute initial
-    // accelerations
-    problem->GetDis("structure")->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
-    problem->GetDis("structure")->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
+  // pass initial scalar field to structural discretization to correctly compute initial
+  // accelerations
+  problem->GetDis("structure")->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
+  problem->GetDis("structure")->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
-    // set up structural base algorithm
-    struct_adapterbase_ptr_->Setup();
+  // set up structural base algorithm
+  struct_adapterbase_ptr_->Setup();
 
-    // get wrapper and cast it to specific type
-    // do not do so, in case the wrapper has already been set from outside
-    if (structure_ == Teuchos::null)
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
-          struct_adapterbase_ptr_->StructureField());
-
-    if (structure_ == Teuchos::null) dserror("No valid pointer to ADAPTER::SSIStructureWrapper !");
-  }
+  // get wrapper and cast it to specific type
+  if (structure_ == Teuchos::null)
+    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+        struct_adapterbase_ptr_->StructureField());
+  if (structure_ == Teuchos::null) dserror("No valid pointer to ADAPTER::SSIStructureWrapper !");
 
   // check maps from subproblems
   if (scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
@@ -188,10 +177,14 @@ void SSTI::SSTIAlgorithm::Setup()
   if (InterfaceMeshtying())
   {
     // check for consistent parameterization of these conditions
-    CheckConsistencyInterfaceMeshtyingCondition();
+    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+    // get ssi to be tested
+    std::vector<DRT::Condition*> ssticonditions;
+    structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
+    SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(ssticonditions, structdis);
 
     // set up scatra-scatra interface coupling adapter for structure field
-    SetupCouplingAdapterStructure();
+    icoup_structure_ = SSI::Utils::SetupInterfaceCouplingAdapterStructure(structdis);
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
@@ -213,55 +206,6 @@ void SSTI::SSTIAlgorithm::Setup()
   }
 
   issetup_ = true;
-}
-
-/*----------------------------------------------------------------------------------*
- *----------------------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::SetupCouplingAdapterStructure()
-{
-  // initialize integer vectors for global IDs of master-side and slave-side interface nodes on
-  // structure discretization
-  std::vector<int> inodegidvec_master;
-  std::vector<int> inodegidvec_slave;
-
-  // extract scatra-scatra interface coupling conditions from structure discretization
-  std::vector<DRT::Condition*> conditions(0, nullptr);
-  structure_->Discretization()->GetCondition("S2ICoupling", conditions);
-
-  // loop over all conditions
-  for (const auto& condition : conditions)
-  {
-    // extract interface side associated with current condition
-    const int side = condition->GetInt("interface side");
-
-    // extract nodes associated with current condition
-    const std::vector<int>* const inodegids = condition->Nodes();
-
-    for (const int inodegid : *inodegids)
-    {
-      // insert global ID of current node into associated vector only if node is owned by current
-      // processor need to make sure that node is stored on current processor, otherwise cannot
-      // resolve "->Owner()"
-      if (structure_->Discretization()->HaveGlobalNode(inodegid) and
-          structure_->Discretization()->gNode(inodegid)->Owner() ==
-              structure_->Discretization()->Comm().MyPID())
-        side == INPAR::S2I::side_master ? inodegidvec_master.push_back(inodegid)
-                                        : inodegidvec_slave.push_back(inodegid);
-    }
-  }
-
-  // remove potential duplicates from vectors
-  std::sort(inodegidvec_master.begin(), inodegidvec_master.end());
-  inodegidvec_master.erase(
-      unique(inodegidvec_master.begin(), inodegidvec_master.end()), inodegidvec_master.end());
-  std::sort(inodegidvec_slave.begin(), inodegidvec_slave.end());
-  inodegidvec_slave.erase(
-      unique(inodegidvec_slave.begin(), inodegidvec_slave.end()), inodegidvec_slave.end());
-
-  // setup scatra-scatra interface coupling adapter for structure field
-  icoup_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoup_structure_->SetupCoupling(*structure_->Discretization(), *structure_->Discretization(),
-      inodegidvec_master, inodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 }
 
 /*----------------------------------------------------------------------*
@@ -322,12 +266,13 @@ void SSTI::SSTIAlgorithm::SetStructureSolution()
   ScaTraField()->ApplyMeshMovement(structure_->Dispnp(), 1);
   ThermoField()->ApplyMeshMovement(structure_->Dispnp(), 1);
 
-  const auto structure_dofs_zero = LINALG::CreateVector(*structure_->DofRowMap());
+  // convective velocity is set to zero
+  const auto convective_velocity = LINALG::CreateVector(*structure_->DofRowMap());
 
   ScaTraField()->SetVelocityField(
-      structure_dofs_zero, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
+      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
   ThermoField()->SetVelocityField(
-      structure_dofs_zero, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
+      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -367,15 +312,10 @@ void SSTI::SSTIAlgorithm::SetThermoSolution()
         1, imastertempnp);
     ThermoField()->Discretization()->SetState(3, "imastertemp", imastertempnp);
 
-    // averaged temperature at interface (from slave and master side)
-    auto itempnp = Teuchos::rcp(new Epetra_Vector(*imastertempnp));
-    meshtying_strategy_thermo_->InterfaceMaps()->AddVector(
+    ScaTraField()->Discretization()->SetState(2, "islavetemp",
         meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(
-            *thermo_->ScaTraField()->Phinp(), 1),
-        1, itempnp, 1.0);
-    itempnp->Scale(0.5);
-
-    ScaTraField()->Discretization()->SetState(2, "itemp", itempnp);
+            *thermo_->ScaTraField()->Phinp(), 1));
+    ScaTraField()->Discretization()->SetState(2, "imastertemp", imastertempnp);
   }
 }
 
@@ -386,76 +326,6 @@ void SSTI::SSTIAlgorithm::SetSolutionAllFields()
   SetScatraSolution();
   SetStructureSolution();
   SetThermoSolution();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::CheckConsistencyInterfaceMeshtyingCondition()
-{
-  // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = structure_->Discretization();
-
-  // get ssi and s2i conditions to be tested
-  std::vector<DRT::Condition*> ssiconditions;
-  structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
-  std::vector<DRT::Condition*> s2iconditions;
-  structdis->GetCondition("S2ICoupling", s2iconditions);
-
-  // loop over all ssi conditions and check for a consistent initialization of the s2i conditions
-  for (const auto* ssicondition : ssiconditions)
-  {
-    bool matchingconditions(false);
-    bool isslave(true);
-    const int s2icouplingid = ssicondition->GetInt("S2ICouplingID");
-    const auto* side = ssicondition->Get<std::string>("Side");
-    // check interface side
-    if (*side == "Slave")
-      isslave = true;
-    else if (*side == "Master")
-      isslave = false;
-    else
-    {
-      dserror(
-          "Interface side of SSIInterfaceMeshtying condition not recognized, has to be either "
-          "'Slave' or 'Master'");
-    }
-
-    // loop over all s2i conditions to find the one that is matching the current ssi condition
-    for (const auto* s2icondition : s2iconditions)
-    {
-      const int s2iconditionid = s2icondition->GetInt("ConditionID");
-      // only do further checks if Ids match
-      if (s2icouplingid != s2iconditionid) continue;
-
-      // check the interface side
-      switch (s2icondition->GetInt("interface side"))
-      {
-        case INPAR::S2I::side_slave:
-        {
-          if (isslave) matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
-          break;
-        }
-        case INPAR::S2I::side_master:
-        {
-          if (!isslave) matchingconditions = DRT::UTILS::HaveSameNodes(ssicondition, s2icondition);
-          break;
-        }
-        default:
-        {
-          dserror("interface side of 'S2iCondition' has to be either 'Slave' or 'Master'");
-          break;
-        }
-      }
-    }
-
-    if (not matchingconditions)
-    {
-      dserror(
-          "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
-          "the 'SSIInterfaceMeshtying' condition",
-          s2icouplingid, side->c_str());
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*/

@@ -2,8 +2,7 @@
 /*! \file
  \brief control routine for scalar structure thermo interaction
 
- \level 1
-
+ \level 2
 
  *------------------------------------------------------------------------------------------------*/
 

@@ -40,7 +40,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
       const double expterm = regfac * (expterm1 - expterm2);
 
       // safety check
-      if (abs(expterm) > 1.0e5)
+      if (std::abs(expterm) > 1.0e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
       const double expterm = regfac * expterm1 - expterm2;
 
       // safety check
-      if (abs(expterm) > 1.0e5)
+      if (std::abs(expterm) > 1.0e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 

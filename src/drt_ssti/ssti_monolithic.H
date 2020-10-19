@@ -4,9 +4,7 @@
 
 \level 2
 
-
-*/
-/*--------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------*/
 
 #ifndef SSTI_MONOLITHIC_H_
 #define SSTI_MONOLITHIC_H_
@@ -92,7 +90,7 @@ namespace SSTI
     //}
 
     //! statistics for evaluation and solving
-    std::vector<double> Statistics() const
+    std::vector<double> TimeStatistics() const
     {
       return {dtevaluate_ + dtassemble_, dtsolve_, dtnewton_};
     };
@@ -101,8 +99,6 @@ namespace SSTI
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
-    //! evaluate interface contributions to  off-diagonal scatra-structure block of global
-    //! system matrix
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces();
 

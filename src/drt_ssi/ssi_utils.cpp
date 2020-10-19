@@ -11,9 +11,14 @@
 
 #include <Epetra_Map.h>
 
+#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_inpar/inpar_s2i.H"
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -141,4 +146,121 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
               << "================================================================================="
                  "=======\n \n";
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
+    std::vector<DRT::Condition*> conditionsToBeTested, Teuchos::RCP<DRT::Discretization>& structdis)
+{
+  std::vector<DRT::Condition*> s2iconditions;
+  structdis->GetCondition("S2ICoupling", s2iconditions);
+
+  // loop over all conditions to be tested and check for a consistent initialization of the s2i
+  // conditions
+  for (auto conditionToBeTested : conditionsToBeTested)
+  {
+    bool matchingconditions(false);
+    bool isslave(true);
+    const int s2icouplingid = conditionToBeTested->GetInt("S2ICouplingID");
+    auto* side = conditionToBeTested->Get<std::string>("Side");
+    // check interface side
+    if (*side == "Slave")
+      isslave = true;
+    else if (*side == "Master")
+      isslave = false;
+    else
+      dserror(
+          "Interface side of tested condition not recognized, has to be either 'Slave' or "
+          "'Master'");
+
+    // loop over all s2i conditions to find the one that is matching the current ssi condition
+    for (auto s2icondition : s2iconditions)
+    {
+      const int s2iconditionid = s2icondition->GetInt("ConditionID");
+      // only do further checks if Ids match
+      if (s2icouplingid != s2iconditionid) continue;
+
+      // check the interface side
+      switch (s2icondition->GetInt("interface side"))
+      {
+        case INPAR::S2I::side_slave:
+        {
+          if (isslave)
+            matchingconditions = DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition);
+
+          break;
+        }
+        case INPAR::S2I::side_master:
+        {
+          if (!isslave)
+            matchingconditions = DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition);
+
+          break;
+        }
+        default:
+        {
+          dserror("interface side of 'S2iCondition' has to be either 'Slave' or 'Master'");
+          break;
+        }
+      }
+    }
+
+    if (!matchingconditions)
+      dserror(
+          "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
+          "the condition to be tested",
+          s2icouplingid, side->c_str());
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<ADAPTER::Coupling> SSI::Utils::SetupInterfaceCouplingAdapterStructure(
+    Teuchos::RCP<DRT::Discretization> structdis)
+{
+  // initialize integer vectors for global IDs of master-side and slave-side interface nodes on
+  // structure discretization
+  std::vector<int> inodegidvec_master;
+  std::vector<int> inodegidvec_slave;
+
+  // extract scatra-scatra interface coupling conditions from structure discretization
+  std::vector<DRT::Condition*> conditions(0, nullptr);
+  structdis->GetCondition("S2ICoupling", conditions);
+
+  // loop over all conditions
+  for (const auto& condition : conditions)
+  {
+    // extract interface side associated with current condition
+    const int side = condition->GetInt("interface side");
+
+    // extract nodes associated with current condition
+    const std::vector<int>* const inodegids = condition->Nodes();
+
+    for (const int inodegid : *inodegids)
+    {
+      // insert global ID of current node into associated vector only if node is owned by current
+      // processor need to make sure that node is stored on current processor, otherwise cannot
+      // resolve "->Owner()"
+      if (structdis->HaveGlobalNode(inodegid) and
+          structdis->gNode(inodegid)->Owner() == structdis->Comm().MyPID())
+        side == INPAR::S2I::side_master ? inodegidvec_master.push_back(inodegid)
+                                        : inodegidvec_slave.push_back(inodegid);
+    }
+  }
+
+  // remove potential duplicates from vectors
+  std::sort(inodegidvec_master.begin(), inodegidvec_master.end());
+  inodegidvec_master.erase(
+      unique(inodegidvec_master.begin(), inodegidvec_master.end()), inodegidvec_master.end());
+  std::sort(inodegidvec_slave.begin(), inodegidvec_slave.end());
+  inodegidvec_slave.erase(
+      unique(inodegidvec_slave.begin(), inodegidvec_slave.end()), inodegidvec_slave.end());
+
+  // setup scatra-scatra interface coupling adapter for structure field
+  auto coupling_structure = Teuchos::rcp(new ADAPTER::Coupling());
+  coupling_structure->SetupCoupling(*structdis, *structdis, inodegidvec_master, inodegidvec_slave,
+      DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+
+  return coupling_structure;
 }

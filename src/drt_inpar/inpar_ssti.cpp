@@ -99,4 +99,36 @@ void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 void INPAR::SSTI::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
+  using namespace DRT::INPUT;
+
+  /*--------------------------------------------------------------------*/
+  // set Scalar-Structure-Thermo interaction interface meshtying condition
+  Teuchos::RCP<ConditionDefinition> linesstiinterfacemeshtying =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING LINE CONDITIONS",
+          "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
+          DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfsstiinterfacemeshtying =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS",
+          "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
+          DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Surface));
+
+  // equip condition definitions with input file line components
+  //
+  std::vector<Teuchos::RCP<ConditionComponent>> sstiinterfacemeshtying;
+  sstiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  sstiinterfacemeshtying.push_back(Teuchos::rcp(
+      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+          Teuchos::tuple<std::string>("Master", "Slave"))));
+  sstiinterfacemeshtying.push_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+  sstiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+
+  // insert input file line components into condition definitions
+  for (unsigned i = 0; i < sstiinterfacemeshtying.size(); ++i)
+  {
+    linesstiinterfacemeshtying->AddComponent(sstiinterfacemeshtying[i]);
+    surfsstiinterfacemeshtying->AddComponent(sstiinterfacemeshtying[i]);
+  }
+
+  condlist.push_back(linesstiinterfacemeshtying);
+  condlist.push_back(surfsstiinterfacemeshtying);
 }

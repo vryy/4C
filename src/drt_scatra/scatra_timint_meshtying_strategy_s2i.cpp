@@ -2953,7 +2953,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
           {
             conditionparams.set<double>("thermoperm", s2icondition.GetDouble("thermoperm"));
             conditionparams.set<double>(
-                "energy_substance_ratio", s2icondition.GetDouble("energy_substance_ratio"));
+                "molar_heat_capacity", s2icondition.GetDouble("molar_heat_capacity"));
           }
 
           break;

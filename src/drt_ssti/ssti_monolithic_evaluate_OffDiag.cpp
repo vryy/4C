@@ -1,11 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief Evaluation of off-diagonal blocks for monolithic SSTI
+
 \level 2
 
-
- */
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 #include "ssti_monolithic_evaluate_OffDiag.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"

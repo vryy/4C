@@ -95,6 +95,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const double resistance = my::scatraparamsboundary_->Resistance();
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
   const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
+  const bool isReducedBV =
+      (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -108,9 +112,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  LINALG::Matrix<my::nen_, 1> etemp(true);
+  LINALG::Matrix<my::nen_, 1> eslavetempnp(true);
+  LINALG::Matrix<my::nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(etemp, discretization, la, "itemp", 2);
+  {
+    my::ExtractNodeValues(eslavetempnp, discretization, la, "islavetemp", 2);
+    my::ExtractNodeValues(emastertempnp, discretization, la, "imastertemp", 2);
+  }
 
   // dummy element matrix and vector
   Epetra_SerialDenseMatrix dummymatrix;
@@ -131,11 +139,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
-    EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_, emasterphinp, etemp,
-        my::funct_, my::funct_, my::funct_, my::funct_, kineticmodel, numelectrons, kr, alphaa,
-        alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
-        GetFRT(), eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual,
-        dummyvector);
+    EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_, emasterphinp,
+        eslavetempnp, emastertempnp, my::funct_, my::funct_, my::funct_, my::funct_, kineticmodel,
+        numelectrons, kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV,
+        timefacfac, timefacrhsfac, GetFRT(), isReducedBV, eslavematrix, emastermatrix, dummymatrix,
+        dummymatrix, eslaveresidual, dummyvector);
   }  // loop over integration points
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling
 
@@ -152,7 +160,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     const std::vector<
         LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
         emasterphinp,
-    const LINALG::Matrix<my::nen_, 1>& etemp, const LINALG::Matrix<my::nen_, 1>& funct_slave,
+    const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+        emastertempnp,
+    const LINALG::Matrix<my::nen_, 1>& funct_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const LINALG::Matrix<my::nen_, 1>& test_slave,
@@ -161,8 +172,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     const int kineticmodel, const int numelectrons, const double kr, const double alphaa,
     const double alphac, const double resistance, const double itemaxmimplicitBV,
     const double convtolimplicitBV, const double timefacfac, const double timefacrhsfac, double frt,
-    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
+    const bool isReducedBV, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+    Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
+    Epetra_SerialDenseVector& r_m)
 {
   // number of nodes of master-side mortar element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
@@ -173,7 +185,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
   const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
   const double emasterphiint = funct_master.Dot(emasterphinp[0]);
   const double emasterpotint = funct_master.Dot(emasterphinp[1]);
-  const double etempint = funct_slave.Dot(etemp);
+  const double eslavetempint = funct_slave.Dot(eslavetempnp);
+  const double emastertempint = funct_master.Dot(emastertempnp);
+
+  const double etempint = 0.5 * (eslavetempint + emastertempint);
 
   // get faraday constant
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
@@ -197,12 +212,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt);
 
   // Butler-Volmer exchange mass flux density
-  const double j0((kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-                      kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
-                      kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance)
-                      ? kr
-                      : kr * std::pow(emasterphiint, alphaa) *
-                            std::pow(cmax - eslavephiint, alphaa) * std::pow(eslavephiint, alphac));
+  const double j0 = isReducedBV ? kr
+                                : kr * std::pow(emasterphiint, alphaa) *
+                                      std::pow(cmax - eslavephiint, alphaa) *
+                                      std::pow(eslavephiint, alphac);
 
   // compute matrix and vector contributions according to kinetic model for current scatra-scatra
   // interface coupling condition
@@ -227,7 +240,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       const double expterm = expterm1 - expterm2;
 
       // safety check
-      if (abs(expterm) > 1.0e5)
+      if (std::abs(expterm) > 1.0e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 
@@ -274,7 +287,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       const double expterm = expterm1 - expterm2;
 
       // safety check
-      if (abs(expterm) > 1.0e5)
+      if (std::abs(expterm) > 1.0e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
             expterm);
 
@@ -400,6 +413,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int differentiationtype =
       params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const bool isReducedBV =
+      (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   this->ExtractNodeValues(discretization, la);
@@ -407,9 +424,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  LINALG::Matrix<my::nen_, 1> etemp(true);
+  LINALG::Matrix<my::nen_, 1> eslavetempnp(true);
+  LINALG::Matrix<my::nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(etemp, discretization, la, "itemp", 2);
+  {
+    my::ExtractNodeValues(eslavetempnp, discretization, la, "islavetemp", 2);
+    my::ExtractNodeValues(emastertempnp, discretization, la, "imastertemp", 2);
+  }
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
@@ -437,10 +458,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
-    const double etempint = my::funct_.Dot(etemp);
+    const double etempslaveint = my::funct_.Dot(eslavetempnp);
+    const double etempmasterint = my::funct_.Dot(emastertempnp);
 
-    // compute matrix and vector contributions according to kinetic model for current scatra-scatra
-    // interface coupling condition
+    const double etempint = 0.5 * (etempslaveint + etempmasterint);
+
+    // compute matrix and vector contributions according to kinetic
+    // model for current scatra-scatra interface coupling condition
     switch (kineticmodel)
     {
       // Butler-Volmer kinetics
@@ -474,12 +498,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         if (std::isinf(epd)) break;
 
         // Butler-Volmer exchange mass flux density
-        const double j0(
-            (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-                kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-                ? kr
-                : kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa) *
-                      std::pow(eslavephiint, alphac));
+        const double j0 = isReducedBV ? kr
+                                      : kr * std::pow(emasterphiint, alphaa) *
+                                            std::pow(cmax - eslavephiint, alphaa) *
+                                            std::pow(eslavephiint, alphac);
 
         // electrode-electrolyte overpotential at integration point
         const double eta = eslavepotint - emasterpotint - epd;
@@ -535,8 +557,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
             {
               // derivative of epd w.r.t temperature
-              const double depddT = -1.0 * matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
-                                               eslavephiint, faraday, gasconstant);
+              const double depddT = matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
+                  eslavephiint, faraday, gasconstant);
 
               // forward declarations
               double dj_dT_slave(0.0);
@@ -777,61 +799,73 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::tr
         const Teuchos::RCP<const MAT::Electrode>&, const std::vector<LINALG::Matrix<my::nen_, 1>>&,
         const std::vector<LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-        const LINALG::Matrix<my::nen_, 1>&, const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<
+            DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const int, const int, const double, const double, const double, const double, const double,
-        const double, const double, const double, const double, Epetra_SerialDenseMatrix&,
+        const double, const double, const double, const double, const bool,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
-        Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
+        Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::tri3>::
     EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
         const Teuchos::RCP<const MAT::Electrode>&, const std::vector<LINALG::Matrix<my::nen_, 1>>&,
         const std::vector<LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-        const LINALG::Matrix<my::nen_, 1>&, const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<
+            DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const int, const int, const double, const double, const double, const double, const double,
-        const double, const double, const double, const double, Epetra_SerialDenseMatrix&,
+        const double, const double, const double, const double, const bool,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
-        Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
+        Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::quad4>::
     EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(
         const Teuchos::RCP<const MAT::Electrode>&, const std::vector<LINALG::Matrix<my::nen_, 1>>&,
         const std::vector<LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-        const LINALG::Matrix<my::nen_, 1>&, const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<
+            DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const int, const int, const double, const double, const double, const double, const double,
-        const double, const double, const double, const double, Epetra_SerialDenseMatrix&,
+        const double, const double, const double, const double, const bool,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
-        Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
+        Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::quad4>::
     EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
         const Teuchos::RCP<const MAT::Electrode>&, const std::vector<LINALG::Matrix<my::nen_, 1>>&,
         const std::vector<LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-        const LINALG::Matrix<my::nen_, 1>&, const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
+        const LINALG::Matrix<
+            DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const LINALG::Matrix<my::nen_, 1>&,
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const int, const int, const double, const double, const double, const double, const double,
-        const double, const double, const double, const double, Epetra_SerialDenseMatrix&,
+        const double, const double, const double, const double, const bool,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
-        Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
+        Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::line3>;

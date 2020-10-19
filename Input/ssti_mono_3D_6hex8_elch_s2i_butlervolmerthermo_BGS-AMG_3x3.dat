@@ -120,17 +120,17 @@ FUNCTION (-0.5*(1+cos((t-0.2)*pi))*heaviside(1.2-t)+1)*heaviside(t-0.2)
 ------------------------------------------------------------FUNCT8
 FUNCTION (-0.5*(1+cos((t-0.1)*pi))*heaviside(1.1-t)+1)*heaviside(t-0.1)
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -2.00000000000919738e-04 TOLERANCE 2.0e-13
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -3.00000000001255859e-04 TOLERANCE 3.0e-13
-STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE -5.00000000001031737e-04 TOLERANCE 5.0e-13
-SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  5.55555524014470237e+00 TOLERANCE 5.6e-09
-SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  1.18959729222410535e-01 TOLERANCE 1.2e-10
-SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  1.10836336365585685e+04 TOLERANCE 1.1e-05
-SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.77894344333503057e+02 TOLERANCE 2.8e-07
-SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.18197638523760872e+02 TOLERANCE 3.2e-07
-SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.34677660756042599e+02 TOLERANCE 3.3e-07
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -2.00000000000919738e-04 TOLERANCE 2.0e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -3.00000000001255859e-04 TOLERANCE 3.0e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 00.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 00.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE -5.00000000001031737e-04 TOLERANCE 5.0e-12
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  5.55555524014470326e+00 TOLERANCE 5.6e-08
+SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  1.18959729222410576e-01 TOLERANCE 1.2e-09
+SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  1.10836336365585084e+04 TOLERANCE 1.1e-04
+SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.77894344333498680e+02 TOLERANCE 2.8e-06
+SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.18197638523761327e+02 TOLERANCE 3.2e-06
+SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.34677660756037596e+02 TOLERANCE 3.3e-06
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  12
 NDVOL   7
@@ -175,14 +175,14 @@ E 3 - ScaTra 3
 -------------------------------DESIGN S2I COUPLING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
-E 2 - 0 Slave KineticModel Butler-Volmer-reduced-thermoresistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 thermoperm 1.0e-4 energy_substance_ratio 0.0
+E 2 - 0 Slave KineticModel Butler-Volmer-reduced-thermoresistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 thermoperm 1.0e-4 molar_heat_capacity 0.0
 // an_el_el_side
 E 3 - 0 Master
 // cath_el_el_side
 E 4 - 1 Master
 // cath_el_cath_side
-E 5 - 1 Slave KineticModel Butler-Volmer-reduced-thermoresistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 thermoperm 1.0e-4 energy_substance_ratio 0.0
---------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
+E 5 - 1 Slave KineticModel Butler-Volmer-reduced-thermoresistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 thermoperm 1.0e-4 molar_heat_capacity 0.0
+--------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
 E 2 - 0 Slave S2ICouplingID 0

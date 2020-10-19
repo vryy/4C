@@ -4,8 +4,8 @@
 
 \level 2
 
- */
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
+
 #ifndef SSTI_MONOLITHIC_EVALUATE_OffDiag_H
 #define SSTI_MONOLITHIC_EVALUATE_OffDiag_H
 

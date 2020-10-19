@@ -2,7 +2,7 @@
 /*! \file
  \brief Utility methods for SSTI
 
- \level 1
+ \level 2
 
 
  *------------------------------------------------------------------------------------------------*/
@@ -17,12 +17,8 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_inpar/inpar_scatra.H"
-
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
-
-#include "../drt_ssi/ssi_clonestrategy.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
@@ -52,9 +48,8 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
   maps_subproblems_->CheckForValidMapExtractor();
 
   // initialize map extractors associated with blocks of subproblems
-  maps_structure_ =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(*structure->Discretization()->DofRowMap(),
-          std::vector<Teuchos::RCP<const Epetra_Map>>(1, structure->DofRowMap())));
+  maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure->DofRowMap(),
+      std::vector<Teuchos::RCP<const Epetra_Map>>(1, structure->DofRowMap())));
   switch (scatra->MatrixType())
   {
     case LINALG::MatrixType::sparse:
@@ -80,7 +75,7 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
 
   // set up map for interior and master-side structural degrees of freedom
   map_structure_condensed_ =
-      LINALG::SplitMap(*structure->Discretization()->DofRowMap(), *icoupstructure->SlaveDofMap());
+      LINALG::SplitMap(*structure->DofRowMap(), *icoupstructure->SlaveDofMap());
 
   maps_scatra_->CheckForValidMapExtractor();
   maps_structure_->CheckForValidMapExtractor();
@@ -94,8 +89,8 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
     maps_interface.emplace_back(icoupstructure->MasterDofMap());
     maps_interface.emplace_back(
         LINALG::SplitMap(*map_structure_condensed_, *icoupstructure->MasterDofMap()));
-    maps_interface_structure_ = Teuchos::rcp(
-        new LINALG::MultiMapExtractor(*structure->Discretization()->DofRowMap(), maps_interface));
+    maps_interface_structure_ =
+        Teuchos::rcp(new LINALG::MultiMapExtractor(*structure->DofRowMap(), maps_interface));
     maps_interface_structure_->CheckForValidMapExtractor();
   }
 }
@@ -105,8 +100,11 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
 const Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy) const
 {
-  return LINALG::MultiMapExtractor::MergeMaps({meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
-      meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
+  auto mergedInterfaceMap =
+      LINALG::MultiMapExtractor::MergeMaps({meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
+          meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
+  if (not mergedInterfaceMap->UniqueGIDs()) dserror("Map not unique");
+  return mergedInterfaceMap;
 }
 
 /*---------------------------------------------------------------------------------*
@@ -201,14 +199,16 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
     // one single main-diagonal matrix block associated with scalar transport field
     case LINALG::MatrixType::sparse:
     {
-      maps_systemmatrix_subblocks_ = MapsSubpromblems();
+      maps_systemmatrix_subblocks_ = MapsSubproblems();
       break;
     }
       // many main-diagonal matrix blocks associated with scalar transport field
     case LINALG::MatrixType::block_condition:
     {
-      // extract maps underlying main-diagonal matrix blocks associated with scalar transport
-      // field
+      // maps in multimap extractor:
+      // scatra:  0 -> 1-num_maps_systemmatrix_scatra
+      // structure: num_maps_systemmatrix_scatra
+      // thermo: num_maps_systemmatrix_scatra + num_maps_systemmatrix_structure (=1) -> end
       const int num_maps_systemmatrix_scatra = MapsScatra()->NumMaps();
       const int num_maps_systemmatrix_structure = MapsStructure()->NumMaps();
       const int num_maps_systemmatrix_thermo = MapsThermo()->NumMaps();
@@ -229,7 +229,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
 
       // initialize map extractor associated with blocks of global system matrix
       maps_systemmatrix_subblocks_ = Teuchos::rcp(
-          new LINALG::MultiMapExtractor(*MapsSubpromblems()->FullMap(), maps_systemmatrix));
+          new LINALG::MultiMapExtractor(*MapsSubproblems()->FullMap(), maps_systemmatrix));
 
       break;
     }
@@ -269,7 +269,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   ssti_mono.ScaTraField()
       ->Splitter()
       ->ExtractOtherVector(
-          ssti_mono.AllMaps()->MapsSubpromblems()->ExtractVector(ssti_mono.Increment(), 0))
+          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Increment(), 0))
       ->Norm2(&concincnorm);
 
   // compute L2 norm of concentration residual vector
@@ -277,7 +277,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   ssti_mono.ScaTraField()
       ->Splitter()
       ->ExtractOtherVector(
-          ssti_mono.AllMaps()->MapsSubpromblems()->ExtractVector(ssti_mono.Residual(), 0))
+          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Residual(), 0))
       ->Norm2(&concresnorm);
 
   // compute L2 norm of potential state vector
@@ -292,7 +292,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   ssti_mono.ScaTraField()
       ->Splitter()
       ->ExtractCondVector(
-          ssti_mono.AllMaps()->MapsSubpromblems()->ExtractVector(ssti_mono.Increment(), 0))
+          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Increment(), 0))
       ->Norm2(&potincnorm);
 
   // compute L2 norm of potential residual vector
@@ -300,7 +300,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   ssti_mono.ScaTraField()
       ->Splitter()
       ->ExtractCondVector(
-          ssti_mono.AllMaps()->MapsSubpromblems()->ExtractVector(ssti_mono.Residual(), 0))
+          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Residual(), 0))
       ->Norm2(&potresnorm);
 
   // compute L2 norm of structural state vector
@@ -310,14 +310,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   // compute L2 norm of structural residual vector
   double structureresnorm(0.0);
   ssti_mono.AllMaps()
-      ->MapsSubpromblems()
+      ->MapsSubproblems()
       ->ExtractVector(ssti_mono.Residual(), 1)
       ->Norm2(&structureresnorm);
 
   // compute L2 norm of structural increment vector
   double structureincnorm(0.0);
   ssti_mono.AllMaps()
-      ->MapsSubpromblems()
+      ->MapsSubproblems()
       ->ExtractVector(ssti_mono.Increment(), 1)
       ->Norm2(&structureincnorm);
 
@@ -328,14 +328,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   // compute L2 norm of thermo residual vector
   double thermoresnorm(0.0);
   ssti_mono.AllMaps()
-      ->MapsSubpromblems()
+      ->MapsSubproblems()
       ->ExtractVector(ssti_mono.Residual(), 2)
       ->Norm2(&thermoresnorm);
 
   // compute L2 norm of thermo increment vector
   double thermoincnorm(0.0);
   ssti_mono.AllMaps()
-      ->MapsSubpromblems()
+      ->MapsSubproblems()
       ->ExtractVector(ssti_mono.Increment(), 2)
       ->Norm2(&thermoincnorm);
 
@@ -390,7 +390,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
                 << std::scientific << thermoresnorm << "   |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << totresnorm << "   |    | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-                << ssti_mono.Statistics()[0] << ")" << std::endl;
+                << ssti_mono.TimeStatistics()[0] << ")" << std::endl;
     }
   }
 
@@ -415,8 +415,8 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
                 << std::scientific << thermoincnorm / thermodofnorm << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << totresnorm << "   | "
                 << "   | (ts = " << std::setw(10) << std::setprecision(3)
-                << ssti_mono.Statistics()[1] << ", te = " << std::setw(10) << std::setprecision(3)
-                << ssti_mono.Statistics()[0] << ")" << std::endl;
+                << ssti_mono.TimeStatistics()[1] << ", te = " << std::setw(10)
+                << std::setprecision(3) << ssti_mono.TimeStatistics()[0] << ")" << std::endl;
     }
 
     // convergence check
