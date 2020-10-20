@@ -468,10 +468,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   const double resistance = my::scatraparamsboundary_->Resistance();
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
   const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
-  const bool isReducedBV =
-      (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
 
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
@@ -496,7 +492,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         my::funct_slave_, my::funct_master_, my::test_lm_slave_, my::test_lm_master_, kineticmodel,
         numelectrons, kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV,
-        timefacfac, timefacrhsfac, GetFRT(), isReducedBV, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 
   return;
@@ -556,10 +552,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   const double resistance = my::scatraparamsboundary_->Resistance();
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
   const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
-  const bool isReducedBV =
-      (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
 
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
@@ -577,8 +569,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, my::funct_slave_,
       my::funct_master_, my::funct_slave_, my::funct_master_, kineticmodel, numelectrons, kr,
       alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), isReducedBV, k_ss, k_sm,
-      k_ms, k_mm, r_s, r_m);
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
+      r_m);
 
   return;
 }

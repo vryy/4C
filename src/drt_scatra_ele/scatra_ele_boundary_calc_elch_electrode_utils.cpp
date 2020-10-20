@@ -185,3 +185,12 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   // final scaling
   return i / faraday;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolmer(int kineticmodel)
+{
+  return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
+}

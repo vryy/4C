@@ -230,7 +230,7 @@ void SSTI::SSTIMono::PrepareTimeStep()
   // update time and time step
   IncrementTimeAndStep();
 
-  SetSolutionAllFields();
+  DistributeSolutionAllFields();
 
   // in first time step: solve to get initital derivatives
   ScaTraField()->PrepareTimeStep();
@@ -527,7 +527,7 @@ void SSTI::SSTIMono::Timeloop()
   // output initial scalar transport solution to screen and files
   if (Step() == 0)
   {
-    SetSolutionAllFields();
+    DistributeSolutionAllFields();
 
     ScaTraField()->Output();
     ThermoField()->Output();
@@ -612,9 +612,14 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 {
   double starttime = timer_->WallTime();
 
-  SetSolutionAllFields();
+  // consider order of 'set state'-calls. Velocity is updated inside Structure
+
+  DistributeScatraSolution();
+  DistributeThermoSolution();
 
   StructureField()->Evaluate();
+
+  DistributeStructureSolution();
   ScaTraField()->PrepareLinearSolve();
   ThermoField()->PrepareLinearSolve();
 

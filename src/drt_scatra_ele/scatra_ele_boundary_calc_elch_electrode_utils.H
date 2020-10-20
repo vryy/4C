@@ -107,6 +107,9 @@ namespace DRT
       static double CalculateModifiedButlerVolmerMassFluxDensity(double j0, double alphaa,
           double alphac, double frt, double pot_ed, double pot_el, double epd, double resistance,
           double itemax, double convtol, double faraday);
+
+      //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
+      static bool IsReducedButlerVolmer(int kineticmodel);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

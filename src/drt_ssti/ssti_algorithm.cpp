@@ -261,7 +261,7 @@ void SSTI::SSTIAlgorithm::TestResults(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::SetStructureSolution()
+void SSTI::SSTIAlgorithm::DistributeStructureSolution()
 {
   ScaTraField()->ApplyMeshMovement(structure_->Dispnp(), 1);
   ThermoField()->ApplyMeshMovement(structure_->Dispnp(), 1);
@@ -277,7 +277,7 @@ void SSTI::SSTIAlgorithm::SetStructureSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::SetScatraSolution()
+void SSTI::SSTIAlgorithm::DistributeScatraSolution()
 {
   StructureField()->Discretization()->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
   ThermoField()->Discretization()->SetState(2, "scatra", scatra_->ScaTraField()->Phinp());
@@ -297,7 +297,7 @@ void SSTI::SSTIAlgorithm::SetScatraSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::SetThermoSolution()
+void SSTI::SSTIAlgorithm::DistributeThermoSolution()
 {
   StructureField()->Discretization()->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
@@ -321,11 +321,11 @@ void SSTI::SSTIAlgorithm::SetThermoSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::SetSolutionAllFields()
+void SSTI::SSTIAlgorithm::DistributeSolutionAllFields()
 {
-  SetScatraSolution();
-  SetStructureSolution();
-  SetThermoSolution();
+  DistributeScatraSolution();
+  DistributeStructureSolution();
+  DistributeThermoSolution();
 }
 
 /*----------------------------------------------------------------------*/

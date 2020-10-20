@@ -113,12 +113,12 @@ namespace SSTI
     //! copies modified time step from scatra to structure and to this SSI algorithm
     void DistributeDtFromScaTra();
 
-    //! copy states between subproblems
+    //! distribute states between subproblems
     //@{
-    void SetSolutionAllFields();
-    void SetScatraSolution();
-    void SetStructureSolution();
-    void SetThermoSolution();
+    void DistributeSolutionAllFields();
+    void DistributeScatraSolution();
+    void DistributeStructureSolution();
+    void DistributeThermoSolution();
     //@}
 
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations

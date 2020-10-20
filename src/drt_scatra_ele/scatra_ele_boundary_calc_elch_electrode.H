@@ -58,7 +58,8 @@ namespace DRT
        * @param[in] matelectrode     electrode material
        * @param[in] eslavephinp      state variables at slave-side nodes
        * @param[in] emasterphinp     state variables at master-side nodes
-       * @param[in] etemp            temperature at interface (average of master and slave)
+       * @param[in] eslavetempnp     temperature at slave side of interface
+       * @param[in] emastertempnp    temperature at master side of interface
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
@@ -108,7 +109,7 @@ namespace DRT
               test_master,
           int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
           double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
-          double timefacrhsfac, double frt, bool isReducedBV, Epetra_SerialDenseMatrix& k_ss,
+          double timefacrhsfac, double frt, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);

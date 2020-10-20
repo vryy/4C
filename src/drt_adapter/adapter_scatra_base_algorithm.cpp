@@ -646,16 +646,19 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
 
   bool is_elch_timeint;
   if (probtype == prb_ssi)
+  {
     is_elch_timeint = DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
                           DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                       INPAR::SSI::scatratiminttype_elch;
+  }
   else if (probtype == prb_ssti)
+  {
     is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
                           DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
                       INPAR::SSTI::ScaTraTimIntType::elch;
+  }
 
   const std::string disname = scatra_->Discretization()->Name();
-
 
   if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
     return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));

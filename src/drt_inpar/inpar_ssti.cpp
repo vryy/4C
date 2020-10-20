@@ -113,22 +113,24 @@ void INPAR::SSTI::SetValidConditions(
           DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Surface));
 
   // equip condition definitions with input file line components
-  //
-  std::vector<Teuchos::RCP<ConditionComponent>> sstiinterfacemeshtying;
-  sstiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  sstiinterfacemeshtying.push_back(Teuchos::rcp(
+  std::vector<Teuchos::RCP<ConditionComponent>> sstiinterfacemeshtyingcomponents;
+  sstiinterfacemeshtyingcomponents.emplace_back(
+      Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(
       new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
           Teuchos::tuple<std::string>("Master", "Slave"))));
-  sstiinterfacemeshtying.push_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
-  sstiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+  sstiinterfacemeshtyingcomponents.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+  sstiinterfacemeshtyingcomponents.emplace_back(
+      Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < sstiinterfacemeshtying.size(); ++i)
+  for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)
   {
-    linesstiinterfacemeshtying->AddComponent(sstiinterfacemeshtying[i]);
-    surfsstiinterfacemeshtying->AddComponent(sstiinterfacemeshtying[i]);
+    linesstiinterfacemeshtying->AddComponent(sstiinterfacemeshtyingcomponent);
+    surfsstiinterfacemeshtying->AddComponent(sstiinterfacemeshtyingcomponent);
   }
 
-  condlist.push_back(linesstiinterfacemeshtying);
-  condlist.push_back(surfsstiinterfacemeshtying);
+  condlist.emplace_back(linesstiinterfacemeshtying);
+  condlist.emplace_back(surfsstiinterfacemeshtying);
 }

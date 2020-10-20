@@ -158,24 +158,26 @@ void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
 
   // loop over all conditions to be tested and check for a consistent initialization of the s2i
   // conditions
-  for (auto conditionToBeTested : conditionsToBeTested)
+  for (const auto& conditionToBeTested : conditionsToBeTested)
   {
     bool matchingconditions(false);
     bool isslave(true);
     const int s2icouplingid = conditionToBeTested->GetInt("S2ICouplingID");
-    auto* side = conditionToBeTested->Get<std::string>("Side");
+    const auto* side = conditionToBeTested->Get<std::string>("Side");
     // check interface side
     if (*side == "Slave")
       isslave = true;
     else if (*side == "Master")
       isslave = false;
     else
+    {
       dserror(
           "Interface side of tested condition not recognized, has to be either 'Slave' or "
           "'Master'");
+    }
 
     // loop over all s2i conditions to find the one that is matching the current ssi condition
-    for (auto s2icondition : s2iconditions)
+    for (const auto& s2icondition : s2iconditions)
     {
       const int s2iconditionid = s2icondition->GetInt("ConditionID");
       // only do further checks if Ids match
@@ -207,10 +209,12 @@ void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
     }
 
     if (!matchingconditions)
+    {
       dserror(
           "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
           "the condition to be tested",
           s2icouplingid, side->c_str());
+    }
   }
 }
 

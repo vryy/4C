@@ -3711,10 +3711,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
               // safety check
               if (std::abs(expterm) > 1.e5)
+              {
                 dserror(
                     "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
                     "%lf",
                     expterm);
+              }
 
               // core residual term associated with Butler-Volmer mass flux density
               q_ = j0 * expterm;
