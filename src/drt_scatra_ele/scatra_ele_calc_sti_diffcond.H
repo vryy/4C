@@ -83,6 +83,14 @@ namespace DRT
                                 //!< right-hand side vector
       );
 
+      //! element matrix and right-hand side vector contributions arising from Joule's heat
+      void CalcMatAndRhsJouleSolid(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+          const double& timefacfac,  //!< domain integration factor times time integration factor
+          const double& rhsfac  //!< domain integration factor times time integration factor for
+                                //!< right-hand side vector
+      );
+
       //! element matrix and right-hand side vector contributions arising from heat of mixing
       void CalcMatAndRhsMixing(Epetra_SerialDenseMatrix& emat,  //!< element matrix
           Epetra_SerialDenseVector& erhs,                       //!< element right-hand side vector
@@ -107,6 +115,12 @@ namespace DRT
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
       void CalcMatJouleOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+          const double& timefacfac  //!< domain integration factor times time integration factor
+      );
+
+      //! provide element matrix with linearizations of Joule's heat term in discrete thermo
+      //! residuals w.r.t. scatra dofs
+      void CalcMatJouleSolidOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 
@@ -141,6 +155,12 @@ namespace DRT
       //! evaluate Soret material
       void MatSoret(const Teuchos::RCP<const MAT::Material> material,  //!< Soret material
           double& densn,                                               //!< density at time t_(n)
+          double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
+          double& densam   //!< density at time t_(n+alpha_M)
+      );
+
+      void MatFourier(const Teuchos::RCP<const MAT::Material> material,  //!< Fourier material
+          double& densn,                                                 //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );

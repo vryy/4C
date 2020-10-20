@@ -281,6 +281,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SSI CONTROL", *list);
   reader.ReadGidSection("--SSI CONTROL/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
+  reader.ReadGidSection("--SSTI CONTROL", *list);
+  reader.ReadGidSection("--SSTI CONTROL/MONOLITHIC", *list);
+  reader.ReadGidSection("--SSTI CONTROL/THERMO", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);
@@ -2141,6 +2144,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_ssi:
+    case prb_ssti:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2157,6 +2161,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+
+      if (GetProblemType() == prb_ssti)
+      {
+        thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
+        thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+        AddDis("thermo", thermdis);
+        nodereader.AddElementReader(
+            Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS")));
+      }
 
       break;
     }

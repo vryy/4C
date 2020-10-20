@@ -25,11 +25,14 @@ namespace DRT
 
   namespace ELEMENTS
   {
+    class ScaTraEleBoundaryCalcElchElectrodeUtils;
+
     // class implementation
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      public:
       //! singleton access method
@@ -51,6 +54,7 @@ namespace DRT
        *
        * @param[in] matelectrode   electrode material
        * @param[in] eslavetempnp   thermo state variables at slave-side nodes
+       * @param[in] emastertempnp  thermo state variables at master-side nodes
        * @param[in] eslavephinp    scatra state variables at slave-side nodes
        * @param[in] emasterphinp   scatra state variables at master-side nodes
        * @param[in] funct_slave    slave-side shape function values
@@ -60,10 +64,14 @@ namespace DRT
        * @param[in] alphaa         symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac         symmetry coefficient of cathodic intercalation reaction
        * @param[in] peltier        peltier coefficient
+       * @param[in] thermoperm     thermal permeability at interface
+       * @param[in] molar_heat_capacity
+       *                           energy transported by flux of species
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
        *                           domain-integration factor
        * @param[out] k_ss          linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_sm          linearizations of slave-side residuals w.r.t. master-side dofs
        * @param[out] r_s           slave-side residual vector
        *
        * \tparam distype_master  This method is templated on the master-side discretization type.
@@ -72,6 +80,9 @@ namespace DRT
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
           const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
@@ -81,14 +92,16 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const int kineticmodel, const double kr, const double alphaa, const double alphac,
-          const double peltier, const double timefacfac, const double timefacrhsfac,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseVector& r_s);
+          const double peltier, const double thermoperm, const double molar_heat_capacity,
+          const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s);
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
        *        interface coupling condition at integration point
        * @param[in] matelectrode  electrode material
        * @param[in] eslavetempnp  thermo state variables at slave-side nodes
+       * @param[in] emastertempnp thermo state variables at master-side nodes
        * @param[in] eslavephinp   scatra state variables at slave-side nodes
        * @param[in] emasterphinp  scatra state variables at master-side nodes
        * @param[in] funct_slave   slave-side shape function values
@@ -98,9 +111,14 @@ namespace DRT
        * @param[in] alphaa        symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac        symmetry coefficient of cathodic intercalation reaction
        * @param[in] peltier       peltier coefficient
+       * @param[in] thermoperm     thermal permeability at interface
+       * @param[in] molar_heat_capacity
+       *                          energy transported by flux of species
        * @param[in] timefacfac    time-integration factor times domain-integration factor
        * @param[in] differentiationtype
        *                          type of variable for linearization
+       * @param[i] shapederivatives
+       *                          derivative of shape functions
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
@@ -108,6 +126,9 @@ namespace DRT
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
           const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
@@ -117,8 +138,10 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           int kineticmodel, double kr, double alphaa, double alphac, double peltier,
-          double timefacfac, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm);
+          const double thermoperm, const double molar_heat_capacity, const double timefacfac,
+          const double timefacwgt, int differentiationtype,
+          const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
 
      private:
       //! private constructor for singletons
@@ -132,8 +155,9 @@ namespace DRT
           DRT::Discretization& discretization,               ///< discretization
           DRT::Element::LocationArray& la,                   ///< location array
           Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
+          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
           Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-      );
+          ) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition

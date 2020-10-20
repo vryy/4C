@@ -20,7 +20,7 @@ namespace DRT
     {
      public:
       /*!
-       * \brief calculate core linearizations associated with Butler-Volmer mass flux density
+       * \brief calculate core linearizations of Butler-Volmer mass flux density w.r.t. elch dofs
        *
        * \remark This is a static method as it is also called from static method
        *         EvaluateS2ICouplingAtIntegrationPoint.
@@ -54,11 +54,32 @@ namespace DRT
        *
        * \date 09/19
        */
-      static void CalculateCoreLinearizations(int kineticmodel, double j0, double frt,
+      static void CalculateButlerVolmerElchLinearizations(int kineticmodel, double j0, double frt,
           double epdderiv, double alphaa, double alphac, double resistance, double expterm1,
           double expterm2, double kr, double faraday, double emasterphiint, double eslavephiint,
           double cmax, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
           double& dj_dpot_master);
+
+      /*!
+       * \brief calculate core linearizations of Butler-Volmer mass flux density w.r.t. temperature
+       * dofs
+       *
+       * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
+       * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
+       * @param[in] depddT           equilibrium electric potential difference at electrode surface
+       *                             w.r.t. temperature
+       * @param[in] eta              electrode-electrolyte overpotential
+       * @param[in] etempint         average temperature (master and slave side) at interface
+       * @param[in] faraday          Faraday constant
+       * @param[in] frt              Faraday/(gasconstant * temperature)
+       * @param[in] gasconstant      gasconstant
+       * @param[in] j0               exchange mass flux density
+       * @param[out] dj_dT_slave     linearization of Butler-Volmer mass flux density w.r.t.
+       *                             temperature on slave-side
+       */
+      static void CalculateButlerVolmerTempLinearizations(double alphaa, double alphac,
+          double depddT, double eta, double etempint, double faraday, double frt,
+          double gasconstant, double j0, double& dj_dT_slave);
 
       /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method
@@ -86,6 +107,9 @@ namespace DRT
       static double CalculateModifiedButlerVolmerMassFluxDensity(double j0, double alphaa,
           double alphac, double frt, double pot_ed, double pot_el, double epd, double resistance,
           double itemax, double convtol, double faraday);
+
+      //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
+      static bool IsReducedButlerVolmer(int kineticmodel);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

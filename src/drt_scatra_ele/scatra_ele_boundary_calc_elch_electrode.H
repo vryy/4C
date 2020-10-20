@@ -58,6 +58,8 @@ namespace DRT
        * @param[in] matelectrode     electrode material
        * @param[in] eslavephinp      state variables at slave-side nodes
        * @param[in] emasterphinp     state variables at master-side nodes
+       * @param[in] eslavetempnp     temperature at slave side of interface
+       * @param[in] emastertempnp    temperature at master side of interface
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
@@ -93,6 +95,10 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
+          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
           const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&

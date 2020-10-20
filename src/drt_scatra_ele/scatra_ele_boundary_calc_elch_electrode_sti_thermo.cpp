@@ -224,10 +224,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
           const double expterm = expterm1 - expterm2;
 
           // safety check
-          if (std::abs(expterm) > 1.e5)
+          if (std::abs(expterm) > 1.0e5)
+          {
             dserror(
                 "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
                 expterm);
+          }
 
           // linearization of Butler-Volmer mass flux density w.r.t. temperature
           const double dj_dT_timefacfac = -timefacfac * j0 * frt / eslavetempint * eta *
