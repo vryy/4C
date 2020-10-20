@@ -261,6 +261,9 @@ $CMAKE_COMMAND "${CMAKE_FULL_ARGS[@]}"
 
 cd "$BACI_HOME"
 
+# Create python virtual environment for baci developement
+./create-baci-python-venv
+
 # adapt CLion settings
 if [[ $ADAPT_IDE_CLION == 1 ]]; then
   if [ -f .idea/workspace.xml ]; then

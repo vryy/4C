@@ -43,32 +43,32 @@ else
 fi
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
-if [ -f ./utilities/code_checks/clang-format ]
+# Load the python virtual environment, which provides clang-format.
+source ./utilities/baci-python-venv/bin/activate
+
+# set the field separator to new line
+IFS=$'\n'
+
+echo "Start test for code format ..."
+for line in $(find ./ -type f)
+do
+# check if the file is a c or cpp file
+if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
 then
-  # set the field separator to new line
-  IFS=$'\n'
-
-  echo "Start test for code format ..."
-  for line in $(find ./ -type f)
-  do
-    # check if the file is a c or cpp file
-    if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
+    # Check if clang would format the file
+    if [[  $(diff -u <(clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
     then
-      # Check if clang would format the file
-      if [[  $(diff -u <(./utilities/code_checks/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-      then
-        uncompliant_files+="$(pwd)/${line}\n"
-      fi
+    uncompliant_files+="$(pwd)/${line}\n"
     fi
-  done
+fi
+done
 
-  if [ ! -z "$uncompliant_files" ]
-  then
-    (printf "$uncompliant_files")>>wrong_clang_format.txt
-    echo "Failed. Non-compliant files have been reported in wrong_clang_format.txt."
-    cat wrong_clang_format.txt
-    exit 1
-  fi
+if [ ! -z "$uncompliant_files" ]
+then
+(printf "$uncompliant_files")>>wrong_clang_format.txt
+echo "Failed. Non-compliant files have been reported in wrong_clang_format.txt."
+cat wrong_clang_format.txt
+exit 1
 fi
 
 echo "Passed."
