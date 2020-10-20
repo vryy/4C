@@ -612,14 +612,14 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 {
   double starttime = timer_->WallTime();
 
-  // consider order of 'set state'-calls. Velocity is updated inside Structure
+  // needed to communicate to NOX state
+  StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
-  DistributeScatraSolution();
-  DistributeThermoSolution();
+  // distribute solution from all fields to each other
+  DistributeSolutionAllFields();
 
+  // evaluate all subproblems
   StructureField()->Evaluate();
-
-  DistributeStructureSolution();
   ScaTraField()->PrepareLinearSolve();
   ThermoField()->PrepareLinearSolve();
 

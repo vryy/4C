@@ -76,6 +76,12 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& g
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::AssembleMatAndRHS()
 {
+  // needed to communicate to NOX state
+  StructureField()->SetState(StructureField()->WriteAccessDispnp());
+
+  // pass structural degrees of freedom to scalar transport discretization
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+
   // pass scalar transport degrees of freedom to structural discretization
   SetScatraSolution(ScaTraField()->Phinp());
 
@@ -85,8 +91,6 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   // build system matrix and residual for structure field
   StructureField()->Evaluate();
 
-  // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   // build system matrix and residual for scalar transport field
   ScaTraField()->PrepareLinearSolve();
 
