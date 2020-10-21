@@ -46,17 +46,6 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-      systemmatrix_(Teuchos::null),
-      scatrastructuredomain_(Teuchos::null),
-      scatrastructureinterface_(Teuchos::null),
-      scatrathermodomain_(Teuchos::null),
-      scatrathermointerface_(Teuchos::null),
-      structurescatradomain_(Teuchos::null),
-      structurethermodomain_(Teuchos::null),
-      thermoscatradomain_(Teuchos::null),
-      thermoscatrainterface_(Teuchos::null),
-      thermostructuredomain_(Teuchos::null),
-      thermostructureinterface_(Teuchos::null),
       scatrastructureoffdiagcoupling_(Teuchos::null),
       scatrathermooffdiagcoupling_(Teuchos::null),
       thermostructureoffdiagcoupling_(Teuchos::null),
@@ -70,6 +59,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       ssti_maps_mono_(Teuchos::null),
+      ssti_submatrices_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
       convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams)))
 {
@@ -82,36 +72,48 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
   double starttime = timer_->WallTime();
 
   // assemble blocks of subproblems into system matrix
-  strategy_assemble_->AssembleScatraDomain(systemmatrix_, ScaTraField()->SystemMatrixOperator());
-  strategy_assemble_->AssembleStructureDomain(systemmatrix_, StructureField()->SystemMatrix());
-  strategy_assemble_->AssembleThermoDomain(systemmatrix_, ThermoField()->SystemMatrixOperator());
+  strategy_assemble_->AssembleScatraDomain(
+      ssti_submatrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+  strategy_assemble_->AssembleStructureDomain(
+      ssti_submatrices_->SystemMatrix(), StructureField()->SystemMatrix());
+  strategy_assemble_->AssembleThermoDomain(
+      ssti_submatrices_->SystemMatrix(), ThermoField()->SystemMatrixOperator());
 
   // assemble domain contributions from coupling into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(systemmatrix_, scatrastructuredomain_);
-  strategy_assemble_->AssembleStructureScatraDomain(systemmatrix_, structurescatradomain_);
-  strategy_assemble_->AssembleThermoStructureDomain(systemmatrix_, thermostructuredomain_);
-  strategy_assemble_->AssembleStructureThermoDomain(systemmatrix_, structurethermodomain_);
-  strategy_assemble_->AssembleThermoScatraDomain(systemmatrix_, thermoscatradomain_);
+  strategy_assemble_->AssembleScatraStructureDomain(
+      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraStructureDomain());
+  strategy_assemble_->AssembleStructureScatraDomain(
+      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->StructureScaTraDomain());
+  strategy_assemble_->AssembleThermoStructureDomain(
+      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoStructureDomain());
+  strategy_assemble_->AssembleStructureThermoDomain(
+      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->StructureThermoDomain());
+  strategy_assemble_->AssembleThermoScatraDomain(
+      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoScaTraDomain());
 
   // assemble interface contributions from coupling into system matrix
   if (InterfaceMeshtying())
   {
-    strategy_assemble_->AssembleScatraStructureInterface(systemmatrix_, scatrastructureinterface_);
-    strategy_assemble_->AssembleThermoStructureInterface(systemmatrix_, thermostructureinterface_);
-    strategy_assemble_->AssembleScatraThermoInterface(systemmatrix_, scatrathermointerface_);
-    strategy_assemble_->AssembleThermoScatraInterface(systemmatrix_, thermoscatrainterface_);
+    strategy_assemble_->AssembleScatraStructureInterface(
+        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraStructureInterface());
+    strategy_assemble_->AssembleThermoStructureInterface(
+        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoStructureInterface());
+    strategy_assemble_->AssembleScatraThermoInterface(
+        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraThermoInterface());
+    strategy_assemble_->AssembleThermoScatraInterface(
+        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoScaTraIntefrace());
   }
 
   // apply meshtying on structural linearizations
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(systemmatrix_);
+  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssti_submatrices_->SystemMatrix());
 
   // finalize global system matrix
-  systemmatrix_->Complete();
+  ssti_submatrices_->SystemMatrix()->Complete();
 
   // apply Dirichlet conditions
-  systemmatrix_->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
-  systemmatrix_->ApplyDirichlet(*ThermoField()->DirichMaps()->CondMap(), true);
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(systemmatrix_);
+  ssti_submatrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  ssti_submatrices_->SystemMatrix()->ApplyDirichlet(*ThermoField()->DirichMaps()->CondMap(), true);
+  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssti_submatrices_->SystemMatrix());
 
   // assemble RHS
   strategy_assemble_->AssembleRHS(
@@ -292,44 +294,14 @@ void SSTI::SSTIMono::SetupSystem()
   // initialize global residual vector
   residual_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
 
-  // perform initializations associated with global system matrix
-  switch (matrixtype_)
+  if (matrixtype_ == LINALG::MatrixType::block_field)
   {
-    case LINALG::MatrixType::block_field:
-    {
-      if (!solver_->Params().isSublist("AMGnxn Parameters"))
-        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+    if (!solver_->Params().isSublist("AMGnxn Parameters"))
+      dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
 
-      // initialize global system matrix
-      systemmatrix_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono_->MapsSystemMatrixSubblocks(),
-              *ssti_maps_mono_->MapsSystemMatrixSubblocks(), 81, false, true));
-
-      // feed AMGnxn block preconditioner with null space information for each block of global
-      // block system matrix
-      BuildNullSpaces();
-
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      if (ScaTraField()->SystemMatrix() == Teuchos::null)
-        dserror("Incompatible matrix type associated with scalar transport field!");
-
-      // initialize global system matrix
-      systemmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(
-          *ssti_maps_mono_->MapsSubproblems()->FullMap(), 27, false, true));
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
-      break;
-    }
+    // feed AMGnxn block preconditioner with null space information for each block of global
+    // block system matrix
+    BuildNullSpaces();
   }
 
   // setup interface maps with master and slace side dofs
@@ -337,11 +309,15 @@ void SSTI::SSTIMono::SetupSystem()
   Teuchos::RCP<Epetra_Map> interface_map_thermo = ssti_maps_mono_->MapInterface(MeshtyingThermo());
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerfaceslave(Teuchos::null);
+  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
 
   switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     {
+      blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
+          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+
       blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
           LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
       blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
@@ -363,104 +339,10 @@ void SSTI::SSTIMono::SetupSystem()
     }
   }
 
-  // setup blocks for coupling matrices
-  switch (ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    {
-      Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface =
-          ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
-              LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
-
-      Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface =
-          ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
-              LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
-
-      scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono_->MapsStructure(), ScaTraField()->BlockMaps(), 81, false, true));
-
-      structurescatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), *ssti_maps_mono_->MapsStructure(), 81, false, true));
-
-      structurethermodomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ThermoField()->BlockMaps(), *ssti_maps_mono_->MapsStructure(), 81, false, true));
-
-      thermostructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono_->MapsStructure(), ThermoField()->BlockMaps(), 81, false, true));
-
-      scatrathermodomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ThermoField()->BlockMaps(), ScaTraField()->BlockMaps(), 81, false, true));
-
-      thermoscatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), ThermoField()->BlockMaps(), 81, false, true));
-
-      if (InterfaceMeshtying())
-      {
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono_->MapsStructure(), *blockmapscatrainterface, 81, false, true));
-        thermostructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono_->MapsStructure(), *blockmapthermointerface, 81, false, true));
-
-        scatrathermointerface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono_->MapsThermo(), *blockmapscatrainterface, 81, false, true));
-
-        thermoscatrainterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono_->MapsScatra(), *blockmapthermointerface, 81, false, true));
-      }
-      break;
-    }
-    case LINALG::MatrixType::sparse:
-    {
-      scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ScaTraField()->DofRowMap(), 27, false, true));
-
-      structurescatradomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*StructureField()->DofRowMap(), 27, false, true));
-
-      structurethermodomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*StructureField()->DofRowMap(), 27, false, true));
-
-      thermostructuredomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ThermoField()->DofRowMap(), 27, false, true));
-
-      scatrathermodomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ScaTraField()->DofRowMap(), 27, false, true));
-
-      thermoscatradomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ThermoField()->DofRowMap(), 27, false, true));
-
-      if (InterfaceMeshtying())
-      {
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-        thermostructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
-
-        scatrathermointerface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-        thermoscatrainterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
-      }
-      break;
-    }
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
+  // initialize submatrices and system matrix
+  ssti_submatrices_ = Teuchos::rcp(new SSTI::SSTISubMatrices(ssti_maps_mono_, matrixtype_,
+      ScaTraField()->MatrixType(), interface_map_scatra, interface_map_thermo,
+      blockmapscatrainterface, blockmapthermointerface, InterfaceMeshtying()));
 
   // initialize strategy for assembly
   ADAPTER::CouplingSlaveConverter converter(*CouplingAdapterStructure());
@@ -625,24 +507,27 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 
   // evaluate domain contributions from coupling
   scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      scatrastructuredomain_);
+      ssti_submatrices_->ScaTraStructureDomain());
   scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      structurescatradomain_);
+      ssti_submatrices_->StructureScaTraDomain());
   thermostructureoffdiagcoupling_->EvaluateOffDiagBlockThermoStructureDomain(
-      thermostructuredomain_);
+      ssti_submatrices_->ThermoStructureDomain());
   thermostructureoffdiagcoupling_->EvaluateOffDiagBlockStructureThermoDomain(
-      structurethermodomain_);
-  scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraDomain(thermoscatradomain_);
+      ssti_submatrices_->StructureThermoDomain());
+  scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraDomain(
+      ssti_submatrices_->ThermoScaTraDomain());
 
   // evaluate interface contributions from coupling
   if (InterfaceMeshtying())
   {
     scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        scatrastructureinterface_);
+        ssti_submatrices_->ScaTraStructureInterface());
     thermostructureoffdiagcoupling_->EvaluateOffDiagBlockThermoStructureInterface(
-        thermostructureinterface_);
-    scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraInterface(thermoscatrainterface_);
-    scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoInterface(scatrathermointerface_);
+        ssti_submatrices_->ThermoStructureInterface());
+    scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraInterface(
+        ssti_submatrices_->ThermoScaTraIntefrace());
+    scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoInterface(
+        ssti_submatrices_->ScaTraThermoInterface());
   }
 
   double mydt = timer_->WallTime() - starttime;
@@ -657,13 +542,14 @@ void SSTI::SSTIMono::LinearSolve()
 
   increment_->PutScalar(0.0);
 
-  if (!systemmatrix_->Filled())
+  if (!ssti_submatrices_->SystemMatrix()->Filled())
     dserror("Complete() has not been called on global system matrix yet!");
 
   equilibration_->EquilibrateSystem(
-      systemmatrix_, residual_, *AllMaps()->MapsSystemMatrixSubblocks());
+      ssti_submatrices_->SystemMatrix(), residual_, *AllMaps()->MapsSystemMatrixSubblocks());
 
-  solver_->Solve(systemmatrix_->EpetraOperator(), increment_, residual_, true, iter_ == 1);
+  solver_->Solve(
+      ssti_submatrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, iter_ == 1);
 
   equilibration_->UnequilibrateIncrement(increment_);
 
@@ -694,5 +580,5 @@ void SSTI::SSTIMono::PrepareNewtonStep()
   // reset timer
   timer_->ResetStartTime();
 
-  systemmatrix_->Zero();
+  ssti_submatrices_->SystemMatrix()->Zero();
 }

@@ -116,7 +116,7 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablock)
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock)
 {
   // initialize thermo-scatra matrix block
   thermoscatrablock->Zero();
@@ -204,7 +204,7 @@ STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchi
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblockinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface)
 {
   // zero out matrix
   scatrathermoblockinterface->Zero();
@@ -426,7 +426,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoScatraInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface)
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface)
 {
   // zero out matrix
   thermoscatrablockinterface->Zero();
@@ -595,7 +595,7 @@ STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMorta
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblockinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface)
 {
   // zero out matrix
   scatrathermoblockinterface->Zero();
@@ -736,7 +736,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoScatraInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface)
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface)
 {
   // zero out matrix
   thermoscatrablockinterface->Zero();

@@ -36,6 +36,10 @@ namespace SCATRA
 
 namespace SSI
 {
+  namespace Utils
+  {
+    class SSISubMatrices;
+  }
   class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
 
@@ -48,6 +52,9 @@ namespace SSI
     );
 
     ~SSI_Mono() override = default;
+
+    //! return global map of degrees of freedom
+    const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
     int Init(const Epetra_Comm& comm,                    //!< communicator
         const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
@@ -72,6 +79,9 @@ namespace SSI
     {
       return maps_systemmatrix_;
     }
+
+    // Return matrix type of global system matrix
+    LINALG::MatrixType MatrixType() const { return matrixtype_; };
 
     //! return the scatra-scatra interface meshtying strategy
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
@@ -108,9 +118,6 @@ namespace SSI
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
-    //! return global map of degrees of freedom
-    const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
-
     //! finite difference check for global system matrix
     void FDCheck();
 
@@ -137,14 +144,17 @@ namespace SSI
     //! time for solution of global system of equations
     double dtsolve_;
 
+    //! equilibration method applied to system matrix
+    const LINALG::EquilibrationMethod equilibration_method_;
+
     //! global increment vector for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Vector> increment_;
 
-    //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
-
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
+
+    //! map extractor associated with all degrees of freedom inside scatra field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
 
     //! global map extractor (0: scalar transport, 1: structure)
     Teuchos::RCP<LINALG::MapExtractor> maps_sub_problems_;
@@ -152,25 +162,14 @@ namespace SSI
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
 
-    //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
-
-    //! equilibration method applied to system matrix
-    const LINALG::EquilibrationMethod equilibration_method_;
-
     //! type of global system matrix in global system of equations
     const LINALG::MatrixType matrixtype_;
 
+    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+
     //! global residual vector on right-hand side of global system of equations
     Teuchos::RCP<Epetra_Vector> residual_;
-
-    //! scatra-structure block of global system matrix (derivatives of scalar transport residuals
-    //! w.r.t. structural degrees of freedom) containing domain contributions
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
-
-    //! scatra-structure block of global system matrix (derivatives of scalar transport residuals
-    //! w.r.t. structural degrees of freedom) containing interface contributions
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
 
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
@@ -178,21 +177,17 @@ namespace SSI
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
 
-    //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
+    //! this object holds the system matrix and all subblocks
+    Teuchos::RCP<SSI::Utils::SSISubMatrices> ssi_sub_matrices_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
 
-    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+    //! strategy for Newton-Raphson convergence check
+    Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
 
-    //! structure-scatra block of global system matrix (derivatives of structural residuals w.r.t.
-    //! scalar transport degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
-
-    //! global system matrix
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+    //! all equilibration of global system matrix and RHS is done in here
+    Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
 
     //! timer for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Time> timer_;

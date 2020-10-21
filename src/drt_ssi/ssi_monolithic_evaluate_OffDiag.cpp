@@ -54,7 +54,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& scatrastructureblock)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock)
 {
   // initialize scatra-structure matrix block
   scatrastructureblock->Zero();
@@ -122,7 +122,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& scatrastructureinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   scatrastructureinterface->Zero();
 
@@ -195,7 +195,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& structurescatradomain) const
+    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const
 {
   // initialize structure-scatra matrix block
   structurescatradomain->Zero();

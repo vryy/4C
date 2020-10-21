@@ -65,7 +65,7 @@ SSTI::AssembleStrategySparse::AssembleStrategySparse(
  |                            assemble scatra domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
   // cast systemmatrix
@@ -91,7 +91,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
   // cast systemmatrix
@@ -110,7 +110,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
   // cast systemmatrix
@@ -130,7 +130,7 @@ void SSTI::AssembleStrategySparse::AssembleScatraDomain(
  |                         assemble structure domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   // cast systemmatrix
@@ -155,7 +155,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   // cast systemmatrix
@@ -172,7 +172,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   // cast systemmatrix
@@ -224,7 +224,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
  |                            assemble thermo domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermodomain)
 {
   // cast systemmatrix
@@ -251,7 +251,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermodomain)
 {
   // cast systemmatrix
@@ -270,7 +270,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermodomain)
 {
   // cast systemmatrix
@@ -290,7 +290,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoDomain(
  |                  assemble scatra-structure domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
 {
   // cast systemmatrix
@@ -323,7 +323,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
 {
   // cast systemmatrix
@@ -346,7 +346,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleScatraStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
 {
   // cast systemmatrix
@@ -393,7 +393,7 @@ void SSTI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
  |               assemble scatra-structure interface into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   const int numberscatrablocks = ssti_mono_->AllMaps()->MapsScatra()->NumMaps();
@@ -419,7 +419,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   // cast systemmatrix
@@ -434,7 +434,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructureInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   // cast systemmatrix
@@ -450,7 +450,7 @@ void SSTI::AssembleStrategySparse::AssembleScatraStructureInterface(
  |                  assemble scatra-thermo interface into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrathermointerface)
 {
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
@@ -518,7 +518,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrathermointerface)
 {
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
@@ -548,7 +548,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatrathermointerface)
 {
   // cast systemmatrix
@@ -581,7 +581,7 @@ void SSTI::AssembleStrategySparse::AssembleScatraThermoInterface(
  |                  assemble structure-scatra domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
   // cast systemmatrix
@@ -614,7 +614,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
   // cast systemmatrix
@@ -637,7 +637,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
   // cast systemmatrix
@@ -685,7 +685,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureScatraDomainMeshtying(
  |                     assemble thermo-scatra domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatradomain)
 {
   // cast systemmatrix
@@ -714,7 +714,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatradomain)
 {
   // cast systemmatrix
@@ -735,7 +735,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleThermoScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatradomain)
 {
   // cast systemmatrix
@@ -755,7 +755,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoScatraDomain(
  |                     assemble thermo-scatra domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatrainterface)
 {
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
@@ -830,7 +830,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatrainterface)
 {
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_block;
@@ -859,7 +859,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleThermoScatraInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermoscatrainterface)
 {
   // cast systemmatrix
@@ -892,7 +892,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoScatraInterface(
  |                  assemble thermo-structure domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain)
 {
   // cast systemmatrix
@@ -927,7 +927,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain)
 {
   // cast systemmatrix
@@ -950,7 +950,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructureDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleThermoStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain)
 {
   // cast systemmatrix
@@ -996,7 +996,7 @@ void SSTI::AssembleStrategyBase::AssembleThermoStructureDomainMeshtying(
  |               assemble thermo-structure interface into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface)
 {
   const int numberthermoblocks = ssti_mono_->AllMaps()->MapsScatra()->NumMaps();
@@ -1023,7 +1023,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface)
 {
   // cast systemmatrix
@@ -1038,7 +1038,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructureInterface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface)
 {
   // cast systemmatrix
@@ -1054,7 +1054,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoStructureInterface(
  |                  assemble structure-thermo domain into system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurethermodomain)
 {
   // cast systemmatrix
@@ -1089,7 +1089,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermoDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockSparse::AssembleStructureThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurethermodomain)
 {
   // cast systemmatrix
@@ -1112,7 +1112,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureThermoDomain(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::AssembleStructureThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurethermodomain)
 {
   // cast systemmatrix
@@ -1244,7 +1244,7 @@ void SSTI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syst
  |                                apply structural DBC to system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlock::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
   // locsys manager of strucutre
   const auto& locsysmanager_structure = ssti_mono_->StructureField()->LocsysManager();
@@ -1279,7 +1279,7 @@ void SSTI::AssembleStrategyBlock::ApplyStructuralDBCSystemMatrix(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
   // locsys manager of strucutre
   const auto& locsysmanager_structure = ssti_mono_->StructureField()->LocsysManager();
@@ -1319,7 +1319,7 @@ void SSTI::AssembleStrategySparse::ApplyStructuralDBCSystemMatrix(
 /*----------------------------------------------------------------------*
  |                                             assemble right-hand-side |
  *----------------------------------------------------------------------*/
-void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
+void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     Teuchos::RCP<Epetra_Vector> RHSscatra, Teuchos::RCP<const Epetra_Vector> RHSstructure,
     Teuchos::RCP<const Epetra_Vector> RHSthermo)
 {
@@ -1377,7 +1377,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
  |                                                   cast system matrix |
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlock::CastSystemMatrixBlock(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::BlockSparseMatrixBase>& systemmatrix_block)
 {
   systemmatrix_block = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
@@ -1387,7 +1387,7 @@ void SSTI::AssembleStrategyBlock::CastSystemMatrixBlock(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategySparse::CastSystemMatrixSparse(
-    Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix_sparse)
 {
   systemmatrix_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);

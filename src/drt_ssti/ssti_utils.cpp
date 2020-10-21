@@ -244,6 +244,143 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
+SSTI::SSTISubMatrices::SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
+    const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
+    Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying)
+    : systemmatrix_(Teuchos::null),
+      scatrastructuredomain_(Teuchos::null),
+      scatrastructureinterface_(Teuchos::null),
+      scatrathermodomain_(Teuchos::null),
+      scatrathermointerface_(Teuchos::null),
+      structurescatradomain_(Teuchos::null),
+      structurethermodomain_(Teuchos::null),
+      thermoscatradomain_(Teuchos::null),
+      thermoscatrainterface_(Teuchos::null),
+      thermostructuredomain_(Teuchos::null),
+      thermostructureinterface_(Teuchos::null)
+{
+  // perform initializations associated with global system matrix
+  switch (matrixtype_global)
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      systemmatrix_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsSystemMatrixSubblocks(),
+              *ssti_maps_mono->MapsSystemMatrixSubblocks(), 81, false, true));
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      systemmatrix_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsSubproblems()->FullMap(), 27, false, true));
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  // setup blocks for coupling matrices
+  switch (matrixtype_scatra)
+  {
+    case LINALG::MatrixType::block_condition:
+    {
+      scatrastructuredomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsStructure(), *ssti_maps_mono->MapsScatra(), 81, false, true));
+
+      structurescatradomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsScatra(), *ssti_maps_mono->MapsStructure(), 81, false, true));
+
+      structurethermodomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsThermo(), *ssti_maps_mono->MapsStructure(), 81, false, true));
+
+      thermostructuredomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsStructure(), *ssti_maps_mono->MapsThermo(), 81, false, true));
+
+      scatrathermodomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsThermo(), *ssti_maps_mono->MapsScatra(), 81, false, true));
+
+      thermoscatradomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssti_maps_mono->MapsScatra(), *ssti_maps_mono->MapsThermo(), 81, false, true));
+
+      if (isinterfacemeshtying)
+      {
+        scatrastructureinterface_ =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *ssti_maps_mono->MapsStructure(), *blockmapscatrainterface, 81, false, true));
+        thermostructureinterface_ =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *ssti_maps_mono->MapsStructure(), *blockmapthermointerface, 81, false, true));
+
+        scatrathermointerface_ =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *ssti_maps_mono->MapsThermo(), *blockmapscatrainterface, 81, false, true));
+
+        thermoscatrainterface_ =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *ssti_maps_mono->MapsScatra(), *blockmapthermointerface, 81, false, true));
+      }
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      scatrastructuredomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsScatra()->FullMap(), 27, false, true));
+
+      structurescatradomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsStructure()->FullMap(), 27, false, true));
+
+      structurethermodomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsStructure()->FullMap(), 27, false, true));
+
+      thermostructuredomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsThermo()->FullMap(), 27, false, true));
+
+      scatrathermodomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsScatra()->FullMap(), 27, false, true));
+
+      thermoscatradomain_ = Teuchos::rcp(
+          new LINALG::SparseMatrix(*ssti_maps_mono->MapsThermo()->FullMap(), 27, false, true));
+
+      if (isinterfacemeshtying)
+      {
+        scatrastructureinterface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
+
+        thermostructureinterface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
+
+        scatrathermointerface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
+
+        thermoscatrainterface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
+      }
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
 SSTI::ConvCheckMono::ConvCheckMono(Teuchos::ParameterList params)
     : itermax_(params.get<int>("ITEMAX")),
       itertol_(params.sublist("MONOLITHIC").get<double>("CONVTOL")),

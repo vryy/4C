@@ -8,17 +8,18 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_utils.H"
+#include "ssi_monolithic.H"
 
-#include <Epetra_Map.h>
+#include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_s2i.H"
-
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -89,10 +90,14 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
   double restarttime = ssiparams.get<double>("RESTARTEVRYTIME");
   double updatetime = ssiparams.get<double>("RESULTSEVRYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
-    if (!(updatetime > 0.0) and !(restarttime > 0.0))
+  {
+    if (updatetime <= 0.0 and restarttime <= 0.0)
+    {
       dserror(
           "If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and "
           "RESULTSEVRYTIME has to be set");
+    }
+  }
 
   // set restart params
   int scatrarestart;
@@ -268,4 +273,136 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::Utils::SetupInterfaceCouplingAdapterStructu
       DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 
   return coupling_structure;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SSI::Utils::SSISubMatrices::SSISubMatrices(
+    const SSI::SSI_Mono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
+{
+  // first: build interface maps
+  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
+  switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
+  {
+    // one single main-diagonal matrix block associated with scalar transport field
+    case LINALG::MatrixType::sparse:
+    {
+      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      {
+        blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
+            std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_scatra)));
+        blockmapscatrainterface->CheckForValidMapExtractor();
+      }
+      break;
+    }
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      {
+        const int maps_systemmatrix_scatra = ssi_mono_algorithm.MapsScatra()->NumMaps();
+
+        // build block map for scatra interface by merging slave and master side for each block
+        std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
+            maps_systemmatrix_scatra, Teuchos::null);
+        for (int iblockmap = 0; iblockmap < maps_systemmatrix_scatra; ++iblockmap)
+        {
+          partial_blockmapscatrainterface.at(iblockmap) = LINALG::MultiMapExtractor::MergeMaps(
+              {ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsSlave().Map(iblockmap),
+                  ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsMaster().Map(iblockmap)});
+        }
+        blockmapscatrainterface = Teuchos::rcp(
+            new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
+        blockmapscatrainterface->CheckForValidMapExtractor();
+      }
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+
+  // second: initialze system matrix
+  switch (ssi_mono_algorithm.MatrixType())
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      systemmatrix_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssi_mono_algorithm.MapsSystemMatrix(), *ssi_mono_algorithm.MapsSystemMatrix(), 81,
+              false, true));
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      systemmatrix_ =
+          Teuchos::rcp(new LINALG::SparseMatrix(*ssi_mono_algorithm.DofRowMap(), 27, false, true));
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  // third: initialize scatra-structure block and structure-scatra block of global system matrix
+  switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      // initialize scatra-structure block
+      scatrastructuredomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *ssi_mono_algorithm.MapStructure(), ssi_mono_algorithm.ScaTraField()->BlockMaps(), 81,
+              false, true));
+
+      // initialize scatra-structure block
+      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      {
+        scatrastructureinterface_ =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                *ssi_mono_algorithm.MapStructure(), *blockmapscatrainterface, 81, false, true));
+      }
+
+      // initialize structure-scatra block
+      structurescatradomain_ =
+          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              ssi_mono_algorithm.ScaTraField()->BlockMaps(), *ssi_mono_algorithm.MapStructure(), 81,
+              false, true));
+
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      // initialize scatra-structure block
+      scatrastructuredomain_ = Teuchos::rcp(new LINALG::SparseMatrix(
+          *ssi_mono_algorithm.ScaTraField()->DofRowMap(), 27, false, true));
+
+      // initialize scatra-structure block
+      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+        scatrastructureinterface_ =
+            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
+
+      // initialize structure-scatra block
+      structurescatradomain_ = Teuchos::rcp(new LINALG::SparseMatrix(
+          *ssi_mono_algorithm.StructureField()->DofRowMap(), 27, false, true));
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
 }

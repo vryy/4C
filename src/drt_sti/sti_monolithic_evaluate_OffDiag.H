@@ -62,15 +62,15 @@ namespace STI
 
     //! evaluation of interface contributions to scatra-thermo OD block
     virtual void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblockinterface) = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) = 0;
 
     //! evaluation of domain contributions to thermo-scatra OD block
     void EvaluateOffDiagBlockThermoScatraDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablock);
+        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock);
 
     //! evaluation of interface contributions to thermo-scatra OD block
     virtual void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface) = 0;
+        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) = 0;
 
    protected:
     //! map extractor associated with all degrees of freedom inside temperature field
@@ -176,11 +176,11 @@ namespace STI
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblockinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) override;
 
     //! evaluation of interface contributions to thermo-scatra off-diagonal block
     void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) override;
 
    private:
     //! map extractor associated with degrees of freedom on interface (slave side) of temperature
@@ -225,11 +225,11 @@ namespace STI
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblockinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) override;
 
     //! evaluation of interface contributions to thermo-scatra off-diagonal block
     void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatrablockinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) override;
   };
 
   //! build specific off diagonal coupling object

@@ -49,6 +49,7 @@ namespace SSTI
   class AssembleStrategyBase;
   class ConvCheckMono;
   class SSTIMapsMono;
+  class SSTISubMatrices;
   class ThermoStructureOffDiagCoupling;
 
   enum class Subproblem
@@ -138,21 +139,6 @@ namespace SSTI
     Teuchos::RCP<LINALG::Solver> solver_;
     //@}
 
-    //! subblocks of system matrix
-    //@{
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
-    Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain_;
-    Teuchos::RCP<LINALG::SparseOperator> scatrathermointerface_;
-    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
-    Teuchos::RCP<LINALG::SparseOperator> structurethermodomain_;
-    Teuchos::RCP<LINALG::SparseOperator> thermoscatradomain_;
-    Teuchos::RCP<LINALG::SparseOperator> thermoscatrainterface_;
-    Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain_;
-    Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface_;
-    //@}
-
     //! evaluation of off-diagonal blocks
     //@{
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureoffdiagcoupling_;
@@ -177,6 +163,9 @@ namespace SSTI
 
     //! all maps
     Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono_;
+
+    //! system matrix and submatrices
+    Teuchos::RCP<SSTI::SSTISubMatrices> ssti_submatrices_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSTI::AssembleStrategyBase> strategy_assemble_;
