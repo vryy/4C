@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
       dj_dpot_master = -dF_dpot_master * dF_di_inverse;
       break;
     }  // case INPAR::S2I::kinetics_butlervolmerresistance
-    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedresistance:
     {
       // core linearizations associated with Butler-Volmer current density according to MA Schmidt
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
@@ -191,6 +191,6 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolmer(int kineticmodel)
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
 }

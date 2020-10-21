@@ -127,7 +127,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
-        case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
           SetAlpha(parameters);
           SetChargeTransferConstant(parameters);
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerpeltier)
             SetPeltier(parameters);
           else if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerresistance or
-                   kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedwithresistance)
+                   kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedresistance)
           {
             SetConvTolIterNum(parameters);
             SetResistance(parameters);

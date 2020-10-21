@@ -2926,7 +2926,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
-        case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
           conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
           conditionparams.set<std::vector<int>*>(
@@ -2940,7 +2940,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
             conditionparams.set<double>("peltier", s2icondition.GetDouble("peltier"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerresistance or
-              kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedwithresistance)
+              kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance)
           {
             conditionparams.set<double>("resistance", s2icondition.GetDouble("resistance"));
             conditionparams.set<double>(
