@@ -36,10 +36,12 @@ namespace SSI
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
 
+    //! check, if nodes of input conditions equal s2i conditions
     void CheckConsistencyWithS2IMeshtyingCondition(
-        std::vector<DRT::Condition*> conditionsToBeTested,
+        std::vector<DRT::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
+    //! setup coupling adapter for structure interfaces from s2i condition
     Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure(
         Teuchos::RCP<DRT::Discretization> structdis);
 

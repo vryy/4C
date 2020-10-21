@@ -151,7 +151,8 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
-    std::vector<DRT::Condition*> conditionsToBeTested, Teuchos::RCP<DRT::Discretization>& structdis)
+    std::vector<DRT::Condition*>& conditionsToBeTested,
+    Teuchos::RCP<DRT::Discretization>& structdis)
 {
   std::vector<DRT::Condition*> s2iconditions;
   structdis->GetCondition("S2ICoupling", s2iconditions);
