@@ -64,7 +64,7 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& g
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-      ssi_sub_matrices_(Teuchos::null),
+      ssi_matrices_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
@@ -97,50 +97,50 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      ssi_sub_matrices_->ScaTraStructureDomain());
+      ssi_matrices_->ScaTraStructureDomain());
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying())
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        ssi_sub_matrices_->ScaTraStructureInterface());
+        ssi_matrices_->ScaTraStructureInterface());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      ssi_sub_matrices_->StructureScaTraDomain());
+      ssi_matrices_->StructureScaTraDomain());
 
   // assemble scatra block into system matrix
   strategy_assemble_->AssembleScatraDomain(
-      ssi_sub_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
 
   // assemble scatra-strucutre block (domain contributions) into system matrix
   strategy_assemble_->AssembleScatraStructureDomain(
-      ssi_sub_matrices_->SystemMatrix(), ssi_sub_matrices_->ScaTraStructureDomain());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
 
   // assemble scatra-strucutre block (interface contributions) into system matrix
   if (SSIInterfaceMeshtying())
     strategy_assemble_->AssembleScatraStructureInterface(
-        ssi_sub_matrices_->SystemMatrix(), ssi_sub_matrices_->ScaTraStructureInterface());
+        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
 
   // assemble structure-scatra block (domain contributions) into system matrix
   strategy_assemble_->AssembleStructureScatraDomain(
-      ssi_sub_matrices_->SystemMatrix(), ssi_sub_matrices_->StructureScaTraDomain());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
 
   // assemble strucutre block into system matrix
   strategy_assemble_->AssembleStructureDomain(
-      ssi_sub_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
+      ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
 
   // apply meshtying
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_sub_matrices_->SystemMatrix());
+  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // finalize global system matrix
-  ssi_sub_matrices_->SystemMatrix()->Complete();
+  ssi_matrices_->SystemMatrix()->Complete();
 
   // apply scatra Dirichlet
-  ssi_sub_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
 
   // apply structural Dirichlet conditions
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_sub_matrices_->SystemMatrix());
+  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS());
@@ -226,21 +226,21 @@ void SSI::SSI_Mono::FDCheck()
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
-  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(ssi_sub_matrices_->SystemMatrix()) !=
+  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()) !=
       Teuchos::null)
   {
     sysmat_original =
         (new LINALG::SparseMatrix(
-             *(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(ssi_sub_matrices_->SystemMatrix()))))
+             *(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()))))
             ->EpetraMatrix();
   }
   else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(
-               ssi_sub_matrices_->SystemMatrix()) != Teuchos::null)
+               ssi_matrices_->SystemMatrix()) != Teuchos::null)
   {
     sysmat_original =
-        (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(
-             ssi_sub_matrices_->SystemMatrix())
-                                        ->Merge())))
+        (new LINALG::SparseMatrix(*(
+             Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(ssi_matrices_->SystemMatrix())
+                 ->Merge())))
             ->EpetraMatrix();
   }
   else
@@ -725,7 +725,7 @@ void SSI::SSI_Mono::SetupSystem()
   }
 
   // initialize subblocks and system matrix
-  ssi_sub_matrices_ = Teuchos::rcp(new SSI::Utils::SSISubMatrices(*this, interface_map_scatra));
+  ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(*this, interface_map_scatra));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(
@@ -759,11 +759,11 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
 void SSI::SSI_Mono::SolveLinearSystem()
 {
   strategy_equilibration_->EquilibrateSystem(
-      ssi_sub_matrices_->SystemMatrix(), residual_, *MapsSystemMatrix());
+      ssi_matrices_->SystemMatrix(), residual_, *MapsSystemMatrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
-  solver_->Solve(ssi_sub_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true,
+  solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true,
       IterationCount() == 1);
 
   strategy_equilibration_->UnequilibrateIncrement(increment_);
@@ -797,7 +797,7 @@ void SSI::SSI_Mono::NewtonLoop()
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
-    if (!ssi_sub_matrices_->SystemMatrix()->Filled())
+    if (!ssi_matrices_->SystemMatrix()->Filled())
       dserror("Complete() has not been called on global system matrix yet!");
 
     // perform finite difference check on time integrator level

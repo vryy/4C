@@ -36,9 +36,9 @@ namespace SCATRA
 
 namespace SSI
 {
-  namespace Utils
+  namespace UTILS
   {
-    class SSISubMatrices;
+    class SSIMatrices;
   }
   class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
@@ -178,7 +178,7 @@ namespace SSI
     Teuchos::RCP<LINALG::Solver> solver_;
 
     //! this object holds the system matrix and all subblocks
-    Teuchos::RCP<SSI::Utils::SSISubMatrices> ssi_sub_matrices_;
+    Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;

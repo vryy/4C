@@ -1736,6 +1736,13 @@ namespace SSI
   }  // namespace UTILS
 }  // namespace SSI
 
+/*! \brief Algorithm for scalar-structure-temperature interaction problems
+ *
+ */
+namespace SSI
+{
+}
+
 /*! \brief Algorithms for scalar-thermo interaction problems
  *
  */

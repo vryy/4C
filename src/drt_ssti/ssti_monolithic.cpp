@@ -58,10 +58,11 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
           globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
+      convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams))),
       ssti_maps_mono_(Teuchos::null),
-      ssti_submatrices_(Teuchos::null),
+      ssti_matrices_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
-      convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams)))
+      strategy_equilibration_(Teuchos::null)
 {
 }
 
@@ -73,47 +74,47 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
 
   // assemble blocks of subproblems into system matrix
   strategy_assemble_->AssembleScatraDomain(
-      ssti_submatrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+      ssti_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
   strategy_assemble_->AssembleStructureDomain(
-      ssti_submatrices_->SystemMatrix(), StructureField()->SystemMatrix());
+      ssti_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
   strategy_assemble_->AssembleThermoDomain(
-      ssti_submatrices_->SystemMatrix(), ThermoField()->SystemMatrixOperator());
+      ssti_matrices_->SystemMatrix(), ThermoField()->SystemMatrixOperator());
 
   // assemble domain contributions from coupling into system matrix
   strategy_assemble_->AssembleScatraStructureDomain(
-      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraStructureDomain());
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraStructureDomain());
   strategy_assemble_->AssembleStructureScatraDomain(
-      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->StructureScaTraDomain());
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureScaTraDomain());
   strategy_assemble_->AssembleThermoStructureDomain(
-      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoStructureDomain());
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoStructureDomain());
   strategy_assemble_->AssembleStructureThermoDomain(
-      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->StructureThermoDomain());
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureThermoDomain());
   strategy_assemble_->AssembleThermoScatraDomain(
-      ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoScaTraDomain());
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoScaTraDomain());
 
   // assemble interface contributions from coupling into system matrix
   if (InterfaceMeshtying())
   {
     strategy_assemble_->AssembleScatraStructureInterface(
-        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraStructureInterface());
+        ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraStructureInterface());
     strategy_assemble_->AssembleThermoStructureInterface(
-        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoStructureInterface());
+        ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoStructureInterface());
     strategy_assemble_->AssembleScatraThermoInterface(
-        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ScaTraThermoInterface());
+        ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraThermoInterface());
     strategy_assemble_->AssembleThermoScatraInterface(
-        ssti_submatrices_->SystemMatrix(), ssti_submatrices_->ThermoScaTraIntefrace());
+        ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoScaTraIntefrace());
   }
 
   // apply meshtying on structural linearizations
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssti_submatrices_->SystemMatrix());
+  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssti_matrices_->SystemMatrix());
 
   // finalize global system matrix
-  ssti_submatrices_->SystemMatrix()->Complete();
+  ssti_matrices_->SystemMatrix()->Complete();
 
   // apply Dirichlet conditions
-  ssti_submatrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
-  ssti_submatrices_->SystemMatrix()->ApplyDirichlet(*ThermoField()->DirichMaps()->CondMap(), true);
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssti_submatrices_->SystemMatrix());
+  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ThermoField()->DirichMaps()->CondMap(), true);
+  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssti_matrices_->SystemMatrix());
 
   // assemble RHS
   strategy_assemble_->AssembleRHS(
@@ -340,7 +341,7 @@ void SSTI::SSTIMono::SetupSystem()
   }
 
   // initialize submatrices and system matrix
-  ssti_submatrices_ = Teuchos::rcp(new SSTI::SSTISubMatrices(ssti_maps_mono_, matrixtype_,
+  ssti_matrices_ = Teuchos::rcp(new SSTI::SSTIMatrices(ssti_maps_mono_, matrixtype_,
       ScaTraField()->MatrixType(), interface_map_scatra, interface_map_thermo,
       blockmapscatrainterface, blockmapthermointerface, InterfaceMeshtying()));
 
@@ -369,7 +370,7 @@ void SSTI::SSTIMono::SetupSystem()
       MeshtyingScatra(), MeshtyingThermo(), ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
-  equilibration_ = LINALG::BuildEquilibration(
+  strategy_equilibration_ = LINALG::BuildEquilibration(
       matrixtype_, equilibration_method_, AllMaps()->MapsSubproblems()->FullMap());
 }
 
@@ -507,27 +508,27 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 
   // evaluate domain contributions from coupling
   scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      ssti_submatrices_->ScaTraStructureDomain());
+      ssti_matrices_->ScaTraStructureDomain());
   scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      ssti_submatrices_->StructureScaTraDomain());
+      ssti_matrices_->StructureScaTraDomain());
   thermostructureoffdiagcoupling_->EvaluateOffDiagBlockThermoStructureDomain(
-      ssti_submatrices_->ThermoStructureDomain());
+      ssti_matrices_->ThermoStructureDomain());
   thermostructureoffdiagcoupling_->EvaluateOffDiagBlockStructureThermoDomain(
-      ssti_submatrices_->StructureThermoDomain());
+      ssti_matrices_->StructureThermoDomain());
   scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraDomain(
-      ssti_submatrices_->ThermoScaTraDomain());
+      ssti_matrices_->ThermoScaTraDomain());
 
   // evaluate interface contributions from coupling
   if (InterfaceMeshtying())
   {
     scatrastructureoffdiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        ssti_submatrices_->ScaTraStructureInterface());
+        ssti_matrices_->ScaTraStructureInterface());
     thermostructureoffdiagcoupling_->EvaluateOffDiagBlockThermoStructureInterface(
-        ssti_submatrices_->ThermoStructureInterface());
+        ssti_matrices_->ThermoStructureInterface());
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraInterface(
-        ssti_submatrices_->ThermoScaTraIntefrace());
+        ssti_matrices_->ThermoScaTraIntefrace());
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoInterface(
-        ssti_submatrices_->ScaTraThermoInterface());
+        ssti_matrices_->ScaTraThermoInterface());
   }
 
   double mydt = timer_->WallTime() - starttime;
@@ -542,16 +543,16 @@ void SSTI::SSTIMono::LinearSolve()
 
   increment_->PutScalar(0.0);
 
-  if (!ssti_submatrices_->SystemMatrix()->Filled())
+  if (!ssti_matrices_->SystemMatrix()->Filled())
     dserror("Complete() has not been called on global system matrix yet!");
 
-  equilibration_->EquilibrateSystem(
-      ssti_submatrices_->SystemMatrix(), residual_, *AllMaps()->MapsSystemMatrixSubblocks());
+  strategy_equilibration_->EquilibrateSystem(
+      ssti_matrices_->SystemMatrix(), residual_, *AllMaps()->MapsSystemMatrixSubblocks());
 
   solver_->Solve(
-      ssti_submatrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, iter_ == 1);
+      ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, iter_ == 1);
 
-  equilibration_->UnequilibrateIncrement(increment_);
+  strategy_equilibration_->UnequilibrateIncrement(increment_);
 
   double mydt = timer_->WallTime() - starttime;
   Comm().MaxAll(&mydt, &dtsolve_, 1);
@@ -580,5 +581,5 @@ void SSTI::SSTIMono::PrepareNewtonStep()
   // reset timer
   timer_->ResetStartTime();
 
-  ssti_submatrices_->SystemMatrix()->Zero();
+  ssti_matrices_->SystemMatrix()->Zero();
 }

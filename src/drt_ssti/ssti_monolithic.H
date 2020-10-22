@@ -49,7 +49,7 @@ namespace SSTI
   class AssembleStrategyBase;
   class ConvCheckMono;
   class SSTIMapsMono;
-  class SSTISubMatrices;
+  class SSTIMatrices;
   class ThermoStructureOffDiagCoupling;
 
   enum class Subproblem
@@ -161,20 +161,20 @@ namespace SSTI
     const LINALG::MatrixType matrixtype_;
     //@}
 
+    //! convergence check of Newton iteration
+    Teuchos::RCP<SSTI::ConvCheckMono> convcheck_;
+
     //! all maps
     Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono_;
 
     //! system matrix and submatrices
-    Teuchos::RCP<SSTI::SSTISubMatrices> ssti_submatrices_;
+    Teuchos::RCP<SSTI::SSTIMatrices> ssti_matrices_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSTI::AssembleStrategyBase> strategy_assemble_;
 
-    //! convergence check of Newton iteration
-    Teuchos::RCP<SSTI::ConvCheckMono> convcheck_;
-
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
 #endif

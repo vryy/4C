@@ -31,8 +31,10 @@ namespace INPAR
 
 namespace LINALG
 {
+  class BlockSparseMatrixBase;
   enum class MatrixType;
   class MultiMapExtractor;
+  class SparseMatrix;
   class SparseOperator;
 }  // namespace LINALG
 
@@ -57,7 +59,7 @@ namespace SSTI
 
     virtual ~SSTIMaps() = default;
 
-    //! getmaps of subproblems
+    //! get maps of subproblems
     //@{
     const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; };
     const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsStructure() const
@@ -147,10 +149,10 @@ namespace SSTI
   /*---------------------------------------------------------------------------------*
    *---------------------------------------------------------------------------------*/
   //! sets up and holds all subblocks of system matrices and system matrix for SSTI simulations
-  class SSTISubMatrices
+  class SSTIMatrices
   {
    public:
-    SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
+    SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
         const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
         Teuchos::RCP<Epetra_Map> interface_map_scatra,
         Teuchos::RCP<Epetra_Map> interface_map_thermo,
@@ -180,6 +182,13 @@ namespace SSTI
     //@}
 
    private:
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+        Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
+
+    Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
+        const Teuchos::RCP<const Epetra_Map> row_map);
+
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
     //! subblocks of system matrix
     //@{

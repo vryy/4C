@@ -270,11 +270,11 @@ void SSI::SSI_Base::Setup()
     // get ssi to be tested
     std::vector<DRT::Condition*> ssiconditions;
     structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
-    SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
+    SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
 
     // set up scatra-scatra interface coupling adapter for structure field
 
-    icoup_structure_ = SSI::Utils::SetupInterfaceCouplingAdapterStructure(structdis);
+    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis);
 
     // setup the scatra-scatra interface coupling slave converter for structure field
     icoup_structure_slave_converter_ =
@@ -479,8 +479,8 @@ void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
 {
   if (restarttime > 0.0)
   {
-    const int restartstructure = SSI::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
-    const int restartscatra = SSI::Utils::CheckTimeStepping(ScaTraField()->Dt(), restarttime);
+    const int restartstructure = SSI::UTILS::CheckTimeStepping(structure_->Dt(), restarttime);
+    const int restartscatra = SSI::UTILS::CheckTimeStepping(ScaTraField()->Dt(), restarttime);
 
     structure_->ReadRestart(restartstructure);
 

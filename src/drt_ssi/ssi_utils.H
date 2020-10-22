@@ -27,14 +27,17 @@ namespace DRT
 
 namespace LINALG
 {
+  class BlockSparseMatrixBase;
+  class MultiMapExtractor;
+  class SparseMatrix;
   class SparseOperator;
-}
+}  // namespace LINALG
 
 namespace SSI
 {
   class SSI_Mono;
 
-  namespace Utils
+  namespace UTILS
   {
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
@@ -46,7 +49,7 @@ namespace SSI
 
     //! check, if nodes of input conditions equal s2i conditions
     void CheckConsistencyWithS2IMeshtyingCondition(
-        std::vector<DRT::Condition*>& conditionsToBeTested,
+        const std::vector<DRT::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
     //! setup coupling adapter for structure interfaces from s2i condition
@@ -56,10 +59,10 @@ namespace SSI
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/
     //! sets up and holds all subblocks of system matrices and system matrix for SSTI simulations
-    class SSISubMatrices
+    class SSIMatrices
     {
      public:
-      SSISubMatrices(
+      SSIMatrices(
           const SSI::SSI_Mono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra);
 
       Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
@@ -81,6 +84,13 @@ namespace SSI
       //@}
 
      private:
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+          Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+          Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
+
+      Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
+          const Teuchos::RCP<const Epetra_Map> row_map);
+
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
       //! subblocks of system matrix
       //@{
@@ -90,7 +100,7 @@ namespace SSI
       //@}
     };
 
-  };  // namespace Utils
+  };  // namespace UTILS
 }  // namespace SSI
 
 #endif /* SSI_UTILS_H_ */

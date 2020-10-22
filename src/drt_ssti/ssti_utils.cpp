@@ -244,7 +244,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSTI::SSTISubMatrices::SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
+SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
     const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
     Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
@@ -266,17 +266,14 @@ SSTI::SSTISubMatrices::SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_map
   {
     case LINALG::MatrixType::block_field:
     {
-      systemmatrix_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsSystemMatrixSubblocks(),
-              *ssti_maps_mono->MapsSystemMatrixSubblocks(), 81, false, true));
+      systemmatrix_ = SetupBlockMatrix(
+          ssti_maps_mono->MapsSystemMatrixSubblocks(), ssti_maps_mono->MapsSystemMatrixSubblocks());
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      systemmatrix_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsSubproblems()->FullMap(), 27, false, true));
+      systemmatrix_ = SetupSparseMatrix(ssti_maps_mono->MapsSubproblems()->FullMap());
       break;
     }
 
@@ -293,81 +290,46 @@ SSTI::SSTISubMatrices::SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_map
     case LINALG::MatrixType::block_condition:
     {
       scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsStructure(), *ssti_maps_mono->MapsScatra(), 81, false, true));
-
+          SetupBlockMatrix(ssti_maps_mono->MapsScatra(), ssti_maps_mono->MapsStructure());
       structurescatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsScatra(), *ssti_maps_mono->MapsStructure(), 81, false, true));
-
+          SetupBlockMatrix(ssti_maps_mono->MapsStructure(), ssti_maps_mono->MapsScatra());
       structurethermodomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsThermo(), *ssti_maps_mono->MapsStructure(), 81, false, true));
-
+          SetupBlockMatrix(ssti_maps_mono->MapsStructure(), ssti_maps_mono->MapsThermo());
       thermostructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsStructure(), *ssti_maps_mono->MapsThermo(), 81, false, true));
-
+          SetupBlockMatrix(ssti_maps_mono->MapsThermo(), ssti_maps_mono->MapsStructure());
       scatrathermodomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsThermo(), *ssti_maps_mono->MapsScatra(), 81, false, true));
-
+          SetupBlockMatrix(ssti_maps_mono->MapsScatra(), ssti_maps_mono->MapsThermo());
       thermoscatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssti_maps_mono->MapsScatra(), *ssti_maps_mono->MapsThermo(), 81, false, true));
+          SetupBlockMatrix(ssti_maps_mono->MapsThermo(), ssti_maps_mono->MapsScatra());
 
       if (isinterfacemeshtying)
       {
         scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono->MapsStructure(), *blockmapscatrainterface, 81, false, true));
+            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->MapsStructure());
         thermostructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono->MapsStructure(), *blockmapthermointerface, 81, false, true));
-
+            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->MapsStructure());
         scatrathermointerface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono->MapsThermo(), *blockmapscatrainterface, 81, false, true));
-
+            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->MapsThermo());
         thermoscatrainterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssti_maps_mono->MapsScatra(), *blockmapthermointerface, 81, false, true));
+            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->MapsScatra());
       }
       break;
     }
     case LINALG::MatrixType::sparse:
     {
-      scatrastructuredomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsScatra()->FullMap(), 27, false, true));
-
-      structurescatradomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsStructure()->FullMap(), 27, false, true));
-
-      structurethermodomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsStructure()->FullMap(), 27, false, true));
-
-      thermostructuredomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsThermo()->FullMap(), 27, false, true));
-
-      scatrathermodomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsScatra()->FullMap(), 27, false, true));
-
-      thermoscatradomain_ = Teuchos::rcp(
-          new LINALG::SparseMatrix(*ssti_maps_mono->MapsThermo()->FullMap(), 27, false, true));
+      scatrastructuredomain_ = SetupSparseMatrix(ssti_maps_mono->MapsScatra()->FullMap());
+      structurescatradomain_ = SetupSparseMatrix(ssti_maps_mono->MapsStructure()->FullMap());
+      structurethermodomain_ = SetupSparseMatrix(ssti_maps_mono->MapsStructure()->FullMap());
+      thermostructuredomain_ = SetupSparseMatrix(ssti_maps_mono->MapsThermo()->FullMap());
+      scatrathermodomain_ = SetupSparseMatrix(ssti_maps_mono->MapsScatra()->FullMap());
+      thermoscatradomain_ = SetupSparseMatrix(ssti_maps_mono->MapsThermo()->FullMap());
 
       if (isinterfacemeshtying)
       {
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-        thermostructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
-
-        scatrathermointerface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-        thermoscatrainterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
+        scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
+        thermostructureinterface_ = SetupSparseMatrix(interface_map_thermo);
+        scatrathermointerface_ = SetupSparseMatrix(interface_map_scatra);
+        thermoscatrainterface_ = SetupSparseMatrix(interface_map_thermo);
       }
       break;
     }
@@ -377,6 +339,33 @@ SSTI::SSTISubMatrices::SSTISubMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_map
       break;
     }
   }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
+    Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> col_map)
+{
+  const int expected_entries_per_row = 81;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> SSTI::SSTIMatrices::SetupSparseMatrix(
+    const Teuchos::RCP<const Epetra_Map> row_map)
+{
+  const int expected_entries_per_row = 27;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(
+      new LINALG::SparseMatrix(*row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
 /*---------------------------------------------------------------------------------*

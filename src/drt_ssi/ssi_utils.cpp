@@ -27,7 +27,7 @@
 /* Function for checking that the different time steps are a
  multiplicative of each other                                           */
 
-int SSI::Utils::CheckTimeStepping(double dt1, double dt2)
+int SSI::UTILS::CheckTimeStepping(double dt1, double dt2)
 {
   double workdt1 = std::min(dt1, dt2);
   double workdt2 = std::max(dt1, dt2);
@@ -53,7 +53,7 @@ int SSI::Utils::CheckTimeStepping(double dt1, double dt2)
 /*                                                        AN,JH 10/2014 */
 // Modification of time parameter list for problem with different time step size
 
-void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
+void SSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
     Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn)
 {
   bool difftimestep = DRT::INPUT::IntegralValue<int>(ssiparams, "DIFFTIMESTEPSIZE");
@@ -64,7 +64,7 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
     double scatrastep = scatradyn.get<double>("TIMESTEP");
     double solidstep = sdyn.get<double>("TIMESTEP");
 
-    SSI::Utils::CheckTimeStepping(scatrastep, solidstep);
+    SSI::UTILS::CheckTimeStepping(scatrastep, solidstep);
 
     // modify global time step size
     ssiparams.set<double>("TIMESTEP", std::min(scatrastep, solidstep));
@@ -105,8 +105,8 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
   if (restarttime > 0.0)
   {
-    scatrarestart = SSI::Utils::CheckTimeStepping(scatradyn.get<double>("TIMESTEP"), restarttime);
-    structurerestart = SSI::Utils::CheckTimeStepping(sdyn.get<double>("TIMESTEP"), restarttime);
+    scatrarestart = SSI::UTILS::CheckTimeStepping(scatradyn.get<double>("TIMESTEP"), restarttime);
+    structurerestart = SSI::UTILS::CheckTimeStepping(sdyn.get<double>("TIMESTEP"), restarttime);
   }
   else
   {
@@ -121,8 +121,8 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
   if (updatetime > 0.0)
   {
-    scatraupres = SSI::Utils::CheckTimeStepping(scatradyn.get<double>("TIMESTEP"), updatetime);
-    structureupres = SSI::Utils::CheckTimeStepping(sdyn.get<double>("TIMESTEP"), updatetime);
+    scatraupres = SSI::UTILS::CheckTimeStepping(scatradyn.get<double>("TIMESTEP"), updatetime);
+    structureupres = SSI::UTILS::CheckTimeStepping(sdyn.get<double>("TIMESTEP"), updatetime);
   }
   else
   {
@@ -155,8 +155,8 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
-    std::vector<DRT::Condition*>& conditionsToBeTested,
+void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
+    const std::vector<DRT::Condition*>& conditionsToBeTested,
     Teuchos::RCP<DRT::Discretization>& structdis)
 {
   std::vector<DRT::Condition*> s2iconditions;
@@ -226,7 +226,7 @@ void SSI::Utils::CheckConsistencyWithS2IMeshtyingCondition(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::Coupling> SSI::Utils::SetupInterfaceCouplingAdapterStructure(
+Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
     Teuchos::RCP<DRT::Discretization> structdis)
 {
   // initialize integer vectors for global IDs of master-side and slave-side interface nodes on
@@ -277,7 +277,7 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::Utils::SetupInterfaceCouplingAdapterStructu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::Utils::SSISubMatrices::SSISubMatrices(
+SSI::UTILS::SSIMatrices::SSIMatrices(
     const SSI::SSI_Mono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
 {
   // first: build interface maps
@@ -330,17 +330,15 @@ SSI::Utils::SSISubMatrices::SSISubMatrices(
   {
     case LINALG::MatrixType::block_field:
     {
-      systemmatrix_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssi_mono_algorithm.MapsSystemMatrix(), *ssi_mono_algorithm.MapsSystemMatrix(), 81,
-              false, true));
+      systemmatrix_ = SetupBlockMatrix(
+          ssi_mono_algorithm.MapsSystemMatrix(), ssi_mono_algorithm.MapsSystemMatrix());
+
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      systemmatrix_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ssi_mono_algorithm.DofRowMap(), 27, false, true));
+      systemmatrix_ = SetupSparseMatrix(ssi_mono_algorithm.DofRowMap());
 
       break;
     }
@@ -360,41 +358,26 @@ SSI::Utils::SSISubMatrices::SSISubMatrices(
     {
       // initialize scatra-structure block
       scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *ssi_mono_algorithm.MapStructure(), ssi_mono_algorithm.ScaTraField()->BlockMaps(), 81,
-              false, true));
+          SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()),
+              ssi_mono_algorithm.MapStructure());
+      structurescatradomain_ = SetupBlockMatrix(ssi_mono_algorithm.MapStructure(),
+          Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()));
 
-      // initialize scatra-structure block
       if (ssi_mono_algorithm.SSIInterfaceMeshtying())
       {
         scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *ssi_mono_algorithm.MapStructure(), *blockmapscatrainterface, 81, false, true));
+            SetupBlockMatrix(blockmapscatrainterface, ssi_mono_algorithm.MapStructure());
       }
-
-      // initialize structure-scatra block
-      structurescatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ssi_mono_algorithm.ScaTraField()->BlockMaps(), *ssi_mono_algorithm.MapStructure(), 81,
-              false, true));
 
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      // initialize scatra-structure block
-      scatrastructuredomain_ = Teuchos::rcp(new LINALG::SparseMatrix(
-          *ssi_mono_algorithm.ScaTraField()->DofRowMap(), 27, false, true));
-
-      // initialize scatra-structure block
+      scatrastructuredomain_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
+      structurescatradomain_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
       if (ssi_mono_algorithm.SSIInterfaceMeshtying())
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-      // initialize structure-scatra block
-      structurescatradomain_ = Teuchos::rcp(new LINALG::SparseMatrix(
-          *ssi_mono_algorithm.StructureField()->DofRowMap(), 27, false, true));
+        scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
 
       break;
     }
@@ -405,4 +388,31 @@ SSI::Utils::SSISubMatrices::SSISubMatrices(
       break;
     }
   }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+    Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> col_map)
+{
+  const int expected_entries_per_row = 81;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> SSI::UTILS::SSIMatrices::SetupSparseMatrix(
+    const Teuchos::RCP<const Epetra_Map> row_map)
+{
+  const int expected_entries_per_row = 27;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(
+      new LINALG::SparseMatrix(*row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
