@@ -69,6 +69,7 @@ namespace INPAR
       kinetics_butlervolmerreduced,
       kinetics_butlervolmerresistance,
       kinetics_butlervolmerreducedwithresistance,
+      kinetics_butlervolmerreducedthermoresistance,
       kinetics_constantinterfaceresistance,
       kinetics_nointerfaceflux
     };

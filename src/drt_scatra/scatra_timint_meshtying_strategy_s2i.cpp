@@ -2925,6 +2925,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
         case INPAR::S2I::kinetics_butlervolmerreduced:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
         {
           conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
@@ -2944,9 +2945,17 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
             conditionparams.set<double>("resistance", s2icondition.GetDouble("resistance"));
             conditionparams.set<double>(
                 "CONVTOL_IMPLBUTLERVOLMER", s2icondition.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
-            conditionparams.set<double>(
-                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetDouble("ITEMAX_IMPLBUTLERVOLMER"));
+            conditionparams.set<int>(
+                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
           }
+
+          if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
+          {
+            conditionparams.set<double>("thermoperm", s2icondition.GetDouble("thermoperm"));
+            conditionparams.set<double>(
+                "molar_heat_capacity", s2icondition.GetDouble("molar_heat_capacity"));
+          }
+
           break;
         }
 

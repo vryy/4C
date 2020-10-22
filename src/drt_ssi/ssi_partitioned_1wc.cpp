@@ -302,6 +302,10 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
     if (ScaTraField()->Step() % diffsteps == 0)
     {
       SetScatraSolution(ScaTraField()->Phinp());
+
+      // evaluate temperature from function and set to structural discretization
+      EvaluateAndSetTemperatureField();
+
       // PrepareTimeStep() is called after solving the scalar transport, because then the predictor
       // will include the new scalar solution
       StructureField()->PrepareTimeStep();

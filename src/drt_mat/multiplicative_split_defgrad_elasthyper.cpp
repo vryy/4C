@@ -11,16 +11,16 @@ multiplicatively into elastic and inelastic parts
 /* headers */
 #include "multiplicative_split_defgrad_elasthyper.H"
 
+#include "elasthyper_service.H"
+#include "inelastic_defgrad_factors.H"
 #include "multiplicative_split_defgrad_elasthyper_service.H"
-
 #include "material_service.H"
 #include "matpar_bundle.H"
-#include "inelastic_defgrad_factors.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_ssi.H"
-#include "elasthyper_service.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/voigt_notation.H"
+#include "../drt_matelast/elast_summand.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 
 /*--------------------------------------------------------------------*
@@ -262,10 +262,14 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   // evaluate OD Block
   else
   {
-    // get source of deformation for this OD block
+    // get source of deformation for this OD block depending on the differentiation type
     PAR::InelasticSource source;
-    if (params.get<std::string>("scalartype", "none") == "concentration")
+    const int differentiationtype =
+        params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
+    if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
       source = PAR::InelasticSource::inelastic_concentration;
+    else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
+      source = PAR::InelasticSource::inelastic_temperature;
     else
       dserror("unknown scalaratype");
 
@@ -703,7 +707,8 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
       if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
           (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
-          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
+          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso) and
+          (materialtype != INPAR::MAT::mfi_lin_temp_iso))
         dserror(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you "
             "need to use the material 'MAT_InelasticDefgradLinScalarAniso' "

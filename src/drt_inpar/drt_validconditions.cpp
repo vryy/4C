@@ -30,6 +30,7 @@
 #include "inpar_bio.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
+#include "inpar_ssti.H"
 #include "inpar_ehl.H"
 #include "inpar_particle.H"
 #include "inpar_beampotential.H"
@@ -1113,6 +1114,8 @@ DRT::INPUT::ValidConditions()
   INPAR::THR::SetValidConditions(condlist);
 
   INPAR::SSI::SetValidConditions(condlist);
+
+  INPAR::SSTI::SetValidConditions(condlist);
 
   INPAR::PARTICLE::SetValidConditions(condlist);
 

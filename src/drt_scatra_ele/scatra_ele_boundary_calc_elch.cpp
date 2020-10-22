@@ -31,7 +31,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
       // instance of utility class supporting element evaluation
       utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
 {
-  return;
 }
 
 
@@ -145,7 +144,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
 
   // access input parameter
   const double frt = elchparams_->FRT();
-  if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
 
   // get control parameter from parameter list
   const bool is_stationary = my::scatraparamstimint_->IsStationary();
@@ -252,7 +250,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     // access input parameter
     const double frt = elchparams_->FRT();
-    if (frt < 0.0) dserror("A negative factor frt is not possible by definition");
 
     const double time = my::scatraparamstimint_->Time();
 
@@ -509,8 +506,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
     dserror(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus
 
 

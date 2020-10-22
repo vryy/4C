@@ -2335,6 +2335,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinTempIso",
+        "Temperature dependent growth law. Volume change linearly dependent on temperature",
+        INPAR::MAT::mfi_lin_temp_iso));
+
+    AddNamedReal(m, "Temp_GrowthFac", "isotropic growth factor due to temperature");
+    AddNamedReal(m, "RefTemp", "reference temperature causing no strains");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
   {
     auto mm = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",

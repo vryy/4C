@@ -67,6 +67,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::Setup(
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
+
+  // safety check
+  for (const auto& type_i : {fluidphase_, openboundaryphase_})
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      dserror("no particle container for particle type '%s' found!",
+          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
 void PARTICLEINTERACTION::SPHOpenBoundaryBase::CheckOpenBoundaryPhaseChange(

@@ -13,6 +13,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_sti_thermo.H"
 #include "scatra_ele_utils_elch_diffcond.H"
+#include "scatra_ele_parameter_std.H"
 
 #include "../drt_mat/soret.H"
 
@@ -121,8 +122,24 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
     my::CalcMatDiff(emat, 0, timefacfac);
     my::CalcRHSDiff(erhs, 0, rhsfac);
 
+    // matrix and vector contributions arising from conservative part of convective term (deforming
+    // meshes)
+    if (my::scatrapara_->IsConservative())
+    {
+      double vdiv(0.0);
+      my::GetDivergence(vdiv, my::evelnp_);
+      my::CalcMatConvAddCons(emat, 0, timefacfac, vdiv, densnp[0]);
+
+      double vrhs = rhsfac * my::scatravarmanager_->Phinp(0) * vdiv * densnp[0];
+      for (unsigned vi = 0; vi < my::nen_; ++vi)
+        erhs[vi * my::numdofpernode_] -= vrhs * my::funct_(vi);
+    }
+
     // matrix and vector contributions arising from source terms
-    mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
+    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+      mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
+    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      CalcMatAndRhsJouleSolid(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 
   return;
@@ -187,6 +204,24 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
   }
 
   return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJouleSolid(
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const double& timefacfac,
+    const double& rhsfac)
+{
+  // no contributions to matrix
+
+  // square of gradient of electric potential
+  const double gradpot2 = VarManager()->GradPot().Dot(VarManager()->GradPot());
+
+  // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs are zero
+  // contributions of Joule's heat term to thermo residuals
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+    erhs[vi] += rhsfac * my::funct_(vi) * gradpot2 * diffmanagerdiffcond_->GetCond();
 }
 
 
@@ -389,7 +424,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
-    mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
+    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+      mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
+    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      CalcMatJouleSolidOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
 
   return;
@@ -480,6 +518,36 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   }
 
   return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
+    Epetra_SerialDenseMatrix& emat, const double& timefacfac)
+{
+  // extract variables and parameters
+  const LINALG::Matrix<my::nsd_, 1>& gradpot = VarManager()->GradPot();
+  const double gradpot2 = gradpot.Dot(gradpot);
+
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+  {
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+    {
+      // gradient of shape function times gradient of electric potential
+      double laplawfrhs_gradpot(0.0);
+      my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, ui);
+
+      // linearizations of Joule's heat term in thermo residuals w.r.t. concentration dofs (in case
+      // conductivity is a function of the concentration)
+      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) * diffmanagerdiffcond_->GetDerivCond(0) *
+                          gradpot2 * my::funct_(ui);
+
+      // linearizations of Joule's heat term in thermo residuals w.r.t. electric potential dofs
+      emat(vi, ui * 2 + 1) -=
+          timefacfac * my::funct_(vi) * 2.0 * diffmanagerdiffcond_->GetCond() * laplawfrhs_gradpot;
+    }
+  }
 }
 
 
@@ -638,6 +706,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const D
   Teuchos::RCP<const MAT::Material> material = ele->Material();
   if (material->MaterialType() == INPAR::MAT::m_soret)
     MatSoret(material, densn[0], densnp[0], densam[0]);
+  else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    MatFourier(material, densn[0], densnp[0], densam[0]);
   else
     dserror("Invalid thermal material!");
 
@@ -677,6 +747,25 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret(
   densn = densnp = densam = matsoret->Capacity();
   DiffManager()->SetIsotropicDiff(matsoret->Conductivity(), 0);
   DiffManager()->SetSoret(matsoret->SoretCoefficient());
+
+  return;
+}  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatFourier(
+    const Teuchos::RCP<const MAT::Material> material,  //!< Fourier material
+    double& densn,                                     //!< density at time t_(n)
+    double& densnp,                                    //!< density at time t_(n+1) or t_(n+alpha_F)
+    double& densam                                     //!< density at time t_(n+alpha_M)
+)
+{
+  // extract material parameters from Soret material
+  const Teuchos::RCP<const MAT::FourierIso> matfourier =
+      Teuchos::rcp_static_cast<const MAT::FourierIso>(material);
+  densn = densnp = densam = matfourier->Capacity();
+  DiffManager()->SetIsotropicDiff(matfourier->Conductivity(), 0);
 
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret
@@ -724,8 +813,6 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
   // for heat transport within electrochemical substances
   my::scatravarmanager_ =
       Teuchos::rcp(new ScaTraEleInternalVariableManagerSTIElch<my::nsd_, my::nen_>(my::numscal_));
-
-  return;
 }
 
 

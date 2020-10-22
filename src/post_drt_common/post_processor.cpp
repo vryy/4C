@@ -833,6 +833,30 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
+
+    case prb_ssti:
+    {
+      std::string basename = problem.outname();
+
+      // remark: scalar transport discretization number is one for old structural time integration!
+      PostField* scatrafield = problem.get_discretization(0);
+
+      ScaTraFilter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+
+      // remark: structure discretization number is zero for old structural time integration!
+      PostField* structfield = problem.get_discretization(2);
+
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* thermofield = problem.get_discretization(1);
+      ScaTraFilter thermowriter(thermofield, basename);
+      thermowriter.WriteFiles();
+
+      break;
+    }
     case prb_fluid_topopt:
     {
       std::string basename = problem.outname();

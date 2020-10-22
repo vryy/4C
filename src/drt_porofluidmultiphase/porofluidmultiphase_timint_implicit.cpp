@@ -1374,7 +1374,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
       file << "Step,Time";
       for (int i = 0; i < num_domainint_funct_; i++)
       {
-        file << ",Function " << domainint_funct_[i];
+        file << ",Function_" << domainint_funct_[i];
       }
       file << "\n";
       file.close();

@@ -32,6 +32,7 @@ POSTPROCESS                     yes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
+AZREUSE                         1000
 ----------------------------------------------------------MATERIALS
 
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 50 PERMITTIVITY 0 PERMEABILITY 1

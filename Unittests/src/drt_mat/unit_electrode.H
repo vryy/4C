@@ -284,14 +284,6 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
         1677.6;  // cathode concentration at 100% state of charge
     concentrations_cathode_polynomial_[1] = 3115.6;  // cathode concentration at 50% state of charge
     concentrations_cathode_polynomial_[2] = 4553.6;  // cathode concentration at 0% state of charge
-
-    // as we do not have access to data defined in the input file here, we define the constants here
-    // using the SI unit system
-    faraday_ = 9.64853399e4;
-    const double gasconstant = 8.314472;
-
-    // calculate factor F/(RT) for temperature 298.0 K
-    frt_ = faraday_ / (gasconstant * 298.);
   }
 
   //! tear down unit testing for electrode material
@@ -316,7 +308,6 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     concentrations_cathode_taralov_.clear();
     concentrations_anode_polynomial_.clear();
     concentrations_cathode_polynomial_.clear();
-    frt_ = 0.;
   }
 
   //! test member function ComputeOpenCircuitPotential of electrode material
@@ -379,8 +370,8 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i])
   }
 
-  //! test member function ComputeFirstDerivOpenCircuitPotential of electrode material
-  void test_ComputeFirstDerivOpenCircuitPotential()
+  //! test member function ComputeFirstDerivOpenCircuitPotentialConc of electrode material
+  void test_ComputeFirstDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
     const double results_anode_redlichkister[] = {
@@ -394,15 +385,15 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
-      TS_ASSERT_DELTA(anode_redlichkister_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_anode_redlichkister_[i], faraday_, frt_),
           results_anode_redlichkister[i], tolerances_anode_redlichkister[i])
     for (unsigned i = 0; i < concentrations_anode_taralov_.size(); ++i)
-      TS_ASSERT_DELTA(anode_taralov_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_taralov_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_anode_taralov_[i], faraday_, frt_),
           results_anode_taralov[i], tolerances_anode_taralov[i])
     for (unsigned i = 0; i < concentrations_anode_polynomial_.size(); ++i)
-      TS_ASSERT_DELTA(anode_polynomial_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_polynomial_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_anode_polynomial_[i], faraday_, frt_),
           results_anode_polynomial[i], tolerances_anode_polynomial[i])
 
@@ -422,25 +413,58 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_csv_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_csv_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_cathode_csv_[i], faraday_, frt_),
           results_cathode_csv[i], tolerances_cathode_csv[i])
     for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_cathode_redlichkister_[i], faraday_, frt_),
           results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i])
     for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_taralov_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_taralov_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_cathode_taralov_[i], faraday_, frt_),
           results_cathode_taralov[i], tolerances_cathode_taralov[i])
     for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_polynomial_->ComputeFirstDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_polynomial_->ComputeFirstDerivOpenCircuitPotentialConc(
                           concentrations_cathode_polynomial_[i], faraday_, frt_),
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i])
   }
 
-  //! test member function ComputeSecondDerivOpenCircuitPotential of electrode material
-  void test_ComputeSecondDerivOpenCircuitPotential()
+  //! test member function ComputeFirstDerivOpenCircuitPotentialTemp of electrode material
+  void test_ComputeFirstDerivOpenCircuitPotentialTemp()
+  {
+    // define results and tolerances for cathode materials
+    const double results_cathode_csv[] = {0.0, 0.0, 0.0};
+    const double tolerances_cathode_csv[] = {0.0, 0.0, 0.0};
+    const double results_cathode_redlichkister[] = {
+        2.0138191402737653e-05, 0.0, -2.3115616026561951e-04};
+    const double tolerances_cathode_redlichkister[] = {1.0e-21, 0.0, 1.0e-20};
+    const double results_cathode_taralov[] = {0.0, 0.0, 0.0};
+    const double tolerances_cathode_taralov[] = {0.0, 0.0, 0.0};
+    const double results_cathode_polynomial[] = {0.0, 0.0, 0.0};
+    const double tolerances_cathode_polynomial[] = {0.0, 0.0, 0.0};
+
+    // test member function using sample concentration values for cathode materials
+    for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
+      TS_ASSERT_DELTA(cathode_csv_->ComputeFirstDerivOpenCircuitPotentialTemp(
+                          concentrations_cathode_csv_[i], faraday_, gasconstant_),
+          results_cathode_csv[i], tolerances_cathode_csv[i])
+    for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
+      TS_ASSERT_DELTA(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialTemp(
+                          concentrations_cathode_redlichkister_[i], faraday_, gasconstant_),
+          results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i])
+    for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
+      TS_ASSERT_DELTA(cathode_taralov_->ComputeFirstDerivOpenCircuitPotentialTemp(
+                          concentrations_cathode_taralov_[i], faraday_, gasconstant_),
+          results_cathode_taralov[i], tolerances_cathode_taralov[i])
+    for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
+      TS_ASSERT_DELTA(cathode_polynomial_->ComputeFirstDerivOpenCircuitPotentialTemp(
+                          concentrations_cathode_polynomial_[i], faraday_, gasconstant_),
+          results_cathode_polynomial[i], tolerances_cathode_polynomial[i])
+  }
+
+  //! test member function ComputeSecondDerivOpenCircuitPotentialConc of electrode material
+  void test_ComputeSecondDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
     const double results_anode_redlichkister[] = {
@@ -454,15 +478,15 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
-      TS_ASSERT_DELTA(anode_redlichkister_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_redlichkister_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_anode_redlichkister_[i], faraday_, frt_),
           results_anode_redlichkister[i], tolerances_anode_redlichkister[i])
     for (unsigned i = 0; i < concentrations_anode_taralov_.size(); ++i)
-      TS_ASSERT_DELTA(anode_taralov_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_taralov_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_anode_taralov_[i], faraday_, frt_),
           results_anode_taralov[i], tolerances_anode_taralov[i])
     for (unsigned i = 0; i < concentrations_anode_polynomial_.size(); ++i)
-      TS_ASSERT_DELTA(anode_polynomial_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(anode_polynomial_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_anode_polynomial_[i], faraday_, frt_),
           results_anode_polynomial[i], tolerances_anode_polynomial[i])
 
@@ -482,19 +506,19 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_csv_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_csv_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_cathode_csv_[i], faraday_, frt_),
           results_cathode_csv[i], tolerances_cathode_csv[i])
     for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_redlichkister_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_redlichkister_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_cathode_redlichkister_[i], faraday_, frt_),
           results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i])
     for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_taralov_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_taralov_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_cathode_taralov_[i], faraday_, frt_),
           results_cathode_taralov[i], tolerances_cathode_taralov[i])
     for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
-      TS_ASSERT_DELTA(cathode_polynomial_->ComputeSecondDerivOpenCircuitPotential(
+      TS_ASSERT_DELTA(cathode_polynomial_->ComputeSecondDerivOpenCircuitPotentialConc(
                           concentrations_cathode_polynomial_[i], faraday_, frt_),
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i])
   }
@@ -580,9 +604,12 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
   std::vector<double> concentrations_cathode_polynomial_;
 
   //! faraday constant
-  double faraday_;
+  const double faraday_ = 9.64853399e4;
+
+  //! universal gas constant
+  const double gasconstant_ = 8.314472;
 
   //! factor F/(RT)
-  double frt_;
+  const double frt_ = faraday_ / (gasconstant_ * 298.0);
 };
 #endif

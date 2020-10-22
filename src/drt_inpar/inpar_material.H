@@ -290,9 +290,11 @@ namespace INPAR
       mfi_poly_intercal_frac_aniso,  ///< volume change due to (anisotropic) inelastic deformation
                                      ///< gradient is a polynomial function of the intercalation
                                      ///< fraction that causes the volume change
-      mfi_poly_intercal_frac_iso     ///< volume change due to (isotropic) inelastic deformation
+      mfi_poly_intercal_frac_iso,    ///< volume change due to (isotropic) inelastic deformation
                                      ///< gradient is a polynomial function of the intercalation
                                      ///< fraction that causes the volume change
+      mfi_lin_temp_iso  ///< volume change due to isotropic inelastic deformation gradient is a
+                        ///< linear function of the temperature
     };
 
     /*----------------------------------------------------------------------*

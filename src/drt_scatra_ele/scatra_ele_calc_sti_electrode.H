@@ -145,6 +145,12 @@ namespace DRT
           double& densam   //!< density at time t_(n+alpha_M)
       );
 
+      void MatFourier(const Teuchos::RCP<const MAT::Material> material,  //!< Fourier material
+          double& densn,                                                 //!< density at time t_(n)
+          double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
+          double& densam   //!< density at time t_(n+alpha_M)
+      );
+
       //! set internal variables for element evaluation
       void SetInternalVariablesForMatAndRHS();
 
@@ -208,9 +214,9 @@ namespace DRT
         // evaluate material
         ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration, faraday, frt);
         ocpderiv_ =
-            matelectrode->ComputeFirstDerivOpenCircuitPotential(concentration, faraday, frt);
+            matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(concentration, faraday, frt);
         ocpderiv2_ =
-            matelectrode->ComputeSecondDerivOpenCircuitPotential(concentration, faraday, frt);
+            matelectrode->ComputeSecondDerivOpenCircuitPotentialConc(concentration, faraday, frt);
 
         return;
       };

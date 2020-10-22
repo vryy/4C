@@ -1,0 +1,2 @@
+# Python modules that will be installed into the baci python virtual environment
+clang-format==6.0.1

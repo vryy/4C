@@ -121,8 +121,25 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     my::CalcMatDiff(emat, 0, timefacfac);
     my::CalcRHSDiff(erhs, 0, rhsfac);
 
+
+    // matrix and vector contributions arising from conservative part of convective term (deforming
+    // meshes)
+    if (my::scatrapara_->IsConservative())
+    {
+      double vdiv(0.0);
+      my::GetDivergence(vdiv, my::evelnp_);
+      my::CalcMatConvAddCons(emat, 0, timefacfac, vdiv, densnp[0]);
+
+      double vrhs = rhsfac * my::scatravarmanager_->Phinp(0) * vdiv * densnp[0];
+      for (unsigned vi = 0; vi < my::nen_; ++vi)
+        erhs[vi * my::numdofpernode_] -= vrhs * my::funct_(vi);
+    }
+
     // matrix and vector contributions arising from source terms
-    mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
+    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+      mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
+    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      CalcMatAndRhsJoule(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 
   return;
@@ -356,7 +373,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
-    mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
+    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+      mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
+    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      CalcMatJouleOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
 
   return;
@@ -577,6 +597,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
   Teuchos::RCP<const MAT::Material> material = ele->Material();
   if (material->MaterialType() == INPAR::MAT::m_soret)
     MatSoret(material, densn[0], densnp[0], densam[0]);
+  else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    MatFourier(material, densn[0], densnp[0], densam[0]);
   else
     dserror("Invalid thermal material!");
 
@@ -613,6 +635,23 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret(
   DiffManager()->SetSoret(matsoret->SoretCoefficient());
 
   return;
+}  // DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatFourier(
+    const Teuchos::RCP<const MAT::Material> material,  //!< Fourie material
+    double& densn,                                     //!< density at time t_(n)
+    double& densnp,                                    //!< density at time t_(n+1) or t_(n+alpha_F)
+    double& densam                                     //!< density at time t_(n+alpha_M)
+)
+{
+  // extract material parameters from Soret material
+  const Teuchos::RCP<const MAT::FourierIso> matfourier =
+      Teuchos::rcp_static_cast<const MAT::FourierIso>(material);
+  densn = densnp = densam = matfourier->Capacity();
+  DiffManager()->SetIsotropicDiff(matfourier->Conductivity(), 0);
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret
 
 

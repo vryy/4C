@@ -30,9 +30,13 @@ TIMEINT                         BDF2
 INITIALFIELD                    field_by_function
 CALCERR                         yes
 ERRORFUNCNO                     2
+EQUILIBRATION                   rowsandcolumns_full
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
+SOLVER                          Aztec_MSR
+AZSOLVE                         GMRES
+AZTOL                           1e-7
+AZREUSE                         25
 
 ----------------------------------------------------------MATERIALS
 
@@ -51,8 +55,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION 0
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric-rel VALUE 1.37220510434278437e-01 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic-rel VALUE 3.28588777486087280e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric-rel VALUE 2.82108564237506416e-02 TOLERANCE 1e-5
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic-rel VALUE 3.01632060386394674e-01 TOLERANCE 1e-5
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

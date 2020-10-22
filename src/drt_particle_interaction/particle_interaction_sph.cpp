@@ -11,6 +11,7 @@
 #include "particle_interaction_sph.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_utils.H"
 
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_sph_equationofstate.H"
@@ -270,6 +271,37 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     // set initial mass and radius for all particles of current type
     container->SetState(initmass, PARTICLEENGINE::Mass);
     container->SetState(initradius, PARTICLEENGINE::Radius);
+
+    // evaluate initial inertia for respective particles of current type
+    if (container->HaveStoredState(PARTICLEENGINE::Inertia))
+    {
+      // (initial) inertia of current phase
+      std::vector<double> initinertia(1);
+
+      if (kernelspacedim == 2)
+      {
+        // effective particle radius considering initial particle volume in disk shape
+        const double effectiveradius = std::sqrt(M_1_PI * initialparticlevolume);
+
+        // inertia for disk shape
+        initinertia[0] = 0.5 * initmass[0] * UTILS::pow<2>(effectiveradius);
+      }
+      else if (kernelspacedim == 3)
+      {
+        // effective particle radius considering initial particle volume in spherical shape
+        const double effectiveradius = std::pow(0.75 * M_1_PI * initialparticlevolume, 1.0 / 3.0);
+
+        // inertia for spherical shape
+        initinertia[0] = 0.4 * initmass[0] * UTILS::pow<2>(effectiveradius);
+      }
+      else
+      {
+        dserror("inertia for particles only in two and three dimensional evaluation given!");
+      }
+
+      // set initial inertia for respective particles of current type
+      container->SetState(initinertia, PARTICLEENGINE::Inertia);
+    }
 
     // initial states for temperature evaluation
     if (temperature_)

@@ -307,11 +307,14 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     }
   }
 
+  // STI algorithm has non deforming mesh
+  static constexpr bool isAle = false;
+
   // initialize OD evaluation strategy
   scatrathermooffdiagcoupling_ = STI::BuildScatraThermoOffDiagCoupling(
       strategyscatra_->CouplingType(), blockmapthermo_, blockmapthermointerface,
       blockmapthermointerfaceslave, maps_->Map(0), maps_->Map(1), interface_map_scatra,
-      interface_map_thermo, strategyscatra_, strategythermo_, scatra_, thermo_);
+      interface_map_thermo, isAle, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
   equilibration_ = LINALG::BuildEquilibration(

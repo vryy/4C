@@ -43,7 +43,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::WriteRestart(
     std::shared_ptr<IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart
-  writer->WriteDouble(objectname_ + "maxglobalid", maxglobalid_);
+  writer->WriteInt(objectname_ + "maxglobalid", maxglobalid_);
 
   // write reusable global ids
   {
@@ -64,7 +64,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart
-  maxglobalid_ = reader->ReadDouble(objectname_ + "maxglobalid");
+  maxglobalid_ = reader->ReadInt(objectname_ + "maxglobalid");
 
   // get reusable global ids from restart
   {
@@ -187,13 +187,18 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
 
   // sort reusable global ids
   std::sort(reusableglobalids_.begin(), reusableglobalids_.end());
+
+#ifdef DEBUG
+  auto it = std::unique(reusableglobalids_.begin(), reusableglobalids_.end());
+  if (it != reusableglobalids_.end()) dserror("duplicate entries in reusable global ids!");
+#endif
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs(
     int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids)
 {
   // mpi communicator
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // gather number of requested global ids of each processor on master processor

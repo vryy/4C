@@ -25,6 +25,8 @@ namespace ELEMAG
     calc_abc,
     /// Project field (initialization)
     project_field,
+    /// Project electric field from a scatra field (initialization)
+    project_electric_from_scatra_field,
     /// Update secondary solution (local solver)
     update_secondary_solution,
     /// Interpolate the discontinous solution to mesh nodes (output)

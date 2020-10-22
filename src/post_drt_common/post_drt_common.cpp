@@ -1054,7 +1054,6 @@ PostField PostProblem::getfield(MAP* field_info)
   {
     case ShapeFunctionType::shapefunction_polynomial:
     case ShapeFunctionType::shapefunction_hdg:
-    case ShapeFunctionType::shapefunction_meshfree:
     {
       dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
       break;

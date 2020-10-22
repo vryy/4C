@@ -25,7 +25,7 @@ INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MAXTIME                         0.1
 NUMSTEP                         40
-RESTARTEVRY                     1000
+RESTARTEVRY                     5
 THETA                           0.5
 TIMEINTEGR                      BDF2
 TIMESTEP                        0.005

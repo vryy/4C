@@ -446,6 +446,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       }
       break;
       case prb_ssi:
+      case prb_ssti:
       {
         structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
       }

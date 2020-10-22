@@ -121,6 +121,7 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Structure"] = prb_structure;
     string2prbtype["Structure_Ale"] = prb_struct_ale;
     string2prbtype["Structure_Scalar_Interaction"] = prb_ssi;
+    string2prbtype["Structure_Scalar_Thermo_Interaction"] = prb_ssti;
     string2prbtype["Thermo"] = prb_thermo;
     string2prbtype["Thermo_Structure_Interaction"] = prb_tsi;
     string2prbtype["Thermo_Fluid_Structure_Interaction"] = prb_thermo_fsi;
@@ -156,7 +157,6 @@ std::map<std::string, ShapeFunctionType> INPAR::PROBLEMTYPE::StringToShapeFuncti
     // problem types in alphabetical order
     string2shapefuntype["Polynomial"] = ShapeFunctionType::shapefunction_polynomial;
     string2shapefuntype["Nurbs"] = ShapeFunctionType::shapefunction_nurbs;
-    string2shapefuntype["Meshfree"] = ShapeFunctionType::shapefunction_meshfree;
     string2shapefuntype["HDG"] = ShapeFunctionType::shapefunction_hdg;
   }
 

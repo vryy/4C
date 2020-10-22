@@ -6,8 +6,7 @@ variables:
     # Clone repository by default, file have changed attribute.
     GIT_STRATEGY: clone
     # If not called by a scheduler this variable has to be 0.
-    # 1: daily full
-    # 2: daily debug
+    # 1: daily full (release, debug)
     # 3: weekly coverage
     GITLAB_SCHEDULER_TYPE: "0"
 
@@ -260,7 +259,7 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "2"
+# $GITLAB_SCHEDULER_TYPE = "1"
 # Debug tests are performed.
 .buildtest_daily_debug: &buildtest_daily_debug
     stage: buildtest
@@ -295,7 +294,7 @@ variables:
         expire_in: 1 day
     only:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "2"
+            - $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 #
@@ -331,12 +330,8 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
             - $GITLAB_INTERACTIVE_MODE == "1"
 
-# This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "1"
+# This kind of job is started only on the master branch
 # Doxygen is build and moved to a folder with known path.
-#
-# The doxygen job is meant for nightly testing. It also provides doxygen output
-# to be copied to $DOXYGEN_PATH.
 .doxygen: &doxygen
     stage: doxygen
     script:
@@ -391,6 +386,7 @@ checkcode:
     script:
         - "echo code check"
         - cd ../baci
+        - ./create-baci-python-venv
         - bash utilities/code_checks/check_format_and_header
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
@@ -404,7 +400,6 @@ checkcode:
         - web
     except:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
             - $GITLAB_INTERACTIVE_MODE == "1"
     tags:
@@ -423,6 +418,7 @@ imcs-buildtest_minimal:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-minimal
+    needs: ["checkcode"]
 
 imcs-buildtest_full:
     <<: *buildtest_full
@@ -435,6 +431,7 @@ imcs-buildtest_full:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-full
+    needs: ["checkcode"]
 
 imcs-buildtest_interactive:
     <<: *buildtest_interactive
@@ -464,6 +461,7 @@ imcs-buildtest_daily:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-nightly-full
+    needs: ["checkcode"]
 
 imcs-buildtest_daily_debug:
     <<: *buildtest_daily_debug
@@ -476,6 +474,7 @@ imcs-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - imcs-nightly-debug
+    needs: ["checkcode"]
 
 .imcs-doxygen:
     <<: *doxygen
@@ -494,6 +493,41 @@ imcs-buildtest_daily_debug:
 
 # LNM---------------------------------------------------------------------------
 
+lnm-codeclimate:
+    stage: checkcode
+    script:
+        - "echo Check code for possible improvements"
+        # Delete old build files.
+        - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
+        - mkdir ../baci-build/
+        - cd ../baci-build/
+        # configure to get a compilation database
+        - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+        # create  and activate virtual environment
+        - python3 -m venv venv
+        - . venv/bin/activate
+        - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
+        # run clang tidy and export report
+        - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 6 -p . -extra-arg="-I/usr/include/openmpi-x86_64/" -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+        - cd ${CI_PROJECT_DIR}
+    variables:
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
+    artifacts:
+        paths: [codeclimate.json]
+        reports:
+            codequality: codeclimate.json
+    only:
+        - master
+        - web
+    except:
+        variables:
+            - $GITLAB_INTERACTIVE_MODE == "1"
+    allow_failure: true
+    tags:
+        - lnm-clangtidy-codeclimate
+
 lnm-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
@@ -505,6 +539,7 @@ lnm-buildtest_minimal:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-mastermod-minimal
+    needs: ["checkcode"]
 
 lnm-buildtest_full:
     <<: *buildtest_full
@@ -517,6 +552,7 @@ lnm-buildtest_full:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-user-full
+    needs: ["checkcode"]
 
 lnm-workstation-buildtest_interactive:
     <<: *buildtest_interactive
@@ -552,6 +588,7 @@ lnm-buildtest_coverage_weekly:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-weekly-coverage
+    needs: []
 
 pages: # job name needs to be pages
     stage: pages
@@ -607,6 +644,7 @@ lnm-buildtest_daily:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-full
+    needs: ["checkcode"]
 
 lnm-buildtest_daily_bruteforce_icc:
     <<: *buildtest_daily
@@ -624,6 +662,7 @@ lnm-buildtest_daily_bruteforce_icc:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
+    needs: ["checkcode"]
 
 lnm-buildtest_daily_bruteforce_gcc:
     <<: *buildtest_daily
@@ -643,6 +682,7 @@ lnm-buildtest_daily_bruteforce_gcc:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
+    needs: ["checkcode"]
 
 lnm-buildtest-bruteforce-icc_interactive:
     <<: *buildtest_interactive
@@ -698,6 +738,7 @@ lnm-buildtest_daily_deep:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_DEEP == "1"
+    needs: ["checkcode"]
 
 lnm-buildtest-deep_interactive:
     <<: *buildtest_interactive
@@ -733,6 +774,7 @@ lnm-buildtest_daily_schmarrn:
     only:
         variables:
             - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
+    needs: ["checkcode"]
 
 lnm-buildtest-schmarrn_interactive:
     <<: *buildtest_interactive
@@ -763,6 +805,7 @@ lnm-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-debug-nightly-full
+    needs: ["checkcode"]
 
 lnm-doxygen-web:
     <<: *doxygen_web

@@ -26,6 +26,7 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(
   switch (DRT::Problem::Instance()->Materials()->ById(matid)->Type())
   {
     case INPAR::MAT::m_soret:
+    case INPAR::MAT::m_th_fourier_iso:
       // do nothing in case of compatible material
       break;
 
@@ -61,6 +62,8 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToC
   conditions.insert(std::pair<std::string, std::string>("ThermoVolumeNeumann", "VolumeNeumann"));
   conditions.insert(std::pair<std::string, std::string>("ThermoInitfield", "Initfield"));
   conditions.insert(std::pair<std::string, std::string>("ThermoRobin", "TransportRobin"));
+  conditions.insert(
+      std::pair<std::string, std::string>("ScatraPartitioning", "ScatraPartitioning"));
 
   // return map
   return conditions;
@@ -116,11 +119,13 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
   switch (oldele_transport->ImplType())
   {
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+    case INPAR::SCATRA::impltype_elch_diffcond:
     {
       newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_diffcond);
       break;
     }
     case INPAR::SCATRA::impltype_elch_electrode_thermo:
+    case INPAR::SCATRA::impltype_elch_electrode:
     {
       newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_electrode);
       break;

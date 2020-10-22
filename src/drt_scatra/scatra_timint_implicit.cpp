@@ -36,6 +36,7 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1762,7 +1763,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
   if ((step_ != 0) and (output_state_matlab_))
   {
     std::ostringstream filename;
-    filename << "Result_Step" << step_ << ".m";
+    filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
     LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
   // NOTE:
@@ -3694,7 +3695,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // at electrode surface
               const double epd = matelectrode->ComputeOpenCircuitPotential(conc_ed, faraday, frt);
               const double epdderiv =
-                  matelectrode->ComputeFirstDerivOpenCircuitPotential(conc_ed, faraday, frt);
+                  matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(conc_ed, faraday, frt);
 
               // electrode-electrolyte overpotential at multi-scale coupling point
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
@@ -3709,11 +3710,13 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double expterm = expterm1 - expterm2;
 
               // safety check
-              if (abs(expterm) > 1.e5)
+              if (std::abs(expterm) > 1.e5)
+              {
                 dserror(
                     "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
                     "%lf",
                     expterm);
+              }
 
               // core residual term associated with Butler-Volmer mass flux density
               q_ = j0 * expterm;
@@ -3797,6 +3800,19 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
 
       // do mesh tying if there is at least one mesh tying condition
       if (!ssiconditions.empty()) IsS2IMeshtying = true;
+      break;
+    }
+    case prb_ssti:
+    {
+      // get structure discretization
+      auto structdis = problem->GetDis("structure");
+
+      // get ssi meshtying conditions
+      std::vector<DRT::Condition*> ssticonditions;
+      structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
+
+      // do mesh tying if there is at least one mesh tying condition
+      if (!ssticonditions.empty()) IsS2IMeshtying = true;
       break;
     }
     default:

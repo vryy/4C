@@ -58,14 +58,14 @@ namespace DRT
        * @param[in] matelectrode     electrode material
        * @param[in] eslavephinp      state variables at slave-side nodes
        * @param[in] emasterphinp     state variables at master-side nodes
+       * @param[in] eslavetempnp     temperature at slave side of interface
+       * @param[in] emastertempnp    temperature at master side of interface
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
        * @param[in] test_master      master-side test function values
        * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
        * @param[in] numelectrons     number of electrons involved in charge transfer
-       * @param[in] stoichiometries  vector of stoichiometric coefficients for scatra-scatra
-       *                             interface
        * @param[in] kr               charge transfer constant
        * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
@@ -95,6 +95,10 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
+          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
           const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
@@ -103,12 +107,12 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int kineticmodel, int numelectrons, const std::vector<int>* stoichiometries, double kr,
-          double alphaa, double alphac, double resistance, double itemaxmodifiedBV,
-          double convtolmodifiedBV, double timefacfac, double timefacrhsfac, double frt,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
+          double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
+          double timefacrhsfac, double frt, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
 
       /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals

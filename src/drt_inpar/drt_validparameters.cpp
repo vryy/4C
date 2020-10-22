@@ -53,6 +53,7 @@
 #include "inpar_fpsi.H"
 #include "inpar_ehl.H"
 #include "inpar_ssi.H"
+#include "inpar_ssti.H"
 #include "inpar_fs3i.H"
 #include "inpar_particle.H"
 #include "inpar_pasi.H"
@@ -468,6 +469,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::POROFLUIDMULTIPHASE::SetValidParameters(list);
   INPAR::EHL::SetValidParameters(list);
   INPAR::SSI::SetValidParameters(list);
+  INPAR::SSTI::SetValidParameters(list);
   INPAR::ALE::SetValidParameters(list);
   INPAR::FSI::SetValidParameters(list);
 

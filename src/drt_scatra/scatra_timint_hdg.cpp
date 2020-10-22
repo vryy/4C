@@ -188,9 +188,11 @@ void SCATRA::TimIntHDG::SetTheta()
           // The time step can not be set to zero because there is plenty of divisions by dt.
           // Dt is therefore to 1.0
           dta_ = 1.0;
-          // Set time equal to final time (in case of time dependent functions)
-          // This way the steady state is given as the solution at t=maxtime_
-          time_ = maxtime_ - dta_;
+          // Set time equal -dta, this way the steady state is given as the solution at t=0.0.
+          // This is necessary otherwhise the solver would recognise that we are at the end of a
+          // simulation and skip the solution altogheter.
+          time_ = -dta_;
+          maxtime_ = dta_;
           // stepmax is 1 to avoid waste computation (it's stationary after all)
           stepmax_ = 1;
           break;
@@ -963,11 +965,11 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntHDG::PrepareTimeLoop()
 {
-  // call base class routine
-  ScaTraTimIntImpl::PrepareTimeLoop();
-
   // calculate matrices on element
   CalcMatInitial();
+
+  // call base class routine
+  ScaTraTimIntImpl::PrepareTimeLoop();
 
 }  // SCATRA::TimIntHDG::PrepareTimeLoop
 

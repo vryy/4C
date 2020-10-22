@@ -909,6 +909,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_remodelfiber_impl:
     case INPAR::MAT::mfi_poly_intercal_frac_aniso:
     case INPAR::MAT::mfi_poly_intercal_frac_iso:
+    case INPAR::MAT::mfi_lin_temp_iso:
     {
       return Teuchos::null;
     }

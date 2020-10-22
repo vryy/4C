@@ -21,8 +21,9 @@
 void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
     const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
 {
-  // is the source discretization ready?
+  // are the source and target discretizations ready?
   if (!sourcedis.Filled()) dserror("The source discretization is not filled!");
+  if (!targetdis.Filled()) dserror("The target discretization is not filled!");
 
   // is the target discretization really empty?
   if (targetdis.NumGlobalElements() or targetdis.NumGlobalNodes())

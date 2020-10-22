@@ -28,6 +28,8 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,  /// dimension of the problem
@@ -46,6 +48,14 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,  /// dimension of the 
   if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
   if (structdis->AddDofSet(scatradofset) != 1) dserror("unexpected dof sets in structure field");
 
+  if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
+  {
+    const int numDofsPerNodeTemp = 1;  // defined by temperature field
+
+    Teuchos::RCP<DRT::DofSetInterface> dofsettemp =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
+    if (structdis->AddDofSet(dofsettemp) != 2) dserror("unexpected dof sets in structure field");
+  }
 
   AssignMaterialPointers(structdis, scatradis);
 
@@ -120,6 +130,12 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
 )
 {
   structdis.SetState(1, "scalarfield", phi);
+}
+
+void SSI::SSICouplingMatchingVolume::SetTemperatureField(
+    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
+{
+  structdis.SetState(2, "tempfield", temp);
 }
 
 /*----------------------------------------------------------------------*/
