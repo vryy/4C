@@ -1739,7 +1739,7 @@ namespace SSI
 /*! \brief Algorithm for scalar-structure-temperature interaction problems
  *
  */
-namespace SSI
+namespace SSTI
 {
 }
 
