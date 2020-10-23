@@ -303,18 +303,26 @@ void SSTI::SSTIAlgorithm::DistributeThermoSolution()
 
   if (interfacemeshtying_)
   {
-    // pass master-side thermo degrees of freedom to thermo discretization
+    // extract master side temperatures and copy to slave side dof map
     const Teuchos::RCP<Epetra_Vector> imastertempnp =
         LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
     meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
         meshtying_strategy_thermo_->CouplingAdapter()->MasterToSlave(
             meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 2)),
         1, imastertempnp);
+
+    // extract slave side temperatures
+    const Teuchos::RCP<Epetra_Vector> islavetempnp =
+        LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+    meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
+        meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 1), 1,
+        islavetempnp);
+
+    // set master side temperature to thermo discretization
     ThermoField()->Discretization()->SetState(3, "imastertemp", imastertempnp);
 
-    ScaTraField()->Discretization()->SetState(2, "islavetemp",
-        meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(
-            *thermo_->ScaTraField()->Phinp(), 1));
+    // set master and slave side temperature to scatra discretization
+    ScaTraField()->Discretization()->SetState(2, "islavetemp", islavetempnp);
     ScaTraField()->Discretization()->SetState(2, "imastertemp", imastertempnp);
   }
 }
