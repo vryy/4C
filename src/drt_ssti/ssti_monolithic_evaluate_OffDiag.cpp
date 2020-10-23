@@ -52,7 +52,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& thermostructuredomain)
+    Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain)
 {
   // initialize thermo-structure matrix block
   thermostructuredomain->Zero();
@@ -111,7 +111,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator>& thermostructureinterface)
+    Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface)
 {
   thermostructureinterface->Zero();
 
@@ -178,7 +178,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& structurethermodomain)
+    Teuchos::RCP<LINALG::SparseOperator> structurethermodomain)
 {
   structurethermodomain->Zero();
 

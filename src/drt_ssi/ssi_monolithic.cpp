@@ -14,6 +14,7 @@
 #include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
+#include "ssi_utils.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
@@ -47,28 +48,28 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& g
     : SSI_Base(comm, globaltimeparams),
       dtele_(0.0),
       dtsolve_(0.0),
-      maps_scatra_(Teuchos::null),
-      map_structure_(Teuchos::null),
-      maps_sub_problems_(Teuchos::null),
-      maps_systemmatrix_(Teuchos::null),
-      equilibration_(Teuchos::null),
       equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
           globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
+      increment_(Teuchos::null),
+      map_structure_(Teuchos::null),
+      maps_scatra_(Teuchos::null),
+      maps_sub_problems_(Teuchos::null),
+      maps_systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
+      meshtying_strategy_s2i_(Teuchos::null),
       residual_(Teuchos::null),
-      scatrastructuredomain_(Teuchos::null),
-      scatrastructureinterface_(Teuchos::null),
+      scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-      strategy_convcheck_(Teuchos::null),
+      ssi_matrices_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
-      meshtying_strategy_s2i_(Teuchos::null),
-      structurescatradomain_(Teuchos::null),
-      systemmatrix_(Teuchos::null),
+      strategy_convcheck_(Teuchos::null),
+      strategy_equilibration_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
+
 {
 }
 
@@ -96,45 +97,50 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      scatrastructuredomain_);
+      ssi_matrices_->ScaTraStructureDomain());
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying())
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        scatrastructureinterface_);
+        ssi_matrices_->ScaTraStructureInterface());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      structurescatradomain_);
+      ssi_matrices_->StructureScaTraDomain());
 
   // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatraDomain(systemmatrix_, ScaTraField()->SystemMatrixOperator());
+  strategy_assemble_->AssembleScatraDomain(
+      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
 
   // assemble scatra-strucutre block (domain contributions) into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(systemmatrix_, scatrastructuredomain_);
+  strategy_assemble_->AssembleScatraStructureDomain(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
 
   // assemble scatra-strucutre block (interface contributions) into system matrix
   if (SSIInterfaceMeshtying())
-    strategy_assemble_->AssembleScatraStructureInterface(systemmatrix_, scatrastructureinterface_);
+    strategy_assemble_->AssembleScatraStructureInterface(
+        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
 
   // assemble structure-scatra block (domain contributions) into system matrix
-  strategy_assemble_->AssembleStructureScatraDomain(systemmatrix_, structurescatradomain_);
+  strategy_assemble_->AssembleStructureScatraDomain(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
 
   // assemble strucutre block into system matrix
-  strategy_assemble_->AssembleStructureDomain(systemmatrix_, StructureField()->SystemMatrix());
+  strategy_assemble_->AssembleStructureDomain(
+      ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
 
   // apply meshtying
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(systemmatrix_);
+  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // finalize global system matrix
-  systemmatrix_->Complete();
+  ssi_matrices_->SystemMatrix()->Complete();
 
   // apply scatra Dirichlet
-  systemmatrix_->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
 
   // apply structural Dirichlet conditions
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(systemmatrix_);
+  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS());
@@ -220,15 +226,23 @@ void SSI::SSI_Mono::FDCheck()
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
-  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_) != Teuchos::null)
-    sysmat_original =
-        (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(systemmatrix_))))
-            ->EpetraMatrix();
-  else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()) !=
+      Teuchos::null)
+  {
     sysmat_original =
         (new LINALG::SparseMatrix(
-             *(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_)->Merge())))
+             *(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()))))
             ->EpetraMatrix();
+  }
+  else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(
+               ssi_matrices_->SystemMatrix()) != Teuchos::null)
+  {
+    sysmat_original =
+        (new LINALG::SparseMatrix(*(
+             Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(ssi_matrices_->SystemMatrix())
+                 ->Merge())))
+            ->EpetraMatrix();
+  }
   else
     dserror("Type of system matrix unknown!");
   sysmat_original->FillComplete();
@@ -277,11 +291,13 @@ void SSI::SSI_Mono::FDCheck()
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
     if (SSIInterfaceMeshtying() and
         InterfaceCouplingAdapterStructure()->PermMasterDofMap()->MyGID(colgid))
+    {
       if (statenp->SumIntoGlobalValue(
               InterfaceCouplingAdapterStructure()->SlaveDofMap()->GID(
                   InterfaceCouplingAdapterStructure()->PermMasterDofMap()->LID(colgid)),
               0, ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
+    }
     ScaTraField()->Phinp()->Update(1., *MapsSubProblems()->ExtractVector(statenp, 0), 0.);
     StructureField()->SetState(MapsSubProblems()->ExtractVector(statenp, 1));
 
@@ -437,10 +453,12 @@ void SSI::SSI_Mono::FDCheck()
       dserror("Finite difference check failed for SSI system matrix!");
     }
     else
+    {
       printf(
           "--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR "
           "%+12.5e\n\n",
           maxabserrglobal, maxrelerrglobal);
+    }
   }
 
   // undo perturbations of state variables
@@ -548,18 +566,21 @@ void SSI::SSI_Mono::Setup()
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)
+  {
     dserror(
         "Since the ssi_monolithic framework is only implemented for usage in combination with "
         "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
         "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only "
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
-
+  }
   if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
+  }
 
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
@@ -575,9 +596,11 @@ void SSI::SSI_Mono::Setup()
     if (meshtying_strategy_s2i_ == Teuchos::null)
       dserror("Invalid scatra-scatra interface coupling strategy!");
     if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+    {
       dserror(
           "Monolithic scalar-structure interaction only implemented for scatra-scatra "
           "interface coupling with matching interface nodes!");
+    }
   }
 }
 
@@ -587,7 +610,6 @@ void SSI::SSI_Mono::SetupSystem()
 {
   // merge slave and master side block maps for interface matrix for scatra
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
-  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
 
   if (SSIInterfaceMeshtying())
   {
@@ -624,12 +646,6 @@ void SSI::SSI_Mono::SetupSystem()
     case LINALG::MatrixType::sparse:
     {
       maps_systemmatrix_ = MapsSubProblems();
-      if (SSIInterfaceMeshtying())
-      {
-        blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
-            std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_scatra)));
-        blockmapscatrainterface->CheckForValidMapExtractor();
-      }
       break;
     }
 
@@ -664,20 +680,6 @@ void SSI::SSI_Mono::SetupSystem()
       // safety check
       map_structure_->CheckForValidMapExtractor();
 
-      if (SSIInterfaceMeshtying())
-      {
-        // build block map for scatra interface by merging slave and master side for each block
-        std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
-            maps_systemmatrix_scatra, Teuchos::null);
-        for (int iblockmap = 0; iblockmap < maps_systemmatrix_scatra; ++iblockmap)
-          partial_blockmapscatrainterface.at(iblockmap) = LINALG::MultiMapExtractor::MergeMaps(
-              {meshtying_strategy_s2i_->BlockMapsSlave().Map(iblockmap),
-                  meshtying_strategy_s2i_->BlockMapsMaster().Map(iblockmap)});
-        blockmapscatrainterface = Teuchos::rcp(
-            new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
-        blockmapscatrainterface->CheckForValidMapExtractor();
-      }
-
       break;
     }
 
@@ -700,11 +702,6 @@ void SSI::SSI_Mono::SetupSystem()
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
         dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
 
-      // initialize global system matrix
-      systemmatrix_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *MapsSystemMatrix(), *MapsSystemMatrix(), 81, false, true));
-
       // feed AMGnxn block preconditioner with null space information for each block of global block
       // system matrix
       BuildNullSpaces();
@@ -717,10 +714,6 @@ void SSI::SSI_Mono::SetupSystem()
       // safety check
       if (ScaTraField()->SystemMatrix() == Teuchos::null)
         dserror("Incompatible matrix type associated with scalar transport field!");
-
-      // initialize global system matrix
-      systemmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(), 27, false, true));
-
       break;
     }
 
@@ -731,55 +724,8 @@ void SSI::SSI_Mono::SetupSystem()
     }
   }
 
-  // initialize scatra-structure block and structure-scatra block of global system matrix
-  switch (ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
-    {
-      // initialize scatra-structure block
-      scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *MapStructure(), ScaTraField()->BlockMaps(), 81, false, true));
-
-      // initialize scatra-structure block
-      if (SSIInterfaceMeshtying())
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *MapStructure(), *blockmapscatrainterface, 81, false, true));
-
-      // initialize structure-scatra block
-      structurescatradomain_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), *MapStructure(), 81, false, true));
-
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      // initialize scatra-structure block
-      scatrastructuredomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*ScaTraField()->DofRowMap(), 27, false, true));
-
-      // initialize scatra-structure block
-      if (SSIInterfaceMeshtying())
-        scatrastructureinterface_ =
-            Teuchos::rcp(new LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
-
-      // initialize structure-scatra block
-      structurescatradomain_ =
-          Teuchos::rcp(new LINALG::SparseMatrix(*StructureField()->DofRowMap(), 27, false, true));
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
+  // initialize subblocks and system matrix
+  ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(*this, interface_map_scatra));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(
@@ -792,7 +738,7 @@ void SSI::SSI_Mono::SetupSystem()
           interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField()));
 
   // instantiate appropriate equilibration class
-  equilibration_ =
+  strategy_equilibration_ =
       LINALG::BuildEquilibration(matrixtype_, equilibration_method_, MapsSubProblems()->FullMap());
 }
 
@@ -812,14 +758,15 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
  *---------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SolveLinearSystem()
 {
-  equilibration_->EquilibrateSystem(systemmatrix_, residual_, *MapsSystemMatrix());
+  strategy_equilibration_->EquilibrateSystem(
+      ssi_matrices_->SystemMatrix(), residual_, *MapsSystemMatrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
-  solver_->Solve(
-      systemmatrix_->EpetraOperator(), increment_, residual_, true, IterationCount() == 1);
+  solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true,
+      IterationCount() == 1);
 
-  equilibration_->UnequilibrateIncrement(increment_);
+  strategy_equilibration_->UnequilibrateIncrement(increment_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -850,7 +797,7 @@ void SSI::SSI_Mono::NewtonLoop()
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
-    if (!systemmatrix_->Filled())
+    if (!ssi_matrices_->SystemMatrix()->Filled())
       dserror("Complete() has not been called on global system matrix yet!");
 
     // perform finite difference check on time integrator level

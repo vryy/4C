@@ -244,6 +244,132 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
+SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
+    const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
+    Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying)
+    : systemmatrix_(Teuchos::null),
+      scatrastructuredomain_(Teuchos::null),
+      scatrastructureinterface_(Teuchos::null),
+      scatrathermodomain_(Teuchos::null),
+      scatrathermointerface_(Teuchos::null),
+      structurescatradomain_(Teuchos::null),
+      structurethermodomain_(Teuchos::null),
+      thermoscatradomain_(Teuchos::null),
+      thermoscatrainterface_(Teuchos::null),
+      thermostructuredomain_(Teuchos::null),
+      thermostructureinterface_(Teuchos::null)
+{
+  // perform initializations associated with global system matrix
+  switch (matrixtype_global)
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      systemmatrix_ = SetupBlockMatrix(
+          ssti_maps_mono->MapsSystemMatrixSubblocks(), ssti_maps_mono->MapsSystemMatrixSubblocks());
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      systemmatrix_ = SetupSparseMatrix(ssti_maps_mono->MapsSubproblems()->FullMap());
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  // setup blocks for coupling matrices
+  switch (matrixtype_scatra)
+  {
+    case LINALG::MatrixType::block_condition:
+    {
+      scatrastructuredomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsScatra(), ssti_maps_mono->MapsStructure());
+      structurescatradomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsStructure(), ssti_maps_mono->MapsScatra());
+      structurethermodomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsStructure(), ssti_maps_mono->MapsThermo());
+      thermostructuredomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsThermo(), ssti_maps_mono->MapsStructure());
+      scatrathermodomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsScatra(), ssti_maps_mono->MapsThermo());
+      thermoscatradomain_ =
+          SetupBlockMatrix(ssti_maps_mono->MapsThermo(), ssti_maps_mono->MapsScatra());
+
+      if (isinterfacemeshtying)
+      {
+        scatrastructureinterface_ =
+            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->MapsStructure());
+        thermostructureinterface_ =
+            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->MapsStructure());
+        scatrathermointerface_ =
+            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->MapsThermo());
+        thermoscatrainterface_ =
+            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->MapsScatra());
+      }
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      scatrastructuredomain_ = SetupSparseMatrix(ssti_maps_mono->MapsScatra()->FullMap());
+      structurescatradomain_ = SetupSparseMatrix(ssti_maps_mono->MapsStructure()->FullMap());
+      structurethermodomain_ = SetupSparseMatrix(ssti_maps_mono->MapsStructure()->FullMap());
+      thermostructuredomain_ = SetupSparseMatrix(ssti_maps_mono->MapsThermo()->FullMap());
+      scatrathermodomain_ = SetupSparseMatrix(ssti_maps_mono->MapsScatra()->FullMap());
+      thermoscatradomain_ = SetupSparseMatrix(ssti_maps_mono->MapsThermo()->FullMap());
+
+      if (isinterfacemeshtying)
+      {
+        scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
+        thermostructureinterface_ = SetupSparseMatrix(interface_map_thermo);
+        scatrathermointerface_ = SetupSparseMatrix(interface_map_scatra);
+        thermoscatrainterface_ = SetupSparseMatrix(interface_map_thermo);
+      }
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
+    Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> col_map)
+{
+  const int expected_entries_per_row = 81;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> SSTI::SSTIMatrices::SetupSparseMatrix(
+    const Teuchos::RCP<const Epetra_Map> row_map)
+{
+  const int expected_entries_per_row = 27;
+  const bool explicitdirichlet = false;
+  const bool savegraph = true;
+
+  return Teuchos::rcp(
+      new LINALG::SparseMatrix(*row_map, expected_entries_per_row, explicitdirichlet, savegraph));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
 SSTI::ConvCheckMono::ConvCheckMono(Teuchos::ParameterList params)
     : itermax_(params.get<int>("ITEMAX")),
       itertol_(params.sublist("MONOLITHIC").get<double>("CONVTOL")),

@@ -49,16 +49,16 @@ namespace SSI
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrastructureblock);
+        Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock);
 
     //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
     //! matrix
     void EvaluateOffDiagBlockScatraStructureInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrastructureinterface);
+        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface);
 
     //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
     void EvaluateOffDiagBlockStructureScatraDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& structurescatradomain) const;
+        Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const;
 
    private:
     //! copy slave entries to master side scaled by -1.0

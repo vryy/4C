@@ -366,7 +366,7 @@ void INPAR::S2I::SetValidConditions(
 
               kineticmodels.push_back(Teuchos::rcp(new CondCompBundle(
                   "Butler-Volmer-ReducedwithResistance", butlervolmerreducedwithresistance,
-                  INPAR::S2I::kinetics_butlervolmerreducedwithresistance)));
+                  INPAR::S2I::kinetics_butlervolmerreducedresistance)));
             }
 
             {
@@ -445,15 +445,14 @@ void INPAR::S2I::SetValidConditions(
               "kinetic models for scatra-scatra interface coupling",
               Teuchos::rcp(new StringConditionComponent("kinetic model", "ConstantPermeability",
                   Teuchos::tuple<std::string>("ConstantPermeability", "Butler-Volmer",
-                      "Butler-Volmer-Peltier", "Butler-Volmer-reduced", "Butler-Volmer-Resistance",
-                      "Butler-Volmer-ReducedwithResistance",
-                      "Butler-Volmer-reduced-thermoresistance", "ConstantInterfaceResistance",
-                      "NoInterfaceFlux"),
+                      "Butler-Volmer-Peltier", "Butler-VolmerReduced", "Butler-Volmer_Resistance",
+                      "Butler-VolmerReduced_Resistance", "Butler-VolmerReduced_ThermoResistance",
+                      "ConstantInterfaceResistance", "NoInterfaceFlux"),
                   Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,
                       INPAR::S2I::kinetics_butlervolmer, INPAR::S2I::kinetics_butlervolmerpeltier,
                       INPAR::S2I::kinetics_butlervolmerreduced,
                       INPAR::S2I::kinetics_butlervolmerresistance,
-                      INPAR::S2I::kinetics_butlervolmerreducedwithresistance,
+                      INPAR::S2I::kinetics_butlervolmerreducedresistance,
                       INPAR::S2I::kinetics_butlervolmerreducedthermoresistance,
                       INPAR::S2I::kinetics_constantinterfaceresistance,
                       INPAR::S2I::kinetics_nointerfaceflux))),

@@ -43,7 +43,7 @@ void ssi_drt()
       const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
 
   //  //Modification of time parameter list
-  SSI::Utils::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
+  SSI::UTILS::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
 
   const INPAR::SSI::SolutionSchemeOverFields coupling =
       DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");

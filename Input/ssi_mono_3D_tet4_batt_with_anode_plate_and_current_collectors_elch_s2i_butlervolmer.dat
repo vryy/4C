@@ -194,7 +194,7 @@ E 2 - 0 Slave KineticModel ConstantInterfaceResistance resistance 8.0e-3
 // an-side_(ma)_of_an-cc_interface
 E 3 - 0 Master
 // an-side_(sl)_of_an-el_interface
-E 4 - 1 Slave KineticModel Butler-Volmer-reduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5
+E 4 - 1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5
 // el-side_(ma)_of_an-el_interface
 E 5 - 1 Master
 // el-side_(ma)_of_cat-el_interface

@@ -49,15 +49,15 @@ namespace SSTI
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void EvaluateOffDiagBlockStructureThermoDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& structurethermodomain);
+        Teuchos::RCP<LINALG::SparseOperator> structurethermodomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs in domain
     void EvaluateOffDiagBlockThermoStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& thermostructuredomain);
+        Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
     void EvaluateOffDiagBlockThermoStructureInterface(
-        Teuchos::RCP<LINALG::SparseOperator>& thermostructureinterface);
+        Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface);
 
    private:
     void CopySlaveToMasterThermoStructureInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,

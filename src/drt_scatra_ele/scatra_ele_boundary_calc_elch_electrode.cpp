@@ -263,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     }
 
     case INPAR::S2I::kinetics_butlervolmerresistance:
-    case INPAR::S2I::kinetics_butlervolmerreducedwithresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedresistance:
     {
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
