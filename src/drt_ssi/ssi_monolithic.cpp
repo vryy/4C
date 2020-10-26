@@ -156,7 +156,8 @@ void SSI::SSI_Mono::BuildNullSpaces() const
     case LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
-      ScaTraField()->BuildBlockNullSpaces(solver_, 0);
+      ScaTraField()->BuildBlockNullSpaces(
+          solver_, GetBlockPositions(Subproblem::scalar_transport)->at(0));
 
       break;
     }
@@ -218,8 +219,10 @@ void SSI::SSI_Mono::FDCheck()
 
   // create global state vector
   Teuchos::RCP<Epetra_Vector> statenp(LINALG::CreateVector(*DofRowMap(), true));
-  MapsSubProblems()->InsertVector(ScaTraField()->Phinp(), 0, statenp);
-  MapsSubProblems()->InsertVector(StructureField()->Dispnp(), 1, statenp);
+  MapsSubProblems()->InsertVector(
+      ScaTraField()->Phinp(), GetProblemPosition(Subproblem::scalar_transport), statenp);
+  MapsSubProblems()->InsertVector(
+      StructureField()->Dispnp(), GetProblemPosition(Subproblem::structure), statenp);
 
   // make a copy of global state vector to undo perturbations later
   Teuchos::RCP<Epetra_Vector> statenp_original = Teuchos::rcp(new Epetra_Vector(*statenp));
@@ -298,8 +301,12 @@ void SSI::SSI_Mono::FDCheck()
               0, ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
     }
-    ScaTraField()->Phinp()->Update(1., *MapsSubProblems()->ExtractVector(statenp, 0), 0.);
-    StructureField()->SetState(MapsSubProblems()->ExtractVector(statenp, 1));
+    ScaTraField()->Phinp()->Update(1.0,
+        *MapsSubProblems()->ExtractVector(
+            statenp, GetProblemPosition(Subproblem::scalar_transport)),
+        0.0);
+    StructureField()->SetState(
+        MapsSubProblems()->ExtractVector(statenp, GetProblemPosition(Subproblem::structure)));
 
     // calculate element right-hand side vector for perturbed state
     if (IterationCount() != 1) UpdateIterStructure();
@@ -462,8 +469,12 @@ void SSI::SSI_Mono::FDCheck()
   }
 
   // undo perturbations of state variables
-  ScaTraField()->Phinp()->Update(1., *MapsSubProblems()->ExtractVector(statenp_original, 0), 0.0);
-  StructureField()->SetState(MapsSubProblems()->ExtractVector(statenp_original, 1));
+  ScaTraField()->Phinp()->Update(1.0,
+      *MapsSubProblems()->ExtractVector(
+          statenp_original, GetProblemPosition(Subproblem::scalar_transport)),
+      0.0);
+  StructureField()->SetState(MapsSubProblems()->ExtractVector(
+      statenp_original, GetProblemPosition(Subproblem::structure)));
 
   // recompute system matrix and right-hand side vector based on original state variables
   if (IterationCount() != 1) UpdateIterStructure();
@@ -660,13 +671,18 @@ void SSI::SSI_Mono::SetupSystem()
       maps_scatra_->CheckForValidMapExtractor();
 
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport  field
-      const int maps_systemmatrix_scatra = maps_scatra_->NumMaps();
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(maps_systemmatrix_scatra + 1);
-      for (int imap = 0; imap < maps_systemmatrix_scatra; ++imap)
-        maps_systemmatrix[imap] = maps_scatra_->Map(imap);
+      std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
+          GetBlockPositions(Subproblem::scalar_transport)->size() +
+          GetBlockPositions(Subproblem::structure)->size());
+      for (int imap = 0; imap < GetBlockPositions(Subproblem::scalar_transport)->size(); ++imap)
+      {
+        maps_systemmatrix[GetBlockPositions(Subproblem::scalar_transport)->at(imap)] =
+            maps_scatra_->Map(imap);
+      }
 
       // extract map underlying single main-diagonal matrix block associated with structural field
-      maps_systemmatrix[maps_systemmatrix_scatra] = StructureField()->DofRowMap();
+      maps_systemmatrix[GetBlockPositions(Subproblem::structure)->at(0)] =
+          StructureField()->DofRowMap();
 
       // initialize map extractor associated with blocks of global system matrix
       maps_systemmatrix_ =
@@ -732,10 +748,11 @@ void SSI::SSI_Mono::SetupSystem()
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize object, that performs evaluations of OD coupling
-  scatrastructureOffDiagcoupling_ =
-      Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(MapsStructure(),
-          MapsSubProblems()->Map(0), MapsSubProblems()->Map(1), InterfaceCouplingAdapterStructure(),
-          interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField()));
+  scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
+      MapsStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+      MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+      InterfaceCouplingAdapterStructure(), interface_map_scatra, meshtying_strategy_s2i_,
+      ScaTraBaseAlgorithm(), StructureField()));
 
   // instantiate appropriate equilibration class
   strategy_equilibration_ =
@@ -894,7 +911,8 @@ void SSI::SSI_Mono::Update()
 void SSI::SSI_Mono::UpdateIterScaTra()
 {
   // update scalar transport field
-  ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(increment_, 0));
+  ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
+      increment_, GetProblemPosition(Subproblem::scalar_transport)));
   ScaTraField()->ComputeIntermediateValues();
 }
 
@@ -904,7 +922,7 @@ void SSI::SSI_Mono::UpdateIterStructure()
 {
   // set up structural increment vector
   const Teuchos::RCP<Epetra_Vector> increment_structure =
-      MapsSubProblems()->ExtractVector(increment_, 1);
+      MapsSubProblems()->ExtractVector(increment_, GetProblemPosition(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
@@ -921,4 +939,71 @@ void SSI::SSI_Mono::UpdateIterStructure()
 
   // update displacement of structure field
   StructureField()->UpdateStateIncrementally(increment_structure);
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<int>> SSI::SSI_Mono::GetBlockPositions(Subproblem subproblem) const
+{
+  if (matrixtype_ == LINALG::MatrixType::sparse) dserror("Sparse matrices have just one block");
+
+  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
+
+  switch (static_cast<int>(subproblem))
+  {
+    case static_cast<int>(Subproblem::structure):
+    {
+      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(1);
+      else
+        block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
+      break;
+    }
+    case static_cast<int>(Subproblem::scalar_transport):
+    {
+      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(0);
+      else
+      {
+        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps().NumMaps()); ++i)
+          block_position->emplace_back(i);
+      }
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of subproblem");
+      break;
+    }
+  }
+
+  return block_position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+int SSI::SSI_Mono::GetProblemPosition(Subproblem subproblem) const
+{
+  int position = -1;
+
+  switch (static_cast<int>(subproblem))
+  {
+    case static_cast<int>(Subproblem::structure):
+    {
+      position = 1;
+      break;
+    }
+    case static_cast<int>(Subproblem::scalar_transport):
+    {
+      position = 0;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of subproblem");
+      break;
+    }
+  }
+
+  return position;
 }

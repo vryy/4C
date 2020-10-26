@@ -43,6 +43,12 @@ namespace SSI
   class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
 
+  enum class Subproblem : int
+  {
+    scalar_transport,
+    structure
+  };
+
   class SSI_Mono : public SSI_Base
   {
    public:
@@ -64,6 +70,12 @@ namespace SSI
         std::string scatra_disname,  //!< name of scalar transport discretization
         bool isAle                   //!< flag for ALE
         ) override;
+
+    //! get vector containing positions within system matrix for specific subproblem
+    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+
+    //! get position within global dof map for specific subproblem
+    int GetProblemPosition(Subproblem subproblem) const;
 
     //! return global map extractor (0: scalar transport, 1: structure)
     const Teuchos::RCP<LINALG::MapExtractor>& MapsSubProblems() const { return maps_sub_problems_; }

@@ -54,11 +54,15 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   //! compute L2 norm of scalar transport increment vector
   double scatraincnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.increment_, 0)->Norm2(&scatraincnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport))
+      ->Norm2(&scatraincnorm);
 
   //! compute L2 norm of scalar transport residual vector
   double scatraresnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.residual_, 0)->Norm2(&scatraresnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport))
+      ->Norm2(&scatraresnorm);
 
   //! compute L2 norm of structural state vector
   double structuredofnorm(0.);
@@ -66,11 +70,15 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&structureincnorm);
 
   // safety checks
   if (std::isnan(scatradofnorm) or std::isnan(scatraresnorm) or std::isnan(scatraincnorm) or
@@ -185,14 +193,16 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
   double concincnorm(0.);
   timint.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(timint.increment_, 0))
+      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(
+          timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
   //! compute L2 norm of concentration residual vector
   double concresnorm(0.);
   timint.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(timint.residual_, 0))
+      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(
+          timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
   //! compute L2 norm of potential state vector
@@ -206,14 +216,16 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
   double potincnorm(0.);
   timint.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(timint.increment_, 0))
+      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(
+          timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
   //! compute L2 norm of potential residual vector
   double potresnorm(0.);
   timint.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(timint.residual_, 0))
+      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(
+          timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
   //! compute L2 norm of structural state vector
@@ -222,11 +234,15 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.residual_, 1)->Norm2(&structureresnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.MapsSubProblems()->ExtractVector(timint.increment_, 1)->Norm2(&structureincnorm);
+  timint.MapsSubProblems()
+      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&structureincnorm);
 
   // safety checks
   if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
