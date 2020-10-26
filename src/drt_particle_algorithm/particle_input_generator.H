@@ -22,11 +22,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
-{
-  class DiscretizationReader;
-}
-
 namespace PARTICLEENGINE
 {
   class ParticleObject;

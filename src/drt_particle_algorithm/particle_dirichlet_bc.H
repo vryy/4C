@@ -26,11 +26,6 @@ namespace PARTICLEENGINE
   class ParticleEngineInterface;
 }
 
-namespace IO
-{
-  class DiscretizationReader;
-}
-
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/

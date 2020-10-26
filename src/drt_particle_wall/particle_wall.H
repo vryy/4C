@@ -25,11 +25,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
-{
-  class DiscretizationReader;
-}
-
 namespace PARTICLEWALL
 {
   class WallDataState;
