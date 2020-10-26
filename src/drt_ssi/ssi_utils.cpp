@@ -278,7 +278,7 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(
-    const SSI::SSI_Mono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
+    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
 {
   // first: build interface maps
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);

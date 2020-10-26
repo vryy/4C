@@ -44,8 +44,8 @@
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Base(comm, globaltimeparams),
+SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : SSIBase(comm, globaltimeparams),
       dtele_(0.0),
       dtsolve_(0.0),
       equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
@@ -75,7 +75,7 @@ SSI::SSI_Mono::SSI_Mono(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::AssembleMatAndRHS()
+void SSI::SSIMono::AssembleMatAndRHS()
 {
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
@@ -148,7 +148,7 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::BuildNullSpaces() const
+void SSI::SSIMono::BuildNullSpaces() const
 {
   switch (ScaTraField()->MatrixType())
   {
@@ -198,12 +198,12 @@ void SSI::SSI_Mono::BuildNullSpaces() const
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
-}  // SSI::SSI_Mono::BuildNullSpaces
+}  // SSI::SSIMono::BuildNullSpaces
 
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const
+const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
 {
   return MapsSubProblems()->FullMap();
 }
@@ -211,7 +211,7 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::FDCheck()
+void SSI::SSIMono::FDCheck()
 {
   // initial screen output
   if (Comm().MyPID() == 0)
@@ -486,7 +486,7 @@ void SSI::SSI_Mono::FDCheck()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-int SSI::SSI_Mono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+int SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
@@ -501,14 +501,13 @@ int SSI::SSI_Mono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   {
     case INPAR::SSI::scatratiminttype_elch:
     {
-      strategy_convcheck_ =
-          Teuchos::rcp(new SSI::SSI_Mono::ConvCheckStrategyElch(globaltimeparams));
+      strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElch(globaltimeparams));
       break;
     }
 
     case INPAR::SSI::scatratiminttype_standard:
     {
-      strategy_convcheck_ = Teuchos::rcp(new SSI::SSI_Mono::ConvCheckStrategyStd(globaltimeparams));
+      strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyStd(globaltimeparams));
       break;
     }
 
@@ -520,14 +519,14 @@ int SSI::SSI_Mono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   }
 
   // call base class routine
-  return SSI_Base::Init(
+  return SSIBase::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 }
 
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::Output()
+void SSI::SSIMono::Output()
 {
   // output scalar transport field
   ScaTraField()->Output();
@@ -538,7 +537,7 @@ void SSI::SSI_Mono::Output()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::PrepareTimeStep()
+void SSI::SSIMono::PrepareTimeStep()
 {
   // update time and time step
   IncrementTimeAndStep();
@@ -570,10 +569,10 @@ void SSI::SSI_Mono::PrepareTimeStep()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::Setup()
+void SSI::SSIMono::Setup()
 {
   // call base class routine
-  SSI_Base::Setup();
+  SSIBase::Setup();
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)
@@ -617,7 +616,7 @@ void SSI::SSI_Mono::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::SetupSystem()
+void SSI::SSIMono::SetupSystem()
 {
   // merge slave and master side block maps for interface matrix for scatra
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
@@ -761,7 +760,7 @@ void SSI::SSI_Mono::SetupSystem()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::SetupModelEvaluator() const
+void SSI::SSIMono::SetupModelEvaluator() const
 {
   // construct and register structural model evaluator if necessary
   if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
@@ -773,7 +772,7 @@ void SSI::SSI_Mono::SetupModelEvaluator() const
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::SolveLinearSystem()
+void SSI::SSIMono::SolveLinearSystem()
 {
   strategy_equilibration_->EquilibrateSystem(
       ssi_matrices_->SystemMatrix(), residual_, *MapsSystemMatrix());
@@ -788,7 +787,7 @@ void SSI::SSI_Mono::SolveLinearSystem()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::NewtonLoop()
+void SSI::SSIMono::NewtonLoop()
 {
   // reset counter for Newton-Raphson iteration
   ResetIterationCount();
@@ -852,7 +851,7 @@ void SSI::SSI_Mono::NewtonLoop()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::Timeloop()
+void SSI::SSIMono::Timeloop()
 {
   // output initial scalar transport solution to screen and files
   if (Step() == 0)
@@ -897,7 +896,7 @@ void SSI::SSI_Mono::Timeloop()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::Update()
+void SSI::SSIMono::Update()
 {
   // update scalar transport field
   ScaTraField()->Update();
@@ -908,7 +907,7 @@ void SSI::SSI_Mono::Update()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::UpdateIterScaTra()
+void SSI::SSIMono::UpdateIterScaTra()
 {
   // update scalar transport field
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
@@ -918,7 +917,7 @@ void SSI::SSI_Mono::UpdateIterScaTra()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::UpdateIterStructure()
+void SSI::SSIMono::UpdateIterStructure()
 {
   // set up structural increment vector
   const Teuchos::RCP<Epetra_Vector> increment_structure =
@@ -943,7 +942,7 @@ void SSI::SSI_Mono::UpdateIterStructure()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> SSI::SSI_Mono::GetBlockPositions(Subproblem subproblem) const
+Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subproblem) const
 {
   if (matrixtype_ == LINALG::MatrixType::sparse) dserror("Sparse matrices have just one block");
 
@@ -982,7 +981,7 @@ Teuchos::RCP<std::vector<int>> SSI::SSI_Mono::GetBlockPositions(Subproblem subpr
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-int SSI::SSI_Mono::GetProblemPosition(Subproblem subproblem) const
+int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
 {
   int position = -1;
 

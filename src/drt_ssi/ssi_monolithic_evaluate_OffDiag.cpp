@@ -115,8 +115,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   }
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -188,8 +186,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
       break;
     }
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -260,8 +256,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
       break;
     }
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -292,10 +286,12 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
       for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
+      {
         LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
             ADAPTER::CouplingSlaveConverter(*interface_coupling_structure_), mastermatrixsparse,
             true, true);
+      }
 
       // finalize auxiliary system matrix
       mastermatrixsparse.Complete(*interface_coupling_structure_->MasterDofMap(),
@@ -334,8 +330,6 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -375,6 +369,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   std::vector<DRT::Condition*> conditions;
   scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
   for (const auto& condition : conditions)
+  {
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       // collect condition specific data and store to scatra boundary parameter class
@@ -383,6 +378,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
       scatra_->ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
     }
+  }
 
   // finalize scatra-structure matrix block
   switch (scatra_->ScaTraField()->MatrixType())
@@ -411,6 +407,4 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
 
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }

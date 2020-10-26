@@ -21,7 +21,7 @@ namespace ADAPTER
 
 namespace SSI
 {
-  class SSI_Part;
+  class SSIPart;
 }
 
 namespace STR
@@ -32,12 +32,12 @@ namespace STR
     {
      public:
       //! constructor
-      PartitionedSSI(const Teuchos::RCP<const SSI::SSI_Part>
+      PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart>
               ssi_part  //!< partitioned algorithm for scalar-structure interaction
       );
 
       //! destructor
-      virtual ~PartitionedSSI() = default;
+      ~PartitionedSSI() override = default;
 
       //! setup class variables [derived]
       void Setup() override;
@@ -49,7 +49,7 @@ namespace STR
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override { return; };
+      void Reset(const Epetra_Vector& x) override{};
 
       //! [derived]
       bool EvaluateForce() override { return true; };
@@ -61,10 +61,10 @@ namespace STR
       bool EvaluateForceStiff() override { return true; };
 
       //! derived
-      void PreEvaluate() override { return; };
+      void PreEvaluate() override{};
 
       //! derived
-      void PostEvaluate() override { return; };
+      void PostEvaluate() override{};
 
       //! derived
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -74,16 +74,15 @@ namespace STR
 
       //! [derived]
       void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
-      {
-        return;
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override{
+
       };
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -91,37 +90,36 @@ namespace STR
 
       //! recover condensed Lagrange multipliers
       void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
-      {
-        return;
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override{
+
       };
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      void UpdateStepElement() override { return; };
+      void UpdateStepElement() override{};
 
       //! [derived]
-      void DetermineStressStrain() override { return; };
+      void DetermineStressStrain() override{};
 
       //! [derived]
-      void DetermineEnergy() override { return; };
+      void DetermineEnergy() override{};
 
       //! [derived]
-      void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override{};
 
       //! [derived]
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override{};
 
       //! derived
-      void ResetStepState() override { return; };
+      void ResetStepState() override{};
 
       //! [derived]
-      void PostOutput() override { return; };
+      void PostOutput() override{};
 
       //! [derived]
       Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
@@ -136,7 +134,7 @@ namespace STR
 
      private:
       //! partitioned algorithm for scalar-structure interaction
-      const Teuchos::RCP<const SSI::SSI_Part> ssi_part_;
+      const Teuchos::RCP<const SSI::SSIPart> ssi_part_;
     };  // class PartitionedSSI
 
   }  // namespace MODELEVALUATOR

@@ -18,8 +18,8 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Base(comm, globaltimeparams)
+SSI::SSIPart::SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : SSIBase(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -30,49 +30,45 @@ SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::SetupSystem() { return; }
+void SSI::SSIPart::SetupSystem() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int SSI::SSI_Part::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+int SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Base::Init(
+  int returnvar = SSI::SSIBase::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // safety check
   if (SSIInterfaceMeshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
+  {
     dserror(
         "Must have TangDis predictor for structural field in partitioned scalar-structure "
         "interaction simulations involving scatra-scatra interface coupling! Otherwise, Dirichlet "
         "boundary conditions on master-side degrees of freedom are not transferred to slave-side "
         "degrees of freedom!");
+  }
 
   return returnvar;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::Setup()
+void SSI::SSIPart::Setup()
 {
   // call setup of base class
-  SSI::SSI_Base::Setup();
-
-  return;
+  SSI::SSIBase::Setup();
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSI_Part::SetupModelEvaluator() const
+void SSI::SSIPart::SetupModelEvaluator() const
 {
   // build and register ssi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
       Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this, false)));
   StructureBaseAlgorithm()->RegisterModelEvaluator("Partitioned Coupling Model", ssi_model_ptr);
-
-  return;
 }

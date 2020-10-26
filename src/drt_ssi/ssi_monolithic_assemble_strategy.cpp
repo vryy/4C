@@ -23,14 +23,14 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBase::AssembleStrategyBase(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono)
+SSI::AssembleStrategyBase::AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
     : ssi_mono_(ssi_mono)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlock::AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono)
+SSI::AssembleStrategyBlock::AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
     : AssembleStrategyBase(ssi_mono), block_position_scatra_(Teuchos::null), position_structure_(-1)
 {
   block_position_scatra_ = ssi_mono_->GetBlockPositions(SSI::Subproblem::scalar_transport);
@@ -43,7 +43,7 @@ SSI::AssembleStrategyBlock::AssembleStrategyBlock(const Teuchos::RCP<const SSI::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
-    const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono)
+    const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
     : AssembleStrategyBlock(ssi_mono)
 {
 }
@@ -51,15 +51,14 @@ SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
-    const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono)
+    const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
     : AssembleStrategyBlock(ssi_mono)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategySparse::AssembleStrategySparse(
-    const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono)
+SSI::AssembleStrategySparse::AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
     : AssembleStrategyBase(ssi_mono)
 {
 }
@@ -726,7 +725,7 @@ void SSI::AssembleStrategyBase::CastMatrixSparse(Teuchos::RCP<LINALG::SparseOper
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
-    Teuchos::RCP<const SSI::SSI_Mono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
+    Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
     LINALG::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::AssembleStrategyBase> assemblestrategy = Teuchos::null;

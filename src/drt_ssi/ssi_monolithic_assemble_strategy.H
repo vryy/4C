@@ -24,7 +24,7 @@ namespace LINALG
 
 namespace SSI
 {
-  class SSI_Mono;
+  class SSIMono;
 }
 
 namespace SSI
@@ -45,7 +45,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     //! destructor
     virtual ~AssembleStrategyBase() = default;
@@ -114,7 +114,7 @@ namespace SSI
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlock() override = default;
 
@@ -164,7 +164,7 @@ namespace SSI
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlockBlock() override = default;
 
@@ -191,7 +191,7 @@ namespace SSI
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlockSparse() override = default;
 
@@ -218,7 +218,7 @@ namespace SSI
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategySparse() override = default;
 
@@ -244,7 +244,7 @@ namespace SSI
 
   //! build specific assemble strategy
   Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
-      Teuchos::RCP<const SSI::SSI_Mono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
+      Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
       LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI

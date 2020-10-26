@@ -127,9 +127,6 @@ namespace SSTI
     void AssembleStructureThermoDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure_thermo,
         const LINALG::SparseMatrix& structurethermodomain, bool zero);
 
-    void AssembleThermoScatraDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_scatra,
-        LINALG::SparseMatrix thermoscatradomain, bool zero);
-
     void AssembleThermoStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_structure,
         const LINALG::SparseMatrix& thermostructuredomain, bool zero);
 

@@ -49,15 +49,15 @@ namespace SSI
     structure
   };
 
-  class SSI_Mono : public SSI_Base
+  class SSIMono : public SSIBase
   {
    public:
     //! constructor
-    explicit SSI_Mono(const Epetra_Comm& comm,          //!< communicator
+    explicit SSIMono(const Epetra_Comm& comm,           //!< communicator
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
-    ~SSI_Mono() override = default;
+    ~SSIMono() override = default;
 
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
@@ -196,7 +196,7 @@ namespace SSI
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
 
     //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
+    Teuchos::RCP<const SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;

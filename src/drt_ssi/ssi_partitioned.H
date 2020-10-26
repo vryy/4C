@@ -14,14 +14,15 @@
 
 namespace SSI
 {
-  class SSI_Part : public SSI_Base
+  class SSIPart : public SSIBase
   {
    public:
     /// setup SSI algorithm
-    SSI_Part(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
-    virtual ~SSI_Part(){};
+    ~SSIPart() override = default;
+    ;
 
     /*!
     \brief Initialize this object
@@ -36,9 +37,9 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle);
+        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
 
     /*!
     \brief Setup vectors and pointers
@@ -53,13 +54,13 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup();
+    void Setup() override;
 
     /// setup of single fields (if needed)
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// time loop of coupled problem
-    virtual void Timeloop() = 0;
+    void Timeloop() override = 0;
 
    protected:
     /// prepare time step of single fields
@@ -75,7 +76,7 @@ namespace SSI
 
    private:
     //! set up structural model evaluator for scalar-structure interaction
-    void SetupModelEvaluator() const;
+    void SetupModelEvaluator() const override;
   };
 
 }  // namespace SSI

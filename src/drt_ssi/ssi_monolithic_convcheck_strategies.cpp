@@ -27,22 +27,21 @@ derived from an abstract, purely virtual interface class.
 /*----------------------------------------------------------------------*
  | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Mono::ConvCheckStrategyBase::ConvCheckStrategyBase(
+SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
     const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
     )
     : itermax_(parameters.get<int>("ITEMAX")),
       itertol_(parameters.sublist("MONOLITHIC").get<double>("CONVTOL")),
       restol_(parameters.sublist("MONOLITHIC").get<double>("ABSTOLRES"))
 {
-  return;
 }
 
 
 /*-----------------------------------------------------------------------*
  | check termination criterion for Newton-Raphson iteration   fang 11/17 |
  *-----------------------------------------------------------------------*/
-bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
-    const SSI::SSI_Mono& timint  //!< time integrator for monolithic scalar-structure interaction
+bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
+    const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
     ) const
 {
   // initialize exit flag
@@ -123,6 +122,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
   {
     // print current line of convergence table to screen
     if (timint.Comm().MyPID() == 0)
+    {
       std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
@@ -134,6 +134,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
                 << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
                 << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
                 << std::endl;
+    }
 
     // convergence check
     if (scatraresnorm <= itertol_ and structureresnorm <= itertol_ and
@@ -166,9 +167,11 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   // print finish line of convergence table to screen
   if (exit and timint.Comm().MyPID() == 0)
+  {
     std::cout << "+------------+-------------------+--------------+--------------+--------------+--"
                  "------------+"
               << std::endl;
+  }
 
   return exit;
 }  // SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson
@@ -177,7 +180,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson(
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 11/17 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono& timint) const
+bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& timint) const
 {
   // initialize exit flag
   bool exit(false);
@@ -291,6 +294,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
   {
     // print current line of convergence table to screen
     if (timint.Comm().MyPID() == 0)
+    {
       std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
@@ -304,6 +308,7 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
                 << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
                 << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
                 << std::endl;
+    }
 
     // convergence check
     if (concresnorm <= itertol_ and potresnorm <= itertol_ and structureresnorm <= itertol_ and
@@ -337,9 +342,11 @@ bool SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSI_Mono
 
   // print finish line of convergence table to screen
   if (exit and timint.Comm().MyPID() == 0)
+  {
     std::cout << "+------------+-------------------+--------------+--------------+--------------+--"
                  "------------+--------------+--------------+"
               << std::endl;
+  }
 
   return exit;
 }  // SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson

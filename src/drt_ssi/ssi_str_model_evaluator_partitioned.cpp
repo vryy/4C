@@ -27,18 +27,16 @@
 
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
-#include "Epetra_Comm.h"
 #include "../linalg/linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/18 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSI_Part>
+STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart>
         ssi_part  //!< partitioned algorithm for scalar-structure interaction
     )
     : ssi_part_(ssi_part)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -51,24 +49,25 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
   if (ssi_part_->SSIInterfaceMeshtying())
   {
     // cast old Jacobian
-    LINALG::SparseMatrix& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
+    auto& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
 
     // initialize new Jacobian
     LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
 
     // assemble interior and master-side rows and columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->MapStructureCondensed(), 1., NULL, NULL, jac_new);
+        *ssi_part_->MapStructureCondensed(), 1., nullptr, nullptr, jac_new);
 
     // transform and assemble slave-side rows of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
         *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
         *ssi_part_->MapStructureCondensed(), 1.0,
-        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), NULL, jac_new, true, true);
+        &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), nullptr, jac_new, true,
+        true);
 
     // transform and assemble slave-side columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0, NULL,
+        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0, nullptr,
         &ssi_part_->InterfaceCouplingAdapterStructureSlaveConverter(), jac_new, true, true);
 
     // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
@@ -98,13 +97,13 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
 {
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying())
+  {
     // transform and assemble master-side part of structural increment vector to slave side
     ssi_part_->MapsStructure()->InsertVector(
         *ssi_part_->InterfaceCouplingAdapterStructure()->MasterToSlave(
             ssi_part_->MapsStructure()->ExtractVector(dir_mutable, 2)),
         1, dir_mutable);
-
-  return;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -114,8 +113,6 @@ void STR::MODELEVALUATOR::PartitionedSSI::Setup()
   CheckInit();
   // set flag
   issetup_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -167,4 +164,4 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::UpdateStepState(const double& timefac_n) { return; }
+void STR::MODELEVALUATOR::PartitionedSSI::UpdateStepState(const double& timefac_n) {}

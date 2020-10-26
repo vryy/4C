@@ -12,15 +12,11 @@
 #include "ssi_partitioned_1wc.H"
 #include "ssi_partitioned_2wc.H"
 #include "ssi_utils.H"
-#include "../drt_inpar/inpar_ssi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -32,25 +28,23 @@ void ssi_drt()
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // 2.- Parameter reading
-  Teuchos::ParameterList& ssiparams =
-      const_cast<Teuchos::ParameterList&>(problem->SSIControlParams());
+  auto& ssiparams = const_cast<Teuchos::ParameterList&>(problem->SSIControlParams());
   // access scatra params list
-  Teuchos::ParameterList& scatradyn =
-      const_cast<Teuchos::ParameterList&>(problem->ScalarTransportDynamicParams());
+  auto& scatradyn = const_cast<Teuchos::ParameterList&>(problem->ScalarTransportDynamicParams());
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  Teuchos::ParameterList& sdyn =
+  auto& sdyn =
       const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
 
   //  //Modification of time parameter list
   SSI::UTILS::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
 
-  const INPAR::SSI::SolutionSchemeOverFields coupling =
+  const auto coupling =
       DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
 
 
   // 3.- Creation of Structure + Scalar_Transport problem.
-  Teuchos::RCP<SSI::SSI_Base> ssi = Teuchos::null;
+  Teuchos::RCP<SSI::SSIBase> ssi = Teuchos::null;
 
   // by default we employ an ale formulation for our scatra
   bool isale = true;
@@ -60,30 +54,30 @@ void ssi_drt()
   {
     case INPAR::SSI::ssi_OneWay_ScatraToSolid:
     {
-      ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart1WCScatraToSolid(comm, ssiparams));
       isale = false;
     }
     break;
     case INPAR::SSI::ssi_OneWay_SolidToScatra:
-      ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart1WCSolidToScatra(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_IterStagg:
-      ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart2WC(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
-      ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelax(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
-      ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelax(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
-      ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelaxAitken(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
-      ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelaxAitken(comm, ssiparams));
       break;
     case INPAR::SSI::ssi_Monolithic:
-      ssi = Teuchos::rcp(new SSI::SSI_Mono(comm, ssiparams));
+      ssi = Teuchos::rcp(new SSI::SSIMono(comm, ssiparams));
       break;
     default:
       dserror("unknown coupling algorithm for SSI!");
@@ -96,8 +90,7 @@ void ssi_drt()
 
   // 3.1.2 init the chosen ssi algorithm
   // Construct time integrators of subproblems inside.
-  int redistribute = (int)SSI::none;
-  redistribute = ssi->Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
+  int redistribute = ssi->Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
 
   // 3.1.3 Redistribute discretizations if necessary
   if (redistribute == (int)SSI::match)
@@ -141,7 +134,6 @@ void ssi_drt()
   const double restarttime = problem->RestartTime();
   if (restarttime > 0.0)
     ssi->ReadRestartfromTime(restarttime);
-
   else if (restart)
     ssi->ReadRestart(restart);
 

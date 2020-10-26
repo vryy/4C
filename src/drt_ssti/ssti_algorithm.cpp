@@ -397,21 +397,21 @@ void SSTI::SSTIAlgorithm::AssignMaterialPointers()
 const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ScaTraField() const
 {
   return scatra_->ScaTraField();
-};
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 {
   return thermo_->ScaTraField();
-};
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::CheckIsInit()
 {
   if (not isinit_) dserror("Init(...) was not called.");
-};
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

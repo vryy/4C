@@ -21,8 +21,8 @@ namespace DRT
 namespace SSI
 {
   // forward declarations
-  class SSI_Base;
-  class SSI_Mono;
+  class SSIBase;
+  class SSIMono;
 
   /*!
     \brief result testing functionality for scalar-structure interaction problems
@@ -40,7 +40,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
+    SSIResultTest(const Teuchos::RCP<const SSI::SSIBase>
             ssi_base  //!< time integrator for scalar-structure interaction
     );
 
@@ -49,19 +49,19 @@ namespace SSI
         DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
         int& nerr,                        //!< number of failed result tests
         int& test_count                   //!< number of result tests
-    );
+        ) override;
 
     //! test special quantity not associated with a particular element or node
     void TestSpecial(
         DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
         int& nerr,                        //!< number of failed result tests
         int& test_count                   //!< number of result tests
-    );
+        ) override;
 
    private:
     //! get nodal result to be tested
-    double ResultNode(const std::string quantity,  //!< name of quantity to be tested
-        DRT::Node* node                            //!< node carrying the result to be tested
+    double ResultNode(const std::string& quantity,  //!< name of quantity to be tested
+        DRT::Node* node                             //!< node carrying the result to be tested
         ) const;
 
     //! get special result to be tested
@@ -69,10 +69,10 @@ namespace SSI
         ) const;
 
     //! return time integrator for monolithic scalar-structure interaction
-    const SSI::SSI_Mono& SSI_Mono() const;
+    const SSI::SSIMono& SSIMono() const;
 
     //! time integrator for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSI_Base> ssi_base_;
+    const Teuchos::RCP<const SSI::SSIBase> ssi_base_;
   };
 }  // namespace SSI
 #endif
