@@ -52,10 +52,7 @@ namespace SSTI
   class SSTIMaps
   {
    public:
-    SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo,
-        Teuchos::RCP<ADAPTER::Coupling> icoupstructure, bool interfacemeshyting);
+    SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm);
 
     virtual ~SSTIMaps() = default;
 
@@ -128,10 +125,7 @@ namespace SSTI
   class SSTIMapsMono : public SSTIMaps
   {
    public:
-    SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo,
-        Teuchos::RCP<ADAPTER::Coupling> icoupstructure, bool interfacemeshyting);
+    SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm);
 
     ~SSTIMapsMono() override = default;
 
