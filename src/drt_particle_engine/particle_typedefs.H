@@ -43,26 +43,26 @@ namespace DRT
 namespace PARTICLEENGINE
 {
   //! particle type enum
-  typedef enum PARTICLEENGINE::ParticleType TypeEnum;
+  using TypeEnum = PARTICLEENGINE::ParticleType;
 
   //! particle status enum
-  typedef enum PARTICLEENGINE::ParticleStatus StatusEnum;
+  using StatusEnum = PARTICLEENGINE::ParticleStatus;
 
   //! particle state enum
-  typedef enum PARTICLEENGINE::ParticleState StateEnum;
+  using StateEnum = PARTICLEENGINE::ParticleState;
 
   //! states of particle indexed by particle state enum
-  typedef std::vector<std::vector<double>> ParticleStates;
+  using ParticleStates = std::vector<std::vector<double>>;
 
   //! shared pointer to particle object
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
+  using ParticleObjShrdPtr = std::shared_ptr<PARTICLEENGINE::ParticleObject>;
 
   //! collection of particle containers indexed by particle type enum and particle status enum
-  typedef std::vector<std::vector<std::shared_ptr<PARTICLEENGINE::ParticleContainer>>>
-      TypeStatusContainers;
+  using TypeStatusContainers =
+      std::vector<std::vector<std::shared_ptr<PARTICLEENGINE::ParticleContainer>>>;
 
   //! shared pointer to particle container bundle
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle> ParticleContainerBundleShrdPtr;
+  using ParticleContainerBundleShrdPtr = std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle>;
 
   /*!
    * \brief local index tuple of a particle
@@ -70,10 +70,10 @@ namespace PARTICLEENGINE
    * Local index tuple of a particle consisting of particle type enum, particle status enum, and
    * index of particle in container.
    */
-  typedef std::tuple<TypeEnum, StatusEnum, int> LocalIndexTuple;
+  using LocalIndexTuple = std::tuple<TypeEnum, StatusEnum, int>;
 
   //! shared pointer to local index tuple of a particle
-  typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
+  using LocalIndexTupleShrdPtr = std::shared_ptr<LocalIndexTuple>;
 
   /*!
    * \brief relate particles to corresponding bins being located in
@@ -85,13 +85,13 @@ namespace PARTICLEENGINE
    * \note The information of the particle status (owned or ghosted) can be deduced directly from
    *       the status of the bin.
    */
-  typedef std::vector<std::vector<std::pair<TypeEnum, int>>> ParticlesToBins;
+  using ParticlesToBins = std::vector<std::vector<std::pair<TypeEnum, int>>>;
 
   //! potential particle neighbor pairs
-  typedef std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>> PotentialParticleNeighbors;
+  using PotentialParticleNeighbors = std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>>;
 
   //! relate particle type enums and particle state enums to be refreshed
-  typedef std::vector<std::pair<TypeEnum, std::vector<StateEnum>>> StatesOfTypesToRefresh;
+  using StatesOfTypesToRefresh = std::vector<std::pair<TypeEnum, std::vector<StateEnum>>>;
 
   /*!
    * \brief relate range of owned bins to corresponding column wall element
@@ -99,10 +99,10 @@ namespace PARTICLEENGINE
    * Relate the range of owned bins (global id of bin) to the column wall element occupying that
    * bins. The column wall elements are indexed by the local id of their column map.
    */
-  typedef std::vector<std::vector<int>> BinsToColWallEles;
+  using BinsToColWallEles = std::vector<std::vector<int>>;
 
   //! potential particle wall neighbor pairs
-  typedef std::vector<std::pair<LocalIndexTuple, DRT::Element*>> PotentialWallNeighbors;
+  using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, DRT::Element*>>;
 
 }  // namespace PARTICLEENGINE
 

@@ -36,23 +36,23 @@ namespace PARTICLEENGINE
 }
 
 /*---------------------------------------------------------------------------*
- | type definitions                                           sfuchs 03/2019 |
+ | type definitions                                                          |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairTangential>
-      TouchedDEMHistoryPairTangential;
-  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairTangential>>
-      DEMHistoryPairTangentialData;
+  using TouchedDEMHistoryPairTangential =
+      std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairTangential>;
+  using DEMHistoryPairTangentialData =
+      std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairTangential>>;
 
-  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairRolling> TouchedDEMHistoryPairRolling;
-  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairRolling>>
-      DEMHistoryPairRollingData;
+  using TouchedDEMHistoryPairRolling = std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairRolling>;
+  using DEMHistoryPairRollingData =
+      std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairRolling>>;
 
-  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairAdhesion>
-      TouchedDEMHistoryPairAdhesion;
-  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairAdhesion>>
-      DEMHistoryPairAdhesionData;
+  using TouchedDEMHistoryPairAdhesion =
+      std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairAdhesion>;
+  using DEMHistoryPairAdhesionData =
+      std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairAdhesion>>;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*

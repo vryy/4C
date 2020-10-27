@@ -34,12 +34,12 @@ namespace PARTICLEWALL
 }
 
 /*---------------------------------------------------------------------------*
- | type definitions                                           sfuchs 01/2019 |
+ | type definitions                                                          |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::vector<PARTICLEINTERACTION::DEMParticlePair> DEMParticlePairData;
-  typedef std::vector<PARTICLEINTERACTION::DEMParticleWallPair> DEMParticleWallPairData;
+  using DEMParticlePairData = std::vector<PARTICLEINTERACTION::DEMParticlePair>;
+  using DEMParticleWallPairData = std::vector<PARTICLEINTERACTION::DEMParticleWallPair>;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
