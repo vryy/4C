@@ -87,9 +87,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraDomain(
   CastMatrixBlock(scatradomain, scatradomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
-    for (int jblock = 0; jblock < BlockPositionScaTra()->size(); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
     {
       systemmatrix_block->Assign(BlockPositionScaTra()->at(iblock),
           BlockPositionScaTra()->at(jblock), LINALG::View,
@@ -251,9 +251,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoDomain(
   CastMatrixBlock(thermodomain, thermodomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionThermo()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
   {
-    for (int jblock = 0; jblock < BlockPositionThermo()->size(); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo()->size()); ++jblock)
     {
       systemmatrix_block->Assign(BlockPositionThermo()->at(iblock),
           BlockPositionThermo()->at(jblock), LINALG::View,
@@ -314,7 +314,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
   CastMatrixBlock(scatrastructuredomain, scatrastructuredomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     const auto scatrastructuredomain_subblock = scatrastructuredomain_block->Matrix(iblock, 0);
 
@@ -422,7 +422,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
 
   // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs
   // and assemble into auxiliary system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     const auto scatrastructureinterface_subblock =
         scatrastructureinterface_block->Matrix(iblock, 0);
@@ -488,9 +488,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 
   LINALG::SparseMatrix masterderiv(*scatrainterface, 27, false, true);
 
-  for (int i = 0; i < BlockPositionScaTra()->size(); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionScaTra()->size()); ++i)
   {
-    for (int j = 0; j < BlockPositionThermo()->size(); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionThermo()->size()); ++j)
     {
       const auto scatrathermointerface_subblock = scatrathermointerface_block->Matrix(i, j);
 
@@ -522,9 +522,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 
   blockmasterderiv->Complete();
 
-  for (int i = 0; i < BlockPositionScaTra()->size(); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionScaTra()->size()); ++i)
   {
-    for (int j = 0; j < BlockPositionThermo()->size(); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionThermo()->size()); ++j)
     {
       const auto masterderiv_subblock = blockmasterderiv->Matrix(i, j);
 
@@ -616,7 +616,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
   CastMatrixBlock(structurescatradomain, structurescatradomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     const auto structurescatradomain_subblock = structurescatradomain_block->Matrix(0, iblock);
 
@@ -722,9 +722,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraDomain(
   CastMatrixBlock(thermoscatradomain, thermoscatradomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionThermo()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
   {
-    for (int jblock = 0; jblock < BlockPositionScaTra()->size(); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
     {
       const auto thermoscatradomain_subblock = thermoscatradomain_block->Matrix(iblock, jblock);
       LINALG::MatrixLogicalSplitAndTransform()(thermoscatradomain_subblock,
@@ -791,9 +791,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
   LINALG::SparseMatrix masterflux(
       *ssti_mono_->MeshtyingThermo()->CouplingAdapter()->MasterDofMap(), 27, false, true);
 
-  for (int i = 0; i < BlockPositionThermo()->size(); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionThermo()->size()); ++i)
   {
-    for (int j = 0; j < BlockPositionScaTra()->size(); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionScaTra()->size()); ++j)
     {
       const auto scatrathermointerface_subblock = thermoscatrainterface_block->Matrix(i, j);
 
@@ -834,9 +834,9 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
 
   blockmasterflux->Complete();
 
-  for (int i = 0; i < BlockPositionThermo()->size(); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionThermo()->size()); ++i)
   {
-    for (int j = 0; j < BlockPositionScaTra()->size(); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionScaTra()->size()); ++j)
     {
       auto blockmasterflux_subblock = blockmasterflux->Matrix(i, j);
 
@@ -929,7 +929,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureDomain(
   CastMatrixBlock(thermostructuredomain, thermostructuredomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionThermo()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
   {
     const auto thermostructuredomain_subblock = thermostructuredomain_block->Matrix(iblock, 0);
 
@@ -1033,7 +1033,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructureInterface(
 
   // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs
   // and assemble into auxiliary system matrix
-  for (int iblock = 0; iblock < BlockPositionThermo()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
   {
     const auto thermostructureinterface_subblock =
         thermostructureinterface_block->Matrix(iblock, 0);
@@ -1096,7 +1096,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermoDomain(
   CastMatrixBlock(structurethermodomain, structurethermodomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionThermo()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
   {
     const auto structurethermodomain_subblock = structurethermodomain_block->Matrix(0, iblock);
 

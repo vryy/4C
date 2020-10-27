@@ -78,9 +78,9 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraDomain(
   CastMatrixBlock(scatradomain, scatradomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
-    for (int jblock = 0; jblock < BlockPositionScaTra()->size(); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
     {
       systemmatrix_block->Assign(BlockPositionScaTra()->at(iblock),
           BlockPositionScaTra()->at(jblock), LINALG::View,
@@ -243,7 +243,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
   CastMatrixBlock(scatrastructuredomain, scatrastructuredomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     // add entire block or assemble slave side to master side
     if (!ssi_mono_->SSIInterfaceMeshtying())
@@ -346,7 +346,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
 
   // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
   // assemble into auxiliary system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     // assemble scatra-structure-interface into system matrix
     AssembleScatraStructureDomainMeshtying(
@@ -406,7 +406,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
   CastMatrixBlock(structurescatradomain, structurescatradomain_block);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < BlockPositionScaTra()->size(); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     // add entire block or assemble slave side to master side
     if (!ssi_mono_->SSIInterfaceMeshtying())

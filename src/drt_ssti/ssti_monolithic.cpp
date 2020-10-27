@@ -605,9 +605,9 @@ Teuchos::RCP<std::vector<int>> SSTI::SSTIMono::GetBlockPositions(Subproblem subp
 
   Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
 
-  switch (static_cast<int>(subproblem))
+  switch (subproblem)
   {
-    case static_cast<int>(Subproblem::structure):
+    case Subproblem::structure:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
         block_position->emplace_back(1);
@@ -615,7 +615,7 @@ Teuchos::RCP<std::vector<int>> SSTI::SSTIMono::GetBlockPositions(Subproblem subp
         block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
       break;
     }
-    case static_cast<int>(Subproblem::scalar_transport):
+    case Subproblem::scalar_transport:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
         block_position->emplace_back(0);
@@ -627,7 +627,7 @@ Teuchos::RCP<std::vector<int>> SSTI::SSTIMono::GetBlockPositions(Subproblem subp
       }
       break;
     }
-    case static_cast<int>(Subproblem::thermo):
+    case Subproblem::thermo:
     {
       if (ThermoField()->MatrixType() == LINALG::MatrixType::sparse)
         block_position->emplace_back(2);
@@ -654,19 +654,19 @@ int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
 {
   int position = -1;
 
-  switch (static_cast<int>(subproblem))
+  switch (subproblem)
   {
-    case static_cast<int>(Subproblem::structure):
+    case Subproblem::structure:
     {
       position = 1;
       break;
     }
-    case static_cast<int>(Subproblem::scalar_transport):
+    case Subproblem::scalar_transport:
     {
       position = 0;
       break;
     }
-    case static_cast<int>(Subproblem::thermo):
+    case Subproblem::thermo:
     {
       position = 2;
       break;

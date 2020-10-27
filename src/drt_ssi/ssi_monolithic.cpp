@@ -673,7 +673,8 @@ void SSI::SSIMono::SetupSystem()
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
           GetBlockPositions(Subproblem::scalar_transport)->size() +
           GetBlockPositions(Subproblem::structure)->size());
-      for (int imap = 0; imap < GetBlockPositions(Subproblem::scalar_transport)->size(); ++imap)
+      for (int imap = 0;
+           imap < static_cast<int>(GetBlockPositions(Subproblem::scalar_transport)->size()); ++imap)
       {
         maps_systemmatrix[GetBlockPositions(Subproblem::scalar_transport)->at(imap)] =
             maps_scatra_->Map(imap);
@@ -948,9 +949,9 @@ Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subpro
 
   Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
 
-  switch (static_cast<int>(subproblem))
+  switch (subproblem)
   {
-    case static_cast<int>(Subproblem::structure):
+    case Subproblem::structure:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
         block_position->emplace_back(1);
@@ -958,13 +959,13 @@ Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subpro
         block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
       break;
     }
-    case static_cast<int>(Subproblem::scalar_transport):
+    case Subproblem::scalar_transport:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
         block_position->emplace_back(0);
       else
       {
-        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps().NumMaps()); ++i)
+        for (int i = 0; i < ScaTraField()->BlockMaps().NumMaps(); ++i)
           block_position->emplace_back(i);
       }
       break;
@@ -985,14 +986,14 @@ int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
 {
   int position = -1;
 
-  switch (static_cast<int>(subproblem))
+  switch (subproblem)
   {
-    case static_cast<int>(Subproblem::structure):
+    case Subproblem::structure:
     {
       position = 1;
       break;
     }
-    case static_cast<int>(Subproblem::scalar_transport):
+    case Subproblem::scalar_transport:
     {
       position = 0;
       break;

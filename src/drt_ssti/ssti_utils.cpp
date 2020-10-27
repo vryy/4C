@@ -80,16 +80,16 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     }
   }
 
-  // set up map for interior and master-side structural degrees of freedom
-  map_structure_condensed_ = LINALG::SplitMap(*ssti_mono_algorithm.StructureField()->DofRowMap(),
-      *ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
-
   maps_scatra_->CheckForValidMapExtractor();
   maps_structure_->CheckForValidMapExtractor();
   maps_thermo_->CheckForValidMapExtractor();
 
   if (ssti_mono_algorithm.InterfaceMeshtying())
   {
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_condensed_ = LINALG::SplitMap(*ssti_mono_algorithm.StructureField()->DofRowMap(),
+        *ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
+
     // set up structural map extractor holding interface maps of dofs
     std::vector<Teuchos::RCP<const Epetra_Map>> maps_interface(0, Teuchos::null);
     maps_interface.emplace_back(ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
@@ -219,14 +219,14 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
           block_positions_scatra->size() + block_positions_structure->size() +
           block_positions_thermo->size());
-      for (int imap = 0; imap < block_positions_scatra->size(); ++imap)
+      for (int imap = 0; imap < static_cast<int>(block_positions_scatra->size()); ++imap)
         maps_systemmatrix[block_positions_scatra->at(imap)] = MapsScatra()->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
       maps_systemmatrix[block_positions_structure->at(0)] = MapsStructure()->FullMap();
 
-      for (int imap = 0; imap < block_positions_thermo->size(); ++imap)
+      for (int imap = 0; imap < static_cast<int>(block_positions_thermo->size()); ++imap)
         maps_systemmatrix[block_positions_thermo->at(imap)] = MapsThermo()->Map(imap);
 
       // initialize map extractor associated with blocks of global system matrix
