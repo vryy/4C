@@ -21,11 +21,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
-{
-  class DiscretizationReader;
-}
-
 namespace PARTICLEALGORITHM
 {
   class DirichletBoundaryConditionHandler;

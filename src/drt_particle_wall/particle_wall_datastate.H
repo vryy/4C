@@ -23,11 +23,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
-{
-  class DiscretizationReader;
-}
-
 namespace DRT
 {
   class Discretization;
