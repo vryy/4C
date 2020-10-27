@@ -574,10 +574,9 @@ namespace LINALG
 
   Teuchos::RCP<LINALG::SparseMatrix> Eye(const Epetra_Map& map);
 
-  //! Cast Matrix of type SparseOperator to SparseMatrix
-  Teuchos::RCP<LINALG::SparseMatrix> CastToSparseMatrix(
+  //! Cast matrix of type SparseOperator to SparseMatrix and check if cast was successful
+  Teuchos::RCP<LINALG::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
       Teuchos::RCP<LINALG::SparseOperator> input_matrix);
-
 }  // namespace LINALG
 
 

@@ -1939,7 +1939,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrix(
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);

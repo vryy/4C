@@ -726,7 +726,7 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockMatrixBase(
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto block_matrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(input_matrix);

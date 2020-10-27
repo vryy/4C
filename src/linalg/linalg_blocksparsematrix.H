@@ -461,8 +461,8 @@ namespace LINALG
   Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> BlockMatrix2x2(
       SparseMatrix& A00, SparseMatrix& A01, SparseMatrix& A10, SparseMatrix& A11);
 
-  //! Cast Matrix of type SparseOperator to BlockSparseMatrixBase
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> CastToBlockMatrixBase(
+  //! Cast matrix of type SparseOperator to BlockSparseMatrixBase and check if cast was successful
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> CastToBlockSparseMatrixBaseAndCheckSuccess(
       Teuchos::RCP<LINALG::SparseOperator> input_matrix);
 
   //////////////////////////////////
