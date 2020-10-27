@@ -26,6 +26,7 @@
 #include "particle_interaction_sph_open_boundary.H"
 #include "particle_interaction_sph_virtual_wall_particle.H"
 #include "particle_interaction_sph_phase_change.H"
+#include "particle_interaction_sph_rigid_particle_contact.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -92,6 +93,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init phase change handler
   InitPhaseChangeHandler();
 
+  // init rigid particle contact handler
+  InitRigidParticleContactHandler();
+
   // safety check
   if (surfacetension_ and virtualwallparticle_)
     dserror("surface tension formulation with wall interaction not implemented!");
@@ -152,6 +156,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   // setup phase change handler
   if (phasechange_)
     phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+
+  // setup rigid particle contact handler
+  if (rigidparticlecontact_) rigidparticlecontact_->Setup(particleengineinterface, neighborpairs_);
 
   // short screen output
   if ((dirichletopenboundary_ or neumannopenboundary_) and
@@ -369,6 +376,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+
+  // add rigid particle contact contribution to force field
+  if (rigidparticlecontact_) rigidparticlecontact_->AddForceContribution();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
@@ -764,4 +774,37 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 
   // init phase change handler
   if (phasechange_) phasechange_->Init();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitRigidParticleContactHandler()
+{
+  // get type of rigid particle contact
+  INPAR::PARTICLE::RigidParticleContactType rigidparticlecontacttype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RigidParticleContactType>(
+          params_sph_, "RIGIDPARTICLECONTACTTYPE");
+
+  // create rigid particle contact handler
+  switch (rigidparticlecontacttype)
+  {
+    case INPAR::PARTICLE::NoRigidParticleContact:
+    {
+      rigidparticlecontact_ =
+          std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::ElasticRigidParticleContact:
+    {
+      rigidparticlecontact_ = std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactElastic>(
+          new PARTICLEINTERACTION::SPHRigidParticleContactElastic(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown rigid particle contact type!");
+      break;
+    }
+  }
+
+  // init rigid particle contact handler
+  if (rigidparticlecontact_) rigidparticlecontact_->Init();
 }

@@ -193,6 +193,13 @@ namespace INPAR
       TwoWayScalarPhaseChange
     };
 
+    //! type of rigid particle contact
+    enum RigidParticleContactType
+    {
+      NoRigidParticleContact,
+      ElasticRigidParticleContact
+    };
+
     /*---------------------------------------------------------------------------*
      | discrete element method (DEM) specific control parameters                 |
      *---------------------------------------------------------------------------*/

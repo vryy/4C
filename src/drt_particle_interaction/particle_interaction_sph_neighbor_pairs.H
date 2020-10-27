@@ -39,14 +39,14 @@ namespace PARTICLEINTERACTION
 }
 
 /*---------------------------------------------------------------------------*
- | type definitions                                           sfuchs 01/2019 |
+ | type definitions                                                          |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::vector<PARTICLEINTERACTION::SPHParticlePair> SPHParticlePairData;
-  typedef std::vector<PARTICLEINTERACTION::SPHParticleWallPair> SPHParticleWallPairData;
-  typedef std::vector<std::vector<std::vector<int>>> SPHIndexOfParticlePairs;
-  typedef std::vector<std::vector<int>> SPHIndexOfParticleWallPairs;
+  using SPHParticlePairData = std::vector<PARTICLEINTERACTION::SPHParticlePair>;
+  using SPHParticleWallPairData = std::vector<PARTICLEINTERACTION::SPHParticleWallPair>;
+  using SPHIndexOfParticlePairs = std::vector<std::vector<std::vector<int>>>;
+  using SPHIndexOfParticleWallPairs = std::vector<std::vector<int>>;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*

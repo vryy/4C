@@ -1190,6 +1190,7 @@ baci_test(particle_sph_2d_bubble_continuumsurfaceforce_twophase_equaldensity_tem
 baci_test(particle_sph_2d_wetting_continuumsurfaceforce_twophase_equaldensity 2 400)
 baci_test(particle_sph_2d_wetting_heatsource_volume_phasechange 2 "")
 baci_test(particle_sph_2d_wetting_heatsource_surface_phasechange 2 "")
+baci_test(particle_sph_2d_rigidbody_gravity 2 800)
 baci_test(particle_sph_2d_rigidbody_induced_trans_and_rot 2 128)
 baci_test(particle_sph_3d_cube_virtualwall_densitysummation 2 256)
 baci_test(particle_sph_3d_hydrostatic_virtualwall_densitysummation 2 256)

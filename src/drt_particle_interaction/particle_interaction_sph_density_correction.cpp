@@ -32,9 +32,6 @@ void PARTICLEINTERACTION::SPHDensityCorrectionBase::Setup()
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
-  | set corrected density of interior particles               sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityCorrectionBase::CorrectedDensityInterior(
     const double* denssum, double* dens) const
 {
@@ -49,9 +46,6 @@ PARTICLEINTERACTION::SPHDensityCorrectionInterior::SPHDensityCorrectionInterior(
 
 bool PARTICLEINTERACTION::SPHDensityCorrectionInterior::ComputeDensityBC() const { return false; }
 
-/*---------------------------------------------------------------------------*
-  | set corrected density of free surface particles           sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityCorrectionInterior::CorrectedDensityFreeSurface(
     const double* denssum, const double* colorfield, const double* dens_bc, double* dens) const
 {
@@ -66,9 +60,6 @@ PARTICLEINTERACTION::SPHDensityCorrectionNormalized::SPHDensityCorrectionNormali
 
 bool PARTICLEINTERACTION::SPHDensityCorrectionNormalized::ComputeDensityBC() const { return false; }
 
-/*---------------------------------------------------------------------------*
-  | set corrected density of free surface particles           sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityCorrectionNormalized::CorrectedDensityFreeSurface(
     const double* denssum, const double* colorfield, const double* dens_bc, double* dens) const
 {
