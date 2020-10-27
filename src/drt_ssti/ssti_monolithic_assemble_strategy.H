@@ -130,14 +130,6 @@ namespace SSTI
     void AssembleThermoStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_structure,
         const LINALG::SparseMatrix& thermostructuredomain, bool zero);
 
-    //! cast matrix to block matrix
-    void CastMatrixBlock(Teuchos::RCP<LINALG::SparseOperator> input_matrix,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& block_matrix);
-
-    //! cast matrix to sparse matrix
-    void CastMatrixSparse(Teuchos::RCP<LINALG::SparseOperator> input_matrix,
-        Teuchos::RCP<LINALG::SparseMatrix>& sparse_matrix);
-
     //! structural coupling converter
     ADAPTER::CouplingSlaveConverter converter_;
 

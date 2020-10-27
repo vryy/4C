@@ -97,14 +97,6 @@ namespace SSI
     void AssembleStructureScatraDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure_scatra,
         const LINALG::SparseMatrix& structurescatradomain, bool zero);
 
-    //! cast matrix to block matrix
-    void CastMatrixBlock(Teuchos::RCP<LINALG::SparseOperator> input_matrix,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& block_matrix);
-
-    //! cast matrix to sparse matrix
-    void CastMatrixSparse(Teuchos::RCP<LINALG::SparseOperator> input_matrix,
-        Teuchos::RCP<LINALG::SparseMatrix>& sparse_matrix);
-
     //! monolithic algorithm for scalar-structure interaction
     const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
   };

@@ -1936,3 +1936,14 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
   eye->Complete();
   return eye;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> input_matrix)
+{
+  auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);
+  if (sparse_matrix == Teuchos::null) dserror("Matrix is not a sparse matrix!");
+
+  return sparse_matrix;
+}

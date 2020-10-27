@@ -723,3 +723,14 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
   ghost_.clear();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockMatrixBase(
+    Teuchos::RCP<LINALG::SparseOperator> input_matrix)
+{
+  auto block_matrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(input_matrix);
+  if (block_matrix == Teuchos::null) dserror("Matrix is not a block matrix!");
+
+  return block_matrix;
+}
