@@ -95,6 +95,9 @@ namespace STR
     double GetReactionForce(
         LINALG::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
 
+    double GetReactionMoment(LINALG::Matrix<3, 1>& rmoment_xyz,
+        const Teuchos::RCP<Epetra_Map>* react_maps, const DRT::Condition* rcond) const;
+
     std::vector<std::string> CreateFilePaths(
         const std::vector<Teuchos::RCP<DRT::Condition>>& rconds, const std::string& full_dirpath,
         const std::string& filename_only_prefix, const std::string& file_type) const;
@@ -108,15 +111,17 @@ namespace STR
     void WriteColumnHeader(std::ostream& os, const int col_width) const;
 
     void WriteResultsToFile(const std::string& full_filepath, const LINALG::Matrix<DIM, 1>& rforce,
-        const double& area_ref, const double& area_curr) const;
+        const LINALG::Matrix<DIM, 1>& rmoment, const double& area_ref,
+        const double& area_curr) const;
 
     void WriteResultsToScreen(const Teuchos::RCP<DRT::Condition>& rcond_ptr,
-        const LINALG::Matrix<DIM, 1>& rforce, const double& area_ref,
-        const double& area_curr) const;
+        const LINALG::Matrix<DIM, 1>& rforce, const LINALG::Matrix<DIM, 1>& rmoment,
+        const double& area_ref, const double& area_curr) const;
 
     void WriteResults(std::ostream& os, const int col_width, const int precision,
         const unsigned step, const double time, const LINALG::Matrix<DIM, 1>& rforce,
-        const double& area_ref, const double& area_cur) const;
+        const LINALG::Matrix<DIM, 1>& rmoment, const double& area_ref,
+        const double& area_cur) const;
 
     inline const Epetra_Comm& Comm() const;
 
