@@ -6,7 +6,7 @@ PROBLEMTYP                      Particle
 RANDSEED                        1
 RESTART                         0
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      1
+STDOUTEVRY                      50
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            5.0
