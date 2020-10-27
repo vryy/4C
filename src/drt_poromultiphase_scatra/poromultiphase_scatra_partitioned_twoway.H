@@ -69,11 +69,17 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Vector> structincnp_;
     //! fluid increment of the outer loop
     Teuchos::RCP<Epetra_Vector> fluidincnp_;
+    //! artery scatra increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> artscaincnp_;
+    //! artery pressure increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> arterypressincnp_;
 
     //! maximum iteration steps
     int itmax_;
     //! convergence tolerance
     double ittol_;
+    //! is artery coupling active
+    bool artery_coupling_active_;
 
 
   };  // PoroMultiPhaseScatraPartitionedTwoWay
