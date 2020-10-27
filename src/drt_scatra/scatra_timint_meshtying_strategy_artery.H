@@ -144,7 +144,18 @@ namespace SCATRA
     //! check if initial fields match
     void CheckInitialFields() const;
 
+    //! update increment of 1D discretization
     void UpdateArtScatraIter(Teuchos::RCP<const Epetra_Vector> combined_inc);
+
+    /*!
+     * extract single field vectors
+     * @param[i] globalvec combined 1D-3D vector
+     * @param[o] vec_cont  3D vector
+     * @param[o] vec_art   1D vector
+     */
+    void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+        Teuchos::RCP<const Epetra_Vector>& vec_cont,
+        Teuchos::RCP<const Epetra_Vector>& vec_art) const;
 
    private:
     //! initialize the linear solver

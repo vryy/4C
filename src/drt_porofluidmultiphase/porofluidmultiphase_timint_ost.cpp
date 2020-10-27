@@ -82,7 +82,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::PrintTimeStepInfo()
               << "  "
               << "One-Step-Theta (theta = " << std::setw(3) << std::setprecision(2) << theta_
               << ") STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_
-              << "           |" << std::endl;
+              << "            |" << std::endl;
   }
   return;
 }

@@ -207,15 +207,32 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINA
 /*----------------------------------------------------------------------*
  | Calculate problem specific norm                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(double& preresnorm,
-    double& incprenorm, double& prenorm, const Teuchos::RCP<const Epetra_Vector> increment)
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<double>& preresnorm,
+    std::vector<double>& incprenorm, std::vector<double>& prenorm,
+    const Teuchos::RCP<const Epetra_Vector> increment)
 {
-  preresnorm = UTILS::CalculateVectorNorm(vectornormfres_, rhs_);
-  incprenorm = UTILS::CalculateVectorNorm(vectornorminc_, comb_increment_);
-  // setup combined solution vector and calculate norm
-  arttoporofluidcoupling_->SetupVector(
-      comb_phinp_, porofluidmultitimint_->Phinp(), artnettimint_->Pressurenp());
-  prenorm = UTILS::CalculateVectorNorm(vectornorminc_, comb_phinp_);
+  preresnorm.resize(2);
+  incprenorm.resize(2);
+  prenorm.resize(2);
+
+  prenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidmultitimint_->Phinp());
+  prenorm[1] = UTILS::CalculateVectorNorm(vectornorminc_, artnettimint_->Pressurenp());
+
+  Teuchos::RCP<const Epetra_Vector> arterypressinc;
+  Teuchos::RCP<const Epetra_Vector> porofluidinc;
+
+  arttoporofluidcoupling_->ExtractSingleFieldVectors(comb_increment_, porofluidinc, arterypressinc);
+
+  incprenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidinc);
+  incprenorm[1] = UTILS::CalculateVectorNorm(vectornorminc_, arterypressinc);
+
+  Teuchos::RCP<const Epetra_Vector> arterypressrhs;
+  Teuchos::RCP<const Epetra_Vector> porofluidrhs;
+
+  arttoporofluidcoupling_->ExtractSingleFieldVectors(rhs_, porofluidrhs, arterypressrhs);
+
+  preresnorm[0] = UTILS::CalculateVectorNorm(vectornormfres_, porofluidrhs);
+  preresnorm[1] = UTILS::CalculateVectorNorm(vectornormfres_, arterypressrhs);
 
   return;
 }

@@ -67,12 +67,17 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(Teuchos::RCP<LINALG:
 /*----------------------------------------------------------------------*
  | Calculate problem specific norm                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CalculateNorms(double& preresnorm,
-    double& incprenorm, double& prenorm, const Teuchos::RCP<const Epetra_Vector> increment)
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CalculateNorms(std::vector<double>& preresnorm,
+    std::vector<double>& incprenorm, std::vector<double>& prenorm,
+    const Teuchos::RCP<const Epetra_Vector> increment)
 {
-  preresnorm = UTILS::CalculateVectorNorm(vectornormfres_, porofluidmultitimint_->RHS());
-  incprenorm = UTILS::CalculateVectorNorm(vectornorminc_, increment);
-  prenorm = UTILS::CalculateVectorNorm(vectornorminc_, porofluidmultitimint_->Phinp());
+  preresnorm.resize(1);
+  incprenorm.resize(1);
+  prenorm.resize(1);
+
+  preresnorm[0] = UTILS::CalculateVectorNorm(vectornormfres_, porofluidmultitimint_->RHS());
+  incprenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, increment);
+  prenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidmultitimint_->Phinp());
 
   return;
 }

@@ -406,20 +406,20 @@ namespace POROFLUIDMULTIPHASE
 
     //! print first line of convergence table to screen
     virtual void PrintConvergenceValuesFirstIter(
-        const int& itnum,         //!< current Newton-Raphson iteration step
-        const int& itemax,        //!< maximum number of Newton-Raphson iteration steps
-        const double& ittol,      //!< relative tolerance for Newton-Raphson scheme
-        const double& preresnorm  //!< norm of pressure residual
+        const int& itnum,                      //!< current Newton-Raphson iteration step
+        const int& itemax,                     //!< maximum number of Newton-Raphson iteration steps
+        const double& ittol,                   //!< relative tolerance for Newton-Raphson scheme
+        const std::vector<double>& preresnorm  //!< L2 norm of pressure residual
     );
 
     //! print current line of convergence table to screen
     virtual void PrintConvergenceValues(
-        const int& itnum,          //!< current Newton-Raphson iteration step
-        const int& itemax,         //!< maximum number of Newton-Raphson iteration steps
-        const double& ittol,       //!< relative tolerance for Newton-Raphson scheme
-        const double& preresnorm,  //!< norm of pressure residual
-        const double& incprenorm,  //!< norm of pressure increment
-        const double& prenorm      //!< norm of pressure state vector
+        const int& itnum,     //!< current Newton-Raphson iteration step
+        const int& itemax,    //!< maximum number of Newton-Raphson iteration steps
+        const double& ittol,  //!< relative tolerance for Newton-Raphson scheme
+        const std::vector<double>& preresnorm,  //!< norm of pressure residual
+        const std::vector<double>& incprenorm,  //!< norm of pressure increment
+        const std::vector<double>& prenorm      //!< norm of pressure state vector
     );
 
     //! print finish line of convergence table to screen
@@ -566,6 +566,9 @@ namespace POROFLUIDMULTIPHASE
     double ittolres_;
     //! convergence tolerance for residuals
     double ittolinc_;
+
+    //! flag if artery coupling is active
+    bool artery_coupling_active_;
 
     /*========================================================================*/
     //! @name degrees of freedom variables

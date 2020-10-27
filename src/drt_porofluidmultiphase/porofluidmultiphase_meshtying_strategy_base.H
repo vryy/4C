@@ -60,8 +60,8 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<Epetra_Vector> residual) = 0;
 
     //! calculate norms for convergence checks
-    virtual void CalculateNorms(double& preresnorm, double& incprenorm, double& prenorm,
-        const Teuchos::RCP<const Epetra_Vector> increment) = 0;
+    virtual void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
+        std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) = 0;
 
     //! create the field test
     virtual void CreateFieldTest() = 0;
