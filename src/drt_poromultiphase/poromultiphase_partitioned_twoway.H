@@ -79,6 +79,8 @@ namespace POROMULTIPHASE
 
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> phiincnp_;
+    //! artery pressure increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> arterypressincnp_;
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
@@ -107,6 +109,8 @@ namespace POROMULTIPHASE
     int itnum_;
     //! write restart every n steps
     int writerestartevery_;
+    //! is artery coupling active
+    bool artery_coupling_active_;
 
     //! relaxation method
     INPAR::POROMULTIPHASE::RelaxationMethods relaxationmethod_;

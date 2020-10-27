@@ -11,6 +11,7 @@
 
 #include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 #include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_art_net.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../drt_io/io.H"
@@ -34,6 +35,7 @@ POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay
       itmax_(0),
       itnum_(0),
       writerestartevery_(-1),
+      artery_coupling_active_(false),
       relaxationmethod_(INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_none)
 {
 }
@@ -53,8 +55,12 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra, nearbyelepairs);
 
+  artery_coupling_active_ = DRT::INPUT::IntegralValue<int>(fluidparams, "ARTERY_COUPLING");
+
   // initialize increment vectors
   phiincnp_ = LINALG::CreateVector(*FluidField()->DofRowMap(0), true);
+  if (artery_coupling_active_)
+    arterypressincnp_ = LINALG::CreateVector(*FluidField()->ArteryDofRowMap(), true);
   dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
 
   // initialize fluid vectors
@@ -160,18 +166,12 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   // convergence check based on the scalar increment
   bool stopnonliniter = false;
 
-  //    | scalar increment |_2
+  //    | fluid increment |_2
   //  -------------------------------- < Tolerance
-  //    | scalar state n+1 |_2
+  //    | fluid state n+1 |_2
   //
-  // AND
-  //
-  //    | scalar increment |_2
-  //  -------------------------------- < Tolerance , with n := global length of vector
-  //        dt * sqrt(n)
-  //
-  // The same is checked for the structural displacements.
-  //
+  // The same is checked for the structural displacements
+  // and 1D artery pressure (if present)
 
   // variables to save different L2 - Norms
   // define L2-norm of increments
@@ -179,10 +179,14 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   double phinorm_L2(0.0);
   double dispincnorm_L2(0.0);
   double dispnorm_L2(0.0);
+  double artpressincnorm_L2(0.0);
+  double artpressnorm_L2(0.0);
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   phiincnp_->Update(1.0, *(FluidField()->Phinp()), -1.0);
+  if (artery_coupling_active_)
+    arterypressincnp_->Update(1.0, *FluidField()->ArtNetTimInt()->Pressurenp(), -1.0);
   dispincnp_->Update(1.0, *(StructureField()->Dispnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
@@ -190,10 +194,16 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   FluidField()->Phinp()->Norm2(&phinorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
   StructureField()->Dispnp()->Norm2(&dispnorm_L2);
+  if (artery_coupling_active_)
+  {
+    arterypressincnp_->Norm2(&artpressincnorm_L2);
+    FluidField()->ArtNetTimInt()->Pressurenp()->Norm2(&artpressnorm_L2);
+  }
 
   // care for the case that there is (almost) zero scalar
   if (phinorm_L2 < 1e-6) phinorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
+  if (artpressnorm_L2 < 1e-6) artpressnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
   if (Comm().MyPID() == 0)
@@ -205,27 +215,23 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
     std::cout << "| PARTITIONED OUTER ITERATION STEP ----- FLUID  <-------> STRUCTURE              "
                  "                                |            *\n";
     printf(
-        "+--------------+---------------------+----------------+------------------+----------------"
-        "----+------------------+            *\n");
+        "+--------------+---------------------+-----------------+-----------------+----------------"
+        "-+---------------------+            *\n");
     printf(
-        "|-  step/max  -|-  tol      [norm]  -|-  fluid-inc   -|-  disp-inc      -|-  "
-        "fluid-rel-inc   -|-  disp-rel-inc  -|            *\n");
+        "|-  step/max  -|-  tol      [norm]  -|- fluid-rel-inc -|-  disp-rel-inc -|-   1D-rel-inc  "
+        "-|                                  *\n");
+    printf("|   %3d/%3d    |  %10.3E[L_2 ]   |   %10.3E    |   %10.3E    |   %10.3E    |", itnum,
+        itmax_, ittol_, phiincnorm_L2 / phinorm_L2, dispincnorm_L2 / dispnorm_L2,
+        artpressincnorm_L2 / artpressnorm_L2);
+    printf("                                  *\n");
     printf(
-        "|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E   "
-        "   |",
-        itnum, itmax_, ittol_, phiincnorm_L2 / Dt() / sqrt(phiincnp_->GlobalLength()),
-        dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength()), phiincnorm_L2 / phinorm_L2,
-        dispincnorm_L2 / dispnorm_L2);
-    printf("            *\n");
-    printf(
-        "+--------------+---------------------+----------------+------------------+----------------"
-        "----+------------------+            *\n");
+        "+--------------+---------------------+-----------------+-----------------+----------------"
+        "-+                                  *\n");
   }
 
   // converged
   if (((phiincnorm_L2 / phinorm_L2) <= ittol_) and ((dispincnorm_L2 / dispnorm_L2) <= ittol_) and
-      ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) <= ittol_) and
-      ((phiincnorm_L2 / Dt() / sqrt(phiincnp_->GlobalLength())) <= ittol_))
+      ((artpressincnorm_L2 / artpressnorm_L2) <= ittol_))
   {
     stopnonliniter = true;
     if (Comm().MyPID() == 0)
@@ -244,8 +250,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   // timestep
   if ((itnum == itmax_) and
       (((phiincnorm_L2 / phinorm_L2) > ittol_) or ((dispincnorm_L2 / dispnorm_L2) > ittol_) or
-          ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) > ittol_) or
-          (phiincnorm_L2 / Dt() / sqrt(phiincnp_->GlobalLength())) > ittol_))
+          ((artpressincnorm_L2 / artpressnorm_L2) > ittol_)))
   {
     stopnonliniter = true;
     if ((Comm().MyPID() == 0))
@@ -254,8 +259,8 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
           "|     >>>>>> not converged in itemax steps!                                             "
           "                         |\n");
       printf(
-          "+--------------+---------------------+----------------+------------------+--------------"
-          "------+------------------+\n");
+          "+--------------+---------------------+--------------------+----------------+--------"
+          "------------+----------------+            *\n");
       printf("\n");
       printf("\n");
     }
@@ -428,6 +433,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::IterUpdateStates()
   // will be compared in ConvergenceCheck to the solutions,
   // obtained from the next Struct and Scatra steps.
   phiincnp_->Update(1.0, *FluidField()->Phinp(), 0.0);
+  if (artery_coupling_active_)
+    arterypressincnp_->Update(1.0, *FluidField()->ArtNetTimInt()->Pressurenp(), 0.0);
   dispincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
 
   return;
