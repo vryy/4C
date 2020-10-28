@@ -89,15 +89,29 @@ namespace POROMULTIPHASESCATRA
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
-    //! extract the field vectors from a given composed vector.
+    //! extract the field vectors from a given composed vector x.
     /*!
-     x is the sum of all increments up to this point.
      \param x   (i) composed vector that contains all field vectors
      \param stx (o) structural vector (e.g. displacements)
      \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
+     and pressures of artery network
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
+      and mass fractions in 1D artery network
      */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
+        Teuchos::RCP<const Epetra_Vector>& scx);
+
+    //! extract only the 3D field vectors from a given composed vector x.
+    /*!
+     \param x   (i) composed vector that contains all field vectors
+     \param stx (o) structural vector (e.g. displacements)
+     \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
+     of 3D field
+     \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
+     of 3D field
+     */
+    void Extract3DFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 
@@ -121,7 +135,7 @@ namespace POROMULTIPHASESCATRA
     bool Converged();
 
     //! build norms
-    void BuildConvergenceNorms();
+    virtual void BuildConvergenceNorms();
 
     //! output
     void NewtonOutput();
@@ -233,7 +247,6 @@ namespace POROMULTIPHASESCATRA
     double tolfres_scatra_;  //!< tolerance force residual for scatra
 
     double normrhs_;  //!< norm of residual forces
-    double norminc_;  //!< norm of residual unknowns
 
     double normrhsfluid_;  //!< norm of residual forces (fluid )
     double normincfluid_;  //!< norm of residual unknowns (fluid )
@@ -243,6 +256,17 @@ namespace POROMULTIPHASESCATRA
 
     double normrhsscatra_;  //!< norm of residual forces (scatra)
     double normincscatra_;  //!< norm of residual unknowns (scatra)
+
+    double normrhsart_;       //!< norm of residual (artery)
+    double normincart_;       //!< norm of residual unknowns (artery)
+    double arterypressnorm_;  //!< norm of artery pressure
+
+    double normrhsartsca_;  //!< norm of residual (artery-scatra)
+    double normincartsca_;  //!< norm of residual unknowns (artery-scatra)
+    double arteryscanorm_;  //!< norm of artery scatra mass-fractions
+
+    double maxinc_;  //!< maximum increment
+    double maxres_;  //!< maximum residual
 
     enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornorminc_;   //!< type of norm for increments
@@ -276,14 +300,14 @@ namespace POROMULTIPHASESCATRA
     // update the scatra field
     virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
 
-    //! extract the field vectors from a given composed vector.
+    //! extract the field vectors from a given composed vector x.
     /*!
-     x is the sum of all increments up to this point.
      \param x   (i) composed vector that contains all field vectors
      \param stx (o) structural vector (e.g. displacements)
      \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
-     and pressures of artery network \param scx (o) scatra vector (primary variables of scatra
-     field, i.e. mass fraction) and mass fractions in 1D artery network
+     and pressures of artery network
+     \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
+      and mass fractions in 1D artery network
      */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
@@ -312,6 +336,9 @@ namespace POROMULTIPHASESCATRA
 
     //! build the block null spaces
     virtual void BuildBlockNullSpaces();
+
+    //! build norms for convergence check
+    void BuildConvergenceNorms();
 
     //! dof row map (not splitted), only artery and porofluid
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;

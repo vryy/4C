@@ -67,13 +67,20 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
       tolinc_scatra_(0.0),
       tolfres_scatra_(0.0),
       normrhs_(0.0),
-      norminc_(0.0),
       normrhsfluid_(0.0),
       normincfluid_(0.0),
       normrhsstruct_(0.0),
       normincstruct_(0.0),
       normrhsscatra_(0.0),
       normincscatra_(0.0),
+      normrhsart_(0.0),
+      normincart_(0.0),
+      arterypressnorm_(0.0),
+      normrhsartsca_(0.0),
+      normincartsca_(0.0),
+      arteryscanorm_(0.0),
+      maxinc_(0.0),
+      maxres_(0.0),
       vectornormfres_(INPAR::POROMULTIPHASESCATRA::norm_undefined),
       vectornorminc_(INPAR::POROMULTIPHASESCATRA::norm_undefined),
       timernewton_(comm),
@@ -799,6 +806,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVec
 }
 
 /*----------------------------------------------------------------------*
+ | extract field vectors (only of 3D fields)          kremheller 10/20  |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Extract3DFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& stx,
+    Teuchos::RCP<const Epetra_Vector>& flx, Teuchos::RCP<const Epetra_Vector>& scx)
+{
+  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVectors(x, stx, flx, scx);
+}
+
+/*----------------------------------------------------------------------*
  | Solve linear Poromultiphase-elasticity system     kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
@@ -811,11 +828,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
 
   if (solveradapttol_ and (itnum_ > 1))
   {
-    const double maxinc =
-        std::max(norminc_, std::max(normincfluid_, std::max(normincscatra_, normincstruct_)));
-    const double maxres =
-        std::max(normrhs_, std::max(normrhsfluid_, std::max(normrhsscatra_, normrhsstruct_)));
-    double worst = std::max(maxinc, maxres);
+    double worst = std::max(maxinc_, maxres_);
     double wanted = ittolres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
@@ -844,9 +857,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Converged()
 {
-  return (norminc_ < ittolinc_ && normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_ &&
-          normincscatra_ < ittolinc_ && normrhs_ < ittolres_ && normrhsfluid_ < ittolres_ &&
-          normrhsstruct_ < ittolres_ && normrhsscatra_ < ittolres_);
+  return (normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_ && normincscatra_ < ittolinc_ &&
+          normincart_ < ittolinc_ && normincartsca_ < ittolinc_ && normrhs_ < ittolres_ &&
+          normrhsfluid_ < ittolres_ && normrhsstruct_ < ittolres_ && normrhsscatra_ < ittolres_ &&
+          normrhsart_ < ittolres_ && normrhsartsca_ < ittolres_);
 }
 
 /*----------------------------------------------------------------------*
@@ -861,7 +875,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenc
   Teuchos::RCP<const Epetra_Vector> rhs_sc;
 
   // get structure and fluid RHS
-  ExtractFieldVectors(rhs_, rhs_st, rhs_fl, rhs_sc);
+  Extract3DFieldVectors(rhs_, rhs_st, rhs_fl, rhs_sc);
 
   // build also norms for structure, fluid and scatra
   normrhsstruct_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_st);
@@ -869,45 +883,43 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenc
   normrhsscatra_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_sc);
 
   //------------------------------------------------------------- build residual increment norms
-  norminc_ = UTILS::CalculateVectorNorm(vectornorminc_, iterinc_);
-
   // displacement and fluid velocity & pressure incremental vector
   Teuchos::RCP<const Epetra_Vector> iterincst;
   Teuchos::RCP<const Epetra_Vector> iterincfl;
   Teuchos::RCP<const Epetra_Vector> iterincsc;
 
   // get structure and fluid increment
-  ExtractFieldVectors(iterinc_, iterincst, iterincfl, iterincsc);
+  Extract3DFieldVectors(iterinc_, iterincst, iterincfl, iterincsc);
 
   // build also norms for fluid and structure
   normincstruct_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincst);
   normincfluid_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincfl);
   normincscatra_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincsc);
 
-  // build the total solution vector to build increment norm
-  Teuchos::RCP<Epetra_Vector> sol_vec = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
-  if (solve_structure_) Extractor()->InsertVector(PoroField()->StructDispnp(), 0, sol_vec);
-  Extractor()->InsertVector(PoroField()->FluidPhinp(), struct_offset_, sol_vec);
-  Extractor()->InsertVector(ScatraAlgo()->ScaTraField()->Phinp(), struct_offset_ + 1, sol_vec);
-
   double dispnorm =
       UTILS::CalculateVectorNorm(vectornorminc_, PoroField()->StructureField()->Dispnp());
   double fluidnorm = UTILS::CalculateVectorNorm(vectornorminc_, PoroField()->FluidField()->Phinp());
   double scatranorm =
       UTILS::CalculateVectorNorm(vectornorminc_, ScatraAlgo()->ScaTraField()->Phinp());
-  double totalnorm = UTILS::CalculateVectorNorm(vectornorminc_, sol_vec);
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
   if (fluidnorm < 1.0e-6) fluidnorm = 1.0;
   if (scatranorm < 1.0e-6) scatranorm = 1.0;
-  if (totalnorm < 1.0e-6) totalnorm = 1.0;
+  if (arterypressnorm_ < 1.0e-6) arterypressnorm_ = 1.0;
+  if (arteryscanorm_ < 1.0e-6) arteryscanorm_ = 1.0;
 
   // build relative increment norm
   normincstruct_ /= dispnorm;
   normincfluid_ /= fluidnorm;
   normincscatra_ /= scatranorm;
-  norminc_ /= totalnorm;
+  normincart_ /= arterypressnorm_;
+  normincartsca_ /= arteryscanorm_;
+
+  // build the maximum value of the residuals and increments
+  maxinc_ = std::max({normincfluid_, normincstruct_, normincscatra_, normincart_, normincartsca_});
+  maxres_ = std::max(
+      {normrhs_, normrhsfluid_, normrhsstruct_, normrhsscatra_, normrhsart_, normrhsartsca_});
 
   return;
 }
@@ -920,7 +932,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupNewton()
   // initialise equilibrium loop and norms
   itnum_ = 0;
   normrhs_ = 0.0;
-  norminc_ = 0.0;
   normrhsfluid_ = 0.0;
   normincfluid_ = 0.0;
   normrhsstruct_ = 0.0;
@@ -935,6 +946,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupNewton()
   tolfres_fluid_ = 0.0;
   tolinc_scatra_ = 0.0;
   tolfres_scatra_ = 0.0;
+  normrhsart_ = 0.0;
+  normincart_ = 0.0;
+  arterypressnorm_ = 0.0;
+  normrhsartsca_ = 0.0;
+  normincartsca_ = 0.0;
+  arteryscanorm_ = 0.0;
+  maxinc_ = 0.0;
+  maxres_ = 0.0;
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
@@ -963,20 +982,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonOutput()
   {
     if (itnum_ == 1)
       printf(
-          "+--------------+---------------+---------------+---------------+---------------+--------"
-          "-------+\n");
+          "+--------------+-------------+-------------+--------------+------------+-----"
+          "-------+-----------------+\n");
     printf(
-        "|-  step/max  -|-  total-inc  -|-  fluid-inc  -|-  displ-inc  -|-  scatra-inc  -|-  "
-        "norm-rhs  -| (ts =%10.3E,",
+        "|-  step/max  -|- fluid-inc -|- displ-inc -|- scatra-inc -|-  1Dp-inc -|- "
+        " 1Ds-inc -|- norm(tot-rhs) -| (ts =%10.3E,",
         dtsolve_);
     printf("\n");
     printf(
-        "|   %3d/%3d    |  %10.3E   |  %10.3E   |  %10.3E   |  %10.3E    |  %10.3E  |  te =%10.3E)",
-        itnum_, itmax_, norminc_, normincfluid_, normincstruct_, normincscatra_, normrhs_, dtele_);
+        "|   %3d/%3d    | %10.3E  | %10.3E  |  %10.3E  | %10.3E | %10.3E |   %10.3E    |  "
+        "te =%10.3E)",
+        itnum_, itmax_, normincfluid_, normincstruct_, normincscatra_, normincart_, normincartsca_,
+        normrhs_, dtele_);
     printf("\n");
     printf(
-        "+--------------+---------------+---------------+---------------+----------------+---------"
-        "-----+\n");
+        "+--------------+-------------+-------------+--------------+------------+-----"
+        "-------+-----------------+\n");
   }
 
   return;
@@ -987,12 +1008,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonOutput()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonErrorCheck()
 {
-  // build the maximum value of the residuals and increments
-  const double maxinc =
-      std::max(norminc_, std::max(normincfluid_, std::max(normincscatra_, normincstruct_)));
-  const double maxres =
-      std::max(normrhs_, std::max(normrhsfluid_, std::max(normrhsscatra_, normrhsstruct_)));
-
   // print the incremental based convergence check to the screen
   if (Converged())  // norminc_ < ittolinc_ && normrhs_ < ittolinc_ && normincfluid_ < ittolinc_ &&
                     // normincstruct_ < ittolinc_
@@ -1001,22 +1016,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonErrorChec
     {
       printf(
           "|  Monolithic iteration loop converged after iteration %3d/%3d !                        "
-          "       |\n",
+          "              |\n",
           itnum_, itmax_);
       printf(
           "|  Quantity           [norm]:                 TOL                                       "
-          "       |\n");
+          "              |\n");
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                        "
-          "|\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+          "       |\n",
+          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                        "
-          "|\n",
-          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+          "       |\n",
+          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
-          "+--------------+---------------+---------------+---------------+----------------+-------"
-          "-------+\n");
+          "+--------------+-------------+-------------+--------------+------------+-----"
+          "-------+-----------------+\n");
       printf("\n");
     }
   }
@@ -1034,14 +1049,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonErrorChec
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                        "
           "|\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E    %10.3E                                        "
           "|\n",
-          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
-          "+--------------+---------------+---------------+---------------+----------------+-------"
-          "-------+\n");
+          "+--------------+-------------+-------------+--------------+------------+-----"
+          "-------+-----------------+\n");
       printf("\n");
       printf("\n");
     }
@@ -1070,17 +1085,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintHeader()
   if (Comm().MyPID() == 0)
   {
     std::cout << "+--------------------------------------------------------------------------------"
-                 "--------------+"
+                 "---------------------+"
               << std::endl;
     std::cout << "| MONOLITHIC POROMULTIPHASE-SCATRA SOLVER                                        "
-                 "              |"
+                 "                     |"
               << std::endl;
     std::cout << "| STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
               << "/" << std::setw(5) << std::setprecision(4) << std::scientific << NStep()
               << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime()
               << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
-              << "                            |" << std::endl;
+              << "                                   |" << std::endl;
   }
 }
 
@@ -1612,6 +1627,40 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
   Extractor()->InsertVector(
       *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CoupledRHS(), 1)), struct_offset_ + 3,
       *rhs_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Build necessary norms                               kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
+    BuildConvergenceNorms()
+{
+  Teuchos::RCP<const Epetra_Vector> arteryrhs =
+      Extractor()->ExtractVector(rhs_, struct_offset_ + 2);
+  Teuchos::RCP<const Epetra_Vector> arteryinc =
+      Extractor()->ExtractVector(iterinc_, struct_offset_ + 2);
+
+  // build also norms for artery
+  normrhsart_ = UTILS::CalculateVectorNorm(vectornormfres_, arteryrhs);
+  normincart_ = UTILS::CalculateVectorNorm(vectornorminc_, arteryinc);
+  arterypressnorm_ = UTILS::CalculateVectorNorm(
+      vectornorminc_, (PoroField()->FluidField()->ArtNetTimInt()->Pressurenp()));
+
+  Teuchos::RCP<const Epetra_Vector> arteryscarhs =
+      Extractor()->ExtractVector(rhs_, struct_offset_ + 3);
+  Teuchos::RCP<const Epetra_Vector> arteryscainc =
+      Extractor()->ExtractVector(iterinc_, struct_offset_ + 3);
+
+  // build also norms for artery
+  normrhsartsca_ = UTILS::CalculateVectorNorm(vectornormfres_, arteryscarhs);
+  normincartsca_ = UTILS::CalculateVectorNorm(vectornorminc_, arteryscainc);
+  arteryscanorm_ =
+      UTILS::CalculateVectorNorm(vectornorminc_, (scatramsht_->ArtScatraField()->Phinp()));
+
+  // call base class
+  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenceNorms();
 
   return;
 }
