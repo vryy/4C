@@ -54,11 +54,15 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
       tolinc_fluid_(0.0),
       tolfres_fluid_(0.0),
       normrhs_(0.0),
-      norminc_(0.0),
       normrhsfluid_(0.0),
       normincfluid_(0.0),
       normrhsstruct_(0.0),
       normincstruct_(0.0),
+      normrhsart_(0.0),
+      normincart_(0.0),
+      arterypressnorm_(0.0),
+      maxinc_(0.0),
+      maxres_(0.0),
       vectornormfres_(INPAR::POROMULTIPHASE::norm_undefined),
       vectornorminc_(INPAR::POROMULTIPHASE::norm_undefined),
       timernewton_(comm),
@@ -685,7 +689,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
   // initialise equilibrium loop and norms
   itnum_ = 0;
   normrhs_ = 0.0;
-  norminc_ = 0.0;
   normrhsfluid_ = 0.0;
   normincfluid_ = 0.0;
   normrhsstruct_ = 0.0;
@@ -696,6 +699,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
   tolfres_struct_ = 0.0;
   tolinc_fluid_ = 0.0;
   tolfres_fluid_ = 0.0;
+  normrhsart_ = 0.0;
+  normincart_ = 0.0;
+  arterypressnorm_ = 0.0;
+  maxinc_ = 0.0;
+  maxres_ = 0.0;
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
@@ -722,18 +730,19 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PrintHeader()
   if (Comm().MyPID() == 0)
   {
     if (!solve_structure_) PrintStructureDisabledInfo();
-    std::cout << "+--------------------------------------------------------------------------------"
-                 "----------+"
-              << std::endl;
+    std::cout
+        << "+----------------------------------------------------------------------------------"
+           "----------+"
+        << std::endl;
     std::cout << "| MONOLITHIC POROMULTIPHASE SOLVER                                               "
-                 "          |"
+                 "            |"
               << std::endl;
     std::cout << "| STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
               << "/" << std::setw(5) << std::setprecision(4) << std::scientific << NStep()
               << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime()
               << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
-              << "                        |" << std::endl;
+              << "                          |" << std::endl;
   }
 }
 
@@ -748,43 +757,40 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms()
   Teuchos::RCP<const Epetra_Vector> rhs_f;
 
   // get structure and fluid RHS
-  ExtractFieldVectors(rhs_, rhs_s, rhs_f);
+  ExtractStructureAndFluidVectors(rhs_, rhs_s, rhs_f);
 
   // build also norms for fluid and structure
   normrhsstruct_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_s);
   normrhsfluid_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_f);
 
   //------------------------------------------------------------- build residual increment norms
-  norminc_ = UTILS::CalculateVectorNorm(vectornorminc_, iterinc_);
-
   // displacement and fluid velocity & pressure incremental vector
   Teuchos::RCP<const Epetra_Vector> iterincs;
   Teuchos::RCP<const Epetra_Vector> iterincf;
 
   // get structure and fluid increment
-  ExtractFieldVectors(iterinc_, iterincs, iterincf);
+  ExtractStructureAndFluidVectors(iterinc_, iterincs, iterincf);
 
   // build also norms for fluid and structure
   normincstruct_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincs);
   normincfluid_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincf);
 
-  Teuchos::RCP<Epetra_Vector> sol_vec = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
-  SetupVector(*sol_vec, StructureField()->Dispnp(), FluidField()->Phinp());
-
   double dispnorm = UTILS::CalculateVectorNorm(vectornorminc_, (StructureField()->Dispnp()));
   double fluidnorm = UTILS::CalculateVectorNorm(vectornorminc_, (FluidField()->Phinp()));
-  double totalnorm = UTILS::CalculateVectorNorm(vectornorminc_, sol_vec);
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
   if (fluidnorm < 1.0e-6) fluidnorm = 1.0;
-  if (totalnorm < 1.0e-6) totalnorm = 1.0;
+  if (arterypressnorm_ < 1.0e-6) arterypressnorm_ = 1.0;
 
   // build relative increment norm
   normincstruct_ /= dispnorm;
   normincfluid_ /= fluidnorm;
-  norminc_ /= totalnorm;
+  normincart_ /= arterypressnorm_;
 
+  // build the maximum value of the residuals and increments
+  maxinc_ = std::max({normincart_, normincfluid_, normincstruct_});
+  maxres_ = std::max({normrhs_, normrhsart_, normrhsfluid_, normrhsstruct_});
 
   return;
 }
@@ -799,20 +805,21 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonOutput()
   {
     if (itnum_ == 1)
       printf(
-          "+--------------+----------------+------------------+--------------------+---------------"
-          "---+\n");
+          "+--------------+--------------+--------------+--------------+--------------+"
+          "-----------------+\n");
     printf(
-        "|-  step/max  -|-  total-inc   -|-  fluid-inc     -|-  disp-inc        -|-  norm-rhs      "
-        "-| (ts =%10.3E,",
+        "|-  step/max  -|-   max-inc  -|- fluid-inc  -|-  disp-inc  -|-   1D-inc   -|- "
+        "norm(tot-rhs) -| (ts =%10.3E,",
         dtsolve_);
     printf("\n");
     printf(
-        "|   %3d/%3d    |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |  te =%10.3E)",
-        itnum_, itmax_, norminc_, normincfluid_, normincstruct_, normrhs_, dtele_);
+        "|   %3d/%3d    | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E      "
+        "|  te =%10.3E)",
+        itnum_, itmax_, maxinc_, normincfluid_, normincstruct_, normincart_, normrhs_, dtele_);
     printf("\n");
     printf(
-        "+--------------+----------------+------------------+--------------------+-----------------"
-        "-+\n");
+        "+--------------+--------------+--------------+--------------+--------------+"
+        "-----------------+\n");
   }
 
   return;
@@ -823,10 +830,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonOutput()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
 {
-  // build the maximum value of the residuals and increments
-  const double maxinc = std::max(norminc_, std::max(normincfluid_, normincstruct_));
-  const double maxres = std::max(normrhs_, std::max(normrhsfluid_, normrhsstruct_));
-
   // print the incremental based convergence check to the screen
   if (Converged())  // norminc_ < ittol_ && normrhs_ < ittol_ && normincfluid_ < ittol_ &&
                     // normincstruct_ < ittol_
@@ -835,20 +838,22 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
     {
       printf(
           "|  Monolithic iteration loop converged after iteration %3d/%3d !                        "
-          "   |\n",
+          "     |\n",
           itnum_, itmax_);
       printf(
           "|  Quantity           [norm]:                 TOL                                       "
-          "   |\n");
+          "     |\n");
       printf(
-          "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                    |\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+          "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                      "
+          "|\n",
+          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
-          "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                    |\n",
-          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+          "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                      "
+          "|\n",
+          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
-          "+--------------+----------------+------------------+--------------------+---------------"
-          "---+\n");
+          "+--------------+--------------+--------------+--------------+--------------+"
+          "-----------------+\n");
       printf("\n");
     }
   }
@@ -862,10 +867,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
           itmax_);
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
           "+--------------+----------------+------------------+--------------------+---------------"
           "---+\n");
@@ -884,8 +889,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Converged()
 {
-  return (norminc_ < ittolinc_ && normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_ &&
-          normrhs_ < ittolres_ && normrhsstruct_ < ittolres_ && normrhsfluid_ < ittolres_);
+  return (normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_ && normincart_ < ittolinc_ &&
+          normrhs_ < ittolres_ && normrhsstruct_ < ittolres_ && normrhsfluid_ < ittolres_ &&
+          normrhsart_ < ittolres_);
 }
 
 /*----------------------------------------------------------------------*
@@ -901,7 +907,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
 
   if (solveradapttol_ and (itnum_ > 1))
   {
-    double worst = std::max(normrhs_, norminc_);
+    double worst = std::max(maxres_, maxinc_);
     double wanted = tolfres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
@@ -985,6 +991,15 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ExtractFieldVectors(
 
   // process fluid unknowns of the second field
   fx = Extractor()->ExtractVector(x, 1);
+}
+/*----------------------------------------------------------------------*
+ | extract 3D field vecotrs (structure and fluid)    kremheller 10/20   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ExtractStructureAndFluidVectors(
+    Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector>& fx)
+{
+  PoroMultiPhaseMonolithicTwoWay::ExtractFieldVectors(x, sx, fx);
 }
 
 /*----------------------------------------------------------------------*
@@ -1324,6 +1339,26 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | extract field vectors for calling Evaluate() of the  kremheller 04/18|
+ | single fields                                                        |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildConvergenceNorms()
+{
+  Teuchos::RCP<const Epetra_Vector> arteryrhs = Extractor()->ExtractVector(rhs_, 2);
+  Teuchos::RCP<const Epetra_Vector> arteryinc = Extractor()->ExtractVector(iterinc_, 2);
+
+  // build also norms for artery
+  normrhsart_ = UTILS::CalculateVectorNorm(vectornormfres_, arteryrhs);
+  normincart_ = UTILS::CalculateVectorNorm(vectornorminc_, arteryinc);
+  arterypressnorm_ =
+      UTILS::CalculateVectorNorm(vectornorminc_, (FluidField()->ArtNetTimInt()->Pressurenp()));
+
+  // call base class
+  PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms();
+
+  return;
+}
 /*----------------------------------------------------------------------*
  | extract field vectors for calling Evaluate() of the  kremheller 04/18|
  | single fields                                                        |
