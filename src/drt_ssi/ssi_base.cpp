@@ -26,7 +26,6 @@
 #include "../drt_lib/drt_utils_createdis.H"
 #include "ssi_clonestrategy.H"
 
-#include "../drt_inpar/inpar_s2i.H"
 #include "../drt_inpar/inpar_volmortar.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -37,7 +36,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
@@ -71,7 +70,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
@@ -128,11 +127,13 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
              "Old")  // todo this is the part that should be removed !
     {
       if (comm.MyPID() == 0)
+      {
         std::cout << "\n"
                   << " USING OLD STRUCTURAL TIME INTEGRATION FOR STRUCTURE-SCATRA-INTERACTION!\n"
                      " FIX THIS! THIS IS ONLY SUPPOSED TO BE TEMPORARY!"
                      "\n"
                   << std::endl;
+      }
 
       use_old_structure_ = true;
 
@@ -145,11 +146,13 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
         dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
     }
     else
+    {
       dserror(
           "Unknown time integration requested!\n"
           "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
           "If you want to use yet unsupported elements or algorithms,\n"
           "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
+    }
 
   }  // if structure_ not set from outside
 
@@ -172,9 +175,11 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   {
     // safety check: adaptive time stepping in one of the subproblems?
     if (!DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+    {
       dserror(
           "Must provide adaptive time stepping algorithim in one of the subproblems. (Currently "
           "just ScTra)");
+    }
     if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
         INPAR::STR::timada_kind_none)
       dserror("Adaptive time stepping in SSI currently just from ScaTra");
@@ -191,7 +196,7 @@ int SSI::SSI_Base::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::Setup()
+void SSI::SSIBase::Setup()
 {
   // check initialization
   CheckIsInit();
@@ -240,9 +245,11 @@ void SSI::SSI_Base::Setup()
           struct_adapterbase_ptr_->StructureField());
 
     if (structure_ == Teuchos::null)
+    {
       dserror(
           "No valid pointer to ADAPTER::SSIStructureWrapper !\n"
           "Either cast failed, or no valid wrapper was set using SetStructureWrapper(...) !");
+    }
   }
 
   // for old structural time integration
@@ -286,10 +293,10 @@ void SSI::SSI_Base::Setup()
 
     // set up structural map extractor holding interior and interface maps of degrees of freedom
     std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
-    maps.push_back(LINALG::SplitMap(
+    maps.emplace_back(LINALG::SplitMap(
         *map_structure_condensed_, *InterfaceCouplingAdapterStructure()->MasterDofMap()));
-    maps.push_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    maps.push_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
+    maps.emplace_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    maps.emplace_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
     maps_structure_ = Teuchos::rcp(
         new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps));
     maps_structure_->CheckForValidMapExtractor();
@@ -297,14 +304,12 @@ void SSI::SSI_Base::Setup()
 
   // set flag
   SetIsSetup(true);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Setup the discretizations                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::InitDiscretizations(
+void SSI::SSIBase::InitDiscretizations(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
 {
   // Scheme   : the structure discretization is received from the input. Then, an ale-scatra disc.
@@ -319,10 +324,12 @@ void SSI::SSI_Base::InitDiscretizations(
   if (scatradis->NumGlobalNodes() == 0)
   {
     if (fieldcoupling_ != INPAR::SSI::coupling_volume_match)
+    {
       dserror(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' in the SSI CONTROL section cloning of the "
           "scatra discretization"
           "from the structure discretization is not supported!");
+    }
 
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, scatradis);
@@ -331,6 +338,7 @@ void SSI::SSI_Base::InitDiscretizations(
   else
   {
     if (fieldcoupling_ == INPAR::SSI::coupling_volume_match)
+    {
       dserror(
           "Reading a TRANSPORT discretization from the .dat file for the input parameter "
           "'FIELDCOUPLING volume_matching' in the"
@@ -339,6 +347,7 @@ void SSI::SSI_Base::InitDiscretizations(
           "the ScaTra discretization is cloned from the structure discretization. Delete the "
           "ScaTra discretization"
           "from your input file.");
+    }
 
     // copy conditions
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
@@ -355,6 +364,7 @@ void SSI::SSI_Base::InitDiscretizations(
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
       if (clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+      {
         dserror(
             "A TRANSPORT discretization is read from the .dat file, which is fine since the scatra "
             "discretization is not cloned from "
@@ -363,16 +373,15 @@ void SSI::SSI_Base::InitDiscretizations(
             "which does not make sense if you don't want to clone the structure discretization. "
             "Change the ImplType to 'Undefined' "
             "or decide to clone the scatra discretization from the structure discretization.");
+      }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Setup ssi coupling object                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Base::InitFieldCoupling(
+int SSI::SSIBase::InitFieldCoupling(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
 {
   // initialize return variable
@@ -391,20 +400,24 @@ int SSI::SSI_Base::InitFieldCoupling(
 
     if (havessicoupling and (fieldcoupling_ != INPAR::SSI::coupling_boundary_nonmatch and
                                 fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match))
+    {
       dserror(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
           "'boundary_nonmatching' "
           "or 'volumeboundary_matching' in SSI DYNAMIC section. ");
+    }
 
     if (fieldcoupling_ == INPAR::SSI::coupling_volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
       if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
               volmortarparams, "COUPLINGTYPE") != INPAR::VOLMORTAR::couplingtype_coninter)
+      {
         dserror(
             "Volmortar coupling only tested for consistent interpolation, "
             "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own "
             "risk.");
+      }
     }
   }
 
@@ -440,7 +453,7 @@ int SSI::SSI_Base::InitFieldCoupling(
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 01/12  |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::ReadRestart(int restart)
+void SSI::SSIBase::ReadRestart(int restart)
 {
   if (restart)
   {
@@ -468,14 +481,12 @@ void SSI::SSI_Base::ReadRestart(int restart)
   // They need to be reset.
   ssicoupling_->AssignMaterialPointers(
       structure_->Discretization(), ScaTraField()->Discretization());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | read restart information for given time (public)        AN, JH 10/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
+void SSI::SSIBase::ReadRestartfromTime(double restarttime)
 {
   if (restarttime > 0.0)
   {
@@ -506,13 +517,11 @@ void SSI::SSI_Base::ReadRestartfromTime(double restarttime)
   // They need to be reset.
   ssicoupling_->AssignMaterialPointers(
       structure_->Discretization(), ScaTraField()->Discretization());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::TestResults(const Epetra_Comm& comm) const
+void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -524,7 +533,7 @@ void SSI::SSI_Base::TestResults(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetStructSolution(
+void SSI::SSIBase::SetStructSolution(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // safety checks
@@ -537,7 +546,7 @@ void SSI::SSI_Base::SetStructSolution(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
+void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
 {
   // safety checks
   CheckIsInit();
@@ -548,7 +557,7 @@ void SSI::SSI_Base::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::EvaluateAndSetTemperatureField()
+void SSI::SSIBase::EvaluateAndSetTemperatureField()
 {
   // temperature is non primary variable. Only set, if function for temperature is given
   if (temperature_funct_num_ != -1)
@@ -565,7 +574,7 @@ void SSI::SSI_Base::EvaluateAndSetTemperatureField()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
+void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 {
   // safety checks
   CheckIsInit();
@@ -576,7 +585,7 @@ void SSI::SSI_Base::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
+void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // safety checks
   CheckIsInit();
@@ -587,7 +596,7 @@ void SSI::SSI_Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetDtFromScaTraToStructure()
+void SSI::SSIBase::SetDtFromScaTraToStructure()
 {
   // change current time and time step of structure according to ScaTra
   StructureField()->SetDt(ScaTraField()->Dt());
@@ -597,13 +606,11 @@ void SSI::SSI_Base::SetDtFromScaTraToStructure()
   // change current time and time step of this algorithm according to ScaTra
   SetTimeStep(ScaTraField()->Time(), Step());
   SetDt(ScaTraField()->Dt());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSI_Base::ScaTraField() const
+const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
 {
   return scatra_base_algorithm_->ScaTraField();
 }

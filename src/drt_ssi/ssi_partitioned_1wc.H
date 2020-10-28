@@ -14,14 +14,14 @@
 
 namespace SSI
 {
-  class SSI_Part1WC : public SSI_Part
+  class SSIPart1WC : public SSIPart
   {
    public:
     //! constructor
-    SSI_Part1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
-    virtual ~SSI_Part1WC(){};
+    ~SSIPart1WC() override = default;
 
     /*!
     \brief Setup this object
@@ -36,36 +36,36 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle);
+        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
 
     //! actual time loop (implemented by derived class)
-    virtual void Timeloop() = 0;
+    void Timeloop() override = 0;
 
    protected:
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) = 0;
+    void PrepareTimeStep(bool printheader = true) override = 0;
 
     //! perform one time step of structure field
-    void DoStructStep();
+    void DoStructStep() override;
 
     //! perform one time step of scatra field
-    void DoScatraStep();
+    void DoScatraStep() override;
 
     // Flag for reading scatra result from restart files
     bool isscatrafromfile_;
   };
 
-  class SSI_Part1WC_SolidToScatra : public SSI_Part1WC
+  class SSIPart1WCSolidToScatra : public SSIPart1WC
   {
    public:
     //! constructor
-    SSI_Part1WC_SolidToScatra(
+    SSIPart1WCSolidToScatra(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
-    virtual ~SSI_Part1WC_SolidToScatra(){};
+    ~SSIPart1WCSolidToScatra() override = default;
 
     /*!
     \brief Setup this object
@@ -80,26 +80,26 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle);
+        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
 
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
   };
 
-  class SSI_Part1WC_ScatraToSolid : public SSI_Part1WC
+  class SSIPart1WCScatraToSolid : public SSIPart1WC
   {
    public:
     //! constructor
-    SSI_Part1WC_ScatraToSolid(
+    SSIPart1WCScatraToSolid(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
-    virtual ~SSI_Part1WC_ScatraToSolid(){};
+    ~SSIPart1WCScatraToSolid() override = default;
 
     /*!
     \brief Setup this object
@@ -114,15 +114,15 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle);
+        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
 
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
   };
 
 }  // namespace SSI

@@ -66,6 +66,12 @@ namespace SSTI
 
     ~SSTIMono() override = default;
 
+    //! get vector containing positions within system matrix for specific subproblem
+    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+
+    //! get position within global dof map for specific subproblem
+    int GetProblemPosition(Subproblem subproblem) const;
+
     //! Setup of algorithm
     //@{
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,

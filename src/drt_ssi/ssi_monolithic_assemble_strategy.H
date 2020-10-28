@@ -24,7 +24,7 @@ namespace LINALG
 
 namespace SSI
 {
-  class SSI_Mono;
+  class SSIMono;
 }
 
 namespace SSI
@@ -45,7 +45,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     //! destructor
     virtual ~AssembleStrategyBase() = default;
@@ -98,7 +98,7 @@ namespace SSI
         const LINALG::SparseMatrix& structurescatradomain, bool zero);
 
     //! monolithic algorithm for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono_;
+    const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
   };
 
   //======================================================================================================
@@ -106,8 +106,7 @@ namespace SSI
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
-    //! constructor
-    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlock() override = default;
 
@@ -138,9 +137,18 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override = 0;
 
    protected:
-    //! cast system matrix to block matrix
-    void CastSystemMatrixBlock(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& systemmatrix_block);
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> BlockPositionScaTra() const { return block_position_scatra_; };
+
+    //! position of structure block in system matrix
+    int PositionStructure() const { return position_structure_; };
+
+   private:
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> block_position_scatra_;
+
+    //! position of structure block in system matrix
+    int position_structure_;
   };
 
   // *********************************************************************************************
@@ -148,8 +156,7 @@ namespace SSI
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
-    //! constructor
-    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlockBlock() override = default;
 
@@ -176,8 +183,7 @@ namespace SSI
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
-    //! constructor
-    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategyBlockSparse() override = default;
 
@@ -204,8 +210,7 @@ namespace SSI
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:
-    //! constructor
-    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono);
+    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
     ~AssembleStrategySparse() override = default;
 
@@ -227,16 +232,11 @@ namespace SSI
 
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override;
-
-   protected:
-    //! cast system matrix to sparse matrix
-    void CastSystemMatrixSparse(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix_sparse);
   };
 
   //! build specific assemble strategy
   Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
-      Teuchos::RCP<const SSI::SSI_Mono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
+      Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
       LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI

@@ -43,15 +43,21 @@ namespace SSI
   class ScatraStructureOffDiagCoupling;
   class AssembleStrategyBase;
 
-  class SSI_Mono : public SSI_Base
+  enum class Subproblem : int
+  {
+    scalar_transport,
+    structure
+  };
+
+  class SSIMono : public SSIBase
   {
    public:
     //! constructor
-    explicit SSI_Mono(const Epetra_Comm& comm,          //!< communicator
+    explicit SSIMono(const Epetra_Comm& comm,           //!< communicator
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
-    ~SSI_Mono() override = default;
+    ~SSIMono() override = default;
 
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
@@ -64,6 +70,12 @@ namespace SSI
         std::string scatra_disname,  //!< name of scalar transport discretization
         bool isAle                   //!< flag for ALE
         ) override;
+
+    //! get vector containing positions within system matrix for specific subproblem
+    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+
+    //! get position within global dof map for specific subproblem
+    int GetProblemPosition(Subproblem subproblem) const;
 
     //! return global map extractor (0: scalar transport, 1: structure)
     const Teuchos::RCP<LINALG::MapExtractor>& MapsSubProblems() const { return maps_sub_problems_; }
@@ -184,7 +196,7 @@ namespace SSI
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
 
     //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
+    Teuchos::RCP<const SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;

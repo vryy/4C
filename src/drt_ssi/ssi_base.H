@@ -24,7 +24,6 @@ namespace ADAPTER
   class Coupling;
   class CouplingSlaveConverter;
   class Structure;
-  class ScaTraTimIntImpl;
   class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;
   class StructureBaseAlgorithmNew;
@@ -53,13 +52,13 @@ namespace SSI
   };
 
   //! Base class of all solid-scatra algorithms
-  class SSI_Base : public ADAPTER::AlgorithmBase
+  class SSIBase : public ADAPTER::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
-    explicit SSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    explicit SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    ~SSI_Base() override = default;
+    ~SSIBase() override = default;
 
     //! return scatra-scatra interface coupling adapter for structure field
     const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure() const
@@ -238,9 +237,6 @@ namespace SSI
 
     //! set flag true after init or false if init became invalid
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
-
-    //! set up scatra-scatra interface coupling adapter for structure field
-    void SetupInterfaceCouplingAdapterStructure();
 
     //! set up structural model evaluator for scalar-structure interaction
     virtual void SetupModelEvaluator() const = 0;

@@ -20,9 +20,8 @@
 
 #include "../drt_io/io.H"
 
-SSI::SSI_Part1WC::SSI_Part1WC(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part(comm, globaltimeparams), isscatrafromfile_(false)
+SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : SSIPart(comm, globaltimeparams), isscatrafromfile_(false)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -34,14 +33,12 @@ SSI::SSI_Part1WC::SSI_Part1WC(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+int SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Part::Init(
+  int returnvar = SSI::SSIPart::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   return returnvar;
@@ -49,7 +46,7 @@ int SSI::SSI_Part1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC::DoStructStep()
+void SSI::SSIPart1WC::DoStructStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -72,7 +69,7 @@ void SSI::SSI_Part1WC::DoStructStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC::DoScatraStep()
+void SSI::SSIPart1WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -153,7 +150,7 @@ void SSI::SSI_Part1WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
+void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
 
@@ -176,9 +173,9 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(
+SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part1WC(comm, globaltimeparams)
+    : SSIPart1WC(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -190,27 +187,26 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
+int SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string struct_disname,
     const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Part1WC::Init(
+  int returnvar = SSI::SSIPart1WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // do some checks
   {
-    INPAR::SCATRA::ConvForm convform =
-        DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
     if (convform != INPAR::SCATRA::convform_conservative)
+    {
       dserror(
           "If the scalar tranport problem is solved on the deforming domain, the conservative form "
           "must be "
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR "
           "TRANSPORT DYNAMIC section!");
+    }
   }
 
   return returnvar;
@@ -218,16 +214,18 @@ int SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
+void SSI::SSIPart1WCSolidToScatra::Timeloop()
 {
   // safety checks
   CheckIsInit();
   CheckIsSetup();
 
   if (StructureField()->Dt() > ScaTraField()->Dt())
+  {
     dserror(
         "Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra "
         "interaction");
+  }
 
   const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
 
@@ -247,9 +245,9 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(
+SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part1WC(comm, globaltimeparams)
+    : SSIPart1WC(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -261,15 +259,13 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
+int SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string struct_disname,
     const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Part1WC::Init(
+  int returnvar = SSI::SSIPart1WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
@@ -281,7 +277,7 @@ int SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
+void SSI::SSIPart1WCScatraToSolid::Timeloop()
 {
   if (StructureField()->Dt() < ScaTraField()->Dt())
   {
@@ -318,7 +314,7 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_ScatraToSolid::PrepareTimeStep(bool printheader)
+void SSI::SSIPart1WCScatraToSolid::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
   // PrintHeader();

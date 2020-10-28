@@ -24,9 +24,7 @@
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo,
-    Teuchos::RCP<ADAPTER::Coupling> icoupstructure, bool interfacemeshyting)
+SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     : map_structure_condensed_(Teuchos::null),
       maps_interface_structure_(Teuchos::null),
       maps_scatra_(Teuchos::null),
@@ -36,9 +34,12 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
 {
   // setup maps containing dofs of subproblems
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(3, Teuchos::null);
-  partial_maps[0] = Teuchos::rcp(new Epetra_Map(*scatra->DofRowMap()));
-  partial_maps[1] = Teuchos::rcp(new Epetra_Map(*structure->DofRowMap()));
-  partial_maps[2] = Teuchos::rcp(new Epetra_Map(*thermo->DofRowMap()));
+  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::scalar_transport)] =
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ScaTraField()->DofRowMap()));
+  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::structure)] =
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.StructureField()->DofRowMap()));
+  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::thermo)] =
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->DofRowMap()));
   Teuchos::RCP<const Epetra_Map> temp_map =
       LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
   Teuchos::RCP<const Epetra_Map> merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
@@ -48,22 +49,28 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
   maps_subproblems_->CheckForValidMapExtractor();
 
   // initialize map extractors associated with blocks of subproblems
-  maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure->DofRowMap(),
-      std::vector<Teuchos::RCP<const Epetra_Map>>(1, structure->DofRowMap())));
-  switch (scatra->MatrixType())
+  maps_structure_ =
+      Teuchos::rcp(new LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->DofRowMap(),
+          std::vector<Teuchos::RCP<const Epetra_Map>>(
+              1, ssti_mono_algorithm.StructureField()->DofRowMap())));
+  switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::sparse:
     {
-      maps_scatra_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*scatra->DofRowMap(),
-          std::vector<Teuchos::RCP<const Epetra_Map>>(1, scatra->DofRowMap())));
-      maps_thermo_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*thermo->DofRowMap(),
-          std::vector<Teuchos::RCP<const Epetra_Map>>(1, thermo->DofRowMap())));
+      maps_scatra_ = Teuchos::rcp(
+          new LINALG::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->DofRowMap(),
+              std::vector<Teuchos::RCP<const Epetra_Map>>(
+                  1, ssti_mono_algorithm.ScaTraField()->DofRowMap())));
+      maps_thermo_ = Teuchos::rcp(
+          new LINALG::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->DofRowMap(),
+              std::vector<Teuchos::RCP<const Epetra_Map>>(
+                  1, ssti_mono_algorithm.ThermoField()->DofRowMap())));
       break;
     }
     case LINALG::MatrixType::block_condition:
     {
-      maps_scatra_ = Teuchos::rcpFromRef(scatra->BlockMaps());
-      maps_thermo_ = Teuchos::rcpFromRef(thermo->BlockMaps());
+      maps_scatra_ = Teuchos::rcpFromRef(ssti_mono_algorithm.ScaTraField()->BlockMaps());
+      maps_thermo_ = Teuchos::rcpFromRef(ssti_mono_algorithm.ThermoField()->BlockMaps());
       break;
     }
     default:
@@ -73,24 +80,24 @@ SSTI::SSTIMaps::SSTIMaps(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
     }
   }
 
-  // set up map for interior and master-side structural degrees of freedom
-  map_structure_condensed_ =
-      LINALG::SplitMap(*structure->DofRowMap(), *icoupstructure->SlaveDofMap());
-
   maps_scatra_->CheckForValidMapExtractor();
   maps_structure_->CheckForValidMapExtractor();
   maps_thermo_->CheckForValidMapExtractor();
 
-  if (interfacemeshyting)
+  if (ssti_mono_algorithm.InterfaceMeshtying())
   {
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_condensed_ = LINALG::SplitMap(*ssti_mono_algorithm.StructureField()->DofRowMap(),
+        *ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
+
     // set up structural map extractor holding interface maps of dofs
     std::vector<Teuchos::RCP<const Epetra_Map>> maps_interface(0, Teuchos::null);
-    maps_interface.emplace_back(icoupstructure->SlaveDofMap());
-    maps_interface.emplace_back(icoupstructure->MasterDofMap());
-    maps_interface.emplace_back(
-        LINALG::SplitMap(*map_structure_condensed_, *icoupstructure->MasterDofMap()));
-    maps_interface_structure_ =
-        Teuchos::rcp(new LINALG::MultiMapExtractor(*structure->DofRowMap(), maps_interface));
+    maps_interface.emplace_back(ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
+    maps_interface.emplace_back(ssti_mono_algorithm.CouplingAdapterStructure()->MasterDofMap());
+    maps_interface.emplace_back(LINALG::SplitMap(*map_structure_condensed_,
+        *ssti_mono_algorithm.CouplingAdapterStructure()->MasterDofMap()));
+    maps_interface_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
+        *ssti_mono_algorithm.StructureField()->DofRowMap(), maps_interface));
     maps_interface_structure_->CheckForValidMapExtractor();
   }
 }
@@ -187,14 +194,11 @@ const Teuchos::RCP<LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo,
-    Teuchos::RCP<ADAPTER::Coupling> icoupstructure, bool interfacemeshyting)
-    : SSTIMaps(structure, scatra, thermo, icoupstructure, interfacemeshyting),
-      maps_systemmatrix_subblocks_(Teuchos::null)
+SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
+    : SSTIMaps(ssti_mono_algorithm), maps_systemmatrix_subblocks_(Teuchos::null)
 {
   // initialize map extractors associated with blocks of global system matrix
-  switch (scatra->MatrixType())
+  switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
     case LINALG::MatrixType::sparse:
@@ -205,27 +209,25 @@ SSTI::SSTIMapsMono::SSTIMapsMono(Teuchos::RCP<::ADAPTER::SSIStructureWrapper> st
       // many main-diagonal matrix blocks associated with scalar transport field
     case LINALG::MatrixType::block_condition:
     {
-      // maps in multimap extractor:
-      // scatra:  0 -> 1-num_maps_systemmatrix_scatra
-      // structure: num_maps_systemmatrix_scatra
-      // thermo: num_maps_systemmatrix_scatra + num_maps_systemmatrix_structure (=1) -> end
-      const int num_maps_systemmatrix_scatra = MapsScatra()->NumMaps();
-      const int num_maps_systemmatrix_structure = MapsStructure()->NumMaps();
-      const int num_maps_systemmatrix_thermo = MapsThermo()->NumMaps();
+      Teuchos::RCP<std::vector<int>> block_positions_scatra =
+          ssti_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
+      Teuchos::RCP<std::vector<int>> block_positions_structure =
+          ssti_mono_algorithm.GetBlockPositions(Subproblem::structure);
+      Teuchos::RCP<std::vector<int>> block_positions_thermo =
+          ssti_mono_algorithm.GetBlockPositions(Subproblem::thermo);
 
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
-          num_maps_systemmatrix_scatra + num_maps_systemmatrix_structure +
-          num_maps_systemmatrix_thermo);
-      for (int imap = 0; imap < num_maps_systemmatrix_scatra; ++imap)
-        maps_systemmatrix[imap] = MapsScatra()->Map(imap);
+          block_positions_scatra->size() + block_positions_structure->size() +
+          block_positions_thermo->size());
+      for (int imap = 0; imap < static_cast<int>(block_positions_scatra->size()); ++imap)
+        maps_systemmatrix[block_positions_scatra->at(imap)] = MapsScatra()->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
-      maps_systemmatrix[num_maps_systemmatrix_scatra] = MapsStructure()->FullMap();
+      maps_systemmatrix[block_positions_structure->at(0)] = MapsStructure()->FullMap();
 
-      for (int imap = 0; imap < num_maps_systemmatrix_thermo; ++imap)
-        maps_systemmatrix[num_maps_systemmatrix_scatra + num_maps_systemmatrix_structure + imap] =
-            MapsThermo()->Map(imap);
+      for (int imap = 0; imap < static_cast<int>(block_positions_thermo->size()); ++imap)
+        maps_systemmatrix[block_positions_thermo->at(imap)] = MapsThermo()->Map(imap);
 
       // initialize map extractor associated with blocks of global system matrix
       maps_systemmatrix_subblocks_ = Teuchos::rcp(
@@ -394,16 +396,16 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double concincnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(
-          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Increment(), 0))
+      ->ExtractOtherVector(ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(
+          ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
   // compute L2 norm of concentration residual vector
   double concresnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(
-          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Residual(), 0))
+      ->ExtractOtherVector(ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(
+          ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
   // compute L2 norm of potential state vector
@@ -417,16 +419,16 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double potincnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(
-          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Increment(), 0))
+      ->ExtractCondVector(ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(
+          ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
   // compute L2 norm of potential residual vector
   double potresnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(
-          ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(ssti_mono.Residual(), 0))
+      ->ExtractCondVector(ssti_mono.AllMaps()->MapsSubproblems()->ExtractVector(
+          ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
   // compute L2 norm of structural state vector
@@ -437,14 +439,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double structureresnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubproblems()
-      ->ExtractVector(ssti_mono.Residual(), 1)
+      ->ExtractVector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   // compute L2 norm of structural increment vector
   double structureincnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubproblems()
-      ->ExtractVector(ssti_mono.Increment(), 1)
+      ->ExtractVector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // compute L2 norm of thermo state vector
@@ -455,14 +457,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double thermoresnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubproblems()
-      ->ExtractVector(ssti_mono.Residual(), 2)
+      ->ExtractVector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::thermo))
       ->Norm2(&thermoresnorm);
 
   // compute L2 norm of thermo increment vector
   double thermoincnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubproblems()
-      ->ExtractVector(ssti_mono.Increment(), 2)
+      ->ExtractVector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::thermo))
       ->Norm2(&thermoincnorm);
 
   // compute L2 norm of total residual vector

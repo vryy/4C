@@ -28,7 +28,7 @@ namespace SSI
 
   */
 
-  class SSI_Mono::ConvCheckStrategyBase
+  class SSIMono::ConvCheckStrategyBase
   {
    public:
     //! constructor
@@ -37,11 +37,11 @@ namespace SSI
     );
 
     //! destructor
-    virtual ~ConvCheckStrategyBase() { return; };
+    virtual ~ConvCheckStrategyBase() = default;
 
     //! check termination criterion for Newton-Raphson iteration
-    virtual bool ExitNewtonRaphson(const SSI::SSI_Mono&
-            timint  //!< time integrator for monolithic scalar-structure interaction
+    virtual bool ExitNewtonRaphson(
+        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
         ) const = 0;
 
    protected:
@@ -66,25 +66,22 @@ namespace SSI
 
   */
 
-  class SSI_Mono::ConvCheckStrategyStd : public SSI_Mono::ConvCheckStrategyBase
+  class SSIMono::ConvCheckStrategyStd : public SSIMono::ConvCheckStrategyBase
   {
    public:
     //! constructor
     ConvCheckStrategyStd(
         const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
         )
-        : ConvCheckStrategyBase(parameters)
-    {
-      return;
-    };
+        : ConvCheckStrategyBase(parameters){};
 
     //! destructor
-    virtual ~ConvCheckStrategyStd() { return; };
+    ~ConvCheckStrategyStd() override = default;
 
     //! check termination criterion for Newton-Raphson iteration
-    bool ExitNewtonRaphson(const SSI::SSI_Mono&
-            timint  //!< time integrator for monolithic scalar-structure interaction
-        ) const;
+    bool ExitNewtonRaphson(
+        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
+        ) const override;
 
    private:
     //! copy constructor
@@ -98,25 +95,22 @@ namespace SSI
 
   */
 
-  class SSI_Mono::ConvCheckStrategyElch : public SSI_Mono::ConvCheckStrategyBase
+  class SSIMono::ConvCheckStrategyElch : public SSIMono::ConvCheckStrategyBase
   {
    public:
     //! constructor
     ConvCheckStrategyElch(
         const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
         )
-        : ConvCheckStrategyBase(parameters)
-    {
-      return;
-    };
+        : ConvCheckStrategyBase(parameters){};
 
     //! destructor
-    virtual ~ConvCheckStrategyElch() { return; };
+    ~ConvCheckStrategyElch() override = default;
 
     //! check termination criterion for Newton-Raphson iteration
-    bool ExitNewtonRaphson(const SSI::SSI_Mono&
-            timint  //!< time integrator for monolithic scalar-structure interaction
-        ) const;
+    bool ExitNewtonRaphson(
+        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
+        ) const override;
 
    private:
     //! copy constructor

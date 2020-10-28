@@ -35,7 +35,7 @@ namespace LINALG
 
 namespace SSI
 {
-  class SSI_Mono;
+  class SSIMono;
 
   namespace UTILS
   {
@@ -63,7 +63,7 @@ namespace SSI
     {
      public:
       SSIMatrices(
-          const SSI::SSI_Mono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra);
+          const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra);
 
       Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
@@ -100,7 +100,7 @@ namespace SSI
       //@}
     };
 
-  };  // namespace UTILS
+  }  // namespace UTILS
 }  // namespace SSI
 
 #endif /* SSI_UTILS_H_ */

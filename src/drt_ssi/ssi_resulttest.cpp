@@ -24,7 +24,7 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
-SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
+SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase>
         ssi_base  //!< time integrator for scalar-structure interaction
     )
     // call base class constructor
@@ -33,14 +33,13 @@ SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
       // store pointer to time integrator for scalar-structure interaction
       ssi_base_(ssi_base)
 {
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 12/17 |
  *----------------------------------------------------------------------*/
-double SSI::SSIResultTest::ResultNode(const std::string quantity, DRT::Node* node) const
+double SSI::SSIResultTest::ResultNode(const std::string& quantity, DRT::Node* node) const
 {
   // initialize variable for result
   double result(0.);
@@ -99,11 +98,13 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
   else if (quantity == "numiterlastlinearsolve")
   {
     // safety check
-    if (SSI_Mono().Solver().Params().get("solver", "none") != "aztec")
+    if (SSIMono().Solver().Params().get("solver", "none") != "aztec")
+    {
       dserror(
           "Must have Aztec solver for result test involving number of solver iterations during "
           "last Newton-Raphson iteration!");
-    result = (double)SSI_Mono().Solver().getNumIters();
+    }
+    result = (double)SSIMono().Solver().getNumIters();
   }
 
   // test total number of time steps
@@ -112,10 +113,12 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
 
   // catch unknown quantity strings
   else
+  {
     dserror(
         "Quantity '%s' not supported by result testing functionality for scalar-structure "
         "interaction!",
         quantity.c_str());
+  }
 
   return result;
 }  // SSI::SSIResultTest::ResultSpecial
@@ -124,10 +127,10 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
 /*---------------------------------------------------------------------------------*
  | return time integrator for monolithic scalar-structure interaction   fang 01/18 |
  *---------------------------------------------------------------------------------*/
-const SSI::SSI_Mono& SSI::SSIResultTest::SSI_Mono() const
+const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
 {
-  const SSI::SSI_Mono* const ssi_mono = dynamic_cast<const SSI::SSI_Mono* const>(ssi_base_.get());
-  if (ssi_mono == NULL)
+  const auto* const ssi_mono = dynamic_cast<const SSI::SSIMono* const>(ssi_base_.get());
+  if (ssi_mono == nullptr)
     dserror("Couldn't access time integrator for monolithic scalar-structure interaction!");
   return *ssi_mono;
 }
@@ -145,7 +148,7 @@ void SSI::SSIResultTest::TestNode(
   // determine discretization
   std::string dis;
   res.ExtractString("DIS", dis);
-  const DRT::Discretization* discretization(NULL);
+  const DRT::Discretization* discretization(nullptr);
   if (dis == ssi_base_->ScaTraField()->Discretization()->Name())
     discretization = ssi_base_->ScaTraField()->Discretization().get();
   else if (dis == ssi_base_->StructureField()->Discretization()->Name())
@@ -176,8 +179,6 @@ void SSI::SSIResultTest::TestNode(
     nerr += CompareValues(ResultNode(quantity, discretization->gNode(node)), "NODE", res);
     ++test_count;
   }
-
-  return;
 }  // SSI::SSIResultTest::TestNode
 
 
@@ -205,6 +206,4 @@ void SSI::SSIResultTest::TestSpecial(
     nerr += err;
     ++test_count;
   }
-
-  return;
 }  // SSI::SSIResultTest::TestSpecial

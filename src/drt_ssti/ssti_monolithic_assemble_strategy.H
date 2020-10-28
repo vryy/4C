@@ -127,9 +127,6 @@ namespace SSTI
     void AssembleStructureThermoDomainMeshtying(LINALG::SparseMatrix& systemmatrix_structure_thermo,
         const LINALG::SparseMatrix& structurethermodomain, bool zero);
 
-    void AssembleThermoScatraDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_scatra,
-        LINALG::SparseMatrix thermoscatradomain, bool zero);
-
     void AssembleThermoStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_structure,
         const LINALG::SparseMatrix& thermostructuredomain, bool zero);
 
@@ -204,9 +201,24 @@ namespace SSTI
         Teuchos::RCP<LINALG::SparseOperator> structurethermodomain) override = 0;
 
    protected:
-    //! cast system matrix to block matrix
-    void CastSystemMatrixBlock(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& systemmatrix_block);
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> BlockPositionScaTra() const { return block_position_scatra_; };
+
+    //! position of thermo blocks in system matrix
+    Teuchos::RCP<std::vector<int>> BlockPositionThermo() const { return block_position_thermo_; };
+
+    //! position of structure block in system matrix
+    int PositionStructure() const { return position_structure_; };
+
+   private:
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> block_position_scatra_;
+
+    //! position of thermo blocks in system matrix
+    Teuchos::RCP<std::vector<int>> block_position_thermo_;
+
+    //! position of structure block in system matrix
+    int position_structure_;
   };
 
   // *********************************************************************************************
@@ -392,11 +404,6 @@ namespace SSTI
     //! assemble Thermo-Block into system matrix
     void AssembleStructureThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurethermodomain) override;
-
-   protected:
-    //! cast system matrix to sparse matrix
-    void CastSystemMatrixSparse(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix_sparse);
   };
 
   //! build specifc assemble strategy

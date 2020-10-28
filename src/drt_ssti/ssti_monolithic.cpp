@@ -134,23 +134,31 @@ void SSTI::SSTIMono::BuildNullSpaces()
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      ScaTraField()->BuildBlockNullSpaces(solver_, 0);
-      ThermoField()->BuildBlockNullSpaces(solver_, ssti_maps_mono_->MapsScatra()->NumMaps() + 1);
+      ScaTraField()->BuildBlockNullSpaces(
+          solver_, GetBlockPositions(Subproblem::scalar_transport)->at(0));
+      ThermoField()->BuildBlockNullSpaces(solver_, GetBlockPositions(Subproblem::thermo)->at(0));
       break;
     }
     case LINALG::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
-      Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
-      blocksmootherparams.sublist("Aztec Parameters");
-      blocksmootherparams.sublist("MueLu Parameters");
+      std::ostringstream scatrablockstr;
+      scatrablockstr << GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
+      Teuchos::ParameterList& blocksmootherparamsscatra =
+          solver_->Params().sublist("Inverse" + scatrablockstr.str());
+
+      blocksmootherparamsscatra.sublist("Aztec Parameters");
+      blocksmootherparamsscatra.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparamsscatra);
 
-      Teuchos::ParameterList& blocksmootherparamsthermo = solver_->Params().sublist("Inverse3");
+      std::ostringstream thermoblockstr;
+      thermoblockstr << GetBlockPositions(Subproblem::thermo)->at(0) + 1;
+      Teuchos::ParameterList& blocksmootherparamsthermo =
+          solver_->Params().sublist("Inverse" + thermoblockstr.str());
       blocksmootherparamsthermo.sublist("Aztec Parameters");
       blocksmootherparamsthermo.sublist("MueLu Parameters");
 
@@ -169,7 +177,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
   {
     // store number of matrix block associated with structural field as string
     std::stringstream iblockstr;
-    iblockstr << ssti_maps_mono_->MapsScatra()->NumMaps() + 1;
+    iblockstr << GetBlockPositions(Subproblem::structure)->at(0) + 1;
 
     // equip smoother for structural matrix block with empty parameter sub lists to trigger null
     // space computation
@@ -286,8 +294,7 @@ void SSTI::SSTIMono::Setup()
 void SSTI::SSTIMono::SetupSystem()
 {
   // Setup all kind of maps
-  ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(StructureField(), ScaTraField(),
-      ThermoField(), CouplingAdapterStructure(), InterfaceMeshtying()));
+  ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
 
   // initialize global increment vector for Newton-Raphson iteration
   increment_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
@@ -353,19 +360,22 @@ void SSTI::SSTIMono::SetupSystem()
   // initialize evaluation objects for coupling betwee subproblems
   scatrastructureoffdiagcoupling_ = Teuchos::rcp(
       new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
-          ssti_maps_mono_->MapsSubproblems()->Map(0), ssti_maps_mono_->MapsSubproblems()->Map(1),
+          ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+          ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
           CouplingAdapterStructure(), ssti_maps_mono_->MapInterface(MeshtyingScatra()),
           MeshtyingScatra(), ScaTraFieldBase(), StructureField()));
 
-  thermostructureoffdiagcoupling_ = Teuchos::rcp(
-      new SSTI::ThermoStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
-          ssti_maps_mono_->MapsThermo(), ssti_maps_mono_->MapsSubproblems()->Map(1),
-          ssti_maps_mono_->MapsSubproblems()->Map(2), CouplingAdapterStructure(),
-          interface_map_thermo, MeshtyingThermo(), StructureField(), ThermoFieldBase()));
+  thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
+      ssti_maps_mono_->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
+      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
+      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
+      CouplingAdapterStructure(), interface_map_thermo, MeshtyingThermo(), StructureField(),
+      ThermoFieldBase()));
 
   scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
-      ssti_maps_mono_->MapsSubproblems()->Map(0), ssti_maps_mono_->MapsSubproblems()->Map(2),
+      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
       ssti_maps_mono_->MapInterface(MeshtyingScatra()), interface_map_thermo, true,
       MeshtyingScatra(), MeshtyingThermo(), ScaTraFieldBase(), ThermoFieldBase()));
 
@@ -449,7 +459,8 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     case Subproblem::structure:
     {
       // First, extract increment from domain and master side
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 1);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+          increment_, GetProblemPosition(Subproblem::structure));
 
       // Second, copy master side displacements and increments to slave side for meshtying
       if (InterfaceMeshtying())
@@ -472,12 +483,14 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     }
     case Subproblem::scalar_transport:
     {
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 0);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+          increment_, GetProblemPosition(Subproblem::scalar_transport));
       break;
     }
     case Subproblem::thermo:
     {
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(increment_, 2);
+      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+          increment_, GetProblemPosition(Subproblem::thermo));
       break;
     }
     default:
@@ -582,4 +595,88 @@ void SSTI::SSTIMono::PrepareNewtonStep()
   timer_->ResetStartTime();
 
   ssti_matrices_->SystemMatrix()->Zero();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<int>> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
+{
+  if (matrixtype_ == LINALG::MatrixType::sparse) dserror("Sparse matrices have just one block");
+
+  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
+
+  switch (subproblem)
+  {
+    case Subproblem::structure:
+    {
+      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(1);
+      else
+        block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
+      break;
+    }
+    case Subproblem::scalar_transport:
+    {
+      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(0);
+      else
+
+      {
+        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps().NumMaps()); ++i)
+          block_position->emplace_back(i);
+      }
+      break;
+    }
+    case Subproblem::thermo:
+    {
+      if (ThermoField()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(2);
+      else
+      {
+        for (int i = 0; i < static_cast<int>(ThermoField()->BlockMaps().NumMaps()); ++i)
+          block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps() + 1 + i);
+      }
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of subproblem");
+      break;
+    }
+  }
+
+  return block_position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
+{
+  int position = -1;
+
+  switch (subproblem)
+  {
+    case Subproblem::structure:
+    {
+      position = 1;
+      break;
+    }
+    case Subproblem::scalar_transport:
+    {
+      position = 0;
+      break;
+    }
+    case Subproblem::thermo:
+    {
+      position = 2;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of subproblem");
+      break;
+    }
+  }
+
+  return position;
 }

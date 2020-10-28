@@ -22,9 +22,8 @@
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC::SSI_Part2WC(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part(comm, globaltimeparams),
+SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : SSIPart(comm, globaltimeparams),
       scaincnp_(Teuchos::null),
       dispincnp_(Teuchos::null),
       ittol_(-1.0),
@@ -40,14 +39,12 @@ SSI::SSI_Part2WC::SSI_Part2WC(
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+int SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Part::Init(
+  int returnvar = SSI::SSIPart::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
@@ -57,16 +54,17 @@ int SSI::SSI_Part2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 
   // do some checks
   {
-    INPAR::STR::DynamicType structtimealgo =
+    auto structtimealgo =
         DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP");
     if (structtimealgo == INPAR::STR::dyna_statics)
+    {
       dserror(
           "If you use statics as the structural time integrator no velocities will be calculated "
           "and hence"
           "the deformations will not be applied to the scalar transport problem!");
+    }
 
-    INPAR::SCATRA::ConvForm convform =
-        DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
     if (convform == INPAR::SCATRA::convform_convective)
     {
       // get scatra discretization
@@ -78,11 +76,13 @@ int SSI::SSI_Part2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
       {
         if ((dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i)))->ImplType() !=
             INPAR::SCATRA::impltype_refconcreac)
+        {
           dserror(
               "If the scalar transport problem is solved on the deforming domain, the conservative "
               "form must be "
               "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR "
               "TRANSPORT DYNAMIC section or use RefConcReac as ScatraType!");
+        }
       }
     }
   }
@@ -102,32 +102,30 @@ int SSI::SSI_Part2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  | Setup this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::Setup()
+void SSI::SSIPart2WC::Setup()
 {
   // call setup in base class
-  SSI::SSI_Part::Setup();
+  SSI::SSIPart::Setup();
 
   // construct increment vectors
   scaincnp_ = LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
   dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Setup the discretizations                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::InitDiscretizations(
+void SSI::SSIPart2WC::InitDiscretizations(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
 {
   // call init in base class
-  SSI::SSI_Base::InitDiscretizations(comm, struct_disname, scatra_disname);
-  return;
+  SSI::SSIBase::InitDiscretizations(comm, struct_disname, scatra_disname);
 }
 
 /*----------------------------------------------------------------------*
  | Timeloop for 2WC SSI problems                             Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::Timeloop()
+void SSI::SSIPart2WC::Timeloop()
 {
   // safety checks
   CheckIsInit();
@@ -162,7 +160,7 @@ void SSI::SSI_Part2WC::Timeloop()
 /*----------------------------------------------------------------------*
  | Solve structure filed                                     Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::DoStructStep()
+void SSI::SSIPart2WC::DoStructStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -179,7 +177,7 @@ void SSI::SSI_Part2WC::DoStructStep()
 /*----------------------------------------------------------------------*
  | Solve Scatra field                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::DoScatraStep()
+void SSI::SSIPart2WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -201,7 +199,7 @@ void SSI::SSI_Part2WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  | Solve Scatra field                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::PreOperator1()
+void SSI::SSIPart2WC::PreOperator1()
 {
   if (IterationCount() != 1 and UseOldStructureTimeInt())
   {
@@ -214,7 +212,7 @@ void SSI::SSI_Part2WC::PreOperator1()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::PrepareTimeLoop()
+void SSI::SSIPart2WC::PrepareTimeLoop()
 {
   // initial output
   StructureField()->PrepareOutput();
@@ -226,7 +224,7 @@ void SSI::SSI_Part2WC::PrepareTimeLoop()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
+void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
   if (printheader) PrintHeader();
@@ -245,7 +243,7 @@ void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::UpdateAndOutput()
+void SSI::SSIPart2WC::UpdateAndOutput()
 {
   StructureField()->PrepareOutput();
 
@@ -262,22 +260,20 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
 /*----------------------------------------------------------------------*
  | update the current states in every iteration             rauch 05/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::IterUpdateStates()
+void SSI::SSIPart2WC::IterUpdateStates()
 {
   // store last solutions (current states).
   // will be compared in ConvergenceCheck to the solutions,
   // obtained from the next Struct and Scatra steps.
   scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
   dispincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
-
-  return;
 }  // IterUpdateStates()
 
 
 /*----------------------------------------------------------------------*
  | Outer Timeloop for 2WC SSi without relaxation            rauch 06/17 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::OuterLoop()
+void SSI::SSIPart2WC::OuterLoop()
 {
   // reset iteration number
   ResetIterationCount();
@@ -289,7 +285,7 @@ void SSI::SSI_Part2WC::OuterLoop()
                  "LOOP\n****************************************\n";
   }
 
-  while (stopnonliniter == false)
+  while (!stopnonliniter)
   {
     // increment iteration number
     IncrementIterationCount();
@@ -315,14 +311,12 @@ void SSI::SSI_Part2WC::OuterLoop()
     // stop iteration loop if converged
     stopnonliniter = ConvergenceCheck(IterationCount());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | convergence check for both fields (scatra & structure) (copied form tsi)
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
+bool SSI::SSIPart2WC::ConvergenceCheck(int itnum)
 {
   // convergence check based on the scalar increment
   bool stopnonliniter = false;
@@ -435,7 +429,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 /*----------------------------------------------------------------------*
  | calculate velocities by a FD approximation                Thon 14/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp)
+Teuchos::RCP<Epetra_Vector> SSI::SSIPart2WC::CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp)
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
@@ -450,9 +444,9 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(Teuchos::RCP<const Ep
 /*----------------------------------------------------------------------*
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(
+SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part2WC(comm, globaltimeparams), omega_(-1.0)
+    : SSIPart2WC(comm, globaltimeparams), omega_(-1.0)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -464,15 +458,13 @@ SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC_SolidToScatra_Relax::Init(const Epetra_Comm& comm,
+int SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string struct_disname,
     const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call init of base class
-  returnvar = SSI::SSI_Part2WC::Init(
+  int returnvar = SSI::SSIPart2WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -487,7 +479,7 @@ int SSI::SSI_Part2WC_SolidToScatra_Relax::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Outer Timeloop for 2WC SSi with relaxed displacements     Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
+void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
 {
   ResetIterationCount();
   bool stopnonliniter = false;
@@ -503,7 +495,7 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
       LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
   Teuchos::RCP<Epetra_Vector> velnp = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
 
-  while (stopnonliniter == false)
+  while (!stopnonliniter)
   {
     IncrementIterationCount();
 
@@ -561,14 +553,12 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
       velnp->Update(1., *StructureField()->Velnp(), 0.);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter                            Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCSolidToScatraRelax::CalcOmega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
   if (Comm().MyPID() == 0)
@@ -578,9 +568,9 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int it
 /*----------------------------------------------------------------------*
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Aitken(
+SSI::SSIPart2WCSolidToScatraRelaxAitken::SSIPart2WCSolidToScatraRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams), dispincnpold_(Teuchos::null)
+    : SSIPart2WCSolidToScatraRelax(comm, globaltimeparams), dispincnpold_(Teuchos::null)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -592,25 +582,23 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Setup()
+void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
 {
   // call setup of base class
-  SSI::SSI_Part2WC::Setup();
+  SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
   dispincnpold_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter via Aitken                 Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCSolidToScatraRelaxAitken::CalcOmega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
       DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
-  ;
+
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
   // Get minimal relaxation parameter from input file
@@ -626,9 +614,11 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
   double dispincnpdiffnorm = 0.0;
   dispincnpdiff->Norm2(&dispincnpdiffnorm);
   if (dispincnpdiffnorm <= 1e-06 and Comm().MyPID() == 0)
+  {
     std::cout << "Warning: The structure increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous Omega instead!"
               << std::endl;
+  }
 
   // calculate dot product
   double dispincsdot = 0.0;  // delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
@@ -646,17 +636,21 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
     if (omega < minomega)
     {
       if (Comm().MyPID() == 0)
+      {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
                   << std::endl;
+      }
       omega = minomega;
     }
     if (omega > maxomega)
     {
       if (Comm().MyPID() == 0)
+      {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
                   << std::endl;
+      }
       omega = maxomega;
     }
   }
@@ -675,9 +669,9 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
 /*----------------------------------------------------------------------*
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(
+SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part2WC(comm, globaltimeparams), omega_(-1.0)
+    : SSIPart2WC(comm, globaltimeparams), omega_(-1.0)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -689,15 +683,13 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(const Epetra_Comm& comm,
+int SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string struct_disname,
     const std::string scatra_disname, bool isAle)
 {
-  int returnvar = 0;
-
   // call setup of base class
-  returnvar = SSI::SSI_Part2WC::Init(
+  int returnvar = SSI::SSIPart2WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -722,7 +714,7 @@ int SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Outer Timeloop for 2WC SSi with relaxed scalar             Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
+void SSI::SSIPart2WCScatraToSolidRelax::OuterLoop()
 {
   ResetIterationCount();
   bool stopnonliniter = false;
@@ -786,7 +778,7 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter                            Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCScatraToSolidRelax::CalcOmega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
   if (Comm().MyPID() == 0)
@@ -796,9 +788,9 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int it
 /*----------------------------------------------------------------------*
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Aitken(
+SSI::SSIPart2WCScatraToSolidRelaxAitken::SSIPart2WCScatraToSolidRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams), scaincnpold_(Teuchos::null)
+    : SSIPart2WCScatraToSolidRelax(comm, globaltimeparams), scaincnpold_(Teuchos::null)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -810,25 +802,23 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Setup()
+void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
 {
   // call setup of base class
-  SSI::SSI_Part2WC::Setup();
+  SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
   scaincnpold_ = LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter via Aitken                 Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCScatraToSolidRelaxAitken::CalcOmega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
       DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
-  ;
+
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
   // Get minimal relaxation parameter from input file
@@ -843,9 +833,11 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
   scaincnpdiff->Norm2(&scaincnpdiffnorm);
 
   if (scaincnpdiffnorm <= 1e-06 and Comm().MyPID() == 0)
+  {
     std::cout << "Warning: The scalar increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous omega instead!"
               << std::endl;
+  }
 
   // calculate dot product
   double scaincsdot = 0.0;  // delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
@@ -863,17 +855,21 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
     if (omega < minomega)
     {
       if (Comm().MyPID() == 0)
+      {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
                   << std::endl;
+      }
       omega = minomega;
     }
     if (omega > maxomega)
     {
       if (Comm().MyPID() == 0)
+      {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
                   << std::endl;
+      }
       omega = maxomega;
     }
   }

@@ -29,12 +29,11 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/17 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::SSI_Mono>
+STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::SSIMono>
         ssi_mono  //!< monolithic algorithm for scalar-structure interaction
     )
     : stresses_(Teuchos::null), ssi_mono_(ssi_mono)
 {
-  return;
 }
 
 
@@ -97,10 +96,10 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   Discret().GetCondition("S2ICoupling", conditions);
 
   // loop over all scatra-scatra interface coupling conditions
-  for (unsigned icond = 0; icond < conditions.size(); ++icond)
+  for (auto& condition : conditions)
   {
     // extract interface side
-    const int side = conditions[icond]->GetInt("interface side");
+    const int side = condition->GetInt("interface side");
 
     // set references depending on interface side
     Epetra_MultiVector& stresses_vector =
@@ -109,22 +108,20 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
         side == INPAR::S2I::side_slave ? numelement_slave : numelement_master;
 
     // extract nodal cloud of current condition
-    const std::vector<int>* const nodegids = conditions[icond]->Nodes();
+    const std::vector<int>* const nodegids = condition->Nodes();
     if (!nodegids or !nodegids->size())
       dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
 
     // loop over all nodes
-    for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+    for (int nodegid : *nodegids)
     {
       // extract global ID of current node
-      const int nodegid = (*nodegids)[inode];
-
       // process only nodes stored on calling processor
       if (Discret().HaveGlobalNode(nodegid))
       {
         // extract node
         const DRT::Node* const node = Discret().gNode(nodegid);
-        if (node == NULL) dserror("Couldn't find node!");
+        if (node == nullptr) dserror("Couldn't find node!");
 
         // process only nodes owned by calling processor
         if (node->Owner() == Discret().Comm().MyPID())
@@ -179,32 +176,30 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(stresses_slave, stresses_master);
 
   // loop over all scatra-scatra interface coupling conditions
-  for (unsigned icond = 0; icond < conditions.size(); ++icond)
+  for (auto& condition : conditions)
   {
     // extract interface side
-    const int side = conditions[icond]->GetInt("interface side");
+    const int side = condition->GetInt("interface side");
 
     // set reference depending on interface side
     Epetra_MultiVector& stresses_vector =
         side == INPAR::S2I::side_slave ? *stresses_slave : *stresses_master;
 
     // extract nodal cloud of current condition
-    const std::vector<int>* const nodegids = conditions[icond]->Nodes();
+    const std::vector<int>* const nodegids = condition->Nodes();
     if (!nodegids or !nodegids->size())
       dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
 
     // loop over all nodes
-    for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+    for (int nodegid : *nodegids)
     {
       // extract global ID of current node
-      const int nodegid = (*nodegids)[inode];
-
       // process only nodes stored on calling processor
       if (Discret().HaveGlobalNode(nodegid))
       {
         // extract node
         const DRT::Node* const node = Discret().gNode(nodegid);
-        if (node == NULL) dserror("Couldn't find node!");
+        if (node == nullptr) dserror("Couldn't find node!");
 
         // process only nodes owned by calling processor
         if (node->Owner() == Discret().Comm().MyPID())
@@ -231,8 +226,6 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
       }
     }
   }
-
-  return;
 }
 
 
@@ -255,8 +248,6 @@ void STR::MODELEVALUATOR::MonolithicSSI::OutputStepState(IO::DiscretizationWrite
 
   // write nodal stresses
   iowriter.WriteVector("nodal_stresses_xyz", stresses_, IO::nodevector);
-
-  return;
 }
 
 
@@ -273,8 +264,6 @@ void STR::MODELEVALUATOR::MonolithicSSI::Setup()
 
   // set flag
   issetup_ = true;
-
-  return;
 }
 
 
@@ -286,6 +275,4 @@ void STR::MODELEVALUATOR::MonolithicSSI::WriteRestart(
 {
   // write nodal stresses
   iowriter.WriteVector("nodal_stresses_xyz", stresses_, IO::nodevector);
-
-  return;
 }

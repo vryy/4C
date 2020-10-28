@@ -135,9 +135,6 @@ namespace SSTI
     Teuchos::ParameterList CloneThermoParams(
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams);
 
-    //! Setup meshtying for structure
-    void SetupCouplingAdapterStructure();
-
     //! Pointers to subproblems
     //@{
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
