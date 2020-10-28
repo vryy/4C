@@ -527,7 +527,6 @@ double STR::MonitorDbc::GetReactionMoment(LINALG::Matrix<DIM, 1>& rmoment_xyz,
     const Teuchos::RCP<Epetra_Map>* react_maps, const DRT::Condition* rcond) const
 {
   Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->GetDisNp();
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(*discret_ptr_);
 
   Epetra_Vector complete_freact(*gstate_ptr_->GetFreactNp());
   dbc_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(complete_freact));
@@ -548,12 +547,13 @@ double STR::MonitorDbc::GetReactionMoment(LINALG::Matrix<DIM, 1>& rmoment_xyz,
 
   for (int nid : *nids)
   {
-    const int rlid = discret.NodeColMap()->LID(nid);
+    // Check if the node of the boundary condition is owned by this rank.
+    const int rlid = discret_ptr_->NodeRowMap()->LID(nid);
     if (rlid == -1) continue;
 
-    const DRT::Node* node = discret.lColNode(rlid);
+    const DRT::Node* node = discret_ptr_->lRowNode(rlid);
 
-    for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret.Dof(node, i);
+    for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret_ptr_->Dof(node, i);
 
     std::vector<double> mydisp;
     DRT::UTILS::ExtractMyValues(*dispn, mydisp, node_gid);
