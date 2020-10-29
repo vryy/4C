@@ -138,7 +138,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] freeuniquegids free unique global ids
      */
-    void FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids) override;
+    void FreeUniqueGlobalIds(std::vector<int>& freeuniquegids) override;
 
     /*!
      * \brief get unique global ids for all particles
