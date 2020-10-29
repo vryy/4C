@@ -1030,6 +1030,7 @@ namespace DRT
       void GetNodalTriadsFromDispTheta(const std::vector<LINALG::Matrix<3, 1, double>>& disptheta,
           std::vector<LINALG::Matrix<4, 1, T>>& Qnode) const;
 
+     public:
       //! compute nodal triads either from current nodal rotation vectors ("displacement", i.e.
       //! relative rotations)
       //  or from full displacement state vector of the element (decision based on size of given STL
@@ -1038,6 +1039,7 @@ namespace DRT
       void GetNodalTriadsFromFullDispVecOrFromDispTheta(
           const std::vector<T>& dispvec, std::vector<LINALG::Matrix<4, 1, T>>& Qnode) const;
 
+     private:
       //! compute vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
       //  function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
       template <unsigned int nnodetriad, typename T>
